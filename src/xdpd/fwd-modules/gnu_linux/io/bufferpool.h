@@ -1,0 +1,70 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#ifndef BUFFERPOOL_H
+#define BUFFERPOOL_H 
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <vector>
+#include <rofl/datapath/pipeline/common/datapacket.h>
+#include "datapacketx86.h"
+
+/**
+* @file bufferpool.h
+* @author Marc Sune<marc.sune (at) bisdn.de>
+*
+* @brief Manager of the data packets pool
+*
+*/
+
+typedef enum{
+	BPX86_SLOT_UNAVAILABLE=0,
+	BPX86_SLOT_AVAILABLE=1,
+	BPX86_SLOT_IN_USE=2
+}bufferpool_slot_state_t;
+
+class bufferpool{
+
+public:
+	//Init 
+	static void init(long long unsigned int capacity);
+	static void increase_capacity(long long unsigned int new_capacity);
+
+	//Public interface of the pool (static)
+	static datapacket_t* get_free_buffer(bool blocking = true);
+	static inline datapacket_t* get_free_buffer_nonblocking() {
+		return get_free_buffer(false);
+	}
+
+	static void release_buffer(datapacket_t* buf);
+	
+	static void destroy();
+	
+protected:
+	//For performance make this power of 2	
+	static const unsigned int DEFAULT_SIZE = 1024*2; //2048 items
+
+	//Singleton instance
+	static bufferpool* instance;
+	
+	//Pool internals
+	std::vector<datapacket_t*> pool;	
+	std::vector<bufferpool_slot_state_t> pool_status;	
+	long long unsigned int pool_size; //This might be different from pool.size during initialization/resizing
+
+	//Mutex and cond
+	static pthread_mutex_t mutex;
+	static pthread_cond_t cond;
+
+	//Constructor and destructor
+	bufferpool(long long unsigned int pool_items=DEFAULT_SIZE);
+	~bufferpool();
+
+	//get instance
+	static bufferpool* get_instance(void);
+};
+
+#endif /* BUFFERPOOL_H_ */

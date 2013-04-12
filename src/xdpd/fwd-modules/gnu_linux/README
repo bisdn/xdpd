@@ -1,0 +1,18 @@
+Brief:
+	The contents of this folder are the implementation for a generic GNU/Linux OS Abstract Forwarding API (AFA) forwarding module. Please have a look to ROFL-AFA for more details.
+
+Folder structure and some files:
+	- afa-imp: Abstract Forwarding API implementation (forwarding module end) 
+	- bg_taskmanager.c: subsystem for background tasks  
+	- io: I/O subsystem, including I/O ports, port scheduling algorithms and GNU/Linux packet manipulation (getters, setters and push/pop operations on the packet headers)
+	- ls_internal_state.h: Internal state (GNU/Linux specific) associated with all the logical switches. 
+	- pipeline-imp: Implementation of the required APIs  
+	- processing: Management of processing threads
+	- util: Some utils used in processing and io subsystems. 
+
+Authorship:
+	Marc Sune<marc.sune (at) bisdn.de>
+	Andreas Koepsel<andreas.koepsel (at) bisdn.de>
+	Victor Alvarez<victor.alvarez (at) bisdn.de>
+	Tobias Jungel<tobias.jungel (at) bisdn.de>
+

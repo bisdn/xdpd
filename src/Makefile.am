@@ -1,0 +1,5 @@
+MAINTAINERCLEANFILES = Makefile.in
+
+SUBDIRS = xdpd 
+DIST_SUBDIRS = xdpd 
+

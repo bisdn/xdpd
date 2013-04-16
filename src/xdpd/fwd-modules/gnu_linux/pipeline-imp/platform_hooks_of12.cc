@@ -75,6 +75,7 @@ void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapack
 
 	assert(OF_VERSION_12 == sw->of_ver);
 
+	//Store packet in the storage system. Packet is NOT returned to the bufferpool
 	storeid id = datapacket_storage_store_packet((((struct logical_switch_internals*)sw->platform_state)->store_handle), pkt);
 
 	//Get real packet
@@ -96,8 +97,13 @@ void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapack
 			*((of12_packet_matches_t*)pkt->matches)
 			);
 
-	if (AFA_FAILURE == rv) {
-		//TODO do we need to do s/t?
+	if (rv == AFA_FAILURE) {
+		
+		//Take packet out from the storage
+		pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)sw->platform_state)->store_handle, id);
+
+		//Return to the bufferpool
+		bufferpool::release_buffer(pkt);
 	}
 }
 

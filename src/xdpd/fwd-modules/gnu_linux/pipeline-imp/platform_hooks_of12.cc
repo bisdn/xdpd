@@ -12,6 +12,7 @@
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
 
 
+#include "../io/bufferpool.h"
 #include "../io/datapacketx86.h"
 #include "../io/datapacketx86_c_wrapper.h"
 #include "../io/datapacket_storage.h"
@@ -20,6 +21,7 @@
 
 
 #define DATAPACKET_STORE_EXPIRATION_TIME 180
+#define DATAPACKET_STORE_MAX_BUFFERS bufferpool::RESERVED_SLOTS/2 
 
 /*
 * Hooks for configuration of the switch
@@ -40,10 +42,13 @@ rofl_result_t platform_post_init_of12_switch(of12_switch_t* sw){
 	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));
 
 	ls_int->ringbuffer = new_ringbuffer();
-	ls_int->store_handle = create_datapacket_store(1024, DATAPACKET_STORE_EXPIRATION_TIME); // todo make this value configurable
+	ls_int->store_handle = create_datapacket_store(DATAPACKET_STORE_MAX_BUFFERS, DATAPACKET_STORE_EXPIRATION_TIME); // todo make this value configurable
 
 	sw->platform_state = (of_switch_platform_state_t*)ls_int;
-	
+
+	//Set number of buffers
+	sw->pipeline->num_of_buffers = DATAPACKET_STORE_MAX_BUFFERS;
+
 	return ROFL_SUCCESS;
 }
 

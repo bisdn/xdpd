@@ -16,7 +16,7 @@
 * @file bufferpool.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief Manager of the data packets pool
+* @brief Data packet buffer pool management 
 *
 */
 
@@ -29,8 +29,22 @@ typedef enum{
 class bufferpool{
 
 public:
+	/**
+	* RESERVED_SLOTS are the slots not meant to be used by ports, but likely
+	* used in other situations (such PACKET_INs).
+	* Ports instead should increase_capacity of the bufferpool once they are
+	* scheduled in the I/O (if the pool is not properly sized yet). 
+	*/
+	static const unsigned int RESERVED_SLOTS = 1024*2; //2048 items
+
+	/**
+	* Initialization default size of the buffer pool; must be >= RESERVED_SIZE
+	* For performance make this power of 2.	
+	*/
+	static const unsigned int DEFAULT_SIZE = RESERVED_SLOTS*2;
+
 	//Init 
-	static void init(long long unsigned int capacity);
+	static void init(long long unsigned int capacity=DEFAULT_SIZE);
 	static void increase_capacity(long long unsigned int new_capacity);
 
 	//Public interface of the pool (static)
@@ -44,8 +58,6 @@ public:
 	static void destroy();
 	
 protected:
-	//For performance make this power of 2	
-	static const unsigned int DEFAULT_SIZE = 1024*2; //2048 items
 
 	//Singleton instance
 	static bufferpool* instance;

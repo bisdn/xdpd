@@ -1,3 +1,20 @@
+/*
+ * @section LICENSE
+ * 
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * 
+ * @author: msune, akoepsel, tjungel, valvarez, 
+ * 
+ * @section DESCRIPTION 
+ * 
+ * GNU/Linux forwarding_module dispatching routines. This file contains primary AFA driver hooks
+ * for CMM to call forwarding module specific functions (e.g. bring up port, or create logical switch).
+ * Openflow version dependant hooks are under openflow/ folder. 
+*/
+
+
 #include <stdio.h>
 #include <net/if.h>
 #include <rofl/datapath/afa/fwd_module.h>
@@ -21,25 +38,7 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
 
-#define AFA_NUM_ELEM_BUFFERPOOL 2048
-
-/*
- *
- * @section LICENSE
- * 
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- * 
- * @author: msune, akoepsel, tjungle, valvarez, 
- * 
- * @section DESCRIPTION 
- * 
- * x86 driver dispatching routines. This file contains primary AFA driver hooks
- * for HCL to call driver specific functions (e.g. bring up port, or create logical switch).
- * Openflow version dependant hooks are under openflow/ folder. 
-*/
-
+#define NUM_ELEM_INIT_BUFFERPOOL 2048 //This is cache for fast port addition
 
 //FIXME: implement it properly. Single portgroup ID emulation 
 static int iomanager_grp_id;
@@ -60,7 +59,7 @@ afa_result_t fwd_module_init(){
 	}
 	
 	//create bufferpool
-	bufferpool_init_wrapper(AFA_NUM_ELEM_BUFFERPOOL);
+	bufferpool_init_wrapper(NUM_ELEM_INIT_BUFFERPOOL);
 	
 	//create a port_group NOTE so far we will only have one of these
 	// the managment of port_groups creation, destroy, port adding and removing will be done later

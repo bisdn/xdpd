@@ -8,16 +8,13 @@ pthread_cond_t bufferpool::cond = PTHREAD_COND_INITIALIZER;
  
 //Constructor and destructor
 bufferpool::bufferpool(long long unsigned int pool_items)
-	: pool(pool_items)
+	: pool(pool_items),
+	pool_status(pool_items)
 {
 
 	long long unsigned int i;
 	datapacket_t* dp;
 	datapacketx86* dpx86;
-
-	//Reserve space
-	//  pool.reserve(pool_items);
-	pool_status.reserve(pool_items);
 
 	for(i=0;i<pool_items;++i){
 
@@ -59,6 +56,7 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 		//Add to the pool	
 		pool[i] = dp;
 		pool_status[i] = BPX86_SLOT_AVAILABLE;
+	
 	}
 
 	//Set size
@@ -169,12 +167,17 @@ void bufferpool::init(long long unsigned int capacity){
 
 	pthread_mutex_lock(&bufferpool::mutex);		
 
+	//Add the RESERVED_SLOTS to the capacity 
+	capacity += RESERVED_SLOTS;
+
 	if(bufferpool::instance){
 		//Double-call to init??
 		fprintf(stderr,"Double call to bufferpool init!! Skipping...\n");
 		pthread_mutex_unlock(&bufferpool::mutex);
 		return;	
 	}
+	
+	//std::cout<<"Initializing bufferpool to:"<<capacity<<std::endl;
 
 	//Init 	
 	bufferpool::instance = new bufferpool(capacity);
@@ -195,7 +198,7 @@ void bufferpool::destroy(){
 }
 
 /*
-* Resizes current buffer pool to new_capacity
+* Resizes current buffer pool to new_capacity, to the final size of new_capacity+RESERVED_SLOTS
 */
 void bufferpool::increase_capacity(long long unsigned int new_capacity){
 
@@ -205,14 +208,21 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 	datapacket_t* dp;
 	datapacketx86* dpx86;
 
-	//Check for current capacity
+	//Add the RESERVED_SLOTS to the new_capacity 
+	new_capacity += RESERVED_SLOTS;
+
+	//std::cout<<"Attempting to resize buffer pool to:"<<new_capacity<<" current:"<<bp->pool_size<<std::endl;
+
+	//Check if current capacity is enough
 	if(new_capacity <= bp->pool_size)
 		return;	
+	
+	//std::cout<<"Resizing buffer pool to:"<<new_capacity<<"!"<<std::endl;
 
 	//Resize vectors
 	try {
-		bp->pool.reserve(new_capacity);
-		bp->pool_status.reserve(new_capacity);
+		bp->pool.resize(new_capacity);
+		bp->pool_status.resize(new_capacity);
 	}catch(std::bad_alloc ex){
 		return; 
 	}		
@@ -253,7 +263,6 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 		//Add to the pool	
 		bp->pool[i] = dp;
 		bp->pool_status[i] = BPX86_SLOT_AVAILABLE;
-	
 	}
 	
 	//Finally allow to use extended capacity

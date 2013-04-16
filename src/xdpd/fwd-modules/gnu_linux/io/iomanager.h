@@ -18,13 +18,6 @@
 * @file iomanager.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief Manager of the data packets pool
-*
-*/
-/**
-* @file iomanager.h
-* @author Marc Sune<marc.sune (at) bisdn.de>
-*
 * @brief Class in charge of launch/stopping of the I/O threads, 
 * dealing with data packet tx/rx.
 * 
@@ -54,10 +47,10 @@ public:
 	
 };
 
-/*
-* I/O manager. Create/destroy io threads to work on the ports(portgroup). This class is purely static.
+/**
+* I/O manager, creates and destroys (launches and stops) I/O threads to work on the ports, or specifically a set of ports (portgroups). 
+* This class is purely static.
 */
-
 class iomanager{ 
 
 public:
@@ -92,6 +85,9 @@ protected:
 	//Constants
 	static const unsigned int DEFAULT_THREADS_PER_PORTGROUP = 1;
 	static const unsigned int MAX_THREADS_PER_PORTGROUP = DEFAULT_MAX_THREADS_PER_PORTGROUP;
+
+	//Number of buffers currently required by the ports to operate
+	static unsigned long long int num_of_port_buffers;
 
 	//Portgroup state
 	//static std::vector<portgroup_state> portgroups;	

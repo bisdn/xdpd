@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <rofl/datapath/pipeline/platform/cutil.h>
 #include "iomanager.h"
+#include "bufferpool.h"
 
 //Add it here if you want to use another scheduler...
 #include "scheduler/epoll_ioscheduler.h"
 
 /* Static members */
+unsigned long long int iomanager::num_of_port_buffers = 0;
 pthread_mutex_t iomanager::mutex = PTHREAD_MUTEX_INITIALIZER; 
 //std::vector<portgroup_state> iomanager::portgroups; //TODO: maybe add a pre-reserved memory here
 safevector<portgroup_state*> iomanager::portgroups; //TODO: maybe add a pre-reserved memory here
@@ -175,6 +177,10 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 			return ROFL_FAILURE;
 		}
 	}
+
+	//Pre-allocate buffers for operating at line-rate
+	num_of_port_buffers += port->get_required_buffers();
+	bufferpool::increase_capacity(num_of_port_buffers);
 	
 	//Add to port
 	pg->ports->push_back(port);	
@@ -215,6 +221,9 @@ rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* por
 	
 	//Bring it down
 	bring_port_down(port, true);
+	
+	//Substract buffers that were required by this port
+	num_of_port_buffers -= port->get_required_buffers();
 		
 	//Erase it
 	pg->ports->erase(port);	

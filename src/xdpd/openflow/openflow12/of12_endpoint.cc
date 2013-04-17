@@ -595,7 +595,7 @@ of12_endpoint::process_packet_in(
 				table_id,
 				/*cookie=*/0,
 				/*in_port=*/0, // OF1.0 only
-				pack.match,
+				pack.get_match(),
 				pkt_buffer, buf_len);
 
 		return AFA_SUCCESS;

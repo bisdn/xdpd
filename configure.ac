@@ -8,6 +8,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_LD
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AUTOCONF_ENV="SHELL=/bin/sh"
 LT_INIT
@@ -42,17 +43,6 @@ AC_MSG_CHECKING(whether to compile in verbose mode)
 AC_ARG_ENABLE(verbose,
 	AS_HELP_STRING([--verbose], [turn on verbose mode [default=no]])
 		, verbose="yes", verbose="no")
-
-if test "$verbose" = "yes"; then
-	AC_MSG_RESULT(yes)
-	AM_SILENT_RULES([no])	
-else
-	AC_MSG_RESULT(no)
-	# Silent build for automake >= 1.11
-	m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
-fi
-
-
 
 # Check for profiling mode
 AC_MSG_CHECKING(whether to enable profiling mode)

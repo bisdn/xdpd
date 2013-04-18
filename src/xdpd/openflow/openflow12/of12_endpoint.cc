@@ -208,7 +208,6 @@ of12_endpoint::handle_table_stats_request(
 							(of12switch->pipeline->tables[n].stats.lookup_count),
 							(of12switch->pipeline->tables[n].stats.matched_count)
 						);
-		fprintf(stderr, "table_stats: %s\n", a.c_str());
 	}
 
 
@@ -460,7 +459,7 @@ of12_endpoint::handle_group_stats_request(
 	
 	if(g_msg==NULL){
 		//TODO handle error
-		fprintf(stderr,"<%s:%d> ERROR MESSAGE NOT CREATED\n",__func__,__LINE__);
+		WRITELOG(CDATAPATH, ERROR,"<%s:%d> ERROR MESSAGE NOT CREATED\n",__func__,__LINE__);
 	}
 	
 	num_of_buckets = g_msg->num_of_buckets;
@@ -723,26 +722,29 @@ of12_endpoint::handle_flow_mod(
 		cofctl *ctl,
 		cofmsg_flow_mod *msg)
 {
-	fprintf(stderr, "of12_endpoint::handle_flow_mod() pack: %s\n", msg->c_str());
-
 	switch (msg->get_command()) {
-	case OFPFC_ADD: {
-		flow_mod_add(ctl, msg);
-	} break;
-	case OFPFC_MODIFY: {
-		flow_mod_modify(ctl, msg, false);
-	} break;
-	case OFPFC_MODIFY_STRICT: {
-		flow_mod_modify(ctl, msg, true);
-	} break;
-	case OFPFC_DELETE: {
-		flow_mod_delete(ctl, msg, false);
-	} break;
-	case OFPFC_DELETE_STRICT: {
-		flow_mod_delete(ctl, msg, true);
-	} break;
-	default:
-		throw eFlowModBadCommand();
+		case OFPFC_ADD: {
+				flow_mod_add(ctl, msg);
+			} break;
+		
+		case OFPFC_MODIFY: {
+				flow_mod_modify(ctl, msg, false);
+			} break;
+		
+		case OFPFC_MODIFY_STRICT: {
+				flow_mod_modify(ctl, msg, true);
+			} break;
+		
+		case OFPFC_DELETE: {
+				flow_mod_delete(ctl, msg, false);
+			} break;
+		
+		case OFPFC_DELETE_STRICT: {
+				flow_mod_delete(ctl, msg, true);
+			} break;
+		
+		default:
+			throw eFlowModBadCommand();
 	}
 	delete msg;
 }
@@ -782,7 +784,7 @@ of12_endpoint::flow_mod_add(
 								msg->get_flags() & OFPFF_CHECK_OVERLAP,
 								msg->get_flags() & OFPFF_RESET_COUNTS)){
 		// log error
-		fprintf(stderr,"Error inserting the flowmod\n");
+		WRITELOG(CDATAPATH, ERROR, "Error inserting the flowmod\n");
 		of12_destroy_flow_entry(entry);
 	}
 
@@ -825,7 +827,7 @@ of12_endpoint::flow_mod_modify(
 								strictness,
 								pack->get_flags() & OFPFF_RESET_COUNTS)){
 		//TODO: FIXME send exception
-		fprintf(stderr,"Error modiying flowmod\n");
+		WRITELOG(CDATAPATH, ERROR, "Error modiying flowmod\n");
 		of12_destroy_flow_entry(entry);
 	} 
 
@@ -859,7 +861,7 @@ of12_endpoint::flow_mod_delete(
 								pack->get_out_port(),
 								pack->get_out_group(),
 								strictness)) {
-		fprintf(stderr,"Error deleting flowmod\n");
+		WRITELOG(CDATAPATH, ERROR, "Error deleting flowmod\n");
 		//TODO: treat exception
 	} 
 	of12_destroy_flow_entry(entry);
@@ -916,7 +918,7 @@ of12_endpoint::handle_group_mod(
 	 * 3- call driver function?
 	 */
 
-	fprintf(stderr, "of12_endpoint::handle_group_mod() => buckets: %s\n", msg->get_buckets().c_str());
+	WRITELOG(CDATAPATH, DBG, "of12_endpoint::handle_group_mod() => buckets: %s\n", msg->get_buckets().c_str());
 
 #if 0
 	// sanity check: check for invalid actions => FIXME: fake for oftest12, there are numerous

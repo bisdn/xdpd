@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 //Prototypes
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -129,8 +130,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
 		//FIXME change this messages into warnings "Unable to discover mac address of interface %s"
-		fprintf(stderr,"<%s:%d> %s: ",__func__,__LINE__,ifr.ifr_name);
-		perror("ioctl SIOCETHTOOL");
+		ROFL_ERR("<%s:%d> %s: ioctl SIOCETHTOOL",__func__,__LINE__,ifr.ifr_name);
 	}
 	
 	//Init the port
@@ -140,9 +140,10 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	//get the MAC addr.
 	socll = (struct sockaddr_ll *)ifa->ifa_addr;
-	fprintf(stderr,"<%s:%d> Iface %s mac_addr %02X:%02X:%02X:%02X:%02X:%02X \n",__func__,__LINE__,
+	ROFL_DEBUG("<%s:%d> Iface %s mac_addr %02X:%02X:%02X:%02X:%02X:%02X \n",__func__,__LINE__,
 		ifa->ifa_name,socll->sll_addr[0],socll->sll_addr[1],socll->sll_addr[2],socll->sll_addr[3],
 		socll->sll_addr[4],socll->sll_addr[5]);
+
 	for(j=0;j<6;j++)
 		port->hwaddr[j] = socll->sll_addr[j];
 
@@ -202,7 +203,7 @@ afa_result_t discover_physical_ports(){
 				break;
 		}
 		if(index==PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS){
-			fprintf(stderr,"<%s:%d> All physical port slots are non empty\n",__func__, __LINE__);
+			ROFL_ERR("<%s:%d> All physical port slots are occupied\n",__func__, __LINE__);
 			freeifaddrs(ifaddr);
 			return AFA_FAILURE;
 		}
@@ -218,7 +219,7 @@ afa_result_t discover_physical_ports(){
 
 		if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
 			//FIXME change this messages into warnings "Unable to discover mac address of interface %s"
-			fprintf(stderr,"<%s:%d> %s: ",__func__,__LINE__,ifr.ifr_name);
+			ROFL_ERR("<%s:%d> %s: ",__func__,__LINE__,ifr.ifr_name);
 			perror("ioctl SIOCETHTOOL");
 		}
 	#endif	

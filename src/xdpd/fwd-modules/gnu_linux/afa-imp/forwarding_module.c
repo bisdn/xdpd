@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <net/if.h>
 #include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/afa/cmm.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
@@ -136,7 +137,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	//Launch switch processing threads
 	if(start_ls_workers_wrapper(sw) < 0){
 		
-		fprintf(stderr,"<%s:%d> error initializing workers from processing manager. Destroying switch...\n",__func__,__LINE__);
+		ROFL_ERR("<%s:%d> error initializing workers from processing manager. Destroying switch...\n",__func__,__LINE__);
 		of_destroy_switch(sw);
 		return NULL;
 	}
@@ -192,7 +193,7 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 	
 	//stop the threads here (it is blocking)
 	if(stop_ls_workers_wrapper(sw)!= ROFL_SUCCESS)
-		fprintf(stderr,"<%s:%d> error stopping workers from processing manager\n",__func__,__LINE__);
+		ROFL_ERR("<%s:%d> error stopping workers from processing manager\n",__func__,__LINE__);
 	
 	//Remove switch from the switch bank
 	if(physical_switch_remove_logical_switch(sw)!=ROFL_SUCCESS)

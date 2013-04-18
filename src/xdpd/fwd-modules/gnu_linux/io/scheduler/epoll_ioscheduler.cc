@@ -1,8 +1,10 @@
 #include "epoll_ioscheduler.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <unistd.h>
 
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/datapath/pipeline/platform/cutil.h>
@@ -41,9 +43,8 @@ inline void epoll_ioscheduler::process_port_io(ioport* port){
 	n_buckets = READ_BUCKETS[port->get_input_queue_state()];
 
 	//Perform up_to n_buckets_read
-#ifdef DEBUG
-	//std::cerr<<"Trying to read at port ["<<port->of_port_state->name<<"] with "<< n_buckets <<"buckets. Queue state: "<<port->get_input_queue_state()<<std::endl;
-#endif
+	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d. Queue state: %d\n", port->of_port_state->name, n_buckets, port->get_input_queue_state());
+	
 	for(i=0; i<n_buckets; i++){
 		
 		//Attempt to read (non-blocking)
@@ -67,24 +68,19 @@ inline void epoll_ioscheduler::process_port_io(ioport* port){
 				int result = ((ringbuffer*)((struct logical_switch_internals*)port->of_port_state->attached_sw->platform_state)->ringbuffer)->non_blocking_write(pkt);
 				if( result == ringbuffer::RB_FAILURE ){
 					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
-					//std::cerr << "<" << __func__ << ":" << __LINE__ << "> FAILURE when writting to ringbuffer" << std::endl;
-					//fprintf(stderr,"[%s] Packet DROPPED, processing buffer full (sw: %s)\n",port->of_port_state->name,port->of_port_state->attached_sw->name);
+					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 					bufferpool::release_buffer(pkt);
 				}else{
-					//DEBUG_CALL(std::cerr << "<" << __func__ << ":" << __LINE__ << "> SUCCESS when writting to ringbuffer->" << std::endl);
-					//fprintf(stderr,"[%s] Packet scheduled for process -> sw: %s\n",port->of_port_state->name,port->of_port_state->attached_sw->name);
+					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) scheduled for process -> sw: %s\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 				}
 					
 #ifdef DEBUG
 			}
 #endif
 		}else{
-#ifdef DEBUG
-			//std::cerr<<"Port reading: breaking at num_of_buckets "<<i<<std::endl;
-#endif
+			ROFL_DEBUG_VERBOSE("[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, n_buckets);
 			break;
 		}
-		//} while (pkt);
 	}
 
 	//Process output (up to WRITE_BUCKETS[output_queue_state])
@@ -93,9 +89,8 @@ inline void epoll_ioscheduler::process_port_io(ioport* port){
 		//Increment number of buckets
 		n_buckets = WRITE_BUCKETS[port->get_output_queue_state(q_id)]*WRITE_QOS_QUEUE_FACTOR[q_id];
 
-#ifdef DEBUG
-		//std::cerr<<"Trying to write at port queue: "<<q_id <<" with: "<< n_buckets <<" buckets. Queue state: "<<port->get_output_queue_state(q_id)<<std::endl;
-#endif
+		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d. Queue state: %d\n", port->of_port_state->name, q_id, n_bucket,port->get_output_queue_state(q_id));
+		
 		//Perform up to n_buckets write	
 		port->write(q_id,n_buckets);
 	}
@@ -112,8 +107,8 @@ inline void epoll_ioscheduler::add_fd_epoll(struct epoll_event* ev, int epfd, io
 	ev->data.ptr = (void*)port;
 
 	if( epoll_ctl(epfd, EPOLL_CTL_ADD, fd, ev) < 0){
-		//XXX FIXME  do something, trace or exit on development
-		fprintf(stderr,"epoll failed");
+		ROFL_ERR("[epoll_ioscheduler] epoll failed");
+		assert(0);
 	}
 }
 /*
@@ -147,7 +142,7 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, int* epfd
 
 	if(!*ev){
 		//FIXME: what todo...
-		fprintf(stderr,"malloc failed");
+		ROFL_ERR("[epoll_ioscheduler] malloc failed");
 		pg->running_ports->read_unlock();
 		return;
 	}
@@ -189,35 +184,27 @@ void* epoll_ioscheduler::process_io(void* grp){
 	epfd = -1;
 	init_or_update_fds(pg, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
 
-	std::cerr<<"Initialization of epoll completed in thread:"<<(unsigned int)pthread_self()<<std::endl;
+	ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
 	
 	/*
 	* Infinite loop unless group is stopped. e.g. all ports detached
 	*/
 	while(iomanager::keep_on_working(pg)){
 
-		//std::cerr<<"Epoll wait.."<<std::endl;
-
 		//Wait for events or TIMEOUT_MS
 		res = epoll_wait(epfd, events, current_num_of_ports, EPOLL_TIMEOUT_MS);
 		
-		//std::cerr<<"After epoll.."<<std::endl;
-		
 		if(res == -1){
-#ifdef DEBUG
-			//std::cerr<<"epoll failed"<<strerror(errno)<<" \n";
-			//fprintf(stderr,"epoll failed");
-#else
+			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] epoll returned -1. Continuing...\n");
 			continue;
-#endif
 		}
 		if(res == 0){
 			//std::cerr<<"Timeout.."<<std::endl;
 			//Check if this is really necessary
 			//Timeout loop over ALL fds 
-			for(unsigned int i=0;i<current_num_of_ports*2;i+=2){
+			//for(unsigned int i=0;i<current_num_of_ports*2;i+=2){
 				//epoll_ioscheduler::process_port_io((ioport*)ev[i].data.ptr);
-			}	
+			//}	
 		}else{	
 			//std::cerr<<"Active fds.."<<std::endl;
 			//Loop over active fd
@@ -231,7 +218,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 			init_or_update_fds(pg, &epfd, &ev,&events, &current_num_of_ports, &current_hash );
 	}
 
-	std::cout<<"Finishing execution of I/O thread: #"<<pthread_self()<<std::endl;
+	ROFL_INFO("Finishing execution of I/O thread: #%d\n",pthread_self());
 
 	//Free dynamic memory
 	free(ev);

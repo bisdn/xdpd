@@ -1,5 +1,6 @@
 #include "ioport_mockup.h"
 #include <iostream>
+#include <rofl/common/utils/c_logger.h>
 #include "../../bufferpool.h" 
 #include <fcntl.h>
 
@@ -21,7 +22,6 @@ ioport_mockup::ioport_mockup(switch_port_t* of_ps, unsigned int num_queues):iopo
 	//Open pipe for output signaling on enqueue	
 	ret = pipe(notify_pipe);
 	(void)ret; // todo use the value
-	//std::cerr<<"INPUT: "<<input<<" Pipe ["<<input[0]<<","<<input[1]<<"]"<<std::endl;		
 
 	//Set non-blocking read/write in the pipe
 	for(i=0;i<2;i++){
@@ -29,7 +29,6 @@ ioport_mockup::ioport_mockup(switch_port_t* of_ps, unsigned int num_queues):iopo
 		flags |= O_NONBLOCK;				//turn off blocking flag
 		fcntl(notify_pipe[i], F_SETFL, flags);		//set up non-blocking read
 	}
-	//std::cerr<<"INPUT: "<<input<<" Pipe ["<<notify_pipe[0]<<","<<notify_pipe[1]<<"]"<<std::endl;		
 
 }
 
@@ -80,7 +79,8 @@ datapacket_t* ioport_mockup::read(){
 		return NULL;
 	}
 
-	std::cerr<<"Filled buffer with id:"<<pkt_x86->buffer_id<<", buffer internal id: "<<pkt_x86->internal_buffer_id<<". Sending to process\n";
+	ROFL_DEBUG_VERBOSE("Filled buffer with id:%d. Sending to process.\n", pkt_x86->buffer_id);
+	
 	return pkt;	
 }
 
@@ -92,6 +92,8 @@ unsigned int ioport_mockup::write(unsigned int q_id, unsigned int num_of_buckets
 	unsigned int i;
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
+	
+	(void)pkt_x86;
 
 	//Free the pipe
 	ret = ::read(notify_pipe[READ],&dummy,SIMULATED_PKT_SIZE);
@@ -107,7 +109,8 @@ unsigned int ioport_mockup::write(unsigned int q_id, unsigned int num_of_buckets
 		
 		//Just "put it into the wire" -> print it 
 		pkt_x86 = (datapacketx86*)pkt->platform_state;
-		std::cerr<<"Putting packet buffer with id:"<<pkt_x86->buffer_id<<", buffer internal id: "<<pkt_x86->internal_buffer_id<<"in the wire\n";
+		
+		ROFL_DEBUG_VERBOSE("Getting buffer with id:%d. Putting it into the wire\n", pkt_x86->buffer_id);
 		
 		//Free buffer
 		bufferpool::release_buffer(pkt);
@@ -117,14 +120,10 @@ unsigned int ioport_mockup::write(unsigned int q_id, unsigned int num_of_buckets
 
 }
 
-rofl_result_t
-ioport_mockup::disable()
-{
+rofl_result_t ioport_mockup::disable(){
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t
-ioport_mockup::enable()
-{
+rofl_result_t ioport_mockup::enable(){
 	return ROFL_SUCCESS;
 }

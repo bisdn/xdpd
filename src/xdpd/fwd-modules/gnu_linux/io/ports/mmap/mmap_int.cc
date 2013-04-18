@@ -10,6 +10,8 @@
 #include <linux/if_arp.h>
 #include <errno.h>
 
+#include <rofl/common/utils/c_logger.h>
+
 mmap_int::mmap_int(
 		int __type,
 		std::string __devname,
@@ -27,7 +29,7 @@ mmap_int::mmap_int(
 		ring(NULL),
 		rpos(0)
 {
-	WRITELOG(CPORT, DBG, "cpktline(%p)::cpktline() %s\n",
+	ROFL_DEBUG_VERBOSE( "cpktline(%p)::cpktline() %s\n",
 			this, (ring_type == PACKET_TX_RING) ? "TX-RING" : "RX-RING");
 
 	memset(&req, 0, sizeof(req));
@@ -38,7 +40,7 @@ mmap_int::mmap_int(
 
 mmap_int::~mmap_int()
 {
-	WRITELOG(CPORT, DBG, "cpktline(%p)::~cpktline() %s\n",
+	ROFL_DEBUG_VERBOSE( "cpktline(%p)::~cpktline() %s\n",
 			this, (ring_type == PACKET_TX_RING) ? "TX-RING" : "RX-RING");
 	if (-1 != sd)
 	{
@@ -48,7 +50,7 @@ mmap_int::~mmap_int()
 
 			if ((rc = munmap(map, req.tp_block_size * req.tp_block_nr)) < 0)
 			{
-				WRITELOG(CPORT, DBG, "cpktline(%p)::~cpktline() %s => errno: %d (%s)",
+				ROFL_ERR("cpktline(%p)::~cpktline() %s => errno: %d (%s) \n",
 						this, (ring_type == PACKET_TX_RING) ? "TX-RING" : "RX-RING", errno, strerror(errno));
 
 				throw eInternalError();
@@ -149,9 +151,8 @@ mmap_int::initialize() throw (ePktLineFailed)
 	req.tp_frame_size 	= frame_size; // 2048
 	req.tp_frame_nr 	= req.tp_block_size * req.tp_block_nr / req.tp_frame_size;
 
-	//fprintf(stdout, "frame_nr:%d\n", req.tp_frame_nr);
 
-	WRITELOG(CPORT, DBG, "cpktline(%p)::initialize() block-size:%u block-nr:%u frame-size:%u frame-nr:%u",
+	ROFL_DEBUG_VERBOSE( "cpktline(%p)::initialize() block-size:%u block-nr:%u frame-size:%u frame-nr:%u\n",
 			this,
 			req.tp_block_size,
 			req.tp_block_nr,
@@ -165,7 +166,7 @@ mmap_int::initialize() throw (ePktLineFailed)
 	if ((rc = setsockopt(sd, SOL_PACKET, PACKET_VERSION,
 			(void *) &val, sizeof(val))) < 0)
 	{
-		WRITELOG(CPORT, DBG, "cpktline(%p)::initialize() setsockopt() sys-call failed for PACKET_VERSION "
+		ROFL_ERR( "cpktline(%p)::initialize() setsockopt() sys-call failed for PACKET_VERSION "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw ePktLineFailed();
 	}
@@ -176,7 +177,7 @@ mmap_int::initialize() throw (ePktLineFailed)
 	{
 		// todo implement a retry if the request is not accepted
 
-		WRITELOG(CPORT, DBG, "cpktline(%p)::initialize() setsockopt() sys-call failed "
+		ROFL_DEBUG_VERBOSE( "cpktline(%p)::initialize() setsockopt() sys-call failed "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw ePktLineFailed();
 	}
@@ -205,12 +206,11 @@ mmap_int::initialize() throw (ePktLineFailed)
 			PROT_READ | PROT_WRITE /* | PROT_EXEC*/, MAP_SHARED,
 			/*file descriptor*/sd, /*offset*/0)) == MAP_FAILED)
 	{
-		WRITELOG(CPORT, DBG, "cpktline(%p)::initialize() mmap() sys-call failed "
+		ROFL_ERR( "cpktline(%p)::initialize() mmap() sys-call failed "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw ePktLineFailed();
 	}
 
-	//fprintf(stdout, "map: %p\n", map);
 
 	ring = (struct iovec*)ringptrs.resize(req.tp_frame_nr * sizeof(struct iovec));
 
@@ -218,9 +218,9 @@ mmap_int::initialize() throw (ePktLineFailed)
 	{
 		ring[i].iov_base = (void*)((uint8_t*)map + i * req.tp_frame_size);
 		ring[i].iov_len  = req.tp_frame_size;
-		WRITELOG(CPORT, DBG, "cpktline(%p)::initialize() ring[%d].iov_base: %p   ",
+		ROFL_DEBUG_VERBOSE( "cpktline(%p)::initialize() ring[%d].iov_base: %p   \n",
 				this, i, ring[i].iov_base);
-		WRITELOG(CPORT, DBG, "cpktline(%p)::initialize() ring[%d].iov_len:  %lu",
+		ROFL_DEBUG_VERBOSE( "cpktline(%p)::initialize() ring[%d].iov_len:  %lu\n",
 				this, i, ring[i].iov_len);
 	}
 
@@ -278,7 +278,7 @@ mmap_int::copy_packet(struct tpacket2_hdr *hdr, datapacketx86* packet)
 	memcpy(data, packet->get_buffer(), packet->get_buffer_length());
 
 #if 0
-	fprintf(stderr, "%s(): datapacketx86 %p to tpacket_hdr %p\n"
+	ROFL_DEBUG_VERBOSE("%s(): datapacketx86 %p to tpacket_hdr %p\n"
 			"	data = %p\n,"
 			"	with content:\n", __FUNCTION__, packet, hdr, data);
 	packet->dump();
@@ -293,11 +293,11 @@ mmap_int::send()
 {
 	int rc = 0;
 
-	fprintf(stderr, "%s() on socket descriptor %d\n", __FUNCTION__, sd);
+	ROFL_DEBUG_VERBOSE("%s() on socket descriptor %d\n", __FUNCTION__, sd);
 
 	if ((rc = ::sendto(sd, NULL, 0, MSG_DONTWAIT, NULL, 0)) < 0) {
 
-		fprintf(stderr,"Error: %d:%s\n", errno, strerror(errno));
+		ROFL_ERR("Error in port %s: %d:%s\n", devname.c_str(), errno, strerror(errno));
 	
 		switch (errno) {
 		case EMSGSIZE:

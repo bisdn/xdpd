@@ -175,7 +175,6 @@ datapacketx86::push(
 	size_t free_space_head = (uint8_t*)buffer.iov_base - (uint8_t*)slot.iov_base;
 	size_t free_space_tail = slot.iov_len - (free_space_head + buffer.iov_len);
 
-	//rofl::fframe frame1(get_buffer(), get_buffer_length()); fprintf(stderr, "push(1.1): %s\n", frame1.c_str());
 	/*
 	 * this is the safe sanity check for both head and tail space
 	 */
@@ -200,7 +199,6 @@ datapacketx86::push(
 	buffer.iov_base = (uint8_t*)buffer.iov_base - num_of_bytes;
 	buffer.iov_len += num_of_bytes;
 
-	//rofl::fframe frame2(get_buffer(), get_buffer_length()); fprintf(stderr, "push(1.2): %s\n", frame2.c_str());
 
 	return ROFL_SUCCESS;
 }
@@ -230,7 +228,6 @@ datapacketx86::pop(
 		return ROFL_FAILURE;
 	}
 
-	//rofl::fframe frame1(get_buffer(), get_buffer_length()); fprintf(stderr, "pop(1.1): %s\n", frame1.c_str());
 	// move first bytes backward
 	platform_memmove((uint8_t*)buffer.iov_base + num_of_bytes, buffer.iov_base, offset);
 
@@ -241,7 +238,6 @@ datapacketx86::pop(
 
 	buffer.iov_base = (uint8_t*)buffer.iov_base + num_of_bytes;
 	buffer.iov_len -= num_of_bytes;
-	//rofl::fframe frame2(get_buffer(), get_buffer_length()); fprintf(stderr, "pop(1.2): %s\n", frame2.c_str());
 
 	// re-parse_ether() here? yes, we have to, but what about the costs?
 

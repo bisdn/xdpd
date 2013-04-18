@@ -2,6 +2,7 @@
 #include "../../bufferpool.h"
 #include "../../datapacketx86.h"
 
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/common/protocols/fetherframe.h>
 #include <rofl/common/protocols/fvlanframe.h>
 
@@ -54,13 +55,13 @@ ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id)
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
 		output_queues[q_id].blocking_write(pkt);
 
-		fprintf(stderr, "%s(): Enqueued, buffer size: %d\n", __FUNCTION__, output_queues[q_id].size());
+		ROFL_DEBUG_VERBOSE("%s(): Enqueued, buffer size: %d\n", __FUNCTION__, output_queues[q_id].size());
 	
 		//TODO: make it happen only if thread is really sleeping...
 		ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
 		(void)ret; // todo use the value
 	} else {
-		fprintf(stderr, "%s(): drop packet %p scheduled for queue %u\n", __FUNCTION__, pkt, q_id);
+		ROFL_DEBUG_VERBOSE("%s(): drop packet %p scheduled for queue %u\n", __FUNCTION__, pkt, q_id);
 		// port down -> drop packet
 		bufferpool::release_buffer(pkt);
 	}
@@ -99,7 +100,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 	}
 
 #if 0
-	fprintf(stderr, "ioport_mmap(%s)::read_loop() total #slots:%d\n",
+	ROFL_DEBUG_VERBOSE("ioport_mmap(%s)::read_loop() total #slots:%d\n",
 			of_port_state->name, rx.req.tp_frame_nr);
 #endif
 	int cnt = 0;
@@ -130,7 +131,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 
 		/* sanity check */
 		if (hdr->tp_mac + hdr->tp_snaplen > rx.req.tp_frame_size) {
-			fprintf(stderr, "sanity check during read mmap failed\n");
+			ROFL_DEBUG_VERBOSE("sanity check during read mmap failed\n");
 			
 			//Increment error statistics
 			switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
@@ -142,14 +143,14 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 //		fetherframe ether(((uint8_t*)hdr + hdr->tp_mac), hdr->tp_len);
 //		if (ether.get_dl_src() == hwaddr)
 //		{
-//			fprintf(stderr, "cioport(%s)::handle_revent() self-originating "
+//			ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() self-originating "
 //				"frame rcvd in slot i:%d, ignoring", devname.c_str(), i);
 //			continue; // ignore self-originating frames
 //		}
 
 		struct sockaddr_ll *sll = (struct sockaddr_ll*)((uint8_t*)hdr + TPACKET_ALIGN(sizeof(struct tpacket_hdr)));
 		if (PACKET_OUTGOING == sll->sll_pkttype) {
-			fprintf(stderr, "cioport(%s)::handle_revent() outgoing "
+			ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
 					"frame rcvd in slot i:%d, ignoring\n", of_port_state->name, rx.rpos);
 			goto next; // ignore outgoing frames
 		}
@@ -171,7 +172,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			cmacaddr eth_src = cmacaddr(((struct fetherframe::eth_hdr_t*)((uint8_t*)hdr + hdr->tp_mac))->dl_src, OFP_ETH_ALEN);
 
 			if (hwaddr == eth_src) {
-				fprintf(stderr, "cioport(%s)::handle_revent() outgoing "
+				ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
 						"frame rcvd in slot i:%d, src-mac == own-mac, ignoring\n", of_port_state->name, rx.rpos);
 				pkt_x86->destroy();
 				bufferpool::release_buffer(pkt);
@@ -228,7 +229,7 @@ next:
 		}
 	}
 
-	// fprintf(stderr, "cnt=%d\n", cnt);
+	// ROFL_DEBUG_VERBOSE("cnt=%d\n", cnt);
 
 	//Increment statistics
 	if(cnt)
@@ -248,7 +249,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 		return num_of_buckets;
 	}
 
-	fprintf(stderr, "%s(q_id=%d, num_of_buckets=%u): on %s with queue.size()=%u\n",
+	ROFL_DEBUG_VERBOSE("%s(q_id=%d, num_of_buckets=%u): on %s with queue.size()=%u\n",
 			__FUNCTION__,
 			q_id,
 			num_of_buckets,
@@ -261,7 +262,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 		pkt = output_queues[q_id].non_blocking_read();
 
 		if (NULL == pkt) {
-			fprintf(stderr, "%s(): on %s: no packet in output_queue %u left, %u buckets left\n",
+			ROFL_DEBUG_VERBOSE("%s(): on %s: no packet in output_queue %u left, %u buckets left\n",
 					__FUNCTION__,
 					of_port_state->name,
 					q_id,
@@ -297,7 +298,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 			tx_bytes_local += hdr->tp_len;
 
 		} else {
-			fprintf(stderr, "no free slot in ringbuffer\n");
+			ROFL_DEBUG_VERBOSE("no free slot in ringbuffer\n");
 
 			//Increment error statistics
 			switch_port_stats_inc(of_port_state,0,0,0,0,0,1);
@@ -314,14 +315,14 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 	} // for
 
 #if 0
-	fprintf(stderr, "ioport_mmap::write(q_id=%d, num_of_buckets=%u) on %s all packets scheduled\n",
+	ROFL_DEBUG_VERBOSE("ioport_mmap::write(q_id=%d, num_of_buckets=%u) on %s all packets scheduled\n",
 			q_id,
 			num_of_buckets,
 			of_port_state->name);
 #endif
 
 	if (cnt) {
-		fprintf(stderr, "%s(): schedule %u packet(s) to be send\n", __FUNCTION__, cnt);
+		ROFL_DEBUG_VERBOSE("%s(): schedule %u packet(s) to be send\n", __FUNCTION__, cnt);
 		// send packet-ins tx queue (this call is currently a blocking call!)
 		tx.send();
 

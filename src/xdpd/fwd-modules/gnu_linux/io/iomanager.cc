@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/platform/cutil.h>
 #include "iomanager.h"
 #include "bufferpool.h"
@@ -26,8 +27,7 @@ void iomanager::start_portgroup_threads(portgroup_state* pg){
 	for(i=0;i<pg->num_of_threads;++i){
 		if(pthread_create(&pg->thread_state[i], NULL, ioscheduler_provider::process_io, (void *)pg) < 0){
 			//TODO: print a trace or something
-			std::cerr<<"WARNING: pthread_create failed for port-group"<<pg->id<<std::endl;
-			fprintf(stderr,"pthread_create failed");
+			ROFL_WARN("WARNING: pthread_create failed for port-group %d\n", pg->id);
 		}
 	}
 }

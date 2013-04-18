@@ -23,7 +23,7 @@ mmap_int::mmap_int(
 		devname(__devname),
 		ring_type(__type),
 		sd(-1),
-		ll_addr(AF_PACKET, ETH_P_ALL, devname, 0, 0, NULL, 0),
+		ll_addr(ETH_P_ALL, devname, 0, 0, NULL, 0),
 		ring(NULL),
 		rpos(0)
 {

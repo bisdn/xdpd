@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 // Maybe needs to be in hal.h
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/datapath/afa/cmm.h>
@@ -55,29 +56,28 @@ int prepare_event_socket()
 {
 	int sock;
 	struct sockaddr_nl addr;
-	if ((sock = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE)) == -1)
-	{
-        fprintf(stderr,"<%s:%d> couldn't open NETLINK_ROUTE socket\n",__func__,__LINE__);
-        return -1;
-    }
-    
-	if(fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0)
-	{
-		// handle error
-		fprintf(stderr,"<%s:%d> error fcntl\n",__func__,__LINE__);
-        return -1;
-	}
-    
-    memset(&addr, 0, sizeof(addr));
-    addr.nl_family = AF_NETLINK;
-    addr.nl_groups = RTNLGRP_LINK;//RTMGRP_IPV4_IFADDR;
 
-    if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1)
-	{
-        fprintf(stderr,"<%s:%d> couldn't bind\n",__func__,__LINE__);
-        return -1;
-    }
-    return sock;
+	if ((sock = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE)) == -1){
+		ROFL_ERR("<%s:%d> couldn't open NETLINK_ROUTE socket\n",__func__,__LINE__);
+		return -1;
+	}
+
+	if(fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0){
+		// handle error
+		ROFL_ERR("<%s:%d> error fcntl\n",__func__,__LINE__);
+		return -1;
+	}
+
+	memset(&addr, 0, sizeof(addr));
+	addr.nl_family = AF_NETLINK;
+	addr.nl_groups = RTNLGRP_LINK;//RTMGRP_IPV4_IFADDR;
+
+	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1){
+		ROFL_ERR("<%s:%d> couldn't bind\n",__func__,__LINE__);
+		return -1;
+	}
+
+	return sock;
 }
 
 /**
@@ -94,12 +94,12 @@ rofl_result_t update_port_status(char * name){
 	memset(&edata,0,sizeof(edata));//Make valgrind happy
 	
 	if(port == NULL){
-		fprintf(stderr,"<%s:%d> Error port with name %s not found\n",__func__,__LINE__,name);
+		ROFL_ERR("<%s:%d> Error port with name %s not found\n",__func__,__LINE__,name);
 		return ROFL_FAILURE;
 	}
 	
 	if (( skfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ){
-		fprintf(stderr,"<%s:%d> Socket call error\n",__func__,__LINE__);
+		ROFL_ERR("<%s:%d> Socket call error\n",__func__,__LINE__);
 		return ROFL_FAILURE;
 	}
 	
@@ -108,10 +108,11 @@ rofl_result_t update_port_status(char * name){
 	
 	ifr.ifr_data = (char *) &edata;
 	if (ioctl(skfd, SIOCETHTOOL, &ifr) == -1){
-		fprintf(stderr,"<%s:%d> ETHTOOL_GLINK failed. (%s) Errno=%d \n", __func__,__LINE__,name,errno);
+		ROFL_ERR("<%s:%d> ETHTOOL_GLINK failed. (%s) Errno=%d \n", __func__,__LINE__,name,errno);
 		return ROFL_FAILURE;
 	}
-	fprintf(stderr,"<%s:%d> Link %s is %s\n",__func__,__LINE__,name,(edata.data ? "up" : "down"));
+
+	ROFL_INFO("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
 	
 	last_link_status = port->up;
 
@@ -200,13 +201,13 @@ static rofl_result_t read_netlink_message(int fd){
 				
 				if_indextoname(ifi->ifi_index, name);
 				
-		fprintf(stderr,"<%s:%d> %s interface changed status\n",__func__,__LINE__,name);
+				ROFL_DEBUG_VERBOSE("<%s:%d> interface changed status\n",__func__,__LINE__,name);
 				
 				// HERE change the status to the port structure
 				if(update_port_status(name)!=ROFL_SUCCESS)
 					return ROFL_FAILURE;
 	    }else{
-				fprintf(stderr,"<%s:%d> Received a different RTM message type\n",__func__,__LINE__);
+				ROFL_ERR("<%s:%d> Received a different RTM message type\n",__func__,__LINE__);
 				return ROFL_FAILURE;
 	    }
 	}
@@ -248,39 +249,36 @@ int process_timeouts(physical_switch_t* psw)
 			
 #ifdef DEBUG
 		dummy++;
-		//fprintf(stderr,"<%s:%d> Checking flow entries expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
+		//ROFL_DEBUG_VERBOSE("<%s:%d> Checking flow entries expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
 #endif
 		last_time_entries_checked = now;
 	}
 	
-	if(get_time_difference_ms(&now, &last_time_pool_checked)>=LSW_TIMER_BUFFER_POOL_MS)
-	{
+	if(get_time_difference_ms(&now, &last_time_pool_checked)>=LSW_TIMER_BUFFER_POOL_MS){
 		uint32_t buffer_id;
 		datapacket_store_handle *dps=NULL;
 		
-		for(i=0; i<PHYSICAL_SWITCH_MAX_LS; i++)
-		{
-			if(psw->logical_switches[i] != NULL)
-			{
+		for(i=0; i<PHYSICAL_SWITCH_MAX_LS; i++){
+
+			if(psw->logical_switches[i] != NULL){
+
 				dps = ( (struct logical_switch_internals*) psw->logical_switches[i]->platform_state)->store_handle ;
 				//TODO process buffers in the storage
-				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id))
-				{
-					fprintf(stderr,"<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
-					if(datapacket_storage_get_packet_wrapper(dps,buffer_id)==NULL)
-					{
-						fprintf(stderr,"<%s:%d> Error in get_packet_wrapper\n",__func__,__LINE__);
-					}
-					else
-					{
-						fprintf(stderr,"<%s:%d> datapacket expired correctly\n",__func__,__LINE__);
+				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
+
+					ROFL_DEBUG_VERBOSE("<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
+
+					if(datapacket_storage_get_packet_wrapper(dps,buffer_id)==NULL){
+						ROFL_DEBUG_VERBOSE("<%s:%d> Error in get_packet_wrapper\n",__func__,__LINE__);
+					}else{
+						ROFL_DEBUG_VERBOSE("<%s:%d> datapacket expired correctly\n",__func__,__LINE__);
 					}
 				}
 			}
 		}
 		
 #ifdef DEBUG
-		//fprintf(stderr,"<%s:%d> Checking pool buffers expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
+		//ROFL_ERR("<%s:%d> Checking pool buffers expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
 #endif
 		last_time_pool_checked = now;
 	}
@@ -306,24 +304,21 @@ void* x86_background_tasks_routine(void* param)
 	memset(event_list,0,sizeof(event_list));
 	memset(&epe_port,0,sizeof(epe_port));
 	
-	if((events_socket=prepare_event_socket())<0)
-	{
+	if((events_socket=prepare_event_socket())<0){
 		exit(ROFL_FAILURE);
 	}
 	
 	efd = epoll_create1(0);
-	if(efd == -1)
-	{
-		fprintf(stderr,"<%s:%d> Error in epoll_create1\n",__func__,__LINE__);
+	if(efd == -1){
+		ROFL_ERR("<%s:%d> Error in epoll_create1\n",__func__,__LINE__);
 		return NULL;
 	}
 	
 	epe_port.data.fd = events_socket;
 	epe_port.events = EPOLLIN | EPOLLET;
 	
-	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1)
-	{
-		fprintf(stderr,"<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
+	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
+		ROFL_ERR("<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
 		return NULL;
 	}
 	
@@ -333,27 +328,24 @@ void* x86_background_tasks_routine(void* param)
 		nfds = epoll_wait(efd, event_list, MAX_EPOLL_EVENTS, LSW_TIMER_SLOT_MS/*timeout needs TBD somewhere else*/);
 
 
-		if(nfds==-1)
-		{
-			fprintf(stderr,"<%s:%d> Epoll Failed\n",__func__,__LINE__);
+		if(nfds==-1){
+			ROFL_DEBUG("<%s:%d> Epoll Failed\n",__func__,__LINE__);
 			continue;
 		}
-		if(nfds==0)
-		{
+
+		if(nfds==0){
 			//TIMEOUT PASSED
 			process_timeouts(psw);
 		}
-		for(i=0;i<nfds;i++)
-		{
-			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)/*||(event_list[i].events & EPOLLIN)*/)
-			{
+
+		for(i=0;i<nfds;i++){
+
+			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)/*||(event_list[i].events & EPOLLIN)*/){
 				//error on this fd
-				fprintf(stderr,"<%s:%d> Error in file descriptor\n",__func__,__LINE__);
+				ROFL_ERR("<%s:%d> Error in file descriptor\n",__func__,__LINE__);
 				close(event_list[i].data.fd); //fd gets removed automatically from efd's
 				continue;
-			}
-			else
-			{
+			}else{
 				//something is going on with the i/o system
 				if(read_netlink_message(event_list[i].data.fd)!=ROFL_SUCCESS)
 					continue;
@@ -367,7 +359,7 @@ void* x86_background_tasks_routine(void* param)
 	close(efd);
 	
 	//Printing some information
-	fprintf(stdout,"Finishing execution of bg thread\n"); 
+	ROFL_INFO("[bg] Finishing thread execution\n"); 
 
 	//Exit
 	pthread_exit(NULL);	
@@ -381,9 +373,8 @@ rofl_result_t launch_background_tasks_manager()
 	//Set flag
 	bg_continue_execution = true;
 	
-	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0)
-	{
-		fprintf(stderr,"<%s:%d> pthread_create failed\n",__func__,__LINE__);
+	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0){
+		ROFL_ERR("<%s:%d> pthread_create failed\n",__func__,__LINE__);
 		return ROFL_FAILURE;
 	}
 	return ROFL_SUCCESS;

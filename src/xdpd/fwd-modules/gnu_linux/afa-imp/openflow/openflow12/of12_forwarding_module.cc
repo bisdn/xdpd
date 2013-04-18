@@ -1,4 +1,5 @@
 #include <rofl/datapath/afa/openflow/openflow12/of12_fwd_module.h>
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_pipeline.h>
@@ -257,7 +258,7 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	//Reclassify the packet
 	((datapacketx86*)pkt->platform_state)->headers->classify();
 
-	fprintf(stderr,"Getting packet out \n");	
+	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	
 	//Instruct pipeline to process actions. This may reinject the packet	
 	of12_process_packet_out_pipeline(lsw, pkt, action_group);

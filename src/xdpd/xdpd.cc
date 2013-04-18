@@ -3,15 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <rofl/platform/unix/cunixenv.h>
-#include "xdpd.h"
+#include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/common/utils/c_logger.h>
 #include "management/switch_manager.h"
 #include "management/port_manager.h"
 #include "management/adapter/cli/xdpd_cli.h"
-#include <rofl/datapath/afa/fwd_module.h>
 
 using namespace rofl;
 
-class xdpd* xdpd::instance = NULL;
+#define XDPD_LOG_FILE "xdpd.log"
+
+//TODO: Redirect C loggers to the output log
 
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
@@ -21,20 +23,22 @@ void interrupt_handler(int dummy=0) {
 
 /**
  * XDPD Main routine
- * TODO: add param description
  */
-int
-main(int argc, char** argv)
-{
+int main(int argc, char** argv){
 
 	//Check for root privileges 
 	if(geteuid() != 0){
-		fprintf(stderr,"ERROR: Root permissions are required to run %s\n",argv[0]);	
+		ROFL_ERR("ERROR: Root permissions are required to run %s\n",argv[0]);	
 		exit(EXIT_FAILURE);	
 	}
 
 	//Capture control+C
 	signal(SIGINT, interrupt_handler);
+
+#if DEBUG && VERBOSE_DEBUG
+	//Set verbose debug if necessary
+	rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
+#endif
 	
 	/* Add additional arguments */
 	char s_dbg[32];
@@ -68,7 +72,7 @@ main(int argc, char** argv)
 	
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
-		fprintf(stderr,"Init driver failed\n");	
+		ROFL_INFO("Init driver failed\n");	
 		exit(-1);
 	}
 
@@ -85,7 +89,7 @@ main(int argc, char** argv)
 	ciosrv::run();
 
 	//Printing nice trace
-	fprintf(stdout,"\nCleaning the house...\n");	
+	ROFL_INFO("\nCleaning the house...\n");	
 
 	//Destroy all state
 	switch_manager::destroy_all_switches();
@@ -99,7 +103,9 @@ main(int argc, char** argv)
 	//Call fwd_module to shutdown
 	fwd_module_destroy();
 	
-	fprintf(stdout,"House cleaned!\nGoodbye\n");	
+	ROFL_INFO("House cleaned!\nGoodbye\n");
+	
+	exit(EXIT_SUCCESS);
 }
 
 

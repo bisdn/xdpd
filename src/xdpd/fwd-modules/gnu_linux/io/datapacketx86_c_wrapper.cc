@@ -9,6 +9,7 @@
 #include "bufferpool.h"
 #include "ports/ioport.h"
 #include "datapacketx86_c_wrapper.h"
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
@@ -364,7 +365,7 @@ static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, s
 	//Output packet to the appropiate queue and port_num
 	if(port && port->platform_port_state){
 		
-		std::cerr<<"OUTPUT->>>>>>>>>>>"<<port->name<<std::endl;
+		ROFL_DEBUG("[Packet %p] OUTPUT>%s\n", pkt, port->name);
 		of12_dump_packet_matches((of12_packet_matches_t*)pkt->matches);
 
 		//Schedule in the port
@@ -402,41 +403,14 @@ dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port)
 	if(pack->ipv4_recalc_checksum){
 		if(pack->headers->ipv4(0))	
 			pack->headers->ipv4(0)->ipv4_calc_checksum();
-    }
-#if 0
-        //Checksum recalculation
-    if(pack->tcp_recalc_checksum){
-        fipv4frame* ipv4 = pack->headers->ipv4(0);	
-    
-        if(pack->headers->tcp(0)){
-            
-            pack->headers->tcp(0)->tcp_calc_checksum(ipv4->get_ipv4_src(),
-                            ipv4->get_ipv4_dst(),
-                            ipv4->get_ipv4_proto(),
-                            pack->headers->tcp(0)->framelen());
-            //fprintf(stderr,"ip %s\ntcp frame:%s\n",ipv4->c_str(),pack->headers->tcp(0)->c_str());
-        }
-    }else if(pack->udp_recalc_checksum){
-            fipv4frame* ipv4 = pack->headers->ipv4(0);
-            if(pack->headers->udp(0)){
-                pack->headers->udp(0)->udp_calc_checksum(ipv4->get_ipv4_src(),
-                            ipv4->get_ipv4_dst(),
-                            ipv4->get_ipv4_proto(),
-                            pack->headers->udp(0)->framelen());
-            //fprintf(stderr,"udp src:%s\n",pack->headers->udp(0)->c_str());
-            }
-    }else{ 
-			if(pack->icmpv4_recalc_checksum)
-				if(pack->headers->icmpv4(0))	
-					pack->headers->icmpv4(0)->icmpv4_calc_checksum();
-		
-#else
+	}
+
 	fipv4frame *fipv4 = pack->headers->ipv4(-1);
-	
+
 	if ((pack->tcp_recalc_checksum) && pack->headers->tcp(0) && fipv4) {
 		
 		
-        pack->headers->tcp(0)->tcp_calc_checksum(
+	pack->headers->tcp(0)->tcp_calc_checksum(
 			fipv4->get_ipv4_src(),
 			fipv4->get_ipv4_dst(),
 			fipv4->get_ipv4_proto(),
@@ -453,7 +427,6 @@ dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port)
 	} else if ((pack->icmpv4_recalc_checksum) && (pack->headers->icmpv4())) {
 
 		pack->headers->icmpv4(0)->icmpv4_calc_checksum(pack->headers->get_pkt_len(pack->headers->icmpv4(0)));
-#endif
 	}
 
 
@@ -480,7 +453,7 @@ dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port)
 			replica = platform_packet_replicate(pkt); 	
 			replica_pack = (datapacketx86*) (replica->platform_state);
 
-			std::cerr<<"OUTPUT [Flood]->>>>>>>>>>>"<<port_it->name<<std::endl;
+			ROFL_DEBUG("[Packet %p (original %p)] OUTPUT-Flood>%s\n", replica, pkt, port_it->name);
 			
 			//send the replica
 			dpx86_output_single_packet(replica, replica_pack, port_it);

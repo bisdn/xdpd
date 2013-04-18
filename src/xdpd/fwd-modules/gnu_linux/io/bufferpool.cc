@@ -1,5 +1,5 @@
 #include "bufferpool.h"
-#include <rofl/datapath/pipeline/platform/cutil.h>
+#include <rofl/common/utils/c_logger.h>
 
 /* Static member initialization */
 bufferpool* bufferpool::instance = NULL;
@@ -150,8 +150,7 @@ void bufferpool::release_buffer(datapacket_t* buf){
 	//Release
 	if(bp->pool_status[id] != BPX86_SLOT_IN_USE){
 		//Attempting to release an unallocated/unavailable buffer
-		//TODO: put a trace here
-		fprintf(stderr,"Attempting to release an unallocated/unavailable buffer");
+		ROFL_ERR("Attempting to release an unallocated/unavailable buffer. Ignoring..");
 	}else{ 
 		buf->is_replica = false; //Make sure this flag is 0
 		bp->pool_status[id] = BPX86_SLOT_AVAILABLE;
@@ -172,12 +171,12 @@ void bufferpool::init(long long unsigned int capacity){
 
 	if(bufferpool::instance){
 		//Double-call to init??
-		fprintf(stderr,"Double call to bufferpool init!! Skipping...\n");
+		ROFL_DEBUG("Double call to bufferpool init!! Skipping...\n");
 		pthread_mutex_unlock(&bufferpool::mutex);
 		return;	
 	}
 	
-	//std::cout<<"Initializing bufferpool to:"<<capacity<<std::endl;
+	ROFL_DEBUG("Initializing bufferpool with a capacity of %d buffers\n",capacity);
 
 	//Init 	
 	bufferpool::instance = new bufferpool(capacity);
@@ -211,13 +210,13 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 	//Add the RESERVED_SLOTS to the new_capacity 
 	new_capacity += RESERVED_SLOTS;
 
-	//std::cout<<"Attempting to resize buffer pool to:"<<new_capacity<<" current:"<<bp->pool_size<<std::endl;
+	ROFL_DEBUG("Attemtping to resize bufferpool to %d buffers (current %d)\n", new_capacity, bp->pool_size);
 
 	//Check if current capacity is enough
 	if(new_capacity <= bp->pool_size)
 		return;	
 	
-	//std::cout<<"Resizing buffer pool to:"<<new_capacity<<"!"<<std::endl;
+	ROFL_DEBUG("Resizing bufferpool to %d\n", new_capacity);
 
 	//Resize vectors
 	try {
@@ -267,5 +266,7 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 	
 	//Finally allow to use extended capacity
 	bp->pool_size = new_capacity;
+	
+	ROFL_DEBUG("Resized!\n", new_capacity);
 	
 }

@@ -151,7 +151,7 @@ void bufferpool::release_buffer(datapacket_t* buf){
 	if(bp->pool_status[id] != BPX86_SLOT_IN_USE){
 		//Attempting to release an unallocated/unavailable buffer
 		//TODO: put a trace here
-		DEBUG_ERROR_EXIT("Attempting to release an unallocated/unavailable buffer");
+		fprintf(stderr,"Attempting to release an unallocated/unavailable buffer");
 	}else{ 
 		buf->is_replica = false; //Make sure this flag is 0
 		bp->pool_status[id] = BPX86_SLOT_AVAILABLE;

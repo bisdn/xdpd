@@ -27,7 +27,7 @@ void iomanager::start_portgroup_threads(portgroup_state* pg){
 		if(pthread_create(&pg->thread_state[i], NULL, ioscheduler_provider::process_io, (void *)pg) < 0){
 			//TODO: print a trace or something
 			std::cerr<<"WARNING: pthread_create failed for port-group"<<pg->id<<std::endl;
-			DEBUG_ERROR_EXIT("pthread_create failed");
+			fprintf(stderr,"pthread_create failed");
 		}
 	}
 }

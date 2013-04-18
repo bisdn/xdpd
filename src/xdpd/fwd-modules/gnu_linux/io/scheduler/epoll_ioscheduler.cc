@@ -107,13 +107,13 @@ inline void epoll_ioscheduler::process_port_io(ioport* port){
 */
 inline void epoll_ioscheduler::add_fd_epoll(struct epoll_event* ev, int epfd, ioport* port, int fd){
 
-	ev->events = EPOLLIN | EPOLLPRI;
+	ev->events = EPOLLIN | EPOLLPRI | EPOLLET;
 	ev->data.fd = fd;
 	ev->data.ptr = (void*)port;
 
 	if( epoll_ctl(epfd, EPOLL_CTL_ADD, fd, ev) < 0){
 		//XXX FIXME  do something, trace or exit on development
-		DEBUG_ERROR_EXIT("epoll failed");
+		fprintf(stderr,"epoll failed");
 	}
 }
 /*
@@ -147,7 +147,7 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, int* epfd
 
 	if(!*ev){
 		//FIXME: what todo...
-		DEBUG_ERROR_EXIT("malloc failed");
+		fprintf(stderr,"malloc failed");
 		pg->running_ports->read_unlock();
 		return;
 	}
@@ -206,7 +206,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 		if(res == -1){
 #ifdef DEBUG
 			//std::cerr<<"epoll failed"<<strerror(errno)<<" \n";
-			//DEBUG_ERROR_EXIT("epoll failed");
+			//fprintf(stderr,"epoll failed");
 #else
 			continue;
 #endif

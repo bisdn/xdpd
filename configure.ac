@@ -39,10 +39,17 @@ fi
 AM_CONDITIONAL(DEBUG, test "$enable_debug" = yes)
 
 # Make verbosity 
-AC_MSG_CHECKING(whether to compile in verbose mode)
+AC_MSG_CHECKING(whether to output in verbose mode)
 AC_ARG_ENABLE(verbose,
 	AS_HELP_STRING([--verbose], [turn on verbose mode [default=no]])
-		, verbose="yes", verbose="no")
+		, verbose_debug="yes", verbose_debug="no")
+if test "$verbose_debug" = "yes"; then
+	CFLAGS="$CFLAGS -DVERBOSE_DEBUG" 
+	CXXFLAGS="$CXXFLAGS -DVERBOSE_DEBUG" 
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
 
 # Check for profiling mode
 AC_MSG_CHECKING(whether to enable profiling mode)

@@ -130,7 +130,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
 		//FIXME change this messages into warnings "Unable to discover mac address of interface %s"
-		ROFL_ERR("<%s:%d> %s: ioctl SIOCETHTOOL",__func__,__LINE__,ifr.ifr_name);
+		ROFL_WARN("WARNING: unable to MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
 	}
 	
 	//Init the port
@@ -140,7 +140,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	//get the MAC addr.
 	socll = (struct sockaddr_ll *)ifa->ifa_addr;
-	ROFL_DEBUG("<%s:%d> Iface %s mac_addr %02X:%02X:%02X:%02X:%02X:%02X \n",__func__,__LINE__,
+	ROFL_DEBUG("Discovered iface %s mac_addr %02X:%02X:%02X:%02X:%02X:%02X \n",
 		ifa->ifa_name,socll->sll_addr[0],socll->sll_addr[1],socll->sll_addr[2],socll->sll_addr[3],
 		socll->sll_addr[4],socll->sll_addr[5]);
 
@@ -207,22 +207,7 @@ afa_result_t discover_physical_ports(){
 			freeifaddrs(ifaddr);
 			return AFA_FAILURE;
 		}
-	#if 0	
-		//Slot found
-		psw->physical_ports[index] = (switch_port_t*)cutil_malloc_shared(sizeof(switch_port_t));//NOTE this needs to be freed
-		
-		//fetch interface info with ethtool
-		strcpy(ifr.ifr_name, ifa->ifa_name);
-		memset(&edata,0,sizeof(edata));
-		edata.cmd = ETHTOOL_GSET;
-		ifr.ifr_data = (char *) &edata;
 
-		if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
-			//FIXME change this messages into warnings "Unable to discover mac address of interface %s"
-			ROFL_ERR("<%s:%d> %s: ",__func__,__LINE__,ifr.ifr_name);
-			perror("ioctl SIOCETHTOOL");
-		}
-	#endif	
 		//here we call the function that fills the structure
 		if( (psw->physical_ports[index] = fill_port(sock, ifa)) == NULL )
 			return AFA_FAILURE;

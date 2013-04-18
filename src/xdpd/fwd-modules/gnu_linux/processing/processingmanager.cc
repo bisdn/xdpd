@@ -1,6 +1,7 @@
 #include "processingmanager.h"
 #include <cstdlib>
 #include <unistd.h>
+#include <rofl/common/utils/c_logger.h>
 #include "../io/bufferpool.h"
 #include "../util/ringbuffer.h"
 #include "../ls_internal_state.h"
@@ -49,7 +50,7 @@ rofl_result_t processingmanager::start_ls_workers(of_switch_t* ls, unsigned int 
 	for(i=0;i<num_of_threads;++i){
 		if(pthread_create(&group->thread_state[i], NULL, processing_function, (void *)group) < 0){
 			//TODO: print a trace or something
-			std::cerr<<"WARNING: pthread_create failed for processing thread"<<group->id<<std::endl;
+			ROFL_ERR("Error creating processing pthread for groups %d\n",group->id);
 		}
 	}
 
@@ -116,8 +117,8 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 #ifdef DEBUG
 		if(by_pass_pipeline){
 			//DEBUG; by-pass pipeline, print trace and sleep
-			//std::cout <<" Simulating processing of packet @"<<pkt<<std::endl;
 			std::cout <<"!";
+			ROFL_DEBUG_VERBOSE("!");
 			usleep(rand()%300); //Random sleep up to 300ms
 		}else{
 #endif
@@ -144,7 +145,7 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 	}
 
 	//Printing some information
-	std::cout<<"Finishing execution of processing thread: #"<<pthread_self()<<" switch: "<<sw->name<<std::endl;
+	ROFL_INFO("Finishing execution of processing thread: #%u switch: %s\n",pthread_self(),sw->name);
 	
 	//Exit
 	pthread_exit(NULL);	

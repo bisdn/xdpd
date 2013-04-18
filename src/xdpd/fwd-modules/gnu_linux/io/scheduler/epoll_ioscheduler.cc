@@ -89,7 +89,7 @@ inline void epoll_ioscheduler::process_port_io(ioport* port){
 		//Increment number of buckets
 		n_buckets = WRITE_BUCKETS[port->get_output_queue_state(q_id)]*WRITE_QOS_QUEUE_FACTOR[q_id];
 
-		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d. Queue state: %d\n", port->of_port_state->name, q_id, n_bucket,port->get_output_queue_state(q_id));
+		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d. Queue state: %d\n", port->of_port_state->name, q_id, n_buckets,port->get_output_queue_state(q_id));
 		
 		//Perform up to n_buckets write	
 		port->write(q_id,n_buckets);
@@ -218,7 +218,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 			init_or_update_fds(pg, &epfd, &ev,&events, &current_num_of_ports, &current_hash );
 	}
 
-	ROFL_INFO("Finishing execution of I/O thread: #%d\n",pthread_self());
+	ROFL_INFO("Finishing execution of I/O thread: #%u\n",pthread_self());
 
 	//Free dynamic memory
 	free(ev);

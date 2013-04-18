@@ -365,7 +365,7 @@ static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, s
 	//Output packet to the appropiate queue and port_num
 	if(port && port->platform_port_state){
 		
-		ROFL_DEBUG("[Packet %p] OUTPUT>%s\n", pkt, port->name);
+		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
 		of12_dump_packet_matches((of12_packet_matches_t*)pkt->matches);
 
 		//Schedule in the port
@@ -383,9 +383,7 @@ static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, s
 
 //FIXME TODO XXX this should be stripped from here and moved in a convenient place
 /* Output action */
-void
-dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port)
-{
+void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 	of_switch_t* sw;
 	datapacketx86* pack;
 
@@ -453,7 +451,7 @@ dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port)
 			replica = platform_packet_replicate(pkt); 	
 			replica_pack = (datapacketx86*) (replica->platform_state);
 
-			ROFL_DEBUG("[Packet %p (original %p)] OUTPUT-Flood>%s\n", replica, pkt, port_it->name);
+			ROFL_DEBUG("[%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
 			
 			//send the replica
 			dpx86_output_single_packet(replica, replica_pack, port_it);

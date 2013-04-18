@@ -3,6 +3,7 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/common/utils/c_logger.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -392,6 +393,8 @@ platform_packet_set_ppp_proto(datapacket_t* pkt, uint16_t proto)
 void
 platform_packet_drop(datapacket_t* pkt)
 {
+	ROFL_DEBUG("Dropping packet(%p)\n",pkt);
+	
 	//Release buffer
 	bufferpool_release_buffer_wrapper(pkt);
 

@@ -10,6 +10,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_table.h>
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/common/utils/c_logger.h>
 
 
 #include "../io/bufferpool.h"
@@ -81,6 +82,8 @@ void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapack
 	//Get real packet
 	pkt_size = dpx86_get_packet_size(pkt);
 
+	ROFL_DEBUG("Sending PKT_IN event towards CMM for packet(%p) in switch: %s\n",pkt,sw->name);
+	
 	//Normalize
 	if(pkt_size > sw->pipeline->miss_send_len )
 		pkt_size = sw->pipeline->miss_send_len;
@@ -98,6 +101,7 @@ void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapack
 			);
 
 	if (rv == AFA_FAILURE) {
+		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s. Dropping..\n",pkt,sw->name);
 		
 		//Take packet out from the storage
 		pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)sw->platform_state)->store_handle, id);

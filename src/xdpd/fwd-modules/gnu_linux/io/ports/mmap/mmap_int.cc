@@ -40,8 +40,9 @@ mmap_int::mmap_int(
 
 mmap_int::~mmap_int()
 {
-	ROFL_DEBUG_VERBOSE( "cpktline(%p)::~cpktline() %s\n",
-			this, (ring_type == PACKET_TX_RING) ? "TX-RING" : "RX-RING");
+	//ROFL_DEBUG_VERBOSE( "cpktline(%p)::~cpktline() %s\n",
+	//		this, (ring_type == PACKET_TX_RING) ? "TX-RING" : "RX-RING");
+
 	if (-1 != sd)
 	{
 		if (map != MAP_FAILED)
@@ -218,10 +219,10 @@ mmap_int::initialize() throw (ePktLineFailed)
 	{
 		ring[i].iov_base = (void*)((uint8_t*)map + i * req.tp_frame_size);
 		ring[i].iov_len  = req.tp_frame_size;
-		ROFL_DEBUG_VERBOSE( "cpktline(%p)::initialize() ring[%d].iov_base: %p   \n",
-				this, i, ring[i].iov_base);
-		ROFL_DEBUG_VERBOSE( "cpktline(%p)::initialize() ring[%d].iov_len:  %lu\n",
-				this, i, ring[i].iov_len);
+		//ROFL_DEBUG_VERBOSE( "cpktline(%p)::initialize() ring[%d].iov_base: %p   \n",
+		//		this, i, ring[i].iov_base);
+		//ROFL_DEBUG_VERBOSE( "cpktline(%p)::initialize() ring[%d].iov_len:  %lu\n",
+		//		this, i, ring[i].iov_len);
 	}
 
 

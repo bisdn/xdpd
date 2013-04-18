@@ -207,12 +207,15 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 						(uint8_t*)hdr + hdr->tp_mac + sizeof(struct fetherframe::eth_hdr_t),
 						hdr->tp_len - sizeof(struct fetherframe::eth_hdr_t));
                 
-                pkt_x86->headers->classify();
+
+		                pkt_x86->headers->classify();
 
 			} else {
 				// no vlan tag present
 				pkt_x86->init((uint8_t*)hdr + hdr->tp_mac, hdr->tp_len, of_port_state->attached_sw, get_port_no());
 			}
+
+			ROFL_DEBUG("[%s] packet(%p) recieved\n", of_port_state->name ,pkt);
 
 			// fill input_queue
 			input_queue->non_blocking_write(pkt);
@@ -309,6 +312,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 			break;
 		}
 
+		ROFL_DEBUG("[%s] packet(%p) put in the wire\n", of_port_state->name ,pkt);
 		// pkt is processed
 		bufferpool::release_buffer(pkt);
 		cnt++;

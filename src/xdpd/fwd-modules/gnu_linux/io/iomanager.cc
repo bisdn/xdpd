@@ -285,7 +285,9 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 		}	
 	}catch(...){
 		//Do nothing; should never jump here
-		//FIXME: add debugging trace here	
+		ROFL_ERR("Exception thrown while trying to bring %s port down\n", port->of_port_state->name);
+		assert(0);
+		
 	}
 	
 	if(!mutex_locked){
@@ -354,7 +356,8 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 		}	
 	}catch(...){
 		//Do nothing; should never jump here
-		//FIXME: add debugging trace here	
+		ROFL_ERR("Exception thrown while trying to bring %s port up\n", port->of_port_state->name);
+		assert(0);
 	}
 	
 	pthread_mutex_unlock(&mutex);

@@ -102,7 +102,7 @@ inline void epoll_ioscheduler::process_port_io(ioport* port){
 */
 inline void epoll_ioscheduler::add_fd_epoll(struct epoll_event* ev, int epfd, ioport* port, int fd){
 
-	ev->events = EPOLLIN | EPOLLPRI | EPOLLET;
+	ev->events = EPOLLIN | EPOLLPRI /*| EPOLLET*/;
 	ev->data.fd = fd;
 	ev->data.ptr = (void*)port;
 

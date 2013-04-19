@@ -30,8 +30,9 @@
 //fwd decl
 class packet_mmap;
 
-class ioport_mmap : public ioport
-{
+class ioport_mmap : public ioport{
+
+
 public:
 	//ioport_mmap
 	ioport_mmap(
@@ -69,18 +70,15 @@ public:
 
 	// Get read fds. Return -1 if do not exist
 	inline virtual int
-	get_read_fd(void)
-	{
-		//fprintf(stderr, "%s(): read fd = %i\n", __FUNCTION__, rx.sd);
-		return rx.sd;
+	get_read_fd(void){
+		if(rx)
+			return rx->sd;
+		return -1;
 	};
 
 	// Get write fds. Return -1 if do not exist
 	inline virtual int
-	get_write_fd(void)
-	{
-		//fprintf(stderr, "%s(): write fd = %i\n", __FUNCTION__, notify_pipe[READ]);
-		//return tx.sd;
+	get_write_fd(void){
 		return notify_pipe[READ];
 	};
 
@@ -119,9 +117,15 @@ protected:
 	static const unsigned int MMAP_DEFAULT_NUM_OF_QUEUES = 4;
 
 private:
-	//mmap
-	mmap_int rx;
-	mmap_int tx;
+	
+	//mmap internals
+	mmap_int* rx;
+	mmap_int* tx;
+
+	//parameters for regenerating tx/rx
+	int block_size;
+	int n_blocks;
+	int frame_size;
 
 	/* todo move to parent? */
 	cmacaddr hwaddr;
@@ -132,7 +136,6 @@ private:
 	//Pipe extremes
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;
-	
 };
 
 #endif /* IOPORT_MMAP_H_ */

@@ -17,8 +17,11 @@ ioport_mmap::ioport_mmap(
 		int frame_size,
 		unsigned int num_queues) :
 			ioport(of_ps, num_queues),
-			rx(PACKET_RX_RING, std::string(of_ps->name), 2 * block_size, n_blocks, frame_size),
-			tx(PACKET_TX_RING, std::string(of_ps->name), block_size, n_blocks, frame_size),
+			rx(NULL),
+			tx(NULL),
+			block_size(block_size),
+			n_blocks(n_blocks),
+			frame_size(frame_size),	
 			hwaddr(of_ps->hwaddr, OFP_ETH_ALEN)
 {
 	int ret;
@@ -38,6 +41,11 @@ ioport_mmap::ioport_mmap(
 
 ioport_mmap::~ioport_mmap()
 {
+	if(rx)
+		delete rx;
+	if(tx)
+		delete tx;
+	
 	close(notify_pipe[READ]);
 	close(notify_pipe[WRITE]);
 }
@@ -55,13 +63,13 @@ ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id)
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
 		output_queues[q_id].blocking_write(pkt);
 
-		ROFL_DEBUG_VERBOSE("%s(): Enqueued, buffer size: %d\n", __FUNCTION__, output_queues[q_id].size());
+		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
 	
 		//TODO: make it happen only if thread is really sleeping...
 		ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
 		(void)ret; // todo use the value
 	} else {
-		ROFL_DEBUG_VERBOSE("%s(): drop packet %p scheduled for queue %u\n", __FUNCTION__, pkt, q_id);
+		ROFL_DEBUG_VERBOSE("[mmap:%s] dropped packet(%p) scheduled for queue %u\n", of_port_state->name, pkt, q_id);
 		// port down -> drop packet
 		bufferpool::release_buffer(pkt);
 	}
@@ -83,8 +91,8 @@ ioport_mmap::read()
 	ret = ::read(notify_pipe[READ],&c,sizeof(c));
 	(void)ret; // todo use the value
 	
-	if (input_queue->is_empty()) {
-		read_loop(rx.sd, 1);
+	if (input_queue->is_empty() && rx ) {
+		read_loop(rx->sd, 1);
 	}
 
 	return input_queue->non_blocking_read();
@@ -94,14 +102,14 @@ int
 ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 		int read_max)
 {
-	if (rx.sd != fd)
+	if (rx->sd != fd)
 	{
 		return 0;
 	}
 
 #if 0
 	ROFL_DEBUG_VERBOSE("ioport_mmap(%s)::read_loop() total #slots:%d\n",
-			of_port_state->name, rx.req.tp_frame_nr);
+			of_port_state->name, rx->req.tp_frame_nr);
 #endif
 	int cnt = 0;
 	int rx_bytes_local = 0;
@@ -124,14 +132,14 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 		   - Pad to align to TPACKET_ALIGNMENT=16
 		 */
 
-		struct tpacket2_hdr *hdr = rx.read_packet();
+		struct tpacket2_hdr *hdr = rx->read_packet();
 		if (NULL == hdr) {
 			break;
 		}
 
 		/* sanity check */
-		if (hdr->tp_mac + hdr->tp_snaplen > rx.req.tp_frame_size) {
-			ROFL_DEBUG_VERBOSE("sanity check during read mmap failed\n");
+		if (hdr->tp_mac + hdr->tp_snaplen > rx->req.tp_frame_size) {
+			ROFL_DEBUG_VERBOSE("[mmap:%s] sanity check during read mmap failed\n",of_port_state->name);
 			
 			//Increment error statistics
 			switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
@@ -150,8 +158,8 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 
 		struct sockaddr_ll *sll = (struct sockaddr_ll*)((uint8_t*)hdr + TPACKET_ALIGN(sizeof(struct tpacket_hdr)));
 		if (PACKET_OUTGOING == sll->sll_pkttype) {
-			ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
-					"frame rcvd in slot i:%d, ignoring\n", of_port_state->name, rx.rpos);
+			/*ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
+					"frame rcvd in slot i:%d, ignoring\n", of_port_state->name, rx->rpos);*/
 			goto next; // ignore outgoing frames
 		}
 
@@ -172,8 +180,8 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			cmacaddr eth_src = cmacaddr(((struct fetherframe::eth_hdr_t*)((uint8_t*)hdr + hdr->tp_mac))->dl_src, OFP_ETH_ALEN);
 
 			if (hwaddr == eth_src) {
-				ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
-						"frame rcvd in slot i:%d, src-mac == own-mac, ignoring\n", of_port_state->name, rx.rpos);
+				/*ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
+						"frame rcvd in slot i:%d, src-mac == own-mac, ignoring\n", of_port_state->name, rx->rpos);*/
 				pkt_x86->destroy();
 				bufferpool::release_buffer(pkt);
 				goto next; // ignore outgoing frames
@@ -215,7 +223,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 				pkt_x86->init((uint8_t*)hdr + hdr->tp_mac, hdr->tp_len, of_port_state->attached_sw, get_port_no());
 			}
 
-			ROFL_DEBUG("[%s] packet(%p) recieved\n", of_port_state->name ,pkt);
+			ROFL_DEBUG("[mmap:%s] packet(%p) recieved\n", of_port_state->name ,pkt);
 
 			// fill input_queue
 			input_queue->non_blocking_write(pkt);
@@ -226,9 +234,9 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 
 next:
 		hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
-		rx.rpos++; // select next packet. todo: should be moved to pktline
-		if (rx.rpos >=rx.req.tp_frame_nr) {
-			rx.rpos = 0;
+		rx->rpos++; // select next packet. todo: should be moved to pktline
+		if (rx->rpos >=rx->req.tp_frame_nr) {
+			rx->rpos = 0;
 		}
 	}
 
@@ -248,15 +256,14 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 	unsigned int cnt = 0;
 	int tx_bytes_local = 0;
 
-	if (0 == output_queues[q_id].size()) {
+	if (0 == output_queues[q_id].size() || !tx) {
 		return num_of_buckets;
 	}
 
-	ROFL_DEBUG_VERBOSE("%s(q_id=%d, num_of_buckets=%u): on %s with queue.size()=%u\n",
-			__FUNCTION__,
+	ROFL_DEBUG_VERBOSE("[mmap:%s] (q_id=%d, num_of_buckets=%u): on %s with queue.size()=%u\n",
+			of_port_state->name,
 			q_id,
 			num_of_buckets,
-			of_port_state->name,
 			output_queues[q_id].size());
 
 	// read available packets from incoming buffer
@@ -265,8 +272,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 		pkt = output_queues[q_id].non_blocking_read();
 
 		if (NULL == pkt) {
-			ROFL_DEBUG_VERBOSE("%s(): on %s: no packet in output_queue %u left, %u buckets left\n",
-					__FUNCTION__,
+			ROFL_DEBUG_VERBOSE("[mmap:%s] no packet in output_queue %u left, %u buckets left\n",
 					of_port_state->name,
 					q_id,
 					num_of_buckets);
@@ -286,7 +292,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 		 - Start+tp_net: Packet data, aligned to TPACKET_ALIGNMENT=16.
 		 - Pad to align to TPACKET_ALIGNMENT=16
 		 */
-		struct tpacket2_hdr *hdr = tx.get_free_slot();
+		struct tpacket2_hdr *hdr = tx->get_free_slot();
 
 		if (NULL != hdr) {
 			datapacketx86* pkt_x86;
@@ -295,7 +301,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 
 			// todo check the right size
 
-			tx.copy_packet(hdr, pkt_x86);
+			tx->copy_packet(hdr, pkt_x86);
 
 			// todo statistics
 			tx_bytes_local += hdr->tp_len;
@@ -312,7 +318,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 			break;
 		}
 
-		ROFL_DEBUG("[%s] packet(%p) put in the wire\n", of_port_state->name ,pkt);
+		ROFL_DEBUG("[mmap:%s] packet(%p) put in the MMAP region\n", of_port_state->name ,pkt);
 		// pkt is processed
 		bufferpool::release_buffer(pkt);
 		cnt++;
@@ -326,9 +332,12 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 #endif
 
 	if (cnt) {
-		ROFL_DEBUG_VERBOSE("%s(): schedule %u packet(s) to be send\n", __FUNCTION__, cnt);
+		ROFL_DEBUG_VERBOSE("[mmap:%s] schedule %u packet(s) to be send\n", __FUNCTION__, cnt);
 		// send packet-ins tx queue (this call is currently a blocking call!)
-		tx.send();
+		if(tx->send()<0){
+			ROFL_DEBUG("[mmap:%s] packet(%p) put in the MMAP region\n", of_port_state->name ,pkt);
+			assert(0);
+		}
 
 		//Increment statistics
 		switch_port_stats_inc(of_port_state, 0, cnt, 0, tx_bytes_local, 0, 0);	
@@ -345,9 +354,12 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 */
 rofl_result_t
 ioport_mmap::enable() {
+	
 	struct ifreq ifr;
 	int sd, rc;
 
+	ROFL_DEBUG_VERBOSE("[mmap:%s] Trying to enable port\n",of_port_state->name);
+	
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
 		return ROFL_FAILURE;
 	}
@@ -365,19 +377,41 @@ ioport_mmap::enable() {
 	}
 
 	if (IFF_UP & ifr.ifr_flags){
-		close(sd);
 		
 		//Already up.. Silently skip
+		close(sd);
+
+		//If tx/rx lines are not created create them
+		if(!rx){	
+			ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_int for RX\n",of_port_state->name);
+			rx = new mmap_int(PACKET_RX_RING, std::string(of_port_state->name), 2 * block_size, n_blocks, frame_size);
+		}
+		if(!tx){
+			ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_int for TX\n",of_port_state->name);
+			tx = new mmap_int(PACKET_TX_RING, std::string(of_port_state->name), block_size, n_blocks, frame_size);
+		}
+
 		of_port_state->up = true;
 		return ROFL_SUCCESS;
 	}
 
 	ifr.ifr_flags |= IFF_UP;
-
 	if ((rc = ioctl(sd, SIOCSIFFLAGS, &ifr)) < 0){
 		close(sd);
 		return ROFL_FAILURE;
 	}
+
+	//If tx/rx lines are not created create them
+	if(!rx){	
+		ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_int for RX\n",of_port_state->name);
+		rx = new mmap_int(PACKET_RX_RING, std::string(of_port_state->name), 2 * block_size, n_blocks, frame_size);
+	}
+	if(!tx){
+		ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_int for TX\n",of_port_state->name);
+		tx = new mmap_int(PACKET_TX_RING, std::string(of_port_state->name), block_size, n_blocks, frame_size);
+	}
+
+	
 
 	// enable promiscous mode
 	memset((void*)&ifr, 0, sizeof(ifr));
@@ -407,6 +441,8 @@ ioport_mmap::disable() {
 	struct ifreq ifr;
 	int sd, rc;
 
+	ROFL_DEBUG_VERBOSE("[mmap:%s] Trying to disable port\n",of_port_state->name);
+
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0) {
 		return ROFL_FAILURE;
 	}
@@ -421,6 +457,18 @@ ioport_mmap::disable() {
 	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0) {
 		close(sd);
 		return ROFL_FAILURE;
+	}
+
+	//If rx/tx exist, delete them
+	if(rx){
+		ROFL_DEBUG_VERBOSE("[mmap:%s] destroying mmap_int for RX\n",of_port_state->name);
+		delete rx;
+		rx = NULL;
+	}
+	if(tx){
+		ROFL_DEBUG_VERBOSE("[mmap:%s] destroying mmap_int for TX\n",of_port_state->name);
+		delete tx;
+		tx = NULL;
 	}
 
 	if ( !(IFF_UP & ifr.ifr_flags) ) {

@@ -23,8 +23,16 @@
 class ioport{
 
 public:
-	//Constructor and destructor
+	/**
+	* @brief Constructor for the ioport
+	* Constructs the ioport. The state of the port is explicitely undefined
+	* (usually down) unless enable/disable is called AFTER the constructor.
+	*/
 	ioport(switch_port_t* of_ps, unsigned int q_num=MAX_OUTPUT_QUEUES);
+
+	/**
+	* Destructor
+	*/
 	virtual ~ioport(void);
 
 	/**

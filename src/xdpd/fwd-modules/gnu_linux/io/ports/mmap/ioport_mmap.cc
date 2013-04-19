@@ -348,46 +348,50 @@ ioport_mmap::enable() {
 	struct ifreq ifr;
 	int sd, rc;
 
-	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0) {
+	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
 		return ROFL_FAILURE;
 	}
 
 	memset(&ifr, 0, sizeof(struct ifreq));
 	strcpy(ifr.ifr_name, of_port_state->name);
 
-	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0) {
+	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0){
 		return ROFL_FAILURE;
 	}
 
-	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0) {
+	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
 		close(sd);
 		return ROFL_FAILURE;
 	}
 
-	if (IFF_UP & ifr.ifr_flags) {
+	if (IFF_UP & ifr.ifr_flags){
 		close(sd);
+		
 		//Already up.. Silently skip
+		of_port_state->up = true;
 		return ROFL_SUCCESS;
 	}
 
 	ifr.ifr_flags |= IFF_UP;
 
-	if ((rc = ioctl(sd, SIOCSIFFLAGS, &ifr)) < 0) {
+	if ((rc = ioctl(sd, SIOCSIFFLAGS, &ifr)) < 0){
 		close(sd);
 		return ROFL_FAILURE;
 	}
 
 	// enable promiscous mode
-	bzero((void*)&ifr, sizeof(ifr));
+	memset((void*)&ifr, 0, sizeof(ifr));
 	strncpy(ifr.ifr_name, of_port_state->name, sizeof(ifr.ifr_name));
-	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0)
-	{
-		throw ePktLineFailed();
+	
+	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){
+		close(sd);
+		return ROFL_FAILURE;
 	}
+
 	ifr.ifr_flags |= IFF_PROMISC;
-	if ((rc = ioctl(sd, SIOCSIFFLAGS, &ifr)) < 0)
-	{
-		throw ePktLineFailed();
+	if ((rc = ioctl(sd, SIOCSIFFLAGS, &ifr)) < 0){
+		close(sd);
+		return ROFL_FAILURE;
 	}
 
 	// todo recheck?

@@ -203,6 +203,7 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 
 	long long unsigned int i;
 	bufferpool* bp = get_instance();
+	bool errors = false;
 	
 	datapacket_t* dp;
 	datapacketx86* dpx86;
@@ -216,13 +217,14 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 	if(new_capacity <= bp->pool_size)
 		return;	
 	
-	ROFL_DEBUG("Resizing bufferpool to %d\n", new_capacity);
+	ROFL_DEBUG("Resizing bufferpool to %d...", new_capacity);
 
 	//Resize vectors
 	try {
 		bp->pool.resize(new_capacity);
 		bp->pool_status.resize(new_capacity);
 	}catch(std::bad_alloc ex){
+		ROFL_DEBUG(" KO. Unable to resize pool vectors.\n");
 		return; 
 	}		
 
@@ -238,6 +240,7 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 			bp->pool_status[i] = BPX86_SLOT_UNAVAILABLE;
 
 			//Skip
+			errors = true;
 			continue;
 		}
 
@@ -250,6 +253,7 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 			bp->pool_status[i] = BPX86_SLOT_UNAVAILABLE;
 			
 			free(dp);
+			errors = true;
 			continue;		
 		}		
 
@@ -267,6 +271,9 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 	//Finally allow to use extended capacity
 	bp->pool_size = new_capacity;
 	
-	ROFL_DEBUG("Resized!\n", new_capacity);
 	
+	if(errors)
+		ROFL_DEBUG(" errors while allocating memory (out of memory?) \n");
+	else
+		ROFL_DEBUG("OK\n", new_capacity);
 }

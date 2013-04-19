@@ -84,7 +84,7 @@ ioport_mmap::read()
 	char c;
 	int ret;
 
-	if(!of_port_state->up || of_port_state->drop_received)
+	if(!of_port_state->up || of_port_state->drop_received || !rx)
 		return NULL;
 
 	//Just take the byte from the pipe	
@@ -102,7 +102,7 @@ int
 ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 		int read_max)
 {
-	if (rx->sd != fd)
+	if (!rx || rx->sd != fd)
 	{
 		return 0;
 	}

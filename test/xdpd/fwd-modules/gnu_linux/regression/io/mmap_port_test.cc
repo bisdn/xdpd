@@ -130,6 +130,8 @@ MMAPPortTest::setUp()
 
 	port = new ioport_mmap(of_port_state);
 
+	port->enable();
+
 	// Init bufferpool
 	bufferpool::init(2048);
 	datapacketx86* pkt_x86;

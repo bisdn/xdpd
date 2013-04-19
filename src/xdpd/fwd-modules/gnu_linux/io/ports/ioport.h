@@ -44,6 +44,17 @@ public:
 	inline unsigned int get_num_of_queues(void){ return num_of_queues; } 
 
 	/**
+	* Retrieve the size (in number of slots) of a queue 
+	*/
+	inline unsigned int get_queue_size(unsigned int id){ 
+		if(id < num_of_queues)
+			return output_queues[id].MAX_SLOTS; 
+		
+		return 0;
+	} 
+
+
+	/**
 	* Enque packet for transmission(this is blocking call)
 	*/
 	virtual void enqueue_packet(datapacket_t* pkt, unsigned int q_id)=0;
@@ -122,7 +133,7 @@ public:
 	switch_port_t* of_port_state;
 
 protected:
-	static const unsigned int MAX_OUTPUT_QUEUES=4;	/*!< Constant max output queues */
+	static const unsigned int MAX_OUTPUT_QUEUES=8;	/*!< Constant max output queues */
 	static const unsigned int NUM_OF_REQUIRED_BUFFERS=2048;	/* Required buffers for the port to operate at line rate */
 	
 	//Output QoS queues

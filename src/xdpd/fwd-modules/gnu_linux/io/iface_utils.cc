@@ -28,6 +28,19 @@
 *
 */
 
+static void fill_port_queues(switch_port_t* port, ioport* io_port){
+
+	unsigned int i;
+	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
+
+	//Filling one-by-one the queues that ioport has	
+	for(i=0;i<io_port->get_num_of_queues();i++){
+		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
+		switch_port_add_queue(port, i, (char*)&queue_name, io_port->get_queue_size(i), 0, 0);
+	}
+
+}
+
 /*
 * Physical port disovery
 */
@@ -159,10 +172,12 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	//Fill speeds and capabilities	
 	fill_port_speeds_capabilities(port, &edata);
 
-
 	//Initialize MMAP-based port
 	//Change this line to use another ioport...
 	port->platform_port_state = (platform_port_state_t*)new ioport_mmap(port);
+
+	//Fill port queues
+	fill_port_queues(port, (ioport*)port->platform_port_state);
 	
 	return port;
 }

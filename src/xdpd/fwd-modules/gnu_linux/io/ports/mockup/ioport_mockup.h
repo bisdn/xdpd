@@ -51,7 +51,7 @@ public:
 
 protected:
 	//Queues
-	static const unsigned int MMAP_DEFAULT_NUM_OF_QUEUES=4; 
+	static const unsigned int MMAP_DEFAULT_NUM_OF_QUEUES=8; 
 
 	//fds
 	int input[2];

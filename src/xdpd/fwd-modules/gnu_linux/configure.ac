@@ -16,6 +16,7 @@ LT_INIT
 AC_ENABLE_STATIC
 
 AC_CONFIG_FILES([
+	Makefile
 	src/Makefile
 	src/afa-imp/Makefile
 	src/afa-imp/openflow/openflow12/Makefile

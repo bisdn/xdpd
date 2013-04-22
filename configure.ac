@@ -39,7 +39,7 @@ else
 fi
 AM_CONDITIONAL(DEBUG, test "$enable_debug" = yes)
 
-# Make verbosity 
+# Application verbosity 
 AC_MSG_CHECKING(whether to output in verbose mode)
 AC_ARG_ENABLE(verbose,
 	AS_HELP_STRING([--verbose], [turn on verbose mode [default=no]])
@@ -111,16 +111,19 @@ if ( test "$enable_gnu_linux_dpdk" = "yes" );then
 	msg="$msg GNU/Linux Intel DPDK"
 	AC_DEFINE(ENABLE_GNU_LINUX_DPDK)
 	PLATFORM=gnu_linux_dpdk
+	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/gnu_linux_dpdk])
 fi
 if( test "$enable_bcm" = "yes" );then
 	msg="$msg Broadcom"
 	AC_DEFINE(ENABLE_BCM)
 	PLATFORM=bcm
+	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/bcm])
 fi	
 if( test "$enable_octeon" = "yes" );then
 	msg="$msg OCTEON 5650"
 	AC_DEFINE(ENABLE_OCTEON5650)
 	PLATFORM=octeon5650
+	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/octeon5650])
 fi
 
 AC_MSG_RESULT($msg)
@@ -173,6 +176,7 @@ AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	src/xdpd/Makefile
+	src/xdpd/fwd-modules/Makefile
 	src/xdpd/management/Makefile
 	src/xdpd/openflow/Makefile
 	src/xdpd/openflow/openflow12/Makefile

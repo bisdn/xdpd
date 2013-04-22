@@ -1,9 +1,9 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 #Defines driver lib
-FM_LIB= fwd-modules/$(PLATFORM)/libfwd_module_$(PLATFORM).la
+FM_LIB= fwd-modules/$(PLATFORM)/src/libfwd_module_$(PLATFORM).la
 
-SUBDIRS = management openflow #fwd-modules
+SUBDIRS = management openflow fwd-modules
 
 #Main program
 sbin_PROGRAMS = xdpd

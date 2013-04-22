@@ -1,4 +1,5 @@
-AC_INIT(xdpd, 0.2.11, rofl@bisdn.de, xdpd)
+AC_INIT(xdpd, 0.3, rofl@bisdn.de, xdpd)
+AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_GNU_SOURCE
@@ -13,7 +14,6 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AUTOCONF_ENV="SHELL=/bin/sh"
 LT_INIT
 AC_ENABLE_STATIC
-AC_CONFIG_AUX_DIR([.])
 
 # default flags
 CFLAGS="-Werror -Wall -Wl,-export-dynamic $CFLAGS"
@@ -106,7 +106,6 @@ if ( test "$enable_gnu_linux" = "yes" );then
 	AC_DEFINE(ENABLE_GNU_LINUX)
 	PLATFORM=gnu_linux
 	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/gnu_linux])
-
 fi
 if ( test "$enable_gnu_linux_dpdk" = "yes" );then
 	msg="$msg GNU/Linux Intel DPDK"
@@ -144,7 +143,7 @@ AC_SUBST(PLATFORM)
 #])])
 
 # Makefiles for gnu_linux_dpdk
-A#M_COND_IF(ENABLE_GNU_LINUX_DPDK_SUPPORT,[AC_CONFIG_FILES([
+#AM_COND_IF(ENABLE_GNU_LINUX_DPDK_SUPPORT,[AC_CONFIG_FILES([
 #	src/xdpd/fwd-modules/gnu_linux_dpdk/Makefile
 #])])
 
@@ -175,9 +174,6 @@ AC_CONFIG_FILES([
 	src/Makefile
 	src/xdpd/Makefile
 	src/xdpd/management/Makefile
-	
-	src/xdpd/fwd-modules/Makefile
-	
 	src/xdpd/openflow/Makefile
 	src/xdpd/openflow/openflow12/Makefile
 
@@ -194,5 +190,5 @@ AC_CONFIG_FILES([
 
 	doc/Makefile
 ])
-#test/unit/xdpd/fwd-modules/octeon5650/Makefile
+
 AC_OUTPUT

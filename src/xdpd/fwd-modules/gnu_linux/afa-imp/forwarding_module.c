@@ -54,8 +54,7 @@ afa_result_t fwd_module_init(){
 	//Init the ROFL-PIPELINE phyisical switch
 	physical_switch_init();
 	
-	if(discover_physical_ports()!=AFA_SUCCESS)
-	{
+	if(discover_physical_ports() != ROFL_SUCCESS){
 		return AFA_FAILURE;
 	}
 	
@@ -90,6 +89,9 @@ afa_result_t fwd_module_destroy(){
 	
 	//Stop the bg manager
 	stop_background_tasks_manager();
+
+	//Destroy interfaces
+	destroy_ports();
 
 	//Destroy physical switch (including ports)
 	physical_switch_destroy();
@@ -399,7 +401,7 @@ afa_result_t fwd_module_enable_port(const char* name){
 			return AFA_SUCCESS;
 	}else{
 		//The port is not attached. Only bring it up (ifconfig up)
-		if(enable_port(port->platform_port_state)==AFA_FAILURE)
+		if(enable_port(port->platform_port_state)==ROFL_FAILURE)
 			return AFA_FAILURE;
 	}
 
@@ -432,7 +434,7 @@ afa_result_t fwd_module_disable_port(const char* name){
 			return AFA_FAILURE;
 	}else{
 		//The port is not attached. Only bring it down (ifconfig down)
-		if(disable_port(port->platform_port_state)==AFA_FAILURE)
+		if(disable_port(port->platform_port_state)==ROFL_FAILURE)
 			return AFA_FAILURE;
 	}
 

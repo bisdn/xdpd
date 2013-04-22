@@ -13,6 +13,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AUTOCONF_ENV="SHELL=/bin/sh"
 LT_INIT
 AC_ENABLE_STATIC
+AC_CONFIG_AUX_DIR([.])
 
 # default flags
 CFLAGS="-Werror -Wall -Wl,-export-dynamic $CFLAGS"
@@ -104,6 +105,8 @@ if ( test "$enable_gnu_linux" = "yes" );then
 	msg="$msg GNU/Linux"
 	AC_DEFINE(ENABLE_GNU_LINUX)
 	PLATFORM=gnu_linux
+	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/gnu_linux])
+
 fi
 if ( test "$enable_gnu_linux_dpdk" = "yes" );then
 	msg="$msg GNU/Linux Intel DPDK"
@@ -125,30 +128,30 @@ AC_MSG_RESULT($msg)
 AC_SUBST(PLATFORM)
 
 # Makefiles for gnu_linux
-AM_COND_IF(ENABLE_GNU_LINUX_SUPPORT,[AC_CONFIG_FILES([
-	src/xdpd/fwd-modules/gnu_linux/Makefile
-	src/xdpd/fwd-modules/gnu_linux/afa-imp/Makefile
-	src/xdpd/fwd-modules/gnu_linux/afa-imp/openflow/openflow12/Makefile
-	src/xdpd/fwd-modules/gnu_linux/io/Makefile
-	src/xdpd/fwd-modules/gnu_linux/io/packet_classifiers/Makefile
-	src/xdpd/fwd-modules/gnu_linux/io/ports/Makefile
-	src/xdpd/fwd-modules/gnu_linux/io/ports/mmap/Makefile
-	src/xdpd/fwd-modules/gnu_linux/io/ports/mockup/Makefile
-	src/xdpd/fwd-modules/gnu_linux/io/scheduler/Makefile
-	src/xdpd/fwd-modules/gnu_linux/pipeline-imp/Makefile
-	src/xdpd/fwd-modules/gnu_linux/processing/Makefile
-	src/xdpd/fwd-modules/gnu_linux/util/Makefile
-])])
+#AM_COND_IF(ENABLE_GNU_LINUX_SUPPORT,[AC_CONFIG_FILES([
+#	src/xdpd/fwd-modules/gnu_linux/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/afa-imp/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/afa-imp/openflow/openflow12/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/io/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/io/packet_classifiers/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/io/ports/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/io/ports/mmap/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/io/ports/mockup/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/io/scheduler/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/pipeline-imp/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/processing/Makefile
+#	src/xdpd/fwd-modules/gnu_linux/util/Makefile
+#])])
 
 # Makefiles for gnu_linux_dpdk
-AM_COND_IF(ENABLE_GNU_LINUX_DPDK_SUPPORT,[AC_CONFIG_FILES([
-	src/xdpd/fwd-modules/gnu_linux_dpdk/Makefile
-])])
+A#M_COND_IF(ENABLE_GNU_LINUX_DPDK_SUPPORT,[AC_CONFIG_FILES([
+#	src/xdpd/fwd-modules/gnu_linux_dpdk/Makefile
+#])])
 
 # Makefiles for octeon
-AM_COND_IF(ENABLE_OCTEON_SUPPORT,[AC_CONFIG_FILES([
-	src/xdpd/fwd-modules/octeon5650/Makefile
-])])
+#AM_COND_IF(ENABLE_OCTEON_SUPPORT,[AC_CONFIG_FILES([
+#	src/xdpd/fwd-modules/octeon5650/Makefile
+#])])
 
 
 # TODO: make the configuration front ends configureable, as soon as we have more than the cli

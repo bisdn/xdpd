@@ -60,6 +60,7 @@ AC_ARG_ENABLE(profile,
 if test "$enable_profile" = "yes"; then
 	CFLAGS="$( echo $CFLAGS | sed s/-fomit-frame-pointer//g )"
 	CXXFLAGS="$( echo $CXXFLAGS | sed s/-fomit-frame-pointer//g )"
+	CFLAGS="$CFLAGS -pg"
 	CXXFLAGS="$CXXFLAGS -pg"
 	LDFLAGS="$LDFLAGS -pg"
 	AC_MSG_RESULT(yes)

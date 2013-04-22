@@ -55,7 +55,9 @@ public:
 
 
 	/**
-	* Enque packet for transmission(this is blocking call)
+	* Enque packet for transmission(this is a blocking call). 
+	* Function cannot assume that q_id is a valid id, so it MUST do the appropiate
+	* checks before attempting to enqueue the packet.
 	*/
 	virtual void enqueue_packet(datapacket_t* pkt, unsigned int q_id)=0;
 

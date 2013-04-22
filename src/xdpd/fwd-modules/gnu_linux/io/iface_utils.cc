@@ -44,25 +44,25 @@ static void fill_port_queues(switch_port_t* port, ioport* io_port){
 /*
 * Physical port disovery
 */
-static afa_result_t fill_port_admin_and_link_state(switch_port_t* port){
+static rofl_result_t fill_port_admin_and_link_state(switch_port_t* port){
 
 	struct ifreq ifr;
 	int sd, rc;
 
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0) {
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 	}
 
 	memset(&ifr, 0, sizeof(struct ifreq));
 	strcpy(ifr.ifr_name, port->name);
 
 	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0) {
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 	}
 
 	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0) {
 		close(sd);
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 	}
 
 	//Fill values
@@ -75,7 +75,7 @@ static afa_result_t fill_port_admin_and_link_state(switch_port_t* port){
 
 	//Close socket	
 	close(sd);
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
 static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cmd* edata){
@@ -161,7 +161,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 		port->hwaddr[j] = socll->sll_addr[j];
 
 	//Fill port admin/link state
-	if( fill_port_admin_and_link_state(port) == AFA_FAILURE){
+	if( fill_port_admin_and_link_state(port) == ROFL_FAILURE){
 		if(strcmp(port->name,"lo") == 0) //Skip loopback but return success
 			return port; 
 			
@@ -186,13 +186,12 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
  * Looks in the system physical ports and fills up the switch_port_t sructure with them
  *
  */
-afa_result_t discover_physical_ports(){
-	physical_switch_t* psw;
-	int index, sock;
+rofl_result_t discover_physical_ports(){
+	
+	switch_port_t* port;
+	int sock;
 	
 	struct ifaddrs *ifaddr, *ifa;
-	
-	psw = get_physical_switch();
 	
 	/*real way to find interfaces*/
 	//getifaddrs(&ifap); -> there are examples on how to get the ip addresses
@@ -211,45 +210,62 @@ afa_result_t discover_physical_ports(){
 		
 		if(ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_PACKET)
 			continue;
-		
-		//look for an empty slot
-		for(index=0;index<PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS;index++){
-			if(psw->physical_ports[index] == NULL)
-				break;
-		}
-		if(index==PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS){
+
+		//Fill port
+		port = fill_port(sock, ifa);
+
+		//Adding the 
+		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
 			ROFL_ERR("<%s:%d> All physical port slots are occupied\n",__func__, __LINE__);
 			freeifaddrs(ifaddr);
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		}
-
-		//here we call the function that fills the structure
-		if( (psw->physical_ports[index] = fill_port(sock, ifa)) == NULL )
-			return AFA_FAILURE;
 	}
 	
 	freeifaddrs(ifaddr);
 	
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
-afa_result_t destroy_port(switch_port_t* port){
+rofl_result_t destroy_port(switch_port_t* port){
 	
 	ioport* ioport_instance;
 
 	if(!port)
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 	
 	//Destroy the inner driver-dependant structures
 	ioport_instance = (ioport*)port->platform_port_state;	
 	delete ioport_instance;
 
-	if(switch_port_destroy(port) == ROFL_FAILURE)
-		return AFA_FAILURE;
+	//Delete port from the pipeline library
+	if(physical_switch_remove_port(port->name) == ROFL_FAILURE)
+		return ROFL_FAILURE;
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
+/*
+ * Discovers platform physical ports and fills up the switch_port_t sructures
+ *
+ */
+rofl_result_t destroy_ports(){
+
+	unsigned int max_ports, i;
+	switch_port_t** array;	
+
+	array = physical_switch_get_physical_ports(&max_ports);
+	
+	for(i=0; i<max_ports ; i++){
+		if(array[i] != NULL){
+			destroy_port(array[i]);
+		}
+	}
+
+	//TODO: add virtual and tun
+
+	return ROFL_SUCCESS;
+}
 /*
 * Port attachement/detachment 
 */
@@ -257,27 +273,27 @@ afa_result_t destroy_port(switch_port_t* port){
 /*
 * Enable port (direct call to ioport)
 */
-afa_result_t enable_port(platform_port_state_t* ioport_instance){
+rofl_result_t enable_port(platform_port_state_t* ioport_instance){
 
 	ioport* port = (ioport*)ioport_instance; 
 
 	if(port->enable() == ROFL_FAILURE)
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
 /*
 * Disable port (direct call to ioport)
 */
-afa_result_t disable_port(platform_port_state_t* ioport_instance){
+rofl_result_t disable_port(platform_port_state_t* ioport_instance){
 
 	class ioport* port = (ioport*)ioport_instance; 
 
 	if(port->disable() == ROFL_FAILURE)
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
 

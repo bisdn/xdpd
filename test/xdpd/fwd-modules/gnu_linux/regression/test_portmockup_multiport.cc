@@ -51,7 +51,6 @@ void DriverMultiPortMockupTestCase::setUp(){
 
 	afa_result_t res;
 	unsigned int of_port_num=0;
-	physical_switch_t* psw;
 	fprintf(stderr,"<%s:%d> ************** Set up ************\n",__func__,__LINE__);
 
 	res = fwd_module_init();//discovery of ports
@@ -84,9 +83,8 @@ void DriverMultiPortMockupTestCase::setUp(){
 	write_fd2 = mport2->get_fake_write_fd();
 	
 	//Fake discovery of port in the physical switch
-	psw = get_physical_switch();
-	psw->physical_ports[PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS-1] = port1; 
-	psw->physical_ports[PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS-2] = port2; 
+	physical_switch_add_port(port1); 
+	physical_switch_add_port(port2); 
 	
 	//Attach
 	afa_result_t ret = fwd_module_attach_port_to_switch(TEST_DPID, PORT_NAME0 , &of_port_num); 	

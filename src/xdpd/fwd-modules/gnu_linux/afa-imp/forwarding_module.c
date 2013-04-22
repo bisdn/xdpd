@@ -54,8 +54,7 @@ afa_result_t fwd_module_init(){
 	//Init the ROFL-PIPELINE phyisical switch
 	physical_switch_init();
 	
-	if(discover_physical_ports()!=AFA_SUCCESS)
-	{
+	if(discover_physical_ports() != ROFL_SUCCESS){
 		return AFA_FAILURE;
 	}
 	
@@ -85,22 +84,16 @@ afa_result_t fwd_module_init(){
 */
 afa_result_t fwd_module_destroy(){
 
-	physical_switch_t* psw;
-	int i;
-	
-	psw = get_physical_switch();
-	
 	//destroy group ports
 	iomanager_delete_group_wrapper(iomanager_grp_id);
 	
 	//Stop the bg manager
 	stop_background_tasks_manager();
 
-	//destroy ports
-	for(i=0;i<PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS;i++){
-		destroy_port(psw->physical_ports[i]);
-	}
-	
+	//Destroy interfaces
+	destroy_ports();
+
+	//Destroy physical switch (including ports)
 	physical_switch_destroy();
 	
 	// destroy bufferpool
@@ -232,10 +225,8 @@ switch_port_t* fwd_module_get_port_by_name(const char *name){
 * @ingroup port_management
 * @retval  Pointer to the first port. 
 */
-switch_port_t** fwd_module_get_physical_ports(){
-	physical_switch_t* psw;
-	psw = get_physical_switch();
-	return psw->physical_ports;
+switch_port_t** fwd_module_get_physical_ports(unsigned int* num_of_ports){
+	return physical_switch_get_physical_ports(num_of_ports);
 }
 
 /*
@@ -244,10 +235,8 @@ switch_port_t** fwd_module_get_physical_ports(){
 * @ingroup port_management
 * @retval  Pointer to the first port. 
 */
-switch_port_t** fwd_module_get_virtual_ports(){
-	physical_switch_t* psw;
-	psw = get_physical_switch();
-	return psw->virtual_ports;
+switch_port_t** fwd_module_get_virtual_ports(unsigned int* num_of_ports){
+	return physical_switch_get_virtual_ports(num_of_ports);
 }
 
 /*
@@ -256,10 +245,8 @@ switch_port_t** fwd_module_get_virtual_ports(){
 * @ingroup port_management
 * @retval  Pointer to the first port. 
 */
-switch_port_t** fwd_module_get_tunnel_ports(){
-	physical_switch_t* psw;
-	psw = get_physical_switch();
-	return psw->tunnel_ports;
+switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
+	return physical_switch_get_tunnel_ports(num_of_ports);
 }
 /*
 * @name    fwd_module_attach_physical_port_to_switch
@@ -414,7 +401,7 @@ afa_result_t fwd_module_enable_port(const char* name){
 			return AFA_SUCCESS;
 	}else{
 		//The port is not attached. Only bring it up (ifconfig up)
-		if(enable_port(port->platform_port_state)==AFA_FAILURE)
+		if(enable_port(port->platform_port_state)==ROFL_FAILURE)
 			return AFA_FAILURE;
 	}
 
@@ -447,7 +434,7 @@ afa_result_t fwd_module_disable_port(const char* name){
 			return AFA_FAILURE;
 	}else{
 		//The port is not attached. Only bring it down (ifconfig down)
-		if(disable_port(port->platform_port_state)==AFA_FAILURE)
+		if(disable_port(port->platform_port_state)==ROFL_FAILURE)
 			return AFA_FAILURE;
 	}
 

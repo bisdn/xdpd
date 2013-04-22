@@ -5,6 +5,7 @@
 #ifndef _PLATFORM_PORT_MGMT_
 #define _PLATFORM_PORT_MGMT_
 
+#include <rofl.h>
 #include <rofl/datapath/afa/fwd_module.h>
 
 /**
@@ -19,32 +20,37 @@
 //C++ extern C
 ROFL_BEGIN_DECLS
 
-/*
+/**
  * Get the port by its name
  */
 switch_port_t* get_port_by_name(const char *name);
 
-/*
- * Looks in the platform for physical ports and fills up the switch_port_t sructure with them
- *
+/**
+ * Discovers platform physical ports and fills up the switch_port_t sructures
  */
-afa_result_t discover_physical_ports(void);
+rofl_result_t discover_physical_ports(void);
+
+/**
+ * Destroys ports previously created 
+ */
+rofl_result_t destroy_ports(void);
+
 
 /*
  * Destroy port 
  */
-afa_result_t destroy_port(switch_port_t* port);
+rofl_result_t destroy_port(switch_port_t* port);
 
 //Port enable/disable
 /*
 * Enable port (direct call to ioport instance)
 */
-afa_result_t enable_port(platform_port_state_t* ioport_instance);
+rofl_result_t enable_port(platform_port_state_t* ioport_instance);
 
 /*
 * Disable port (direct call to ioport instance)
 */
-afa_result_t disable_port(platform_port_state_t* ioport_instance);
+rofl_result_t disable_port(platform_port_state_t* ioport_instance);
 
 //C++ extern C
 ROFL_END_DECLS

@@ -220,12 +220,16 @@ static rofl_result_t read_netlink_message(int fd){
  * @brief checks if its time to process timeouts (flow entries and pool of buffers)
  * @param psw physical switch (where all the logical switches are)
  */
-int process_timeouts(physical_switch_t* psw)
+int process_timeouts()
 {
-	int i;
+	unsigned int i, max_switches;
 	struct timeval now;
+	of_switch_t** logical_switches;
 	static struct timeval last_time_entries_checked={0,0}, last_time_pool_checked={0,0};
 	gettimeofday(&now,NULL);
+
+	//Retrieve the logical switches list
+	logical_switches = physical_switch_get_logical_switches(&max_switches);
 	
 	if(get_time_difference_ms(&now, &last_time_entries_checked)>=LSW_TIMER_SLOT_MS)
 	{
@@ -234,15 +238,15 @@ int process_timeouts(physical_switch_t* psw)
 #endif
 
 		//TIMERS FLOW ENTRIES
-		for(i=0; i<PHYSICAL_SWITCH_MAX_LS; i++)
+		for(i=0; i<max_switches; i++)
 		{
 
-			if(psw->logical_switches[i] != NULL){
-				of_process_pipeline_tables_timeout_expirations(psw->logical_switches[i]);
+			if(logical_switches[i] != NULL){
+				of_process_pipeline_tables_timeout_expirations(logical_switches[i]);
 				
 #ifdef DEBUG
 				if(dummy%20 == 0)
-					of12_full_dump_switch((of12_switch_t*)psw->logical_switches[i]);
+					of12_full_dump_switch((of12_switch_t*)logical_switches[i]);
 #endif
 			}
 		}
@@ -258,11 +262,11 @@ int process_timeouts(physical_switch_t* psw)
 		uint32_t buffer_id;
 		datapacket_store_handle *dps=NULL;
 		
-		for(i=0; i<PHYSICAL_SWITCH_MAX_LS; i++){
+		for(i=0; i<max_switches; i++){
 
-			if(psw->logical_switches[i] != NULL){
+			if(logical_switches[i] != NULL){
 
-				dps = ( (struct logical_switch_internals*) psw->logical_switches[i]->platform_state)->store_handle ;
+				dps = ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->store_handle ;
 				//TODO process buffers in the storage
 				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
 
@@ -294,9 +298,6 @@ void* x86_background_tasks_routine(void* param)
 {
 	int i, efd, events_socket,nfds;
 	struct epoll_event event_list[MAX_EPOLL_EVENTS], epe_port;
-	physical_switch_t* psw;
-
-	psw = get_physical_switch();
 
 	// program an epoll that listents to the file descriptors of the ports with a
 	// timeout that makes us check 
@@ -335,7 +336,7 @@ void* x86_background_tasks_routine(void* param)
 
 		if(nfds==0){
 			//TIMEOUT PASSED
-			process_timeouts(psw);
+			process_timeouts();
 		}
 
 		for(i=0;i<nfds;i++){
@@ -351,7 +352,7 @@ void* x86_background_tasks_routine(void* param)
 					continue;
 			}
 			//check if there is a need of manage timers!
-			process_timeouts(psw);
+			process_timeouts();
 		}
 	}
 	

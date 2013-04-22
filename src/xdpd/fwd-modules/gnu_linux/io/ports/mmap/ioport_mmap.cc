@@ -60,6 +60,14 @@ ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id)
 	
 
 	if (of_port_state->up && of_port_state->forward_packets ) {
+
+		//Safe check for q_id
+		if(q_id >= get_num_of_queues()){
+			ROFL_DEBUG("[mmap:%s] Packet(%p) trying to be enqueued in an invalid q_id: %u\n",  of_port_state->name, pkt, q_id);
+			q_id = 0;
+			assert(0);
+		}
+	
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
 		output_queues[q_id].blocking_write(pkt);
 

@@ -67,24 +67,25 @@ void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int po
 
 std::list<std::string> port_manager::list_available_port_names() throw (eOfSmGeneralError){
 
-	unsigned int i;
+	unsigned int i, max_ports;
 	switch_port_t** ports;
 
 	std::list<std::string> port_name_list;
 	
 	//Call the forwarding module to list the ports
-	//FIXME XXX TODO use the appropiate AFA call instead
-	ports = fwd_module_get_physical_ports();
+	ports = fwd_module_get_physical_ports(&max_ports);
 	
 	if(!ports)
 		throw eOfSmGeneralError();
 
 	//Run over the ports and get the name
-	for(i=0;i<PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS;i++){
+	for(i=0;i<max_ports;i++){
 		if(ports[i])
 			port_name_list.push_back(std::string(ports[i]->name));
 			
 	}
+
+	//TODO: add virtual and tunnel. Calls already available in the AFA
 	
 	return port_name_list; 
 }

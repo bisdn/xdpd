@@ -85,22 +85,13 @@ afa_result_t fwd_module_init(){
 */
 afa_result_t fwd_module_destroy(){
 
-	physical_switch_t* psw;
-	int i;
-	
-	psw = get_physical_switch();
-	
 	//destroy group ports
 	iomanager_delete_group_wrapper(iomanager_grp_id);
 	
 	//Stop the bg manager
 	stop_background_tasks_manager();
 
-	//destroy ports
-	for(i=0;i<PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS;i++){
-		destroy_port(psw->physical_ports[i]);
-	}
-	
+	//Destroy physical switch (including ports)
 	physical_switch_destroy();
 	
 	// destroy bufferpool
@@ -232,10 +223,8 @@ switch_port_t* fwd_module_get_port_by_name(const char *name){
 * @ingroup port_management
 * @retval  Pointer to the first port. 
 */
-switch_port_t** fwd_module_get_physical_ports(){
-	physical_switch_t* psw;
-	psw = get_physical_switch();
-	return psw->physical_ports;
+switch_port_t** fwd_module_get_physical_ports(unsigned int* num_of_ports){
+	return physical_switch_get_physical_ports(num_of_ports);
 }
 
 /*
@@ -244,10 +233,8 @@ switch_port_t** fwd_module_get_physical_ports(){
 * @ingroup port_management
 * @retval  Pointer to the first port. 
 */
-switch_port_t** fwd_module_get_virtual_ports(){
-	physical_switch_t* psw;
-	psw = get_physical_switch();
-	return psw->virtual_ports;
+switch_port_t** fwd_module_get_virtual_ports(unsigned int* num_of_ports){
+	return physical_switch_get_virtual_ports(num_of_ports);
 }
 
 /*
@@ -256,10 +243,8 @@ switch_port_t** fwd_module_get_virtual_ports(){
 * @ingroup port_management
 * @retval  Pointer to the first port. 
 */
-switch_port_t** fwd_module_get_tunnel_ports(){
-	physical_switch_t* psw;
-	psw = get_physical_switch();
-	return psw->tunnel_ports;
+switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
+	return physical_switch_get_tunnel_ports(num_of_ports);
 }
 /*
 * @name    fwd_module_attach_physical_port_to_switch

@@ -187,12 +187,11 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
  *
  */
 afa_result_t discover_physical_ports(){
-	physical_switch_t* psw;
-	int index, sock;
+	
+	switch_port_t* port;
+	int sock;
 	
 	struct ifaddrs *ifaddr, *ifa;
-	
-	psw = get_physical_switch();
 	
 	/*real way to find interfaces*/
 	//getifaddrs(&ifap); -> there are examples on how to get the ip addresses
@@ -211,21 +210,16 @@ afa_result_t discover_physical_ports(){
 		
 		if(ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_PACKET)
 			continue;
-		
-		//look for an empty slot
-		for(index=0;index<PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS;index++){
-			if(psw->physical_ports[index] == NULL)
-				break;
-		}
-		if(index==PHYSICAL_SWITCH_MAX_NUM_PHY_PORTS){
+
+		//Fill port
+		port = fill_port(sock, ifa);
+
+		//Adding the 
+		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
 			ROFL_ERR("<%s:%d> All physical port slots are occupied\n",__func__, __LINE__);
 			freeifaddrs(ifaddr);
 			return AFA_FAILURE;
 		}
-
-		//here we call the function that fills the structure
-		if( (psw->physical_ports[index] = fill_port(sock, ifa)) == NULL )
-			return AFA_FAILURE;
 	}
 	
 	freeifaddrs(ifaddr);
@@ -244,7 +238,8 @@ afa_result_t destroy_port(switch_port_t* port){
 	ioport_instance = (ioport*)port->platform_port_state;	
 	delete ioport_instance;
 
-	if(switch_port_destroy(port) == ROFL_FAILURE)
+	//Delete port from the pipeline library
+	if(physical_switch_remove_port(port->name) == ROFL_FAILURE)
 		return AFA_FAILURE;
 
 	return AFA_SUCCESS;

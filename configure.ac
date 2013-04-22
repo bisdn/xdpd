@@ -1,4 +1,4 @@
-AC_INIT(xdpd, 0.2.11, rofl@bisdn.de, xdpd)
+AC_INIT(xdpd, 0.3, rofl@bisdn.de, xdpd)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_GNU_SOURCE

@@ -40,7 +40,7 @@ fi
 AM_CONDITIONAL(DEBUG, test "$enable_debug" = yes)
 
 # Application verbosity 
-AC_MSG_CHECKING(whether to output in verbose mode)
+AC_MSG_CHECKING(whether to print debug in verbose mode)
 AC_ARG_ENABLE(verbose,
 	AS_HELP_STRING([--verbose], [turn on verbose mode [default=no]])
 		, verbose_debug="yes", verbose_debug="no")
@@ -129,33 +129,6 @@ fi
 AC_MSG_RESULT($msg)
 AC_SUBST(PLATFORM)
 
-# Makefiles for gnu_linux
-#AM_COND_IF(ENABLE_GNU_LINUX_SUPPORT,[AC_CONFIG_FILES([
-#	src/xdpd/fwd-modules/gnu_linux/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/afa-imp/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/afa-imp/openflow/openflow12/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/io/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/io/packet_classifiers/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/io/ports/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/io/ports/mmap/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/io/ports/mockup/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/io/scheduler/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/pipeline-imp/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/processing/Makefile
-#	src/xdpd/fwd-modules/gnu_linux/util/Makefile
-#])])
-
-# Makefiles for gnu_linux_dpdk
-#AM_COND_IF(ENABLE_GNU_LINUX_DPDK_SUPPORT,[AC_CONFIG_FILES([
-#	src/xdpd/fwd-modules/gnu_linux_dpdk/Makefile
-#])])
-
-# Makefiles for octeon
-#AM_COND_IF(ENABLE_OCTEON_SUPPORT,[AC_CONFIG_FILES([
-#	src/xdpd/fwd-modules/octeon5650/Makefile
-#])])
-
-
 # TODO: make the configuration front ends configureable, as soon as we have more than the cli
 AC_DEFINE(HAVE_CONFIG_CLI)
 AM_CONDITIONAL(ENABLE_CONFIG_CLI,[true])
@@ -172,6 +145,7 @@ AC_CHECK_LIB(cli, cli_telnet_protocol,,[AC_MSG_ERROR([cli library not found])])
 #AC_SEARCH_LIBS(physical_switch_init, lrofl_pipeline,,[AC_MSG_ERROR([rofl_pipeline library not found])],)
 
 # AC_CONFIG_HEADERS([include/config.h])
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
@@ -180,19 +154,13 @@ AC_CONFIG_FILES([
 	src/xdpd/management/Makefile
 	src/xdpd/openflow/Makefile
 	src/xdpd/openflow/openflow12/Makefile
-
-	test/Makefile
-	test/xdpd/Makefile
-	test/xdpd/fwd-modules/Makefile
-	test/xdpd/fwd-modules/gnu_linux/Makefile
-	test/xdpd/fwd-modules/gnu_linux/regression/Makefile
-	test/xdpd/fwd-modules/gnu_linux/regression/io/Makefile
-	test/xdpd/fwd-modules/gnu_linux/regression/processing/Makefile
-	test/xdpd/fwd-modules/gnu_linux/unit/Makefile
-	test/xdpd/fwd-modules/gnu_linux/unit/util/Makefile
-	test/xdpd/fwd-modules/gnu_linux/unit/io/Makefile
-
-	doc/Makefile
 ])
+
+
+#	test/Makefile
+#	test/xdpd/Makefile
+#
+#	doc/Makefile
+#])
 
 AC_OUTPUT

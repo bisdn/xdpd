@@ -16,8 +16,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <rofl/datapath/pipeline/switch_port.h>
-#include "xdpd/fwd-modules/gnu_linux/io/ports/mmap/ioport_mmap.h"
-#include "xdpd/fwd-modules/gnu_linux/io/bufferpool.h"
+#include "io/ports/mmap/ioport_mmap.h"
+#include "io/bufferpool.h"
 
 using namespace std;
 

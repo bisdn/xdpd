@@ -15,6 +15,60 @@ AUTOCONF_ENV="SHELL=/bin/sh"
 LT_INIT
 AC_ENABLE_STATIC
 
+# default flags
+CFLAGS="-Werror -Wall -Wl,-export-dynamic $CFLAGS"
+CXXFLAGS="-Werror -Wall -Wl,-export-dynamic $CXXFLAGS"
+AC_DEFINE(__STDC_FORMAT_MACROS)
+
+# Check for debug mode - MUST BE THE FIRST CHECK
+AC_MSG_CHECKING(whether to enable debug mode)
+debug_default="no"
+AC_ARG_ENABLE(debug,
+	AS_HELP_STRING([--enable-debug], [turn on debug mode [default=no]])
+		, , enable_debug=$debug_default)
+if test "$enable_debug" = "yes"; then
+	CFLAGS="$CFLAGS -g -O0"
+	CXXFLAGS="$CXXFLAGS -g -O0 -fno-inline"
+	AC_DEFINE(DEBUG)
+	AC_MSG_RESULT(yes)
+else
+	CFLAGS="$CFLAGS -O3" #--compiler-options -fno-strict-aliasing --compiler-options -fno-inline
+	CXXFLAGS="$CXXFLAGS -O3" #-fomit-frame-pointer"
+	AC_DEFINE(NDEBUG)
+	AC_MSG_RESULT(no)
+fi
+AM_CONDITIONAL(DEBUG, test "$enable_debug" = yes)
+
+# Application verbosity 
+AC_MSG_CHECKING(whether to print debug in verbose mode)
+AC_ARG_ENABLE(verbose,
+	AS_HELP_STRING([--verbose], [turn on verbose mode [default=no]])
+		, verbose_debug="yes", verbose_debug="no")
+if test "$verbose_debug" = "yes"; then
+	CFLAGS="$CFLAGS -DVERBOSE_DEBUG" 
+	CXXFLAGS="$CXXFLAGS -DVERBOSE_DEBUG" 
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
+
+# Check for profiling mode
+AC_MSG_CHECKING(whether to enable profiling mode)
+profile_default="no"
+AC_ARG_ENABLE(profile,
+	AS_HELP_STRING([--enable-profile], [turn on profile mode [default=no]])
+		, , enable_profile=$profile_default)
+if test "$enable_profile" = "yes"; then
+	CFLAGS="$( echo $CFLAGS | sed s/-fomit-frame-pointer//g )"
+	CXXFLAGS="$( echo $CXXFLAGS | sed s/-fomit-frame-pointer//g )"
+	CFLAGS="$CFLAGS -pg"
+	CXXFLAGS="$CXXFLAGS -pg"
+	LDFLAGS="$LDFLAGS -pg"
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
@@ -30,29 +84,13 @@ AC_CONFIG_FILES([
 	src/processing/Makefile
 	src/util/Makefile
 
+	test/Makefile
+	test/regression/Makefile
+	test/regression/io/Makefile
+	test/regression/processing/Makefile
+	test/unit/Makefile
+	test/unit/util/Makefile
+	test/unit/io/Makefile
 ])
-
-#	src/Makefile
-#	src/xdpd/Makefile
-#	src/xdpd/management/Makefile
-	
-#	src/xdpd/fwd-modules/Makefile
-	
-#	src/xdpd/openflow/Makefile
-#	src/xdpd/openflow/openflow12/Makefile
-
-#	test/Makefile
-#	test/xdpd/Makefile
-#	test/xdpd/fwd-modules/Makefile
-#	test/xdpd/fwd-modules/gnu_linux/Makefile
-#	test/xdpd/fwd-modules/gnu_linux/regression/Makefile
-#	test/xdpd/fwd-modules/gnu_linux/regression/io/Makefile
-#	test/xdpd/fwd-modules/gnu_linux/regression/processing/Makefile
-#	test/xdpd/fwd-modules/gnu_linux/unit/Makefile
-#	test/xdpd/fwd-modules/gnu_linux/unit/util/Makefile
-#	test/xdpd/fwd-modules/gnu_linux/unit/io/Makefile
-
-#	doc/Makefile
-#])
 
 AC_OUTPUT

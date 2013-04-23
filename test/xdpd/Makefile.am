@@ -1,5 +1,5 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = fwd-modules 
+SUBDIRS = unit regression 
 
 

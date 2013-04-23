@@ -26,7 +26,7 @@
 #include <rofl/common/protocols/fpppframe.h>
 #include <rofl/common/protocols/fipv4frame.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
-#include "xdpd/fwd-modules/gnu_linux/io/datapacketx86.h"
+#include "io/datapacketx86.h"
 
 
 using namespace rofl;

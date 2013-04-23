@@ -8,10 +8,10 @@
 #include <stdio.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include "xdpd/fwd-modules/gnu_linux/util/ringbuffer.h"
-#include "xdpd/fwd-modules/gnu_linux/io/iomanager.h"
-#include "xdpd/fwd-modules/gnu_linux/io/ports/mmap/ioport_mmap.h"
-#include "xdpd/fwd-modules/gnu_linux/processing/processingmanager.h"
+#include "util/ringbuffer.h"
+#include "io/iomanager.h"
+#include "io/ports/mmap/ioport_mmap.h"
+#include "processing/processingmanager.h"
 
 /**
  * This test must check if the proper messages to hcl

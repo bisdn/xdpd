@@ -10,11 +10,11 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "xdpd/fwd-modules/gnu_linux/io/datapacketx86_c_wrapper.h"
-#include "xdpd/fwd-modules/gnu_linux/io/bufferpool_c_wrapper.h"
+#include "io/datapacketx86_c_wrapper.h"
+#include "io/bufferpool_c_wrapper.h"
 
-#include "xdpd/fwd-modules/gnu_linux/ls_internal_state.h"
-#include "xdpd/fwd-modules/gnu_linux/io/datapacket_storage_c_wrapper.h"
+#include "ls_internal_state.h"
+#include "io/datapacket_storage_c_wrapper.h"
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
 
 

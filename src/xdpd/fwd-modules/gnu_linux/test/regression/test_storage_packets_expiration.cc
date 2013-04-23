@@ -9,9 +9,9 @@
 #include <unistd.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include "xdpd/fwd-modules/gnu_linux/ls_internal_state.h"
-#include "xdpd/fwd-modules/gnu_linux/io/datapacket_storage.h"
-#include "xdpd/fwd-modules/gnu_linux/bg_taskmanager.h"
+#include "ls_internal_state.h"
+#include "io/datapacket_storage.h"
+#include "bg_taskmanager.h"
 
 #define TEST_DPID 0x1015
 #define EXPIRATION_TIME 3

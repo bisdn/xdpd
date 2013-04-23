@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include "xdpd/fwd-modules/gnu_linux/io/datapacket_storage.h"
+#include "io/datapacket_storage.h"
 
 #define STORE_SIZE 15
 #define EXPIRATION_SEC 3

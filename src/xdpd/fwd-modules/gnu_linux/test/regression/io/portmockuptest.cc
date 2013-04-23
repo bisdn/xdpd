@@ -13,11 +13,11 @@
 #include <pthread.h>
 #include <rofl/pipeline/common/datapacket.h>
 #include <rofl/pipeline/switch_port.h>
-#include "drivers/x86/util/ringbuffer.h"
-#include "drivers/x86/io/scheduler/epoll_ioscheduler.h"
-#include "drivers/x86/io/ports/mockup/ioport_mockup.h"
-#include "drivers/x86/io/iomanager.h"
-#include "drivers/x86/io/bufferpool.h"
+#include "util/ringbuffer.h"
+#include "io/scheduler/epoll_ioscheduler.h"
+#include "io/ports/mockup/ioport_mockup.h"
+#include "io/iomanager.h"
+#include "io/bufferpool.h"
 
 using namespace std;
 

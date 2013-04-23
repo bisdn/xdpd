@@ -1,6 +1,5 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = gnu_linux #octeon5650
+SUBDIRS = unit regression 
 
 export INCLUDES += -I$(abs_srcdir)/../src/
-

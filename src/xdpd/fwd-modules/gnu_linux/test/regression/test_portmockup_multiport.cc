@@ -10,11 +10,11 @@
 #include <rofl.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include "xdpd/fwd-modules/gnu_linux/ls_internal_state.h"
-#include "xdpd/fwd-modules/gnu_linux/util/ringbuffer.h"
-#include "xdpd/fwd-modules/gnu_linux/io/iomanager.h"
-#include "xdpd/fwd-modules/gnu_linux/io/ports/mockup/ioport_mockup.h"
-#include "xdpd/fwd-modules/gnu_linux/processing/processingmanager.h"
+#include "ls_internal_state.h"
+#include "util/ringbuffer.h"
+#include "io/iomanager.h"
+#include "io/ports/mockup/ioport_mockup.h"
+#include "processing/processingmanager.h"
 
 
 #define TEST_DPID 0x1015

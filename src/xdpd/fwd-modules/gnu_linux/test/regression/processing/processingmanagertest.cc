@@ -16,12 +16,12 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/matching_algorithms/matching_algorithms_available.h>
-#include "xdpd/fwd-modules/gnu_linux/util/ringbuffer.h"
-#include "xdpd/fwd-modules/gnu_linux/io/iomanager.h"
-#include "xdpd/fwd-modules/gnu_linux/io/bufferpool.h"
-#include "xdpd/fwd-modules/gnu_linux/processing/processingmanager.h"
-#include "xdpd/fwd-modules/gnu_linux/ls_internal_state.h"
-#include "xdpd/fwd-modules/gnu_linux/util/ringbuffer_c_wrapper.h"
+#include "util/ringbuffer.h"
+#include "io/iomanager.h"
+#include "io/bufferpool.h"
+#include "processing/processingmanager.h"
+#include "ls_internal_state.h"
+#include "util/ringbuffer_c_wrapper.h"
 
 #ifndef DEBUG
 	#error "This test can only run in debug mode..."

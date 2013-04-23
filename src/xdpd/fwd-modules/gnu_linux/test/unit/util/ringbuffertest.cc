@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
-#include "xdpd/fwd-modules/gnu_linux/util/ringbuffer.h"
+#include "util/ringbuffer.h"
 
 using namespace std;
 

@@ -12,11 +12,11 @@
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
 
 
-#include "xdpd/fwd-modules/gnu_linux/io/datapacketx86.h"
-#include "xdpd/fwd-modules/gnu_linux/io/datapacketx86_c_wrapper.h"
-#include "xdpd/fwd-modules/gnu_linux/io/datapacket_storage_c_wrapper.h"
-#include "xdpd/fwd-modules/gnu_linux/io/bufferpool.h"
-#include "xdpd/fwd-modules/gnu_linux/ls_internal_state.h"
+#include "io/datapacketx86.h"
+#include "io/datapacketx86_c_wrapper.h"
+#include "io/datapacket_storage_c_wrapper.h"
+#include "io/bufferpool.h"
+#include "ls_internal_state.h"
 
 
 #define DATAPACKET_STORE_EXPIRATION_TIME 60

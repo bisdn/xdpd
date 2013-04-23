@@ -86,6 +86,9 @@ AC_ARG_ENABLE(bcm,
 AC_ARG_ENABLE(octeon,
 	AS_HELP_STRING([--enable-octeon], [compile OCTEON 5650 hardware support [default=no]])
 			, , enable_octeon="no")
+AC_ARG_ENABLE(example,
+	AS_HELP_STRING([--enable-example], [compile the platform example code [default=no]])
+			, , enable_example="no")
 #[+] Add your platform here
 
 
@@ -94,7 +97,8 @@ AC_ARG_ENABLE(octeon,
 if ( test "$enable_gnu_linux_dpdk" = "no" ) &&
 	( test "$enable_gnu_linux" = "no" ) &&
 	( test "$enable_bcm" = "no" ) &&
-	( test "$enable_octeon" = "no" ); then
+	( test "$enable_octeon" = "no" ) &&
+	( test "$example" = "no" ); then
 	enable_gnu_linux="yes"
 fi
 
@@ -122,6 +126,12 @@ if( test "$enable_octeon" = "yes" );then
 	AC_DEFINE(ENABLE_OCTEON5650)
 	PLATFORM=octeon5650
 	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/octeon5650])
+fi
+if( test "$enable_example" = "yes" );then
+	msg="$msg Example platform"
+	AC_DEFINE(ENABLE_EXAMPLE)
+	PLATFORM=example
+	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/example])
 fi
 #[+]Add your platform here...
 

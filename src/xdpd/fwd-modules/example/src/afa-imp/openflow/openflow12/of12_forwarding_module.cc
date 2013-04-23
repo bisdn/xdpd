@@ -23,7 +23,7 @@
  */
 afa_result_t fwd_module_of12_set_port_drop_received_config(uint64_t dpid, unsigned int port_num, bool drop_received){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 
 	return AFA_SUCCESS;
 }
@@ -39,7 +39,7 @@ afa_result_t fwd_module_of12_set_port_drop_received_config(uint64_t dpid, unsign
  */
 afa_result_t fwd_module_of12_set_port_forward_config(uint64_t dpid, unsigned int port_num, bool forward){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return AFA_SUCCESS;
 }
@@ -54,7 +54,7 @@ afa_result_t fwd_module_of12_set_port_forward_config(uint64_t dpid, unsigned int
  */
 afa_result_t fwd_module_of12_set_port_generate_packet_in_config(uint64_t dpid, unsigned int port_num, bool generate_packet_in){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return AFA_SUCCESS;
 }
@@ -70,7 +70,7 @@ afa_result_t fwd_module_of12_set_port_generate_packet_in_config(uint64_t dpid, u
  */
 afa_result_t fwd_module_of12_set_port_advertise_config(uint64_t dpid, unsigned int port_num, uint32_t advertise){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return AFA_SUCCESS;
 }
@@ -86,7 +86,7 @@ afa_result_t fwd_module_of12_set_port_advertise_config(uint64_t dpid, unsigned i
  */
 afa_result_t fwd_module_of12_set_pipeline_config(uint64_t dpid, unsigned int flags, uint16_t miss_send_len){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 
 	return AFA_SUCCESS;
 }
@@ -102,7 +102,7 @@ afa_result_t fwd_module_of12_set_pipeline_config(uint64_t dpid, unsigned int fla
  */
 afa_result_t fwd_module_of12_set_table_config(uint64_t dpid, unsigned int table_id, of12_flow_table_miss_config_t config){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 
 	return AFA_SUCCESS;
 }
@@ -122,7 +122,7 @@ afa_result_t fwd_module_of12_set_table_config(uint64_t dpid, unsigned int table_
 afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_id, uint32_t in_port, of12_action_group_t* action_group, uint8_t* buffer, uint32_t buffer_size)
 {
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return AFA_SUCCESS;
 }
@@ -143,7 +143,7 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 
 afa_result_t fwd_module_of12_process_flow_mod_add(uint64_t dpid, uint8_t table_id, of12_flow_entry_t* flow_entry, uint32_t buffer_id, bool check_overlap, bool reset_counts){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return AFA_SUCCESS;
 }
@@ -161,7 +161,7 @@ afa_result_t fwd_module_of12_process_flow_mod_add(uint64_t dpid, uint8_t table_i
  */
 afa_result_t fwd_module_of12_process_flow_mod_modify(uint64_t dpid, uint8_t table_id, of12_flow_entry_t* flow_entry, of12_flow_removal_strictness_t strictness, bool reset_counts){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 
 	return AFA_SUCCESS;
 }
@@ -182,7 +182,7 @@ afa_result_t fwd_module_of12_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
  */
 afa_result_t fwd_module_of12_process_flow_mod_delete(uint64_t dpid, uint8_t table_id, of12_flow_entry_t* flow_entry, uint32_t buffer_id, uint32_t out_port, uint32_t out_group, of12_flow_removal_strictness_t strictness){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return AFA_SUCCESS;
 } 
@@ -206,9 +206,9 @@ afa_result_t fwd_module_of12_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
  */
 of12_stats_flow_msg_t* fwd_module_of12_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of12_match_t* matchs){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return of12_get_flow_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matchs);
+	return NULL; 
 }
 
  
@@ -227,7 +227,7 @@ of12_stats_flow_msg_t* fwd_module_of12_get_flow_stats(uint64_t dpid, uint8_t tab
  */
 of12_stats_flow_aggregate_msg_t* fwd_module_of12_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of12_match_t* matchs){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 
 	return NULL; 
 } 
@@ -240,7 +240,7 @@ of12_stats_flow_aggregate_msg_t* fwd_module_of12_get_flow_aggregate_stats(uint64
  */
 of12_group_mod_err_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return OF12_GROUP_MOD_ERR_OK;
 }
@@ -254,7 +254,7 @@ of12_group_mod_err_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_typ
  */
 of12_group_mod_err_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return OF12_GROUP_MOD_ERR_OK;
 }
@@ -268,7 +268,7 @@ of12_group_mod_err_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_
  */
 of12_group_mod_err_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t id){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return OF12_GROUP_MOD_ERR_OK;
 }
@@ -282,8 +282,7 @@ of12_group_mod_err_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t id
  */
 of12_stats_group_msg_t * fwd_module_of12_get_group_stats(uint64_t dpid, uint32_t id){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNC__);
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return OF12_GROUP_MOD_ERR_OK;
-
+	return NULL; 
 }

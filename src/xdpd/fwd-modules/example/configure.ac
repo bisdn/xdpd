@@ -74,6 +74,7 @@ AC_CONFIG_FILES([
 	src/Makefile
 	src/afa-imp/Makefile
 	src/afa-imp/openflow/openflow12/Makefile
+	src/pipeline-imp/Makefile
 ])
 
 AC_OUTPUT

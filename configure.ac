@@ -87,7 +87,7 @@ AC_ARG_ENABLE(octeon,
 	AS_HELP_STRING([--enable-octeon], [compile OCTEON 5650 hardware support [default=no]])
 			, , enable_octeon="no")
 AC_ARG_ENABLE(example,
-	AS_HELP_STRING([--enable-example], [compile the platform example code [default=no]])
+	AS_HELP_STRING([--enable-example], [compile the Forwarding Module example code [default=no]])
 			, , enable_example="no")
 #[+] Add your platform here
 
@@ -95,11 +95,13 @@ AC_ARG_ENABLE(example,
 #Make default GNU/Linux if not defined. 
 #[+] Makesure you add your platform here
 if ( test "$enable_gnu_linux_dpdk" = "no" ) &&
-	( test "$enable_gnu_linux" = "no" ) &&
-	( test "$enable_bcm" = "no" ) &&
-	( test "$enable_octeon" = "no" ) &&
-	( test "$example" = "no" ); then
-	enable_gnu_linux="yes"
+   ( test "$enable_gnu_linux" = "no" ) &&
+   ( test "$enable_bcm" = "no" ) &&
+   ( test "$enable_octeon" = "no" ) &&
+   ( test "$enable_example" = "no" ); then
+   
+   enable_gnu_linux="yes"
+
 fi
 
 #Print messages

@@ -1,15 +1,7 @@
-/*
- * memory.c
- *
- *  Created on: Nov 29, 2012
- *      Author: tobi
- */
-
-// #include "../memory.h"
-
 #include <stdlib.h>
 #include <string.h>
 
+#include <rofl/datapath/pipeline/platform/memory.h>
 
 /*
  * malloc and free should be replaced if necessary by platform specific memory allocators

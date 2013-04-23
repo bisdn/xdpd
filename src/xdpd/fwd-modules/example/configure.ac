@@ -1,4 +1,4 @@
-AC_INIT(xdpd - GNU/Linux fwd-module, 0.3, rofl@bisdn.de, xdpd_gnu_linux_fm)
+AC_INIT(xdpd - Example fwd-module, 0.3, rofl@bisdn.de,  xdpd_example_fm)
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
@@ -74,23 +74,6 @@ AC_CONFIG_FILES([
 	src/Makefile
 	src/afa-imp/Makefile
 	src/afa-imp/openflow/openflow12/Makefile
-	src/io/Makefile
-	src/io/packet_classifiers/Makefile
-	src/io/ports/Makefile
-	src/io/ports/mmap/Makefile
-	src/io/ports/mockup/Makefile
-	src/io/scheduler/Makefile
-	src/pipeline-imp/Makefile
-	src/processing/Makefile
-	src/util/Makefile
-
-	test/Makefile
-	test/regression/Makefile
-	test/regression/io/Makefile
-	test/regression/processing/Makefile
-	test/unit/Makefile
-	test/unit/util/Makefile
-	test/unit/io/Makefile
 ])
 
 AC_OUTPUT

@@ -1,5 +1,10 @@
 Brief:
-	The contents of this folder are the implementation for a generic GNU/Linux OS Abstract Forwarding API (AFA) forwarding module. Please have a look to ROFL-AFA for more details.
+	The content of this folder is the implementation of the generic GNU/Linux OS (AFA-compliant) forwarding module. Please have a look to ROFL-AFA for more details
+	about the Astract Forwarding API (AFA). 
+
+Comments:
+	This forwarding module makes extensive use of the ROFL-pipeline library. 
+	For more information about the architecture of this forwarding module, please have on the xDPD wiki.
 
 Folder structure and some files:
 	- afa-imp: Abstract Forwarding API implementation (forwarding module end) 

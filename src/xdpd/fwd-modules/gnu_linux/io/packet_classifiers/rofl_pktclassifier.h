@@ -28,7 +28,10 @@ public:
 	{
 		fhead = ftail = NULL;
 	}; 
-	virtual ~rofl_pktclassifier(){}; 
+	virtual ~rofl_pktclassifier()
+	{
+		classify_reset();
+	};
 
 	/*
 	* Main classification methods. 

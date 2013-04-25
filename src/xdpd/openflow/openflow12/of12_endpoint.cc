@@ -588,6 +588,7 @@ of12_endpoint::process_packet_in(
 		cpacket pack(pkt_buffer, buf_len, in_port, true);
 
 		send_packet_in_message(
+				NULL,
 				buffer_id,
 				total_len,
 				reason,
@@ -598,6 +599,10 @@ of12_endpoint::process_packet_in(
 				pkt_buffer, buf_len);
 
 		return AFA_SUCCESS;
+
+	} catch (eRofBaseNotConnected& e) {
+
+		// TODO: delete message
 
 	} catch (...) {
 
@@ -635,7 +640,7 @@ afa_result_t of12_endpoint::notify_port_add(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(OFPPR_ADD, ofport);
+	send_port_status_message(NULL, OFPPR_ADD, ofport);
 
 	return AFA_SUCCESS;
 }
@@ -664,7 +669,7 @@ afa_result_t of12_endpoint::notify_port_delete(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(OFPPR_DELETE, ofport);
+	send_port_status_message(NULL, OFPPR_DELETE, ofport);
 
 	return AFA_SUCCESS;
 }
@@ -694,7 +699,7 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(OFPPR_MODIFY, ofport);
+	send_port_status_message(NULL, OFPPR_MODIFY, ofport);
 
 	return AFA_SUCCESS; // ignore this notification
 }

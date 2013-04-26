@@ -942,7 +942,7 @@ of12_endpoint::handle_group_mod(
 	}
 #endif
 
-	of12_group_mod_err_t ret_val;
+	rofl_of12_gm_result_t ret_val;
  	of12_bucket_list_t* bucket_list=of12_init_bucket_list();
 	
 	switch(msg->get_command()){
@@ -961,56 +961,56 @@ of12_endpoint::handle_group_mod(
 			break;
 		
 		default:
-			ret_val = OF12_GROUP_MOD_ERR_BCOMMAND;
+			ret_val = ROFL_OF12_GM_BCOMMAND;
 			break;
 	}
 
 	switch(ret_val){
-		case OF12_GROUP_MOD_ERR_OK:
+		case ROFL_OF12_GM_OK:
 			break;
-		case OF12_GROUP_MOD_ERR_EXISTS:
+		case ROFL_OF12_GM_EXISTS:
 			throw eGroupModExists();
 			break;
-		case OF12_GROUP_MOD_ERR_INVAL:
+		case ROFL_OF12_GM_INVAL:
 			throw eGroupModInvalGroup();
 			break;
-		case OF12_GROUP_MOD_ERR_WEIGHT:
+		case ROFL_OF12_GM_WEIGHT:
 			throw eGroupModWeightUnsupported();
 			break;
-		case OF12_GROUP_MOD_ERR_OGRUPS:
+		case ROFL_OF12_GM_OGRUPS:
 			throw eGroupModOutOfGroups();
 			break;
-		case OF12_GROUP_MOD_ERR_OBUCKETS:
+		case ROFL_OF12_GM_OBUCKETS:
 			throw eGroupModOutOfBuckets();
 			break;
-		case OF12_GROUP_MOD_ERR_CHAIN:
+		case ROFL_OF12_GM_CHAIN:
 			throw eGroupModChainingUnsupported();
 			break;
-		case OF12_GROUP_MOD_ERR_WATCH:
+		case ROFL_OF12_GM_WATCH:
 			throw eGroupModWatchUnsupported();
 			break;
-		case OF12_GROUP_MOD_ERR_LOOP:
+		case ROFL_OF12_GM_LOOP:
 			throw eGroupModLoop();
 			break;
-		case OF12_GROUP_MOD_ERR_UNKGRP:
+		case ROFL_OF12_GM_UNKGRP:
 			throw eGroupModUnknownGroup();
 			break;
-		case OF12_GROUP_MOD_ERR_CHNGRP:
+		case ROFL_OF12_GM_CHNGRP:
 			throw eGroupModChainedGroup();
 			break;
-		case OF12_GROUP_MOD_ERR_BTYPE:
+		case ROFL_OF12_GM_BTYPE:
 			throw eGroupModBadType();
 			break;
-		case OF12_GROUP_MOD_ERR_BCOMMAND:
+		case ROFL_OF12_GM_BCOMMAND:
 			throw eGroupModBadCommand();
 			break;
-		case OF12_GROUP_MOD_ERR_BBUCKET:
+		case ROFL_OF12_GM_BBUCKET:
 			throw eGroupModBadBucket();
 			break;
-		case OF12_GROUP_MOD_ERR_BWATCH:
+		case ROFL_OF12_GM_BWATCH:
 			throw eGroupModBadWatch();
 			break;
-		case OF12_GROUP_MOD_ERR_EPERM:
+		case ROFL_OF12_GM_EPERM:
 			throw eGroupModEperm();
 			break;
 		default:

@@ -189,12 +189,15 @@ afa_result_t fwd_module_of12_set_table_config(uint64_t dpid, unsigned int table_
 	}	
 
 	//Simply store the new config
-	if( table_id != OF12_FLOW_TABLE_ALL ){
-		lsw->pipeline->tables[table_id].default_action = config;
-	}else{
+	if( table_id == OF12_FLOW_TABLE_ALL ){
 		for( i=0; i < lsw->pipeline->num_of_tables; i++){
 			lsw->pipeline->tables[i].default_action = config;
 		}
+		
+	}else if(table_id < lsw->pipeline->num_of_tables){
+		lsw->pipeline->tables[table_id].default_action = config;
+	}else{
+		return AFA_FAILURE;
 	}
 
 	return AFA_SUCCESS;
@@ -457,7 +460,7 @@ of12_stats_flow_aggregate_msg_t* fwd_module_of12_get_flow_aggregate_stats(uint64
  *
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
-of12_group_mod_err_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
+rofl_of12_gm_result_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
 	
 	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
@@ -471,7 +474,7 @@ of12_group_mod_err_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_typ
  *
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
-of12_group_mod_err_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
+rofl_of12_gm_result_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
 	
 	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
@@ -485,7 +488,7 @@ of12_group_mod_err_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_
  *
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
-of12_group_mod_err_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t id){
+rofl_of12_gm_result_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t id){
 	
 	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	

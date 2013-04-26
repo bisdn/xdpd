@@ -182,7 +182,10 @@ afa_result_t fwd_module_of12_set_table_config(uint64_t dpid, unsigned int table_
 	lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
 	//Check switch and port
-	if(!lsw || lsw->of_ver != OF_VERSION_12) {
+	if(!lsw || 
+		lsw->of_ver != OF_VERSION_12 || 
+		( (table_id != OF12_FLOW_TABLE_ALL) && (table_id >= lsw->pipeline->num_of_tables) )
+	) {
 		//TODO: log this... should never happen
 		assert(0);
 		return AFA_FAILURE;
@@ -193,11 +196,8 @@ afa_result_t fwd_module_of12_set_table_config(uint64_t dpid, unsigned int table_
 		for( i=0; i < lsw->pipeline->num_of_tables; i++){
 			lsw->pipeline->tables[i].default_action = config;
 		}
-		
-	}else if(table_id < lsw->pipeline->num_of_tables){
-		lsw->pipeline->tables[table_id].default_action = config;
 	}else{
-		return AFA_FAILURE;
+		lsw->pipeline->tables[table_id].default_action = config;
 	}
 
 	return AFA_SUCCESS;

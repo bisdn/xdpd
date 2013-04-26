@@ -143,7 +143,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
 		//FIXME change this messages into warnings "Unable to discover mac address of interface %s"
-		ROFL_WARN("WARNING: unable to MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
+		ROFL_WARN("WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
 	}
 	
 	//Init the port

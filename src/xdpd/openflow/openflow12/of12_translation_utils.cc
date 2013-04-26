@@ -996,7 +996,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_instruction(
 	} break;
 	case OF12_IT_WRITE_ACTIONS: {
 		instruction = cofinst_write_actions();
-		for (unsigned int i = 0; i < (sizeof(inst->write_actions->write_actions) / sizeof(of12_write_actions_t)); i++) {
+		for (unsigned int i = 0; i < OF12_IT_GOTO_TABLE; i++) {
 			if (OF12_AT_NO_ACTION == inst->write_actions->write_actions[i].type)
 				continue;
 			cofaction action;

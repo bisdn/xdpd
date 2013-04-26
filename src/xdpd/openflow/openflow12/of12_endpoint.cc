@@ -492,9 +492,13 @@ of12_endpoint::handle_group_desc_stats_request(
 		cofctl *ctl,
 		cofmsg_group_desc_stats_request *msg)
 {
-	std::vector<cofgroup_desc_stats_reply> group_desc_stats(ctl->get_version());
+	std::vector<cofgroup_desc_stats_reply> group_desc_stats;
 
 	//TODO: fill in std::vector<...> group_desc_stats, when groups are implemented
+#if 0
+	group_desc_stats.push_back(cofgroup_desc_stats_reply(ctl->get_version()));
+#endif
+
 
 	send_group_desc_stats_reply(
 			ctl,
@@ -602,7 +606,7 @@ of12_endpoint::process_packet_in(
 
 	} catch (eRofBaseNotConnected& e) {
 
-		// TODO: delete message
+		return AFA_FAILURE;
 
 	} catch (...) {
 

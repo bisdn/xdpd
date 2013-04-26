@@ -294,7 +294,7 @@ cmd_openflow_datapath_create(struct cli_def *cli, const char *command, char *arg
 
 	}
 
-	int ma_list[] = { 0 };
+	int ma_list[256] = { 0 };
 	switch_manager::create_switch(version, dp_id, dp_name, no_tables, ma_list, rpc_ctl_addr, rpc_dpt_addr);
 
     return CLI_OK;

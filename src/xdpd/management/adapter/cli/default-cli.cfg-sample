@@ -5,7 +5,7 @@ set debuglevel cthread warn
 configure terminal
 openflow
 # do not change the order of parameters (parameters can be omitted from rtl)
-create dp0 1544 3 1
+create dp0 1544 3 8
 configure dp0
 attach_port veth0 1
 attach_port veth2 2

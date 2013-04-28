@@ -130,6 +130,11 @@ public:
 	 */
 	static std::list<std::string> list_sw_names(void);
 
+	/**
+	 * List available matching algorithms
+	 */
+	static std::list<std::string> list_matching_algorithms();
+
 
 };
 

@@ -6,6 +6,8 @@
 #include "../openflow/openflow_switch.h"
 #include "../openflow/openflow12/openflow12_switch.h"
 
+#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/matching_algorithms/matching_algorithms_available.h>
+
 using namespace rofl;
 
 const caddress switch_manager::controller_addr = caddress(AF_INET, "127.0.0.1", 6633);
@@ -131,3 +133,16 @@ std::list<std::string> switch_manager::list_sw_names(void){
 	return name_list;	
 }
 
+/* static */std::list<std::string>
+list_matching_algorithms()
+{
+	std::list<std::string> matching_algorithms;
+	int i;
+	const char * const names[] = MATCHING_ALGORITHM_NAMES;
+
+	for (i = 0; i < matching_algorithm_count; i++) {
+		matching_algorithms.push_back(std::string(names[i]));
+	}
+
+	return matching_algorithms;
+}

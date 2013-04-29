@@ -428,8 +428,81 @@ of12_endpoint::handle_queue_stats_request(
 		cofmsg_queue_stats_request *pack)
 {
 
-	//TODO FIXME
+#if 0
+	switch_port_t* port;
+	unsigned int portnum = 0;//pack->get_port_no(); 
+	unsigned int queue_id = 0;//pack->get_queue_id(); 
+
+	cofmsg_queue_stats_reply reply(OFP12_VERSION); //, portnum, queue_id, 0, 0, 0);
+
+	if( (portnum >= of12switch->max_ports && port_num != OFPP_ANY) || portnum == 0){
+		//Invalid port num
+		assert(0);
 	
+		delete pack;
+		return;
+	}
+
+	/*
+	* port num
+	*/
+	if (OFPP_ANY == port_no){
+		//All ports
+		unsigned int tx_bytes = 0;
+		unsigned int tx_packets = 0;
+		unsigned int tx_errors = 0;
+
+		//we check all the positions in case there are empty slots
+		for (unsigned int n = 1; n < of12switch->max_ports; n++){
+	
+			port = of12switch->logical_ports[n].port; 
+
+			if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) && (port->of_port_num == portnum)){
+
+				//Check if the queue is really in use
+				if(port->queues[queue_id].use){
+					//Set values
+					tx_bytes += port->queues[queue_id].stats.tx_bytes;
+					tx_packets += port->queues[queue_id].stats.tx_packets;
+					tx_errors += port->queues[queue_id].stats.tx_errors;
+				}
+			}
+		}
+
+		//Set values
+		reply.set_tx_bytes(tx_bytes);
+		reply.set_tx_packets(tx_packets);
+		reply.set_tx_errors(tx_errors);
+
+		//Send reply
+		//send_queue_get_config_reply(ctl, reply);
+
+		delete pack;
+		return;
+
+	}else{
+		//Single port
+		port = of12switch->logical_ports[n].port; 
+
+		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) && (port->of_port_num == portnum)){
+
+			//Check if the queue is really in use
+			if(port->queues[queue_id].use){
+				//Set values
+				reply.set_tx_bytes(port->queues[queue_id].stats.tx_bytes);
+				reply.set_tx_packets(port->queues[queue_id].stats.tx_packets);
+				reply.set_tx_errors(port->queues[queue_id].stats.tx_errors);
+
+				//Send reply
+				//send_queue_get_config_reply(ctl, reply);
+
+				delete pack;
+				return;
+			}
+		}
+	}
+#endif
+	//FIXME: send error?
 	delete pack;
 }
 
@@ -1157,8 +1230,49 @@ of12_endpoint::handle_queue_get_config_request(
 		cofctl *ctl,
 		cofmsg_queue_get_config_request *pack)
 {
-	//TODO FIXME
+	switch_port_t* port;
+	unsigned int portnum = pack->get_port_no(); 
+	cofmsg_queue_get_config_reply reply(OFP12_VERSION);
 
+	//we check all the positions in case there are empty slots
+	for(unsigned int n = 1; n < of12switch->max_ports; n++){
+
+		port = of12switch->logical_ports[n].port; 
+
+		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) && (port->of_port_num == portnum)){
+
+			for(unsigned int i=0; i<port->max_queues; i++){
+				if(port->queues[i].set){	
+/*					reply.push_back(
+						cofport_stats_reply(
+							ctl->get_version(),
+							port->of_port_num,
+							port->stats.rx_packets,
+							port->stats.tx_packets,
+							port->stats.rx_bytes,
+							port->stats.tx_bytes,
+							port->stats.rx_dropped,
+							port->stats.tx_dropped,
+							port->stats.rx_errors,
+							port->stats.tx_errors,
+							port->stats.rx_frame_err,
+							port->stats.rx_over_err,
+							port->stats.rx_crc_err,
+							port->stats.collisions));
+*/
+				}
+			
+				//Send reply
+				//XXX
+				//send_queue_get_config_reply(ctl, reply);
+
+				delete pack;
+				return;
+			}
+		}
+	}
+
+	//FIXME: send error?
 	delete pack;
 }
 

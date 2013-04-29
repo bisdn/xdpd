@@ -36,6 +36,9 @@ of12_endpoint::handle_features_request(
 		cofctl *ctl,
 		cofmsg_features_request *msg)
 {
+	logical_switch_port_t* ls_port;	
+	switch_port_t* _port;	
+	
 	uint32_t num_of_tables 	= 0;
 	uint32_t num_of_buffers = 0;
 	uint32_t capabilities 	= 0;
@@ -44,52 +47,44 @@ of12_endpoint::handle_features_request(
 	num_of_buffers 	= of12switch->pipeline->num_of_buffers;
 	capabilities 	= of12switch->pipeline->capabilities;
 
-	logical_switch_port_t *lsw_ports = NULL;
-	unsigned int num_of_ports = 0;
-	unsigned int max_logical_ports = 0;
-
-	//FIXME
-	if (of_get_switch_ports((of_switch*)of12switch, &lsw_ports, &num_of_ports, &max_logical_ports) < 0){
-
-		assert(0);
-		// TODO: handle error
-	}
-
 	// array of structures ofp_port
 	cofportlist portlist;
 
 	//we check all the positions in case there are empty slots
-	for (unsigned int n = 1; n < max_logical_ports; n++)
-	{
-		if(lsw_ports[n].port!=NULL && lsw_ports[n].attachment_state!=LOGICAL_PORT_STATE_DETACHED)
-		{
+	for (unsigned int n = 1; n < of12switch->max_ports; n++){
+
+		ls_port = &of12switch->logical_ports[n];
+		_port = ls_port->port;
+
+		if(_port!=NULL && ls_port->attachment_state!=LOGICAL_PORT_STATE_DETACHED){
+
 			//Mapping of port state
-			assert(n == lsw_ports[n].port->of_port_num);
+			assert(n == _port->of_port_num);
 
 			cofport port(ctl->get_version());
 
-			port.set_port_no(lsw_ports[n].port->of_port_num);
-			port.set_hwaddr(cmacaddr(lsw_ports[n].port->hwaddr, OFP_ETH_ALEN));
-			port.set_name(std::string(lsw_ports[n].port->name));
+			port.set_port_no(_port->of_port_num);
+			port.set_hwaddr(cmacaddr(_port->hwaddr, OFP_ETH_ALEN));
+			port.set_name(std::string(_port->name));
 			
 			uint32_t config = 0;
-			if(!lsw_ports[n].port->up)	
+			if(!_port->up)	
 				config |= OFPPC_PORT_DOWN;
-			if(lsw_ports[n].port->drop_received)
+			if(_port->drop_received)
 				config |= OFPPC_NO_RECV;
-			if(!lsw_ports[n].port->forward_packets)	
+			if(!_port->forward_packets)	
 				config |= OFPPC_NO_FWD;
-			if(!lsw_ports[n].port->of_generate_packet_in)
+			if(!_port->of_generate_packet_in)
 				config |= OFPPC_NO_PACKET_IN;
 
 			port.set_config(config);
-			port.set_state(lsw_ports[n].port->state);
-			port.set_curr(lsw_ports[n].port->curr);
-			port.set_advertised(lsw_ports[n].port->advertised);
-			port.set_supported(lsw_ports[n].port->supported);
-			port.set_peer(lsw_ports[n].port->peer);
-			port.set_curr_speed(of12_translation_utils::get_port_speed_kb(lsw_ports[n].port->curr_speed));
-			port.set_max_speed(of12_translation_utils::get_port_speed_kb(lsw_ports[n].port->curr_max_speed));
+			port.set_state(_port->state);
+			port.set_curr(_port->curr);
+			port.set_advertised(_port->advertised);
+			port.set_supported(_port->supported);
+			port.set_peer(_port->peer);
+			port.set_curr_speed(of12_translation_utils::get_port_speed_kb(_port->curr_speed));
+			port.set_max_speed(of12_translation_utils::get_port_speed_kb(_port->curr_max_speed));
 
 			portlist.next() = port;
 		}
@@ -223,49 +218,43 @@ of12_endpoint::handle_port_stats_request(
 		cofctl *ctl,
 		cofmsg_port_stats_request *msg)
 {
+
+	switch_port_t* port;
 	uint32_t port_no = msg->get_port_stats().get_portno();
 
 	std::vector<cofport_stats_reply> port_stats;
 
-	logical_switch_port_t *lsw_ports = NULL;
-	unsigned int num_of_ports = 0;				// number of ports attached to the logical switch
-	unsigned int max_logical_ports = 0; 		// number of port slots available in the logical switch
-
-	//FIXME
-	if (of_get_switch_ports((of_switch*)of12switch, &lsw_ports, &num_of_ports, &max_logical_ports) < 0){
-
-		// TODO: handle error
-	}
-
-
 	/*
 	 *  send statistics for all ports
 	 */
-	if (OFPP_ANY == port_no)
-	{
+	if (OFPP_ANY == port_no){
+
 		//we check all the positions in case there are empty slots
-		for (unsigned int n = 1; n < max_logical_ports; n++)
-		{
-			if((lsw_ports[n].port != NULL) && (lsw_ports[n].attachment_state != LOGICAL_PORT_STATE_DETACHED))
-			{
+		for (unsigned int n = 1; n < of12switch->max_ports; n++){
+	
+			port = of12switch->logical_ports[n].port; 
+	
+			if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
+
 				port_stats.push_back(
 						cofport_stats_reply(
 								ctl->get_version(),
-								lsw_ports[n].port->of_port_num,
-								lsw_ports[n].port->stats.rx_packets,
-								lsw_ports[n].port->stats.tx_packets,
-								lsw_ports[n].port->stats.rx_bytes,
-								lsw_ports[n].port->stats.tx_bytes,
-								lsw_ports[n].port->stats.rx_dropped,
-								lsw_ports[n].port->stats.tx_dropped,
-								lsw_ports[n].port->stats.rx_errors,
-								lsw_ports[n].port->stats.tx_errors,
-								lsw_ports[n].port->stats.rx_frame_err,
-								lsw_ports[n].port->stats.rx_over_err,
-								lsw_ports[n].port->stats.rx_crc_err,
-								lsw_ports[n].port->stats.collisions));
+								port->of_port_num,
+								port->stats.rx_packets,
+								port->stats.tx_packets,
+								port->stats.rx_bytes,
+								port->stats.tx_bytes,
+								port->stats.rx_dropped,
+								port->stats.tx_dropped,
+								port->stats.rx_errors,
+								port->stats.tx_errors,
+								port->stats.rx_frame_err,
+								port->stats.rx_over_err,
+								port->stats.rx_crc_err,
+								port->stats.collisions));
 			}
 	 	}
+
 	}else{
 		/*
 		 * send statistics for only one port
@@ -273,28 +262,31 @@ of12_endpoint::handle_port_stats_request(
 		
 		// search for the port with the specified port-number
 		//we check all the positions in case there are empty slots
-		for (unsigned int n = 1; n < max_logical_ports; n++){
-			if((lsw_ports[n].port != NULL) &&
-					(lsw_ports[n].attachment_state != LOGICAL_PORT_STATE_DETACHED) &&
-						(lsw_ports[n].port->of_port_num == port_no))
-			{
+		for (unsigned int n = 1; n < of12switch->max_ports; n++){
+			
+			port = of12switch->logical_ports[n].port; 
+
+			if( 	(port != NULL) &&
+				(of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) &&
+				(port->of_port_num == port_no)
+			){
 				//Mapping of port state
 				port_stats.push_back(
 						cofport_stats_reply(
 								ctl->get_version(),
-								lsw_ports[n].port->of_port_num,
-								lsw_ports[n].port->stats.rx_packets,
-								lsw_ports[n].port->stats.tx_packets,
-								lsw_ports[n].port->stats.rx_bytes,
-								lsw_ports[n].port->stats.tx_bytes,
-								lsw_ports[n].port->stats.rx_dropped,
-								lsw_ports[n].port->stats.tx_dropped,
-								lsw_ports[n].port->stats.rx_errors,
-								lsw_ports[n].port->stats.tx_errors,
-								lsw_ports[n].port->stats.rx_frame_err,
-								lsw_ports[n].port->stats.rx_over_err,
-								lsw_ports[n].port->stats.rx_crc_err,
-								lsw_ports[n].port->stats.collisions));
+								port->of_port_num,
+								port->stats.rx_packets,
+								port->stats.tx_packets,
+								port->stats.rx_bytes,
+								port->stats.tx_bytes,
+								port->stats.rx_dropped,
+								port->stats.tx_dropped,
+								port->stats.rx_errors,
+								port->stats.tx_errors,
+								port->stats.rx_frame_err,
+								port->stats.rx_over_err,
+								port->stats.rx_crc_err,
+								port->stats.collisions));
 
 				break;
 			}
@@ -437,7 +429,7 @@ of12_endpoint::handle_queue_stats_request(
 {
 
 	//TODO FIXME
-
+	
 	delete pack;
 }
 

@@ -133,7 +133,7 @@ public:
 	/**
 	 * List available matching algorithms
 	 */
-	static std::list<std::string> list_matching_algorithms();
+	static std::list<std::string> list_matching_algorithms(of_version_t of_version);
 
 
 };

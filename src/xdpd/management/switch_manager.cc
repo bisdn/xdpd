@@ -132,13 +132,13 @@ std::list<std::string> switch_manager::list_sw_names(void){
 }
 
 /* static */std::list<std::string>
-list_matching_algorithms()
+switch_manager::list_matching_algorithms(of_version_t of_version)
 {
 	std::list<std::string> matching_algorithms;
 	int i, count;
 
 	const char * const * names;
-	of_get_switch_matching_algorithms(&names, &count);
+	fwd_module_list_matching_algorithms(of_version, &names, &count);
 
 	for (i = 0; i < count; i++) {
 		matching_algorithms.push_back(std::string(names[i]));

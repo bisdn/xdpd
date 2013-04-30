@@ -1,5 +1,6 @@
 #include "bg_taskmanager.h"
 
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
@@ -12,7 +13,6 @@
 #include <sys/epoll.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 // Maybe needs to be in hal.h
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>

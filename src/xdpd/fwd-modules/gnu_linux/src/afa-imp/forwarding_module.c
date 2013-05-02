@@ -52,11 +52,11 @@ static int iomanager_grp_id;
 afa_result_t fwd_module_init(){
 	
 	//Init the ROFL-PIPELINE phyisical switch
-	physical_switch_init();
-	
-	if(discover_physical_ports() != ROFL_SUCCESS){
+	if(physical_switch_init() != ROFL_SUCCESS)
 		return AFA_FAILURE;
-	}
+	
+	if(discover_physical_ports() != ROFL_SUCCESS)
+		return AFA_FAILURE;
 	
 	//create bufferpool
 	bufferpool_init_wrapper(NUM_ELEM_INIT_BUFFERPOOL);
@@ -504,3 +504,8 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
 	return AFA_SUCCESS;
 }
 
+afa_result_t
+fwd_module_list_matching_algorithms(of_version_t of_version, const char * const** name_list, int *count)
+{
+	return of_get_switch_matching_algorithms(of_version, name_list, count);
+}

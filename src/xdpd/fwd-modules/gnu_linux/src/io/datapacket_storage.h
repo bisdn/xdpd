@@ -87,13 +87,11 @@ private:
 
 	std::list<store_mapping> store;
 	pthread_mutex_t lock;
+	uint16_t expiration_time_sec;
 
 	// this class is noncopyable
 	datapacket_storage(const datapacket_storage&);
-	
-	uint16_t expiration_time_sec;
-
-	// todo assignment operator
+	datapacket_storage& operator=(const datapacket_storage&);
 };
 
 #endif /* DATAPACKET_STORAGE_H_ */

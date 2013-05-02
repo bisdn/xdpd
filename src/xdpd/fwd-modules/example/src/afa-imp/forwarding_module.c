@@ -25,7 +25,8 @@ afa_result_t fwd_module_init(){
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
-	//physical_switch_init();
+	//if(physical_switch_init() != ROFL_SUCCESS)
+	//	return AFA_FAILURE;
 
 	//Likely here you are going to discover platform ports;
 	//If using ROFL_pipeline you would then add them (physical_switch_add_port()

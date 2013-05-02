@@ -128,6 +128,21 @@ std::list<std::string> switch_manager::list_sw_names(void){
 		name_list.push_back(it->second->dpname);
 	}
 
-	return name_list;	
+	return name_list;
 }
 
+/* static */std::list<std::string>
+switch_manager::list_matching_algorithms(of_version_t of_version)
+{
+	std::list<std::string> matching_algorithms;
+	int i, count;
+
+	const char * const * names;
+	fwd_module_list_matching_algorithms(of_version, &names, &count);
+
+	for (i = 0; i < count; i++) {
+		matching_algorithms.push_back(std::string(names[i]));
+	}
+
+	return matching_algorithms;
+}

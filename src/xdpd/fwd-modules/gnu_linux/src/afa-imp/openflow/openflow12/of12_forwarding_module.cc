@@ -472,7 +472,7 @@ rofl_of12_gm_result_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_ty
  * @brief   Instructs driver to modify the GROUP with identification ID
  * @ingroup of12_fwd_module_async_event_processing
  *
- * @param dpid 		Datapath ID of the switch to install the GROUP
+ * @param dpid 		Datapath ID of the switch to modify the GROUP
  */
 rofl_of12_gm_result_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
 	
@@ -486,13 +486,30 @@ rofl_of12_gm_result_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group
  * @brief   Instructs driver to delete the GROUP with identification ID
  * @ingroup of12_fwd_module_async_event_processing
  *
- * @param dpid 		Datapath ID of the switch to install the GROUP
+ * @param dpid 		Datapath ID of the switch to delete the GROUP
  */
 rofl_of12_gm_result_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t id){
 	
 	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
 	return of12_group_delete(lsw->pipeline, lsw->pipeline->groups, id);
+}
+
+/**
+ * @name    fwd_module_of12_group_search
+ * @brief   Instructs driver to search the GROUP with identification ID
+ * @ingroup of12_fwd_module_async_event_processing
+ *
+ * @param dpid 		Datapath ID of the switch to search the GROUP
+ */
+afa_result_t fwd_module_of12_fetch_group_table(uint64_t dpid, of12_group_table_t *group_table){
+	
+	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+	
+	if(of12_fetch_group_table(lsw->pipeline,group_table)!=ROFL_SUCCESS)
+		return AFA_FAILURE;
+	
+	return AFA_SUCCESS;
 }
 
 /**

@@ -955,6 +955,28 @@ of12_translation_utils::of12_map_bucket_list(
 	}
 }
 
+void of12_translation_utils::of12_map_reverse_bucket_list(
+		cofbclist& of_buckets,
+		of12_bucket_list_t* bucket_list){
+	
+	for(of12_bucket_t *bu_it=bucket_list->head;bu_it;bu_it=bu_it->next){
+		cofbucket single_bucket;
+		cofaclist ac_list;
+		for (of12_packet_action_t *action_it = bu_it->actions->head; action_it != NULL; action_it = action_it->next) {
+			if (OF12_AT_NO_ACTION == action_it->type)
+				continue;
+			cofaction action;
+			of12_map_reverse_flow_entry_action(action_it, action);
+			//push this action into the list
+			ac_list.next() = action;
+		}
+		//TODO insert action list in the bucket
+		single_bucket.actions=ac_list;// .insert(___.actions.next() = action);
+		//TODO insert bucket in bucket_list
+		of_buckets.next() = single_bucket;
+
+	}
+}
 
 
 /**

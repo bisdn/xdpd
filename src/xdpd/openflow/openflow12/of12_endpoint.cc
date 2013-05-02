@@ -495,9 +495,23 @@ of12_endpoint::handle_group_desc_stats_request(
 	std::vector<cofgroup_desc_stats_reply> group_desc_stats;
 
 	//TODO: fill in std::vector<...> group_desc_stats, when groups are implemented
-#if 0
-	group_desc_stats.push_back(cofgroup_desc_stats_reply(ctl->get_version()));
-#endif
+
+	of12_group_table_t group_table;
+	of12_group_t *group_it;
+	if(fwd_module_of12_fetch_group_table(sw->dpid,&group_table)!=AFA_SUCCESS){
+		//TODO throw exeption
+	}
+	
+	for(group_it=group_table.head;group_it;group_it=group_it->next){
+		cofbclist bclist;
+		of12_translation_utils::of12_map_reverse_bucket_list(bclist,group_it->bc_list);
+		
+		group_desc_stats.push_back(cofgroup_desc_stats_reply(
+			ctl->get_version(),
+			group_it->type,
+			group_it->id,
+			bclist ));
+	}
 
 
 	send_group_desc_stats_reply(

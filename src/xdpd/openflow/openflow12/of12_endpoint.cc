@@ -1246,7 +1246,13 @@ of12_endpoint::handle_queue_get_config_request(
 {
 	switch_port_t* port;
 	unsigned int portnum = pack->get_port_no(); 
-	cofmsg_queue_get_config_reply reply(OFP12_VERSION);
+
+	//FIXME: send error? => yes, if portnum is unknown, just throw the appropriate exception
+	if (false /*add check for existence of port*/)
+		throw eBadRequestBadPort();
+
+
+	cofpacket_queue_list reply(ctl->get_version());
 
 	//we check all the positions in case there are empty slots
 	for(unsigned int n = 1; n < of12switch->max_ports; n++){
@@ -1255,38 +1261,32 @@ of12_endpoint::handle_queue_get_config_request(
 
 		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) && (port->of_port_num == portnum)){
 
+			if ((OFPQ_ALL != portnum) && (port->of_port_num != portnum))
+				continue;
+
 			for(unsigned int i=0; i<port->max_queues; i++){
 				if(port->queues[i].set){	
-/*					reply.push_back(
-						cofport_stats_reply(
-							ctl->get_version(),
-							port->of_port_num,
-							port->stats.rx_packets,
-							port->stats.tx_packets,
-							port->stats.rx_bytes,
-							port->stats.tx_bytes,
-							port->stats.rx_dropped,
-							port->stats.tx_dropped,
-							port->stats.rx_errors,
-							port->stats.tx_errors,
-							port->stats.rx_frame_err,
-							port->stats.rx_over_err,
-							port->stats.rx_crc_err,
-							port->stats.collisions));
-*/
-				}
-			
-				//Send reply
-				//XXX
-				//send_queue_get_config_reply(ctl, reply);
 
-				delete pack;
-				return;
+					cofpacket_queue pq(ctl->get_version());
+					pq.set_queue_id(port->queues[i].id);
+					pq.set_port(port->of_port_num);
+					pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl->get_version(), port->queues[i].min_rate);
+					pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl->get_version(), port->queues[i].max_rate);
+
+					reply.next() = pq;
+				}
 			}
 		}
 	}
 
-	//FIXME: send error?
+	//Send reply
+	send_queue_get_config_reply(
+			ctl,
+			pack->get_xid(),
+			pack->get_port_no(),
+			reply);
+
+	// do not forget to remove pack from heap
 	delete pack;
 }
 

@@ -1252,7 +1252,7 @@ of12_endpoint::handle_queue_get_config_request(
 		throw eBadRequestBadPort();
 
 
-	cofpacket_queue_list reply(ctl->get_version());
+	cofpacket_queue_list pql(ctl->get_version());
 
 	//we check all the positions in case there are empty slots
 	for(unsigned int n = 1; n < of12switch->max_ports; n++){
@@ -1273,7 +1273,7 @@ of12_endpoint::handle_queue_get_config_request(
 					pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl->get_version(), port->queues[i].min_rate);
 					pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl->get_version(), port->queues[i].max_rate);
 
-					reply.next() = pq;
+					pql.next() = pq;
 				}
 			}
 		}
@@ -1284,7 +1284,7 @@ of12_endpoint::handle_queue_get_config_request(
 			ctl,
 			pack->get_xid(),
 			pack->get_port_no(),
-			reply);
+			pql);
 
 	// do not forget to remove pack from heap
 	delete pack;

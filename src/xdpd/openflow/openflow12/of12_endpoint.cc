@@ -1248,7 +1248,7 @@ of12_endpoint::handle_queue_get_config_request(
 	unsigned int portnum = pack->get_port_no(); 
 
 	//FIXME: send error? => yes, if portnum is unknown, just throw the appropriate exception
-	if (false /*add check for existence of port*/)
+	if (0 /*add check for existence of port*/)
 		throw eBadRequestBadPort();
 
 

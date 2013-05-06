@@ -6,6 +6,7 @@
 
 //Add it here if you want to use another scheduler...
 #include "scheduler/epoll_ioscheduler.h"
+#include "scheduler/polling_ioscheduler.h"
 
 /* Static members */
 unsigned long long int iomanager::num_of_port_buffers = 0;
@@ -15,6 +16,7 @@ safevector<portgroup_state*> iomanager::portgroups; //TODO: maybe add a pre-rese
 
 //Change this if you want to use another scheduler
 typedef epoll_ioscheduler ioscheduler_provider;
+//typedef polling_ioscheduler ioscheduler_provider;
 
 /*
 * Starts num_of_threads as per defined in the portgroup

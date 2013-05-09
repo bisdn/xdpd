@@ -198,7 +198,7 @@ void DriverPortMockupTestCase::test_flow_expiration(){
 	of12_action_group_t* ac_group = of12_init_action_group(NULL);
 	entry->priority = 1;
 	
-	of12_fill_new_timer_entry_info(entry,sec_exp,0); /*idle TO disabled*/
+	__of12_fill_new_timer_entry_info(entry,sec_exp,0); /*idle TO disabled*/
 	
 	of12_add_match_to_entry(entry,match);
 	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, 1, NULL,NULL));

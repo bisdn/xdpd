@@ -61,7 +61,6 @@ of12_translation_utils::of12_map_flow_entry(
 	of12_map_flow_entry_matches(ctl, msg->get_match(), sw, entry);
 
 	// iterate over all instructions and store them in the instruction group contained in entry
-	of12_init_instruction_group(&(entry->inst_grp));
 
 	for (cofinlist::iterator
 			it = msg->get_instructions().begin(); it != msg->get_instructions().end(); ++it)

@@ -70,20 +70,6 @@ public:
 	virtual rofl::fpppoeframe* pppoe(unsigned int idx = 0) const=0;
 	virtual rofl::fpppframe* ppp(unsigned int idx = 0) const=0;
 
-	virtual unsigned int n_ether()  = 0;
-	virtual unsigned int n_vlan()   = 0;
-	virtual unsigned int n_mpls()   = 0;
-	virtual unsigned int n_pppoe()  = 0;
-	virtual unsigned int n_ppp()    = 0;
-	virtual unsigned int n_arpv4()  = 0;
-	virtual unsigned int n_ipv4()   = 0;
-	virtual unsigned int n_icmpv4() = 0;
-	virtual unsigned int n_ipv6()   = 0;
-	virtual unsigned int n_icmpv6() = 0;
-	virtual unsigned int n_udp()    = 0;
-	virtual unsigned int n_tcp()    = 0;
-	virtual unsigned int n_sctp()   = 0;
-
 	/*
 	 * pop operations
 	 */
@@ -115,23 +101,6 @@ protected:
 
 	//Datapacket reference
 	datapacketx86* pkt;
-
-	virtual rofl::fframe* frame_insert(rofl::fframe *append_to, rofl::fframe *frame)=0;
-	virtual void frame_append(rofl::fframe *frame)=0;
-	virtual void frame_push(rofl::fframe *frame)=0;
-	virtual void frame_pop(rofl::fframe *frame)=0;
-
-	virtual void parse_ether(uint8_t *data, size_t datalen)=0;
-	virtual void parse_vlan(uint8_t *data, size_t datalen)=0;
-	virtual void parse_mpls(uint8_t *data, size_t datalen)=0;
-	virtual void parse_pppoe(uint8_t *data, size_t datalen)=0;
-	virtual void parse_ppp(uint8_t *data, size_t datalen)=0;
-	virtual void parse_arpv4(uint8_t *data, size_t datalen)=0;
-	virtual void parse_ipv4(uint8_t *data, size_t datalen)=0;
-	virtual void parse_icmpv4(uint8_t *data, size_t datalen)=0;
-	virtual void parse_udp(uint8_t *data, size_t datalen)=0;
-	virtual void parse_tcp(uint8_t *data, size_t datalen)=0;
-	virtual void parse_sctp(uint8_t *data, size_t datalen)=0;
 
 	/*
 	* Wrappers for pkt push and pop so that we can use friendship in derived classes

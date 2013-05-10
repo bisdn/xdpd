@@ -523,8 +523,19 @@ of12_stats_group_msg_t * fwd_module_of12_get_group_stats(uint64_t dpid, uint32_t
 	
 	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
-	if(id==OFPG_ALL)
+	return of12_get_group_stats(lsw->pipeline,id);
+}
+
+/**
+ * @name    fwd_module_of12_get_group_all_stats
+ * @brief   Instructs driver to fetch the GROUP statistics from all the groups
+ * @ingroup of12_fwd_module_async_event_processing
+ *
+ * @param dpid 		Datapath ID of the switch where the GROUPS are
+ */
+of12_stats_group_msg_t * fwd_module_of12_get_group_all_stats(uint64_t dpid, uint32_t id){
+	
+	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+	
 		return of12_get_group_all_stats(lsw->pipeline,id);
-	else
-		return of12_get_group_stats(lsw->pipeline,id);
 }

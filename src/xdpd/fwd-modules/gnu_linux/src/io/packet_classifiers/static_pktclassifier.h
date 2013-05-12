@@ -33,7 +33,12 @@ public:
 	*/
 	virtual void classify(void);
 	virtual void classify_reset(void){
-		memset(headers,0,sizeof(headers));
+	
+		for(int i=0;i<MAX_HEADERS;i++){
+			headers[i].present = false;
+			headers[i].next = headers[i].prev = NULL;
+		}
+
 		memset(num_of_headers,0,sizeof(num_of_headers));
 		is_classified=false; 
 	};
@@ -87,6 +92,8 @@ protected:
 	//Flag to know if it is classified
 	bool is_classified;
 
+	//Inner most (last) ethertype
+	uint16_t eth_type;
 	
 	//Header type
 	enum header_type{
@@ -120,7 +127,7 @@ protected:
 	static const unsigned int MAX_PPP_FRAMES = 1;
 
 	//Total maximum header occurrences
-	static const unsigned int TOTAL_MAX_HEADERS = MAX_ETHER_FRAMES +
+	static const unsigned int MAX_HEADERS = MAX_ETHER_FRAMES +
 							MAX_VLAN_FRAMES +
 							MAX_MPLS_FRAMES +
 							MAX_ARPV4_FRAMES +
@@ -147,7 +154,7 @@ protected:
 	static const unsigned int FIRST_PPP_FRAME_POS = FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES;
 
 	//Just to be on the safe side of life
-	assert(FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES == TOTAL_MAX_HEADERS);
+	assert(FIRST_PPP_FRAME_POS + MAX_PPP_FRAMES == MAX_HEADERS);
 
 	//Counters
 	unsigned int num_of_headers[HEADER_TYPE_MAX];
@@ -155,7 +162,10 @@ protected:
  
 	//Header container
 	typedef struct header_container{
-	
+
+		//Presence of header
+		bool present;
+		
 		//ROFL header 
 		rofl::fframe frame;	
 		enum header_type type; 
@@ -166,7 +176,7 @@ protected:
 	}header_container_t;
 
 	//Real container
-	header_container_t headers[TOTAL_MAX_HEADERS];	
+	header_container_t headers[MAX_HEADERS];	
 };
 
 

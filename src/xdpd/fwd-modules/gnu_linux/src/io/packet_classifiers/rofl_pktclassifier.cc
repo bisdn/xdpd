@@ -97,7 +97,7 @@ rofl_pktclassifier::frame_pop(
 	// check whether this is the second fframe (first after ether)
 	// if not refuse dropping
 
-	//ROFL_ERR("datapacketx86(%p)::frame_pop() "
+	//ROFL_DEBUG("datapacketx86(%p)::frame_pop() "
 	//		"frame: %p %s\n", this, frame, frame->c_str());
 
 #if 0
@@ -1159,14 +1159,14 @@ void rofl_pktclassifier::classify_reset(void){
 
 
 void rofl_pktclassifier::dump(){
-	ROFL_ERR("datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
+	ROFL_DEBUG("datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
 	rofl::fframe *frame = fhead;
 	while (NULL != frame) {
-		ROFL_ERR("%s\n", frame->c_str());
+		ROFL_DEBUG("%s\n", frame->c_str());
 		frame = frame->next;
 	}
 	rofl::fframe content(pkt->get_buffer(), pkt->get_buffer_length());
-	ROFL_ERR("content: %s\n", content.c_str());
+	ROFL_DEBUG("content: %s\n", content.c_str());
 }
 
 

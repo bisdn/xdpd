@@ -12,6 +12,8 @@
 #include "ioscheduler.h" 
 #include "../ports/ioport.h"
 
+#include <rofl/datapath/pipeline/openflow/of_switch.h>
+
 /**
 * @file polling_ioscheduler.h
 * @author Marc Sune<marc.sune (at) bisdn.de>

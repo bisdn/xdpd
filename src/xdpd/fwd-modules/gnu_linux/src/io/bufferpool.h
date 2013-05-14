@@ -10,7 +10,6 @@
 #include <pthread.h>
 #include <vector>
 #include <rofl/datapath/pipeline/common/datapacket.h>
-#include "datapacketx86.h"
 
 /**
 * @file bufferpool.h

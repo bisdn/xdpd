@@ -117,7 +117,6 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 #ifdef DEBUG
 		if(by_pass_pipeline){
 			//DEBUG; by-pass pipeline, print trace and sleep
-			std::cout <<"!";
 			ROFL_DEBUG_VERBOSE("!");
 			usleep(rand()%300); //Random sleep up to 300ms
 		}else{

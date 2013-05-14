@@ -5,6 +5,7 @@
 #ifndef IOSCHEDULER_H
 #define IOSCHEDULER_H 
 
+#include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 
 /**

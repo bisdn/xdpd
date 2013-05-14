@@ -1,5 +1,6 @@
 #include "bufferpool.h"
 #include <rofl/common/utils/c_logger.h>
+#include "datapacketx86.h"
 
 /* Static member initialization */
 bufferpool* bufferpool::instance = NULL;

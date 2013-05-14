@@ -7,6 +7,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_statistics.h>
 #include "../../../io/bufferpool.h"
 #include "../../../io/datapacket_storage.h"
+#include "../../../io/datapacketx86.h"
 #include "../../../io/ports/ioport.h"
 #include "../../../ls_internal_state.h"
 

@@ -16,7 +16,6 @@ xdpd_LDADD = \
 	-lpthread \
 	-lrofl \
 	-lrofl_pipeline \
-	-lrofl_control \
 	$(FM_LIB) \
 	-ldl
 

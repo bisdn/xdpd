@@ -25,7 +25,7 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 		if(!dp){
 			//Mark as unavailable
 			pool[i] = NULL;
-			pool_status[i] = BPX86_SLOT_UNAVAILABLE;
+			pool_status[i] = BUFFERPOOL_SLOT_UNAVAILABLE;
 
 			//Skip
 			continue;
@@ -41,7 +41,7 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 
 			//Mark as unavailable
 			pool[i] = NULL;
-			pool_status[i] = BPX86_SLOT_UNAVAILABLE;
+			pool_status[i] = BUFFERPOOL_SLOT_UNAVAILABLE;
 			
 			free(dp);
 			continue;		
@@ -56,7 +56,7 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 
 		//Add to the pool	
 		pool[i] = dp;
-		pool_status[i] = BPX86_SLOT_AVAILABLE;
+		pool_status[i] = BUFFERPOOL_SLOT_AVAILABLE;
 	
 	}
 
@@ -104,20 +104,20 @@ datapacket_t* bufferpool::get_free_buffer(bool blocking){
 
 	//Trying to minimize locking.	
 	for(i=0;; (i+1 == bp->pool_size)? i=0 : ++i){ // fixme this has to be improved since its always searching a free packet from the beginning --> queue
-		if(bp->pool_status[i] == BPX86_SLOT_AVAILABLE){
+		if(bp->pool_status[i] == BUFFERPOOL_SLOT_AVAILABLE){
 			
 			//Take mutex
 			pthread_mutex_lock(&bufferpool::mutex);		
 	
 			//Recheck
-			if(bp->pool_status[i] != BPX86_SLOT_AVAILABLE){
+			if(bp->pool_status[i] != BUFFERPOOL_SLOT_AVAILABLE){
 				//There has been an undesired scheduling of threads 
 				pthread_mutex_unlock(&bufferpool::mutex);		
 				continue;	
 			}
 			
 			//Mark as in-use		
-			bp->pool_status[i] = BPX86_SLOT_IN_USE;
+			bp->pool_status[i] = BUFFERPOOL_SLOT_IN_USE;
 		
 			//Release
 			pthread_mutex_unlock(&bufferpool::mutex);		
@@ -149,12 +149,12 @@ void bufferpool::release_buffer(datapacket_t* buf){
 	unsigned int id = ((datapacketx86*)buf->platform_state)->internal_buffer_id;
 	
 	//Release
-	if(bp->pool_status[id] != BPX86_SLOT_IN_USE){
+	if(bp->pool_status[id] != BUFFERPOOL_SLOT_IN_USE){
 		//Attempting to release an unallocated/unavailable buffer
 		ROFL_ERR("Attempting to release an unallocated/unavailable buffer. Ignoring..");
 	}else{ 
 		buf->is_replica = false; //Make sure this flag is 0
-		bp->pool_status[id] = BPX86_SLOT_AVAILABLE;
+		bp->pool_status[id] = BUFFERPOOL_SLOT_AVAILABLE;
 		pthread_cond_broadcast(&bufferpool::cond);
 	}
 }
@@ -238,7 +238,7 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 		if(!dp){
 			//Mark as unavailable
 			bp->pool[i] = NULL;
-			bp->pool_status[i] = BPX86_SLOT_UNAVAILABLE;
+			bp->pool_status[i] = BUFFERPOOL_SLOT_UNAVAILABLE;
 
 			//Skip
 			errors = true;
@@ -251,7 +251,7 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 		}catch(std::bad_alloc ex){
 			//Mark as unavailable
 			bp->pool[i] = NULL;
-			bp->pool_status[i] = BPX86_SLOT_UNAVAILABLE;
+			bp->pool_status[i] = BUFFERPOOL_SLOT_UNAVAILABLE;
 			
 			free(dp);
 			errors = true;
@@ -266,7 +266,7 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 
 		//Add to the pool	
 		bp->pool[i] = dp;
-		bp->pool_status[i] = BPX86_SLOT_AVAILABLE;
+		bp->pool_status[i] = BUFFERPOOL_SLOT_AVAILABLE;
 	}
 	
 	//Finally allow to use extended capacity

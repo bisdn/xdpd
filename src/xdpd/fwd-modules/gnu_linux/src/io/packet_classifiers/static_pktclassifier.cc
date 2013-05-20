@@ -110,7 +110,9 @@ rofl::fetherframe* static_pktclassifier::ether(unsigned int idx) const{
 		pos = FIRST_ETHER_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fetherframe*) headers[pos].frame;	
+	if(headers[pos].present)
+		return (rofl::fetherframe*) headers[pos].frame;	
+	return NULL;
 }
 
 rofl::fvlanframe* static_pktclassifier::vlan(unsigned int idx) const
@@ -126,7 +128,9 @@ rofl::fvlanframe* static_pktclassifier::vlan(unsigned int idx) const
 		pos = FIRST_VLAN_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fvlanframe*) headers[pos].frame;
+	if(headers[pos].present)
+		return (rofl::fvlanframe*) headers[pos].frame;
+	return NULL;
 }
 
 rofl::fmplsframe* static_pktclassifier::mpls(unsigned int idx) const
@@ -142,7 +146,9 @@ rofl::fmplsframe* static_pktclassifier::mpls(unsigned int idx) const
 		pos = FIRST_MPLS_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fmplsframe*) headers[pos].frame;
+	if(headers[pos].present)
+		return (rofl::fmplsframe*) headers[pos].frame;
+	return NULL;
 }
 
 rofl::farpv4frame* static_pktclassifier::arpv4(unsigned int idx) const
@@ -158,7 +164,9 @@ rofl::farpv4frame* static_pktclassifier::arpv4(unsigned int idx) const
 		pos = FIRST_ARPV4_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::farpv4frame*) headers[pos].frame;
+	if(headers[pos].present)
+		return (rofl::farpv4frame*) headers[pos].frame;
+	return NULL;
 }
 
 rofl::fipv4frame* static_pktclassifier::ipv4(unsigned int idx) const
@@ -174,7 +182,9 @@ rofl::fipv4frame* static_pktclassifier::ipv4(unsigned int idx) const
 		pos = FIRST_IPV4_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fipv4frame*) headers[pos].frame;
+	if(headers[pos].present)
+		return (rofl::fipv4frame*) headers[pos].frame;
+	return NULL;
 }
 
 rofl::ficmpv4frame* static_pktclassifier::icmpv4(unsigned int idx) const
@@ -190,7 +200,9 @@ rofl::ficmpv4frame* static_pktclassifier::icmpv4(unsigned int idx) const
 		pos = FIRST_ICMPV4_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::ficmpv4frame*) headers[pos].frame;
+	if(headers[pos].present)
+		return (rofl::ficmpv4frame*) headers[pos].frame;
+	return NULL;
 
 }
 
@@ -207,8 +219,9 @@ rofl::fudpframe* static_pktclassifier::udp(unsigned int idx) const
 		pos = FIRST_UDP_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fudpframe*) headers[pos].frame;
-
+	if(headers[pos].present)
+		return (rofl::fudpframe*) headers[pos].frame;
+	return NULL;
 }
 
 rofl::ftcpframe* static_pktclassifier::tcp(unsigned int idx) const
@@ -224,8 +237,9 @@ rofl::ftcpframe* static_pktclassifier::tcp(unsigned int idx) const
 		pos = FIRST_TCP_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::ftcpframe*) headers[pos].frame;
-
+	if(headers[pos].present)
+		return (rofl::ftcpframe*) headers[pos].frame;
+	return NULL;
 }
 
 rofl::fsctpframe* static_pktclassifier::sctp(unsigned int idx) const
@@ -241,7 +255,9 @@ rofl::fsctpframe* static_pktclassifier::sctp(unsigned int idx) const
 		pos = FIRST_SCTP_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fsctpframe*) headers[pos].frame;
+	if(headers[pos].present)
+		return (rofl::fsctpframe*) headers[pos].frame;
+	return NULL;
 }
 
 rofl::fpppoeframe* static_pktclassifier::pppoe(unsigned int idx) const
@@ -257,8 +273,9 @@ rofl::fpppoeframe* static_pktclassifier::pppoe(unsigned int idx) const
 		pos = FIRST_PPPOE_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fpppoeframe*) headers[pos].frame;
-
+	if(headers[pos].present)
+		return (rofl::fpppoeframe*) headers[pos].frame;
+	return NULL;
 }
 
 rofl::fpppframe* static_pktclassifier::ppp(unsigned int idx) const
@@ -274,7 +291,9 @@ rofl::fpppframe* static_pktclassifier::ppp(unsigned int idx) const
 		pos = FIRST_PPP_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fpppframe*) headers[pos].frame;
+	if(headers[pos].present)
+		return (rofl::fpppframe*) headers[pos].frame;
+	return NULL;
 }
 
 /*

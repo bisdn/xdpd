@@ -834,7 +834,7 @@ void static_pktclassifier::pop_pppoe(uint16_t ether_type){
 				//Take header out
 				pop_header(HEADER_TYPE_PPPOE, FIRST_PPPOE_FRAME_POS, FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES);
 
-				frame_pop(pppoe(0));
+				pop_header(HEADER_TYPE_PPP, FIRST_PPP_FRAME_POS, FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES);
 			}
 			ether_header->shift_right(sizeof(rofl::fpppoeframe::pppoe_hdr_t));
 		}

@@ -2,10 +2,15 @@
 
 //Include here the classifier you want to use
 #include "packet_classifiers/rofl_pktclassifier.h"
+#include "packet_classifiers/static_pktclassifier.h"
 
 /*
  * x86 datapacket related methods
  */
+
+//Change this if you want to use another scheduler
+//typedef rofl_pktclassifier pktclassifier;
+typedef static_pktclassifier pktclassifier;
 
 //Constructor
 datapacketx86::datapacketx86() :
@@ -19,7 +24,7 @@ datapacketx86::datapacketx86() :
 	 tcp_recalc_checksum(false),
 	 udp_recalc_checksum(false),
 	 icmpv4_recalc_checksum(false),
-	 headers(new rofl_pktclassifier(this)),
+	 headers(new pktclassifier(this)),
 	 buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY)
 {
 

@@ -20,13 +20,8 @@ class static_pktclassifier: public packetclassifier{
 public:
 
 	//Constructor&destructor
-	static_pktclassifier(datapacketx86* pkt_ref) :
-		packetclassifier(pkt_ref),
-	{
-		classify_reset();	
-	}; 
-
-	virtual ~static_pktclassifier(){};
+	static_pktclassifier(datapacketx86* pkt_ref);
+	virtual ~static_pktclassifier();
 
 	/*
 	* Main classification methods. 
@@ -34,7 +29,7 @@ public:
 	virtual void classify(void);
 	virtual void classify_reset(void){
 	
-		for(int i=0;i<MAX_HEADERS;i++){
+		for(unsigned int i=0;i<MAX_HEADERS;i++){
 			headers[i].present = false;
 			headers[i].next = headers[i].prev = NULL;
 		}
@@ -105,7 +100,7 @@ protected:
 		HEADER_TYPE_ICMPV4 = 5,	
 		HEADER_TYPE_UDP = 6,	
 		HEADER_TYPE_TCP = 7,	
-		HEADER_TYPE_SCTCP = 8,	
+		HEADER_TYPE_SCTP = 8,	
 		HEADER_TYPE_PPPOE = 9,	
 		HEADER_TYPE_PPP = 10,	
 
@@ -154,7 +149,7 @@ protected:
 	static const unsigned int FIRST_PPP_FRAME_POS = FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES;
 
 	//Just to be on the safe side of life
-	assert(FIRST_PPP_FRAME_POS + MAX_PPP_FRAMES == MAX_HEADERS);
+	//assert( (FIRST_PPP_FRAME_POS + MAX_PPP_FRAMES) == MAX_HEADERS);
 
 	//Counters
 	unsigned int num_of_headers[HEADER_TYPE_MAX];
@@ -167,7 +162,7 @@ protected:
 		bool present;
 		
 		//ROFL header 
-		rofl::fframe frame;	
+		rofl::fframe* frame;	
 		enum header_type type; 
 
 		//Pseudo-linked list pointers (short-cuts)
@@ -177,6 +172,27 @@ protected:
 
 	//Real container
 	header_container_t headers[MAX_HEADERS];	
+	// ethernet type of payload (=innermost ethernet type)
+	rofl::fframe* frame_insert(rofl::fframe *append_to, rofl::fframe *frame);
+	void frame_append(rofl::fframe *frame);
+	void frame_push(rofl::fframe *frame);
+	void frame_pop(rofl::fframe *frame);
+
+	void parse_ether	(uint8_t *data, size_t datalen);
+	void parse_vlan(uint8_t *data, size_t datalen);
+	void parse_mpls(uint8_t *data, size_t datalen);
+	void parse_pppoe(uint8_t *data, size_t datalen);
+	void parse_ppp(uint8_t *data, size_t datalen);
+	void parse_arpv4(uint8_t *data, size_t datalen);
+	void parse_ipv4	(uint8_t *data, size_t datalen);
+	void parse_icmpv4(uint8_t *data, size_t datalen);
+	void parse_udp(uint8_t *data, size_t datalen);
+	void parse_tcp(uint8_t *data, size_t datalen);
+	void parse_sctp	(uint8_t *data, size_t datalen);
+
+	//Insert/pop frame
+	void pop_header(enum header_type type, unsigned int start, unsigned int end);
+	void push_header(enum header_type type, unsigned int start, unsigned int end);
 };
 
 

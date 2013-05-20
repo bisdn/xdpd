@@ -5,7 +5,7 @@
 
 //Constructor&destructor
 static_pktclassifier::static_pktclassifier(datapacketx86* pkt_ref) :
-	packetclassifier(pkt_ref),
+	packetclassifier(pkt_ref)
 {
 	unsigned int i;
 
@@ -17,58 +17,58 @@ static_pktclassifier::static_pktclassifier(datapacketx86* pkt_ref) :
 	
 	//Ether
 	for(i=0;i<MAX_ETHER_FRAMES;i++){
-		headers[FIRST_ETHER_FRAME_POS+i].frame = rofl::fetherframe(NULL, 0);		
+		headers[FIRST_ETHER_FRAME_POS+i].frame = new rofl::fetherframe(NULL, 0);		
 		headers[FIRST_ETHER_FRAME_POS+i].type = HEADER_TYPE_ETHER;
 	}
 	//vlan
 	for(i=0;i<MAX_VLAN_FRAMES;i++){
-		headers[FIRST_VLAN_FRAME_POS+i].frame = rofl::fvlanframe(NULL, 0);		
+		headers[FIRST_VLAN_FRAME_POS+i].frame = new rofl::fvlanframe(NULL, 0);		
 		headers[FIRST_VLAN_FRAME_POS+i].type = HEADER_TYPE_VLAN;
 	}
 	//mpls
 	for(i=0;i<MAX_MPLS_FRAMES;i++){
-		headers[FIRST_MPLS_FRAME_POS+i].frame = rofl::fmplsframe(NULL, 0);		
+		headers[FIRST_MPLS_FRAME_POS+i].frame = new rofl::fmplsframe(NULL, 0);		
 		headers[FIRST_MPLS_FRAME_POS+i].type = HEADER_TYPE_MPLS;
 	}
 	//arpv4
 	for(i=0;i<MAX_ARPV4_FRAMES;i++){
-		headers[FIRST_ARPV4_FRAME_POS+i].frame = rofl::farpv4frame(NULL, 0);		
+		headers[FIRST_ARPV4_FRAME_POS+i].frame = new rofl::farpv4frame(NULL, 0);		
 		headers[FIRST_ARPV4_FRAME_POS+i].type = HEADER_TYPE_ARPV4;
 	}
 	//ipv4
 	for(i=0;i<MAX_IPV4_FRAMES;i++){
-		headers[FIRST_IPV4_FRAME_POS+i].frame = rofl::fipv4frame(NULL, 0);		
+		headers[FIRST_IPV4_FRAME_POS+i].frame = new rofl::fipv4frame(NULL, 0);		
 		headers[FIRST_IPV4_FRAME_POS+i].type = HEADER_TYPE_IPV4;
 	}
 	//icmpv4
 	for(i=0;i<MAX_ICMPV4_FRAMES;i++){
-		headers[FIRST_ICMPV4_FRAME_POS+i].frame = rofl::ficmpv4frame(NULL, 0);		
+		headers[FIRST_ICMPV4_FRAME_POS+i].frame = new rofl::ficmpv4frame(NULL, 0);		
 		headers[FIRST_ICMPV4_FRAME_POS+i].type = HEADER_TYPE_ICMPV4;
 	}
 	//udp
 	for(i=0;i<MAX_UDP_FRAMES;i++){
-		headers[FIRST_UDP_FRAME_POS+i].frame = rofl::fudpframe(NULL, 0);		
+		headers[FIRST_UDP_FRAME_POS+i].frame = new rofl::fudpframe(NULL, 0);		
 		headers[FIRST_UDP_FRAME_POS+i].type = HEADER_TYPE_UDP;
 	}
 	//tcp
 	for(i=0;i<MAX_TCP_FRAMES;i++){
-		headers[FIRST_TCP_FRAME_POS+i].frame = rofl::ftcpframe(NULL, 0);		
+		headers[FIRST_TCP_FRAME_POS+i].frame = new rofl::ftcpframe(NULL, 0);		
 		headers[FIRST_TCP_FRAME_POS+i].type = HEADER_TYPE_TCP;
 	}
 	//sctp
 	for(i=0;i<MAX_SCTP_FRAMES;i++){
-		headers[FIRST_SCTP_FRAME_POS+i].frame = rofl::fsctpframe(NULL, 0);		
+		headers[FIRST_SCTP_FRAME_POS+i].frame = new rofl::fsctpframe(NULL, 0);		
 		headers[FIRST_SCTP_FRAME_POS+i].type = HEADER_TYPE_SCTP;
 	}
 	//pppoe
 	for(i=0;i<MAX_PPPOE_FRAMES;i++){
-		headers[FIRST_PPPOE_FRAME_POS+i].frame = rofl::fpppoeframe(NULL, 0);		
+		headers[FIRST_PPPOE_FRAME_POS+i].frame = new rofl::fpppoeframe(NULL, 0);		
 		headers[FIRST_PPPOE_FRAME_POS+i].type = HEADER_TYPE_PPPOE;
 	}
 
 	//ppp
 	for(i=0;i<MAX_PPP_FRAMES;i++){
-		headers[FIRST_PPP_FRAME_POS+i].frame = rofl::fpppframe(NULL, 0);		
+		headers[FIRST_PPP_FRAME_POS+i].frame = new rofl::fpppframe(NULL, 0);		
 		headers[FIRST_PPP_FRAME_POS+i].type = HEADER_TYPE_PPP;
 	}
 
@@ -76,7 +76,11 @@ static_pktclassifier::static_pktclassifier(datapacketx86* pkt_ref) :
 }
 
 static_pktclassifier::~static_pktclassifier(){
-
+	
+	for(unsigned i=0; i<MAX_HEADERS; i++){
+		if(headers[i].frame)
+			delete headers[i].frame;		
+	}
 
 }
 
@@ -106,7 +110,7 @@ rofl::fetherframe* static_pktclassifier::ether(unsigned int idx) const{
 		pos = FIRST_ETHER_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fetherframe*) headers[pos]->frame	
+	return (rofl::fetherframe*) headers[pos].frame;	
 }
 
 rofl::fvlanframe* static_pktclassifier::vlan(unsigned int idx) const
@@ -122,7 +126,7 @@ rofl::fvlanframe* static_pktclassifier::vlan(unsigned int idx) const
 		pos = FIRST_VLAN_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fvlanframe*) headers[pos]->frame;
+	return (rofl::fvlanframe*) headers[pos].frame;
 }
 
 rofl::fmplsframe* static_pktclassifier::mpls(unsigned int idx) const
@@ -138,7 +142,7 @@ rofl::fmplsframe* static_pktclassifier::mpls(unsigned int idx) const
 		pos = FIRST_MPLS_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fmplsframe*) headers[pos]->frame;
+	return (rofl::fmplsframe*) headers[pos].frame;
 }
 
 rofl::farpv4frame* static_pktclassifier::arpv4(unsigned int idx) const
@@ -154,7 +158,7 @@ rofl::farpv4frame* static_pktclassifier::arpv4(unsigned int idx) const
 		pos = FIRST_ARPV4_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::farpv4frame*) headers[pos]->frame;
+	return (rofl::farpv4frame*) headers[pos].frame;
 }
 
 rofl::fipv4frame* static_pktclassifier::ipv4(unsigned int idx) const
@@ -170,7 +174,7 @@ rofl::fipv4frame* static_pktclassifier::ipv4(unsigned int idx) const
 		pos = FIRST_IPV4_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fipv4frame*) headers[pos]->frame;
+	return (rofl::fipv4frame*) headers[pos].frame;
 }
 
 rofl::ficmpv4frame* static_pktclassifier::icmpv4(unsigned int idx) const
@@ -186,7 +190,7 @@ rofl::ficmpv4frame* static_pktclassifier::icmpv4(unsigned int idx) const
 		pos = FIRST_ICMPV4_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::ficmpv4frame*) headers[pos]->frame;
+	return (rofl::ficmpv4frame*) headers[pos].frame;
 
 }
 
@@ -203,7 +207,7 @@ rofl::fudpframe* static_pktclassifier::udp(unsigned int idx) const
 		pos = FIRST_UDP_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fudpframe*) headers[pos]->frame;
+	return (rofl::fudpframe*) headers[pos].frame;
 
 }
 
@@ -220,7 +224,7 @@ rofl::ftcpframe* static_pktclassifier::tcp(unsigned int idx) const
 		pos = FIRST_TCP_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::ftcpframe*) headers[pos]->frame;
+	return (rofl::ftcpframe*) headers[pos].frame;
 
 }
 
@@ -237,7 +241,7 @@ rofl::fsctpframe* static_pktclassifier::sctp(unsigned int idx) const
 		pos = FIRST_SCTP_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fsctpframe*) headers[pos]->frame;
+	return (rofl::fsctpframe*) headers[pos].frame;
 }
 
 rofl::fpppoeframe* static_pktclassifier::pppoe(unsigned int idx) const
@@ -253,7 +257,7 @@ rofl::fpppoeframe* static_pktclassifier::pppoe(unsigned int idx) const
 		pos = FIRST_PPPOE_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fpppoeframe*) headers[pos]->frame;
+	return (rofl::fpppoeframe*) headers[pos].frame;
 
 }
 
@@ -270,7 +274,7 @@ rofl::fpppframe* static_pktclassifier::ppp(unsigned int idx) const
 		pos = FIRST_PPP_FRAME_POS + idx;	
 
 	//Return the index
-	return (rofl::fpppframe*) headers[pos]->frame;
+	return (rofl::fpppframe*) headers[pos].frame;
 }
 
 /*
@@ -282,7 +286,7 @@ void static_pktclassifier::parse_ether(uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_ether = num_of_headers[HEADER_TYPE_ETHER];
-	headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame.reset(data, datalen/*sizeof(struct rofl::fetherframe::eth_hdr_t)*/);
+	headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame->reset(data, datalen/*sizeof(struct rofl::fetherframe::eth_hdr_t)*/);
 	headers[FIRST_ETHER_FRAME_POS + num_of_ether].present = true;
 	num_of_headers[HEADER_TYPE_ETHER] = num_of_ether+1;
 
@@ -291,9 +295,9 @@ void static_pktclassifier::parse_ether(uint8_t *data, size_t datalen){
 	datalen -= sizeof(struct rofl::fetherframe::eth_hdr_t);
 
 	//Set pointer to header
-	rofl::fetherframe* ether = &headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame;
+	rofl::fetherframe* ether_header = (rofl::fetherframe*) headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame;
 	
-	eth_type = ether->get_dl_type();
+	eth_type = ether_header->get_dl_type();
 
 	switch (eth_type) {
 		case rofl::fvlanframe::VLAN_CTAG_ETHER:
@@ -339,7 +343,7 @@ void static_pktclassifier::parse_vlan( uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_vlan = num_of_headers[HEADER_TYPE_VLAN];
-	headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame.reset(data, datalen);
+	headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame->reset(data, datalen);
 	headers[FIRST_VLAN_FRAME_POS + num_of_vlan].present = true;
 	num_of_headers[HEADER_TYPE_VLAN] = num_of_vlan+1;
 
@@ -348,7 +352,7 @@ void static_pktclassifier::parse_vlan( uint8_t *data, size_t datalen){
 	datalen -= sizeof(struct rofl::fvlanframe::vlan_hdr_t);
 
 	//Set pointer to header
-	rofl::fvlanframe* vlan = &headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame;
+	rofl::fvlanframe* vlan = (rofl::fvlanframe*) headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame;
 	
 	eth_type = vlan->get_dl_type();
 
@@ -396,7 +400,7 @@ void static_pktclassifier::parse_mpls(uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_mpls = num_of_headers[HEADER_TYPE_MPLS];
-	headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame.reset(data, datalen);
+	headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame->reset(data, datalen);
 	headers[FIRST_MPLS_FRAME_POS + num_of_mpls].present = true;
 	num_of_headers[HEADER_TYPE_MPLS] = num_of_mpls+1;
 
@@ -405,7 +409,7 @@ void static_pktclassifier::parse_mpls(uint8_t *data, size_t datalen){
 	datalen -= sizeof(struct rofl::fmplsframe::mpls_hdr_t);
 
 	//Set pointer to header
-	rofl::fmplsframe* mpls = &headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame;
+	rofl::fmplsframe* mpls = (rofl::fmplsframe*) headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame;
 	
 	if (not mpls->get_mpls_bos()){
 
@@ -425,11 +429,11 @@ void static_pktclassifier::parse_pppoe(uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_pppoe = num_of_headers[HEADER_TYPE_PPPOE];
-	headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame.reset(data, datalen);
+	headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame->reset(data, datalen);
 	headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].present = true;
 	num_of_headers[HEADER_TYPE_PPPOE] = num_of_pppoe+1;
 	
-	rofl::fpppoeframe* pppoe = &headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame;
+	rofl::fpppoeframe* pppoe = (rofl::fpppoeframe*) headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame;
 
 	switch (eth_type) {
 		case rofl::fpppoeframe::PPPOE_ETHER_DISCOVERY:
@@ -480,12 +484,12 @@ void static_pktclassifier::parse_ppp(uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_ppp = num_of_headers[HEADER_TYPE_PPP];
-	headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame.reset(data, datalen);
+	headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame->reset(data, datalen);
 	headers[FIRST_PPP_FRAME_POS + num_of_ppp].present = true;
 	num_of_headers[HEADER_TYPE_PPP] = num_of_ppp+1;
 
 	//Set reference
-	rofl::fpppframe* ppp = &headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame; 
+	rofl::fpppframe* ppp = (rofl::fpppframe*) headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	switch (ppp->get_ppp_prot()) {
@@ -514,12 +518,12 @@ void static_pktclassifier::parse_arpv4(uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_arpv4 = num_of_headers[HEADER_TYPE_ARPV4];
-	headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame.reset(data, datalen);
+	headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame->reset(data, datalen);
 	headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].present = true;
 	num_of_headers[HEADER_TYPE_ARPV4] = num_of_arpv4+1;
 
 	//Set reference
-	//rofl::farpv4frame *arpv4 = &headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame; 
+	//rofl::farpv4frame *arpv4 = headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::farpv4frame::arpv4_hdr_t);
@@ -538,18 +542,18 @@ void static_pktclassifier::parse_ipv4(uint8_t *data, size_t datalen){
 	
 	//Set frame
 	unsigned int num_of_ipv4 = num_of_headers[HEADER_TYPE_IPV4];
-	headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame.reset(data, datalen);
+	headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame->reset(data, datalen);
 	headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].present = true;
 	num_of_headers[HEADER_TYPE_IPV4] = num_of_ipv4+1;
 
 	//Set reference
-	rofl::fipv4frame *ipv4 = &headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame; 
+	rofl::fipv4frame *ipv4 = (rofl::fipv4frame*) headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::fipv4frame::ipv4_hdr_t);
 	datalen -= sizeof(struct rofl::fipv4frame::ipv4_hdr_t);
 
-	if (ipv4->has_MF_bit_set){
+	if (ipv4->has_MF_bit_set()){
 		// TODO: fragment handling
 
 		return;
@@ -600,12 +604,12 @@ void static_pktclassifier::parse_icmpv4( uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_icmpv4 = num_of_headers[HEADER_TYPE_ICMPV4];
-	headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame.reset(data, datalen);
+	headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame->reset(data, datalen);
 	headers[FIRST_IPV4_FRAME_POS + num_of_icmpv4].present = true;
 	num_of_headers[HEADER_TYPE_ICMPV4] = num_of_icmpv4+1;
 
 	//Set reference
-	rofl::ficmpv4frame *icmpv4 = &headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame; 
+	//rofl::ficmpv4frame *icmpv4 = (rofl::ficmpv4frame*) headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::ficmpv4frame::icmpv4_hdr_t);
@@ -625,12 +629,13 @@ void static_pktclassifier::parse_udp(uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_udp = num_of_headers[HEADER_TYPE_UDP];
-	headers[FIRST_UDP_FRAME_POS + num_of_udp].frame.reset(data, datalen);
+	headers[FIRST_UDP_FRAME_POS + num_of_udp].frame->reset(data, datalen);
 	headers[FIRST_UDP_FRAME_POS + num_of_udp].present = true;
 	num_of_headers[HEADER_TYPE_UDP] = num_of_udp+1;
 
 	//Set reference
-	rofl::fudpframe *udp = &headers[FIRST_UDP_FRAME_POS + num_of_udp].frame; 
+	//rofl::fudpframe *udp = (rofl::fudpframe*) headers[FIRST_UDP_FRAME_POS + num_of_udp].frame; 
+	
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::fudpframe::udp_hdr_t);
 	datalen -= sizeof(struct rofl::fudpframe::udp_hdr_t);
@@ -649,12 +654,12 @@ void static_pktclassifier::parse_tcp(uint8_t *data, size_t datalen){
 
 	//Set frame
 	unsigned int num_of_tcp = num_of_headers[HEADER_TYPE_TCP];
-	headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame.reset(data, datalen);
+	headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame->reset(data, datalen);
 	headers[FIRST_TCP_FRAME_POS + num_of_tcp].present = true;
 	num_of_headers[HEADER_TYPE_TCP] = num_of_tcp+1;
 
 	//Set reference
-	rofl::ftcpframe *tcp = &headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame; 
+	//rofl::ftcpframe *tcp = (rofl::ftcpframe*) headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::ftcpframe::tcp_hdr_t);
@@ -673,13 +678,13 @@ void static_pktclassifier::parse_sctp( uint8_t *data, size_t datalen){
 	if (datalen < sizeof(struct rofl::fsctpframe::sctp_hdr_t)) { return; }
 
 	//Set frame
-	unsigned int num_of_sctcp = num_of_headers[HEADER_TYPE_SCTCP];
-	headers[FIRST_SCTCP_FRAME_POS + num_of_sctcp].frame.reset(data, datalen);
-	headers[FIRST_SCTCP_FRAME_POS + num_of_sctcp].present = true;
-	num_of_headers[HEADER_TYPE_SCTCP] = num_of_sctcp+1;
+	unsigned int num_of_sctp = num_of_headers[HEADER_TYPE_SCTP];
+	headers[FIRST_SCTP_FRAME_POS + num_of_sctp].frame->reset(data, datalen);
+	headers[FIRST_SCTP_FRAME_POS + num_of_sctp].present = true;
+	num_of_headers[HEADER_TYPE_SCTP] = num_of_sctp+1;
 
 	//Set reference
-	rofl::fsctcpframe *sctcp = &headers[FIRST_SCTCP_FRAME_POS + num_of_sctcp].frame; 
+	//rofl::fsctpframe *sctp = (rofl::fsctpframe*) headers[FIRST_SCTP_FRAME_POS + num_of_sctp].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::fsctpframe::sctp_hdr_t);
@@ -694,16 +699,14 @@ void static_pktclassifier::parse_sctp( uint8_t *data, size_t datalen){
 //Simply moves the first element(start) to the end-1 (rotates), and resets it
 void static_pktclassifier::pop_header(enum header_type type, unsigned int start, unsigned int end){
 
-	unsigned int i;
-
 	if(num_of_headers[type] == 0){
 		//Do nothing
 		assert(0);
 		return;
-	}else if(num_of_headers[type] == 1)
+	}else if(num_of_headers[type] == 1){
 		//Easy, just mark as 
 		headers[start].present = false;
-		headers[start].prev = headers[start].next = NULL;
+		//headers[start].prev = headers[start].next = NULL;
 		return;
 	}else{
 		//Move stuff around
@@ -711,13 +714,13 @@ void static_pktclassifier::pop_header(enum header_type type, unsigned int start,
 		header_container_t copy = headers[start];
 
 		//Rotate
-		for(i=start;i<end-1;i++){
+		for(unsigned i=start;i<end-1;i++){
 			headers[i] = headers[i+1];
 		}
 		
 		//Reset copy
 		copy.present = false;
-		copy.prev = copy.next = NULL;
+		//copy.prev = copy.next = NULL;
 		
 		//Set last item
 		headers[end-1] = copy;		
@@ -749,18 +752,21 @@ void static_pktclassifier::push_header(enum header_type type, unsigned int start
 	
 	//Set presence
 	header->present = true;
-	header->copy.prev = NULL; 
+	//header->copy.prev = NULL; 
 	
 	//Increment header type counter	
 	num_of_headers[type]++;	
 }
 
 void static_pktclassifier::pop_vlan(){
+	
+	rofl::fetherframe* ether_header;
+	
 	// outermost vlan tag, if any, following immediately the initial ethernet header
 	if(num_of_headers[HEADER_TYPE_VLAN] == 0 || !headers[FIRST_VLAN_FRAME_POS].present)
 		return;
 
-	rofl::fvlanframe* vlan = dynamic_cast<rofl::fvlanframe*> headers[FIRST_VLAN_FRAME_POS].frame;
+	rofl::fvlanframe* vlan = (rofl::fvlanframe*) headers[FIRST_VLAN_FRAME_POS].frame;
 
 	if (!vlan)
 		return;
@@ -772,37 +778,55 @@ void static_pktclassifier::pop_vlan(){
 	//Take header out
 	pop_header(HEADER_TYPE_VLAN, FIRST_VLAN_FRAME_POS, FIRST_VLAN_FRAME_POS+MAX_VLAN_FRAMES);
 
+	//Recover the ether(0)
+	ether_header = ether(0);
+	
 	//Set ether_type of new frame
-	ether(0)->shift_right(sizeof(struct rofl::fvlanframe::vlan_hdr_t));
-	ether(0)->set_dl_type(ether_type);
+	ether_header->shift_right(sizeof(struct rofl::fvlanframe::vlan_hdr_t));
+	ether_header->set_dl_type(ether_type);
+	ether_header->reset(ether_header->soframe(), ether_header->framelen() - sizeof(struct rofl::fvlanframe::vlan_hdr_t));
 }
 
 void static_pktclassifier::pop_mpls(uint16_t ether_type){
 	// outermost mpls tag, if any, following immediately the initial ethernet header
+	
+	rofl::fetherframe* ether_header;
+	unsigned int current_length;	
 
 	if (num_of_headers[HEADER_TYPE_MPLS] == 0 || !headers[FIRST_MPLS_FRAME_POS].present)
 		return;
 	
-	rofl::fmplsframe* mpls = dynamic_cast<rofl::fmplsframe*> headers[FIRST_MPLS_FRAME_POS].frame;
+	rofl::fmplsframe* mpls = (rofl::fmplsframe*) headers[FIRST_MPLS_FRAME_POS].frame;
 	
 	if (!mpls)
 		return;
+
+	//Recover the ether(0)
+	ether_header = ether(0);
+	current_length = ether_header->framelen(); 
+	
 	pkt_pop(/*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fmplsframe::mpls_hdr_t));
 
 	//Take header out
 	pop_header(HEADER_TYPE_MPLS, FIRST_MPLS_FRAME_POS, FIRST_MPLS_FRAME_POS+MAX_MPLS_FRAMES);
 
-	ether(0)->shift_right(sizeof(rofl::fmplsframe::mpls_hdr_t));
-	ether(0)->set_dl_type(ether_type);
+	ether_header->shift_right(sizeof(rofl::fmplsframe::mpls_hdr_t));
+	ether_header->set_dl_type(ether_type);
+	ether_header->reset(ether_header->soframe(), current_length - sizeof(struct rofl::fmplsframe::mpls_hdr_t));
 }
 
-void
-static_pktclassifier::pop_pppoe(uint16_t ether_type){
+void static_pktclassifier::pop_pppoe(uint16_t ether_type){
+	
+	rofl::fetherframe* ether_header;
+	
 	// outermost mpls tag, if any, following immediately the initial ethernet header
 	if(num_of_headers[HEADER_TYPE_PPPOE] == 0 || !headers[FIRST_PPPOE_FRAME_POS].present)
 		return;
 
-	switch (ether(0)->get_dl_type()) {
+	//Recover the ether(0)
+	ether_header = ether(0);
+
+	switch (ether_header->get_dl_type()) {
 		case rofl::fpppoeframe::PPPOE_ETHER_DISCOVERY:
 		{
 			pkt_pop(/*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fpppoeframe::pppoe_hdr_t));
@@ -812,9 +836,10 @@ static_pktclassifier::pop_pppoe(uint16_t ether_type){
 
 				frame_pop(pppoe(0));
 			}
-			ether(0)->shift_right(sizeof(rofl::fpppoeframe::pppoe_hdr_t));
+			ether_header->shift_right(sizeof(rofl::fpppoeframe::pppoe_hdr_t));
 		}
 			break;
+
 		case rofl::fpppoeframe::PPPOE_ETHER_SESSION:
 		{
 			pkt_pop(/*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t),
@@ -825,12 +850,14 @@ static_pktclassifier::pop_pppoe(uint16_t ether_type){
 			if (ppp(0)) {
 				pop_header(HEADER_TYPE_PPP, FIRST_PPP_FRAME_POS, FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES);
 			}
-			ether(0)->shift_right(sizeof(rofl::fpppoeframe::pppoe_hdr_t) + sizeof(rofl::fpppframe::ppp_hdr_t));
+			ether_header->shift_right(sizeof(rofl::fpppoeframe::pppoe_hdr_t) + sizeof(rofl::fpppframe::ppp_hdr_t));
 		}
 		break;
 	}
 
-	ether(0)->set_dl_type(ether_type);
+	ether_header->set_dl_type(ether_type);
+	ether_header->reset(ether_header->soframe(), ether_header->framelen() - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
+
 }
 
 
@@ -845,15 +872,22 @@ static_pktclassifier::pop_pppoe(uint16_t ether_type){
  */
 
 rofl::fvlanframe* static_pktclassifier::push_vlan(uint16_t ether_type){
+	
+	rofl::fetherframe* ether_header;
+	unsigned int current_length;
 
 	if ((NULL == ether(0)) || num_of_headers[HEADER_TYPE_VLAN] == MAX_VLAN_FRAMES ){
 		return NULL;
 	}
 	
+	//Recover the ether(0)
+	ether_header = ether(0);
+	current_length = ether_header->framelen(); 
+	
 	if(!is_classified)
 		classify(); // this ensures that ether(0) exists
 
-	uint16_t inner_ether_type = ether(0)->get_dl_type();
+	uint16_t inner_ether_type = ether_header->get_dl_type();
 
 	/*
 	 * this invalidates ether(0), as it shifts ether(0) to the left
@@ -866,7 +900,7 @@ rofl::fvlanframe* static_pktclassifier::push_vlan(uint16_t ether_type){
 	/*
 	 * adjust ether(0): move one vlan tag to the left
 	 */
-	ether(0)->shift_left(sizeof(struct rofl::fvlanframe::vlan_hdr_t));
+	ether_header->shift_left(sizeof(struct rofl::fvlanframe::vlan_hdr_t));
 
 	/*
 	 * append the new fvlanframe 
@@ -874,44 +908,56 @@ rofl::fvlanframe* static_pktclassifier::push_vlan(uint16_t ether_type){
 	push_header(HEADER_TYPE_VLAN, FIRST_VLAN_FRAME_POS, FIRST_VLAN_FRAME_POS+MAX_VLAN_FRAMES);
 	
 	//Now reset frame 
-	headers[FIRST_VLAN_FRAME_POS].frame.reset(ether(0)->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fvlanframe::vlan_hdr_t));
+	ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fvlanframe::vlan_hdr_t));
+	
+	headers[FIRST_VLAN_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fvlanframe::vlan_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
 
 
 	/*
 	 * set default values in vlan tag
 	 */
-	if (this->vlan(1)){
-		vlan->set_dl_vlan_id(this->vlan(1)->get_dl_vlan_id());
-		vlan->set_dl_vlan_pcp(this->vlan(1)->get_dl_vlan_pcp());
+	rofl::fvlanframe* vlan_header = this->vlan(0);
+	if ( this->vlan(1) ) {
+		vlan_header->set_dl_vlan_id(this->vlan(1)->get_dl_vlan_id());
+		vlan_header->set_dl_vlan_pcp(this->vlan(1)->get_dl_vlan_pcp());
 	} else {
-		vlan->set_dl_vlan_id(0x0000);
-		vlan->set_dl_vlan_pcp(0x00);
+		vlan_header->set_dl_vlan_id(0x0000);
+		vlan_header->set_dl_vlan_pcp(0x00);
 	}
-	vlan->set_dl_type(inner_ether_type);
-	ether(0)->set_dl_type(ether_type);
 
-	return vlan;
+	vlan_header->set_dl_type(inner_ether_type);
+	ether_header->set_dl_type(ether_type);
+	
+	return vlan_header;
 }
 
 rofl::fmplsframe* static_pktclassifier::push_mpls(uint16_t ether_type){
+	
+	rofl::fetherframe* ether_header;
+	rofl::fmplsframe* mpls_header;
+	unsigned int current_length;
 
 	if(!is_classified)
 		classify();
 
+	//Recover the ether(0)
+	ether_header = ether(0);
+	current_length = ether_header->framelen(); 
+	
 	/*
 	 * this invalidates ether(0), as it shifts ether(0) to the left
 	 */
-	if (pkt_push(ether(0)->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fmplsframe::mpls_hdr_t)) == ROFL_FAILURE){
+	if (pkt_push(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fmplsframe::mpls_hdr_t)) == ROFL_FAILURE){
 		// TODO: log error
 		return 0;
 	}
 
+
 	/*
 	 * adjust ether(0): move one mpls tag to the left
 	 */
-	ether(0)->shift_left(sizeof(struct rofl::fmplsframe::mpls_hdr_t));
-
-	ether(0)->set_dl_type(ether_type);
+	ether_header->shift_left(sizeof(struct rofl::fmplsframe::mpls_hdr_t));
+	ether_header->set_dl_type(ether_type);
 
 	/*
 	 * append the new fmplsframe instance to ether(0)
@@ -919,29 +965,36 @@ rofl::fmplsframe* static_pktclassifier::push_mpls(uint16_t ether_type){
 	push_header(HEADER_TYPE_MPLS, FIRST_MPLS_FRAME_POS, FIRST_MPLS_FRAME_POS+MAX_MPLS_FRAMES);
 	
 	//Now reset frame 
-	headers[FIRST_MPLS_FRAME_POS].frame.reset(ether(0)->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fmplsframe::mpls_hdr_t));
+	//Size of ethernet needs to be extended with + MPLS size 
+	//MPLS size needs to be ether_header->size + MPLS - ether_header
+	ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fmplsframe::mpls_hdr_t));
+	headers[FIRST_MPLS_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fmplsframe::mpls_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
 
 
 	/*
 	 * set default values in mpls tag
 	 */
+	mpls_header = this->mpls(0);
+
 	if (this->mpls(1) != this->mpls(0)){
-		mpls->set_mpls_bos(false);
-		mpls->set_mpls_label(this->mpls(1)->get_mpls_label());
-		mpls->set_mpls_tc(this->mpls(1)->get_mpls_tc());
-		mpls->set_mpls_ttl(this->mpls(1)->get_mpls_ttl());
+		mpls_header->set_mpls_bos(false);
+		mpls_header->set_mpls_label(this->mpls(1)->get_mpls_label());
+		mpls_header->set_mpls_tc(this->mpls(1)->get_mpls_tc());
+		mpls_header->set_mpls_ttl(this->mpls(1)->get_mpls_ttl());
 	} else {
-		mpls->set_mpls_bos(true);
-		mpls->set_mpls_label(0x0000);
-		mpls->set_mpls_tc(0x00);
-		mpls->set_mpls_ttl(0x00);
+		mpls_header->set_mpls_bos(true);
+		mpls_header->set_mpls_label(0x0000);
+		mpls_header->set_mpls_tc(0x00);
+		mpls_header->set_mpls_ttl(0x00);
 	}
 
-	return mpls;
+	return mpls_header;
 }
 
-rofl::fpppoeframe*
-static_pktclassifier::push_pppoe(uint16_t ether_type){
+rofl::fpppoeframe* static_pktclassifier::push_pppoe(uint16_t ether_type){
+	
+	rofl::fetherframe* ether_header;
+	unsigned int current_length;
 
 	if(!is_classified)
 		classify();
@@ -951,6 +1004,10 @@ static_pktclassifier::push_pppoe(uint16_t ether_type){
 		return NULL;
 	}
 
+	//Recover the ether(0)
+	ether_header = ether(0);
+	current_length = ether_header->framelen(); 
+	
 	rofl::fpppoeframe *n_pppoe = NULL; 
 	rofl::fpppframe *n_ppp = NULL; 
 
@@ -971,27 +1028,28 @@ static_pktclassifier::push_pppoe(uint16_t ether_type){
 			/*
 			 * adjust ether(0): move one pppoe tag to the left
 			 */
-			ether(0)->shift_left(bytes_to_insert);
+			ether_header->shift_left(bytes_to_insert);
 
-			ether(0)->set_dl_type(rofl::fpppoeframe::PPPOE_ETHER_SESSION);
+			ether_header->set_dl_type(rofl::fpppoeframe::PPPOE_ETHER_SESSION);
 
 			/*
 			 * append the new fpppoeframe instance to ether(0)
 			 */
 			push_header(HEADER_TYPE_PPPOE, FIRST_PPPOE_FRAME_POS, FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES);
 			push_header(HEADER_TYPE_PPP, FIRST_PPP_FRAME_POS, FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES);
-			
-			//Now reset frame 
-			headers[FIRST_PPPOE_FRAME_POS].frame.reset(ether(0)->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
-			headers[FIRST_PPP_FRAME_POS].frame.reset(pppoe(0)->soframe() + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t), sizeof(struct rofl::fpppframe::ppp_hdr_t));
-			n_pppoe = &headers[FIRST_PPPOE_FRAME_POS].frame;
-			n_ppp = &headers[FIRST_PPP_FRAME_POS].frame;
+	
+			n_pppoe = (rofl::fpppoeframe*)headers[FIRST_PPPOE_FRAME_POS].frame;
+			n_ppp = (rofl::fpppframe*)headers[FIRST_PPP_FRAME_POS].frame;
 
+			//Now reset frames 
+			ether_header->reset(ether_header->soframe(), current_length + bytes_to_insert);
+			n_pppoe->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), ether_header->framelen() - sizeof(struct rofl::fetherframe::eth_hdr_t) );
+			n_ppp->reset(n_pppoe->soframe() + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t), n_pppoe->framelen() - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
+	
 			/*
 			 * TODO: check if this is an appropiate fix 
 			 */
 			n_pppoe->set_hdr_length(pkt->get_buffer_length() - sizeof(struct rofl::fetherframe::eth_hdr_t) - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
-
 			n_ppp->set_ppp_prot(0x0000);
 		}
 			break;
@@ -1003,7 +1061,7 @@ static_pktclassifier::push_pppoe(uint16_t ether_type){
 			/*
 			 * this invalidates ether(0), as it shifts ether(0) to the left
 			 */
-			if (pkt_push(ether(0)->payload(), bytes_to_insert) == ROFL_FAILURE){
+			if (pkt_push(ether_header->payload(), bytes_to_insert) == ROFL_FAILURE){
 				// TODO: log error
 				return NULL;
 			}
@@ -1011,19 +1069,22 @@ static_pktclassifier::push_pppoe(uint16_t ether_type){
 			/*
 			 * adjust ether(0): move one pppoe tag to the left
 			 */
-			ether(0)->shift_left(bytes_to_insert);
+			ether_header->shift_left(bytes_to_insert);
 
-			ether(0)->set_dl_type(rofl::fpppoeframe::PPPOE_ETHER_DISCOVERY);
+			ether_header->set_dl_type(rofl::fpppoeframe::PPPOE_ETHER_DISCOVERY);
 
 			/*
 			 * append the new fpppoeframe instance to ether(0)
 			 */
 			push_header(HEADER_TYPE_PPPOE, FIRST_PPPOE_FRAME_POS, FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES);
 			
-			//Now reset frame 
-			headers[FIRST_PPPOE_FRAME_POS].frame.reset(ether(0)->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
+			//Now reset frame
+			//Size of ethernet needs to be extended with +PPPOE size 
+			//PPPOE size needs to be ether_header->size + PPPOE - ether_header
+			ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
+			headers[FIRST_PPPOE_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
 
-			n_pppoe = &headers[FIRST_PPPOE_FRAME_POS].frame;
+			n_pppoe = (rofl::fpppoeframe*)headers[FIRST_PPPOE_FRAME_POS].frame;
 
 
 		}
@@ -1045,12 +1106,12 @@ static_pktclassifier::push_pppoe(uint16_t ether_type){
 void static_pktclassifier::dump(){
 
 	ROFL_DEBUG("datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
-	rofl::fframe *frame = fhead;
 
-//	while (NULL != frame) {
-//		ROFL_ERR("%s\n", frame->c_str());
-//		frame = frame->next;
-//	}
+
+	//while (NULL != frame) {
+	//	ROFL_ERR("%s\n", frame->c_str());
+	//	frame = frame->next;
+	//}
 	
 
 	rofl::fframe content(pkt->get_buffer(), pkt->get_buffer_length());

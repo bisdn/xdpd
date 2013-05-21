@@ -27,7 +27,6 @@ static of_switch_t* sw=NULL;
 */
 afa_result_t fwd_module_init(){
 
-	
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
@@ -69,7 +68,7 @@ afa_result_t fwd_module_destroy(){
 	}
 
 	//If using the pipeline you should call
-	//physical_switch_destroy();
+	physical_switch_destroy();
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_destroy()\n");
 	

@@ -11,8 +11,8 @@
 
 #define NETFPGA_DEVNAME "/dev/nf10"
 
-//Pointer to the unique (static) netfpga_dev_info_t
-static netfpga_dev_info_t* nfpga=NULL;
+//Pointer to the unique (static) netfpga_device_t
+static netfpga_device_t* nfpga=NULL;
 
 //Initializes the netfpga shared state, including appropiate state of registers and bootstrap.
 rofl_result_t netfpga_init(){
@@ -23,7 +23,7 @@ rofl_result_t netfpga_init(){
 		return ROFL_SUCCESS; //Skip
 	}
 
-	nfpga = (netfpga_dev_info_t*)malloc(sizeof(*nfpga));
+	nfpga = (netfpga_device_t*)malloc(sizeof(*nfpga));
 	//memset(*nfpga, 0, sizeof(*nfpga));
 
 
@@ -32,8 +32,13 @@ rofl_result_t netfpga_init(){
 	if( ( nfpga->fd) < 0)
 		return ROFL_FAILURE;
 
+	//Reset counters
+	nfpga->num_of_wildcarded_fm = nfpga->num_of_exact_fm = 0;
+
+	//Init mutex
+	pthread_mutex_init(&nfpga->mutex, NULL);
+
 	//FIXME: set registers	
-	
 
 	return ROFL_SUCCESS;
 }
@@ -47,6 +52,10 @@ rofl_result_t netfpga_destroy(){
 		return ROFL_SUCCESS; //Skip
 	}	
 
+	//Destroy mutex
+	pthread_mutex_destroy(&nfpga->mutex);
+
+
 	//FIXME set registers
 
 	close(nfpga->fd);
@@ -55,11 +64,21 @@ rofl_result_t netfpga_destroy(){
 	return ROFL_SUCCESS;
 }
 
-//Deletes all entries within a table 
+//Lock netfpga so that other threads cannot do operations of it. 
+void netfpga_lock(){
+	pthread_mutex_lock(&nfpga->mutex);
+}
+
+//Unlock netfpga so that other threads can do operations of it. 
+void netfpga_unlock(){
+	pthread_mutex_unlock(&nfpga->mutex);
+}
+
+
+
 
 rofl_result_t netfpga_set_table_behaviour(void){
 	//FIXME
-	
 	return ROFL_SUCCESS;
 }
 
@@ -71,7 +90,6 @@ static rofl_result_t netfpga_delete_exact_entry(unsigned int pos){
 	
 	return ROFL_SUCCESS;
 }
-
 static rofl_result_t netfpga_delete_wildcard_entry(unsigned int pos){
 
 	//FIXME: implement	
@@ -79,6 +97,7 @@ static rofl_result_t netfpga_delete_wildcard_entry(unsigned int pos){
 	return ROFL_SUCCESS;
 }
 
+//Deletes all entries within a table 
 rofl_result_t netfpga_delete_all_entries(void){
 
 	unsigned int i;	

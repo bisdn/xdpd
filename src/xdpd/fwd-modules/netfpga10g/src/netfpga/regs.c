@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
-rofl_result_t netfpga_read_reg(netfpga_dev_info_t *nfpga, uint32_t reg_id, uint32_t *value){
+rofl_result_t netfpga_read_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t *value){
 	
 	netfpga_register_t reg;
 
@@ -21,7 +21,7 @@ rofl_result_t netfpga_read_reg(netfpga_dev_info_t *nfpga, uint32_t reg_id, uint3
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t netfpga_write_reg(netfpga_dev_info_t *nfpga, uint32_t reg_id, uint32_t value){
+rofl_result_t netfpga_write_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t value){
 
 	netfpga_register_t reg;
 

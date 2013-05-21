@@ -7,6 +7,7 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <pthread.h>
 #include <rofl.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_pipeline.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_entry.h>
@@ -24,12 +25,19 @@
 #define NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE	32
 
 
-typedef struct netfpga_dev_info{
+typedef struct netfpga_device{
 
-	//File descriptor for the netfpga
+	//File descriptor for IOCTL
 	int fd;
 
-}netfpga_dev_info_t;
+	//Counters (for easy rejection of flow_mods)
+	unsigned int num_of_wildcarded_fm;
+	unsigned int num_of_exact_fm;
+
+	//Mutex (serialization over
+	pthread_mutex_t mutex;
+
+}netfpga_device_t;
 
 //
 // NetFPGA management
@@ -44,6 +52,18 @@ rofl_result_t netfpga_init(void);
 * @brief Destroys state of the netfpga, and restores it to the original state (state before init) 
 */
 rofl_result_t netfpga_destroy(void);
+
+/**
+* @brief Lock netfpga so that other threads cannot do operations of it. 
+*/
+void netfpga_lock(void);
+
+/**
+* @brief Unlock netfpga so that other threads can do operations of it. 
+*/
+void netfpga_unlock(void);
+
+
 
 //
 // Entry table management

@@ -178,7 +178,7 @@ COMPILER_ASSERT( Register_alignment, (sizeof(netfpga_register_t) == 8));
 
 //Prototypes
 /* Function declarations */
-rofl_result_t netfpga_read_reg(netfpga_dev_info_t *nfpga, uint32_t reg_id, uint32_t *value);
-rofl_result_t netfpga_write_reg(netfpga_dev_info_t *nfpga, uint32_t reg_id, uint32_t value);
+rofl_result_t netfpga_read_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t *value);
+rofl_result_t netfpga_write_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t value);
 
 #endif //NETFPGA_REGS

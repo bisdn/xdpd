@@ -2,14 +2,14 @@ MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS = afa-imp pipeline-imp#Add more here... 
 
-noinst_LTLIBRARIES = libfwd_module_example_src.la
+noinst_LTLIBRARIES = libfwd_module_netfpga10g_src.la
 
-library_includedir=$(includedir)/fwd-modules/example
+library_includedir=$(includedir)/fwd-modules/netfpga10g
 include_HEADERS=
 
-libfwd_module_example_src_la_SOURCES =
-libfwd_module_example_src_la_LIBADD = \
-		afa-imp/libfwd_module_example_afa_imp.la\
-		pipeline-imp/libfwd_module_example_pipeline_imp.la 
+libfwd_module_netfpga10g_src_la_SOURCES =
+libfwd_module_netfpga10g_src_la_LIBADD = \
+		afa-imp/libfwd_module_netfpga10g_afa_imp.la\
+		pipeline-imp/libfwd_module_netfpga10g_pipeline_imp.la 
 		
 library_include_HEADERS=

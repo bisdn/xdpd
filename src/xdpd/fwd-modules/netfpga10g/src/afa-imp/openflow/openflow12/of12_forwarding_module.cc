@@ -238,11 +238,11 @@ of12_stats_flow_aggregate_msg_t* fwd_module_of12_get_flow_aggregate_stats(uint64
  *
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
-of12_group_mod_err_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
+rofl_of12_gm_result_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return OF12_GROUP_MOD_ERR_OK;
+	return ROFL_OF12_GM_OK;
 }
 
 /**
@@ -252,11 +252,11 @@ of12_group_mod_err_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_typ
  *
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
-of12_group_mod_err_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
+rofl_of12_gm_result_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return OF12_GROUP_MOD_ERR_OK;
+	return ROFL_OF12_GM_OK;
 }
 
 /**
@@ -266,13 +266,24 @@ of12_group_mod_err_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_
  *
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
-of12_group_mod_err_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t id){
+rofl_of12_gm_result_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t id){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return OF12_GROUP_MOD_ERR_OK;
+	return ROFL_OF12_GM_OK;
 }
 
+/**
+ * @name    fwd_module_of12_group_search
+ * @brief   Instructs driver to search the GROUP with identification ID
+ * @ingroup of12_fwd_module_async_event_processing
+ *
+ * @param dpid 		Datapath ID of the switch to search the GROUP
+ */
+afa_result_t fwd_module_of12_fetch_group_table(uint64_t dpid, of12_group_table_t *group_table){
+	
+	return AFA_FAILURE;
+}
 /**
  * @name    fwd_module_of12_get_group_stats
  * @brief   Instructs driver to fetch the GROUP statistics
@@ -285,4 +296,18 @@ of12_stats_group_msg_t * fwd_module_of12_get_group_stats(uint64_t dpid, uint32_t
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return NULL; 
+}
+
+/**
+ * @name    fwd_module_of12_get_group_all_stats
+ * @brief   Instructs driver to fetch the GROUP statistics from all the groups
+ * @ingroup of12_fwd_module_async_event_processing
+ *
+ * @param dpid 		Datapath ID of the switch where the GROUPS are
+ */
+of12_stats_group_msg_t * fwd_module_of12_get_group_all_stats(uint64_t dpid, uint32_t id){
+	
+	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+	
+		return of12_get_group_all_stats(lsw->pipeline,id);
 }

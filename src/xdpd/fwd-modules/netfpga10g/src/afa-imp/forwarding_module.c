@@ -14,6 +14,11 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
 #define FWD_MOD_NAME "netfpga10g"
+
+
+//Static pipeline switch instance
+static of_switch_t* sw=NULL;
+
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself
@@ -25,8 +30,8 @@ afa_result_t fwd_module_init(){
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
-	//if(physical_switch_init() != ROFL_SUCCESS)
-	//	return AFA_FAILURE;
+	if(physical_switch_init() != ROFL_SUCCESS)
+		return AFA_FAILURE;
 
 	//Likely here you are going to discover platform ports;
 	//If using ROFL_pipeline you would then add them (physical_switch_add_port()
@@ -68,7 +73,9 @@ afa_result_t fwd_module_destroy(){
 */
 of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
 	
-	of_switch_t* sw;
+	//We only accept one logical switch in this forwarding module
+	if(sw)
+		return NULL;
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling create switch. Name: %s, number of tables: %d\n",name, num_of_tables);
 	
@@ -83,6 +90,8 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 			return NULL;
 	}	
 
+	//XXX: todo
+	
 	//In software switches, you may have to launch threads that
 	//do the pipeline processing of the packets
 	
@@ -99,12 +108,9 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 * @retval  Pointer to of_switch_t instance or NULL 
 */
 of_switch_t* fwd_module_get_switch_by_dpid(uint64_t dpid){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_switch_by_dpid()\n");
-	
-	//Call directly the bank
-	//If using the ROFL-pipeline library you would likely call
-	//physical_switch_get_logical_switch_by_dpid(dpid); 
+
+	if( sw && (sw->dpid == dpid) )
+		return sw;
 	
 	return NULL;
 }
@@ -116,7 +122,26 @@ of_switch_t* fwd_module_get_switch_by_dpid(uint64_t dpid){
 */
 afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 
+	if(!sw)
+		return AFA_FAILURE;
+
+	if(sw->dpid != dpid)
+		return AFA_FAILURE;
+	
 	ROFL_INFO("["FWD_MOD_NAME"] calling destroy_switch_by_dpid()\n");
+
+	//XXX: do something with the hw
+	
+	//Detach ports from switch. Do not feed more packets to the switch
+	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
+		return AFA_FAILURE;
+	
+	//Remove switch from the switch bank
+	if(physical_switch_remove_logical_switch(sw)!=ROFL_SUCCESS)
+		return AFA_FAILURE;
+
+	//Set pointer sw pointer so that it can be recreated in the future
+	sw=NULL;	
 	
 	return AFA_SUCCESS;
 }
@@ -132,9 +157,7 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 * @retval  Pointer to the first port. 
 */
 switch_port_t* fwd_module_list_platform_ports(){
-	
 	//TODO: This is never used
-	
 	return NULL;
 }
 
@@ -144,10 +167,7 @@ switch_port_t* fwd_module_list_platform_ports(){
  * @ingroup port_management
  */
 switch_port_t* fwd_module_get_port_by_name(const char *name){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_port_by_name()\n");
-	
-	return NULL;
+	return physical_switch_get_port_by_name(name);
 }
 
 /*
@@ -157,10 +177,7 @@ switch_port_t* fwd_module_get_port_by_name(const char *name){
 * @retval  Pointer to the first port. 
 */
 switch_port_t** fwd_module_get_physical_ports(unsigned int* num_of_ports){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_physical_ports()\n");
-
-	return NULL;
+	return physical_switch_get_physical_ports(num_of_ports);
 }
 
 /*
@@ -170,10 +187,7 @@ switch_port_t** fwd_module_get_physical_ports(unsigned int* num_of_ports){
 * @retval  Pointer to the first port. 
 */
 switch_port_t** fwd_module_get_virtual_ports(unsigned int* num_of_ports){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_virtual_ports()\n");
-	
-	return NULL;
+	return physical_switch_get_virtual_ports(num_of_ports);
 }
 
 /*
@@ -183,10 +197,7 @@ switch_port_t** fwd_module_get_virtual_ports(unsigned int* num_of_ports){
 * @retval  Pointer to the first port. 
 */
 switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_tunnel_ports()\n");
-	
-	return NULL;
+	return physical_switch_get_tunnel_ports(num_of_ports);
 }
 /*
 * @name    fwd_module_attach_physical_port_to_switch
@@ -200,6 +211,8 @@ switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
 afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling attach_port_to_switch()\n");
+
+	//FIXME: todo
 	
 	return AFA_SUCCESS;
 }
@@ -215,6 +228,8 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling detach_port_from_switch()\n");
+	
+	//FIXME: todo
 
 	return AFA_SUCCESS; 
 }
@@ -230,6 +245,8 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const unsigned int of_port_num){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling detach_port_from_switch_at_port_num()\n");
+	
+	//FIXME: todo
 	
 	return AFA_SUCCESS;
 }
@@ -251,6 +268,8 @@ afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const
 afa_result_t fwd_module_enable_port(const char* name){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling enable_port()\n");
+	
+	//FIXME: todo
 	
 	return AFA_SUCCESS;
 }
@@ -281,6 +300,8 @@ afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num)
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling enable_port_by_num()\n");
 	
+	//FIXME: todo
+	
 	return AFA_SUCCESS;
 }
 
@@ -295,6 +316,8 @@ afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num)
 afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling disable_port_by_num()\n");
+	
+	//FIXME: todo
 	
 	return AFA_SUCCESS;
 }

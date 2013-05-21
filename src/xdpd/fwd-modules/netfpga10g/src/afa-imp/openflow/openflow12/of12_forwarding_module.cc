@@ -205,9 +205,7 @@ afa_result_t fwd_module_of12_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
  * @param matchs	Matchs
  */
 of12_stats_flow_msg_t* fwd_module_of12_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of12_match_t* matchs){
-
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
+	//We are not supporting single flow stats 
 	return NULL; 
 }
 
@@ -226,9 +224,7 @@ of12_stats_flow_msg_t* fwd_module_of12_get_flow_stats(uint64_t dpid, uint8_t tab
  * @param matchs	Matchs
  */
 of12_stats_flow_aggregate_msg_t* fwd_module_of12_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of12_match_t* matchs){
-
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-
+	//We are not supporting aggregatestats 
 	return NULL; 
 } 
 /**
@@ -239,10 +235,8 @@ of12_stats_flow_aggregate_msg_t* fwd_module_of12_get_flow_aggregate_stats(uint64
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
 rofl_of12_gm_result_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
-	return ROFL_OF12_GM_OK;
+	//We are not supporting groups (fast path is 1.0!)	
+	return ROFL_OF12_GM_BCOMMAND;
 }
 
 /**
@@ -253,10 +247,8 @@ rofl_of12_gm_result_t fwd_module_of12_group_mod_add(uint64_t dpid, of12_group_ty
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
 rofl_of12_gm_result_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group_type_t type, uint32_t id, of12_bucket_list_t *buckets){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
-	return ROFL_OF12_GM_OK;
+	//We are not supporting groups (fast path is 1.0!)	
+	return ROFL_OF12_GM_BCOMMAND;
 }
 
 /**
@@ -267,10 +259,8 @@ rofl_of12_gm_result_t fwd_module_of12_group_mod_modify(uint64_t dpid, of12_group
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
 rofl_of12_gm_result_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t id){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
-	return ROFL_OF12_GM_OK;
+	//We are not supporting groups (fast path is 1.0!)	
+	return ROFL_OF12_GM_BCOMMAND;
 }
 
 /**
@@ -292,9 +282,7 @@ afa_result_t fwd_module_of12_fetch_group_table(uint64_t dpid, of12_group_table_t
  * @param dpid 		Datapath ID of the switch where the GROUP is
  */
 of12_stats_group_msg_t * fwd_module_of12_get_group_stats(uint64_t dpid, uint32_t id){
-
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
+	//We are not supporting groups (fast path is 1.0!)	
 	return NULL; 
 }
 

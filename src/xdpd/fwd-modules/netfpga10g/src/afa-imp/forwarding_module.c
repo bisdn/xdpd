@@ -12,6 +12,7 @@
 #include <string.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../netfpga/netfpga.h"
 
 #define FWD_MOD_NAME "netfpga10g"
 
@@ -35,8 +36,17 @@ afa_result_t fwd_module_init(){
 
 	//Likely here you are going to discover platform ports;
 	//If using ROFL_pipeline you would then add them (physical_switch_add_port()
+	//FIXME
+
+	//Init 10G NetFPGA
+	if(netfpga_init() != ROFL_SUCCESS){
+		ROFL_ERR("["FWD_MOD_NAME"] calling netfpga_init() failed!\n");
+		//FIXME: Clear state and exit
+		return AFA_FAILURE;	
+	}
 
 	//Initialize some form of background task manager
+	//FIXME
 	
 	//And initialize or setup any other state your platform needs...	
 	
@@ -52,6 +62,11 @@ afa_result_t fwd_module_destroy(){
 
 	//In this function you allow the platform
 	//to be properly cleaning its own state
+
+	//Gently destroy (release) 10G NetFPGA
+	if(netfpga_destroy() != ROFL_SUCCESS){
+		ROFL_DBG("["FWD_MOD_NAME"] calling netfpga_destroy() failed!\n");
+	}
 
 	//If using the pipeline you should call
 	//physical_switch_destroy();

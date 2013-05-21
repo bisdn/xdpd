@@ -1,7 +1,10 @@
 #include "netfpga.h"
 
-#include <sys/stat.h>
+#include <unistd.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
+#include <rofl/common/utils/c_logger.h>
+#include <assert.h>
 
 #define NETFPGA_DEVNAME "/dev/nf10"
 
@@ -12,7 +15,7 @@ static netfpga_dev_info_t* nfpga=NULL;
 rofl_result_t netfpga_init(){
 
 	if(nfpga){
-		ROFL_DBG("Double call to netfpga_init()\n");
+		ROFL_DEBUG("Double call to netfpga_init()\n");
 		assert(0);
 		return ROFL_SUCCESS; //Skip
 	}
@@ -36,14 +39,14 @@ rofl_result_t netfpga_init(){
 rofl_result_t netfpga_destroy(){
 
 	if(!nfpga){
-		ROFL_DBG("netfpga_destroy() called without netfpga being initialized!\n");
+		ROFL_DEBUG("netfpga_destroy() called without netfpga being initialized!\n");
 		assert(0);
 		return ROFL_SUCCESS; //Skip
 	}	
 
 	//FIXME set registers
 
-	close(nfpga->fd)
+	close(nfpga->fd);
 	free(nfpga);	
 	
 	return ROFL_SUCCESS;

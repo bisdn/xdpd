@@ -6,7 +6,7 @@
 #define _NETFPGA_H_
 
 #include <inttypes.h>
-#include <stbool.h>
+#include <stdbool.h>
 #include <rofl.h>
 
 /**

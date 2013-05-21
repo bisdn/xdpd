@@ -65,7 +65,7 @@ afa_result_t fwd_module_destroy(){
 
 	//Gently destroy (release) 10G NetFPGA
 	if(netfpga_destroy() != ROFL_SUCCESS){
-		ROFL_DBG("["FWD_MOD_NAME"] calling netfpga_destroy() failed!\n");
+		ROFL_DEBUG("["FWD_MOD_NAME"] calling netfpga_destroy() failed!\n");
 	}
 
 	//If using the pipeline you should call

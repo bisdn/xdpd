@@ -5,9 +5,12 @@
 #ifndef _NETFPGA_REGS_
 #define NETFPGA__NETFPGA_REGS_
 
-#include <stbool.h>
-#include <rofl.h>
+#include <stdbool.h>
 #include <linux/sockios.h>
+#include <rofl.h>
+#include <rofl/common/utils/c_logger.h>
+
+#include "../util/compiler_assert.h"
 #include "netfpga.h"
 #include "xparameters.h"
 
@@ -170,7 +173,8 @@ typedef struct netfpga_register{
 	uint32_t reg_id;
 	uint32_t reg_val;
 }netfpga_register_t;
-assert(sizeof(netfpga_register_t) == 4);
+
+COMPILER_ASSERT( Register_alignment, (sizeof(netfpga_register_t) == 8));
 	
 
 //Prototypes

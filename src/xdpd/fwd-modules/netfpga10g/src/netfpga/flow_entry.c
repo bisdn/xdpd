@@ -6,7 +6,7 @@
 
 
 //Creates a (empty) flow entry (mappable to HW) 
-netfpga_flow_entry_t* netfpga_init_entry(){
+netfpga_flow_entry_t* netfpga_init_flow_entry(){
 
 	netfpga_flow_entry_t* entry;
 	
@@ -49,7 +49,7 @@ netfpga_flow_entry_t* netfpga_init_entry(){
 
 
 //Destroys an entry previously created via netfpga_init_entry() 
-void netfpga_destroy_entry(netfpga_flow_entry_t* entry){
+void netfpga_destroy_flow_entry(netfpga_flow_entry_t* entry){
 
 	if(!entry)
 		return;
@@ -270,19 +270,19 @@ netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(of12_flow_entry_t* of12_ent
 	netfpga_flow_entry_t* entry;
 
 	//Create the entry container	
-	entry = netfpga_init_entry();
+	entry = netfpga_init_flow_entry();
 	if(!entry)
 		return NULL;
 
 	//Do the translation matches
 	if(netfpga_flow_entry_map_matches(entry, of12_entry) != ROFL_SUCCESS){
-		netfpga_destroy_entry(entry);
+		netfpga_destroy_flow_entry(entry);
 		return NULL;
 	}
 	
 	//Do the translation actions 
 	if(netfpga_flow_entry_map_actions(entry, of12_entry) != ROFL_SUCCESS){
-		netfpga_destroy_entry(entry);
+		netfpga_destroy_flow_entry(entry);
 		return NULL;
 	}
 	

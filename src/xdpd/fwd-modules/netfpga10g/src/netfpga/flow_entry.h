@@ -54,6 +54,10 @@ COMPILER_ASSERT( FLOW_ENTRY_MATCHES, ( sizeof(netfpga_flow_entry_matches_t) == 3
 //Masks
 typedef netfpga_flow_entry_matches_t netfpga_flow_entry_matches_mask_t;
 
+#define NETFPGA_FLOW_ENTRY_MATCHES_WORD_LEN (sizeof(netfpga_flow_entry_matches_t)/4)
+
+#define NETFPGA_FLOW_ENTRY_WILDCARD_WORD_LEN (sizeof(netfpga_flow_entry_matches_mask_t)/4)
+
 //Actions
 
 //Enum for the bitfield
@@ -90,6 +94,8 @@ typedef struct netfpga_flow_entry_actions {
 
 COMPILER_ASSERT( FLOW_ENTRY_ACTIONS, ( sizeof(netfpga_flow_entry_actions_t) == 40) );
 
+#define NETFPGA_FLOW_ENTRY_ACTIONS_WORD_LEN (sizeof(netfpga_flow_entry_actions_t)/4)
+
 #pragma pack(pop)
 
 //Type of entry
@@ -124,13 +130,13 @@ typedef struct netfpga_flow_entry{
 /**
 * @brief Creates a (empty) flow entry (mappable to HW) 
 */
-netfpga_flow_entry_t* netfpga_init_entry(void);
+netfpga_flow_entry_t* netfpga_init_flow_entry(void);
 
 
 /**
 * @brief Destroys an entry previously created via netfpga_init_entry() 
 */
-void netfpga_destroy_entry(netfpga_flow_entry_t* entry);
+void netfpga_destroy_flow_entry(netfpga_flow_entry_t* entry);
 
 /**
 * @brief Generates a HW flow entry based on a ROFL-pipeline flow entry 

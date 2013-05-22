@@ -19,22 +19,14 @@ static netfpga_device_t* nfpga=NULL;
  * Internal HW stuff
  */
 
-#define NETFPGA_READY_WAIT_TIME_US 50000  //50ms
-
 //Specific add command for wildcard entries
 static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 
 	unsigned int i;
 	uint32_t* aux;
-	uint32_t reg_val;
 
 	//Wait for the netfpga to be ready
-	netfpga_read_reg(nfpga, NETFPGA_OF_ACC_RDY_REG,&reg_val);
-	while ( !reg_val&0x01 ){
-		//Not ready loop
-		usleep(NETFPGA_READY_WAIT_TIME_US);
-		netfpga_read_reg(nfpga, NETFPGA_OF_ACC_RDY_REG,&reg_val);
-	}
+	netfpga_wait_reg_ready(nfpga);
 
 	//Set Row address
 	if(entry->type == NETFPGA_FE_FIXED )

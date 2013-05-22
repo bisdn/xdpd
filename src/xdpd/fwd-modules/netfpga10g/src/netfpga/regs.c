@@ -2,6 +2,7 @@
 
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 rofl_result_t netfpga_read_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t *value){
 	
@@ -38,3 +39,17 @@ rofl_result_t netfpga_write_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32
 	return ROFL_SUCCESS;
 }
 
+#define NETFPGA_READY_WAIT_TIME_US 50000  //50ms
+
+void netfpga_wait_reg_ready(netfpga_device_t *nfpga){
+	
+	uint32_t reg_val;
+	
+	//Wait for the netfpga to be ready
+	netfpga_read_reg(nfpga, NETFPGA_OF_ACC_RDY_REG,&reg_val);
+	while ( !reg_val&0x01 ){
+		//Not ready loop
+		usleep(NETFPGA_READY_WAIT_TIME_US);
+		netfpga_read_reg(nfpga, NETFPGA_OF_ACC_RDY_REG,&reg_val);
+	}
+}

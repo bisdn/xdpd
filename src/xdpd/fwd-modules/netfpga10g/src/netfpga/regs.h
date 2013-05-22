@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef _NETFPGA_REGS_
-#define NETFPGA__NETFPGA_REGS_
+#define _NETFPGA_REGS_
 
 #include <stdbool.h>
 #include <linux/sockios.h>
@@ -180,8 +180,21 @@ ROFL_BEGIN_DECLS
 
 //Prototypes
 /* Function declarations */
+
+/**
+* @brief Attempt to read a register 
+*/
 rofl_result_t netfpga_read_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t *value);
+
+/**
+* @brief Attempt to write in a register 
+*/
 rofl_result_t netfpga_write_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t value);
+
+/**
+* @brief Wait until NETFPGA_OF_ACC_RDY_REG is 1  
+*/
+void netfpga_wait_reg_ready(netfpga_device_t *nfpga);
 
 //C++ extern C
 ROFL_END_DECLS

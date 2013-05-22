@@ -37,8 +37,8 @@ typedef struct netfpga_device{
 	int fd;
 
 	//Counters (for easy rejection of flow_mods)
-	unsigned int num_of_wildcarded_fm;
-	unsigned int num_of_exact_fm;
+	unsigned int num_of_wildcarded_entries;
+	unsigned int num_of_exact_entries;
 
 	//Mutex (serialization over
 	pthread_mutex_t mutex;
@@ -90,18 +90,18 @@ rofl_result_t netfpga_set_table_behaviour(void);
 //
 
 /**
-* @brief Add flow entry to table 
+* @brief Add flow entry to table. Assumes already mutual exclusion over table 
 */
 rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry);
 
 /**
-* @brief Deletes an specific entry defined by *entry 
+* @brief Deletes an specific entry defined by *entry. Assumes already mutual exclusion over table 
 */
 rofl_result_t netfpga_delete_flow_entry(of12_flow_entry_t* entry);
 
 
 /**
-* @brief Deletes all entries within a table 
+* @brief Deletes all entries within a table. Assumes already mutual exclusion over table 
 */
 rofl_result_t netfpga_delete_all_entries(void);
 

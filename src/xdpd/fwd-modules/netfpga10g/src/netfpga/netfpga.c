@@ -118,7 +118,7 @@ rofl_result_t netfpga_init(){
 		return ROFL_FAILURE;
 
 	//Reset counters
-	nfpga->num_of_wildcarded_fm = nfpga->num_of_exact_fm = 0;
+	nfpga->num_of_wildcarded_entries= nfpga->num_of_exact_entries = 0;
 
 	//Init mutex
 	pthread_mutex_init(&nfpga->mutex, NULL);
@@ -177,13 +177,19 @@ rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry){
 	if(!hw_entry)
 		return ROFL_FAILURE;
 	
-	//Do the association
+	//Do the association with the netfpga state
 	entry->platform_state = (of12_flow_entry_platform_state_t*) hw_entry;
 
 	//Write to hw
-	netfpga_add_entry_hw(hw_entry);
-		
-	//This might not be true but...
+	if( netfpga_add_entry_hw(hw_entry) != ROFL_SUCCESS )
+		return ROFL_FAILURE;
+
+	//Increment counters
+	if( hw_entry->type == NETFPGA_FE_WILDCARDED )
+		nfpga->num_of_wildcarded_entries++;	
+	else
+		nfpga->num_of_exact_entries++;	
+
 	return ROFL_SUCCESS;
 }
 
@@ -198,14 +204,21 @@ rofl_result_t netfpga_delete_flow_entry(of12_flow_entry_t* entry){
 		return ROFL_FAILURE;
 
 	//Delete entry in HW
-	netfpga_delete_entry_hw(hw_entry->hw_pos);
+	if( netfpga_delete_entry_hw(hw_entry->hw_pos) != ROFL_SUCCESS )
+		return ROFL_FAILURE;
 	
 	//Destroy
 	netfpga_destroy_flow_entry(hw_entry);
 
+	//Decrement counters
+	if( hw_entry->type == NETFPGA_FE_WILDCARDED )
+		nfpga->num_of_wildcarded_entries--;	
+	else
+		nfpga->num_of_exact_entries--;	
+
+	//Unset platform state
 	entry->platform_state = NULL;	
 
-	//This might not be true but...
 	return ROFL_SUCCESS;
 }
 

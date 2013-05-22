@@ -245,12 +245,8 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 
 		//Buffer has expired
 		if(!pkt){
-			assert(0);
 			return AFA_FAILURE; /* TODO: add specific error */
 		}
-
-		//Copy the incomming packet
-		memcpy(((datapacketx86*)pkt->platform_state)->get_buffer(), buffer,buffer_size);	
 	}else{
 		//Retrieve a free buffer	
 		pkt = bufferpool::get_free_buffer();

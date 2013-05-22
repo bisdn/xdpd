@@ -57,3 +57,6 @@ void platform_of12_remove_entry_hook(of12_flow_entry_t* entry){
 
 }
 
+void platform_of12_update_stats_hook(of12_flow_entry_t* entry){
+
+}

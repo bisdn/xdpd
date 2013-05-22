@@ -14,6 +14,47 @@
 //Pointer to the unique (static) netfpga_device_t
 static netfpga_device_t* nfpga=NULL;
 
+
+/*
+ * Internal HW stuff
+ */
+
+//Specific add command for exact entries
+static rofl_result_t netfpga_add_exact_entry_hw(netfpga_flow_entry_t* entry){
+
+	//FIXME: implement	
+	
+	return ROFL_SUCCESS;
+}
+
+//Specific add command for wildcard entries
+static rofl_result_t netfpga_add_wildcard_entry_hw(netfpga_flow_entry_t* entry){
+
+	//FIXME: implement	
+	
+	return ROFL_SUCCESS;
+}
+
+//Specific delete commands for exact entries
+static rofl_result_t netfpga_delete_exact_entry_hw(unsigned int pos){
+
+	//FIXME: implement	
+	
+	return ROFL_SUCCESS;
+}
+//Specific delete commands for wildcarded entries
+static rofl_result_t netfpga_delete_wildcard_entry_hw(unsigned int pos){
+
+	//FIXME: implement	
+	
+	return ROFL_SUCCESS;
+}
+
+
+/*
+ * External interfaces
+ */
+
 //Initializes the netfpga shared state, including appropiate state of registers and bootstrap.
 rofl_result_t netfpga_init(){
 
@@ -77,23 +118,54 @@ void netfpga_unlock(){
 
 
 
+//Set table behaviour
 rofl_result_t netfpga_set_table_behaviour(void){
 	//FIXME
 	return ROFL_SUCCESS;
 }
 
+//Add flow entry to table 
+rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry){
 
-//Specific delete commands
-static rofl_result_t netfpga_delete_exact_entry(unsigned int pos){
+	//Map entry to a hw entry
+	netfpga_flow_entry_t* hw_entry = netfpga_generate_hw_flow_entry(entry);
 
-	//FIXME: implement	
+	if(!hw_entry)
+		return ROFL_FAILURE;
 	
+	//Do the association
+	entry->platform_state = (of12_flow_entry_platform_state_t*) hw_entry;
+
+	//Write to hw
+	if(hw_entry->type == NETFPGA_FE_FIXED )
+		netfpga_add_exact_entry_hw(hw_entry);
+	else
+		netfpga_add_wildcard_entry_hw(hw_entry);
+		
 	return ROFL_SUCCESS;
 }
-static rofl_result_t netfpga_delete_wildcard_entry(unsigned int pos){
 
-	//FIXME: implement	
+//Deletes an specific entry defined by *entry 
+rofl_result_t netfpga_delete_entry(of12_flow_entry_t* entry){
+
+	//Recover the position
+	netfpga_flow_entry_t* hw_entry = (netfpga_flow_entry_t*)entry->platform_state;
+
+	//Check
+	if(!hw_entry)
+		return ROFL_FAILURE;
+
+	if(hw_entry->type == NETFPGA_FE_FIXED )
+		netfpga_delete_exact_entry_hw(hw_entry->hw_pos);
+	else
+		netfpga_delete_wildcard_entry_hw(hw_entry->hw_pos);
 	
+	
+	//Destroy
+	netfpga_destroy_entry(hw_entry);
+
+	entry->platform_state = NULL;	
+
 	return ROFL_SUCCESS;
 }
 
@@ -112,7 +184,7 @@ rofl_result_t netfpga_delete_all_entries(void){
 
 	for(i=0; i< NETFPGA_OPENFLOW_EXACT_TABLE_SIZE; ++i){
 		entry->hw_pos = i;
-		netfpga_delete_exact_entry(i);	
+		netfpga_delete_exact_entry_hw(i);	
 	}
 	
 	//Attempt to delete all entries in the table
@@ -121,7 +193,7 @@ rofl_result_t netfpga_delete_all_entries(void){
 	
 	for(i=0; i< (NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE - NETFPGA_RESERVED_FOR_CPU2NETFPGA) ; ++i){
 		entry->hw_pos = i;
-		netfpga_delete_wildcard_entry(i);	
+		netfpga_delete_wildcard_entry_hw(i);	
 	}
 
 	//Create an empty entry
@@ -129,5 +201,4 @@ rofl_result_t netfpga_delete_all_entries(void){
 
 	return ROFL_SUCCESS;
 }
-
 

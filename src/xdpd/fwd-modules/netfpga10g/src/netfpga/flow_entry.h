@@ -29,6 +29,9 @@
 #pragma pack(1)	
 
 /** Mapped to HW structures **/
+typedef struct netfpga_align_mac_addr{
+	uint8_t addr[6];
+}netfpga_align_mac_addr_t;
 
 //Matches
 typedef struct netfpga_flow_entry_matches {
@@ -38,8 +41,8 @@ typedef struct netfpga_flow_entry_matches {
 	uint32_t ip_dst;
 	uint32_t ip_src;
 	uint16_t eth_type;
-	uint8_t eth_dst[6];
-	uint8_t eth_src[6];
+	netfpga_align_mac_addr_t eth_dst;
+	netfpga_align_mac_addr_t eth_src;
 	uint8_t src_port;
 	uint8_t ip_tos;
 	uint16_t vlan_id;
@@ -52,13 +55,31 @@ COMPILER_ASSERT( FLOW_ENTRY_MATCHES, ( sizeof(netfpga_flow_entry_matches_t) == 3
 typedef netfpga_flow_entry_matches_t netfpga_flow_entry_matches_mask_t;
 
 //Actions
+
+//Enum for the bitfield
+enum netfpga_action_type { //OF1.0 
+	NETFPGA_AT_OUTPUT,           /* Output to switch port. */
+	NETFPGA_AT_SET_VLAN_VID,     /* Set the 802.1q VLAN id. */
+	NETFPGA_AT_SET_VLAN_PCP,     /* Set the 802.1q priority. */
+	NETFPGA_AT_STRIP_VLAN,       /* Strip the 802.1q header. */
+	NETFPGA_AT_SET_DL_SRC,       /* Ethernet source address. */
+	NETFPGA_AT_SET_DL_DST,       /* Ethernet destination address. */
+	NETFPGA_AT_SET_NW_SRC,       /* IP source address. */
+	NETFPGA_AT_SET_NW_DST,       /* IP destination address. */
+	NETFPGA_AT_SET_NW_TOS,       /* IP ToS (DSCP field, 6 bits). */
+	NETFPGA_AT_SET_TP_SRC,       /* TCP/UDP source port. */
+	NETFPGA_AT_SET_TP_DST,       /* TCP/UDP destination port. */
+	NETFPGA_AT_ENQUEUE,          /* Output to queue.  */
+	NETFPGA_AT_VENDOR = 0xffff
+};
+
 typedef struct netfpga_flow_entry_actions {
 	uint16_t forward_bitmask;
-	uint16_t nf2_action_flag;
+	uint16_t action_flags;
 	uint16_t vlan_id;
 	uint8_t vlan_pcp;
-	uint8_t eth_src[6];
-	uint8_t eth_dst[6];
+	netfpga_align_mac_addr_t eth_src;
+	netfpga_align_mac_addr_t eth_dst;
 	uint32_t ip_src;
 	uint32_t ip_dst;
 	uint8_t ip_tos;
@@ -73,7 +94,7 @@ COMPILER_ASSERT( FLOW_ENTRY_ACTIONS, ( sizeof(netfpga_flow_entry_actions_t) == 4
 
 //Type of entry
 typedef enum netfpga_flow_entry_type{
-	NETFPGA_FE_FIXED,
+	NETFPGA_FE_FIXED = 0,
 	NETFPGA_FE_WILDCARDED
 }netfpga_flow_entry_type_t;
 
@@ -86,10 +107,10 @@ typedef struct netfpga_flow_entry{
 	netfpga_flow_entry_type_t type;
 
 	//Matches
-	netfpga_flow_entry_matches_mask_t* mask; 
+	netfpga_flow_entry_matches_t* matches;
 
 	//Wildcards
-	netfpga_flow_entry_matches_t* matches;
+	netfpga_flow_entry_matches_mask_t* masks; 
 
 	//Actions	
 	netfpga_flow_entry_actions_t* actions;
@@ -106,10 +127,14 @@ typedef struct netfpga_flow_entry{
 netfpga_flow_entry_t* netfpga_init_entry(void);
 
 
-/**netfpga_flow_entry_t
+/**
 * @brief Destroys an entry previously created via netfpga_init_entry() 
 */
 void netfpga_destroy_entry(netfpga_flow_entry_t* entry);
 
+/**
+* @brief Generates a HW flow entry based on a ROFL-pipeline flow entry 
+*/
+netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(of12_flow_entry_t* of12_entry);
 
 #endif //NETFPGA_FLOW_ENTRY_H

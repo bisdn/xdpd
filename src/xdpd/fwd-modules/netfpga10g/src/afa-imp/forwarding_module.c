@@ -28,6 +28,7 @@ static of_switch_t* sw=NULL;
 afa_result_t fwd_module_init(){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
+	ROFL_ERR("["FWD_MOD_NAME"] !!!!!!!!! WARNING: NetFPGA 10G forwarding module is experimental. Be advised. !!!!!!!!!\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
 	if(physical_switch_init() != ROFL_SUCCESS)
@@ -88,10 +89,17 @@ afa_result_t fwd_module_destroy(){
 of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
 	
 	//We only accept one logical switch in this forwarding module
-	if(sw)
-		return NULL;
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling create switch. Name: %s, number of tables: %d\n",name, num_of_tables);
+	if(sw){
+		ROFL_ERR("["FWD_MOD_NAME"] ERROR: NetFPGA 10G forwarding module only supports 1 logical switch! Exiting...\n");
+		exit(EXIT_FAILURE);
+	}
+
+	ROFL_INFO("["FWD_MOD_NAME"] calling create switch. Name: %s\n",name);
+
+	if(num_of_tables > 1){
+		ROFL_ERR("["FWD_MOD_NAME"] ERROR: NetFPGA 10G forwarding module only supports 1 table! Exiting...\n");
+		exit(EXIT_FAILURE);
+	}
 	
 	switch(of_version){
 		case OF_VERSION_12: 
@@ -104,7 +112,8 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 			return NULL;
 	}	
 
-	//XXX: todo
+	//XXX: Add ports directly
+	ROFL_ERR("["FWD_MOD_NAME"] All NetFPGA physical ports are attached (nf0..nf3). Subsequent calls to attach_port will be silently ignored...\n");
 	
 	//In software switches, you may have to launch threads that
 	//do the pipeline processing of the packets
@@ -223,11 +232,7 @@ switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
 * @param of_port_num If *of_port_num is non-zero, try to attach to of_port_num of the logical switch, otherwise try to attach to the first available port and return the result in of_port_num
 */
 afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
-
-	ROFL_INFO("["FWD_MOD_NAME"] calling attach_port_to_switch()\n");
-
-	//FIXME: todo
-	
+	//Skip
 	return AFA_SUCCESS;
 }
 
@@ -240,11 +245,7 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 * @param name Port name (system's name)
 */
 afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name){
-
-	ROFL_INFO("["FWD_MOD_NAME"] calling detach_port_from_switch()\n");
-	
-	//FIXME: todo
-
+	//Skip
 	return AFA_SUCCESS; 
 }
 
@@ -258,9 +259,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 */
 afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const unsigned int of_port_num){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling detach_port_from_switch_at_port_num()\n");
-	
-	//FIXME: todo
+	//Skip
 	
 	return AFA_SUCCESS;
 }

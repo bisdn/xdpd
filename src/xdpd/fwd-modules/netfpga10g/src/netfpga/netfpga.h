@@ -24,6 +24,12 @@
 #define NETFPGA_OPENFLOW_EXACT_TABLE_SIZE		1024    
 #define NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE	32
 
+//Ports
+#define NETFPGA_FIRST_PORT	0
+#define NETFPGA_LAST_PORT	3
+#define NETFPGA_IN_PORT		0xfff8
+#define NETFPGA_FLOOD_PORT	0xfffb
+#define NETFPGA_ALL_PORTS	0xfffc
 
 typedef struct netfpga_device{
 
@@ -78,6 +84,11 @@ rofl_result_t netfpga_set_table_behaviour(void);
 //
 // Flow mods
 //
+
+/**
+* @brief Add flow entry to table 
+*/
+rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry);
 
 /**
 * @brief Deletes an specific entry defined by *entry 

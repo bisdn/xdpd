@@ -53,6 +53,9 @@ ROFL_BEGIN_DECLS
 // NetFPGA management
 //
 
+//Getter only used internally in the netfpga code
+netfpga_device_t* netfpga_get(void);
+	
 /**
 * @brief   Initializes the netfpga shared state, including appropiate state of registers and bootstrap.
 */

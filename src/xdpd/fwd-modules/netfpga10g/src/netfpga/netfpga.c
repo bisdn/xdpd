@@ -91,6 +91,11 @@ static rofl_result_t netfpga_delete_entry_hw(unsigned int pos){
  * External interfaces
  */
 
+//Getter only used internally in the netfpga code
+netfpga_device_t* netfpga_get(){
+	return nfpga;
+}
+
 //Initializes the netfpga shared state, including appropiate state of registers and bootstrap.
 rofl_result_t netfpga_init(){
 

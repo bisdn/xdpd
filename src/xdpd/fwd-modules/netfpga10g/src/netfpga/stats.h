@@ -8,6 +8,8 @@
 
 #include <inttypes.h>
 #include "../util/compiler_assert.h"
+#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_pipeline.h>
+#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_entry.h>
 #include "netfpga.h"
 
 /**
@@ -33,7 +35,7 @@ ROFL_BEGIN_DECLS
 /**
 * @brief Get the raw statistics for a flow 
 */
-rofl_result_t get_raw_stats(netfpga_flow_entry_stats_t* entry, netfpga_flow_entry_stats_t* stats);
+rofl_result_t netfpga_update_entry_stats(of12_flow_entry_t* entry);
 
 
 //C++ extern C

@@ -6,6 +6,7 @@
 #include <rofl/common/utils/c_logger.h>
 
 #include "../netfpga/netfpga.h" 
+#include "../netfpga/stats.h" 
 
 #define FWD_MOD_NAME "netfpga10g"
 /*
@@ -96,5 +97,14 @@ void platform_of12_remove_entry_hook(of12_flow_entry_t* entry){
 }
 
 void platform_of12_update_stats_hook(of12_flow_entry_t* entry){
+
+	//Lock netfpga
+	netfpga_lock();
+	
+	//Add entry
+	netfpga_update_entry_stats(entry);
+	
+	//Release lock
+	netfpga_unlock();
 
 }

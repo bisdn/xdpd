@@ -45,6 +45,10 @@ typedef struct netfpga_device{
 
 }netfpga_device_t;
 
+
+//C++ extern C
+ROFL_BEGIN_DECLS
+
 //
 // NetFPGA management
 //
@@ -93,7 +97,7 @@ rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry);
 /**
 * @brief Deletes an specific entry defined by *entry 
 */
-rofl_result_t netfpga_delete_entry(of12_flow_entry_t* entry);
+rofl_result_t netfpga_delete_flow_entry(of12_flow_entry_t* entry);
 
 
 /**
@@ -101,5 +105,7 @@ rofl_result_t netfpga_delete_entry(of12_flow_entry_t* entry);
 */
 rofl_result_t netfpga_delete_all_entries(void);
 
+//C++ extern C
+ROFL_END_DECLS
 
 #endif //NETFPGA_H

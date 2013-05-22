@@ -175,10 +175,15 @@ typedef struct netfpga_register{
 
 COMPILER_ASSERT( Register_alignment, (sizeof(netfpga_register_t) == 8));
 	
+//C++ extern C
+ROFL_BEGIN_DECLS
 
 //Prototypes
 /* Function declarations */
 rofl_result_t netfpga_read_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t *value);
 rofl_result_t netfpga_write_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t value);
+
+//C++ extern C
+ROFL_END_DECLS
 
 #endif //NETFPGA_REGS

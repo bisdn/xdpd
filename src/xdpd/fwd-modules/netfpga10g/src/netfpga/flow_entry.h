@@ -127,6 +127,9 @@ typedef struct netfpga_flow_entry{
 
 //Function prototypes
 
+//C++ extern C
+ROFL_BEGIN_DECLS
+
 /**
 * @brief Creates a (empty) flow entry (mappable to HW) 
 */
@@ -142,5 +145,8 @@ void netfpga_destroy_flow_entry(netfpga_flow_entry_t* entry);
 * @brief Generates a HW flow entry based on a ROFL-pipeline flow entry 
 */
 netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(of12_flow_entry_t* of12_entry);
+
+//C++ extern C
+ROFL_END_DECLS
 
 #endif //NETFPGA_FLOW_ENTRY_H

@@ -5,7 +5,9 @@
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
 #include <rofl/common/utils/c_logger.h>
 
-#define FWD_MOD_NAME "example"
+#include "../netfpga/netfpga.h" 
+
+#define FWD_MOD_NAME "netfpga10g"
 /*
 * Hooks for configuration of the switch
 */
@@ -47,14 +49,50 @@ void platform_of12_notify_flow_removed(const of12_switch_t* sw,
 
 void plaftorm_of12_add_entry_hook(of12_flow_entry_t* new_entry){
 
+	//Lock netfpga
+	netfpga_lock();
+	
+	//Add entry
+	netfpga_add_flow_entry(new_entry);
+	
+	//Release lock
+	netfpga_unlock();
+
 }
 
 void platform_of12_modify_entry_hook(of12_flow_entry_t* old_entry, of12_flow_entry_t* mod, int reset_count){
 
+	//TODO: Not implemented
+
+	#if 0
+	//Lock netfpga
+	netfpga_lock();
+
+	//Remove old one
+	netfpga_delete_flow_entry(entry);
+
+	//Do stuff...
+	
+	//Add entry
+	netfpga_add_flow_entry(mod);
+	
+	//Release lock
+	netfpga_unlock();
+	
+	#endif
+	
 }
 
 void platform_of12_remove_entry_hook(of12_flow_entry_t* entry){
 
+	//Lock netfpga
+	netfpga_lock();
+	
+	//Add entry
+	netfpga_delete_flow_entry(entry);
+	
+	//Release lock
+	netfpga_unlock();
 }
 
 void platform_of12_update_stats_hook(of12_flow_entry_t* entry){

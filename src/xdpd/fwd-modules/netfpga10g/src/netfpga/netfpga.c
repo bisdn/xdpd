@@ -188,7 +188,7 @@ rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry){
 }
 
 //Deletes an specific entry defined by *entry 
-rofl_result_t netfpga_delete_entry(of12_flow_entry_t* entry){
+rofl_result_t netfpga_delete_flow_entry(of12_flow_entry_t* entry){
 
 	//Recover the position
 	netfpga_flow_entry_t* hw_entry = (netfpga_flow_entry_t*)entry->platform_state;

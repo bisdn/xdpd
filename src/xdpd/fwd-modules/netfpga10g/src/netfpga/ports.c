@@ -16,7 +16,7 @@ rofl_result_t netfpga_discover_ports(){
 		//Compose name nf0...nf3
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
 		
-		ROFL_DEBUG("["FWD_MOD_NAME"] Attempting to discover and attach %s\n", iface_name);
+		ROFL_DEBUG("["FWD_MOD_NAME"] Attempting to discover %s\n", iface_name);
 	
 		//FIXME: interfaces should be anyway checked, and set link up.. but anyway. First implementation	
 		port = switch_port_init(iface_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_LIVE);
@@ -44,7 +44,7 @@ rofl_result_t netfpga_attach_ports(of_switch_t* sw){
 		//Compose name nf0...nf3
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
 		
-		ROFL_DEBUG("["FWD_MOD_NAME"] Attempting to discover and attach %s\n", iface_name);
+		ROFL_DEBUG("["FWD_MOD_NAME"] Attempting to attach %s\n", iface_name);
 	
 		//FIXME: interfaces should be anyway checked, and set link up.. but anyway. First implementation	
 		port = physical_switch_get_port_by_name(iface_name);

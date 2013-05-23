@@ -167,7 +167,7 @@ void* x86_background_tasks_routine(void* param)
 			
 		//Recover port from pipeline
 		port = physical_switch_get_port_by_name(iface_name);
-		port_events[i].events = EPOLLIN | EPOLLET;
+		port_events[i].events = EPOLLIN;
 
 		if( !port )
 			exit(EXIT_FAILURE);		
@@ -175,7 +175,7 @@ void* x86_background_tasks_routine(void* param)
 		//Maintain reference back
 		port_events[i].data.ptr = (void*)port;
 
-		if( epoll_ctl(efd,EPOLL_CTL_ADD, ((netfpga_port_t*)port->platform_port_state)->fd, &port_events[i]) ==-1 ){
+		if( epoll_ctl(efd, EPOLL_CTL_ADD, ((netfpga_port_t*)port->platform_port_state)->fd, &port_events[i]) < 0  ){
 			ROFL_ERR("<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
 			exit(EXIT_FAILURE);		
 		}

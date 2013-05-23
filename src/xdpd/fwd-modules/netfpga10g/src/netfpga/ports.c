@@ -3,18 +3,26 @@
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 
 #define FWD_MOD_NAME "netfpga10g"
 
 static rofl_result_t netfpga_init_port(switch_port_t* port){
 
+	int flags;
 	netfpga_port_t* nport = (netfpga_port_t*)malloc(sizeof(*nport));
 
 	//Open raw socket in R/W mode 
-	nport->fd = socket(AF_INET, SOCK_DGRAM, 0);
+	nport->fd = socket(PF_PACKET, SOCK_RAW, 0); //Check 
 	
-	if(nport->fd < 0){
+	if (nport->fd < 0) {
+		return ROFL_FAILURE;
+	}
+
+	/* Set non-blocking mode. */
+	flags = fcntl(nport->fd, F_GETFL, 0);
+	if(fcntl(nport->fd, F_SETFL, flags | O_NONBLOCK) < 0) {
 		return ROFL_FAILURE;
 	}
 

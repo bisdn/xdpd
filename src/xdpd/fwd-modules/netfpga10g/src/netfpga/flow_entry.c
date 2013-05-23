@@ -193,7 +193,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 	for(; action; action = action->next){
 	
 		//FIXME: quick hack (no aliasing in forced in all xdpd, for good reasons). Fix it!
-		indirect = (void*)action->field;	
+		indirect = (void*)&action->field;	
 
 		switch(action->type){
 

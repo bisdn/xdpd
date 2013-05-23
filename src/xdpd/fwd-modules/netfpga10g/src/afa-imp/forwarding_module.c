@@ -12,6 +12,7 @@
 #include <string.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../bg_taskmanager.h"
 #include "../netfpga/netfpga.h"
 #include "../netfpga/ports.h"
 
@@ -49,7 +50,7 @@ afa_result_t fwd_module_init(){
 	}
 
 	//Initialize some form of background task manager
-	//FIXME
+	launch_background_tasks_manager();
 	
 	//And initialize or setup any other state your platform needs...	
 	
@@ -65,6 +66,7 @@ afa_result_t fwd_module_destroy(){
 
 	//In this function you allow the platform
 	//to be properly cleaning its own state
+	stop_background_tasks_manager();
 
 	//Gently destroy (release) 10G NetFPGA
 	if(netfpga_destroy() != ROFL_SUCCESS){

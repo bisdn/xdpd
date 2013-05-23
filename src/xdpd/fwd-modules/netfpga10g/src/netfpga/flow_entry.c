@@ -3,6 +3,7 @@
 //Other headers
 #include <arpa/inet.h>
 #include "netfpga.h"
+#include "../util/crc32.h"
 
 
 //Creates a (empty) flow entry (mappable to HW) 
@@ -265,8 +266,49 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 	return ROFL_FAILURE;
 }
 
-netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(of12_flow_entry_t* of12_entry){
+//Calculate exact position
+static void netfpga_set_hw_position_exact(netfpga_device_t* nfpga, netfpga_flow_entry_t* hw_entry){
 	
+	uint32_t hash;
+	uint32_t pos; 
+	struct crc32 crc;
+
+	crc32_init(&crc, NETFPGA_POLYNOMIAL1);
+	hash = crc32_calculate(&crc, hw_entry->matches, sizeof(*hw_entry->matches));
+
+	//Calculate the index based on the hash.  The last bits of hash is the index in the table
+	pos = (NETFPGA_OPENFLOW_EXACT_TABLE_SIZE-1) & hash;
+
+	if (nfpga->hw_exact_table[pos] == NULL) {
+		hw_entry->hw_pos = pos;
+		nfpga->hw_exact_table[pos] = hw_entry;
+		return;
+	}
+
+	//Use fallback polynomial
+	crc32_init(&crc, NETFPGA_POLYNOMIAL2);
+	hash = crc32_calculate(&crc, hw_entry->matches, sizeof(*hw_entry->matches));
+	
+	// the bottom fixed bits of hash == the index into the table
+	pos = (NETFPGA_OPENFLOW_EXACT_TABLE_SIZE-1) & hash;
+
+	//Check existing entry
+	if (nfpga->hw_exact_table[pos] != NULL) {
+		//FIXME: if is the same, the previous entry should be removed... Which is the collision probability?
+	}
+	
+	hw_entry->hw_pos = pos;
+	nfpga->hw_exact_table[pos] = hw_entry;
+}
+
+//Determine wildcard position
+static void netfpga_set_hw_position_wildcard(netfpga_device_t* nfpga, netfpga_flow_entry_t* hw_entry){
+	
+
+}
+
+netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(netfpga_device_t* nfpga, of12_flow_entry_t* of12_entry){
+
 	netfpga_flow_entry_t* entry;
 
 	//Create the entry container	
@@ -285,6 +327,13 @@ netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(of12_flow_entry_t* of12_ent
 		netfpga_destroy_flow_entry(entry);
 		return NULL;
 	}
-	
+
+	//Determine the position of the entry
+	if( entry->type == NETFPGA_FE_WILDCARDED )
+		netfpga_set_hw_position_wildcard(nfpga, entry);
+	else
+		netfpga_set_hw_position_exact(nfpga, entry);
+
+
 	return entry;	
 }

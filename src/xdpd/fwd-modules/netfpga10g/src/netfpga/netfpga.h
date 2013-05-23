@@ -21,7 +21,7 @@
 
 //Constants
 #define NETFPGA_RESERVED_FOR_CPU2NETFPGA	8
-#define NETFPGA_OPENFLOW_EXACT_TABLE_SIZE		1024    
+#define NETFPGA_OPENFLOW_EXACT_TABLE_SIZE	1024 
 #define NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE	32
 
 //Ports
@@ -31,6 +31,12 @@
 #define NETFPGA_FLOOD_PORT	0xfffb
 #define NETFPGA_ALL_PORTS	0xfffc
 
+//Polynomials
+#define NETFPGA_POLYNOMIAL1	0x04C11DB7
+#define NETFPGA_POLYNOMIAL2	0x1EDC6F41 
+
+struct netfpga_flow_entry;
+
 typedef struct netfpga_device{
 
 	//File descriptor for IOCTL
@@ -39,6 +45,12 @@ typedef struct netfpga_device{
 	//Counters (for easy rejection of flow_mods)
 	unsigned int num_of_wildcarded_entries;
 	unsigned int num_of_exact_entries;
+
+	//Exact entry table
+	struct netfpga_flow_entry* hw_exact_table[NETFPGA_OPENFLOW_EXACT_TABLE_SIZE];
+	
+	//Wildcarded
+	//TODO
 
 	//Mutex (serialization over
 	pthread_mutex_t mutex;

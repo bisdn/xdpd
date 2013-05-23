@@ -106,7 +106,7 @@ rofl_result_t netfpga_init(){
 	}
 
 	nfpga = (netfpga_device_t*)malloc(sizeof(*nfpga));
-	//memset(*nfpga, 0, sizeof(*nfpga));
+	memset(nfpga, 0, sizeof(*nfpga));
 
 
 	//Open fd
@@ -169,7 +169,7 @@ rofl_result_t netfpga_set_table_behaviour(void){
 rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry){
 
 	//Map entry to a hw entry
-	netfpga_flow_entry_t* hw_entry = netfpga_generate_hw_flow_entry(entry);
+	netfpga_flow_entry_t* hw_entry = netfpga_generate_hw_flow_entry(nfpga, entry);
 
 	if(!hw_entry)
 		return ROFL_FAILURE;

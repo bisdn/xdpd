@@ -76,6 +76,7 @@ AC_CONFIG_FILES([
 	src/netfpga/Makefile
 	src/afa-imp/openflow/openflow12/Makefile
 	src/pipeline-imp/Makefile
+	src/util/Makefile
 ])
 
 AC_OUTPUT

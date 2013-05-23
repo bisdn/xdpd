@@ -11,6 +11,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_pipeline.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_entry.h>
 
+#include "netfpga.h"
 #include "../util/compiler_assert.h"
 
 /**
@@ -144,7 +145,7 @@ void netfpga_destroy_flow_entry(netfpga_flow_entry_t* entry);
 /**
 * @brief Generates a HW flow entry based on a ROFL-pipeline flow entry 
 */
-netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(of12_flow_entry_t* of12_entry);
+netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(netfpga_device_t* nfpga, of12_flow_entry_t* of12_entry);
 
 //C++ extern C
 ROFL_END_DECLS

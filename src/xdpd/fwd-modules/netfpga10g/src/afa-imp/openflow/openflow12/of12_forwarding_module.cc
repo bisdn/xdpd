@@ -145,6 +145,39 @@ afa_result_t fwd_module_of12_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
+	of12_switch_t* lsw;
+	rofl_of12_fm_result_t result;
+
+	//Recover switch	
+	lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+
+	if(table_id >= lsw->pipeline->num_of_tables)
+		return AFA_FAILURE;
+
+	//TODO: enhance error codes. Contain invalid matches (pipeline enhancement) 
+	if( (result = of12_add_flow_entry_table(lsw->pipeline, table_id, flow_entry, check_overlap, reset_counts)) != ROFL_OF12_FM_SUCCESS){
+
+		if(result == ROFL_OF12_FM_OVERLAP)
+			return AFA_FM_OVERLAP_FAILURE;
+		
+		return AFA_FAILURE;
+	}
+
+	if(buffer_id != OF12P_NO_BUFFER){
+	
+		/*TODO Translate this into NetFPGA 
+		datapacket_t* pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
+	
+		if(!pkt){
+			assert(0);
+			return AFA_FAILURE; //TODO: return really failure?
+		}
+
+		of_process_packet_pipeline((of_switch_t*)lsw,pkt);
+		*/
+	}
+
 	return AFA_SUCCESS;
 }
 
@@ -161,7 +194,22 @@ afa_result_t fwd_module_of12_process_flow_mod_add(uint64_t dpid, uint8_t table_i
  */
 afa_result_t fwd_module_of12_process_flow_mod_modify(uint64_t dpid, uint8_t table_id, of12_flow_entry_t* flow_entry, of12_flow_removal_strictness_t strictness, bool reset_counts){
 
+	//FIXME: call directy pipeline, and implement modify hook in the netfpga
+	return AFA_FAILURE;
+
+	of12_switch_t* lsw;
+	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+
+
+	//Recover switch	
+	lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+	if(table_id >= lsw->pipeline->num_of_tables)
+		return AFA_FAILURE;
+
+	if(of12_modify_flow_entry_table(lsw->pipeline, table_id, flow_entry, strictness, reset_counts) != ROFL_SUCCESS)
+		return AFA_FAILURE;
 
 	return AFA_SUCCESS;
 }
@@ -183,7 +231,20 @@ afa_result_t fwd_module_of12_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 afa_result_t fwd_module_of12_process_flow_mod_delete(uint64_t dpid, uint8_t table_id, of12_flow_entry_t* flow_entry, uint32_t buffer_id, uint32_t out_port, uint32_t out_group, of12_flow_removal_strictness_t strictness){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
+
+	of12_switch_t* lsw;
+
+	//Recover switch	
+	lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+
+	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF12_FLOW_TABLE_ALL)
+		return AFA_FAILURE;
+
+
+	if(of12_remove_flow_entry_table(lsw->pipeline, table_id, flow_entry, strictness, out_port, out_group) != ROFL_SUCCESS)
+			return AFA_FAILURE;
+
 	return AFA_SUCCESS;
 } 
 
@@ -205,7 +266,7 @@ afa_result_t fwd_module_of12_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
  * @param matchs	Matchs
  */
 of12_stats_flow_msg_t* fwd_module_of12_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of12_match_t* matchs){
-	//We are not supporting single flow stats 
+	//FIXME:
 	return NULL; 
 }
 
@@ -224,7 +285,7 @@ of12_stats_flow_msg_t* fwd_module_of12_get_flow_stats(uint64_t dpid, uint8_t tab
  * @param matchs	Matchs
  */
 of12_stats_flow_aggregate_msg_t* fwd_module_of12_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of12_match_t* matchs){
-	//We are not supporting aggregatestats 
+	//FIXME:
 	return NULL; 
 } 
 /**
@@ -271,7 +332,7 @@ rofl_of12_gm_result_t fwd_module_of12_group_mod_delete(uint64_t dpid, uint32_t i
  * @param dpid 		Datapath ID of the switch to search the GROUP
  */
 afa_result_t fwd_module_of12_fetch_group_table(uint64_t dpid, of12_group_table_t *group_table){
-	
+	//We are not supporting groups (fast path is 1.0!)	
 	return AFA_FAILURE;
 }
 /**
@@ -295,7 +356,7 @@ of12_stats_group_msg_t * fwd_module_of12_get_group_stats(uint64_t dpid, uint32_t
  */
 of12_stats_group_msg_t * fwd_module_of12_get_group_all_stats(uint64_t dpid, uint32_t id){
 	
-	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
-	
-		return of12_get_group_all_stats(lsw->pipeline,id);
+
+	//We are not supporting groups (fast path is 1.0!)	
+	return NULL;
 }

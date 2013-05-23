@@ -88,7 +88,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 		switch(match->type){
 
 			case OF12_MATCH_IN_PORT:
-				matches->src_port = htons( ( ((utern8_t*)match->value)->value) );
+				matches->src_port = /*htons*/( ( ((utern8_t*)match->value)->value) );
 				masks->src_port = 0xFF; //Exact
 				break;
  			case OF12_MATCH_ETH_DST:
@@ -104,7 +104,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				memset(&masks->eth_dst,0xF,sizeof(masks->eth_dst)); //TODO: add mask...
 				break;
  			case OF12_MATCH_ETH_TYPE:
-				matches->eth_type = htons( ( ((utern16_t*)match->value)->value) );	
+				matches->eth_type = /*htons*/( ( ((utern16_t*)match->value)->value) );	
 				masks->eth_type = 0xFFFF;
 				break;
  			case OF12_MATCH_VLAN_PCP:
@@ -112,7 +112,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				masks->vlan_id |= 0x7<< VID_PCP_SHIFT_BITS;
  				break;	
 			case OF12_MATCH_VLAN_VID:
-				matches->vlan_id |= htons(((utern16_t*)match->value)->value) & VID_BITMASK;	
+				matches->vlan_id |= /*htons*/(((utern16_t*)match->value)->value) & VID_BITMASK;	
 				masks->vlan_id |= VID_BITMASK; //Exact
 				break;
  			case OF12_MATCH_IP_DSCP:
@@ -129,8 +129,8 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				break;
  			case OF12_MATCH_IPV4_SRC:
 				
-				matches->ip_src = htonl( ((utern32_t*)match->value)->value );
-				tmp_mask = htonl( ((utern32_t*)match->value)->mask );
+				matches->ip_src = /*htonl*/( ((utern32_t*)match->value)->value );
+				tmp_mask = /*htonl*/( ((utern32_t*)match->value)->mask );
 				if(tmp_mask != 0xFFFF && tmp_mask != 0x0)
 					//Is wildcarded
 					entry->type = NETFPGA_FE_WILDCARDED;
@@ -138,9 +138,9 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				masks->ip_src = tmp_mask;
 				break;
  			case OF12_MATCH_IPV4_DST:
-				matches->ip_dst = htonl( ((utern32_t*)match->value)->value );
+				matches->ip_dst = /*htonl*/( ((utern32_t*)match->value)->value );
 
-				tmp_mask = htonl( ((utern32_t*)match->value)->mask );
+				tmp_mask = /*htonl*/( ((utern32_t*)match->value)->mask );
 				if(tmp_mask != 0xFFFF && tmp_mask != 0x0)
 					//Is wildcarded
 					entry->type = NETFPGA_FE_WILDCARDED;
@@ -150,12 +150,12 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
  			
 			case OF12_MATCH_TCP_SRC:
  			case OF12_MATCH_UDP_SRC:
-				matches->transp_src =  htons( ((utern16_t*)match->value)->value );
+				matches->transp_src =  /*htons*/( ((utern16_t*)match->value)->value );
 				masks->transp_src = 0xFFFF;
 				break;
  			case OF12_MATCH_TCP_DST:
  			case OF12_MATCH_UDP_DST:
-				matches->transp_dst =  htons( ((utern16_t*)match->value)->value );	
+				matches->transp_dst =  /*htons*/( ((utern16_t*)match->value)->value );	
 				masks->transp_dst = 0xFFFF;
 				break;
 			
@@ -202,7 +202,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 				break;
 
 			case OF12_AT_SET_FIELD_VLAN_VID:
-				actions->vlan_id |= htons(*(((uint16_t*)action->field)+3)) & VID_BITMASK;	
+				actions->vlan_id |= /*htons*/(*(((uint16_t*)action->field)+3)) & VID_BITMASK;	
 				actions->action_flags |= (1 << NETFPGA_AT_SET_VLAN_VID);	
 				break;
 			case OF12_AT_SET_FIELD_VLAN_PCP:
@@ -220,26 +220,26 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 
 
 			case OF12_AT_SET_FIELD_IPV4_SRC:
-				actions->ip_src = htonl(*(((uint32_t*)action->field)+1 ));
+				actions->ip_src = /*htonl*/(*(((uint32_t*)action->field)+1 ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_SRC);	
 				break;
 			case OF12_AT_SET_FIELD_IPV4_DST:
-				actions->ip_dst = htonl(*(((uint32_t*)action->field)+1 ));
+				actions->ip_dst = /*htonl*/(*(((uint32_t*)action->field)+1 ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_DST);	
 				break;
 			case OF12_AT_SET_FIELD_TCP_SRC:
-				actions->transp_src = htons(*(((uint16_t*)action->field)+3 ));
+				actions->transp_src = /*htons*/(*(((uint16_t*)action->field)+3 ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_SRC);	
 				break;
 			case OF12_AT_SET_FIELD_TCP_DST:
-				actions->transp_dst = htons(*(((uint16_t*)action->field)+3 ));
+				actions->transp_dst = /*htons*/(*(((uint16_t*)action->field)+3 ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_DST);	
 				break;
 			case OF12_AT_SET_FIELD_UDP_SRC:
-				actions->transp_src = htons(*(((uint16_t*)action->field)+3 ));
+				actions->transp_src = /*htons*/(*(((uint16_t*)action->field)+3 ));
 				break;
 			case OF12_AT_SET_FIELD_UDP_DST:
-				actions->transp_dst = htons(*(((uint16_t*)action->field)+3 ));
+				actions->transp_dst = /*htons*/(*(((uint16_t*)action->field)+3 ));
 				break;
 			case OF12_AT_OUTPUT:
 				port = *(((uint16_t*)action->field)+3 )&0xFFFF;

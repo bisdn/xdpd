@@ -42,7 +42,7 @@ rofl_result_t netfpga_discover_ports(){
 
 		//Init NetFPGA state (platform specific state)
 		if(netfpga_init_port(port) != ROFL_SUCCESS)
-			return ROFL_FAILURE;//XXX FIXME init dev
+			return ROFL_FAILURE;
 		
 		//Add to available ports
 		if( physical_switch_add_port(port) != ROFL_SUCCESS )

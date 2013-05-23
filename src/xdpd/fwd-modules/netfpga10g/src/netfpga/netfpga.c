@@ -86,6 +86,48 @@ static rofl_result_t netfpga_delete_entry_hw(unsigned int pos){
 	return result;
 }
 
+//Setup the catch-all DMA entries (packet_in) and packet out entries
+static rofl_result_t netfpga_init_dma_mechanism(){
+
+	unsigned int i;
+	netfpga_flow_entry_t* entry;
+
+	//Create an empty entry
+	entry = netfpga_init_flow_entry();	
+
+	//Wildcard ALL except ports
+	memset(entry->masks, 0xFF, sizeof(*entry->masks));
+	entry->masks->src_port = 0x0;
+	entry->type = NETFPGA_FE_WILDCARDED; 
+
+	//Insert catch all entries (PKT_IN)
+	for (i = 0; i < 4; ++i) {
+		entry->matches->src_port = 0x1 << (i * 2);
+		entry->actions->forward_bitmask = 0x1 << ((i * 2) + 1);
+		entry->hw_pos =(NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE - 4) + i; 	
+		
+		//Install entry
+		if(netfpga_add_entry_hw(entry) != ROFL_SUCCESS)
+			return ROFL_FAILURE;
+	}
+
+	//Insert output entries (PKT_OUT)  
+	for (i = 0; i < 4; ++i) {
+		entry->matches->src_port = 0x1 << ((i * 2) + 1);
+		entry->actions->forward_bitmask = 0x1 << (i * 2);
+		entry->hw_pos =(NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE - 8) + i; 	
+	
+		//Install entry
+		if(netfpga_add_entry_hw(entry) != ROFL_SUCCESS)
+			return ROFL_FAILURE;
+	}
+
+	//Destroy tmp entry
+	netfpga_destroy_flow_entry(entry);	
+	
+	return ROFL_SUCCESS;
+}
+
 
 /*
  * External interfaces
@@ -119,6 +161,10 @@ rofl_result_t netfpga_init(){
 
 	//Init mutex
 	pthread_mutex_init(&nfpga->mutex, NULL);
+
+	//Init DMA
+	if(netfpga_init_dma_mechanism() != ROFL_SUCCESS)
+		return ROFL_FAILURE;
 
 	//FIXME: set registers	
 

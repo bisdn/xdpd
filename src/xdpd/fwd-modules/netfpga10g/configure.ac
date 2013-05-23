@@ -73,6 +73,7 @@ AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	src/afa-imp/Makefile
+	src/io/Makefile
 	src/netfpga/Makefile
 	src/afa-imp/openflow/openflow12/Makefile
 	src/pipeline-imp/Makefile

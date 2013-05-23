@@ -173,6 +173,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 
 	unsigned int i;
 	uint16_t port;
+	void* indirect;
 	of12_packet_action_t* action;
 	netfpga_flow_entry_actions_t* actions = entry->actions;
 
@@ -187,62 +188,66 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 		return ROFL_FAILURE;
 	}
 
+
 	//Loop over apply actions only
 	for(; action; action = action->next){
+	
+		//FIXME: quick hack (no aliasing in forced in all xdpd, for good reasons). Fix it!
+		indirect = (void*)action->field;	
 
 		switch(action->type){
 
 			case OF12_AT_SET_FIELD_ETH_DST:
-				actions->eth_dst = *( (netfpga_align_mac_addr_t*) (((uint8_t*) action->field)+2) ); //This is nasty, I know and apologize...
+				actions->eth_dst = *( (netfpga_align_mac_addr_t*) (((uint8_t*) indirect)) ); //This is nasty, I know and apologize...
 				actions->action_flags |= (1 << NETFPGA_AT_SET_DL_DST);	
 				break;
 			case OF12_AT_SET_FIELD_ETH_SRC:
-				actions->eth_src = *( (netfpga_align_mac_addr_t*) (((uint8_t*) action->field)+2) ); //This is nasty, I know and apologize...
+				actions->eth_src = *( (netfpga_align_mac_addr_t*) (((uint8_t*) indirect)) ); //This is nasty, I know and apologize...
 				actions->action_flags |= (1 << NETFPGA_AT_SET_DL_SRC);	
 				break;
 
 			case OF12_AT_SET_FIELD_VLAN_VID:
-				actions->vlan_id |= /*htons*/(*(((uint16_t*)action->field)+3)) & VID_BITMASK;	
+				actions->vlan_id |= /*htons*/(action->field) & VID_BITMASK;	
 				actions->action_flags |= (1 << NETFPGA_AT_SET_VLAN_VID);	
 				break;
 			case OF12_AT_SET_FIELD_VLAN_PCP:
-				actions->vlan_id |= (*(((uint8_t*)action->field)+7) << VID_PCP_SHIFT_BITS)&VID_PCP_BITMASK;
+				actions->vlan_id |= (*(((uint8_t*)indirect)) << VID_PCP_SHIFT_BITS)&VID_PCP_BITMASK;
 				actions->action_flags |= (1 << NETFPGA_AT_SET_VLAN_PCP);	
 				break;
 			case OF12_AT_SET_FIELD_IP_DSCP:
-				actions->ip_tos |= ( (*(((uint8_t*)action->field)+7))<<TOS_DSCP_SHIFT_BITS ) & TOS_DSCP_BITMASK;
+				actions->ip_tos |= ( (*(((uint8_t*)indirect)))<<TOS_DSCP_SHIFT_BITS ) & TOS_DSCP_BITMASK;
 				actions->action_flags |= (1 << NETFPGA_AT_SET_NW_TOS);	
 				break;
 			case OF12_AT_SET_FIELD_IP_ECN:
-				actions->ip_tos |= (*(((uint8_t*)action->field)+7)) & TOS_ECN_BITMASK;
+				actions->ip_tos |= (*(((uint8_t*)indirect))) & TOS_ECN_BITMASK;
 				actions->action_flags |= (1 << NETFPGA_AT_SET_NW_TOS);	
 				break;
 
 
 			case OF12_AT_SET_FIELD_IPV4_SRC:
-				actions->ip_src = /*htonl*/(*(((uint32_t*)action->field)+1 ));
+				actions->ip_src = /*htonl*/(*(((uint32_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_SRC);	
 				break;
 			case OF12_AT_SET_FIELD_IPV4_DST:
-				actions->ip_dst = /*htonl*/(*(((uint32_t*)action->field)+1 ));
+				actions->ip_dst = /*htonl*/(*(((uint32_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_DST);	
 				break;
 			case OF12_AT_SET_FIELD_TCP_SRC:
-				actions->transp_src = /*htons*/(*(((uint16_t*)action->field)+3 ));
+				actions->transp_src = /*htons*/(*(((uint16_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_SRC);	
 				break;
 			case OF12_AT_SET_FIELD_TCP_DST:
-				actions->transp_dst = /*htons*/(*(((uint16_t*)action->field)+3 ));
+				actions->transp_dst = /*htons*/(*(((uint16_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_DST);	
 				break;
 			case OF12_AT_SET_FIELD_UDP_SRC:
-				actions->transp_src = /*htons*/(*(((uint16_t*)action->field)+3 ));
+				actions->transp_src = /*htons*/(*(((uint16_t*)indirect) ));
 				break;
 			case OF12_AT_SET_FIELD_UDP_DST:
-				actions->transp_dst = /*htons*/(*(((uint16_t*)action->field)+3 ));
+				actions->transp_dst = /*htons*/(*(((uint16_t*)indirect) ));
 				break;
 			case OF12_AT_OUTPUT:
-				port = *(((uint16_t*)action->field)+3 )&0xFFFF;
+				port = *(((uint16_t*)action->field) )&0xFFFF;
 
 				if ((port >= NETFPGA_FIRST_PORT) && (port <= NETFPGA_LAST_PORT)) {
 					//Send to specific port 

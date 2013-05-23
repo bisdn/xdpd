@@ -2,8 +2,27 @@
 #include <stdio.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/switch_port.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #define FWD_MOD_NAME "netfpga10g"
+
+static rofl_result_t netfpga_init_port(switch_port_t* port){
+
+	netfpga_port_t* nport = (netfpga_port_t*)malloc(sizeof(*nport));
+
+	//Open raw socket in R/W mode 
+	nport->fd = socket(AF_INET, SOCK_DGRAM, 0);
+	
+	if(nport->fd < 0){
+		return ROFL_FAILURE;
+	}
+
+	//Store in platform state and return
+	port->platform_port_state = (platform_port_state_t*) nport;	
+
+	return ROFL_SUCCESS;
+} 
 
 //Discover ports and initialize, raw sockets and I/O thread
 rofl_result_t netfpga_discover_ports(){
@@ -17,11 +36,13 @@ rofl_result_t netfpga_discover_ports(){
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
 		
 		ROFL_DEBUG("["FWD_MOD_NAME"] Attempting to discover %s\n", iface_name);
-	
-		//FIXME: interfaces should be anyway checked, and set link up.. but anyway. First implementation	
+
+		//Initialize pipeline structure	
 		port = switch_port_init(iface_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_LIVE);
 
-		//XXX FIXME init dev
+		//Init NetFPGA state (platform specific state)
+		if(netfpga_init_port(port) != ROFL_SUCCESS)
+			return ROFL_FAILURE;//XXX FIXME init dev
 		
 		//Add to available ports
 		if( physical_switch_add_port(port) != ROFL_SUCCESS )

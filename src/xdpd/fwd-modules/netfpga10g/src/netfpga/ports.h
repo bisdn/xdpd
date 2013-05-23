@@ -8,6 +8,7 @@
 
 #include <inttypes.h>
 #include <rofl/common/utils/c_logger.h>
+#include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include "../util/compiler_assert.h"
 #include "netfpga.h"
@@ -22,6 +23,23 @@
 #define NETFPGA_NUM_PORTS 4 
 #define NETFPGA_INTERFACE_BASE_NAME "nf"
 #define NETFPGA_INTERFACE_NAME_LEN 4 //nfX\0
+
+//Data structures
+
+//Ports. fds are only use to send pkt_in and pkt_out
+//Obviously NetFPGA does the rest
+
+
+typedef struct netfpga_port{
+		
+	//Interface name (in GNU/Linux)
+	char name[NETFPGA_INTERFACE_NAME_LEN];
+	
+	//File-descriptor
+	//read -> pkt_in, write -> pkt_out
+	int fd;
+	
+}netfpga_port_t;
 
 //C++ extern C
 ROFL_BEGIN_DECLS

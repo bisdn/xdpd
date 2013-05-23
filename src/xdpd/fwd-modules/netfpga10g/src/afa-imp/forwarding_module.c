@@ -35,9 +35,11 @@ afa_result_t fwd_module_init(){
 	if(physical_switch_init() != ROFL_SUCCESS)
 		return AFA_FAILURE;
 
-	//Likely here you are going to discover platform ports;
-	//If using ROFL_pipeline you would then add them (physical_switch_add_port()
-	//FIXME
+	//Discover platform ports;
+	if(netfpga_discover_ports() != ROFL_SUCCESS){
+		ROFL_ERR("["FWD_MOD_NAME"] Unable to discover physical ports!\n");
+		return AFA_FAILURE;	
+	}
 
 	//Init 10G NetFPGA
 	if(netfpga_init() != ROFL_SUCCESS){
@@ -116,7 +118,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	//Adding switch to the bank
 	physical_switch_add_logical_switch(sw);
 
-	if(netfpga_discover_ports_and_attach(sw) != ROFL_SUCCESS){
+	if(netfpga_attach_ports(sw) != ROFL_SUCCESS){
 		//Something went wrong. Abort all
 		ROFL_ERR("["FWD_MOD_NAME"] NetFPGA ports could NOT be discovered... I must abort execution...\n");
 		exit(EXIT_FAILURE);

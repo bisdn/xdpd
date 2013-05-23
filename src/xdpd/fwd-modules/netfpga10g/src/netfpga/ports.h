@@ -27,9 +27,15 @@
 ROFL_BEGIN_DECLS
 
 /**
-* @brief Get the raw statistics for a flow 
+* @brief Discover NetFPGA physical ports 
 */
-rofl_result_t netfpga_discover_ports_and_attach(of_switch_t* sw);
+rofl_result_t netfpga_discover_ports(void);
+
+/**
+* @brief Attach all physical ports to switch 
+*/
+rofl_result_t netfpga_attach_ports(of_switch_t* sw);
+
 
 //C++ extern C
 ROFL_END_DECLS

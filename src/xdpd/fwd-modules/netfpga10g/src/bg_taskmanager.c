@@ -167,6 +167,7 @@ void* x86_background_tasks_routine(void* param)
 			
 		//Recover port from pipeline
 		port = physical_switch_get_port_by_name(iface_name);
+		port_events[i].events = EPOLLIN | EPOLLET;
 
 		if( !port )
 			exit(EXIT_FAILURE);		

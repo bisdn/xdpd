@@ -179,7 +179,13 @@ rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry){
 
 	//Write to hw
 	if( netfpga_add_entry_hw(hw_entry) != ROFL_SUCCESS ){
-		//FIXME: remove reference in the exact/wildcard array
+		//Remove reference (release slot) in the table
+		//Acquired in netfpga_generate_hw_flow_entry()
+		if( hw_entry->type == NETFPGA_FE_WILDCARDED )
+			nfpga->hw_wildcard_table[hw_entry->hw_pos] = NULL;
+		else
+			nfpga->hw_exact_table[hw_entry->hw_pos] = NULL;
+			
 		return ROFL_FAILURE;
 	}
 

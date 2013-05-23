@@ -251,7 +251,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 
 				if ((port >= NETFPGA_FIRST_PORT) && (port <= NETFPGA_LAST_PORT)) {
 					//Send to specific port 
-					actions->forward_bitmask |= (1 << ((port - NETFPGA_FIRST_PORT) * 2));
+					actions->forward_bitmask |= (1 << ((port - NETFPGA_PORT_BASE) * 2));
 				}else if (port == NETFPGA_IN_PORT) {
 					//Send back to in-port	
 					actions->forward_bitmask |= (entry->matches->src_port);

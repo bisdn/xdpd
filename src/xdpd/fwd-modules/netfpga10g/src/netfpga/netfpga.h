@@ -27,6 +27,7 @@
 //Ports
 #define NETFPGA_FIRST_PORT	0
 #define NETFPGA_LAST_PORT	3
+#define NETFPGA_PORT_BASE	1
 #define NETFPGA_IN_PORT		0xfff8
 #define NETFPGA_FLOOD_PORT	0xfffb
 #define NETFPGA_ALL_PORTS	0xfffc

@@ -176,6 +176,10 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 	of12_packet_action_t* action;
 	netfpga_flow_entry_actions_t* actions = entry->actions;
 
+	//If entry has not actions we are done (should we really install it down there?)
+	if(!of12_entry->inst_grp.instructions[OF12_IT_APPLY_ACTIONS-1].apply_actions)
+		return ROFL_SUCCESS;
+
 	action = of12_entry->inst_grp.instructions[OF12_IT_APPLY_ACTIONS-1].apply_actions->head;
 	
 	if(!action){

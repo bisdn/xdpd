@@ -13,6 +13,7 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "../netfpga/netfpga.h"
+#include "../netfpga/ports.h"
 
 #define FWD_MOD_NAME "netfpga10g"
 
@@ -112,14 +113,18 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 			return NULL;
 	}	
 
-	//XXX: Add ports directly
+	//Adding switch to the bank
+	physical_switch_add_logical_switch(sw);
+
+	if(netfpga_discover_ports_and_attach(sw) != ROFL_SUCCESS){
+		//Something went wrong. Abort all
+		ROFL_ERR("["FWD_MOD_NAME"] NetFPGA ports could NOT be discovered... I must abort execution...\n");
+		exit(EXIT_FAILURE);
+		;
+	}
+
+	//Warn user
 	ROFL_ERR("["FWD_MOD_NAME"] All NetFPGA physical ports are attached (nf0..nf3). Subsequent calls to attach_port will be silently ignored...\n");
-	
-	//In software switches, you may have to launch threads that
-	//do the pipeline processing of the packets
-	
-	//If you would fully use ROFL-pipeline you woudl call then
-	//physical_switch_add_logical_switch(sw);
 	
 	return sw;
 }

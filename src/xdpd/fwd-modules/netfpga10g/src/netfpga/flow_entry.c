@@ -247,7 +247,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 				actions->transp_dst = /*htons*/(*(((uint16_t*)indirect) ));
 				break;
 			case OF12_AT_OUTPUT:
-				port = *(((uint16_t*)action->field) )&0xFFFF;
+				port = *(((uint16_t*)indirect) )&0xFFFF;
 
 				if ((port >= NETFPGA_FIRST_PORT) && (port <= NETFPGA_LAST_PORT)) {
 					//Send to specific port 

@@ -22,7 +22,7 @@
 //Constants
 #define NETFPGA_RESERVED_FOR_CPU2NETFPGA	8
 #define NETFPGA_OPENFLOW_EXACT_TABLE_SIZE	1024 
-#define NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE	32
+#define NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE	(32 - NETFPGA_RESERVED_FOR_CPU2NETFPGA)
 
 //Ports
 #define NETFPGA_FIRST_PORT	0
@@ -50,7 +50,7 @@ typedef struct netfpga_device{
 	struct netfpga_flow_entry* hw_exact_table[NETFPGA_OPENFLOW_EXACT_TABLE_SIZE];
 	
 	//Wildcarded
-	//TODO
+	struct netfpga_flow_entry* hw_wildcard_table[NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE];
 
 	//Mutex (serialization over
 	pthread_mutex_t mutex;

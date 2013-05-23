@@ -178,8 +178,10 @@ rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry){
 	entry->platform_state = (of12_flow_entry_platform_state_t*) hw_entry;
 
 	//Write to hw
-	if( netfpga_add_entry_hw(hw_entry) != ROFL_SUCCESS )
+	if( netfpga_add_entry_hw(hw_entry) != ROFL_SUCCESS ){
+		//FIXME: remove reference in the exact/wildcard array
 		return ROFL_FAILURE;
+	}
 
 	//Increment counters
 	if( hw_entry->type == NETFPGA_FE_WILDCARDED )

@@ -302,9 +302,27 @@ static void netfpga_set_hw_position_exact(netfpga_device_t* nfpga, netfpga_flow_
 }
 
 //Determine wildcard position
+/*
+* FIXME: this is simply wrong. In EXACT table is correct assuming no order, since is exact, but in wildcard
+* priority should be taken into account. This implies some sort of either brute force moving of entries once
+* an insertion of a higher priority entries needs to happen, or better, implement priority in HW.
+*
+* I am just following the reference implementation here
+*/
 static void netfpga_set_hw_position_wildcard(netfpga_device_t* nfpga, netfpga_flow_entry_t* hw_entry){
-	
 
+	unsigned int i;
+	
+	for(i=0; i<NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE; ++i){
+		if( nfpga->hw_wildcard_table[i] == NULL){
+			hw_entry->hw_pos = i;
+			nfpga->hw_exact_table[i] = hw_entry;
+			return;
+		}
+	}		
+
+	//This cannot happen, since pre-condition should be checked by the fwd_module before calling rofl-pipeline entry insertion
+	assert(0);
 }
 
 netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(netfpga_device_t* nfpga, of12_flow_entry_t* of12_entry){

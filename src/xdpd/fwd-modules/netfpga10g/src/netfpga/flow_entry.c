@@ -15,6 +15,9 @@ netfpga_flow_entry_t* netfpga_init_flow_entry(){
 	if(!entry)
 		return NULL;
 
+	//memset entry
+	memset(entry,0,sizeof(*entry));
+	
 	//Allocate matches
 	entry->matches = malloc(sizeof(netfpga_flow_entry_matches_t));
 	if(!entry->matches){
@@ -40,7 +43,6 @@ netfpga_flow_entry_t* netfpga_init_flow_entry(){
 	}
 	
 	//Init all	
-	memset(entry,0,sizeof(*entry));
 	memset(entry->matches, 0, sizeof(*(entry->matches)));
 	memset(entry->masks, 0, sizeof(*(entry->masks)));
 	memset(entry->actions, 0, sizeof(*(entry->actions)));

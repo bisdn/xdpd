@@ -29,39 +29,47 @@ static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 	netfpga_wait_reg_ready(nfpga);
 
 	//Set Row address
-	if(entry->type == NETFPGA_FE_FIXED )
-		netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_EXACT_BASE + entry->hw_pos);
-	else
-		netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_WILDCARD_BASE + entry->hw_pos);
-
+	if(entry->type == NETFPGA_FE_FIXED ){
+		if(netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_EXACT_BASE + entry->hw_pos) != ROFL_SUCCESS)
+			return ROFL_FAILURE;
+	}else{
+		if(netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_WILDCARD_BASE + entry->hw_pos) != ROFL_SUCCESS)
+			return ROFL_FAILURE;
+	}
 	//Write matches 
 	aux = (uint32_t*)entry->masks;
 	for (i = 0; i < NETFPGA_FLOW_ENTRY_MATCHES_WORD_LEN; ++i) {
-		netfpga_write_reg(nfpga, NETFPGA_OF_LOOKUP_CMP_BASE_REG + i, *(aux+i));
+		if(netfpga_write_reg(nfpga, NETFPGA_OF_LOOKUP_CMP_BASE_REG + i, *(aux+i)) != ROFL_SUCCESS)
+			return ROFL_FAILURE;
 	}
 
 	if( entry->type == NETFPGA_FE_WILDCARDED ){
 		//Write masks
 		aux = (uint32_t*)entry->masks;
 		for (i = 0; i < NETFPGA_FLOW_ENTRY_WILDCARD_WORD_LEN; ++i) {
-			netfpga_write_reg(nfpga, NETFPGA_OF_LOOKUP_CMP_MASK_BASE_REG + i, *(aux+i));
+			if(netfpga_write_reg(nfpga, NETFPGA_OF_LOOKUP_CMP_MASK_BASE_REG + i, *(aux+i)) != ROFL_SUCCESS)
+				return ROFL_FAILURE;
 		}
 	}
 	
 	//Write actions
 	aux = (uint32_t*)entry->masks;
 	for (i = 0; i < NETFPGA_FLOW_ENTRY_ACTIONS_WORD_LEN; ++i) {
-		netfpga_write_reg(nfpga, NETFPGA_OF_LOOKUP_ACTION_BASE_REG + i, *(aux+i));
+		if(netfpga_write_reg(nfpga, NETFPGA_OF_LOOKUP_ACTION_BASE_REG + i, *(aux+i)) != ROFL_SUCCESS)	
+			return ROFL_FAILURE;
 	}
 
 	if( entry->type == NETFPGA_FE_WILDCARDED ){
 		//Reset the stats for the pos 
-		netfpga_write_reg(nfpga, NETFPGA_OF_STATS_BASE_REG, 0x0);
-		netfpga_write_reg(nfpga, NETFPGA_OF_STATS_BASE_REG+1, 0x0);
+		if(netfpga_write_reg(nfpga, NETFPGA_OF_STATS_BASE_REG, 0x0) != ROFL_SUCCESS)
+			return ROFL_FAILURE;
+		if(netfpga_write_reg(nfpga, NETFPGA_OF_STATS_BASE_REG+1, 0x0) != ROFL_SUCCESS)
+			return ROFL_FAILURE;
 	}
 
 	//Write whatever => Trigger load to table
-	netfpga_write_reg(nfpga, NETFPGA_OF_WRITE_ORDER_REG, 0x1); // Write whatever the value
+	if(netfpga_write_reg(nfpga, NETFPGA_OF_WRITE_ORDER_REG, 0x1) != ROFL_SUCCESS) 
+		return ROFL_FAILURE; 
 
 	return ROFL_SUCCESS;
 }

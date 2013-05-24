@@ -88,7 +88,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 		switch(match->type){
 
 			case OF12_MATCH_IN_PORT:
-				matches->src_port = /*htons*/( ( ((utern8_t*)match->value)->value) );
+				matches->src_port = 0x1 << ((/*htons*/( ((utern8_t*)match->value)->value) - NETFPGA_PORT_BASE) *2);
 				masks->src_port = 0xFF; //Exact
 				break;
  			case OF12_MATCH_ETH_DST:

@@ -274,7 +274,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 	}
 	
 	
-	return ROFL_FAILURE;
+	return ROFL_SUCCESS;
 }
 
 //Calculate exact position

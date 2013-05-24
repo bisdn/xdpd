@@ -37,7 +37,7 @@ static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 			return ROFL_FAILURE;
 	}
 	//Write matches 
-	aux = (uint32_t*)entry->masks;
+	aux = (uint32_t*)entry->matches;
 	for (i = 0; i < NETFPGA_FLOW_ENTRY_MATCHES_WORD_LEN; ++i) {
 		if(netfpga_write_reg(nfpga, NETFPGA_OF_LOOKUP_CMP_BASE_REG + i, *(aux+i)) != ROFL_SUCCESS)
 			return ROFL_FAILURE;
@@ -53,7 +53,7 @@ static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 	}
 	
 	//Write actions
-	aux = (uint32_t*)entry->masks;
+	aux = (uint32_t*)entry->actions;
 	for (i = 0; i < NETFPGA_FLOW_ENTRY_ACTIONS_WORD_LEN; ++i) {
 		if(netfpga_write_reg(nfpga, NETFPGA_OF_LOOKUP_ACTION_BASE_REG + i, *(aux+i)) != ROFL_SUCCESS)	
 			return ROFL_FAILURE;

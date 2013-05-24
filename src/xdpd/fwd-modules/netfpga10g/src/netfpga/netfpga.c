@@ -19,6 +19,66 @@ static netfpga_device_t* nfpga=NULL;
  * Internal HW stuff
  */
 
+//Dump wildcard entries
+rofl_result_t netfpga_dump_wildcard_hw_entries(){
+
+       unsigned int i,j;
+       uint32_t* aux;
+       netfpga_flow_entry_t* entry;
+
+       //Create an empty entry
+       entry = netfpga_init_flow_entry();      
+       
+       //Wait for the netfpga to be ready
+       netfpga_wait_reg_ready(nfpga);
+
+       //Loop over all entries
+       for(j =0; j < NETFPGA_OPENFLOW_WILDCARD_FULL_TABLE_SIZE; j++){
+
+               entry->hw_pos =j;
+
+               //PUT something strange
+               memset(entry->matches, 0xEE, sizeof(*(entry->matches)));
+               memset(entry->masks, 0xDD, sizeof(*(entry->masks)));
+               memset(entry->actions, 0xCC, sizeof(*(entry->actions)));
+               
+               //Set Row address
+               if(netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_WILDCARD_BASE + j) != ROFL_SUCCESS)
+                       return ROFL_FAILURE;
+       
+               //Write whatever => Trigger read
+               if(netfpga_write_reg(nfpga, NETFPGA_OF_READ_ORDER_REG, 0x1) != ROFL_SUCCESS)
+                       return ROFL_FAILURE;
+
+       
+               //Read matches
+               aux = (uint32_t*)entry->matches;
+               for (i = 0; i < NETFPGA_FLOW_ENTRY_MATCHES_WORD_LEN; ++i) {
+                       if(netfpga_read_reg(nfpga, NETFPGA_OF_LOOKUP_CMP_BASE_REG + i, (aux+i)) != ROFL_SUCCESS)
+                               return ROFL_FAILURE;
+               }
+
+               //Read masks
+               aux = (uint32_t*)entry->masks;
+               for (i = 0; i < NETFPGA_FLOW_ENTRY_WILDCARD_WORD_LEN; ++i) {
+                       if(netfpga_read_reg(nfpga, NETFPGA_OF_LOOKUP_CMP_MASK_BASE_REG + i, (aux+i)) != ROFL_SUCCESS)
+                               return ROFL_FAILURE;
+               }
+       
+               //Read actions
+               aux = (uint32_t*)entry->actions;
+               for (i = 0; i < NETFPGA_FLOW_ENTRY_ACTIONS_WORD_LEN; ++i) {
+                       if(netfpga_read_reg(nfpga, NETFPGA_OF_LOOKUP_ACTION_BASE_REG + i, (aux+i)) != ROFL_SUCCESS)     
+                               return ROFL_FAILURE;
+               }
+       
+               //XXX: dump     
+               
+       }
+
+       return ROFL_SUCCESS;
+}
+
 //Specific add command for wildcard entries
 static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 

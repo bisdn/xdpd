@@ -20,9 +20,10 @@
 */
 
 //Constants
-#define NETFPGA_RESERVED_FOR_CPU2NETFPGA	8
-#define NETFPGA_OPENFLOW_EXACT_TABLE_SIZE	1024 
-#define NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE	(32 - NETFPGA_RESERVED_FOR_CPU2NETFPGA)
+#define NETFPGA_RESERVED_FOR_CPU2NETFPGA		8
+#define NETFPGA_OPENFLOW_EXACT_TABLE_SIZE		1024 
+#define NETFPGA_OPENFLOW_WILDCARD_FULL_TABLE_SIZE	32
+#define NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE	(NETFPGA_OPENFLOW_WILDCARD_FULL_TABLE_SIZE - NETFPGA_RESERVED_FOR_CPU2NETFPGA)
 
 //Ports
 #define NETFPGA_FIRST_PORT	0
@@ -120,6 +121,12 @@ rofl_result_t netfpga_delete_flow_entry(of12_flow_entry_t* entry);
 * @brief Deletes all entries within a table. Assumes already mutual exclusion over table 
 */
 rofl_result_t netfpga_delete_all_entries(void);
+
+
+//Dumping stuff, only used for debug
+rofl_result_t netfpga_dump_wildcard_hw_entries(void);
+
+
 
 //C++ extern C
 ROFL_END_DECLS

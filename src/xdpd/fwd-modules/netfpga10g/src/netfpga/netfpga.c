@@ -170,6 +170,10 @@ rofl_result_t netfpga_init(){
 	//Init mutex
 	pthread_mutex_init(&nfpga->mutex, NULL);
 
+	//Delete all entries
+	if(netfpga_delete_all_entries() != ROFL_SUCCESS)
+		return ROFL_FAILURE;
+
 	//Init DMA
 	if(netfpga_init_dma_mechanism() != ROFL_SUCCESS)
 		return ROFL_FAILURE;

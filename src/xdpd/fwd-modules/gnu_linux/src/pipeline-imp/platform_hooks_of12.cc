@@ -121,21 +121,20 @@ void platform_of12_notify_flow_removed(const of12_switch_t* sw,
 }
 
 
-void
-plaftorm_of12_add_entry_hook(of12_flow_entry_t* new_entry)
-{
+void plaftorm_of12_add_entry_hook(of12_flow_entry_t* new_entry){
+
+}
+
+void platform_of12_modify_entry_hook(of12_flow_entry_t* old_entry, of12_flow_entry_t* mod, int reset_count){
+
+}
+
+void platform_of12_remove_entry_hook(of12_flow_entry_t* entry){
 
 }
 
 void
-platform_of12_modify_entry_hook(of12_flow_entry_t* old_entry, of12_flow_entry_t* mod, int reset_count)
+platform_of12_update_stats_hook(of12_flow_entry_t* entry)
 {
 
 }
-
-void
-platform_of12_remove_entry_hook(of12_flow_entry_t* entry)
-{
-
-}
-

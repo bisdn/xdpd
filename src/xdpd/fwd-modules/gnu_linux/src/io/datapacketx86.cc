@@ -8,7 +8,7 @@
  * x86 datapacket related methods
  */
 
-//Change this if you want to use another scheduler
+//Change this if you want to use another classifier
 typedef rofl_pktclassifier pktclassifier;
 //typedef static_pktclassifier pktclassifier;
 

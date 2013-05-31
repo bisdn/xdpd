@@ -9,8 +9,8 @@
  */
 
 //Change this if you want to use another scheduler
-//typedef rofl_pktclassifier pktclassifier;
-typedef static_pktclassifier pktclassifier;
+typedef rofl_pktclassifier pktclassifier;
+//typedef static_pktclassifier pktclassifier;
 
 //Constructor
 datapacketx86::datapacketx86() :

@@ -97,15 +97,15 @@ void static_pktclassifier::classify(void){
 * Getters
 */
 
-rofl::fetherframe* static_pktclassifier::ether(unsigned int idx) const{
+rofl::fetherframe* static_pktclassifier::ether(int idx) const{
 
 	unsigned int pos;	
 
-	if(idx > MAX_ETHER_FRAMES)
+	if(idx > (int)MAX_ETHER_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_ETHER_FRAME_POS + num_of_headers[HEADER_TYPE_ETHER];
+		pos = FIRST_ETHER_FRAME_POS + num_of_headers[HEADER_TYPE_ETHER] - 1;
 	else
 		pos = FIRST_ETHER_FRAME_POS + idx;	
 
@@ -115,15 +115,15 @@ rofl::fetherframe* static_pktclassifier::ether(unsigned int idx) const{
 	return NULL;
 }
 
-rofl::fvlanframe* static_pktclassifier::vlan(unsigned int idx) const
+rofl::fvlanframe* static_pktclassifier::vlan(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_VLAN_FRAMES)
+	if(idx > (int)MAX_VLAN_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_VLAN_FRAME_POS + num_of_headers[HEADER_TYPE_VLAN];
+		pos = FIRST_VLAN_FRAME_POS + num_of_headers[HEADER_TYPE_VLAN] - 1;
 	else
 		pos = FIRST_VLAN_FRAME_POS + idx;	
 
@@ -133,15 +133,15 @@ rofl::fvlanframe* static_pktclassifier::vlan(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fmplsframe* static_pktclassifier::mpls(unsigned int idx) const
+rofl::fmplsframe* static_pktclassifier::mpls(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_MPLS_FRAMES)
+	if(idx > (int)MAX_MPLS_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_MPLS_FRAME_POS + num_of_headers[HEADER_TYPE_MPLS];
+		pos = FIRST_MPLS_FRAME_POS + num_of_headers[HEADER_TYPE_MPLS] - 1;
 	else
 		pos = FIRST_MPLS_FRAME_POS + idx;	
 
@@ -151,15 +151,15 @@ rofl::fmplsframe* static_pktclassifier::mpls(unsigned int idx) const
 	return NULL;
 }
 
-rofl::farpv4frame* static_pktclassifier::arpv4(unsigned int idx) const
+rofl::farpv4frame* static_pktclassifier::arpv4(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_ARPV4_FRAMES)
+	if(idx > (int)MAX_ARPV4_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_ARPV4_FRAME_POS + num_of_headers[HEADER_TYPE_ARPV4];
+		pos = FIRST_ARPV4_FRAME_POS + num_of_headers[HEADER_TYPE_ARPV4] - 1;
 	else
 		pos = FIRST_ARPV4_FRAME_POS + idx;	
 
@@ -169,15 +169,15 @@ rofl::farpv4frame* static_pktclassifier::arpv4(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fipv4frame* static_pktclassifier::ipv4(unsigned int idx) const
+rofl::fipv4frame* static_pktclassifier::ipv4(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_IPV4_FRAMES)
+	if(idx > (int)MAX_IPV4_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_IPV4_FRAME_POS + num_of_headers[HEADER_TYPE_IPV4];
+		pos = FIRST_IPV4_FRAME_POS + num_of_headers[HEADER_TYPE_IPV4] - 1;
 	else
 		pos = FIRST_IPV4_FRAME_POS + idx;	
 
@@ -187,15 +187,15 @@ rofl::fipv4frame* static_pktclassifier::ipv4(unsigned int idx) const
 	return NULL;
 }
 
-rofl::ficmpv4frame* static_pktclassifier::icmpv4(unsigned int idx) const
+rofl::ficmpv4frame* static_pktclassifier::icmpv4(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_ICMPV4_FRAMES)
+	if(idx > (int)MAX_ICMPV4_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_ICMPV4_FRAME_POS + num_of_headers[HEADER_TYPE_ICMPV4];
+		pos = FIRST_ICMPV4_FRAME_POS + num_of_headers[HEADER_TYPE_ICMPV4] - 1;
 	else
 		pos = FIRST_ICMPV4_FRAME_POS + idx;	
 
@@ -206,15 +206,15 @@ rofl::ficmpv4frame* static_pktclassifier::icmpv4(unsigned int idx) const
 
 }
 
-rofl::fudpframe* static_pktclassifier::udp(unsigned int idx) const
+rofl::fudpframe* static_pktclassifier::udp(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_UDP_FRAMES)
+	if(idx > (int)MAX_UDP_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_UDP_FRAME_POS + num_of_headers[HEADER_TYPE_UDP];
+		pos = FIRST_UDP_FRAME_POS + num_of_headers[HEADER_TYPE_UDP] - 1;
 	else
 		pos = FIRST_UDP_FRAME_POS + idx;	
 
@@ -224,15 +224,15 @@ rofl::fudpframe* static_pktclassifier::udp(unsigned int idx) const
 	return NULL;
 }
 
-rofl::ftcpframe* static_pktclassifier::tcp(unsigned int idx) const
+rofl::ftcpframe* static_pktclassifier::tcp(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_TCP_FRAMES)
+	if(idx > (int)MAX_TCP_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_TCP_FRAME_POS + num_of_headers[HEADER_TYPE_TCP];
+		pos = FIRST_TCP_FRAME_POS + num_of_headers[HEADER_TYPE_TCP] - 1;
 	else
 		pos = FIRST_TCP_FRAME_POS + idx;	
 
@@ -242,15 +242,15 @@ rofl::ftcpframe* static_pktclassifier::tcp(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fsctpframe* static_pktclassifier::sctp(unsigned int idx) const
+rofl::fsctpframe* static_pktclassifier::sctp(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_SCTP_FRAMES)
+	if(idx > (int)MAX_SCTP_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_SCTP_FRAME_POS + num_of_headers[HEADER_TYPE_SCTP];
+		pos = FIRST_SCTP_FRAME_POS + num_of_headers[HEADER_TYPE_SCTP] - 1;
 	else
 		pos = FIRST_SCTP_FRAME_POS + idx;	
 
@@ -260,15 +260,15 @@ rofl::fsctpframe* static_pktclassifier::sctp(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fpppoeframe* static_pktclassifier::pppoe(unsigned int idx) const
+rofl::fpppoeframe* static_pktclassifier::pppoe(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_PPPOE_FRAMES)
+	if(idx > (int)MAX_PPPOE_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_PPPOE_FRAME_POS + num_of_headers[HEADER_TYPE_PPPOE];
+		pos = FIRST_PPPOE_FRAME_POS + num_of_headers[HEADER_TYPE_PPPOE] - 1;
 	else
 		pos = FIRST_PPPOE_FRAME_POS + idx;	
 
@@ -278,15 +278,15 @@ rofl::fpppoeframe* static_pktclassifier::pppoe(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fpppframe* static_pktclassifier::ppp(unsigned int idx) const
+rofl::fpppframe* static_pktclassifier::ppp(int idx) const
 {
 	unsigned int pos;	
 
-	if(idx > MAX_PPP_FRAMES)
+	if(idx > (int)MAX_PPP_FRAMES)
 		return NULL;
 
 	if(idx < 0) //Inner most
-		pos = FIRST_PPP_FRAME_POS + num_of_headers[HEADER_TYPE_PPP];
+		pos = FIRST_PPP_FRAME_POS + num_of_headers[HEADER_TYPE_PPP] - 1;
 	else
 		pos = FIRST_PPP_FRAME_POS + idx;	
 
@@ -624,7 +624,7 @@ void static_pktclassifier::parse_icmpv4( uint8_t *data, size_t datalen){
 	//Set frame
 	unsigned int num_of_icmpv4 = num_of_headers[HEADER_TYPE_ICMPV4];
 	headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame->reset(data, datalen);
-	headers[FIRST_IPV4_FRAME_POS + num_of_icmpv4].present = true;
+	headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].present = true;
 	num_of_headers[HEADER_TYPE_ICMPV4] = num_of_icmpv4+1;
 
 	//Set reference

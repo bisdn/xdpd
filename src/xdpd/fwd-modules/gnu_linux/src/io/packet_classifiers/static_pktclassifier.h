@@ -42,17 +42,17 @@ public:
 	/*
 	* header access
 	*/	
-	virtual rofl::fetherframe* 	ether(unsigned int idx = 0)	const;
-	virtual rofl::fvlanframe* 	vlan(unsigned int idx = 0) 	const;
-	virtual rofl::fmplsframe* 	mpls(unsigned int idx = 0) 	const;
-	virtual rofl::farpv4frame* 	arpv4(unsigned int idx = 0)	const;
-	virtual rofl::fipv4frame* 	ipv4(unsigned int idx = 0) 	const;
-	virtual rofl::ficmpv4frame* 	icmpv4(unsigned int idx = 0)	const;
-	virtual rofl::fudpframe* 	udp(unsigned int idx = 0) 	const;
-	virtual rofl::ftcpframe* 	tcp(unsigned int idx = 0) 	const;
-	virtual rofl::fsctpframe* 	sctp(unsigned int idx = 0) 	const;
-	virtual rofl::fpppoeframe* 	pppoe(unsigned int idx = 0)	const;
-	virtual rofl::fpppframe* 	ppp(unsigned int idx = 0) 	const;
+	virtual rofl::fetherframe* 	ether(int idx = 0)	const;
+	virtual rofl::fvlanframe* 	vlan(int idx = 0) 	const;
+	virtual rofl::fmplsframe* 	mpls(int idx = 0) 	const;
+	virtual rofl::farpv4frame* 	arpv4(int idx = 0)	const;
+	virtual rofl::fipv4frame* 	ipv4(int idx = 0) 	const;
+	virtual rofl::ficmpv4frame* 	icmpv4(int idx = 0)	const;
+	virtual rofl::fudpframe* 	udp(int idx = 0) 	const;
+	virtual rofl::ftcpframe* 	tcp(int idx = 0) 	const;
+	virtual rofl::fsctpframe* 	sctp(int idx = 0) 	const;
+	virtual rofl::fpppoeframe* 	pppoe(int idx = 0)	const;
+	virtual rofl::fpppframe* 	ppp(int idx = 0) 	const;
 
 	/*
 	 * pop operations

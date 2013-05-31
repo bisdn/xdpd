@@ -921,7 +921,7 @@ rofl_pktclassifier::push_pppoe(uint16_t ether_type){
 
 
 template<class T>
-T* rofl_pktclassifier::header(unsigned int idx) const
+T* rofl_pktclassifier::header(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -940,7 +940,7 @@ T* rofl_pktclassifier::header(unsigned int idx) const
 }
 
 
-rofl::fetherframe* rofl_pktclassifier::ether(unsigned int idx) const
+rofl::fetherframe* rofl_pktclassifier::ether(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -958,7 +958,7 @@ rofl::fetherframe* rofl_pktclassifier::ether(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fvlanframe* rofl_pktclassifier::vlan(unsigned int idx) const
+rofl::fvlanframe* rofl_pktclassifier::vlan(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -976,7 +976,7 @@ rofl::fvlanframe* rofl_pktclassifier::vlan(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fmplsframe* rofl_pktclassifier::mpls(unsigned int idx) const
+rofl::fmplsframe* rofl_pktclassifier::mpls(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -994,7 +994,7 @@ rofl::fmplsframe* rofl_pktclassifier::mpls(unsigned int idx) const
 	return NULL;
 }
 
-rofl::farpv4frame* rofl_pktclassifier::arpv4(unsigned int idx) const
+rofl::farpv4frame* rofl_pktclassifier::arpv4(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -1012,7 +1012,7 @@ rofl::farpv4frame* rofl_pktclassifier::arpv4(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fipv4frame* rofl_pktclassifier::ipv4(unsigned int idx) const
+rofl::fipv4frame* rofl_pktclassifier::ipv4(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -1030,7 +1030,7 @@ rofl::fipv4frame* rofl_pktclassifier::ipv4(unsigned int idx) const
 	return NULL;
 }
 
-rofl::ficmpv4frame* rofl_pktclassifier::icmpv4(unsigned int idx) const
+rofl::ficmpv4frame* rofl_pktclassifier::icmpv4(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -1048,7 +1048,7 @@ rofl::ficmpv4frame* rofl_pktclassifier::icmpv4(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fudpframe* rofl_pktclassifier::udp(unsigned int idx) const
+rofl::fudpframe* rofl_pktclassifier::udp(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -1066,7 +1066,7 @@ rofl::fudpframe* rofl_pktclassifier::udp(unsigned int idx) const
 	return NULL;
 }
 
-rofl::ftcpframe* rofl_pktclassifier::tcp(unsigned int idx) const
+rofl::ftcpframe* rofl_pktclassifier::tcp(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -1084,7 +1084,7 @@ rofl::ftcpframe* rofl_pktclassifier::tcp(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fsctpframe* rofl_pktclassifier::sctp(unsigned int idx) const
+rofl::fsctpframe* rofl_pktclassifier::sctp(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -1102,7 +1102,7 @@ rofl::fsctpframe* rofl_pktclassifier::sctp(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fpppoeframe* rofl_pktclassifier::pppoe(unsigned int idx) const
+rofl::fpppoeframe* rofl_pktclassifier::pppoe(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;
@@ -1120,7 +1120,7 @@ rofl::fpppoeframe* rofl_pktclassifier::pppoe(unsigned int idx) const
 	return NULL;
 }
 
-rofl::fpppframe* rofl_pktclassifier::ppp(unsigned int idx) const
+rofl::fpppframe* rofl_pktclassifier::ppp(int idx) const
 {
     ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
 	rofl::fframe *frame = fhead;

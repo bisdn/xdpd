@@ -528,6 +528,28 @@ of12_endpoint::handle_group_stats_request(
 	}
 	
 	num_of_buckets = g_msg->num_of_buckets;
+
+	// TODO: loop, when group_id == OFPGT_ALL
+
+	std::vector<cofgroup_stats_reply> group_stats;
+
+	cofgroup_stats_reply stats(
+			ctl->get_version(),
+			msg->get_group_stats().get_group_id(),
+			htobe32(g_msg->ref_count),
+			htobe64(g_msg->packet_count),
+			htobe64(g_msg->byte_count),
+			num_of_buckets);
+
+	for(i=0;i<num_of_buckets;i++) {
+		stats.get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
+		stats.get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
+	}
+
+	group_stats.push_back(stats);
+
+	send_group_stats_reply(ctl, msg->get_xid(), group_stats, false);
+#if 0
 	body.resize(sizeof(of12_stats_group_msg_t)+num_of_buckets*sizeof(of12_stats_bucket_counter_t));
 	
 	struct ofp12_group_stats *stats = (struct ofp12_group_stats *)body.somem();
@@ -545,6 +567,7 @@ of12_endpoint::handle_group_stats_request(
 	}
 	
 	send_stats_reply(ctl, msg->get_xid(), OFPST_GROUP, body.somem(), body.memlen(), false);
+#endif
 	of12_destroy_stats_group_msg(g_msg);
 
 	delete msg;
@@ -571,11 +594,12 @@ of12_endpoint::handle_group_desc_stats_request(
 		cofbclist bclist;
 		of12_translation_utils::of12_map_reverse_bucket_list(bclist,group_it->bc_list);
 		
-		group_desc_stats.push_back(cofgroup_desc_stats_reply(
-			ctl->get_version(),
-			group_it->type,
-			group_it->id,
-			bclist ));
+		group_desc_stats.push_back(
+				cofgroup_desc_stats_reply(
+					ctl->get_version(),
+					group_it->type,
+					group_it->id,
+					bclist ));
 	}
 
 

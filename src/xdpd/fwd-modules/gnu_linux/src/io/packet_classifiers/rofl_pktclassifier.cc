@@ -97,7 +97,7 @@ rofl_pktclassifier::frame_pop(
 	// check whether this is the second fframe (first after ether)
 	// if not refuse dropping
 
-	//ROFL_ERR("datapacketx86(%p)::frame_pop() "
+	//ROFL_DEBUG("datapacketx86(%p)::frame_pop() "
 	//		"frame: %p %s\n", this, frame, frame->c_str());
 
 #if 0
@@ -919,223 +919,106 @@ rofl_pktclassifier::push_pppoe(uint16_t ether_type){
 }
 
 
-
 template<class T>
-T* rofl_pktclassifier::header(unsigned int idx) const
+T* rofl_pktclassifier::header(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		T* tframe = dynamic_cast<T*>( frame );
-		if (NULL != tframe) {
-			if (0 == idx)
+	rofl::fframe *frame;	
+	T* tframe;
+
+	if(idx >= 0){
+		//Start from head
+		frame = fhead;
+	
+		while (NULL != frame) {
+			//Try to  dynamic cast	
+			tframe = dynamic_cast<T*>( frame );
+			
+			if (NULL != tframe) {
+				if (0 == idx)
+					return tframe;
+				else
+					--idx;
+			} else {
+				//Move forward
+				frame = frame->next;
+			}
+		}
+	}else if(idx == -1){
+		//Start from the tail
+		//we want the inner most frame
+		frame = ftail;
+		
+		while (NULL != frame) {
+			//Try to  dynamic cast	
+			tframe = dynamic_cast<T*>( frame );
+			
+			if (NULL != tframe) {
 				return tframe;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
+			} else {
+				//Move backwards
+				frame = frame->prev;
+			}
 		}
-	};
+	}
+		
+	//Not found or invalid idx
 	return NULL;
 }
 
-
-rofl::fetherframe* rofl_pktclassifier::ether(unsigned int idx) const
+//Protocol specific getters
+rofl::fetherframe* rofl_pktclassifier::ether(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::fetherframe *ether = dynamic_cast<rofl::fetherframe*>( frame );
-		if (NULL != ether) {
-			if (0 == idx)
-				return ether;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::fetherframe>(idx);
 }
 
-rofl::fvlanframe* rofl_pktclassifier::vlan(unsigned int idx) const
+rofl::fvlanframe* rofl_pktclassifier::vlan(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::fvlanframe *vlan = dynamic_cast<rofl::fvlanframe*>( frame );
-		if (NULL != vlan) {
-			if (0 == idx)
-				return vlan;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::fvlanframe>(idx);
 }
 
-rofl::fmplsframe* rofl_pktclassifier::mpls(unsigned int idx) const
+rofl::fmplsframe* rofl_pktclassifier::mpls(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::fmplsframe *mpls = dynamic_cast<rofl::fmplsframe*>( frame );
-		if (NULL != mpls) {
-			if (0 == idx)
-				return mpls;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::fmplsframe>(idx);
 }
 
-rofl::farpv4frame* rofl_pktclassifier::arpv4(unsigned int idx) const
+rofl::farpv4frame* rofl_pktclassifier::arpv4(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::farpv4frame *arpv4 = dynamic_cast<rofl::farpv4frame*>( frame );
-		if (NULL != arpv4) {
-			if (0 == idx)
-				return arpv4;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::farpv4frame>(idx);
 }
 
-rofl::fipv4frame* rofl_pktclassifier::ipv4(unsigned int idx) const
+rofl::fipv4frame* rofl_pktclassifier::ipv4(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::fipv4frame *ipv4 = dynamic_cast<rofl::fipv4frame*>( frame );
-		if (NULL != ipv4) {
-			if (0 == idx)
-				return ipv4;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::fipv4frame>(idx);
 }
 
-rofl::ficmpv4frame* rofl_pktclassifier::icmpv4(unsigned int idx) const
+rofl::ficmpv4frame* rofl_pktclassifier::icmpv4(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::ficmpv4frame *icmpv4 = dynamic_cast<rofl::ficmpv4frame*>( frame );
-		if (NULL != icmpv4) {
-			if (0 == idx)
-				return icmpv4;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::ficmpv4frame>(idx);
 }
 
-rofl::fudpframe* rofl_pktclassifier::udp(unsigned int idx) const
+rofl::fudpframe* rofl_pktclassifier::udp(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::fudpframe *udp = dynamic_cast<rofl::fudpframe*>( frame );
-		if (NULL != udp) {
-			if (0 == idx)
-				return udp;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::fudpframe>(idx);
 }
 
-rofl::ftcpframe* rofl_pktclassifier::tcp(unsigned int idx) const
+rofl::ftcpframe* rofl_pktclassifier::tcp(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::ftcpframe *tcp = dynamic_cast<rofl::ftcpframe*>( frame );
-		if (NULL != tcp) {
-			if (0 == idx)
-				return tcp;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::ftcpframe>(idx);
 }
 
-rofl::fsctpframe* rofl_pktclassifier::sctp(unsigned int idx) const
+rofl::fsctpframe* rofl_pktclassifier::sctp(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::fsctpframe *sctp = dynamic_cast<rofl::fsctpframe*>( frame );
-		if (NULL != sctp) {
-			if (0 == idx)
-				return sctp;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::fsctpframe>(idx);
 }
 
-rofl::fpppoeframe* rofl_pktclassifier::pppoe(unsigned int idx) const
+rofl::fpppoeframe* rofl_pktclassifier::pppoe(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::fpppoeframe *pppoe = dynamic_cast<rofl::fpppoeframe*>( frame );
-		if (NULL != pppoe) {
-			if (0 == idx)
-				return pppoe;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::fpppoeframe>(idx);
 }
 
-rofl::fpppframe* rofl_pktclassifier::ppp(unsigned int idx) const
+rofl::fpppframe* rofl_pktclassifier::ppp(int idx) const
 {
-    ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(idx);
-	rofl::fframe *frame = fhead;
-	while (NULL != frame) {
-		rofl::fpppframe *ppp = dynamic_cast<rofl::fpppframe*>( frame );
-		if (NULL != ppp) {
-			if (0 == idx)
-				return ppp;
-			else
-				--idx;
-		} else {
-			frame = frame->next;
-		}
-	};
-	return NULL;
+	return rofl_pktclassifier::header<rofl::fpppframe>(idx);
 }
 
 void rofl_pktclassifier::classify_reset(void){
@@ -1159,14 +1042,14 @@ void rofl_pktclassifier::classify_reset(void){
 
 
 void rofl_pktclassifier::dump(){
-	ROFL_ERR("datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
+	ROFL_DEBUG("datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
 	rofl::fframe *frame = fhead;
 	while (NULL != frame) {
-		ROFL_ERR("%s\n", frame->c_str());
+		ROFL_DEBUG("%s\n", frame->c_str());
 		frame = frame->next;
 	}
 	rofl::fframe content(pkt->get_buffer(), pkt->get_buffer_length());
-	ROFL_ERR("content: %s\n", content.c_str());
+	ROFL_DEBUG("content: %s\n", content.c_str());
 }
 
 

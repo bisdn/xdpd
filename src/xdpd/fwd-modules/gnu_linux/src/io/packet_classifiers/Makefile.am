@@ -9,6 +9,8 @@ libfwd_module_gnu_linux_io_classifiers_ladir = $(includedir)/fwd-modules/gnu_lin
 libfwd_module_gnu_linux_io_classifiers_la_HEADERS = packetclassifier.h rofl_pktclassifier.h
 
 libfwd_module_gnu_linux_io_classifiers_la_SOURCES = \
+	static_pktclassifier.cc \
+	static_pktclassifier.cc \
 	rofl_pktclassifier.cc \
 	rofl_pktclassifier.h \
 	packetclassifier.cc\

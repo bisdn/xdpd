@@ -10,7 +10,6 @@
 #include <pthread.h>
 #include <vector>
 #include <rofl/datapath/pipeline/common/datapacket.h>
-#include "datapacketx86.h"
 
 /**
 * @file bufferpool.h
@@ -21,9 +20,9 @@
 */
 
 typedef enum{
-	BPX86_SLOT_UNAVAILABLE=0,
-	BPX86_SLOT_AVAILABLE=1,
-	BPX86_SLOT_IN_USE=2
+	BUFFERPOOL_SLOT_UNAVAILABLE=0,
+	BUFFERPOOL_SLOT_AVAILABLE=1,
+	BUFFERPOOL_SLOT_IN_USE=2
 }bufferpool_slot_state_t;
 
 class bufferpool{

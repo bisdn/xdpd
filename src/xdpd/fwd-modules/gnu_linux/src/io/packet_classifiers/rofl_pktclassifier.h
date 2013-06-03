@@ -43,19 +43,19 @@ public:
 	/*
 	* header access
 	*/	
-	template<class T> T* 	header(unsigned int idx) const;
+	template<class T> T* 	header(int idx) const;
 
-	virtual rofl::fetherframe* 	ether(unsigned int idx = 0) const;
-	virtual rofl::fvlanframe* 	vlan(unsigned int idx = 0) 	const;
-	virtual rofl::fmplsframe* 	mpls(unsigned int idx = 0) 	const;
-	virtual rofl::farpv4frame* 	arpv4(unsigned int idx = 0) const;
-	virtual rofl::fipv4frame* 	ipv4(unsigned int idx = 0) 	const;
-	virtual rofl::ficmpv4frame* icmpv4(unsigned int idx = 0) const;
-	virtual rofl::fudpframe* 	udp(unsigned int idx = 0) 	const;
-	virtual rofl::ftcpframe* 	tcp(unsigned int idx = 0) 	const;
-	virtual rofl::fsctpframe* 	sctp(unsigned int idx = 0) 	const;
-	virtual rofl::fpppoeframe* 	pppoe(unsigned int idx = 0) const;
-	virtual rofl::fpppframe* 	ppp(unsigned int idx = 0) 	const;
+	virtual rofl::fetherframe* 	ether(int idx = 0) const;
+	virtual rofl::fvlanframe* 	vlan(int idx = 0) 	const;
+	virtual rofl::fmplsframe* 	mpls(int idx = 0) 	const;
+	virtual rofl::farpv4frame* 	arpv4(int idx = 0) const;
+	virtual rofl::fipv4frame* 	ipv4(int idx = 0) 	const;
+	virtual rofl::ficmpv4frame* icmpv4(int idx = 0) const;
+	virtual rofl::fudpframe* 	udp(int idx = 0) 	const;
+	virtual rofl::ftcpframe* 	tcp(int idx = 0) 	const;
+	virtual rofl::fsctpframe* 	sctp(int idx = 0) 	const;
+	virtual rofl::fpppoeframe* 	pppoe(int idx = 0) const;
+	virtual rofl::fpppframe* 	ppp(int idx = 0) 	const;
 
 	/*
 	 * pop operations
@@ -113,39 +113,39 @@ protected:
 
 	std::map<enum rofl_pktclassifier_type_t, std::vector<rofl::fframe*> > t_frames;
 
-	virtual unsigned int n_ether() { return t_frames[ROFL_PKT_CLASSIFIER_ETHER ].size(); };
-	virtual unsigned int n_vlan()  { return t_frames[ROFL_PKT_CLASSIFIER_VLAN  ].size(); };
-	virtual unsigned int n_mpls()  { return t_frames[ROFL_PKT_CLASSIFIER_MPLS  ].size(); };
-	virtual unsigned int n_pppoe() { return t_frames[ROFL_PKT_CLASSIFIER_PPPOE ].size(); };
-	virtual unsigned int n_ppp()   { return t_frames[ROFL_PKT_CLASSIFIER_PPP   ].size(); };
-	virtual unsigned int n_arpv4() { return t_frames[ROFL_PKT_CLASSIFIER_ARPV4 ].size(); };
-	virtual unsigned int n_ipv4()  { return t_frames[ROFL_PKT_CLASSIFIER_IPV4  ].size(); };
-	virtual unsigned int n_icmpv4(){ return t_frames[ROFL_PKT_CLASSIFIER_ICMPV4].size(); };
-	virtual unsigned int n_ipv6()  { return t_frames[ROFL_PKT_CLASSIFIER_IPV6  ].size(); };
-	virtual unsigned int n_icmpv6(){ return t_frames[ROFL_PKT_CLASSIFIER_ICMPV6].size(); };
-	virtual unsigned int n_udp()   { return t_frames[ROFL_PKT_CLASSIFIER_UDP   ].size(); };
-	virtual unsigned int n_tcp()   { return t_frames[ROFL_PKT_CLASSIFIER_TCP   ].size(); };
-	virtual unsigned int n_sctp()  { return t_frames[ROFL_PKT_CLASSIFIER_SCTP  ].size(); };
+	unsigned int n_ether() { return t_frames[ROFL_PKT_CLASSIFIER_ETHER ].size(); };
+	unsigned int n_vlan()  { return t_frames[ROFL_PKT_CLASSIFIER_VLAN  ].size(); };
+	unsigned int n_mpls()  { return t_frames[ROFL_PKT_CLASSIFIER_MPLS  ].size(); };
+	unsigned int n_pppoe() { return t_frames[ROFL_PKT_CLASSIFIER_PPPOE ].size(); };
+	unsigned int n_ppp()   { return t_frames[ROFL_PKT_CLASSIFIER_PPP   ].size(); };
+	unsigned int n_arpv4() { return t_frames[ROFL_PKT_CLASSIFIER_ARPV4 ].size(); };
+	unsigned int n_ipv4()  { return t_frames[ROFL_PKT_CLASSIFIER_IPV4  ].size(); };
+	unsigned int n_icmpv4(){ return t_frames[ROFL_PKT_CLASSIFIER_ICMPV4].size(); };
+	unsigned int n_ipv6()  { return t_frames[ROFL_PKT_CLASSIFIER_IPV6  ].size(); };
+	unsigned int n_icmpv6(){ return t_frames[ROFL_PKT_CLASSIFIER_ICMPV6].size(); };
+	unsigned int n_udp()   { return t_frames[ROFL_PKT_CLASSIFIER_UDP   ].size(); };
+	unsigned int n_tcp()   { return t_frames[ROFL_PKT_CLASSIFIER_TCP   ].size(); };
+	unsigned int n_sctp()  { return t_frames[ROFL_PKT_CLASSIFIER_SCTP  ].size(); };
 
 	// ethernet type of payload (=innermost ethernet type)
 	uint16_t eth_type; 
 
-	virtual rofl::fframe* frame_insert(rofl::fframe *append_to, rofl::fframe *frame);
-	virtual void frame_append(rofl::fframe *frame);
-	virtual void frame_push(rofl::fframe *frame);
-	virtual void frame_pop(rofl::fframe *frame);
+	rofl::fframe* frame_insert(rofl::fframe *append_to, rofl::fframe *frame);
+	void frame_append(rofl::fframe *frame);
+	void frame_push(rofl::fframe *frame);
+	void frame_pop(rofl::fframe *frame);
 
-	virtual void parse_ether	(uint8_t *data, size_t datalen);
-	virtual void parse_vlan(uint8_t *data, size_t datalen);
-	virtual void parse_mpls(uint8_t *data, size_t datalen);
-	virtual void parse_pppoe(uint8_t *data, size_t datalen);
-	virtual void parse_ppp(uint8_t *data, size_t datalen);
-	virtual void parse_arpv4(uint8_t *data, size_t datalen);
-	virtual void parse_ipv4	(uint8_t *data, size_t datalen);
-	virtual void parse_icmpv4(uint8_t *data, size_t datalen);
-	virtual void parse_udp(uint8_t *data, size_t datalen);
-	virtual void parse_tcp(uint8_t *data, size_t datalen);
-	virtual void parse_sctp	(uint8_t *data, size_t datalen);
+	void parse_ether	(uint8_t *data, size_t datalen);
+	void parse_vlan(uint8_t *data, size_t datalen);
+	void parse_mpls(uint8_t *data, size_t datalen);
+	void parse_pppoe(uint8_t *data, size_t datalen);
+	void parse_ppp(uint8_t *data, size_t datalen);
+	void parse_arpv4(uint8_t *data, size_t datalen);
+	void parse_ipv4	(uint8_t *data, size_t datalen);
+	void parse_icmpv4(uint8_t *data, size_t datalen);
+	void parse_udp(uint8_t *data, size_t datalen);
+	void parse_tcp(uint8_t *data, size_t datalen);
+	void parse_sctp	(uint8_t *data, size_t datalen);
 
 };
 

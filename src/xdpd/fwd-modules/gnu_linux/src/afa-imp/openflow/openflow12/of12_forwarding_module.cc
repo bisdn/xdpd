@@ -7,6 +7,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_statistics.h>
 #include "../../../io/bufferpool.h"
 #include "../../../io/datapacket_storage.h"
+#include "../../../io/datapacketx86.h"
 #include "../../../io/ports/ioport.h"
 #include "../../../ls_internal_state.h"
 
@@ -232,6 +233,14 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	
 	//Avoid DoS. Check whether the action list contains an action ouput, otherwise drop, since the packet will never be freed
 	if(!action_group_of12_packet_in_contains_output(action_group)){
+
+		if (OF12P_NO_BUFFER != buffer_id) {
+			pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
+			if (NULL != pkt) {
+				bufferpool::release_buffer(pkt);
+			}
+		}
+
 		//FIXME: free action_group??
 		return AFA_FAILURE; /*TODO add specific error */
 	}
@@ -244,12 +253,8 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 
 		//Buffer has expired
 		if(!pkt){
-			assert(0);
 			return AFA_FAILURE; /* TODO: add specific error */
 		}
-
-		//Copy the incomming packet
-		memcpy(((datapacketx86*)pkt->platform_state)->get_buffer(), buffer,buffer_size);	
 	}else{
 		//Retrieve a free buffer	
 		pkt = bufferpool::get_free_buffer();
@@ -523,8 +528,19 @@ of12_stats_group_msg_t * fwd_module_of12_get_group_stats(uint64_t dpid, uint32_t
 	
 	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
-	if(id==OFPG_ALL)
+	return of12_get_group_stats(lsw->pipeline,id);
+}
+
+/**
+ * @name    fwd_module_of12_get_group_all_stats
+ * @brief   Instructs driver to fetch the GROUP statistics from all the groups
+ * @ingroup of12_fwd_module_async_event_processing
+ *
+ * @param dpid 		Datapath ID of the switch where the GROUPS are
+ */
+of12_stats_group_msg_t * fwd_module_of12_get_group_all_stats(uint64_t dpid, uint32_t id){
+	
+	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+	
 		return of12_get_group_all_stats(lsw->pipeline,id);
-	else
-		return of12_get_group_stats(lsw->pipeline,id);
 }

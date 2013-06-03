@@ -517,10 +517,16 @@ of12_endpoint::handle_group_stats_request(
 	unsigned int i;
 	cmemory body(0);
 	unsigned int num_of_buckets;
+	of12_stats_group_msg_t *g_msg;
 
 	uint32_t group_id = msg->get_group_stats().get_group_id();
 	
-	 of12_stats_group_msg_t *g_msg = fwd_module_of12_get_group_stats(sw->dpid, group_id);
+	if(group_id==OFPG_ALL){
+		g_msg = fwd_module_of12_get_group_all_stats(sw->dpid, group_id);
+	}
+	else{
+		g_msg = fwd_module_of12_get_group_stats(sw->dpid, group_id);
+	}
 	
 	if(g_msg==NULL){
 		//TODO handle error

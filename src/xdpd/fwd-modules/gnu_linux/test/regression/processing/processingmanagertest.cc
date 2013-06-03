@@ -51,7 +51,7 @@ class ProcessingManagerTestCase : public CppUnit::TestFixture{
 /* Setup and tear down */
 void ProcessingManagerTestCase::setUp(){
 	
-	matching_algorithm_available matching_algorithms[4] = {matching_algorithm_loop,matching_algorithm_loop,matching_algorithm_loop,matching_algorithm_loop};
+	of12_matching_algorithm_available matching_algorithms[4] = {of12_matching_algorithm_loop,of12_matching_algorithm_loop,of12_matching_algorithm_loop,of12_matching_algorithm_loop};
 	
 	//Init bufferpool
 	bufferpool::init(2048);	

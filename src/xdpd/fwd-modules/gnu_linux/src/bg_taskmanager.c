@@ -19,6 +19,7 @@
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/datapath/afa/cmm.h>
 #include "io/datapacket_storage_c_wrapper.h"
+#include "io/bufferpool_c_wrapper.h"
 #include "ls_internal_state.h"
 
 //Local static variable for background manager thread
@@ -222,6 +223,7 @@ static rofl_result_t read_netlink_message(int fd){
  */
 int process_timeouts()
 {
+	datapacket_t* pkt;
 	unsigned int i, max_switches;
 	struct timeval now;
 	of_switch_t** logical_switches;
@@ -266,15 +268,18 @@ int process_timeouts()
 
 			if(logical_switches[i] != NULL){
 
+				//Recover storage pointer
 				dps = ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->store_handle ;
-				//TODO process buffers in the storage
+				//Loop until the oldest expired packet is taken out
 				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
 
 					ROFL_DEBUG_VERBOSE("<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
 
-					if(datapacket_storage_get_packet_wrapper(dps,buffer_id)==NULL){
+					if( (pkt = datapacket_storage_get_packet_wrapper(dps,buffer_id) ) == NULL ){
 						ROFL_DEBUG_VERBOSE("<%s:%d> Error in get_packet_wrapper\n",__func__,__LINE__);
 					}else{
+						//Return buffer to bufferpool
+						bufferpool_release_buffer_wrapper(pkt);
 						ROFL_DEBUG_VERBOSE("<%s:%d> datapacket expired correctly\n",__func__,__LINE__);
 					}
 				}

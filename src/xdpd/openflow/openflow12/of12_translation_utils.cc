@@ -561,12 +561,12 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				{
 					uint64_t maddr = 0;
 					{
-						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[5];
-						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[4];
-						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[3];
-						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[2];
-						((uint8_t*)&maddr)[6] = oxm.oxm_uint48t->value[1];
-						((uint8_t*)&maddr)[7] = oxm.oxm_uint48t->value[0];
+						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[0];
+						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[1];
+						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[2];
+						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[3];
+						((uint8_t*)&maddr)[6] = oxm.oxm_uint48t->value[4];
+						((uint8_t*)&maddr)[7] = oxm.oxm_uint48t->value[5];
 					}
 
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_DST, maddr, NULL, NULL);
@@ -576,12 +576,12 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				{
 					uint64_t maddr = 0;
 					{
-						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[5];
-						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[4];
-						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[3];
-						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[2];
-						((uint8_t*)&maddr)[6] = oxm.oxm_uint48t->value[1];
-						((uint8_t*)&maddr)[7] = oxm.oxm_uint48t->value[0];
+						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[0];
+						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[1];
+						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[2];
+						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[3];
+						((uint8_t*)&maddr)[6] = oxm.oxm_uint48t->value[4];
+						((uint8_t*)&maddr)[7] = oxm.oxm_uint48t->value[5];
 					}
 
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, maddr, NULL, NULL);

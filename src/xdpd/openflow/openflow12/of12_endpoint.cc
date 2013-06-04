@@ -517,42 +517,43 @@ of12_endpoint::handle_group_stats_request(
 	unsigned int i;
 	cmemory body(0);
 	unsigned int num_of_buckets;
-	of12_stats_group_msg_t *g_msg;
+	of12_stats_group_msg_t *g_msg, *g_msg_all;
 
 	uint32_t group_id = msg->get_group_stats().get_group_id();
 	
 	if(group_id==OFPG_ALL){
-		g_msg = fwd_module_of12_get_group_all_stats(sw->dpid, group_id);
+		g_msg_all = fwd_module_of12_get_group_all_stats(sw->dpid, group_id);
 	}
 	else{
-		g_msg = fwd_module_of12_get_group_stats(sw->dpid, group_id);
+		g_msg_all = fwd_module_of12_get_group_stats(sw->dpid, group_id);
 	}
 	
-	if(g_msg==NULL){
+	if(g_msg_all==NULL){
 		//TODO handle error
 		WRITELOG(CDATAPATH, ERROR,"<%s:%d> ERROR MESSAGE NOT CREATED\n",__func__,__LINE__);
 	}
 	
-	num_of_buckets = g_msg->num_of_buckets;
-
-	// TODO: loop, when group_id == OFPGT_ALL
-
 	std::vector<cofgroup_stats_reply> group_stats;
+	
+	for(g_msg = g_msg_all; g_msg; g_msg = g_msg->next){
+		num_of_buckets = g_msg->num_of_buckets;
 
-	cofgroup_stats_reply stats(
-			ctl->get_version(),
-			msg->get_group_stats().get_group_id(),
-			htobe32(g_msg->ref_count),
-			htobe64(g_msg->packet_count),
-			htobe64(g_msg->byte_count),
-			num_of_buckets);
+		cofgroup_stats_reply stats(
+				ctl->get_version(),
+				/*msg->get_group_stats().get_group_id(),*/
+				htobe32(g_msg->group_id),
+				htobe32(g_msg->ref_count),
+				htobe64(g_msg->packet_count),
+				htobe64(g_msg->byte_count),
+				num_of_buckets);
 
-	for(i=0;i<num_of_buckets;i++) {
-		stats.get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
-		stats.get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
+		for(i=0;i<num_of_buckets;i++) {
+			stats.get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
+			stats.get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
+		}
+		
+		group_stats.push_back(stats);
 	}
-
-	group_stats.push_back(stats);
 
 	send_group_stats_reply(ctl, msg->get_xid(), group_stats, false);
 #if 0

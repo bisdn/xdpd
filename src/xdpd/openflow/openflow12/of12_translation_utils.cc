@@ -1,5 +1,7 @@
 #include "of12_translation_utils.h"
 
+#include <inttypes.h>
+
 using namespace rofl;
 
 //Byte masks
@@ -182,25 +184,8 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		uint64_t maddr = 0;
-		{
-			((uint8_t*)&maddr)[0] = ofmatch.get_eth_dst_addr()[0];
-			((uint8_t*)&maddr)[1] = ofmatch.get_eth_dst_addr()[1];
-			((uint8_t*)&maddr)[2] = ofmatch.get_eth_dst_addr()[2];
-			((uint8_t*)&maddr)[3] = ofmatch.get_eth_dst_addr()[3];
-			((uint8_t*)&maddr)[4] = ofmatch.get_eth_dst_addr()[4];
-			((uint8_t*)&maddr)[5] = ofmatch.get_eth_dst_addr()[5];
-		}
-
-		uint64_t mmask = 0xffffffffffffffff;
-		{
-			((uint8_t*)&mmask)[0] = ofmatch.get_eth_dst_mask()[0];
-			((uint8_t*)&mmask)[1] = ofmatch.get_eth_dst_mask()[1];
-			((uint8_t*)&mmask)[2] = ofmatch.get_eth_dst_mask()[2];
-			((uint8_t*)&mmask)[3] = ofmatch.get_eth_dst_mask()[3];
-			((uint8_t*)&mmask)[4] = ofmatch.get_eth_dst_mask()[4];
-			((uint8_t*)&mmask)[5] = ofmatch.get_eth_dst_mask()[5];
-		}
+		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();;
+		uint64_t mmask = ofmatch.get_eth_dst_mask().get_mac();
 
 		of12_match_t *match = of12_init_eth_dst_match(
 								/*prev*/NULL,
@@ -212,25 +197,8 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		uint64_t maddr = 0;
-		{
-			((uint8_t*)&maddr)[0] = ofmatch.get_eth_src_addr()[0];
-			((uint8_t*)&maddr)[1] = ofmatch.get_eth_src_addr()[1];
-			((uint8_t*)&maddr)[2] = ofmatch.get_eth_src_addr()[2];
-			((uint8_t*)&maddr)[3] = ofmatch.get_eth_src_addr()[3];
-			((uint8_t*)&maddr)[4] = ofmatch.get_eth_src_addr()[4];
-			((uint8_t*)&maddr)[5] = ofmatch.get_eth_src_addr()[5];
-		}
-
-		uint64_t mmask = 0xffffffffffffffff;
-		{
-			((uint8_t*)&mmask)[0] = ofmatch.get_eth_src_mask()[0];
-			((uint8_t*)&mmask)[1] = ofmatch.get_eth_src_mask()[1];
-			((uint8_t*)&mmask)[2] = ofmatch.get_eth_src_mask()[2];
-			((uint8_t*)&mmask)[3] = ofmatch.get_eth_src_mask()[3];
-			((uint8_t*)&mmask)[4] = ofmatch.get_eth_src_mask()[4];
-			((uint8_t*)&mmask)[5] = ofmatch.get_eth_src_mask()[5];
-		}
+		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
+		uint64_t mmask = ofmatch.get_eth_src_mask().get_mac();
 
 		of12_match_t *match = of12_init_eth_src_match(
 								/*prev*/NULL,
@@ -593,13 +561,14 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				{
 					uint64_t maddr = 0;
 					{
-						((uint8_t*)&maddr)[0] = oxm.oxm_uint48t->value[0];
-						((uint8_t*)&maddr)[1] = oxm.oxm_uint48t->value[1];
-						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[2];
-						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[3];
-						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[4];
-						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[5];
+						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[0];
+						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[1];
+						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[2];
+						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[3];
+						((uint8_t*)&maddr)[6] = oxm.oxm_uint48t->value[4];
+						((uint8_t*)&maddr)[7] = oxm.oxm_uint48t->value[5];
 					}
+
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_DST, maddr, NULL, NULL);
 				}
 					break;
@@ -607,13 +576,14 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				{
 					uint64_t maddr = 0;
 					{
-						((uint8_t*)&maddr)[0] = oxm.oxm_uint48t->value[0];
-						((uint8_t*)&maddr)[1] = oxm.oxm_uint48t->value[1];
-						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[2];
-						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[3];
-						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[4];
-						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[5];
+						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[0];
+						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[1];
+						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[2];
+						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[3];
+						((uint8_t*)&maddr)[6] = oxm.oxm_uint48t->value[4];
+						((uint8_t*)&maddr)[7] = oxm.oxm_uint48t->value[5];
 					}
+
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, maddr, NULL, NULL);
 				}
 					break;
@@ -785,21 +755,15 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			break;
 		case OF12_MATCH_ETH_DST:
 		{
-			uint64_t addr = ((utern64_t*)m->value)->value;
-			cmacaddr maddr((uint8_t*)&addr,OFP_ETH_ALEN);
-			addr = ((utern64_t*)m->value)->mask;
-			cmacaddr mmask((uint8_t*)&addr,OFP_ETH_ALEN);
-			
+			cmacaddr maddr(((utern64_t*)m->value)->value);
+			cmacaddr mmask(((utern64_t*)m->value)->mask);
 			match.set_eth_dst(maddr, mmask);
 		}
 			break;
 		case OF12_MATCH_ETH_SRC:
 		{
-			uint64_t addr = ((utern64_t*)m->value)->value;
-			cmacaddr maddr((uint8_t*)&addr,OFP_ETH_ALEN);
-			addr = ((utern64_t*)m->value)->mask;
-			cmacaddr mmask((uint8_t*)&addr,OFP_ETH_ALEN);
-			
+			cmacaddr maddr(((utern64_t*)m->value)->value);
+			cmacaddr mmask(((utern64_t*)m->value)->mask);
 			match.set_eth_src(maddr, mmask);
 		}
 			break;
@@ -1097,23 +1061,11 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	} break;
 	//case OF12_AT_SET_FIELD_METADATA:
 	case OF12_AT_SET_FIELD_ETH_DST: {
-		cmacaddr maddr;
-		maddr[0] = ((uint8_t*)&(of12_action->field))[0];
-		maddr[1] = ((uint8_t*)&(of12_action->field))[1];
-		maddr[2] = ((uint8_t*)&(of12_action->field))[2];
-		maddr[3] = ((uint8_t*)&(of12_action->field))[3];
-		maddr[4] = ((uint8_t*)&(of12_action->field))[4];
-		maddr[5] = ((uint8_t*)&(of12_action->field))[5];
+		cmacaddr maddr(of12_action->field);
 		action = cofaction_set_field(coxmatch_ofb_eth_dst(maddr));
 	} break;
 	case OF12_AT_SET_FIELD_ETH_SRC: {
-		cmacaddr maddr;
-		maddr[0] = ((uint8_t*)&(of12_action->field))[0];
-		maddr[1] = ((uint8_t*)&(of12_action->field))[1];
-		maddr[2] = ((uint8_t*)&(of12_action->field))[2];
-		maddr[3] = ((uint8_t*)&(of12_action->field))[3];
-		maddr[4] = ((uint8_t*)&(of12_action->field))[4];
-		maddr[5] = ((uint8_t*)&(of12_action->field))[5];
+		cmacaddr maddr(of12_action->field);
 		action = cofaction_set_field(coxmatch_ofb_eth_src(maddr));
 	} break;
 	case OF12_AT_SET_FIELD_ETH_TYPE: {

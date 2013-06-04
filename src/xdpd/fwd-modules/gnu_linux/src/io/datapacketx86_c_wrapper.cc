@@ -167,8 +167,7 @@ dpx86_set_eth_dst(datapacket_t* pkt, uint64_t eth_dst)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return;
-	pack->headers->ether(0)->set_dl_dst(
-			rofl::cmacaddr(&((uint8_t*) &eth_dst)[0], OFP_ETH_ALEN));
+	pack->headers->ether(0)->set_dl_dst(rofl::cmacaddr(eth_dst));
 }
 
 void
@@ -176,8 +175,7 @@ dpx86_set_eth_src(datapacket_t* pkt, uint64_t eth_src)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return;
-	pack->headers->ether(0)->set_dl_src(
-			rofl::cmacaddr(&((uint8_t*) &eth_src)[0], OFP_ETH_ALEN));
+	pack->headers->ether(0)->set_dl_src(rofl::cmacaddr(eth_src));
 }
 
 void
@@ -520,9 +518,8 @@ dpx86_get_packet_eth_dst(datapacket_t * const pkt)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
         
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return 0;
-        rofl::cmacaddr dst(pack->headers->ether(0)->get_dl_dst());
-        
-	return dst.get_mac();
+
+	return pack->headers->ether(0)->get_dl_dst().get_mac();
 }
 
 uint64_t
@@ -532,9 +529,7 @@ dpx86_get_packet_eth_src(datapacket_t * const pkt)
         
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return 0;
         
-	rofl::cmacaddr src(pack->headers->ether(0)->get_dl_src());
-        
-	return src.get_mac();
+	return pack->headers->ether(0)->get_dl_src().get_mac();
 }
 
 uint16_t

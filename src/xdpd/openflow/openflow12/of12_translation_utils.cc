@@ -559,32 +559,14 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				switch (oxm.get_oxm_field()) {
 				case OFPXMT_OFB_ETH_DST:
 				{
-					uint64_t maddr = 0;
-					{
-						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[0];
-						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[1];
-						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[2];
-						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[3];
-						((uint8_t*)&maddr)[6] = oxm.oxm_uint48t->value[4];
-						((uint8_t*)&maddr)[7] = oxm.oxm_uint48t->value[5];
-					}
-
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_DST, maddr, NULL, NULL);
+					cmacaddr mac(oxm.oxm_uint48t->value, 6);
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_DST, mac.get_mac(), NULL, NULL);
 				}
 					break;
 				case OFPXMT_OFB_ETH_SRC:
 				{
-					uint64_t maddr = 0;
-					{
-						((uint8_t*)&maddr)[2] = oxm.oxm_uint48t->value[0];
-						((uint8_t*)&maddr)[3] = oxm.oxm_uint48t->value[1];
-						((uint8_t*)&maddr)[4] = oxm.oxm_uint48t->value[2];
-						((uint8_t*)&maddr)[5] = oxm.oxm_uint48t->value[3];
-						((uint8_t*)&maddr)[6] = oxm.oxm_uint48t->value[4];
-						((uint8_t*)&maddr)[7] = oxm.oxm_uint48t->value[5];
-					}
-
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, maddr, NULL, NULL);
+					cmacaddr mac(oxm.oxm_uint48t->value, 6);
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, mac.get_mac(), NULL, NULL);
 				}
 					break;
 				case OFPXMT_OFB_ETH_TYPE:

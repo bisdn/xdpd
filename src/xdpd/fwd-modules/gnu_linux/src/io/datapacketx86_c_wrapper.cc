@@ -522,15 +522,7 @@ dpx86_get_packet_eth_dst(datapacket_t * const pkt)
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return 0;
         rofl::cmacaddr dst(pack->headers->ether(0)->get_dl_dst());
         
-	uint64_t eth_dst(0);
-        ((uint8_t*) &eth_dst)[0] = dst[0];
-        ((uint8_t*) &eth_dst)[1] = dst[1];
-        ((uint8_t*) &eth_dst)[2] = dst[2];
-        ((uint8_t*) &eth_dst)[3] = dst[3];
-        ((uint8_t*) &eth_dst)[4] = dst[4];
-        ((uint8_t*) &eth_dst)[5] = dst[5];
-
-	return eth_dst;
+	return dst.get_mac();
 }
 
 uint64_t
@@ -542,15 +534,7 @@ dpx86_get_packet_eth_src(datapacket_t * const pkt)
         
 	rofl::cmacaddr src(pack->headers->ether(0)->get_dl_src());
         
-	uint64_t eth_src(0);
-        ((uint8_t*) &eth_src)[0] = src[0];
-        ((uint8_t*) &eth_src)[1] = src[1];
-        ((uint8_t*) &eth_src)[2] = src[2];
-        ((uint8_t*) &eth_src)[3] = src[3];
-        ((uint8_t*) &eth_src)[4] = src[4];
-        ((uint8_t*) &eth_src)[5] = src[5];
-
-	return eth_src;
+	return src.get_mac();
 }
 
 uint16_t

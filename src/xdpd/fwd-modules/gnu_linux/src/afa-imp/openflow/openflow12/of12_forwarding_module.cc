@@ -12,7 +12,7 @@
 #include "../../../ls_internal_state.h"
 
 //FIXME move this definition out of here
-#define OFP_NO_BUFFER	0xffffffff
+#define OF12P_NO_BUFFER	0xffffffff
 
 /*
 * Checks wheather the action group contains at least an action output
@@ -232,7 +232,7 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	//Avoid DoS. Check whether the action list contains an action ouput, otherwise drop, since the packet will never be freed
 	if(!action_group_of12_packet_in_contains_output(action_group)){
 
-		if (OFP_NO_BUFFER != buffer_id) {
+		if (OF12P_NO_BUFFER != buffer_id) {
 			pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
 			if (NULL != pkt) {
 				bufferpool::release_buffer(pkt);
@@ -244,7 +244,7 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	}
 	
 	//Recover pkt buffer if is stored. Otherwise pick a free buffer
-	if(buffer_id != OFP_NO_BUFFER){
+	if(buffer_id != OF12P_NO_BUFFER){
 	
 		//Retrieve the packet
 		pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
@@ -307,7 +307,7 @@ afa_result_t fwd_module_of12_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 		return AFA_FAILURE;
 	}
 
-	if(buffer_id != OFP_NO_BUFFER){
+	if(buffer_id != OF12P_NO_BUFFER){
 	
 		datapacket_t* pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
 	

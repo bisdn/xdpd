@@ -427,34 +427,8 @@ of12_endpoint::handle_queue_stats_request(
 		cofctl *ctl,
 		cofmsg_queue_stats_request *pack)
 {
-#if 0
-	std::vector<cofqueue_stats_reply> stats;
 
-	for (int i = 0; i < 3; i++) {
-		uint32_t port_no = 0;
-		uint32_t queue_id = 0;
-		uint64_t tx_bytes = 0;
-		uint64_t tx_packets = 0;
-		uint64_t tx_errors = 0;
-		stats.push_back(
-				cofqueue_stats_reply(
-						ctl->get_version(),
-						port_no,
-						queue_id,
-						tx_bytes,
-						tx_packets,
-						tx_errors));
-	}
-
-	send_queue_stats_reply(
-			ctl,
-			pack->get_xid(),
-			stats,
-			false);
-#endif
-
-
-	switch_port_t* port = (switch_port_t*)0;
+	switch_port_t* port = NULL;
 	unsigned int portnum = pack->get_queue_stats().get_port_no();
 	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
 
@@ -477,7 +451,7 @@ of12_endpoint::handle_queue_stats_request(
 			continue;
 
 
-		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) && (port->of_port_num == portnum)){
+		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)/* && (port->of_port_num == portnum)*/){
 
 			if (OFPQ_ALL == queue_id){
 
@@ -500,11 +474,12 @@ of12_endpoint::handle_queue_stats_request(
 
 			} else {
 
-				// TODO: check, whether the queue really exists first???
+				if(queue_id >= port->max_queues)
+					throw eBadRequestBadPort(); 	//FIXME send a BadQueueId error
+
 
 				//Check if the queue is really in use
 				if(port->queues[queue_id].set){
-
 					//Set values
 					stats.push_back(
 							cofqueue_stats_reply(
@@ -1333,8 +1308,8 @@ of12_endpoint::handle_queue_get_config_request(
 			pq.set_port(port->of_port_num);
 			pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl->get_version(), port->queues[i].min_rate);
 			pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl->get_version(), port->queues[i].max_rate);
-			fprintf(stderr, "min_rate: %d\n", port->queues[i].min_rate);
-			fprintf(stderr, "max_rate: %d\n", port->queues[i].max_rate);
+			//fprintf(stderr, "min_rate: %d\n", port->queues[i].min_rate);
+			//fprintf(stderr, "max_rate: %d\n", port->queues[i].max_rate);
 
 			pql.next() = pq;
 		}

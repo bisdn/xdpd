@@ -427,81 +427,106 @@ of12_endpoint::handle_queue_stats_request(
 		cofctl *ctl,
 		cofmsg_queue_stats_request *pack)
 {
-
 #if 0
-	switch_port_t* port;
-	unsigned int portnum = 0;//pack->get_port_no(); 
-	unsigned int queue_id = 0;//pack->get_queue_id(); 
+	std::vector<cofqueue_stats_reply> stats;
 
-	cofmsg_queue_stats_reply reply(OFP12_VERSION); //, portnum, queue_id, 0, 0, 0);
-
-	if( (portnum >= of12switch->max_ports && port_num != OFPP_ANY) || portnum == 0){
-		//Invalid port num
-		assert(0);
-	
-		delete pack;
-		return;
+	for (int i = 0; i < 3; i++) {
+		uint32_t port_no = 0;
+		uint32_t queue_id = 0;
+		uint64_t tx_bytes = 0;
+		uint64_t tx_packets = 0;
+		uint64_t tx_errors = 0;
+		stats.push_back(
+				cofqueue_stats_reply(
+						ctl->get_version(),
+						port_no,
+						queue_id,
+						tx_bytes,
+						tx_packets,
+						tx_errors));
 	}
+
+	send_queue_stats_reply(
+			ctl,
+			pack->get_xid(),
+			stats,
+			false);
+#endif
+
+
+	switch_port_t* port = (switch_port_t*)0;
+	unsigned int portnum = pack->get_queue_stats().get_port_no();
+	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
+
+	if( ((portnum >= of12switch->max_ports) && (portnum != OFPP_ANY)) || portnum == 0){
+		throw eBadRequestBadPort(); 	//Invalid port num
+	}
+
+	std::vector<cofqueue_stats_reply> stats;
 
 	/*
 	* port num
 	*/
-	if (OFPP_ANY == port_no){
-		//All ports
-		unsigned int tx_bytes = 0;
-		unsigned int tx_packets = 0;
-		unsigned int tx_errors = 0;
 
-		//we check all the positions in case there are empty slots
-		for (unsigned int n = 1; n < of12switch->max_ports; n++){
-	
-			port = of12switch->logical_ports[n].port; 
+	//we check all the positions in case there are empty slots
+	for (unsigned int n = 1; n < of12switch->max_ports; n++){
 
-			if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) && (port->of_port_num == portnum)){
+		port = of12switch->logical_ports[n].port;
 
-				//Check if the queue is really in use
-				if(port->queues[queue_id].use){
-					//Set values
-					tx_bytes += port->queues[queue_id].stats.tx_bytes;
-					tx_packets += port->queues[queue_id].stats.tx_packets;
-					tx_errors += port->queues[queue_id].stats.tx_errors;
-				}
-			}
-		}
+		if ((OFPP_ANY != portnum) && (port->of_port_num != portnum))
+			continue;
 
-		//Set values
-		reply.set_tx_bytes(tx_bytes);
-		reply.set_tx_packets(tx_packets);
-		reply.set_tx_errors(tx_errors);
-
-		//Send reply
-		//send_queue_get_config_reply(ctl, reply);
-
-		delete pack;
-		return;
-
-	}else{
-		//Single port
-		port = of12switch->logical_ports[n].port; 
 
 		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) && (port->of_port_num == portnum)){
 
-			//Check if the queue is really in use
-			if(port->queues[queue_id].use){
-				//Set values
-				reply.set_tx_bytes(port->queues[queue_id].stats.tx_bytes);
-				reply.set_tx_packets(port->queues[queue_id].stats.tx_packets);
-				reply.set_tx_errors(port->queues[queue_id].stats.tx_errors);
+			if (OFPQ_ALL == queue_id){
 
-				//Send reply
-				//send_queue_get_config_reply(ctl, reply);
+				// TODO: iterate over all queues
 
-				delete pack;
-				return;
+				for(unsigned int i=0; i<port->max_queues; i++){
+					if(NULL == port->queues[i].set)
+						continue;
+
+					//Set values
+					stats.push_back(
+							cofqueue_stats_reply(
+									ctl->get_version(),
+									portnum,
+									queue_id,
+									port->queues[i].stats.tx_bytes,
+									port->queues[i].stats.tx_packets,
+									port->queues[i].stats.overrun));
+				}
+
+			} else {
+
+				// TODO: check, whether the queue really exists first???
+
+				//Check if the queue is really in use
+				if(port->queues[queue_id].set){
+
+					//Set values
+					stats.push_back(
+							cofqueue_stats_reply(
+									ctl->get_version(),
+									portnum,
+									queue_id,
+									port->queues[queue_id].stats.tx_bytes,
+									port->queues[queue_id].stats.tx_packets,
+									port->queues[queue_id].stats.overrun));
+
+				}
 			}
 		}
 	}
-#endif
+
+
+	send_queue_stats_reply(
+			ctl,
+			pack->get_xid(),
+			stats,
+			false);
+
 	//FIXME: send error?
 	delete pack;
 }
@@ -1290,23 +1315,28 @@ of12_endpoint::handle_queue_get_config_request(
 
 		port = of12switch->logical_ports[n].port; 
 
-		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) && (port->of_port_num == portnum)){
+		if(port == NULL)
+			continue;
 
-			if ((OFPQ_ALL != portnum) && (port->of_port_num != portnum))
+		if (of12switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
+			continue;
+
+		if ((OFPP_ANY != portnum) && (port->of_port_num != portnum))
+			continue;
+
+		for(unsigned int i=0; i<port->max_queues; i++){
+			if(NULL == port->queues[i].set)
 				continue;
 
-			for(unsigned int i=0; i<port->max_queues; i++){
-				if(port->queues[i].set){	
+			cofpacket_queue pq(ctl->get_version());
+			pq.set_queue_id(port->queues[i].id);
+			pq.set_port(port->of_port_num);
+			pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl->get_version(), port->queues[i].min_rate);
+			pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl->get_version(), port->queues[i].max_rate);
+			fprintf(stderr, "min_rate: %d\n", port->queues[i].min_rate);
+			fprintf(stderr, "max_rate: %d\n", port->queues[i].max_rate);
 
-					cofpacket_queue pq(ctl->get_version());
-					pq.set_queue_id(port->queues[i].id);
-					pq.set_port(port->of_port_num);
-					pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl->get_version(), port->queues[i].min_rate);
-					pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl->get_version(), port->queues[i].max_rate);
-
-					pql.next() = pq;
-				}
-			}
+			pql.next() = pq;
 		}
 	}
 

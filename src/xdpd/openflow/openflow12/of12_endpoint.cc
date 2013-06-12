@@ -458,7 +458,7 @@ of12_endpoint::handle_queue_stats_request(
 				// TODO: iterate over all queues
 
 				for(unsigned int i=0; i<port->max_queues; i++){
-					if(NULL == port->queues[i].set)
+					if(!port->queues[i].set)
 						continue;
 
 					//Set values
@@ -1300,7 +1300,7 @@ of12_endpoint::handle_queue_get_config_request(
 			continue;
 
 		for(unsigned int i=0; i<port->max_queues; i++){
-			if(NULL == port->queues[i].set)
+			if(!port->queues[i].set)
 				continue;
 
 			cofpacket_queue pq(ctl->get_version());

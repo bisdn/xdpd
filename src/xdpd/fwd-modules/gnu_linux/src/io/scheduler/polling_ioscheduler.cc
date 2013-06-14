@@ -66,7 +66,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 				*/
 
 				int result = ((ringbuffer*)((struct logical_switch_internals*)port->of_port_state->attached_sw->platform_state)->ringbuffer)->non_blocking_write(pkt);
-				if( result == ringbuffer::RB_FAILURE ){
+				if( result == ROFL_FAILURE ){
 					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 					bufferpool::release_buffer(pkt);

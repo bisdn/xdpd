@@ -80,9 +80,9 @@ void RingBufferTestCase::bufferFilling(){
 		ret = buf.non_blocking_write(NULL); //Fill
 		
 		if(i != buf.MAX_SLOTS-1){
-			CPPUNIT_ASSERT(ringbuffer::RB_SUCCESS == ret);
+			CPPUNIT_ASSERT(ROFL_SUCCESS == ret);
 		}else{
-			CPPUNIT_ASSERT(ringbuffer::RB_FAILURE == ret);
+			CPPUNIT_ASSERT(ROFL_FAILURE == ret);
 		}	
 	}
 	std::cerr<<"Size: "<<buf.size()<<std::endl;
@@ -128,7 +128,7 @@ void* RingBufferTestCase::blockingWrite(void* obj){
 		ret = test->buffer.blocking_write(((datapacket_t*)0x1)+i);
 		//ret = test->buffer.blocking_write(NULL);
 		
-		CPPUNIT_ASSERT(ret == ringbuffer::RB_SUCCESS);
+		CPPUNIT_ASSERT(ret == ROFL_SUCCESS);
 		
 		//20% prob. sleep
 		if(rand()%100 > 80)

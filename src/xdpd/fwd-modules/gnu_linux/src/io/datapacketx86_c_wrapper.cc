@@ -392,8 +392,10 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 	of_switch_t* sw;
 	datapacketx86* pack;
 
-	if(!output_port)
+	if(!output_port){
+		assert(0);
 		return;
+	}
 
 	//Check whether dpx86 is NULL
 	if (NULL == (pack = (datapacketx86*) (pkt->platform_state))){

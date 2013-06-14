@@ -65,6 +65,7 @@ ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id)
 		if(q_id >= get_num_of_queues()){
 			ROFL_DEBUG("[mmap:%s] Packet(%p) trying to be enqueued in an invalid q_id: %u\n",  of_port_state->name, pkt, q_id);
 			q_id = 0;
+			bufferpool::release_buffer(pkt);
 			assert(0);
 		}
 	

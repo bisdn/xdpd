@@ -151,7 +151,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			
 			//Increment error statistics
 			switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
-
+			hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
 			return cnt;
 		}
 
@@ -177,9 +177,9 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 
 			// handle no free buffer
 			if (NULL == pkt) {
-				//Increment error statistics
+				//Increment error statistics and drop
 				switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
-		
+				hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
 				return cnt;
 			}
 
@@ -190,7 +190,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			if (hwaddr == eth_src) {
 				/*ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
 						"frame rcvd in slot i:%d, src-mac == own-mac, ignoring\n", of_port_state->name, rx->rpos);*/
-				pkt_x86->destroy();
+				//pkt_x86->destroy(); //This is not anymore necessary
 				bufferpool::release_buffer(pkt);
 				goto next; // ignore outgoing frames
 			}
@@ -234,7 +234,11 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			ROFL_DEBUG("[mmap:%s] packet(%p) recieved\n", of_port_state->name ,pkt);
 
 			// fill input_queue
-			input_queue->non_blocking_write(pkt);
+			if(input_queue->non_blocking_write(pkt) != ROFL_SUCCESS){
+				ROFL_DEBUG("[mmap:%s] Congestion in input intermediate buffer, dropping packet(%p)\n", of_port_state->name ,pkt);
+				bufferpool::release_buffer(pkt);
+				goto next;
+			}
 		}
 
 		rx_bytes_local += hdr->tp_len;
@@ -255,6 +259,7 @@ next:
 		switch_port_stats_inc(of_port_state, cnt, 0, rx_bytes_local, 0, 0, 0);	
 	
 	return cnt;
+
 }
 
 unsigned int

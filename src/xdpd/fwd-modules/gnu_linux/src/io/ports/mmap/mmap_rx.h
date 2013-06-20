@@ -93,10 +93,13 @@ next:
 		if(hdr->tp_status == TP_STATUS_USER){
 			return hdr;
 		}else{
-			if( (hdr->tp_status & TP_STATUS_CSUMNOTREADY) == 0){
-				//fprintf(stderr,"Received frame with status :%d, size: %d\n", hdr->tp_status,hdr->tp_len );
-				assert(TP_STATUS_USER == hdr->tp_status);
+			if(hdr->tp_status == (TP_STATUS_USER|TP_STATUS_LOSING)){
+				ROFL_DEBUG("Congestion in RX of the port\n");
+				return 	hdr;
 			}
+
+			//TP_STATUS_COPY or TP_STATUS_CSUMNOTREADY (outgoing) => ignore
+			ROFL_DEBUG("Received frame with status :%d, size: %d\n", hdr->tp_status,hdr->tp_len );
 
 			//Skip
 			hdr->tp_status = TP_STATUS_KERNEL;

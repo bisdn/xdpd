@@ -50,10 +50,9 @@ private:
 	int sd; // socket descriptor
 	caddress ll_addr; // link layer sockaddr
 	struct tpacket_req req; // ring buffer
-	struct iovec *ring; // auxiliary pointers into the mmap'ed area
 
 	//Circular buffer pointer
-	unsigned int rpos; // current position within ring buffer
+	unsigned int tpos; // current position within ring buffer
 
 public:
 	/**
@@ -70,18 +69,19 @@ public:
 	 *
 	 */
 	inline struct tpacket2_hdr* get_free_slot(){
-		struct tpacket2_hdr *hdr = NULL;
-
-		if (((struct tpacket2_hdr*)ring[rpos].iov_base)->tp_status == TP_STATUS_AVAILABLE) {
-			hdr = (struct tpacket2_hdr*)ring[rpos].iov_base;
+		struct tpacket2_hdr *hdr = (struct tpacket2_hdr*)((uint8_t*)map + tpos * req.tp_frame_size);
+	
+		if (hdr->tp_status == TP_STATUS_AVAILABLE) {
 		
 			//Increment and return
-			rpos++;
-			if (rpos == req.tp_frame_nr) {
-				rpos = 0;
+			tpos++;
+			if (tpos == req.tp_frame_nr) {
+				tpos = 0;
 			}
-		}
-		return hdr;
+			
+			return hdr;
+		}else
+			return NULL;
 	};
 
 	inline rofl_result_t send(void){

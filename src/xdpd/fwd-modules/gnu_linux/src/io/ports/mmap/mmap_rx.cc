@@ -13,7 +13,6 @@ mmap_rx::mmap_rx(
 		devname(__devname),
 		sd(-1),
 		ll_addr(ETH_P_ALL, devname, 0, 0, NULL, 0),
-		ring(NULL),
 		rpos(0)
 {
 	int rc = 0;
@@ -132,7 +131,7 @@ mmap_rx::mmap_rx(
 //	int option = (PACKET_TX_RING == ring_type) ? SO_SNDBUF : SO_RCVBUF;
 //	if ((rc = setsockopt(sd, SOL_SOCKET, option, (int*) &optval,
 //			sizeof(optval))) < 0) {
-		throw eConstructorMmapRx();	
+//		throw eConstructorMmapRx();	
 //	}
 
 	// todo for rx
@@ -154,17 +153,6 @@ mmap_rx::mmap_rx(
 		ROFL_ERR( "mmap_rx(%p)::initialize() mmap() sys-call failed "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw eConstructorMmapRx();	
-	}
-
-
-	for (unsigned int i = 0; i < req.tp_frame_nr; ++i)
-	{
-		ring[i].iov_base = (void*)((uint8_t*)map + i * req.tp_frame_size);
-		ring[i].iov_len  = req.tp_frame_size;
-		//ROFL_DEBUG_VERBOSE( "mmap_rx(%p)::initialize() ring[%d].iov_base: %p   \n",
-		//		this, i, ring[i].iov_base);
-		//ROFL_DEBUG_VERBOSE( "mmap_rx(%p)::initialize() ring[%d].iov_len:  %lu\n",
-		//		this, i, ring[i].iov_len);
 	}
 
 

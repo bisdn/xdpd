@@ -57,7 +57,6 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	const char c='a';
 	int ret;
 	
-
 	if (of_port_state->up && of_port_state->forward_packets ) {
 
 		//Safe check for q_id
@@ -152,6 +151,10 @@ next:
 		ROFL_DEBUG_VERBOSE("[mmap:%s] sanity check during read mmap failed\n",of_port_state->name);
 		//Increment error statistics
 		switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
+
+		//Return packet to kernel in the RX ring		
+		rx->return_packet(hdr);
+
 		hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
 		return NULL;
 	}
@@ -161,6 +164,10 @@ next:
 	if (PACKET_OUTGOING == sll->sll_pkttype) {
 		/*ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
 					"frame rcvd in slot i:%d, ignoring\n", of_port_state->name, rx->rpos);*/
+
+		//Return packet to kernel in the RX ring		
+		rx->return_packet(hdr);
+
 		goto next;
 	}
 	
@@ -169,6 +176,10 @@ next:
 	if (hwaddr == eth_src) {
 		/*ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
 		"frame rcvd in slot i:%d, src-mac == own-mac, ignoring\n", of_port_state->name, rx->rpos);*/
+
+		//Return packet to kernel in the RX ring		
+		rx->return_packet(hdr);
+
 		goto next;
 	}
 
@@ -193,6 +204,9 @@ next:
 		// no vlan tag present
 		pkt_x86->init((uint8_t*)hdr + hdr->tp_mac, hdr->tp_len, of_port_state->attached_sw, get_port_no());
 	}
+
+	//Return packet to kernel in the RX ring		
+ 	rx->return_packet(hdr);
 
 	//Increment statistics&return
 	switch_port_stats_inc(of_port_state, 1, 0, hdr->tp_len, 0, 0, 0);	
@@ -330,11 +344,11 @@ rofl_result_t ioport_mmapv2::enable() {
 
 		//If tx/rx lines are not created create them
 		if(!rx){	
-			ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_int for RX\n",of_port_state->name);
+			ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_rx for RX\n",of_port_state->name);
 			rx = new mmap_rx(std::string(of_port_state->name), 2 * block_size, n_blocks, frame_size);
 		}
 		if(!tx){
-			ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_int for TX\n",of_port_state->name);
+			ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_tx for TX\n",of_port_state->name);
 			tx = new mmap_tx(std::string(of_port_state->name), block_size, n_blocks, frame_size);
 		}
 
@@ -350,11 +364,11 @@ rofl_result_t ioport_mmapv2::enable() {
 
 	//If tx/rx lines are not created create them
 	if(!rx){	
-		ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_int for RX\n",of_port_state->name);
+		ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_rx for RX\n",of_port_state->name);
 		rx = new mmap_rx(std::string(of_port_state->name), 2 * block_size, n_blocks, frame_size);
 	}
 	if(!tx){
-		ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_int for TX\n",of_port_state->name);
+		ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_tx for TX\n",of_port_state->name);
 		tx = new mmap_tx(std::string(of_port_state->name), block_size, n_blocks, frame_size);
 	}
 

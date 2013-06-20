@@ -6,6 +6,7 @@
 #define MMAP_RX_H 
 
 #include <string>
+#include <assert.h>
 
 #include <unistd.h>
 #include <string.h>
@@ -51,7 +52,7 @@ private:
 	int sd; // socket descriptor
 	caddress ll_addr; // link layer sockaddr
 	struct tpacket_req req; // ring buffer
-	struct iovec *ring; // auxiliary pointers into the mmap'ed area
+	//struct iovec *ring; // auxiliary pointers into the mmap'ed area
 
 	//Circular buffer pointer
 	unsigned int rpos; // current position within ring buffer
@@ -73,21 +74,35 @@ public:
 	 *
 	 */
 	inline struct tpacket2_hdr* read_packet(){
-
-		struct tpacket2_hdr *hdr = (struct tpacket2_hdr*)ring[rpos].iov_base;
+		
+		struct tpacket2_hdr *hdr = (struct tpacket2_hdr*)((uint8_t*)map + rpos * req.tp_frame_size);
 
 		/* treat any status besides kernel as readable */
 		if (TP_STATUS_KERNEL == hdr->tp_status) {
+			
+			assert(TP_STATUS_KERNEL == hdr->tp_status);
+			
+			unsigned int rpos2=rpos+1;
+			if(rpos2 == req.tp_frame_nr)
+				rpos2 = 0;
+			hdr = (struct tpacket2_hdr*)((uint8_t*)map + ((rpos2) * req.tp_frame_size));
+			assert(TP_STATUS_KERNEL == hdr->tp_status);
 			return NULL;
 		}
+
+		assert(TP_STATUS_USER == hdr->tp_status);
 
 		//Increment and return
 		rpos++;
 		if (rpos == req.tp_frame_nr) {
 			rpos = 0;
 		}
-
 		return hdr;
+	}
+	
+	//Return buffer
+	inline void return_packet(struct tpacket2_hdr* hdr){
+		hdr->tp_status = TP_STATUS_KERNEL;
 	}
 
 	// Get read fds.

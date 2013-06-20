@@ -14,8 +14,7 @@ mmap_tx::mmap_tx(
 		devname(__devname),
 		sd(-1),
 		ll_addr(ETH_P_ALL, devname, 0, 0, NULL, 0),
-		ring(NULL),
-		rpos(0)
+		tpos(0)
 {
 	ROFL_DEBUG_VERBOSE( "mmap_tx(%p)::mmap_tx() %s\n",
 			this, "RX-RING");
@@ -139,17 +138,6 @@ mmap_tx::mmap_tx(
 		ROFL_ERR( "mmap_tx(%p)::initialize() mmap() sys-call failed "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw eConstructorMmapTx();
-	}
-
-
-	for (unsigned int i = 0; i < req.tp_frame_nr; ++i)
-	{
-		ring[i].iov_base = (void*)((uint8_t*)map + i * req.tp_frame_size);
-		ring[i].iov_len  = req.tp_frame_size;
-		//ROFL_DEBUG_VERBOSE( "mmap_tx(%p)::initialize() ring[%d].iov_base: %p   \n",
-		//		this, i, ring[i].iov_base);
-		//ROFL_DEBUG_VERBOSE( "mmap_tx(%p)::initialize() ring[%d].iov_len:  %lu\n",
-		//		this, i, ring[i].iov_len);
 	}
 
 	struct sockaddr_ll s_ll;

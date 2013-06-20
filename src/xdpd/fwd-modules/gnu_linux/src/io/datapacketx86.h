@@ -90,7 +90,7 @@ public: // methods
 private:
 	//HOST buffer size
 	static const unsigned int PRE_GUARD_BYTES  = 256;
-	static const unsigned int FRAME_SIZE_BYTES = 1600;
+	static const unsigned int FRAME_SIZE_BYTES = 9000;
 	static const unsigned int POST_GUARD_BYTES = 64;
 
 	/*

@@ -126,6 +126,13 @@ mmap_rx::mmap_rx(
 		throw eConstructorMmapRx();	
 	}
 
+        /* change the buffer size */
+	if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &req.tp_frame_size, sizeof(req.tp_frame_size))< 0)
+	{
+		ROFL_ERR( "mmap_tx(%p)::initialize() Could not change buffer_size\n");
+		throw eConstructorMmapTx();
+	}
+
 	/* change the buffer size */
 //	int optval = 131072;
 //	int option = (PACKET_TX_RING == ring_type) ? SO_SNDBUF : SO_RCVBUF;

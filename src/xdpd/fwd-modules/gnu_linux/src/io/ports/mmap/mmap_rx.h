@@ -74,6 +74,37 @@ public:
 	 *
 	 */
 	inline struct tpacket2_hdr* read_packet(){
+	
+next:  
+		struct tpacket2_hdr *hdr = (struct tpacket2_hdr*)((uint8_t*)map + rpos * req.tp_frame_size);
+
+		/* treat any status besides kernel as readable */
+		if (TP_STATUS_KERNEL == hdr->tp_status) {
+			assert(TP_STATUS_KERNEL == hdr->tp_status);
+			return NULL;
+		}
+
+		//Increment and return
+		rpos++;
+		if (rpos == req.tp_frame_nr) {
+			rpos = 0;
+		}
+
+		if(hdr->tp_status == TP_STATUS_USER){
+			return hdr;
+		}else{
+			if( (hdr->tp_status & TP_STATUS_CSUMNOTREADY) == 0){
+				//fprintf(stderr,"Received frame with status :%d, size: %d\n", hdr->tp_status,hdr->tp_len );
+				assert(TP_STATUS_USER == hdr->tp_status);
+			}
+
+			//Skip
+			hdr->tp_status = TP_STATUS_KERNEL;
+			goto next;
+		}
+	}
+
+	inline struct tpacket2_hdr* read_packet(){
 		
 		struct tpacket2_hdr *hdr = (struct tpacket2_hdr*)((uint8_t*)map + rpos * req.tp_frame_size);
 

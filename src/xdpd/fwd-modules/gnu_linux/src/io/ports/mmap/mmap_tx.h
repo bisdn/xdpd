@@ -59,9 +59,9 @@ public:
 	 *
 	 */
 	mmap_tx(std::string devname,
-		int block_size = 96,
-		int n_blocks = 2,
-		int frame_size = 2048);
+		int block_size,
+		int n_blocks,
+		int frame_size);
 
 	~mmap_tx(void);
 

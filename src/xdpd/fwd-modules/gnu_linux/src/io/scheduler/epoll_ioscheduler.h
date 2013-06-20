@@ -52,7 +52,7 @@ protected:
 	static const unsigned int READ_BUCKETS[3];
 
 	//WRITing buckets	
-	static const unsigned int WRITE_BUCKETSPP=2;
+	static const unsigned int WRITE_BUCKETSPP=4;
 	static const unsigned int WRITE_BUCKETS[3];
 	static const float WRITE_QOS_QUEUE_FACTOR[4]; //TODO: PORT_MAX_NUMBER_OF_QUEUES
 

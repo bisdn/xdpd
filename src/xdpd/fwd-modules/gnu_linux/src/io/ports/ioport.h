@@ -97,7 +97,7 @@ public:
 			return output_queues[q_id].get_buffer_state();
 		else{
 			assert(0);
-			return 0;
+			return RB_BUFFER_AVAILABLE;
 		} 
 	}; 
 

@@ -6,6 +6,7 @@
 #define IOPORT_H 
 
 #include <string>
+#include <assert.h>
 
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>

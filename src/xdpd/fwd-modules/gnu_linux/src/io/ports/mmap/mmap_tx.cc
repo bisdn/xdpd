@@ -111,12 +111,16 @@ mmap_tx::mmap_tx(
 		throw eConstructorMmapTx();
 	}
 
+#if 0
+	//Setting this screws everything.. DO NOT uncomment
+
         /* change the buffer size */
 	if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &req.tp_frame_size, sizeof(req.tp_frame_size))< 0)
 	{
 		ROFL_ERR( "mmap_tx(%p)::initialize() Could not change buffer_size\n");
 		throw eConstructorMmapTx();
 	}
+#endif
 
 	/* change the buffer size */
 //	int optval = 131072;

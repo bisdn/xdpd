@@ -24,8 +24,7 @@
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 *
 * @brief GNU/Linux interface access via Memory Mapped
-* region (MMAP) 
-*
+* region (MMAP) using PF_PACKET TX/RX rings 
 */
 
 class ioport_mmapv2 : public ioport{

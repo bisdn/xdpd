@@ -86,9 +86,20 @@ public:
 	virtual int get_read_fd(void)=0;
 	virtual int get_write_fd(void)=0;
 
-	//Get buffer status; generally used to create "smart" schedulers
-	virtual ringbuffer_state_t get_input_queue_state(void); 
-	virtual ringbuffer_state_t get_output_queue_state(unsigned int q_id=0); 
+	//Get buffer status; generally used to create "smart" schedulers. TODO: evaluate if they should be 
+	//non-virtual (inline+virtual does not make a lot of sense here), and evaluate if they are necessary
+	//at all.
+	virtual inline ringbuffer_state_t get_input_queue_state(void){
+		return input_queue->get_buffer_state();
+	}; 
+	virtual inline ringbuffer_state_t get_output_queue_state(unsigned int q_id=0){
+		if(q_id<num_of_queues)
+			return output_queues[q_id].get_buffer_state();
+		else{
+			assert(0);
+			return 0;
+		} 
+	}; 
 
 	/**
 	* @brief Retrieves the number of buffers required by the port to be operating at line-rate; 

@@ -28,6 +28,7 @@
 * @file mmap_rx.h
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
+* @author Marc Sune<marc.sune (at) bisdn.de>
 *
 * @brief MMAP RX internals 
 *
@@ -74,9 +75,10 @@ public:
 	 *
 	 */
 	inline struct tpacket2_hdr* read_packet(){
-	
+
+		struct tpacket2_hdr *hdr;
 next:  
-		struct tpacket2_hdr *hdr = (struct tpacket2_hdr*)((uint8_t*)map + rpos * req.tp_frame_size);
+		hdr = (struct tpacket2_hdr*)((uint8_t*)map + rpos * req.tp_frame_size);
 
 		/* treat any status besides kernel as readable */
 		if (TP_STATUS_KERNEL == hdr->tp_status) {
@@ -84,22 +86,24 @@ next:
 			return NULL;
 		}
 
-		//Increment and return
+		//Increment position
 		rpos++;
 		if (rpos == req.tp_frame_nr) {
 			rpos = 0;
 		}
 
-		if(hdr->tp_status == TP_STATUS_USER){
+		//Check if is valid 
+		if( ( hdr->tp_status&(TP_STATUS_COPY|TP_STATUS_CSUMNOTREADY) ) == 0){
+#ifdef DEBUG
+			if( ( hdr->tp_status&(TP_STATUS_LOSING) ) > 0)
+				ROFL_DEBUG("[mmap_rx:%s] Congestion in RX of the port\n", devname.c_str());
+		
+#endif
+
 			return hdr;
 		}else{
-			if(hdr->tp_status == (TP_STATUS_USER|TP_STATUS_LOSING)){
-				ROFL_DEBUG("Congestion in RX of the port\n");
-				return 	hdr;
-			}
-
 			//TP_STATUS_COPY or TP_STATUS_CSUMNOTREADY (outgoing) => ignore
-			ROFL_DEBUG("Received frame with status :%d, size: %d\n", hdr->tp_status,hdr->tp_len );
+			ROFL_DEBUG("[mmap_rx:%s] Discarting frame with status :%d, size: %d\n", devname.c_str(), hdr->tp_status,hdr->tp_len );
 
 			//Skip
 			hdr->tp_status = TP_STATUS_KERNEL;

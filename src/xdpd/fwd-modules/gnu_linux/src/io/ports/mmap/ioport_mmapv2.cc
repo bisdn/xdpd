@@ -98,7 +98,7 @@ inline void ioport_mmapv2::empty_pipe(){
 inline void ioport_mmapv2::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86 *pkt_x86){
 
 	//Initialize pktx86
-	pkt_x86->init(NULL, hdr->tp_len + sizeof(struct fvlanframe::vlan_hdr_t), of_port_state->attached_sw, get_port_no());
+	pkt_x86->init(NULL, hdr->tp_len + sizeof(struct fvlanframe::vlan_hdr_t), of_port_state->attached_sw, get_port_no(), 0, false); //Init but don't classify
 
 	// write ethernet header
 	memcpy(pkt_x86->get_buffer(), (uint8_t*)hdr + hdr->tp_mac, sizeof(struct fetherframe::eth_hdr_t));
@@ -122,6 +122,9 @@ inline void ioport_mmapv2::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86
 	memcpy(pkt_x86->get_buffer() + sizeof(struct fetherframe::eth_hdr_t) + sizeof(struct fvlanframe::vlan_hdr_t),
 	(uint8_t*)hdr + hdr->tp_mac + sizeof(struct fetherframe::eth_hdr_t), 
 	hdr->tp_len - sizeof(struct fetherframe::eth_hdr_t));
+
+	//And classify
+	pkt_x86->headers->classify();
 }
 	
 // handle read

@@ -19,9 +19,9 @@
 
 /**
 * @file ioport_mmapv2.h
-* @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
+* @author Marc Sune<marc.sune (at) bisdn.de>
 *
 * @brief GNU/Linux interface access via Memory Mapped
 * region (MMAP) using PF_PACKET TX/RX rings 

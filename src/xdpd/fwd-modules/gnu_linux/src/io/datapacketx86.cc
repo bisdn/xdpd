@@ -51,6 +51,7 @@ datapacketx86::init(
 		of_switch_t* sw,
 		uint32_t in_port,
 		uint32_t in_phy_port,
+		bool classify, 
 		bool copy_packet_to_internal_buffer)
 {
 	// do this sanity check here, as someone may request later a transfer to user space,
@@ -88,10 +89,8 @@ datapacketx86::init(
 	this->output_queue = 0;
 
 	//Classify the packet
-	if(buf)
+	if(classify)
 		headers->classify();
-	else
-		headers->classify_reset();
 
 	return ROFL_SUCCESS;
 }

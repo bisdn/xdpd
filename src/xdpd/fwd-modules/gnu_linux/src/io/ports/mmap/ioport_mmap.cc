@@ -199,7 +199,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 
 			if (0 != hdr->tp_vlan_tci) {
 				// packet has vlan tag
-				pkt_x86->init(NULL, hdr->tp_len + sizeof(struct fvlanframe::vlan_hdr_t), of_port_state->attached_sw, get_port_no());
+				pkt_x86->init(NULL, hdr->tp_len + sizeof(struct fvlanframe::vlan_hdr_t), of_port_state->attached_sw, get_port_no(),0,false);
 
 				// write ethernet header
 				memcpy(pkt_x86->get_buffer(), (uint8_t*)hdr + hdr->tp_mac, sizeof(struct fetherframe::eth_hdr_t));

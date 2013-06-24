@@ -27,6 +27,7 @@
 * @file mmap_tx.h
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
+* @author Marc Sune<marc.sune (at) bisdn.de>
 *
 * @brief MMAP TX internals 
 *

@@ -65,7 +65,7 @@ public:
 	//Non-blocking read and write
 	/**
 	* @brief Read(RX) one (1) packet if available, return NULL if no packet
-	* can be read immediately. 
+	* can be read immediately. The packet MUST be already classified. 
 	*
 	* This method must be NON-BLOCKING
 	*/

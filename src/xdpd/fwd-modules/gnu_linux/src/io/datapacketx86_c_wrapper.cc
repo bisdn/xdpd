@@ -28,7 +28,7 @@ dpx86_clone_pkt_contents(datapacket_t* src, datapacket_t* dst){
 	
 	datapacketx86 *pack_src = (datapacketx86*)src->platform_state;
 	datapacketx86 *pack_dst = (datapacketx86*)dst->platform_state;
-	pack_dst->init(pack_src->get_buffer(), pack_src->get_buffer_length(), pack_src->lsw, pack_src->in_port, pack_src->in_phy_port, true);
+	pack_dst->init(pack_src->get_buffer(), pack_src->get_buffer_length(), pack_src->lsw, pack_src->in_port, pack_src->in_phy_port, true, true);
 
 	//copy checksum flags
        pack_dst->ipv4_recalc_checksum = pack_src->ipv4_recalc_checksum;

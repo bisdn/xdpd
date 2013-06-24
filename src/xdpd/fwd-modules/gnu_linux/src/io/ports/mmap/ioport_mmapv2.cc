@@ -2,6 +2,7 @@
 #include "../../bufferpool.h"
 #include "../../datapacketx86.h"
 
+#include <linux/ethtool.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/common/protocols/fetherframe.h>
 #include <rofl/common/protocols/fvlanframe.h>
@@ -24,11 +25,11 @@ ioport_mmapv2::ioport_mmapv2(
 			frame_size(frame_size),	
 			hwaddr(of_ps->hwaddr, OFP_ETH_ALEN)
 {
-	int ret;
+	int rc;
 
 	//Open pipe for output signaling on enqueue	
-	ret = pipe(notify_pipe);
-	(void)ret; // todo use the value
+	rc = pipe(notify_pipe);
+	(void)rc; // todo use the value
 
 	//Set non-blocking read/write in the pipe
 	for(unsigned int i=0;i<2;i++){
@@ -36,6 +37,7 @@ ioport_mmapv2::ioport_mmapv2(
 		flags |= O_NONBLOCK;				//turn off blocking flag
 		fcntl(notify_pipe[i], F_SETFL, flags);		//set up non-blocking read
 	}
+
 }
 
 
@@ -318,8 +320,9 @@ rofl_result_t ioport_mmapv2::enable() {
 	
 	struct ifreq ifr;
 	int sd, rc;
+        struct ethtool_value eval;
 
-	ROFL_DEBUG_VERBOSE("[mmap:%s] Trying to enable port\n",of_port_state->name);
+	ROFL_DEBUG("[mmap:%s] Trying to enable port\n",of_port_state->name);
 	
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
 		return ROFL_FAILURE;
@@ -332,11 +335,61 @@ rofl_result_t ioport_mmapv2::enable() {
 		return ROFL_FAILURE;
 	}
 
+	/*
+	* Make sure we are disabling Receive Offload from the NIC.
+	* This screws up the MMAP
+	*/
+
+	//First retrieve the current gro setup, so that we can gently
+	//inform the user we are going to disable (and not set it back)
+	eval.cmd = ETHTOOL_GGRO;
+	ifr.ifr_data = (caddr_t)&eval;
+	eval.data = 0;//Make valgrind happy
+
+	if (ioctl(sd, SIOCETHTOOL, &ifr) < 0) {
+		ROFL_WARN("[mmap:%s] Unable to detect if the Generic Receive Offload (GRO) feature on the NIC is enabled or not. Please make sure it is disabled using ethtool or similar...\n", of_port_state->name);
+		
+	}else{
+		//Show nice messages in debug mode
+		if(eval.data == 0){
+			ROFL_DEBUG("[mmap:%s] GRO already disabled.\n", of_port_state->name);
+		}else{
+			//Do it
+			eval.cmd = ETHTOOL_SGRO;
+			eval.data = 0;
+			ifr.ifr_data = (caddr_t)&eval;
+			
+			if (ioctl(sd, SIOCETHTOOL, &ifr) < 0) {
+				ROFL_ERR("[mmap:%s] Could not disable Generic Receive Offload feature on the NIC. This can be potentially dangeros...be advised!\n",  of_port_state->name);
+			}else{
+				ROFL_DEBUG("[mmap:%s] GRO successfully disabled.\n", of_port_state->name);
+			}
+
+		}
+	}
+	
+	//Recover flags
 	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
 		close(sd);
 		return ROFL_FAILURE;
 	}
 
+	// enable promiscous mode
+	memset((void*)&ifr, 0, sizeof(ifr));
+	strncpy(ifr.ifr_name, of_port_state->name, sizeof(ifr.ifr_name));
+	
+	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){
+		close(sd);
+		return ROFL_FAILURE;
+	}
+
+	ifr.ifr_flags |= IFF_PROMISC;
+	if ((rc = ioctl(sd, SIOCSIFFLAGS, &ifr)) < 0){
+		close(sd);
+		return ROFL_FAILURE;
+	}
+	
+	//Check if is up or not
 	if (IFF_UP & ifr.ifr_flags){
 		
 		//Already up.. Silently skip
@@ -370,23 +423,6 @@ rofl_result_t ioport_mmapv2::enable() {
 	if(!tx){
 		ROFL_DEBUG_VERBOSE("[mmap:%s] generating a new mmap_tx for TX\n",of_port_state->name);
 		tx = new mmap_tx(std::string(of_port_state->name), block_size, n_blocks, frame_size);
-	}
-
-	
-
-	// enable promiscous mode
-	memset((void*)&ifr, 0, sizeof(ifr));
-	strncpy(ifr.ifr_name, of_port_state->name, sizeof(ifr.ifr_name));
-	
-	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){
-		close(sd);
-		return ROFL_FAILURE;
-	}
-
-	ifr.ifr_flags |= IFF_PROMISC;
-	if ((rc = ioctl(sd, SIOCSIFFLAGS, &ifr)) < 0){
-		close(sd);
-		return ROFL_FAILURE;
 	}
 
 	// todo recheck?

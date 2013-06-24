@@ -35,9 +35,9 @@ public:
 	ioport_mmapv2(
 			/*int port_no,*/
 			switch_port_t* of_ps,
-			int block_size = 96,
+			int block_size = 96*4*2,
 			int n_blocks = 2,
-			int frame_size = 1024*8, //Jumbo frames. FIXME What about > 8192?
+			int frame_size = 2048*4*2, //Jumbo frames.
 			unsigned int num_queues = MMAP_DEFAULT_NUM_OF_QUEUES);
 
 	virtual

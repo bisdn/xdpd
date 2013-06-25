@@ -191,7 +191,7 @@ next:
 	if(!pkt) {
 		//Increment error statistics and drop
 		switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
-		hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
+		rx->return_packet(hdr);
 		return NULL;
 	}
 			
@@ -207,7 +207,7 @@ next:
 	}
 
 	//Return packet to kernel in the RX ring		
- 	rx->return_packet(hdr);
+	rx->return_packet(hdr);
 
 	//Increment statistics&return
 	switch_port_stats_inc(of_port_state, 1, 0, hdr->tp_len, 0, 0, 0);	

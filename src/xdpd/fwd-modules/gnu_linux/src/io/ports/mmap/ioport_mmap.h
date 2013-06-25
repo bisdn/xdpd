@@ -23,7 +23,7 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
 * @brief GNU/Linux interface access via Memory Mapped
-* region (MMAP) 
+* region (MMAP). THIS VERSION IS DEPRECATED! 
 *
 */
 

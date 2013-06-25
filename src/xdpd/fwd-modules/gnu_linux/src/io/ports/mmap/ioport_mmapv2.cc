@@ -159,8 +159,6 @@ next:
 
 		//Return packet to kernel in the RX ring		
 		rx->return_packet(hdr);
-
-		hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
 		return NULL;
 	}
 
@@ -172,7 +170,6 @@ next:
 
 		//Return packet to kernel in the RX ring		
 		rx->return_packet(hdr);
-
 		goto next;
 	}
 	
@@ -184,7 +181,6 @@ next:
 
 		//Return packet to kernel in the RX ring		
 		rx->return_packet(hdr);
-
 		goto next;
 	}
 

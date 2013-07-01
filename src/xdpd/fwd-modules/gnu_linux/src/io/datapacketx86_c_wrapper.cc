@@ -410,7 +410,8 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			pack->headers->ipv4(0)->ipv4_calc_checksum();
 	}
 
-	fipv4frame *fipv4 = pack->headers->ipv4(-1);
+	//Outer most IPv4 frame
+	fipv4frame *fipv4 = pack->headers->ipv4(0);
 
 	if ((pack->tcp_recalc_checksum) && pack->headers->tcp(0) && fipv4) {
 		

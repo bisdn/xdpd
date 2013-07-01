@@ -82,7 +82,6 @@ next:
 
 		/* treat any status besides kernel as readable */
 		if (TP_STATUS_KERNEL == hdr->tp_status) {
-			assert(TP_STATUS_KERNEL == hdr->tp_status);
 			return NULL;
 		}
 

@@ -465,8 +465,8 @@ of12_endpoint::handle_queue_stats_request(
 					stats.push_back(
 							cofqueue_stats_reply(
 									ctl->get_version(),
-									portnum,
-									queue_id,
+									port->of_port_num,
+									i,
 									port->queues[i].stats.tx_bytes,
 									port->queues[i].stats.tx_packets,
 									port->queues[i].stats.overrun));

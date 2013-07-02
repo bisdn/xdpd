@@ -770,7 +770,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		case OF12_MATCH_IPV4_SRC:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = ((utern32_t*)(m->value))->value;
+			addr.ca_s4addr->sin_addr.s_addr = htonl(((utern32_t*)(m->value))->value);
 			match.set_ipv4_src(addr);
 
 		}
@@ -778,7 +778,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		case OF12_MATCH_IPV4_DST:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = ((utern32_t*)(m->value))->value;
+			addr.ca_s4addr->sin_addr.s_addr = htonl(((utern32_t*)(m->value))->value);
 			match.set_ipv4_dst(addr);
 		}
 			break;
@@ -812,14 +812,14 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		case OF12_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = ((utern32_t*)(m->value))->value;
+			addr.ca_s4addr->sin_addr.s_addr = htonl(((utern32_t*)(m->value))->value);
 			match.set_arp_spa(addr);
 		}
 			break;
 		case OF12_MATCH_ARP_TPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = ((utern32_t*)(m->value))->value;
+			addr.ca_s4addr->sin_addr.s_addr = htonl(((utern32_t*)(m->value))->value);
 			match.set_arp_tpa(addr);
 		}
 			break;

@@ -100,6 +100,9 @@ protected:
 
 private:
 	
+	//Minimum frame size (ethernet header size)
+	static const unsigned int MIN_PKT_LEN=14;
+	
 	//mmap internals
 	mmap_rx* rx;
 	mmap_tx* tx;

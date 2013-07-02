@@ -58,8 +58,14 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	//Whatever
 	const char c='a';
 	int ret;
+	unsigned int len;
 	
-	if (of_port_state->up && of_port_state->forward_packets ) {
+	datapacketx86* pkt_x86 = (datapacketx86*) pkt->platform_state;
+	len = pkt_x86->get_buffer_length();
+
+	if (of_port_state->up && 
+		of_port_state->forward_packets &&
+		len >= MIN_PKT_LEN) {
 
 		//Safe check for q_id
 		if(q_id >= get_num_of_queues()){
@@ -78,8 +84,14 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 		ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
 		(void)ret; // todo use the value
 	} else {
-		ROFL_DEBUG_VERBOSE("[mmap:%s] dropped packet(%p) scheduled for queue %u\n", of_port_state->name, pkt, q_id);
-		// port down -> drop packet
+		if(len < MIN_PKT_LEN){
+			ROFL_ERR("[mmap:%s] ERROR: attempt to send invalid packet size for packet(%p) scheduled for queue %u. Packet size: %u\n", of_port_state->name, pkt, q_id, len);
+			assert(0);
+		}else{
+			ROFL_DEBUG_VERBOSE("[mmap:%s] dropped packet(%p) scheduled for queue %u\n", of_port_state->name, pkt, q_id, len);
+		}
+
+		//Drop packet
 		bufferpool::release_buffer(pkt);
 	}
 

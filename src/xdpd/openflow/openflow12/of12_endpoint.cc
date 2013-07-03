@@ -312,9 +312,13 @@ of12_endpoint::handle_flow_stats_request(
 
 	//Map the match structure from OpenFlow to of12_packet_matches_t
 	entry = of12_init_flow_entry(NULL, NULL, false);
-	of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_flow_stats().get_match(), sw, entry);
-
-	//TODO check error while mapping 
+	
+	try{
+		of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_flow_stats().get_match(), sw, entry);
+	}catch(...){
+		of12_destroy_flow_entry(entry);	
+		throw eBadRequestBadStat(); 
+	}
 
 	//Ask the Forwarding Plane to process stats
 	fp_msg = fwd_module_of12_get_flow_stats(sw->dpid,
@@ -326,8 +330,8 @@ of12_endpoint::handle_flow_stats_request(
 					entry->matchs);
 	
 	if(!fp_msg){
-		//FIXME throw exception
-		return;
+		of12_destroy_flow_entry(entry);	
+		throw eBadRequestBadStat(); 
 	}
 
 	//Construct OF message
@@ -388,8 +392,13 @@ of12_endpoint::handle_aggregate_stats_request(
 
 	if(!entry)
 		throw eBadRequestBadStat(); 
-	
-	of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_aggr_stats().get_match(), sw, entry);
+
+	try{	
+		of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_aggr_stats().get_match(), sw, entry);
+	}catch(...){
+		of12_destroy_flow_entry(entry);	
+		throw eBadRequestBadStat(); 
+	}
 
 	//TODO check error while mapping 
 
@@ -585,7 +594,9 @@ of12_endpoint::handle_group_desc_stats_request(
 	of12_group_table_t group_table;
 	of12_group_t *group_it;
 	if(fwd_module_of12_fetch_group_table(sw->dpid,&group_table)!=AFA_SUCCESS){
+
 		//TODO throw exeption
+		delete msg;	
 	}
 	
 	for(group_it=group_table.head;group_it;group_it=group_it->next){
@@ -650,7 +661,12 @@ of12_endpoint::handle_packet_out(
 {
 	of12_action_group_t* action_group = of12_init_action_group(NULL);
 
-	of12_translation_utils::of12_map_flow_entry_actions(ctl, sw, msg->get_actions(), action_group, NULL); //TODO: is this OK always NULL?
+	try{
+		of12_translation_utils::of12_map_flow_entry_actions(ctl, sw, msg->get_actions(), action_group, NULL); //TODO: is this OK always NULL?
+	}catch(...){
+		of12_destroy_action_group(action_group);
+		throw;
+	}
 
 	/* assumption: driver can handle all situations properly:
 	 * - data and datalen both 0 and buffer_id != OFP_NO_BUFFER
@@ -867,6 +883,9 @@ of12_endpoint::flow_mod_add(
 		cofmsg_flow_mod *msg) //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull)
 {
 	uint8_t table_id = msg->get_table_id();
+	afa_result_t res;
+	of12_flow_entry_t *entry=NULL;
+
 	// sanity check: table for table-id must exist
 	if ( (table_id > of12switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
 	{
@@ -877,25 +896,31 @@ of12_endpoint::flow_mod_add(
 		throw eFlowModBadTableId();
 	}
 
-	of12_flow_entry_t *entry = of12_translation_utils::of12_map_flow_entry(ctl, msg,sw);
-
-	if (NULL == entry)
-	{
+	try{
+		entry = of12_translation_utils::of12_map_flow_entry(ctl, msg,sw);
+	}catch(...){
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
-
-		throw eFlowModTableFull();
+		throw eFlowModUnknown();
 	}
 
-	if (AFA_SUCCESS != fwd_module_of12_process_flow_mod_add(sw->dpid,
+	if(!entry)
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+
+	if (AFA_SUCCESS != (res = fwd_module_of12_process_flow_mod_add(sw->dpid,
 								msg->get_table_id(),
 								entry,
 								msg->get_buffer_id(),
 								msg->get_flags() & OFPFF_CHECK_OVERLAP,
-								msg->get_flags() & OFPFF_RESET_COUNTS)){
+								msg->get_flags() & OFPFF_RESET_COUNTS))){
 		// log error
 		WRITELOG(CDATAPATH, ERROR, "Error inserting the flowmod\n");
 		of12_destroy_flow_entry(entry);
+
+		if(res == AFA_FM_OVERLAP_FAILURE)
+			throw eFlowModOverlap();
+		else 
+			throw eFlowModTableFull();
 	}
 
 }
@@ -908,6 +933,7 @@ of12_endpoint::flow_mod_modify(
 		cofmsg_flow_mod *pack,
 		bool strict)
 {
+	of12_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
 	if (pack->get_table_id() > of12switch->pipeline->num_of_tables)
@@ -919,14 +945,17 @@ of12_endpoint::flow_mod_modify(
 		throw eFlowModBadTableId();
 	}
 
-	of12_flow_entry_t *entry = of12_translation_utils::of12_map_flow_entry(ctl, pack,sw);
-
-	if (NULL == entry){
-		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_delete() "
-				"unable to attempt to remove flow-entry", sw->dpname.c_str());
-
-		return;
+	try{
+		entry = of12_translation_utils::of12_map_flow_entry(ctl, pack, sw);
+	}catch(...){
+		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_modify() "
+				"unable to attempt to modify flow-entry", sw->dpname.c_str());
+		throw eFlowModUnknown();
 	}
+
+	if(!entry)
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+
 
 	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
@@ -936,9 +965,9 @@ of12_endpoint::flow_mod_modify(
 								entry,
 								strictness,
 								pack->get_flags() & OFPFF_RESET_COUNTS)){
-		//TODO: FIXME send exception
 		WRITELOG(CDATAPATH, ERROR, "Error modiying flowmod\n");
 		of12_destroy_flow_entry(entry);
+		throw eFlowModBase(); 
 	} 
 
 }
@@ -952,17 +981,21 @@ of12_endpoint::flow_mod_delete(
 		bool strict) //throw (eOfSmPipelineBadTableId)
 {
 
-	of12_flow_entry_t *entry = of12_translation_utils::of12_map_flow_entry(ctl, pack, sw);
-
-	if (NULL == entry) {
+	of12_flow_entry_t *entry=NULL;
+	
+	try{
+		entry = of12_translation_utils::of12_map_flow_entry(ctl, pack, sw);
+	}catch(...){
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_delete() "
 				"unable to attempt to remove flow-entry", sw->dpname.c_str());
-
-		return;
+		throw eFlowModUnknown();
 	}
 
-	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
+	if(!entry)
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
 
+
+	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 	if(AFA_SUCCESS != fwd_module_of12_process_flow_mod_delete(sw->dpid,
 								pack->get_table_id(),
@@ -972,8 +1005,11 @@ of12_endpoint::flow_mod_delete(
 								pack->get_out_group(),
 								strictness)) {
 		WRITELOG(CDATAPATH, ERROR, "Error deleting flowmod\n");
-		//TODO: treat exception
+		of12_destroy_flow_entry(entry);
+		throw eFlowModBase(); 
 	} 
+	
+	//Always delete entry
 	of12_destroy_flow_entry(entry);
 
 }

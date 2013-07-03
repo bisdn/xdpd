@@ -50,7 +50,11 @@ of12_translation_utils::of12_map_flow_entry(
 		cofmsg_flow_mod *msg,
 		openflow_switch* sw)
 {
+
 	of12_flow_entry_t *entry = of12_init_flow_entry(NULL, NULL, msg->get_flags() & OFPFF_SEND_FLOW_REM);
+
+	if(!entry)
+		throw eFlowModUnknown();
 
 	// store flow-mod fields in of12_flow_entry
 	entry->priority 		= msg->get_priority();
@@ -59,11 +63,15 @@ of12_translation_utils::of12_map_flow_entry(
 	entry->timer_info.idle_timeout	= msg->get_idle_timeout(); // these timers must be activated some time, when?
 	entry->timer_info.hard_timeout	= msg->get_hard_timeout();
 
-	// extract OXM fields from pack and store them in of12_flow_entry
-	of12_map_flow_entry_matches(ctl, msg->get_match(), sw, entry);
-
+	try{
+		// extract OXM fields from pack and store them in of12_flow_entry
+		of12_map_flow_entry_matches(ctl, msg->get_match(), sw, entry);
+	}catch(...){
+		of12_destroy_flow_entry(entry);	
+		throw eFlowModUnknown();
+	}
+	
 	// iterate over all instructions and store them in the instruction group contained in entry
-
 	for (cofinlist::iterator
 			it = msg->get_instructions().begin(); it != msg->get_instructions().end(); ++it)
 	{
@@ -72,7 +80,12 @@ of12_translation_utils::of12_map_flow_entry(
 		{
 			of12_action_group_t *apply_actions = of12_init_action_group(0);
 
-			of12_map_flow_entry_actions(ctl, sw, (*it).actions, apply_actions, /*of12_write_actions_t*/0);
+			try{
+				of12_map_flow_entry_actions(ctl, sw, (*it).actions, apply_actions, /*of12_write_actions_t*/0);
+			}catch(...){
+				of12_destroy_flow_entry(entry);	
+				throw eFlowModUnknown();
+			}
 
 			of12_add_instruction_to_group(
 					&(entry->inst_grp),
@@ -116,7 +129,13 @@ of12_translation_utils::of12_map_flow_entry(
 		{
 			of12_write_actions_t *write_actions = of12_init_write_actions();
 
-			of12_map_flow_entry_actions(ctl, sw, (*it).actions, /*of12_action_group_t*/0, write_actions);
+			try{
+				of12_map_flow_entry_actions(ctl, sw, (*it).actions, /*of12_action_group_t*/0, write_actions);
+			}catch(...){
+				of12_destroy_flow_entry(entry);	
+				throw eFlowModUnknown();
+			}
+
 
 			of12_add_instruction_to_group(
 					&(entry->inst_grp),

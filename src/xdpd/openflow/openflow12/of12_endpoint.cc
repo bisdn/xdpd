@@ -882,7 +882,7 @@ of12_endpoint::flow_mod_add(
 		throw eFlowModTableFull();
 	}
 
-	if (AFA_FAILURE == fwd_module_of12_process_flow_mod_add(sw->dpid,
+	if (AFA_SUCCESS != fwd_module_of12_process_flow_mod_add(sw->dpid,
 								msg->get_table_id(),
 								entry,
 								msg->get_buffer_id(),
@@ -926,7 +926,7 @@ of12_endpoint::flow_mod_modify(
 	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 
-	if(AFA_FAILURE == fwd_module_of12_process_flow_mod_modify(sw->dpid,
+	if(AFA_SUCCESS != fwd_module_of12_process_flow_mod_modify(sw->dpid,
 								pack->get_table_id(),
 								entry,
 								strictness,
@@ -959,7 +959,7 @@ of12_endpoint::flow_mod_delete(
 	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 
-	if(AFA_FAILURE == fwd_module_of12_process_flow_mod_delete(sw->dpid,
+	if(AFA_SUCCESS != fwd_module_of12_process_flow_mod_delete(sw->dpid,
 								pack->get_table_id(),
 								entry,
 								pack->get_buffer_id(),
@@ -1069,7 +1069,10 @@ of12_endpoint::handle_group_mod(
 			ret_val = ROFL_OF12_GM_BCOMMAND;
 			break;
 	}
-
+	if( (ret_val != ROFL_OF12_GM_OK) || (msg->get_command() == OFPGC_DELETE) )
+		of12_destroy_bucket_list(bucket_list);
+	
+	//Throw appropiate exception based on the return code
 	switch(ret_val){
 		case ROFL_OF12_GM_OK:
 			break;

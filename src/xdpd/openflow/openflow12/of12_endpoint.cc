@@ -531,6 +531,7 @@ of12_endpoint::handle_group_stats_request(
 	if(g_msg_all==NULL){
 		//TODO handle error
 		WRITELOG(CDATAPATH, ERROR,"<%s:%d> ERROR MESSAGE NOT CREATED\n",__func__,__LINE__);
+		delete msg;
 	}
 	
 	std::vector<cofgroup_stats_reply> group_stats;
@@ -555,27 +556,12 @@ of12_endpoint::handle_group_stats_request(
 		group_stats.push_back(stats);
 	}
 
+	//Send the group stats
 	send_group_stats_reply(ctl, msg->get_xid(), group_stats, false);
-#if 0
-	body.resize(sizeof(of12_stats_group_msg_t)+num_of_buckets*sizeof(of12_stats_bucket_counter_t));
+
 	
-	struct ofp12_group_stats *stats = (struct ofp12_group_stats *)body.somem();
-	
-	//WARNING BYTE ORDER!!
-	
-	stats->group_id = htonl( g_msg->group_id);
-	stats->ref_count = htonl(g_msg->ref_count);
-	stats->packet_count = htobe64(g_msg->packet_count);
-	stats->byte_count = htobe64(g_msg->byte_count);
-	
-	for(i=0;i<num_of_buckets;i++){
-		stats->bucket_stats[i].byte_count = htobe64(g_msg->bucket_stats[i].byte_count);
-		stats->bucket_stats[i].packet_count = htobe64(g_msg->bucket_stats[i].packet_count);
-	}
-	
-	send_stats_reply(ctl, msg->get_xid(), OFPST_GROUP, body.somem(), body.memlen(), false);
-#endif
-	of12_destroy_stats_group_msg(g_msg);
+	//Destroy the g_msg
+	of12_destroy_stats_group_msg(g_msg_all);
 
 	delete msg;
 }

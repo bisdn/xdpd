@@ -385,6 +385,10 @@ of12_endpoint::handle_aggregate_stats_request(
 
 	//Map the match structure from OpenFlow to of12_packet_matches_t
 	entry = of12_init_flow_entry(NULL, NULL, false);
+
+	if(!entry)
+		throw eBadRequestBadStat(); 
+	
 	of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_aggr_stats().get_match(), sw, entry);
 
 	//TODO check error while mapping 
@@ -399,8 +403,8 @@ of12_endpoint::handle_aggregate_stats_request(
 					entry->matchs);
 	
 	if(!fp_msg){
-		//FIXME throw exception
-		return;
+		of12_destroy_flow_entry(entry);
+		throw eBadRequestBadStat(); 
 	}
 
 	//Construct OF message
@@ -416,6 +420,7 @@ of12_endpoint::handle_aggregate_stats_request(
 
 	//Destroy FP stats
 	of12_destroy_stats_flow_aggregate_msg(fp_msg);	
+	of12_destroy_flow_entry(entry);
 
 	delete msg;
 }

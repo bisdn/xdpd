@@ -635,6 +635,7 @@ rofl_pktclassifier::pop_vlan(){
 	pkt_pop(/*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fvlanframe::vlan_hdr_t));
 
 	frame_pop(vlan);
+	delete vlan;
 
 	ether(0)->shift_right(sizeof(struct rofl::fvlanframe::vlan_hdr_t));
 

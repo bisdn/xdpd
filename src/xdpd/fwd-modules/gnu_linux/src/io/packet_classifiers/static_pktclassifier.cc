@@ -995,7 +995,7 @@ rofl::fmplsframe* static_pktclassifier::push_mpls(uint16_t ether_type){
 	 */
 	mpls_header = this->mpls(0);
 
-	if (this->mpls(1) != this->mpls(0)){
+	if (this->mpls(1)){
 		mpls_header->set_mpls_bos(false);
 		mpls_header->set_mpls_label(this->mpls(1)->get_mpls_label());
 		mpls_header->set_mpls_tc(this->mpls(1)->get_mpls_tc());

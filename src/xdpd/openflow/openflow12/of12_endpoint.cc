@@ -473,7 +473,7 @@ of12_endpoint::handle_queue_stats_request(
 
 		port = of12switch->logical_ports[n].port;
 
-		if ((OFPP_ANY != portnum) && (port->of_port_num != portnum))
+		if ((OFPP_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 
@@ -1329,7 +1329,7 @@ of12_endpoint::handle_queue_get_config_request(
 		if (of12switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
 			continue;
 
-		if ((OFPP_ANY != portnum) && (port->of_port_num != portnum))
+		if ((OFPP_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 		for(unsigned int i=0; i<port->max_queues; i++){

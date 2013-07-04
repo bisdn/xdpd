@@ -325,6 +325,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 
 			//Increment error statistics
 			switch_port_stats_inc(of_port_state,0,0,0,0,0,1);
+			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);
 
 
 			// Release and exit
@@ -351,10 +352,13 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 		if(tx->send()<0){
 			ROFL_DEBUG("[mmap:%s] packet(%p) put in the MMAP region\n", of_port_state->name ,pkt);
 			assert(0);
+			switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, cnt);	
+			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);	
 		}
 
 		//Increment statistics
 		switch_port_stats_inc(of_port_state, 0, cnt, 0, tx_bytes_local, 0, 0);	
+		port_queue_stats_inc(&of_port_state->queues[q_id], cnt, tx_bytes_local, 0);	
 	}
 
 	// return not used buckets

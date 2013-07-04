@@ -54,7 +54,7 @@ protected:
 	//WRITing buckets	
 	static const unsigned int WRITE_BUCKETSPP=4;
 	static const unsigned int WRITE_BUCKETS[3];
-	static const float WRITE_QOS_QUEUE_FACTOR[4]; //TODO: PORT_MAX_NUMBER_OF_QUEUES
+	static const float WRITE_QOS_QUEUE_FACTOR[ioport::MAX_OUTPUT_QUEUES];
 
 	/* Methods */
 	//WRR

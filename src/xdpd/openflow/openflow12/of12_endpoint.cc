@@ -364,9 +364,15 @@ of12_endpoint::handle_flow_stats_request(
 						instructions));
 	}
 
-	//Send message
-	send_flow_stats_reply(ctl, msg->get_xid(), flow_stats);
-
+	
+	try{
+		//Send message
+		send_flow_stats_reply(ctl, msg->get_xid(), flow_stats);
+	}catch(...){
+		of12_destroy_stats_flow_msg(fp_msg);	
+		of12_destroy_flow_entry(entry);	
+		throw;
+	}
 	//Destroy FP stats
 	of12_destroy_stats_flow_msg(fp_msg);	
 	of12_destroy_flow_entry(entry);	
@@ -416,16 +422,22 @@ of12_endpoint::handle_aggregate_stats_request(
 		throw eBadRequestBadStat(); 
 	}
 
-	//Construct OF message
-	send_aggr_stats_reply(
-			ctl,
-			msg->get_xid(),
-			cofaggr_stats_reply(
-				ctl->get_version(),
-				fp_msg->packet_count,
-				fp_msg->byte_count,
-				fp_msg->flow_count),
-			false);
+	try{
+		//Construct OF message
+		send_aggr_stats_reply(
+				ctl,
+				msg->get_xid(),
+				cofaggr_stats_reply(
+					ctl->get_version(),
+					fp_msg->packet_count,
+					fp_msg->byte_count,
+					fp_msg->flow_count),
+				false);
+	}catch(...){
+		of12_destroy_stats_flow_aggregate_msg(fp_msg);	
+		of12_destroy_flow_entry(entry);
+		throw;
+	}
 
 	//Destroy FP stats
 	of12_destroy_stats_flow_aggregate_msg(fp_msg);	
@@ -516,7 +528,6 @@ of12_endpoint::handle_queue_stats_request(
 			stats,
 			false);
 
-	//FIXME: send error?
 	delete pack;
 }
 
@@ -570,9 +581,13 @@ of12_endpoint::handle_group_stats_request(
 		group_stats.push_back(stats);
 	}
 
-	//Send the group stats
-	send_group_stats_reply(ctl, msg->get_xid(), group_stats, false);
-
+	try{
+		//Send the group stats
+		send_group_stats_reply(ctl, msg->get_xid(), group_stats, false);
+	}catch(...){
+		of12_destroy_stats_group_msg(g_msg_all);
+		throw;
+	}
 	
 	//Destroy the g_msg
 	of12_destroy_stats_group_msg(g_msg_all);
@@ -1225,47 +1240,33 @@ of12_endpoint::handle_port_mod(
 		throw ePortModBadPort(); 
 		
 	//Drop received
-	if( mask &  OFPPC_NO_RECV ){
-	
-		if( AFA_FAILURE == fwd_module_of12_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC_NO_RECV ) ){
-			//TODO: treat exception
-		}
-	}
+	if( mask &  OFPPC_NO_RECV )
+		if( AFA_FAILURE == fwd_module_of12_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC_NO_RECV ) )
+			throw ePortModBase(); 
 	//No forward
-	if( mask &  OFPPC_NO_FWD ){
-	
-		if( AFA_FAILURE == fwd_module_of12_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) ){
-			//TODO: treat exception
-		}
-	}
-
+	if( mask &  OFPPC_NO_FWD )
+		if( AFA_FAILURE == fwd_module_of12_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) )
+			throw ePortModBase(); 
 	//No packet in
-	if( mask &  OFPPC_NO_PACKET_IN ){
-	
-		if( AFA_FAILURE == fwd_module_of12_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC_NO_PACKET_IN) ) ){
-			//TODO: treat exception
-		}
-	}
+	if( mask &  OFPPC_NO_PACKET_IN )
+		if( AFA_FAILURE == fwd_module_of12_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC_NO_PACKET_IN) ) )
+			throw ePortModBase(); 
 
 	//Advertised
-	if( advertise ){ 
-	
-		if( AFA_FAILURE == fwd_module_of12_set_port_advertise_config(sw->dpid, port_num, advertise)  ){
-			//TODO: treat exception
-		}
-	}
+	if( advertise )
+		if( AFA_FAILURE == fwd_module_of12_set_port_advertise_config(sw->dpid, port_num, advertise)  )
+			throw ePortModBase(); 
 
 	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
 	if( mask &  OFPPC_PORT_DOWN ){
-	
 		if( (config & OFPPC_PORT_DOWN)  ){
 			//Disable port
 			if( AFA_FAILURE == fwd_module_disable_port_by_num(sw->dpid, port_num) ){
-				//TODO: treat exception
+				throw ePortModBase(); 
 			}
 		}else{
 			if( AFA_FAILURE == fwd_module_enable_port_by_num(sw->dpid, port_num) ){
-				//TODO: treat exception
+				throw ePortModBase(); 
 			}
 		}
 	}
@@ -1294,7 +1295,7 @@ of12_endpoint::handle_set_config(
 
 	//Instruct the driver to process the set config	
 	if(AFA_FAILURE == fwd_module_of12_set_pipeline_config(sw->dpid, msg->get_flags(), msg->get_miss_send_len())){
-		//TODO: what to do
+		throw eTableModBadConfig();
 	}
 		
 	delete msg;

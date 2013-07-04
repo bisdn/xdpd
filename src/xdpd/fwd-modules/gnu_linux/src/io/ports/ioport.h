@@ -145,9 +145,9 @@ public:
 
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
+	static const unsigned int MAX_OUTPUT_QUEUES=8;	/*!< Constant max output queues */
 
 protected:
-	static const unsigned int MAX_OUTPUT_QUEUES=8;	/*!< Constant max output queues */
 	static const unsigned int NUM_OF_REQUIRED_BUFFERS=2048;	/* Required buffers for the port to operate at line rate */
 	
 	//Output QoS queues

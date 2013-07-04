@@ -23,7 +23,7 @@
 //Static members initialization
 const unsigned int polling_ioscheduler::READ_BUCKETS[3]={polling_ioscheduler::READ_BUCKETSPP, polling_ioscheduler::READ_BUCKETSPP*2, polling_ioscheduler::READ_BUCKETSPP*3};
 const unsigned int polling_ioscheduler::WRITE_BUCKETS[3]= {polling_ioscheduler::WRITE_BUCKETSPP, polling_ioscheduler::WRITE_BUCKETSPP*2, polling_ioscheduler::WRITE_BUCKETSPP*3};
-const float polling_ioscheduler::WRITE_QOS_QUEUE_FACTOR[4]={1,1.2,1.5,2}; //TODO: PORT_MAX_NUMBER_OF_QUEUES
+const float polling_ioscheduler::WRITE_QOS_QUEUE_FACTOR[ioport::MAX_OUTPUT_QUEUES]={1,1.2,1.5,2,2.2,2.5,2.7,3.0};
 #ifdef DEBUG
 bool polling_ioscheduler::by_pass_processing = false;
 #endif

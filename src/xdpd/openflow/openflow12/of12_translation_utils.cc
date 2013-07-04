@@ -1145,3 +1145,82 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 }
 
 
+/*
+* Maps packet actions to cofmatches
+*/
+
+void of12_translation_utils::of12_map_reverse_packet_matches(of12_packet_matches_t* packet_matches, cofmatch& match){
+	if(packet_matches->port_in)
+		match.set_in_port(packet_matches->port_in);
+	if(packet_matches->phy_port_in)
+		match.set_in_phy_port(packet_matches->phy_port_in);
+	//if(packet_matches->metadata)
+	//	match.set_metadata(packet_matches->metadata);
+	if(packet_matches->eth_dst){
+		uint64_t addr = packet_matches->eth_dst;
+		cmacaddr maddr((uint8_t*)&addr,OFP_ETH_ALEN);
+		addr = 0x0000FFFFFFFFFFFF; 
+		cmacaddr mmask((uint8_t*)&addr,OFP_ETH_ALEN);
+		
+		match.set_eth_dst(maddr, mmask);
+	}
+	if(packet_matches->eth_src){
+		uint64_t addr = packet_matches->eth_src;
+		cmacaddr maddr((uint8_t*)&addr,OFP_ETH_ALEN);
+		addr = 0x0000FFFFFFFFFFFF; 
+		cmacaddr mmask((uint8_t*)&addr,OFP_ETH_ALEN);
+		
+		match.set_eth_src(maddr, mmask);
+	}
+	if(packet_matches->eth_type)
+		match.set_eth_type(packet_matches->eth_type);
+	if(packet_matches->vlan_vid)
+		match.set_vlan_vid(packet_matches->vlan_vid);
+	if(packet_matches->vlan_pcp)
+		match.set_vlan_pcp(packet_matches->vlan_pcp);
+	if(packet_matches->ip_dscp)
+		match.set_ip_dscp(packet_matches->ip_dscp);
+	if(packet_matches->ip_ecn)
+		match.set_ip_ecn(packet_matches->ip_ecn);
+	if(packet_matches->ip_proto)
+		match.set_ip_proto(packet_matches->ip_proto);
+	if(packet_matches->ipv4_src){
+			caddress addr(AF_INET, "0.0.0.0");
+			addr.ca_s4addr->sin_addr.s_addr = packet_matches->ipv4_src;
+			match.set_ipv4_src(addr);
+
+	}
+	if(packet_matches->ipv4_dst){
+		caddress addr(AF_INET, "0.0.0.0");
+		addr.ca_s4addr->sin_addr.s_addr = packet_matches->ipv4_dst;
+		match.set_ipv4_dst(addr);
+	}
+	if(packet_matches->tcp_src)
+		match.set_tcp_src(packet_matches->tcp_src);
+	if(packet_matches->tcp_dst)
+		match.set_tcp_dst(packet_matches->tcp_dst);
+	if(packet_matches->udp_src)
+		match.set_udp_src(packet_matches->udp_src);
+	if(packet_matches->udp_dst)
+		match.set_udp_dst(packet_matches->udp_dst);
+	if(packet_matches->icmpv4_type)
+		match.set_icmpv4_type(packet_matches->icmpv4_type);
+	if(packet_matches->icmpv4_code)
+		match.set_icmpv4_code(packet_matches->icmpv4_code);
+		
+	//TODO IPv6
+	if(packet_matches->mpls_label)
+		match.set_mpls_label(packet_matches->mpls_label);
+	if(packet_matches->mpls_tc)
+		match.set_mpls_tc(packet_matches->mpls_tc);
+	if(packet_matches->pppoe_code)
+		match.set_pppoe_code(packet_matches->pppoe_code);
+	if(packet_matches->pppoe_type)
+		match.set_pppoe_type(packet_matches->pppoe_type);
+	if(packet_matches->pppoe_sid)
+		match.set_pppoe_sessid(packet_matches->pppoe_sid);
+	if(packet_matches->ppp_proto)
+		match.set_ppp_prot(packet_matches->ppp_proto);
+
+}
+

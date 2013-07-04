@@ -705,8 +705,10 @@ of12_endpoint::process_packet_in(
 		of12_packet_matches_t matches)
 {
 	try {
-		// classify packet and extract matches as instance of cofmatch
-		cpacket pack(pkt_buffer, buf_len, in_port, true);
+		//Transform matches 
+		cofmatch match;
+		of12_translation_utils::of12_map_reverse_packet_matches(&matches, match);
+
 
 		send_packet_in_message(
 				NULL,
@@ -716,7 +718,7 @@ of12_endpoint::process_packet_in(
 				table_id,
 				/*cookie=*/0,
 				/*in_port=*/0, // OF1.0 only
-				pack.get_match(),
+				match,
 				pkt_buffer, buf_len);
 
 		return AFA_SUCCESS;

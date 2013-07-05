@@ -105,14 +105,14 @@ cmd_debuglevel(struct cli_def *cli, const char *command, char *argv[], int argc)
 	case 2:
 		debuglevel.assign(argv[1]);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: new debuglevel set to %s", debuglevel.c_str());
+		cli_print(cli, "new debuglevel set to %s", debuglevel.c_str());
 #endif
 
 		/* no break */
 	case 1:
 		debugclass.assign(argv[0]);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: new debugclass set to %s", debugclass.c_str());
+		cli_print(cli, "new debugclass set to %s", debugclass.c_str());
 #endif
 
 		/* no break */
@@ -229,30 +229,30 @@ cmd_openflow_datapath_create(struct cli_def *cli, const char *command, char *arg
 	uint64_t dp_id = 0;
 	unsigned int no_tables = 0;
 	caddress rpc_ctl_addr(switch_manager::controller_addr);
-	caddress rpc_dpt_addr(switch_manager::binding_addr);
+	caddress rpc_dpt_bind_addr(switch_manager::binding_addr);
 
 	// usage:
 	/*   at least 4       question?               max 6 */
 	if ( argc < 4 || strchr(argv[argc-1], '?') || 6 < argc ) {
 		cli_print(cli, "Create a new datapath\n"
 				"usage: create <dpname> <dpid>"
-				" <version> <no_tables>"
+				" <version> <num_tables>"
 				" [ctl_ipv4[:port](default:%s:%i)]"
-				" [dp_ipv4[:port](default:%s:%i)]",
+				" [bind_ipv4[:port](default:%s:%i)]",
 				rpc_ctl_addr.addr_c_str(),
 				be16toh(rpc_ctl_addr.ca_s4addr->sin_port),
-				rpc_dpt_addr.addr_c_str(),
-				be16toh(rpc_dpt_addr.ca_s4addr->sin_port) );
+				rpc_dpt_bind_addr.addr_c_str(),
+				be16toh(rpc_dpt_bind_addr.ca_s4addr->sin_port) );
 		return CLI_OK;
 	}
 
 	switch (argc) {
 	case 6:
 		// parse rpc_dpt_addr (check?)
-		set_ip_helper(argv[5], &rpc_dpt_addr);
+		set_ip_helper(argv[5], &rpc_dpt_bind_addr);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: ctl_addr set to %s:%i", rpc_dpt_addr.addr_c_str(),
-				be16toh(rpc_dpt_addr.ca_s4addr->sin_port));
+		cli_print(cli, "ctl_addr set to %s:%i", rpc_dpt_bind_addr.addr_c_str(),
+				be16toh(rpc_dpt_bind_addr.ca_s4addr->sin_port));
 #endif
 
 		/* no break */
@@ -260,7 +260,7 @@ cmd_openflow_datapath_create(struct cli_def *cli, const char *command, char *arg
 		// parse rpc_ctl_addr (check?)
 		set_ip_helper(argv[4], &rpc_ctl_addr);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: ctl_addr set to %s:%i", rpc_ctl_addr.addr_c_str(),
+		cli_print(cli, "ctl_addr set to %s:%i", rpc_ctl_addr.addr_c_str(),
 				be16toh(rpc_ctl_addr.ca_s4addr->sin_port));
 #endif
 
@@ -271,31 +271,33 @@ cmd_openflow_datapath_create(struct cli_def *cli, const char *command, char *arg
 		// check n_tables?
 		no_tables = strtol(argv[3], NULL, 0);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: no_tables set to %i", no_tables);
+		cli_print(cli, "no_tables set to %i", no_tables);
 #endif
 		// check version?
 		version = (of_version_t)strtol(argv[2], NULL, 0);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: no_tables set to %i", no_tables);
+		cli_print(cli, "no_tables set to %i", no_tables);
 #endif
 
 		// todo check dpid
 		dp_id = strtol(argv[1], NULL, 0);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: new dp_id set to %"PRIu64, dp_id);
+		cli_print(cli, "new dp_id set to %"PRIu64, dp_id);
 #endif
 
 		// check dpname?
 		dp_name.assign(argv[0]);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: new dp_name set to %s", dp_name.c_str());
+		cli_print(cli, "new dp_name set to %s", dp_name.c_str());
 #endif
 		break;
 
 	}
 
-	int ma_list[] = { 0 };
-	switch_manager::create_switch(version, dp_id, dp_name, no_tables, ma_list, rpc_ctl_addr, rpc_dpt_addr);
+	// std::list<std::string> names = switch_manager::list_matching_algorithms(version);
+
+	int ma_list[256] = { 0 };
+	switch_manager::create_switch(version, dp_id, dp_name, no_tables, ma_list, rpc_ctl_addr, rpc_dpt_bind_addr);
 
     return CLI_OK;
 }
@@ -318,7 +320,7 @@ cmd_config_openflow_configure_connect(struct cli_def *cli, const char *command, 
 	if (1 == argc) {
 		set_ip_helper(argv[0], &controller_address);
 #ifndef NDEBUG
-		cli_print(cli, "DBG: ctl_addr set to %s:%i",
+		cli_print(cli, "ctl_addr set to %s:%i",
 				controller_address.addr_c_str(),
 				be16toh(controller_address.ca_s4addr->sin_port));
 #endif

@@ -1,8 +1,27 @@
-Brief:
-	The contents of this folder are the implementation for a generic GNU/Linux OS Abstract Forwarding API (AFA) forwarding module. Please have a look to ROFL-AFA for more details.
+The GNU/Linux (user-space) forwarding module 
 
-Folder structure and some files:
-	- afa-imp: Abstract Forwarding API implementation (forwarding module end) 
+## Brief:
+
+The content of this folder is the implementation of the generic GNU/Linux OS (AFA-compliant) forwarding module in user-space. 
+
+Please have a look to ROFL-AFA for more details about the Astract Forwarding API (AFA). 
+
+## Comments:
+This forwarding module makes extensive use of the ROFL-pipeline library. 
+
+For more information about the architecture of this forwarding module, please have on the xDPD wiki.
+
+The fwd_module can be extended in a number of ways, particularly:
+
+	- New ports (io/ports/ioport.h), like Netmap, PQF... Derive your class from ioport and you are ready to go
+	- Better scheduling polices (io/scheduler/ioscheduler.h). Derive your class from ioscheduler.h
+	- New and more efficient network protocol header parsers (io/packet_classifiers/packetclassifier.h). Derive your class from packetclassifier.h.
+	- New network protocol support (OF matches) and new actions (OF actions). This may imply extension/modification of other parts of xDPD including ROFL-core (endpoint) libraries, ROFL-pipeline (core platform-agnostic Openflow pipeline) and packet classifiers. Extension in ROFL-core and ROFL-pipeline will also benefit other platforms; they are shared among all the forwarding modules.
+	- New Openflow software lookup algorithms (matching algorithms). This implies only extension on ROFL-pipeline library. All software packet processing forwarding modules will benefit from these extensions.
+	- ...
+
+## Folder structure and some files:
+	- afa-imp: Abstract Forwarding API implementation (forwarding module C interface) 
 	- bg_taskmanager.c: subsystem for background tasks  
 	- io: I/O subsystem, including I/O ports, port scheduling algorithms and GNU/Linux packet manipulation (getters, setters and push/pop operations on the packet headers)
 	- ls_internal_state.h: Internal state (GNU/Linux specific) associated with all the logical switches. 
@@ -10,7 +29,7 @@ Folder structure and some files:
 	- processing: Management of processing threads
 	- util: Some utils used in processing and io subsystems. 
 
-Authorship:
+## Authorship:
 	Marc Sune<marc.sune (at) bisdn.de>
 	Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 	Victor Alvarez<victor.alvarez (at) bisdn.de>

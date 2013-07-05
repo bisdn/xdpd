@@ -5,12 +5,11 @@ set debuglevel cthread warn
 configure terminal
 openflow
 # do not change the order of parameters (parameters can be omitted from rtl)
-create dp0 1544 3 1
+# create <dpname> <dpid> <version> <num_tables> [ctl_ipv4[:port]] [bind_ipv4[:port]]
+create dp0 1544 3 8 127.0.0.1:6633
 configure dp0
 attach_port veth0 1
 attach_port veth2 2
 attach_port veth4 3
 attach_port veth6 4
-# ip:port is the current default if it is omitted
-# connect 127.0.0.1:6632
 quit

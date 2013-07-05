@@ -61,6 +61,11 @@ public:
 	static void of12_map_bucket_list(cofctl *ctl, openflow_switch* sw, cofbclist& of_buckets, of12_bucket_list_t* bucket_list);
 
 	/**
+	 * Reverse maps a bucket list 
+	 */
+	static void of12_map_reverse_bucket_list(	cofbclist& of_buckets, of12_bucket_list_t* bucket_list);
+	
+	/**
 	*
 	*/
 	static void of12_map_reverse_flow_entry_instructions(of12_instruction_group_t* group, cofinlist& instructions);
@@ -73,7 +78,12 @@ public:
 	/**
 	*
 	*/
-	static void	of12_map_reverse_flow_entry_action(of12_packet_action_t* of12_action, cofaction& action);
+	static void of12_map_reverse_flow_entry_action(of12_packet_action_t* of12_action, cofaction& action);
+
+	/**
+	*
+	*/
+	static void of12_map_reverse_packet_matches(of12_packet_matches_t* packet_matches, cofmatch& match);
 };
 
 }// namespace rofl

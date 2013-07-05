@@ -36,6 +36,9 @@ of12_endpoint::handle_features_request(
 		cofctl *ctl,
 		cofmsg_features_request *msg)
 {
+	logical_switch_port_t* ls_port;	
+	switch_port_t* _port;	
+	
 	uint32_t num_of_tables 	= 0;
 	uint32_t num_of_buffers = 0;
 	uint32_t capabilities 	= 0;
@@ -44,52 +47,44 @@ of12_endpoint::handle_features_request(
 	num_of_buffers 	= of12switch->pipeline->num_of_buffers;
 	capabilities 	= of12switch->pipeline->capabilities;
 
-	logical_switch_port_t *lsw_ports = NULL;
-	unsigned int num_of_ports = 0;
-	unsigned int max_logical_ports = 0;
-
-	//FIXME
-	if (of_get_switch_ports((of_switch*)of12switch, &lsw_ports, &num_of_ports, &max_logical_ports) < 0){
-
-		assert(0);
-		// TODO: handle error
-	}
-
 	// array of structures ofp_port
 	cofportlist portlist;
 
 	//we check all the positions in case there are empty slots
-	for (unsigned int n = 1; n < max_logical_ports; n++)
-	{
-		if(lsw_ports[n].port!=NULL && lsw_ports[n].attachment_state!=LOGICAL_PORT_STATE_DETACHED)
-		{
+	for (unsigned int n = 1; n < of12switch->max_ports; n++){
+
+		ls_port = &of12switch->logical_ports[n];
+		_port = ls_port->port;
+
+		if(_port!=NULL && ls_port->attachment_state!=LOGICAL_PORT_STATE_DETACHED){
+
 			//Mapping of port state
-			assert(n == lsw_ports[n].port->of_port_num);
+			assert(n == _port->of_port_num);
 
 			cofport port(ctl->get_version());
 
-			port.set_port_no(lsw_ports[n].port->of_port_num);
-			port.set_hwaddr(cmacaddr(lsw_ports[n].port->hwaddr, OFP_ETH_ALEN));
-			port.set_name(std::string(lsw_ports[n].port->name));
+			port.set_port_no(_port->of_port_num);
+			port.set_hwaddr(cmacaddr(_port->hwaddr, OFP_ETH_ALEN));
+			port.set_name(std::string(_port->name));
 			
 			uint32_t config = 0;
-			if(!lsw_ports[n].port->up)	
+			if(!_port->up)	
 				config |= OFPPC_PORT_DOWN;
-			if(lsw_ports[n].port->drop_received)
+			if(_port->drop_received)
 				config |= OFPPC_NO_RECV;
-			if(!lsw_ports[n].port->forward_packets)	
+			if(!_port->forward_packets)	
 				config |= OFPPC_NO_FWD;
-			if(!lsw_ports[n].port->of_generate_packet_in)
+			if(!_port->of_generate_packet_in)
 				config |= OFPPC_NO_PACKET_IN;
 
 			port.set_config(config);
-			port.set_state(lsw_ports[n].port->state);
-			port.set_curr(lsw_ports[n].port->curr);
-			port.set_advertised(lsw_ports[n].port->advertised);
-			port.set_supported(lsw_ports[n].port->supported);
-			port.set_peer(lsw_ports[n].port->peer);
-			port.set_curr_speed(of12_translation_utils::get_port_speed_kb(lsw_ports[n].port->curr_speed));
-			port.set_max_speed(of12_translation_utils::get_port_speed_kb(lsw_ports[n].port->curr_max_speed));
+			port.set_state(_port->state);
+			port.set_curr(_port->curr);
+			port.set_advertised(_port->advertised);
+			port.set_supported(_port->supported);
+			port.set_peer(_port->peer);
+			port.set_curr_speed(of12_translation_utils::get_port_speed_kb(_port->curr_speed));
+			port.set_max_speed(of12_translation_utils::get_port_speed_kb(_port->curr_max_speed));
 
 			portlist.next() = port;
 		}
@@ -208,7 +203,6 @@ of12_endpoint::handle_table_stats_request(
 							(of12switch->pipeline->tables[n].stats.lookup_count),
 							(of12switch->pipeline->tables[n].stats.matched_count)
 						);
-		fprintf(stderr, "table_stats: %s\n", a.c_str());
 	}
 
 
@@ -224,49 +218,43 @@ of12_endpoint::handle_port_stats_request(
 		cofctl *ctl,
 		cofmsg_port_stats_request *msg)
 {
+
+	switch_port_t* port;
 	uint32_t port_no = msg->get_port_stats().get_portno();
 
 	std::vector<cofport_stats_reply> port_stats;
 
-	logical_switch_port_t *lsw_ports = NULL;
-	unsigned int num_of_ports = 0;				// number of ports attached to the logical switch
-	unsigned int max_logical_ports = 0; 		// number of port slots available in the logical switch
-
-	//FIXME
-	if (of_get_switch_ports((of_switch*)of12switch, &lsw_ports, &num_of_ports, &max_logical_ports) < 0){
-
-		// TODO: handle error
-	}
-
-
 	/*
 	 *  send statistics for all ports
 	 */
-	if (OFPP_ANY == port_no)
-	{
+	if (OFPP_ANY == port_no){
+
 		//we check all the positions in case there are empty slots
-		for (unsigned int n = 1; n < max_logical_ports; n++)
-		{
-			if((lsw_ports[n].port != NULL) && (lsw_ports[n].attachment_state != LOGICAL_PORT_STATE_DETACHED))
-			{
+		for (unsigned int n = 1; n < of12switch->max_ports; n++){
+	
+			port = of12switch->logical_ports[n].port; 
+	
+			if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
+
 				port_stats.push_back(
 						cofport_stats_reply(
 								ctl->get_version(),
-								lsw_ports[n].port->of_port_num,
-								lsw_ports[n].port->stats.rx_packets,
-								lsw_ports[n].port->stats.tx_packets,
-								lsw_ports[n].port->stats.rx_bytes,
-								lsw_ports[n].port->stats.tx_bytes,
-								lsw_ports[n].port->stats.rx_dropped,
-								lsw_ports[n].port->stats.tx_dropped,
-								lsw_ports[n].port->stats.rx_errors,
-								lsw_ports[n].port->stats.tx_errors,
-								lsw_ports[n].port->stats.rx_frame_err,
-								lsw_ports[n].port->stats.rx_over_err,
-								lsw_ports[n].port->stats.rx_crc_err,
-								lsw_ports[n].port->stats.collisions));
+								port->of_port_num,
+								port->stats.rx_packets,
+								port->stats.tx_packets,
+								port->stats.rx_bytes,
+								port->stats.tx_bytes,
+								port->stats.rx_dropped,
+								port->stats.tx_dropped,
+								port->stats.rx_errors,
+								port->stats.tx_errors,
+								port->stats.rx_frame_err,
+								port->stats.rx_over_err,
+								port->stats.rx_crc_err,
+								port->stats.collisions));
 			}
 	 	}
+
 	}else{
 		/*
 		 * send statistics for only one port
@@ -274,28 +262,31 @@ of12_endpoint::handle_port_stats_request(
 		
 		// search for the port with the specified port-number
 		//we check all the positions in case there are empty slots
-		for (unsigned int n = 1; n < max_logical_ports; n++){
-			if((lsw_ports[n].port != NULL) &&
-					(lsw_ports[n].attachment_state != LOGICAL_PORT_STATE_DETACHED) &&
-						(lsw_ports[n].port->of_port_num == port_no))
-			{
+		for (unsigned int n = 1; n < of12switch->max_ports; n++){
+			
+			port = of12switch->logical_ports[n].port; 
+
+			if( 	(port != NULL) &&
+				(of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) &&
+				(port->of_port_num == port_no)
+			){
 				//Mapping of port state
 				port_stats.push_back(
 						cofport_stats_reply(
 								ctl->get_version(),
-								lsw_ports[n].port->of_port_num,
-								lsw_ports[n].port->stats.rx_packets,
-								lsw_ports[n].port->stats.tx_packets,
-								lsw_ports[n].port->stats.rx_bytes,
-								lsw_ports[n].port->stats.tx_bytes,
-								lsw_ports[n].port->stats.rx_dropped,
-								lsw_ports[n].port->stats.tx_dropped,
-								lsw_ports[n].port->stats.rx_errors,
-								lsw_ports[n].port->stats.tx_errors,
-								lsw_ports[n].port->stats.rx_frame_err,
-								lsw_ports[n].port->stats.rx_over_err,
-								lsw_ports[n].port->stats.rx_crc_err,
-								lsw_ports[n].port->stats.collisions));
+								port->of_port_num,
+								port->stats.rx_packets,
+								port->stats.tx_packets,
+								port->stats.rx_bytes,
+								port->stats.tx_bytes,
+								port->stats.rx_dropped,
+								port->stats.tx_dropped,
+								port->stats.rx_errors,
+								port->stats.tx_errors,
+								port->stats.rx_frame_err,
+								port->stats.rx_over_err,
+								port->stats.rx_crc_err,
+								port->stats.collisions));
 
 				break;
 			}
@@ -321,9 +312,13 @@ of12_endpoint::handle_flow_stats_request(
 
 	//Map the match structure from OpenFlow to of12_packet_matches_t
 	entry = of12_init_flow_entry(NULL, NULL, false);
-	of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_flow_stats().get_match(), sw, entry);
-
-	//TODO check error while mapping 
+	
+	try{
+		of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_flow_stats().get_match(), sw, entry);
+	}catch(...){
+		of12_destroy_flow_entry(entry);	
+		throw eBadRequestBadStat(); 
+	}
 
 	//Ask the Forwarding Plane to process stats
 	fp_msg = fwd_module_of12_get_flow_stats(sw->dpid,
@@ -335,8 +330,8 @@ of12_endpoint::handle_flow_stats_request(
 					entry->matchs);
 	
 	if(!fp_msg){
-		//FIXME throw exception
-		return;
+		of12_destroy_flow_entry(entry);	
+		throw eBadRequestBadStat(); 
 	}
 
 	//Construct OF message
@@ -369,9 +364,15 @@ of12_endpoint::handle_flow_stats_request(
 						instructions));
 	}
 
-	//Send message
-	send_flow_stats_reply(ctl, msg->get_xid(), flow_stats);
-
+	
+	try{
+		//Send message
+		send_flow_stats_reply(ctl, msg->get_xid(), flow_stats);
+	}catch(...){
+		of12_destroy_stats_flow_msg(fp_msg);	
+		of12_destroy_flow_entry(entry);	
+		throw;
+	}
 	//Destroy FP stats
 	of12_destroy_stats_flow_msg(fp_msg);	
 	of12_destroy_flow_entry(entry);	
@@ -394,7 +395,16 @@ of12_endpoint::handle_aggregate_stats_request(
 
 	//Map the match structure from OpenFlow to of12_packet_matches_t
 	entry = of12_init_flow_entry(NULL, NULL, false);
-	of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_aggr_stats().get_match(), sw, entry);
+
+	if(!entry)
+		throw eBadRequestBadStat(); 
+
+	try{	
+		of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_aggr_stats().get_match(), sw, entry);
+	}catch(...){
+		of12_destroy_flow_entry(entry);	
+		throw eBadRequestBadStat(); 
+	}
 
 	//TODO check error while mapping 
 
@@ -408,23 +418,30 @@ of12_endpoint::handle_aggregate_stats_request(
 					entry->matchs);
 	
 	if(!fp_msg){
-		//FIXME throw exception
-		return;
+		of12_destroy_flow_entry(entry);
+		throw eBadRequestBadStat(); 
 	}
 
-	//Construct OF message
-	send_aggr_stats_reply(
-			ctl,
-			msg->get_xid(),
-			cofaggr_stats_reply(
-				ctl->get_version(),
-				fp_msg->packet_count,
-				fp_msg->byte_count,
-				fp_msg->flow_count),
-			false);
+	try{
+		//Construct OF message
+		send_aggr_stats_reply(
+				ctl,
+				msg->get_xid(),
+				cofaggr_stats_reply(
+					ctl->get_version(),
+					fp_msg->packet_count,
+					fp_msg->byte_count,
+					fp_msg->flow_count),
+				false);
+	}catch(...){
+		of12_destroy_stats_flow_aggregate_msg(fp_msg);	
+		of12_destroy_flow_entry(entry);
+		throw;
+	}
 
 	//Destroy FP stats
 	of12_destroy_stats_flow_aggregate_msg(fp_msg);	
+	of12_destroy_flow_entry(entry);
 
 	delete msg;
 }
@@ -437,7 +454,79 @@ of12_endpoint::handle_queue_stats_request(
 		cofmsg_queue_stats_request *pack)
 {
 
-	//TODO FIXME
+	switch_port_t* port = NULL;
+	unsigned int portnum = pack->get_queue_stats().get_port_no();
+	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
+
+	if( ((portnum >= of12switch->max_ports) && (portnum != OFPP_ANY)) || portnum == 0){
+		throw eBadRequestBadPort(); 	//Invalid port num
+	}
+
+	std::vector<cofqueue_stats_reply> stats;
+
+	/*
+	* port num
+	*/
+
+	//we check all the positions in case there are empty slots
+	for (unsigned int n = 1; n < of12switch->max_ports; n++){
+
+		port = of12switch->logical_ports[n].port;
+
+		if ((OFPP_ALL != portnum) && (port->of_port_num != portnum))
+			continue;
+
+
+		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)/* && (port->of_port_num == portnum)*/){
+
+			if (OFPQ_ALL == queue_id){
+
+				// TODO: iterate over all queues
+
+				for(unsigned int i=0; i<port->max_queues; i++){
+					if(!port->queues[i].set)
+						continue;
+
+					//Set values
+					stats.push_back(
+							cofqueue_stats_reply(
+									ctl->get_version(),
+									port->of_port_num,
+									i,
+									port->queues[i].stats.tx_bytes,
+									port->queues[i].stats.tx_packets,
+									port->queues[i].stats.overrun));
+				}
+
+			} else {
+
+				if(queue_id >= port->max_queues)
+					throw eBadRequestBadPort(); 	//FIXME send a BadQueueId error
+
+
+				//Check if the queue is really in use
+				if(port->queues[queue_id].set){
+					//Set values
+					stats.push_back(
+							cofqueue_stats_reply(
+									ctl->get_version(),
+									portnum,
+									queue_id,
+									port->queues[queue_id].stats.tx_bytes,
+									port->queues[queue_id].stats.tx_packets,
+									port->queues[queue_id].stats.overrun));
+
+				}
+			}
+		}
+	}
+
+
+	send_queue_stats_reply(
+			ctl,
+			pack->get_xid(),
+			stats,
+			false);
 
 	delete pack;
 }
@@ -453,35 +542,55 @@ of12_endpoint::handle_group_stats_request(
 	unsigned int i;
 	cmemory body(0);
 	unsigned int num_of_buckets;
+	of12_stats_group_msg_t *g_msg, *g_msg_all;
 
 	uint32_t group_id = msg->get_group_stats().get_group_id();
 	
-	 of12_stats_group_msg_t *g_msg = fwd_module_of12_get_group_stats(sw->dpid, group_id);
+	if(group_id==OFPG_ALL){
+		g_msg_all = fwd_module_of12_get_group_all_stats(sw->dpid, group_id);
+	}
+	else{
+		g_msg_all = fwd_module_of12_get_group_stats(sw->dpid, group_id);
+	}
 	
-	if(g_msg==NULL){
+	if(g_msg_all==NULL){
 		//TODO handle error
-		fprintf(stderr,"<%s:%d> ERROR MESSAGE NOT CREATED\n",__func__,__LINE__);
+		WRITELOG(CDATAPATH, ERROR,"<%s:%d> ERROR MESSAGE NOT CREATED\n",__func__,__LINE__);
+		delete msg;
 	}
 	
-	num_of_buckets = g_msg->num_of_buckets;
-	body.resize(sizeof(of12_stats_group_msg_t)+num_of_buckets*sizeof(of12_stats_bucket_counter_t));
+	std::vector<cofgroup_stats_reply> group_stats;
 	
-	struct ofp12_group_stats *stats = (struct ofp12_group_stats *)body.somem();
-	
-	//WARNING BYTE ORDER!!
-	
-	stats->group_id = htonl( g_msg->group_id);
-	stats->ref_count = htonl(g_msg->ref_count);
-	stats->packet_count = htobe64(g_msg->packet_count);
-	stats->byte_count = htobe64(g_msg->byte_count);
-	
-	for(i=0;i<num_of_buckets;i++){
-		stats->bucket_stats[i].byte_count = htobe64(g_msg->bucket_stats[i].byte_count);
-		stats->bucket_stats[i].packet_count = htobe64(g_msg->bucket_stats[i].packet_count);
+	for(g_msg = g_msg_all; g_msg; g_msg = g_msg->next){
+		num_of_buckets = g_msg->num_of_buckets;
+
+		cofgroup_stats_reply stats(
+				ctl->get_version(),
+				/*msg->get_group_stats().get_group_id(),*/
+				htobe32(g_msg->group_id),
+				htobe32(g_msg->ref_count),
+				htobe64(g_msg->packet_count),
+				htobe64(g_msg->byte_count),
+				num_of_buckets);
+
+		for(i=0;i<num_of_buckets;i++) {
+			stats.get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
+			stats.get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
+		}
+		
+		group_stats.push_back(stats);
+	}
+
+	try{
+		//Send the group stats
+		send_group_stats_reply(ctl, msg->get_xid(), group_stats, false);
+	}catch(...){
+		of12_destroy_stats_group_msg(g_msg_all);
+		throw;
 	}
 	
-	send_stats_reply(ctl, msg->get_xid(), OFPST_GROUP, body.somem(), body.memlen(), false);
-	of12_destroy_stats_group_msg(g_msg);
+	//Destroy the g_msg
+	of12_destroy_stats_group_msg(g_msg_all);
 
 	delete msg;
 }
@@ -493,9 +602,30 @@ of12_endpoint::handle_group_desc_stats_request(
 		cofctl *ctl,
 		cofmsg_group_desc_stats_request *msg)
 {
-	std::vector<cofgroup_desc_stats_reply> group_desc_stats(ctl->get_version());
+	std::vector<cofgroup_desc_stats_reply> group_desc_stats;
 
 	//TODO: fill in std::vector<...> group_desc_stats, when groups are implemented
+
+	of12_group_table_t group_table;
+	of12_group_t *group_it;
+	if(fwd_module_of12_fetch_group_table(sw->dpid,&group_table)!=AFA_SUCCESS){
+
+		//TODO throw exeption
+		delete msg;	
+	}
+	
+	for(group_it=group_table.head;group_it;group_it=group_it->next){
+		cofbclist bclist;
+		of12_translation_utils::of12_map_reverse_bucket_list(bclist,group_it->bc_list);
+		
+		group_desc_stats.push_back(
+				cofgroup_desc_stats_reply(
+					ctl->get_version(),
+					group_it->type,
+					group_it->id,
+					bclist ));
+	}
+
 
 	send_group_desc_stats_reply(
 			ctl,
@@ -546,7 +676,12 @@ of12_endpoint::handle_packet_out(
 {
 	of12_action_group_t* action_group = of12_init_action_group(NULL);
 
-	of12_translation_utils::of12_map_flow_entry_actions(ctl, sw, msg->get_actions(), action_group, NULL); //TODO: is this OK always NULL?
+	try{
+		of12_translation_utils::of12_map_flow_entry_actions(ctl, sw, msg->get_actions(), action_group, NULL); //TODO: is this OK always NULL?
+	}catch(...){
+		of12_destroy_action_group(action_group);
+		throw;
+	}
 
 	/* assumption: driver can handle all situations properly:
 	 * - data and datalen both 0 and buffer_id != OFP_NO_BUFFER
@@ -585,20 +720,27 @@ of12_endpoint::process_packet_in(
 		of12_packet_matches_t matches)
 {
 	try {
-		// classify packet and extract matches as instance of cofmatch
-		cpacket pack(pkt_buffer, buf_len, in_port, true);
+		//Transform matches 
+		cofmatch match;
+		of12_translation_utils::of12_map_reverse_packet_matches(&matches, match);
+
 
 		send_packet_in_message(
+				NULL,
 				buffer_id,
 				total_len,
 				reason,
 				table_id,
 				/*cookie=*/0,
 				/*in_port=*/0, // OF1.0 only
-				pack.match,
+				match,
 				pkt_buffer, buf_len);
 
 		return AFA_SUCCESS;
+
+	} catch (eRofBaseNotConnected& e) {
+
+		return AFA_FAILURE;
 
 	} catch (...) {
 
@@ -636,7 +778,7 @@ afa_result_t of12_endpoint::notify_port_add(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(OFPPR_ADD, ofport);
+	send_port_status_message(NULL, OFPPR_ADD, ofport);
 
 	return AFA_SUCCESS;
 }
@@ -665,7 +807,7 @@ afa_result_t of12_endpoint::notify_port_delete(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(OFPPR_DELETE, ofport);
+	send_port_status_message(NULL, OFPPR_DELETE, ofport);
 
 	return AFA_SUCCESS;
 }
@@ -695,7 +837,7 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(OFPPR_MODIFY, ofport);
+	send_port_status_message(NULL, OFPPR_MODIFY, ofport);
 
 	return AFA_SUCCESS; // ignore this notification
 }
@@ -723,26 +865,29 @@ of12_endpoint::handle_flow_mod(
 		cofctl *ctl,
 		cofmsg_flow_mod *msg)
 {
-	fprintf(stderr, "of12_endpoint::handle_flow_mod() pack: %s\n", msg->c_str());
-
 	switch (msg->get_command()) {
-	case OFPFC_ADD: {
-		flow_mod_add(ctl, msg);
-	} break;
-	case OFPFC_MODIFY: {
-		flow_mod_modify(ctl, msg, false);
-	} break;
-	case OFPFC_MODIFY_STRICT: {
-		flow_mod_modify(ctl, msg, true);
-	} break;
-	case OFPFC_DELETE: {
-		flow_mod_delete(ctl, msg, false);
-	} break;
-	case OFPFC_DELETE_STRICT: {
-		flow_mod_delete(ctl, msg, true);
-	} break;
-	default:
-		throw eFlowModBadCommand();
+		case OFPFC_ADD: {
+				flow_mod_add(ctl, msg);
+			} break;
+		
+		case OFPFC_MODIFY: {
+				flow_mod_modify(ctl, msg, false);
+			} break;
+		
+		case OFPFC_MODIFY_STRICT: {
+				flow_mod_modify(ctl, msg, true);
+			} break;
+		
+		case OFPFC_DELETE: {
+				flow_mod_delete(ctl, msg, false);
+			} break;
+		
+		case OFPFC_DELETE_STRICT: {
+				flow_mod_delete(ctl, msg, true);
+			} break;
+		
+		default:
+			throw eFlowModBadCommand();
 	}
 	delete msg;
 }
@@ -755,6 +900,9 @@ of12_endpoint::flow_mod_add(
 		cofmsg_flow_mod *msg) //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull)
 {
 	uint8_t table_id = msg->get_table_id();
+	afa_result_t res;
+	of12_flow_entry_t *entry=NULL;
+
 	// sanity check: table for table-id must exist
 	if ( (table_id > of12switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
 	{
@@ -765,25 +913,31 @@ of12_endpoint::flow_mod_add(
 		throw eFlowModBadTableId();
 	}
 
-	of12_flow_entry_t *entry = of12_translation_utils::of12_map_flow_entry(ctl, msg,sw);
-
-	if (NULL == entry)
-	{
+	try{
+		entry = of12_translation_utils::of12_map_flow_entry(ctl, msg,sw);
+	}catch(...){
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
-
-		throw eFlowModTableFull();
+		throw eFlowModUnknown();
 	}
 
-	if (AFA_FAILURE == fwd_module_of12_process_flow_mod_add(sw->dpid,
+	if(!entry)
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+
+	if (AFA_SUCCESS != (res = fwd_module_of12_process_flow_mod_add(sw->dpid,
 								msg->get_table_id(),
 								entry,
 								msg->get_buffer_id(),
 								msg->get_flags() & OFPFF_CHECK_OVERLAP,
-								msg->get_flags() & OFPFF_RESET_COUNTS)){
+								msg->get_flags() & OFPFF_RESET_COUNTS))){
 		// log error
-		fprintf(stderr,"Error inserting the flowmod\n");
+		WRITELOG(CDATAPATH, ERROR, "Error inserting the flowmod\n");
 		of12_destroy_flow_entry(entry);
+
+		if(res == AFA_FM_OVERLAP_FAILURE)
+			throw eFlowModOverlap();
+		else 
+			throw eFlowModTableFull();
 	}
 
 }
@@ -796,6 +950,7 @@ of12_endpoint::flow_mod_modify(
 		cofmsg_flow_mod *pack,
 		bool strict)
 {
+	of12_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
 	if (pack->get_table_id() > of12switch->pipeline->num_of_tables)
@@ -807,26 +962,29 @@ of12_endpoint::flow_mod_modify(
 		throw eFlowModBadTableId();
 	}
 
-	of12_flow_entry_t *entry = of12_translation_utils::of12_map_flow_entry(ctl, pack,sw);
-
-	if (NULL == entry){
-		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_delete() "
-				"unable to attempt to remove flow-entry", sw->dpname.c_str());
-
-		return;
+	try{
+		entry = of12_translation_utils::of12_map_flow_entry(ctl, pack, sw);
+	}catch(...){
+		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_modify() "
+				"unable to attempt to modify flow-entry", sw->dpname.c_str());
+		throw eFlowModUnknown();
 	}
+
+	if(!entry)
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+
 
 	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 
-	if(AFA_FAILURE == fwd_module_of12_process_flow_mod_modify(sw->dpid,
+	if(AFA_SUCCESS != fwd_module_of12_process_flow_mod_modify(sw->dpid,
 								pack->get_table_id(),
 								entry,
 								strictness,
 								pack->get_flags() & OFPFF_RESET_COUNTS)){
-		//TODO: FIXME send exception
-		fprintf(stderr,"Error modiying flowmod\n");
+		WRITELOG(CDATAPATH, ERROR, "Error modiying flowmod\n");
 		of12_destroy_flow_entry(entry);
+		throw eFlowModBase(); 
 	} 
 
 }
@@ -840,28 +998,35 @@ of12_endpoint::flow_mod_delete(
 		bool strict) //throw (eOfSmPipelineBadTableId)
 {
 
-	of12_flow_entry_t *entry = of12_translation_utils::of12_map_flow_entry(ctl, pack, sw);
-
-	if (NULL == entry) {
+	of12_flow_entry_t *entry=NULL;
+	
+	try{
+		entry = of12_translation_utils::of12_map_flow_entry(ctl, pack, sw);
+	}catch(...){
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_delete() "
 				"unable to attempt to remove flow-entry", sw->dpname.c_str());
-
-		return;
+		throw eFlowModUnknown();
 	}
+
+	if(!entry)
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+
 
 	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
-
-	if(AFA_FAILURE == fwd_module_of12_process_flow_mod_delete(sw->dpid,
+	if(AFA_SUCCESS != fwd_module_of12_process_flow_mod_delete(sw->dpid,
 								pack->get_table_id(),
 								entry,
 								pack->get_buffer_id(),
 								pack->get_out_port(),
 								pack->get_out_group(),
 								strictness)) {
-		fprintf(stderr,"Error deleting flowmod\n");
-		//TODO: treat exception
+		WRITELOG(CDATAPATH, ERROR, "Error deleting flowmod\n");
+		of12_destroy_flow_entry(entry);
+		throw eFlowModBase(); 
 	} 
+	
+	//Always delete entry
 	of12_destroy_flow_entry(entry);
 
 }
@@ -916,7 +1081,7 @@ of12_endpoint::handle_group_mod(
 	 * 3- call driver function?
 	 */
 
-	fprintf(stderr, "of12_endpoint::handle_group_mod() => buckets: %s\n", msg->get_buckets().c_str());
+	WRITELOG(CDATAPATH, DBG, "of12_endpoint::handle_group_mod() => buckets: %s\n", msg->get_buckets().c_str());
 
 #if 0
 	// sanity check: check for invalid actions => FIXME: fake for oftest12, there are numerous
@@ -940,7 +1105,7 @@ of12_endpoint::handle_group_mod(
 	}
 #endif
 
-	of12_group_mod_err_t ret_val;
+	rofl_of12_gm_result_t ret_val;
  	of12_bucket_list_t* bucket_list=of12_init_bucket_list();
 	
 	switch(msg->get_command()){
@@ -959,56 +1124,59 @@ of12_endpoint::handle_group_mod(
 			break;
 		
 		default:
-			ret_val = OF12_GROUP_MOD_ERR_BCOMMAND;
+			ret_val = ROFL_OF12_GM_BCOMMAND;
 			break;
 	}
-
+	if( (ret_val != ROFL_OF12_GM_OK) || (msg->get_command() == OFPGC_DELETE) )
+		of12_destroy_bucket_list(bucket_list);
+	
+	//Throw appropiate exception based on the return code
 	switch(ret_val){
-		case OF12_GROUP_MOD_ERR_OK:
+		case ROFL_OF12_GM_OK:
 			break;
-		case OF12_GROUP_MOD_ERR_EXISTS:
+		case ROFL_OF12_GM_EXISTS:
 			throw eGroupModExists();
 			break;
-		case OF12_GROUP_MOD_ERR_INVAL:
+		case ROFL_OF12_GM_INVAL:
 			throw eGroupModInvalGroup();
 			break;
-		case OF12_GROUP_MOD_ERR_WEIGHT:
+		case ROFL_OF12_GM_WEIGHT:
 			throw eGroupModWeightUnsupported();
 			break;
-		case OF12_GROUP_MOD_ERR_OGRUPS:
+		case ROFL_OF12_GM_OGRUPS:
 			throw eGroupModOutOfGroups();
 			break;
-		case OF12_GROUP_MOD_ERR_OBUCKETS:
+		case ROFL_OF12_GM_OBUCKETS:
 			throw eGroupModOutOfBuckets();
 			break;
-		case OF12_GROUP_MOD_ERR_CHAIN:
+		case ROFL_OF12_GM_CHAIN:
 			throw eGroupModChainingUnsupported();
 			break;
-		case OF12_GROUP_MOD_ERR_WATCH:
+		case ROFL_OF12_GM_WATCH:
 			throw eGroupModWatchUnsupported();
 			break;
-		case OF12_GROUP_MOD_ERR_LOOP:
+		case ROFL_OF12_GM_LOOP:
 			throw eGroupModLoop();
 			break;
-		case OF12_GROUP_MOD_ERR_UNKGRP:
+		case ROFL_OF12_GM_UNKGRP:
 			throw eGroupModUnknownGroup();
 			break;
-		case OF12_GROUP_MOD_ERR_CHNGRP:
+		case ROFL_OF12_GM_CHNGRP:
 			throw eGroupModChainedGroup();
 			break;
-		case OF12_GROUP_MOD_ERR_BTYPE:
+		case ROFL_OF12_GM_BTYPE:
 			throw eGroupModBadType();
 			break;
-		case OF12_GROUP_MOD_ERR_BCOMMAND:
+		case ROFL_OF12_GM_BCOMMAND:
 			throw eGroupModBadCommand();
 			break;
-		case OF12_GROUP_MOD_ERR_BBUCKET:
+		case ROFL_OF12_GM_BBUCKET:
 			throw eGroupModBadBucket();
 			break;
-		case OF12_GROUP_MOD_ERR_BWATCH:
+		case ROFL_OF12_GM_BWATCH:
 			throw eGroupModBadWatch();
 			break;
-		case OF12_GROUP_MOD_ERR_EPERM:
+		case ROFL_OF12_GM_EPERM:
 			throw eGroupModEperm();
 			break;
 		default:
@@ -1072,47 +1240,33 @@ of12_endpoint::handle_port_mod(
 		throw ePortModBadPort(); 
 		
 	//Drop received
-	if( mask &  OFPPC_NO_RECV ){
-	
-		if( AFA_FAILURE == fwd_module_of12_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC_NO_RECV ) ){
-			//TODO: treat exception
-		}
-	}
+	if( mask &  OFPPC_NO_RECV )
+		if( AFA_FAILURE == fwd_module_of12_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC_NO_RECV ) )
+			throw ePortModBase(); 
 	//No forward
-	if( mask &  OFPPC_NO_FWD ){
-	
-		if( AFA_FAILURE == fwd_module_of12_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) ){
-			//TODO: treat exception
-		}
-	}
-
+	if( mask &  OFPPC_NO_FWD )
+		if( AFA_FAILURE == fwd_module_of12_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) )
+			throw ePortModBase(); 
 	//No packet in
-	if( mask &  OFPPC_NO_PACKET_IN ){
-	
-		if( AFA_FAILURE == fwd_module_of12_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC_NO_PACKET_IN) ) ){
-			//TODO: treat exception
-		}
-	}
+	if( mask &  OFPPC_NO_PACKET_IN )
+		if( AFA_FAILURE == fwd_module_of12_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC_NO_PACKET_IN) ) )
+			throw ePortModBase(); 
 
 	//Advertised
-	if( advertise ){ 
-	
-		if( AFA_FAILURE == fwd_module_of12_set_port_advertise_config(sw->dpid, port_num, advertise)  ){
-			//TODO: treat exception
-		}
-	}
+	if( advertise )
+		if( AFA_FAILURE == fwd_module_of12_set_port_advertise_config(sw->dpid, port_num, advertise)  )
+			throw ePortModBase(); 
 
 	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
 	if( mask &  OFPPC_PORT_DOWN ){
-	
 		if( (config & OFPPC_PORT_DOWN)  ){
 			//Disable port
 			if( AFA_FAILURE == fwd_module_disable_port_by_num(sw->dpid, port_num) ){
-				//TODO: treat exception
+				throw ePortModBase(); 
 			}
 		}else{
 			if( AFA_FAILURE == fwd_module_enable_port_by_num(sw->dpid, port_num) ){
-				//TODO: treat exception
+				throw ePortModBase(); 
 			}
 		}
 	}
@@ -1141,7 +1295,7 @@ of12_endpoint::handle_set_config(
 
 	//Instruct the driver to process the set config	
 	if(AFA_FAILURE == fwd_module_of12_set_pipeline_config(sw->dpid, msg->get_flags(), msg->get_miss_send_len())){
-		//TODO: what to do
+		throw eTableModBadConfig();
 	}
 		
 	delete msg;
@@ -1154,8 +1308,54 @@ of12_endpoint::handle_queue_get_config_request(
 		cofctl *ctl,
 		cofmsg_queue_get_config_request *pack)
 {
-	//TODO FIXME
+	switch_port_t* port;
+	unsigned int portnum = pack->get_port_no(); 
 
+	//FIXME: send error? => yes, if portnum is unknown, just throw the appropriate exception
+	if (0 /*add check for existence of port*/)
+		throw eBadRequestBadPort();
+
+
+	cofpacket_queue_list pql(ctl->get_version());
+
+	//we check all the positions in case there are empty slots
+	for(unsigned int n = 1; n < of12switch->max_ports; n++){
+
+		port = of12switch->logical_ports[n].port; 
+
+		if(port == NULL)
+			continue;
+
+		if (of12switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
+			continue;
+
+		if ((OFPP_ALL != portnum) && (port->of_port_num != portnum))
+			continue;
+
+		for(unsigned int i=0; i<port->max_queues; i++){
+			if(!port->queues[i].set)
+				continue;
+
+			cofpacket_queue pq(ctl->get_version());
+			pq.set_queue_id(port->queues[i].id);
+			pq.set_port(port->of_port_num);
+			pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl->get_version(), port->queues[i].min_rate);
+			pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl->get_version(), port->queues[i].max_rate);
+			//fprintf(stderr, "min_rate: %d\n", port->queues[i].min_rate);
+			//fprintf(stderr, "max_rate: %d\n", port->queues[i].max_rate);
+
+			pql.next() = pq;
+		}
+	}
+
+	//Send reply
+	send_queue_get_config_reply(
+			ctl,
+			pack->get_xid(),
+			pack->get_port_no(),
+			pql);
+
+	// do not forget to remove pack from heap
 	delete pack;
 }
 

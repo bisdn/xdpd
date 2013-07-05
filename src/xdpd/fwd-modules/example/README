@@ -1,0 +1,18 @@
+An example forwarding module 
+
+## Brief:
+
+This is a white canvas for writing the port to your own platform in xDPD. The forwarding module does nothing but print traces.
+You may want to have a look to ROFL-pipeline library in order to build the internals of the library.
+
+## Comments:
+
+Put any other comment here that might be of interest
+
+## Folder structure and some files:
+	
+	- afa-imp: Abstract Forwarding API implementation (forwarding module end) 
+	- .... 
+	
+## Authorship:
+	Put your name and email here

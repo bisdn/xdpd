@@ -254,7 +254,9 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 	unsigned int cnt = 0;
 	int tx_bytes_local = 0;
 
-	if (0 == output_queues[q_id].size() || !tx) {
+	ringbuffer* queue = &output_queues[q_id];
+
+	if (!tx) {
 		return num_of_buckets;
 	}
 
@@ -263,7 +265,7 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 
 		
 		//Check
-		if(output_queues[q_id].size() == 0){
+		if(queue->size() == 0){
 			ROFL_DEBUG_VERBOSE("[mmap:%s] no packet left in output_queue %u left, %u buckets left\n",
 					of_port_state->name,
 					q_id,
@@ -279,7 +281,7 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			break;
 		
 		//Retrieve the buffer
-		pkt = output_queues[q_id].non_blocking_read();
+		pkt = queue->non_blocking_read();
 		
 		if(!pkt){
 			ROFL_ERR("[mmap:%s] A packet has been discarted due to race condition on the output queue. Are you really running the I/O subsystem with a single thread? output_queue %u left, %u buckets left\n",

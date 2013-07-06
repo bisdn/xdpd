@@ -87,7 +87,8 @@ static_pktclassifier::~static_pktclassifier(){
 
 
 void static_pktclassifier::classify(void){
-	classify_reset();
+	if(is_classified)
+		classify_reset();
 	parse_ether(pkt->get_buffer(), pkt->get_buffer_length());
 	is_classified = true;
 }

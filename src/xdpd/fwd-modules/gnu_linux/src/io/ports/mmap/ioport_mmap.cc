@@ -70,7 +70,12 @@ ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id)
 		}
 	
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
-		output_queues[q_id].blocking_write(pkt);
+		if(output_queues[q_id].non_blocking_write(pkt) != ROFL_SUCCESS){
+			ROFL_DEBUG("[mmap:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
+			//Drop packet
+			bufferpool::release_buffer(pkt);
+			return;
+		}
 
 		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
 	

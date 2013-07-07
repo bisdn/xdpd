@@ -9,6 +9,10 @@ rofl_result_t iomanager_delete_group_wrapper(unsigned int grp_id){
 	return iomanager::delete_group(grp_id);
 }
 
+rofl_result_t iomanager_delete_all_groups_wrapper(){
+	return iomanager::delete_all_groups();
+}
+
 rofl_result_t iomanager_bring_port_up_wrapper(platform_port_state_t* port)
 {
 	return iomanager::bring_port_up((ioport*)port);

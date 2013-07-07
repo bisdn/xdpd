@@ -16,6 +16,7 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include "iface_utils.h" 
+#include "iomanager.h"
 
 #include "ports/ioport.h" 
 #include "ports/mmap/ioport_mmap.h" 
@@ -173,11 +174,24 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	//Fill speeds and capabilities	
 	fill_port_speeds_capabilities(port, &edata);
 
+	//Create port-group
+	unsigned int id = iomanager::create_group();
+
+	if(id < 0)
+		return NULL;
+
 	//Initialize MMAP-based port
 	//Change this line to use another ioport...
-	port->platform_port_state = (platform_port_state_t*)new ioport_mmapv2(port);
-	//port->platform_port_state = (platform_port_state_t*)new ioport_mmap(port);
+	ioport* io_port = new ioport_mmapv2(port);
+	//iport* io_port = new ioport_mmap(port);
 
+	//Assign group id
+	if( iomanager::add_port_to_group(id, io_port) != ROFL_SUCCESS )
+		return NULL;
+
+	io_port->port_group = id;
+	port->platform_port_state = (platform_port_state_t*)io_port;
+	
 	//Fill port queues
 	fill_port_queues(port, (ioport*)port->platform_port_state);
 	

@@ -96,6 +96,13 @@ unsigned int iomanager::create_group(unsigned int num_of_threads){
 }
 
 /* Deletes the portgroup. If there are existing ports, they are stopped and deleted */
+rofl_result_t iomanager::delete_all_groups(){
+
+	while( iomanager::delete_group(0) != ROFL_FAILURE);
+	return ROFL_SUCCESS;
+}
+
+/* Deletes the portgroup. If there are existing ports, they are stopped and deleted */
 rofl_result_t iomanager::delete_group(unsigned int grp_id){
 
 	portgroup_state* pg;

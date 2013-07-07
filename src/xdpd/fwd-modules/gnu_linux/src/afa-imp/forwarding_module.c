@@ -41,9 +41,6 @@
 
 #define NUM_ELEM_INIT_BUFFERPOOL 2048 //This is cache for fast port addition
 
-//FIXME: implement it properly. Single portgroup ID emulation 
-static int iomanager_grp_id;
-
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself
@@ -55,12 +52,13 @@ afa_result_t fwd_module_init(){
 	if(physical_switch_init() != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
-	if(discover_physical_ports() != ROFL_SUCCESS)
-		return AFA_FAILURE;
-	
+
 	//create bufferpool
 	bufferpool_init_wrapper(NUM_ELEM_INIT_BUFFERPOOL);
-	
+
+	if(discover_physical_ports() != ROFL_SUCCESS)
+		return AFA_FAILURE;
+/*	
 	//create a port_group NOTE so far we will only have one of these
 	// the managment of port_groups creation, destroy, port adding and removing will be done later
 	unsigned int num_of_threads = 1;
@@ -68,7 +66,7 @@ afa_result_t fwd_module_init(){
 	if((iomanager_grp_id = iomanager_create_group_wrapper(num_of_threads)) != ROFL_SUCCESS){
 		return AFA_FAILURE;
 	}
-
+*/
 	//Initialize Background Tasks Manager
 	if(launch_background_tasks_manager() != ROFL_SUCCESS){
 		return AFA_FAILURE;
@@ -85,7 +83,7 @@ afa_result_t fwd_module_init(){
 afa_result_t fwd_module_destroy(){
 
 	//destroy group ports
-	iomanager_delete_group_wrapper(iomanager_grp_id);
+	//iomanager_delete_all_groups_wrapper();
 	
 	//Stop the bg manager
 	stop_background_tasks_manager();
@@ -173,7 +171,8 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 	{
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
 			//Take it out from the group
-			if(iomanager_remove_port_from_group_wrapper(iomanager_grp_id, sw->logical_ports[i].port->platform_port_state) == ROFL_FAILURE){
+			//if(iomanager_remove_port_from_group_wrapper(sw->logical_ports[i].port->platform_port_state) == ROFL_FAILURE){
+			if( iomanager_bring_port_down_wrapper(sw->logical_ports[i].port->platform_port_state) != ROFL_SUCCESS ){
 				//TODO: put trace here?
 			}
 
@@ -273,21 +272,15 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 	if(!port)
 		return AFA_FAILURE;
 
-	//Try first to add the port to the portgroup
-	if(iomanager_add_port_to_group_wrapper(iomanager_grp_id, port->platform_port_state) == ROFL_FAILURE)
-		return AFA_FAILURE;
-	
 	//Attaching the port
 	if(*of_port_num == 0){
 		//no port specified, we assign the first available
 		if(physical_switch_attach_port_to_logical_switch(port,lsw,of_port_num) == ROFL_FAILURE){
-			iomanager_remove_port_from_group_wrapper(iomanager_grp_id, port->platform_port_state);	
 			return AFA_FAILURE;
 		}
 	}else{
 
 		if(physical_switch_attach_port_to_logical_switch_at_port_num(port,lsw,*of_port_num) == ROFL_FAILURE){
-			iomanager_remove_port_from_group_wrapper(iomanager_grp_id, port->platform_port_state);	
 			return AFA_FAILURE;
 		}
 	}
@@ -321,10 +314,6 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 
 	//Check if the port does exist and is really attached to the dpid
 	if( !port || port->attached_sw->dpid != dpid)
-		return AFA_FAILURE;
-
-	//Remove port from the portgroup
-	if(iomanager_remove_port_from_group_wrapper(iomanager_grp_id, port->platform_port_state) == ROFL_FAILURE)
 		return AFA_FAILURE;
 
 	if(physical_switch_detach_port_from_logical_switch(port,lsw) == ROFL_FAILURE)

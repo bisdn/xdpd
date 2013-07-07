@@ -56,7 +56,7 @@ public:
 
 
 	/**
-	* Enque packet for transmission(this is a blocking call). 
+	* Enque packet for transmission(this must be a non blocking call). 
 	* Function cannot assume that q_id is a valid id, so it MUST do the appropiate
 	* checks before attempting to enqueue the packet.
 	*/

@@ -638,26 +638,6 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_MPLS_TC, oxm.uint8_value(), NULL, NULL);
 				}
 					break;
-				case OFPXMT_OFB_PPPOE_CODE:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_CODE, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_PPPOE_TYPE:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_TYPE, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_PPPOE_SID:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_SID, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_PPP_PROT:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPP_PROT, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
 				case OFPXMT_OFB_VLAN_VID:
 				{
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_VLAN_VID, oxm.uint16_value(), NULL, NULL);
@@ -696,6 +676,32 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				}
 					break;
 				}
+			}
+				break;
+			case OFPXMC_EXPERIMENTER: {
+				switch (oxm.get_oxm_field()) {
+				case OFPXMT_OFX_PPPOE_CODE:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_CODE, oxm.uint8_value(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFX_PPPOE_TYPE:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_TYPE, oxm.uint8_value(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFX_PPPOE_SID:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_SID, oxm.uint16_value(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFX_PPP_PROT:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPP_PROT, oxm.uint16_value(), NULL, NULL);
+				}
+					break;
+				}
+
 			}
 				break;
 			default:
@@ -1118,16 +1124,16 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		action = cofaction_set_field(coxmatch_ofb_mpls_tc((uint8_t)(of12_action->field & OF12_AT_1_BYTE_MASK)));
 	} break;
 	case OF12_AT_SET_FIELD_PPPOE_CODE: {
-		action = cofaction_set_field(coxmatch_ofb_pppoe_code((uint8_t)(of12_action->field & OF12_AT_1_BYTE_MASK)));
+		action = cofaction_set_field(coxmatch_ofx_pppoe_code((uint8_t)(of12_action->field & OF12_AT_1_BYTE_MASK)));
 	} break;
 	case OF12_AT_SET_FIELD_PPPOE_TYPE: {
-		action = cofaction_set_field(coxmatch_ofb_pppoe_type((uint8_t)(of12_action->field & OF12_AT_1_BYTE_MASK)));
+		action = cofaction_set_field(coxmatch_ofx_pppoe_type((uint8_t)(of12_action->field & OF12_AT_1_BYTE_MASK)));
 	} break;
 	case OF12_AT_SET_FIELD_PPPOE_SID: {
-		action = cofaction_set_field(coxmatch_ofb_pppoe_sid((uint16_t)(of12_action->field & OF12_AT_2_BYTE_MASK)));
+		action = cofaction_set_field(coxmatch_ofx_pppoe_sid((uint16_t)(of12_action->field & OF12_AT_2_BYTE_MASK)));
 	} break;
 	case OF12_AT_SET_FIELD_PPP_PROT: {
-		action = cofaction_set_field(coxmatch_ofb_ppp_prot((uint16_t)(of12_action->field & OF12_AT_2_BYTE_MASK)));
+		action = cofaction_set_field(coxmatch_ofx_ppp_prot((uint16_t)(of12_action->field & OF12_AT_2_BYTE_MASK)));
 	} break;
 	case OF12_AT_GROUP: {
 		action = cofaction_group((uint32_t)(of12_action->field & OF12_AT_4_BYTE_MASK));

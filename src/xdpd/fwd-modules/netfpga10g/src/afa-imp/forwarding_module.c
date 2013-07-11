@@ -5,7 +5,6 @@
 #include <rofl/datapath/afa/cmm.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
 
 //only for Test
 #include <stdlib.h>

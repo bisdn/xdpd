@@ -6,8 +6,6 @@
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_statistics.h>
 
-#include <rofl/datapath/pipeline/openflow/openflow12/openflow12.h>
-
 #define FWD_MOD_NAME "netfpga10g"
 
 //Port config

@@ -23,7 +23,7 @@
 //Static members initialization
 const unsigned int polling_ioscheduler::READ_BUCKETS[3]={polling_ioscheduler::READ_BUCKETSPP, polling_ioscheduler::READ_BUCKETSPP*2, polling_ioscheduler::READ_BUCKETSPP*3};
 const unsigned int polling_ioscheduler::WRITE_BUCKETS[3]= {polling_ioscheduler::WRITE_BUCKETSPP, polling_ioscheduler::WRITE_BUCKETSPP*2, polling_ioscheduler::WRITE_BUCKETSPP*3};
-const float polling_ioscheduler::WRITE_QOS_QUEUE_FACTOR[4]={1,1.2,1.5,2}; //TODO: PORT_MAX_NUMBER_OF_QUEUES
+const float polling_ioscheduler::WRITE_QOS_QUEUE_FACTOR[ioport::MAX_OUTPUT_QUEUES]={1,1.2,1.5,2,2.2,2.5,2.7,3.0};
 #ifdef DEBUG
 bool polling_ioscheduler::by_pass_processing = false;
 #endif
@@ -66,7 +66,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 				*/
 
 				int result = ((ringbuffer*)((struct logical_switch_internals*)port->of_port_state->attached_sw->platform_state)->ringbuffer)->non_blocking_write(pkt);
-				if( result == ringbuffer::RB_FAILURE ){
+				if( result == ROFL_FAILURE ){
 					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 					bufferpool::release_buffer(pkt);

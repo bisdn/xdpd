@@ -23,6 +23,9 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/ports/mockup/ioport_mockup.cc \
 	$(top_srcdir)/src/io/ports/mmap/ioport_mmap.cc \
 	$(top_srcdir)/src/io/ports/mmap/mmap_int.cc \
+	$(top_srcdir)/src/io/ports/mmap/ioport_mmapv2.cc \
+	$(top_srcdir)/src/io/ports/mmap/mmap_rx.cc \
+	$(top_srcdir)/src/io/ports/mmap/mmap_tx.cc \
 	$(top_srcdir)/src/io/scheduler/epoll_ioscheduler.cc \
 	$(top_srcdir)/src/processing/processingmanager.cc \
 	$(top_srcdir)/src/bg_taskmanager.c \

@@ -11,8 +11,6 @@
 #include "../../../io/ports/ioport.h"
 #include "../../../ls_internal_state.h"
 
-#include <rofl/datapath/pipeline/openflow/openflow12/openflow12.h>
-
 //FIXME move this definition out of here
 #define OF12P_NO_BUFFER	0xffffffff
 
@@ -233,6 +231,14 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	
 	//Avoid DoS. Check whether the action list contains an action ouput, otherwise drop, since the packet will never be freed
 	if(!action_group_of12_packet_in_contains_output(action_group)){
+
+		if (OF12P_NO_BUFFER != buffer_id) {
+			pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
+			if (NULL != pkt) {
+				bufferpool::release_buffer(pkt);
+			}
+		}
+
 		//FIXME: free action_group??
 		return AFA_FAILURE; /*TODO add specific error */
 	}
@@ -245,12 +251,8 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 
 		//Buffer has expired
 		if(!pkt){
-			assert(0);
 			return AFA_FAILURE; /* TODO: add specific error */
 		}
-
-		//Copy the incomming packet
-		memcpy(((datapacketx86*)pkt->platform_state)->get_buffer(), buffer,buffer_size);	
 	}else{
 		//Retrieve a free buffer	
 		pkt = bufferpool::get_free_buffer();

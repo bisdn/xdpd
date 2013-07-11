@@ -6,6 +6,7 @@
 #define IOPORT_H 
 
 #include <string>
+#include <assert.h>
 
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -64,7 +65,7 @@ public:
 	//Non-blocking read and write
 	/**
 	* @brief Read(RX) one (1) packet if available, return NULL if no packet
-	* can be read immediately. 
+	* can be read immediately. The packet MUST be already classified. 
 	*
 	* This method must be NON-BLOCKING
 	*/
@@ -86,9 +87,20 @@ public:
 	virtual int get_read_fd(void)=0;
 	virtual int get_write_fd(void)=0;
 
-	//Get buffer status; generally used to create "smart" schedulers
-	virtual ringbuffer_state_t get_input_queue_state(void); 
-	virtual ringbuffer_state_t get_output_queue_state(unsigned int q_id=0); 
+	//Get buffer status; generally used to create "smart" schedulers. TODO: evaluate if they should be 
+	//non-virtual (inline+virtual does not make a lot of sense here), and evaluate if they are necessary
+	//at all.
+	virtual inline ringbuffer_state_t get_input_queue_state(void){
+		return input_queue->get_buffer_state();
+	}; 
+	virtual inline ringbuffer_state_t get_output_queue_state(unsigned int q_id=0){
+		if(q_id<num_of_queues)
+			return output_queues[q_id].get_buffer_state();
+		else{
+			assert(0);
+			return RB_BUFFER_AVAILABLE;
+		} 
+	}; 
 
 	/**
 	* @brief Retrieves the number of buffers required by the port to be operating at line-rate; 
@@ -133,9 +145,9 @@ public:
 
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
+	static const unsigned int MAX_OUTPUT_QUEUES=8;	/*!< Constant max output queues */
 
 protected:
-	static const unsigned int MAX_OUTPUT_QUEUES=8;	/*!< Constant max output queues */
 	static const unsigned int NUM_OF_REQUIRED_BUFFERS=2048;	/* Required buffers for the port to operate at line rate */
 	
 	//Output QoS queues

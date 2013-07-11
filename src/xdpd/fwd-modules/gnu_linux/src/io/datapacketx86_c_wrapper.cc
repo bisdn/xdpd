@@ -28,7 +28,7 @@ dpx86_clone_pkt_contents(datapacket_t* src, datapacket_t* dst){
 	
 	datapacketx86 *pack_src = (datapacketx86*)src->platform_state;
 	datapacketx86 *pack_dst = (datapacketx86*)dst->platform_state;
-	pack_dst->init(pack_src->get_buffer(), pack_src->get_buffer_length(), pack_src->lsw, pack_src->in_port, pack_src->in_phy_port, true);
+	pack_dst->init(pack_src->get_buffer(), pack_src->get_buffer_length(), pack_src->lsw, pack_src->in_port, pack_src->in_phy_port, true, true);
 
 	//copy checksum flags
        pack_dst->ipv4_recalc_checksum = pack_src->ipv4_recalc_checksum;
@@ -167,8 +167,7 @@ dpx86_set_eth_dst(datapacket_t* pkt, uint64_t eth_dst)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return;
-	pack->headers->ether(0)->set_dl_dst(
-			rofl::cmacaddr(&((uint8_t*) &eth_dst)[0], OFP_ETH_ALEN));
+	pack->headers->ether(0)->set_dl_dst(rofl::cmacaddr(eth_dst));
 }
 
 void
@@ -176,8 +175,7 @@ dpx86_set_eth_src(datapacket_t* pkt, uint64_t eth_src)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return;
-	pack->headers->ether(0)->set_dl_src(
-			rofl::cmacaddr(&((uint8_t*) &eth_src)[0], OFP_ETH_ALEN));
+	pack->headers->ether(0)->set_dl_src(rofl::cmacaddr(eth_src));
 }
 
 void
@@ -394,8 +392,10 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 	of_switch_t* sw;
 	datapacketx86* pack;
 
-	if(!output_port)
+	if(!output_port){
+		assert(0);
 		return;
+	}
 
 	//Check whether dpx86 is NULL
 	if (NULL == (pack = (datapacketx86*) (pkt->platform_state))){
@@ -410,7 +410,8 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			pack->headers->ipv4(0)->ipv4_calc_checksum();
 	}
 
-	fipv4frame *fipv4 = pack->headers->ipv4(-1);
+	//Outer most IPv4 frame
+	fipv4frame *fipv4 = pack->headers->ipv4(0);
 
 	if ((pack->tcp_recalc_checksum) && pack->headers->tcp(0) && fipv4) {
 		
@@ -520,17 +521,8 @@ dpx86_get_packet_eth_dst(datapacket_t * const pkt)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
         
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return 0;
-        rofl::cmacaddr dst(pack->headers->ether(0)->get_dl_dst());
-        
-	uint64_t eth_dst(0);
-        ((uint8_t*) &eth_dst)[0] = dst[0];
-        ((uint8_t*) &eth_dst)[1] = dst[1];
-        ((uint8_t*) &eth_dst)[2] = dst[2];
-        ((uint8_t*) &eth_dst)[3] = dst[3];
-        ((uint8_t*) &eth_dst)[4] = dst[4];
-        ((uint8_t*) &eth_dst)[5] = dst[5];
 
-	return eth_dst;
+	return pack->headers->ether(0)->get_dl_dst().get_mac();
 }
 
 uint64_t
@@ -540,17 +532,7 @@ dpx86_get_packet_eth_src(datapacket_t * const pkt)
         
 	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return 0;
         
-	rofl::cmacaddr src(pack->headers->ether(0)->get_dl_src());
-        
-	uint64_t eth_src(0);
-        ((uint8_t*) &eth_src)[0] = src[0];
-        ((uint8_t*) &eth_src)[1] = src[1];
-        ((uint8_t*) &eth_src)[2] = src[2];
-        ((uint8_t*) &eth_src)[3] = src[3];
-        ((uint8_t*) &eth_src)[4] = src[4];
-        ((uint8_t*) &eth_src)[5] = src[5];
-
-	return eth_src;
+	return pack->headers->ether(0)->get_dl_src().get_mac();
 }
 
 uint16_t

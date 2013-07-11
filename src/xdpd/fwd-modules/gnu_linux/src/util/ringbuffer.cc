@@ -105,7 +105,7 @@ datapacket_t* ringbuffer::blocking_read(unsigned int seconds)
 }
 
 //Write
-int ringbuffer::non_blocking_write(datapacket_t* pkt)
+rofl_result_t ringbuffer::non_blocking_write(datapacket_t* pkt)
 {
 #ifdef RB_ASM_IMP
 
@@ -121,7 +121,7 @@ int ringbuffer::non_blocking_write(datapacket_t* pkt)
 #ifdef RB_MULTI_WRITERS
 		pthread_mutex_unlock(&mutex_writers);
 #endif
-		return RB_FAILURE;
+		return ROFL_FAILURE;
 	}
 
 	*writep = pkt;
@@ -134,19 +134,19 @@ int ringbuffer::non_blocking_write(datapacket_t* pkt)
 
 	pthread_cond_broadcast(&read_cond);
 
-	return RB_SUCCESS;
+	return ROFL_SUCCESS;
 #endif
 }
 
-int ringbuffer::blocking_write(datapacket_t* pkt, unsigned int seconds)
+rofl_result_t ringbuffer::blocking_write(datapacket_t* pkt, unsigned int seconds)
 {
-	int result;
+	rofl_result_t result;
 	struct timespec timeout;
 
 	//Try it straight away
 	result = non_blocking_write(pkt);
 
-	while(result == RB_FAILURE) {
+	while(result == ROFL_FAILURE) {
 	
 		//Acquire lock for pthread_cond_wait
 		pthread_mutex_lock(&mutex_writers);

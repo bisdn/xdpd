@@ -39,8 +39,8 @@ public:
 	datapacket_t* blocking_read(unsigned int seconds=0);
 
 	//Write
-	int non_blocking_write(datapacket_t* pkt);
-	int blocking_write(datapacket_t* pkt, unsigned int seconds=0);
+	rofl_result_t non_blocking_write(datapacket_t* pkt);
+	rofl_result_t blocking_write(datapacket_t* pkt, unsigned int seconds=0);
 
 	//Get buffer state
 	inline ringbuffer_state_t get_buffer_state(void)
@@ -57,10 +57,6 @@ public:
 	is_empty(void);
 
 	//Some constants
-	//Result of write operations
-	static const int RB_SUCCESS = 0;
-	static const int RB_FAILURE = 1;
-
 	static const unsigned int exponent = 11; // todo this could be configureable
 	static const unsigned int MAX_SLOTS = 1 << exponent;
 	static const unsigned int SLOT_MASK = MAX_SLOTS - 1;

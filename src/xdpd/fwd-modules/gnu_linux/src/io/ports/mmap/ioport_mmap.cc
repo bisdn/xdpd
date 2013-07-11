@@ -65,6 +65,7 @@ ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id)
 		if(q_id >= get_num_of_queues()){
 			ROFL_DEBUG("[mmap:%s] Packet(%p) trying to be enqueued in an invalid q_id: %u\n",  of_port_state->name, pkt, q_id);
 			q_id = 0;
+			bufferpool::release_buffer(pkt);
 			assert(0);
 		}
 	
@@ -151,7 +152,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			
 			//Increment error statistics
 			switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
-
+			hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
 			return cnt;
 		}
 
@@ -177,9 +178,9 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 
 			// handle no free buffer
 			if (NULL == pkt) {
-				//Increment error statistics
+				//Increment error statistics and drop
 				switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
-		
+				hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
 				return cnt;
 			}
 
@@ -190,7 +191,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			if (hwaddr == eth_src) {
 				/*ROFL_DEBUG_VERBOSE("cioport(%s)::handle_revent() outgoing "
 						"frame rcvd in slot i:%d, src-mac == own-mac, ignoring\n", of_port_state->name, rx->rpos);*/
-				pkt_x86->destroy();
+				//pkt_x86->destroy(); //This is not anymore necessary
 				bufferpool::release_buffer(pkt);
 				goto next; // ignore outgoing frames
 			}
@@ -198,7 +199,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 
 			if (0 != hdr->tp_vlan_tci) {
 				// packet has vlan tag
-				pkt_x86->init(NULL, hdr->tp_len + sizeof(struct fvlanframe::vlan_hdr_t), of_port_state->attached_sw, get_port_no());
+				pkt_x86->init(NULL, hdr->tp_len + sizeof(struct fvlanframe::vlan_hdr_t), of_port_state->attached_sw, get_port_no(),0,false);
 
 				// write ethernet header
 				memcpy(pkt_x86->get_buffer(), (uint8_t*)hdr + hdr->tp_mac, sizeof(struct fetherframe::eth_hdr_t));
@@ -234,7 +235,11 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			ROFL_DEBUG("[mmap:%s] packet(%p) recieved\n", of_port_state->name ,pkt);
 
 			// fill input_queue
-			input_queue->non_blocking_write(pkt);
+			if(input_queue->non_blocking_write(pkt) != ROFL_SUCCESS){
+				ROFL_DEBUG("[mmap:%s] Congestion in input intermediate buffer, dropping packet(%p)\n", of_port_state->name ,pkt);
+				bufferpool::release_buffer(pkt);
+				goto next;
+			}
 		}
 
 		rx_bytes_local += hdr->tp_len;
@@ -255,6 +260,7 @@ next:
 		switch_port_stats_inc(of_port_state, cnt, 0, rx_bytes_local, 0, 0, 0);	
 	
 	return cnt;
+
 }
 
 unsigned int
@@ -319,6 +325,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 
 			//Increment error statistics
 			switch_port_stats_inc(of_port_state,0,0,0,0,0,1);
+			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);
 
 
 			// Release and exit
@@ -345,10 +352,13 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 		if(tx->send()<0){
 			ROFL_DEBUG("[mmap:%s] packet(%p) put in the MMAP region\n", of_port_state->name ,pkt);
 			assert(0);
+			switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, cnt);	
+			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);	
 		}
 
 		//Increment statistics
 		switch_port_stats_inc(of_port_state, 0, cnt, 0, tx_bytes_local, 0, 0);	
+		port_queue_stats_inc(&of_port_state->queues[q_id], cnt, tx_bytes_local, 0);	
 	}
 
 	// return not used buckets

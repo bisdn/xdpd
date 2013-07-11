@@ -27,20 +27,6 @@ ioport::~ioport(){
 	delete [] output_queues;
 }
 
-//Get buffer status
-ringbuffer_state_t ioport::get_input_queue_state(){
-	return input_queue->get_buffer_state();
-} 
-
-ringbuffer_state_t ioport::get_output_queue_state(unsigned int q_id){
-	if(q_id<num_of_queues)
-		return output_queues[q_id].get_buffer_state();
-	else{
-		//TODO: print trace
-		return RB_BUFFER_INVALID;
-	} 
-}
-
 /**
  * Sets the port receiving behaviour. This MUST change the of_port_state appropiately
  */

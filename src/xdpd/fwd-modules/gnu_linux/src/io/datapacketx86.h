@@ -61,7 +61,7 @@ public:
 public: // methods
 
 	//Initialize the already constructed object
-	rofl_result_t init(uint8_t* buf, size_t buflen, of_switch_t* sw, uint32_t in_port, uint32_t in_phy_port = 0, bool copy_packet_to_internal_buffer = true);
+	rofl_result_t init(uint8_t* buf, size_t buflen, of_switch_t* sw, uint32_t in_port, uint32_t in_phy_port = 0, bool classify=true, bool copy_packet_to_internal_buffer = true);
 
 	//Destroy object. This is NOT a destructor nor releases memory, but resets fields
 	void destroy(void);
@@ -90,7 +90,7 @@ public: // methods
 private:
 	//HOST buffer size
 	static const unsigned int PRE_GUARD_BYTES  = 256;
-	static const unsigned int FRAME_SIZE_BYTES = 1600;
+	static const unsigned int FRAME_SIZE_BYTES = 9000;
 	static const unsigned int POST_GUARD_BYTES = 64;
 
 	/*

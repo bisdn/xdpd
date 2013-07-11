@@ -60,7 +60,7 @@ void DriverMultiPortMockupTestCase::setUp(){
 
 	//Initialize driver	
 	char switch_name[] = "switch1";
-	matching_algorithm_available ma_list[] = { matching_algorithm_loop };
+	of12_matching_algorithm_available ma_list[] = { of12_matching_algorithm_loop };
 	sw = fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list);
 	CPPUNIT_ASSERT(sw->platform_state); /* internal state */
 

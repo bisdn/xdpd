@@ -97,7 +97,7 @@ void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapack
 			dpx86_get_raw_data(pkt),
 			pkt_size,
 			dpx86_get_packet_size(pkt),
-			*((of12_packet_matches_t*)pkt->matches)
+			pkt->matches.of12
 			);
 
 	if (rv == AFA_FAILURE) {

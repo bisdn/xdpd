@@ -371,7 +371,9 @@ static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, s
 	if(port && port->platform_port_state){
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
-		of12_dump_packet_matches((of12_packet_matches_t*)pkt->matches);
+#ifdef DEBUG
+		of12_dump_packet_matches(&pkt->matches);
+#endif
 
 		//Schedule in the port
 		ioport* ioport_inst = (ioport*)port->platform_port_state; 
@@ -465,7 +467,9 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			dpx86_output_single_packet(replica, replica_pack, port_it);
 		}
 
-		of12_dump_packet_matches((of12_packet_matches_t*)pkt->matches);
+#ifdef DEBUG
+		of12_dump_packet_matches(&pkt->matches);
+#endif
 			
 		//discard the original packet always (has been replicated)
 		bufferpool::release_buffer(pkt);

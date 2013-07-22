@@ -1,5 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
+#Do first the config
 SUBDIRS = afa-imp io util pipeline-imp processing 
 
 noinst_LTLIBRARIES = libfwd_module_gnu_linux_src.la
@@ -8,6 +9,7 @@ library_includedir=$(includedir)/fwd-modules/gnu_linux
 include_HEADERS=
 
 libfwd_module_gnu_linux_src_la_SOURCES = \
+	config.c\
 	bg_taskmanager.c\
 	ls_internal_state.h
 
@@ -19,3 +21,5 @@ libfwd_module_gnu_linux_src_la_LIBADD = \
 		util/libfwd_module_gnu_linux_util.la
 		
 library_include_HEADERS=
+
+

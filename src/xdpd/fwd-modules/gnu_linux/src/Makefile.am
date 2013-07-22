@@ -9,8 +9,8 @@ library_includedir=$(includedir)/fwd-modules/gnu_linux
 include_HEADERS=
 
 libfwd_module_gnu_linux_src_la_SOURCES = \
-	config.c\
-	bg_taskmanager.c
+	config.cc\
+	bg_taskmanager.cc
 
 libfwd_module_gnu_linux_src_la_LIBADD = \
 		afa-imp/libfwd_module_gnu_linux_afa_imp.la \

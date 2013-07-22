@@ -503,5 +503,5 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
  * @return
  */
 afa_result_t fwd_module_list_matching_algorithms(of_version_t of_version, const char * const** name_list, int *count){
-	return of_get_switch_matching_algorithms(of_version, name_list, count);
+	return (afa_result_t)of_get_switch_matching_algorithms(of_version, name_list, count);
 }

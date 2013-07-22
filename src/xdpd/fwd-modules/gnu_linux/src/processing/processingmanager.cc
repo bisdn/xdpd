@@ -103,7 +103,7 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 		return NULL;
 	if(! ( sw = ps->sw ) ) 
 		return NULL;
-	if(! ( sw_pkt_queue = (ringbuffer*) ((struct logical_switch_internals*) sw->platform_state )->ringbuffer ) )
+	if(! ( sw_pkt_queue = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0] ) )//XXX
 		return NULL;
 
 	//Main processing loop

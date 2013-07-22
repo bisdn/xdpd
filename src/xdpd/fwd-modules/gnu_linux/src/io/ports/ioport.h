@@ -142,9 +142,24 @@ public:
 	 */
 	virtual rofl_result_t set_advertise_config(uint32_t advertised);
 
+	/**
+	 * Sets the port switch queue where processed packets shall be sent.
+	 */
+	void set_sw_processing_queue(ringbuffer* queue){
+		assert(queue != NULL);
+		sw_processing_queue = queue;
+	};
+	inline ringbuffer* get_sw_processing_queue(void){
+		return sw_processing_queue;
+	};
+
 
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
+	
+	//Switch processing queue to which the port is attached
+	ringbuffer* sw_processing_queue;
+	
 	static const unsigned int MAX_OUTPUT_QUEUES=8;	/*!< Constant max output queues */
 	unsigned int port_group;
 

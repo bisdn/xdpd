@@ -151,7 +151,7 @@ static int read_netlink_socket(int fd, char *buf, int seq_num, int pid){
 		nlh = (struct nlmsghdr *) buf;
 
 		/* Check if the header is valid */
-		if ((NLMSG_OK(nlh, read_len) == 0)
+		if ((NLMSG_OK(nlh, (unsigned int)read_len) == 0)
 		    || (nlh->nlmsg_type == NLMSG_ERROR)) {
 		    return -1;
 		}
@@ -170,7 +170,7 @@ static int read_netlink_socket(int fd, char *buf, int seq_num, int pid){
 		   /* return if its not */
 		    break;
 		}
-	} while ((nlh->nlmsg_seq != seq_num) || (nlh->nlmsg_pid != pid));
+	} while ((nlh->nlmsg_seq != (unsigned int)seq_num) || (nlh->nlmsg_pid != (unsigned int)pid));
 	
 	return msg_len;
 }
@@ -195,7 +195,7 @@ static rofl_result_t read_netlink_message(int fd){
 	if(len == -1)
 		return ROFL_FAILURE; 
 
-	for (; NLMSG_OK(nlh, len); nlh = NLMSG_NEXT(nlh, len)) {
+	for (; NLMSG_OK(nlh, (unsigned int)len); nlh = NLMSG_NEXT(nlh, len)) {
 
 	    if (nlh->nlmsg_type == RTM_NEWLINK){
 				ifi = (struct ifinfomsg *) NLMSG_DATA(nlh);
@@ -262,14 +262,14 @@ int process_timeouts()
 	
 	if(get_time_difference_ms(&now, &last_time_pool_checked)>=LSW_TIMER_BUFFER_POOL_MS){
 		uint32_t buffer_id;
-		datapacket_store_handle *dps=NULL;
+		datapacket_store_handle dps=NULL;
 		
 		for(i=0; i<max_switches; i++){
 
 			if(logical_switches[i] != NULL){
 
 				//Recover storage pointer
-				dps = ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->store_handle ;
+				dps =(datapacket_store_handle) ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
 				//Loop until the oldest expired packet is taken out
 				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
 

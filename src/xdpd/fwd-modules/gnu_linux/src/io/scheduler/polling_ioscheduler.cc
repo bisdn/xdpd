@@ -11,7 +11,7 @@
 #include "../iomanager.h"
 #include "../bufferpool.h"
 #include "../../util/ringbuffer.h"
-#include "../../ls_internal_state.h"
+#include "../../processing/ls_internal_state.h"
 
 /*
 * 

@@ -30,7 +30,7 @@
 #include "../bg_taskmanager.h"
 
 #include "../io/iface_utils.h"
-#include "../ls_internal_state.h"
+#include "../processing/ls_internal_state.h"
 
 //only for Test
 #include <stdlib.h>

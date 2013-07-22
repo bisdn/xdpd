@@ -18,7 +18,7 @@
 #include "../io/datapacketx86_c_wrapper.h"
 #include "../io/datapacket_storage.h"
 #include "../io/datapacket_storage_c_wrapper.h"
-#include "../ls_internal_state.h"
+#include "../processing/ls_internal_state.h"
 
 
 #define DATAPACKET_STORE_EXPIRATION_TIME 180

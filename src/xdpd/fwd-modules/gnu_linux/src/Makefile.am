@@ -10,8 +10,7 @@ include_HEADERS=
 
 libfwd_module_gnu_linux_src_la_SOURCES = \
 	config.c\
-	bg_taskmanager.c\
-	ls_internal_state.h
+	bg_taskmanager.c
 
 libfwd_module_gnu_linux_src_la_LIBADD = \
 		afa-imp/libfwd_module_gnu_linux_afa_imp.la \

@@ -5,8 +5,8 @@
 #ifndef LS_INTERNAL_STATE_H_
 #define LS_INTERNAL_STATE_H_
 
-#include "util/ringbuffer_c_wrapper.h"
-#include "io/datapacket_storage_c_wrapper.h"
+#include "../util/ringbuffer_c_wrapper.h"
+#include "../io/datapacket_storage_c_wrapper.h"
 
 /**
 * @file ls_internal_state.h

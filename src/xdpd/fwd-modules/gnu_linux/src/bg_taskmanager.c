@@ -20,7 +20,7 @@
 #include <rofl/datapath/afa/cmm.h>
 #include "io/datapacket_storage_c_wrapper.h"
 #include "io/bufferpool_c_wrapper.h"
-#include "ls_internal_state.h"
+#include "processing/ls_internal_state.h"
 
 //Local static variable for background manager thread
 static pthread_t bg_thread;

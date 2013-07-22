@@ -4,7 +4,7 @@
 #include <rofl/common/utils/c_logger.h>
 #include "../io/bufferpool.h"
 #include "../util/ringbuffer.h"
-#include "../ls_internal_state.h"
+#include "ls_internal_state.h"
 
 
 /* Static member initialization */

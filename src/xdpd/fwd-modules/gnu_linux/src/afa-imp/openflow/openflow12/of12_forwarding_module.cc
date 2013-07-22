@@ -9,7 +9,7 @@
 #include "../../../io/datapacket_storage.h"
 #include "../../../io/datapacketx86.h"
 #include "../../../io/ports/ioport.h"
-#include "../../../ls_internal_state.h"
+#include "../../../processing/ls_internal_state.h"
 
 //FIXME move this definition out of here
 #define OF12P_NO_BUFFER	0xffffffff

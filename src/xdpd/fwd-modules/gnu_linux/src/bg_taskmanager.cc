@@ -22,7 +22,7 @@
 #include "io/bufferpool_c_wrapper.h"
 #include "processing/ls_internal_state.h"
 #include "io/ctl_packets.h"
-#include "util/time.h"
+#include "util/time_utils.h"
 
 //Local static variable for background manager thread
 static pthread_t bg_thread;

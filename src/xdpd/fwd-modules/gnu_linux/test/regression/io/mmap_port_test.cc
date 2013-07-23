@@ -166,6 +166,14 @@ MMAPPortTest::setUp()
 	// pkt_x86->headers->vlan(0)->set_dl_vlan_cfi(true); // todo this fails if it is set (fail in mmap?)
 	pkt_x86->headers->vlan(0)->set_dl_type(ETH_P_IP);
 	// todo could fill in also ip layer data + payload
+	
+	//add queues
+	unsigned int i;
+	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
+	for(i=0;i<port->get_num_of_queues();i++){
+		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
+		switch_port_add_queue(of_port_state,i,(char*)&queue_name, port->get_queue_size(i), 0, 0);
+	}
 }
 
 void

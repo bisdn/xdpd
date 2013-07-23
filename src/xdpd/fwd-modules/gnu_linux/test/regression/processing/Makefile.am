@@ -19,6 +19,7 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/datapacket_storage_c_wrapper.cc \
 	$(top_srcdir)/src/io/packet_classifiers/packetclassifier.cc \
 	$(top_srcdir)/src/io/packet_classifiers/rofl_pktclassifier.cc \
+	$(top_srcdir)/src/io/packet_classifiers/static_pktclassifier.cc \
 	$(top_srcdir)/src/io/ports/ioport.cc \
 	$(top_srcdir)/src/io/ports/mockup/ioport_mockup.cc \
 	$(top_srcdir)/src/io/ports/mmap/ioport_mmap.cc \

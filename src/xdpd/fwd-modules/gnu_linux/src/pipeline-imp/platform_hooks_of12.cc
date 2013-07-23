@@ -62,7 +62,7 @@ rofl_result_t platform_pre_destroy_of12_switch(of12_switch_t* sw){
 	
 	unsigned int i;
 
-	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));
+	struct logical_switch_internals* ls_int =  (struct logical_switch_internals*)sw->platform_state;
 	
 	//delete ring buffers and storage (delete switch platform state)
 	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){

@@ -179,10 +179,6 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	ioport* io_port = new ioport_mmapv2(port);
 	//iport* io_port = new ioport_mmap(port);
 
-	//Add port to the iomanager
-	if( iomanager::add_port(io_port) != ROFL_SUCCESS )
-		return NULL;
-
 	port->platform_port_state = (platform_port_state_t*)io_port;
 	
 	//Fill port queues

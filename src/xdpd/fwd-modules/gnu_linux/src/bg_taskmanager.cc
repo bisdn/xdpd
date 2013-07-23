@@ -21,33 +21,20 @@
 #include "io/datapacket_storage_c_wrapper.h"
 #include "io/bufferpool_c_wrapper.h"
 #include "processing/ls_internal_state.h"
+#include "util/time.h"
 
 //Local static variable for background manager thread
 static pthread_t bg_thread;
 static bool bg_continue_execution = true;
-/**
- * This piece of code is meant to manage a thread that is support for:
- * 
- * - execute the expiration of the flow entries.
- * - update the status of the ports
- * - free space in the buffer pool when a buffer is too old
- * - more?
- */
 
 /**
- * @name get_time_difference_ms
- * @brief returns the time difference between 2 timeval structs in ms
- * @param now latest time
- * @param last oldest time
+ * This piece of code is meant to manage a thread that does:
+ * 
+ * - the expiration of the flow entries.
+ * - the update the status of the ports
+ * - purge old buffers in the buffer storage of a logical switch(pkt-in) 
+ * - more?
  */
-uint64_t get_time_difference_ms(struct timeval *now, struct timeval *last)
-{
-	/*diff = now -last; now > last !!*/
-	struct timeval res;
-	timersub(now,last,&res);
-	
-	return res.tv_sec * 1000 + res.tv_usec/1000;
-}
 
 /**
  * @name prepare_event_socket
@@ -315,6 +302,7 @@ void* x86_background_tasks_routine(void* param)
 	}
 	
 	efd = epoll_create1(0);
+
 	if(efd == -1){
 		ROFL_ERR("<%s:%d> Error in epoll_create1\n",__func__,__LINE__);
 		return NULL;
@@ -335,20 +323,16 @@ void* x86_background_tasks_routine(void* param)
 
 
 		if(nfds==-1){
-			ROFL_DEBUG("<%s:%d> Epoll Failed\n",__func__,__LINE__);
+			//ROFL_DEBUG("<%s:%d> Epoll Failed\n",__func__,__LINE__);
 			continue;
 		}
 
-		if(nfds==0){
-			//TIMEOUT PASSED
-			process_timeouts();
-		}
-
+		//Check for events
 		for(i=0;i<nfds;i++){
 
 			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)/*||(event_list[i].events & EPOLLIN)*/){
 				//error on this fd
-				ROFL_ERR("<%s:%d> Error in file descriptor\n",__func__,__LINE__);
+				//ROFL_ERR("<%s:%d> Error in file descriptor\n",__func__,__LINE__);
 				close(event_list[i].data.fd); //fd gets removed automatically from efd's
 				continue;
 			}else{
@@ -356,9 +340,10 @@ void* x86_background_tasks_routine(void* param)
 				if(read_netlink_message(event_list[i].data.fd)!=ROFL_SUCCESS)
 					continue;
 			}
-			//check if there is a need of manage timers!
-			process_timeouts();
 		}
+		
+		//check timers expiration 
+		process_timeouts();
 	}
 	
 	//Cleanup
@@ -378,6 +363,8 @@ rofl_result_t launch_background_tasks_manager()
 {
 	//Set flag
 	bg_continue_execution = true;
+
+	
 	
 	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0){
 		ROFL_ERR("<%s:%d> pthread_create failed\n",__func__,__LINE__);

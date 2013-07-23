@@ -299,7 +299,10 @@ int iomanager::create_group(unsigned int num_of_threads){
 	pg->id = portgroups.size();
 	portgroups.push_back(pg);
 	
+	num_of_groups++;
+	
 	pthread_mutex_unlock(&mutex);
+
 
 	//Return group_id
 	return pg->id;	
@@ -346,6 +349,8 @@ rofl_result_t iomanager::delete_group(unsigned int grp_id){
 	delete pg->ports;
 	delete pg->running_ports;
 	delete pg;	
+	
+	num_of_groups--;
 	
 	pthread_mutex_unlock(&mutex);
 	

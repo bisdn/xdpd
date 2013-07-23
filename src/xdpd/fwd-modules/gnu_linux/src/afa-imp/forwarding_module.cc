@@ -270,11 +270,7 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 	if(!port)
 		return AFA_FAILURE;
 
-	//Add it to the iomanager
-	//XXX
-
-
-	//Refresh pipeline state
+	//Update pipeline state
 	if(*of_port_num == 0){
 		//no port specified, we assign the first available
 		if(physical_switch_attach_port_to_logical_switch(port,lsw,of_port_num) == ROFL_FAILURE){
@@ -289,9 +285,14 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 		}
 	}
 	
+	//Add it to the iomanager
+	if(iomanager::add_port((ioport*)port->platform_port_state) != ROFL_SUCCESS){
+		return AFA_FAILURE;	
+	}
+
 	//notify port attached
 	if(cmm_notify_port_add(port)!=AFA_SUCCESS){
-		return AFA_FAILURE;
+		//return AFA_FAILURE; //Ignore
 	}
 	
 	return AFA_SUCCESS;
@@ -320,15 +321,18 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	if( !port || port->attached_sw->dpid != dpid)
 		return AFA_FAILURE;
 
-	//Remove it from the iomanager
-	//XXX
-
 	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
+	//Remove it from the iomanager
+	if(iomanager::remove_port((ioport*)port->platform_port_state) != ROFL_SUCCESS){
+		ROFL_ERR("Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
+		assert(0);
+	}
+
 	//notify port dettached
 	if(cmm_notify_port_delete(port) != AFA_SUCCESS){
-		return AFA_FAILURE;
+		///return AFA_FAILURE; //ignore
 	}
 
 	return AFA_SUCCESS; 
@@ -359,9 +363,16 @@ afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const
 	
 	if(physical_switch_detach_port_from_logical_switch(port, lsw)==ROFL_FAILURE)
 		return AFA_FAILURE;
+
+	//Remove it from the iomanager
+	if(iomanager::remove_port((ioport*)port->platform_port_state) != ROFL_SUCCESS){
+		ROFL_ERR("Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
+		assert(0);
+	}
 	
-	if(cmm_notify_port_delete(port)!=AFA_SUCCESS)
-		return AFA_FAILURE;
+	if(cmm_notify_port_delete(port)!=AFA_SUCCESS){
+		//return AFA_FAILURE; //ignore
+	}
 		
 	return AFA_SUCCESS;
 }
@@ -394,7 +405,7 @@ afa_result_t fwd_module_enable_port(const char* name){
 	if(port->attached_sw){
 		//Port is attached and belonging to a port group. Instruct I/O manager to start the port
 		if(iomanager::bring_port_up((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
-			return AFA_SUCCESS;
+			return AFA_FAILURE;
 	}else{
 		//The port is not attached. Only bring it up (ifconfig up)
 		if(enable_port(port->platform_port_state)!=ROFL_SUCCESS)

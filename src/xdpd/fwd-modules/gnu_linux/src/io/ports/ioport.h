@@ -147,9 +147,9 @@ public:
 	 * Sets the port switch queue where processed packets shall be sent.
 	 */
 	void set_sw_processing_queue(ringbuffer* queue){
-		assert(queue != NULL);
 		sw_processing_queue = queue;
 	};
+
 	inline ringbuffer* get_sw_processing_queue(void){
 		return sw_processing_queue;
 	};

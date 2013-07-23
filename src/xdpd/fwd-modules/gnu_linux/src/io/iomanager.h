@@ -112,7 +112,7 @@ protected:
 	/*
 	* Group mgmt (internal API)
 	*/
-	static int create_group(unsigned int num_of_threads=DEFAULT_THREADS_PER_PG);
+	static int create_group(unsigned int num_of_threads=DEFAULT_THREADS_PER_PG, bool mutex_locked=false);
 	static rofl_result_t delete_group(unsigned int grp_id);
 	static rofl_result_t delete_all_groups(void);
 	

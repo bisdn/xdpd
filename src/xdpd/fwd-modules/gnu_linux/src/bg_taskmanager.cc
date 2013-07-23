@@ -47,13 +47,13 @@ int prepare_event_socket()
 	struct sockaddr_nl addr;
 
 	if ((sock = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE)) == -1){
-		ROFL_ERR("<%s:%d> couldn't open NETLINK_ROUTE socket\n",__func__,__LINE__);
+		ROFL_ERR("Couldn't open NETLINK_ROUTE socket, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
 	if(fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0){
 		// handle error
-		ROFL_ERR("<%s:%d> error fcntl\n",__func__,__LINE__);
+		ROFL_ERR("Error fcntl, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
@@ -62,7 +62,7 @@ int prepare_event_socket()
 	addr.nl_groups = RTNLGRP_LINK;//RTMGRP_IPV4_IFADDR;
 
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1){
-		ROFL_ERR("<%s:%d> couldn't bind\n",__func__,__LINE__);
+		ROFL_ERR("couldn't bind, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
@@ -83,12 +83,12 @@ rofl_result_t update_port_status(char * name){
 	memset(&edata,0,sizeof(edata));//Make valgrind happy
 	
 	if(port == NULL){
-		ROFL_ERR("<%s:%d> Error port with name %s not found\n",__func__,__LINE__,name);
+		ROFL_ERR("Error port with name %s not found\n",name);
 		return ROFL_FAILURE;
 	}
 	
 	if (( skfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ){
-		ROFL_ERR("<%s:%d> Socket call error\n",__func__,__LINE__);
+		ROFL_ERR("Socket call error, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
 	
@@ -97,7 +97,7 @@ rofl_result_t update_port_status(char * name){
 	
 	ifr.ifr_data = (char *) &edata;
 	if (ioctl(skfd, SIOCETHTOOL, &ifr) == -1){
-		ROFL_ERR("<%s:%d> ETHTOOL_GLINK failed. (%s) Errno=%d \n", __func__,__LINE__,name,errno);
+		ROFL_ERR("ETHTOOL_GLINK failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
 
@@ -190,13 +190,13 @@ static rofl_result_t read_netlink_message(int fd){
 				
 				if_indextoname(ifi->ifi_index, name);
 				
-				ROFL_DEBUG_VERBOSE("<%s:%d> interface changed status\n",__func__,__LINE__,name);
+				ROFL_DEBUG_VERBOSE("interface changed status\n",name);
 				
 				// HERE change the status to the port structure
 				if(update_port_status(name)!=ROFL_SUCCESS)
 					return ROFL_FAILURE;
 	    }else{
-				ROFL_ERR("<%s:%d> Received a different RTM message type\n",__func__,__LINE__);
+				ROFL_ERR("Received a different RTM message type\n");
 				return ROFL_FAILURE;
 	    }
 	}
@@ -243,7 +243,7 @@ int process_timeouts()
 			
 #ifdef DEBUG
 		dummy++;
-		//ROFL_DEBUG_VERBOSE("<%s:%d> Checking flow entries expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
+		//ROFL_DEBUG_VERBOSE("Checking flow entries expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
 #endif
 		last_time_entries_checked = now;
 	}
@@ -261,21 +261,21 @@ int process_timeouts()
 				//Loop until the oldest expired packet is taken out
 				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
 
-					ROFL_DEBUG_VERBOSE("<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
+					ROFL_DEBUG_VERBOSE("Trying to erase a datapacket from storage: %u\n", buffer_id);
 
 					if( (pkt = datapacket_storage_get_packet_wrapper(dps,buffer_id) ) == NULL ){
-						ROFL_DEBUG_VERBOSE("<%s:%d> Error in get_packet_wrapper\n",__func__,__LINE__);
+						ROFL_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
+						ROFL_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
 						//Return buffer to bufferpool
 						bufferpool_release_buffer_wrapper(pkt);
-						ROFL_DEBUG_VERBOSE("<%s:%d> datapacket expired correctly\n",__func__,__LINE__);
 					}
 				}
 			}
 		}
 		
 #ifdef DEBUG
-		//ROFL_ERR("<%s:%d> Checking pool buffers expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
+		//ROFL_ERR("Checking pool buffers expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
 #endif
 		last_time_pool_checked = now;
 	}
@@ -305,7 +305,7 @@ void* x86_background_tasks_routine(void* param)
 	efd = epoll_create1(0);
 
 	if(efd == -1){
-		ROFL_ERR("<%s:%d> Error in epoll_create1\n",__func__,__LINE__);
+		ROFL_ERR("Error in epoll_create1, errno(%d): %s\n", errno, strerror(errno) );
 		return NULL;
 	}
 
@@ -314,18 +314,18 @@ void* x86_background_tasks_routine(void* param)
 	epe_port.events = EPOLLIN | EPOLLET;
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
-		ROFL_ERR("<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
+		ROFL_ERR("Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
 		return NULL;
 	}
 
 	//Add PKT_IN
 	init_packetin_pipe();
 
-	epe_port.data.fd = get_packet_in_notify_fd();
+	epe_port.data.fd = get_packet_in_read_fd();
 	epe_port.events = EPOLLIN | EPOLLET;
 	
-	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
-		ROFL_ERR("<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
+	if(epoll_ctl(efd,EPOLL_CTL_ADD, epe_port.data.fd, &epe_port)==-1){
+		ROFL_ERR("Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
 		return NULL;
 	}
 	
@@ -336,7 +336,7 @@ void* x86_background_tasks_routine(void* param)
 
 
 		if(nfds==-1){
-			//ROFL_DEBUG("<%s:%d> Epoll Failed\n",__func__,__LINE__);
+			//ROFL_DEBUG("Epoll Failed\n");
 			continue;
 		}
 
@@ -345,11 +345,11 @@ void* x86_background_tasks_routine(void* param)
 
 			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)/*||(event_list[i].events & EPOLLIN)*/){
 				//error on this fd
-				//ROFL_ERR("<%s:%d> Error in file descriptor\n",__func__,__LINE__);
+				//ROFL_ERR("Error in file descriptor\n");
 				close(event_list[i].data.fd); //fd gets removed automatically from efd's
 				continue;
 			}else{
-				//Is 				
+				//Is netlink or packet-in subsystem
 				if(get_packet_in_read_fd() == event_list[i].data.fd){
 					//PKT_IN
 					process_packet_ins();	
@@ -386,7 +386,7 @@ rofl_result_t launch_background_tasks_manager()
 	bg_continue_execution = true;
 
 	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0){
-		ROFL_ERR("<%s:%d> pthread_create failed\n",__func__,__LINE__);
+		ROFL_ERR("pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
 	return ROFL_SUCCESS;

@@ -15,7 +15,7 @@
 #define PKT_IN_PIPE_READ 0
 #define PKT_IN_PIPE_WRITE 1
 
-static int pktin_not_pipe[2] = {-1,-1};
+extern int pktin_not_pipe[];
 
 //C++ extern C
 ROFL_BEGIN_DECLS

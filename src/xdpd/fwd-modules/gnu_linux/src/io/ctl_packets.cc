@@ -18,6 +18,7 @@
 #define BUCKETS_PER_LS 10
 #define ITERATIONS_PER_ROUND 2
 
+int pktin_not_pipe[2];
 
 //Processes the pkt_ins up to BUCKETS_PER_LS 
 static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
@@ -56,10 +57,9 @@ static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
 		}
 
 		//Normalize size
+		pkt_size = dpx86_get_packet_size(pkt);
 		if(pkt_size > sw->pipeline->miss_send_len)
 			pkt_size = sw->pipeline->miss_send_len;
-		else
-			pkt_size = dpx86_get_packet_size(pkt);
 			
 		//Process packet in
         	rv = cmm_process_of12_packet_in(sw, 

@@ -44,9 +44,9 @@ rofl_result_t iomanager::init( unsigned int _num_of_groups ){
 		goto INIT_ERROR;
 	}
 	
-	for(i=0;i<num_of_groups;++i){
+	for(i=0;i<_num_of_groups;++i){
 		//Create the group
-		if( create_group() < 0 ){
+		if( create_group(DEFAULT_THREADS_PER_PG, true) < 0 ){
 			goto INIT_ERROR;
 		}
 	}	
@@ -276,7 +276,7 @@ portgroup_state* iomanager::get_group(int grp_id){
 /*
 * Creates an empty portgroup structure
 */
-int iomanager::create_group(unsigned int num_of_threads){
+int iomanager::create_group(unsigned int num_of_threads, bool mutex_locked){
 
 	portgroup_state* pg;
 
@@ -293,7 +293,9 @@ int iomanager::create_group(unsigned int num_of_threads){
 	pg->running_ports = new safevector<ioport*>();	
 	sem_init(&pg->sync_sem,0,0); //Init to 0
 
-	pthread_mutex_lock(&mutex);
+	if(!mutex_locked){
+		pthread_mutex_lock(&mutex);
+	}
 
 	//Add to portgroups and return position in the vector
 	pg->id = portgroups.size();
@@ -301,7 +303,9 @@ int iomanager::create_group(unsigned int num_of_threads){
 	
 	num_of_groups++;
 	
-	pthread_mutex_unlock(&mutex);
+	if(!mutex_locked){
+		pthread_mutex_unlock(&mutex);
+	}
 
 
 	//Return group_id

@@ -24,7 +24,7 @@ rofl_result_t processingmanager::start_ls_workers(of_switch_t* ls, unsigned int 
 	ls_processing_threads_state* group;
 	std::map<of_switch_t*,ls_processing_threads_state*>::const_iterator it;
 
-	ROFL_DEBUG("Creating #%u processing threads for logical switch %s (%p)\n", ls->name, ls);
+	ROFL_DEBUG("Creating #%u processing threads for logical switch %s (%p)\n", num_of_threads, ls->name, ls);
 	
 	//Allocate
 	group = new ls_processing_threads_state;	
@@ -185,7 +185,7 @@ rofl_result_t processingmanager::bind_port_to_sw_processing_queue(ioport* port){
 	}
 
 	//Recover the state of the processing threads
-	if ( (it = ls_processing_groups.find(sw)) != ls_processing_groups.end() ){
+	if ( (it = ls_processing_groups.find(sw)) == ls_processing_groups.end() ){
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -197,14 +197,14 @@ rofl_result_t processingmanager::bind_port_to_sw_processing_queue(ioport* port){
 	pthread_mutex_lock(&mutex);
 
 	index = it->second->current_in_queue_index;
-	it->second->current_in_queue_index++;
+	it->second->current_in_queue_index =  (it->second->current_in_queue_index+1) % PROCESSING_THREADS_PER_LSI;
 
 	pthread_mutex_unlock(&mutex);
 
 	//Really bind the port  to the queue	
 	port->set_sw_processing_queue( ls_int->input_queues[index] );
 	
-	ROFL_INFO("Binding port %s to sw(%p) in queue: %u\n",sw->name);
+	ROFL_DEBUG("Binding port %s to sw(%p) at queue: %u\n", port->of_port_state->name, sw, index);
 
 	return ROFL_SUCCESS;
 }	

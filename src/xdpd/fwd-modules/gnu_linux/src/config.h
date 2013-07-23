@@ -73,7 +73,7 @@
 */
 
 //Num of processing threads per Logical Switch Instance (Tlsi)
-#define PROCESSING_THREADS_PER_LSI 3 
+#define PROCESSING_THREADS_PER_LSI 2
 
 //Per thread input queue to the switch
 //Align to a power of 2

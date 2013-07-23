@@ -1,4 +1,5 @@
 #include "processingmanager.h"
+#include <assert.h>
 #include <cstdlib>
 #include <unistd.h>
 #include <rofl/common/utils/c_logger.h>
@@ -23,11 +24,14 @@ rofl_result_t processingmanager::start_ls_workers(of_switch_t* ls, unsigned int 
 	ls_processing_threads_state* group;
 	std::map<of_switch_t*,ls_processing_threads_state*>::const_iterator it;
 
+	ROFL_DEBUG("Creating #%u processing threads for logical switch %s (%p)\n", ls->name, ls);
+	
 	//Allocate
 	group = new ls_processing_threads_state;	
 
 	//Init values
 	group->sw = ls;
+	group->current_in_queue_index = 0;
 	group->num_of_threads = num_of_threads;
 	group->keep_on_working = true;
 	
@@ -50,7 +54,7 @@ rofl_result_t processingmanager::start_ls_workers(of_switch_t* ls, unsigned int 
 	for(i=0;i<num_of_threads;++i){
 		if(pthread_create(&group->thread_state[i], NULL, processing_function, (void *)group) < 0){
 			//TODO: print a trace or something
-			ROFL_ERR("Error creating processing pthread for groups %d\n",group->id);
+			ROFL_ERR("Error creating processing pthread for switch %p\n",ls);
 		}
 	}
 
@@ -61,6 +65,8 @@ rofl_result_t processingmanager::stop_ls_workers(of_switch_t* ls){
 	
 	ls_processing_threads_state* group;
 	std::map<of_switch_t*,ls_processing_threads_state*>::iterator it;
+	
+	ROFL_DEBUG("Stopping processing threads of logical switch %s (%p)\n", ls->name, ls);
 	
 	//Find group and extract the group from map 
 	pthread_mutex_lock(&mutex);
@@ -93,24 +99,39 @@ rofl_result_t processingmanager::stop_ls_workers(of_switch_t* ls){
 }
 
 void* processingmanager::process_packets_through_pipeline(void* state){
+	unsigned int q_id;
 	datapacket_t* pkt;
 	of_switch_t* sw;
-	ringbuffer* sw_pkt_queue;
+	ringbuffer* sw_input_queue;
 	ls_processing_threads_state* ps;
 	
 	//Init 	
-	if(! ( ps = (ls_processing_threads_state*) state ) ) 
+	if(! ( ps = (ls_processing_threads_state*) state ) ){ 
+		assert(0);
 		return NULL;
-	if(! ( sw = ps->sw ) ) 
+	}
+	if(! ( sw = ps->sw ) ){
+		assert(0);
 		return NULL;
-	if(! ( sw_pkt_queue = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0] ) )//XXX
+	}
+	//Determine the thread's q_id
+	for(q_id=0; q_id<PROCESSING_MAX_LSI_THREADS; q_id++){
+		if( ps->thread_state[q_id] == pthread_self() )
+			break;
+		if( (q_id+1) == PROCESSING_MAX_LSI_THREADS )
+			assert(0); //Shall never happen
+	}
+	//Recover input queue	
+	if(! ( sw_input_queue = ((struct logical_switch_internals*) sw->platform_state )->input_queues[q_id] ) ){
+		assert(0);
 		return NULL;
+	}
 
 	//Main processing loop
 	while(ps->keep_on_working){
 
 		//Get a packet to process
-		pkt = sw_pkt_queue->blocking_read(PROCESSING_THREADS_TIMEOUT_S_READ);
+		pkt = sw_input_queue->blocking_read(PROCESSING_THREADS_TIMEOUT_S_READ);
 
 		if(!pkt)
 			continue;
@@ -134,7 +155,7 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 	for(;;){
 	
 		//Get buffered packet
-		pkt = sw_pkt_queue->non_blocking_read(); //FIXME: put timeout
+		pkt = sw_input_queue->non_blocking_read(); //FIXME: put timeout
 		
 		if(!pkt)
 			break; 
@@ -148,6 +169,50 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 	
 	//Exit
 	pthread_exit(NULL);	
+}
+
+//Binds a port to a processing queue of the switch (which it is already attached to)
+rofl_result_t processingmanager::bind_port_to_sw_processing_queue(ioport* port){
+
+	unsigned int index;
+	of_switch_t* sw = port->of_port_state->attached_sw;
+	std::map<of_switch_t*,ls_processing_threads_state*>::const_iterator it;
+	struct logical_switch_internals* ls_int;
+
+	if(!sw){
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	//Recover the state of the processing threads
+	if ( (it = ls_processing_groups.find(sw)) != ls_processing_groups.end() ){
+		assert(0);
+		return ROFL_FAILURE;
+	}
+	
+	//Recover platform state of the switch
+ 	ls_int = (struct logical_switch_internals*)sw->platform_state;
+
+	//Calculate queue_id (sort of round-robin)
+	pthread_mutex_lock(&mutex);
+
+	index = it->second->current_in_queue_index;
+	it->second->current_in_queue_index++;
+
+	pthread_mutex_unlock(&mutex);
+
+	//Really bind the port  to the queue	
+	port->set_sw_processing_queue( ls_int->input_queues[index] );
+	
+	ROFL_INFO("Binding port %s to sw(%p) in queue: %u\n",sw->name);
+
+	return ROFL_SUCCESS;
+}	
+
+//Unbinds the port from the processing queue of the switch
+rofl_result_t processingmanager::unbind_port_from_sw_processing_queue(ioport* port){
+	port->set_sw_processing_queue(NULL);
+	return ROFL_SUCCESS;
 }
 
 //Wrappers

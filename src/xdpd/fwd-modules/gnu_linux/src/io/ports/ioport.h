@@ -11,6 +11,7 @@
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
+#include "../../config.h"
 #include "../../util/ringbuffer.h" 
 
 /**
@@ -160,11 +161,11 @@ public:
 	//Switch processing queue to which the port is attached
 	ringbuffer* sw_processing_queue;
 	
-	static const unsigned int MAX_OUTPUT_QUEUES=8;	/*!< Constant max output queues */
+	static const unsigned int MAX_OUTPUT_QUEUES=IO_IFACE_NUM_QUEUES; /*!< Constant max output queues */
 	unsigned int port_group;
 
 protected:
-	static const unsigned int NUM_OF_REQUIRED_BUFFERS=2048;	/* Required buffers for the port to operate at line rate */
+	static const unsigned int NUM_OF_REQUIRED_BUFFERS=IO_IFACE_REQUIRED_BUFFERS; /* Required buffers for the port to operate at line rate */
 	
 	//Output QoS queues
 	unsigned int num_of_queues;

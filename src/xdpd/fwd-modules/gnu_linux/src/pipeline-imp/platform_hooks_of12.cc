@@ -12,6 +12,7 @@
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
 #include <rofl/common/utils/c_logger.h>
 
+#include "../config.h"
 #include "../io/bufferpool.h"
 #include "../io/datapacketx86.h"
 #include "../io/datapacketx86_c_wrapper.h"
@@ -40,22 +41,34 @@ rofl_result_t platform_post_init_of12_switch(of12_switch_t* sw){
 	//Create GNU/Linux FWD_Module additional state (platform state)
 	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));
 
-	ls_int->pkt_in_queue = new ringbuffer();
-	ls_int->storage = new datapacket_storage(DATAPACKET_STORE_MAX_BUFFERS, DATAPACKET_STORE_EXPIRATION_TIME); // todo make this value configurable
+	//Create input queues
+	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){
+		ls_int->input_queues[i] =  new ringbuffer(); //FIXME: put buffer size
+	}
+
+	ls_int->pkt_in_queue = new ringbuffer(); //FIXME: put buffer size
+	ls_int->storage = new datapacket_storage( IO_PKT_IN_STORAGE_MAX_BUF, IO_PKT_IN_STORAGE_EXPIRATION_S); // todo make this value configurable
 
 	sw->platform_state = (of_switch_platform_state_t*)ls_int;
 
 	//Set number of buffers
-	sw->pipeline->num_of_buffers = DATAPACKET_STORE_MAX_BUFFERS;
+	sw->pipeline->num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
 
 	return ROFL_SUCCESS;
 }
 
 rofl_result_t platform_pre_destroy_of12_switch(of12_switch_t* sw){
+	
+	unsigned int i;
 
+	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));
+	
 	//delete ring buffers and storage (delete switch platform state)
-	delete ((struct logical_switch_internals*)sw->platform_state)->pkt_in_queue;
-	delete ((struct logical_switch_internals*)sw->platform_state)->storage;
+	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){
+		delete ls_int->input_queues[i]; 
+	}
+	delete ls_int->pkt_in_queue;
+	delete ls_int->storage;
 	free(sw->platform_state);
 	
 	return ROFL_SUCCESS;
@@ -71,12 +84,12 @@ rofl_result_t platform_pre_destroy_of12_switch(of12_switch_t* sw){
 void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
 	uint16_t pkt_size;
-	afa_result_t rv = AFA_FAILURE; //XXX
+	struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
 
 	assert(OF_VERSION_12 == sw->of_ver);
 
 	//Store packet in the storage system. Packet is NOT returned to the bufferpool
-	storeid id = ((struct logical_switch_internals*)sw->platform_state)->storage->store_packet(pkt);
+	storeid id = ls_state->storage->store_packet(pkt);
 
 	//Get real packet
 	pkt_size = dpx86_get_packet_size(pkt);
@@ -87,26 +100,12 @@ void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapack
 	if(pkt_size > sw->pipeline->miss_send_len )
 		pkt_size = sw->pipeline->miss_send_len;
 
-#if 0 
-	// packet in
-	rv = cmm_process_of12_packet_in(sw,
-			table_id,
-			reason,
-			((datapacketx86*)pkt->platform_state)->in_port,	
-			id,
-			dpx86_get_raw_data(pkt),
-			pkt_size,
-			dpx86_get_packet_size(pkt),
-			pkt->matches.of12
-			);
-#endif
-	//TODO: enqueue to pkt_in
-
-	if (rv == AFA_FAILURE) {
-		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s. Dropping..\n",pkt,sw->name);
+	//Enqueue
+	if( ls_state->pkt_in_queue->non_blocking_write(pkt) != ROFL_SUCCESS ){
+		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
 		
 		//Take packet out from the storage
-		pkt = ((struct logical_switch_internals*)sw->platform_state)->storage->get_packet(id);
+		pkt = ls_state->storage->get_packet(id);
 
 		//Return to the bufferpool
 		bufferpool::release_buffer(pkt);

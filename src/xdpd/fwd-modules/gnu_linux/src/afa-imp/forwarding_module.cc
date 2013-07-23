@@ -26,7 +26,7 @@
 #include "../util/ringbuffer_c_wrapper.h"
 #include "../processing/processingmanager.h"
 #include "../io/bufferpool_c_wrapper.h"
-#include "../io/iomanager_c_wrapper.h"
+#include "../io/iomanager.h"
 #include "../bg_taskmanager.h"
 
 #include "../io/iface_utils.h"
@@ -58,15 +58,10 @@ afa_result_t fwd_module_init(){
 
 	if(discover_physical_ports() != ROFL_SUCCESS)
 		return AFA_FAILURE;
-/*	
-	//create a port_group NOTE so far we will only have one of these
-	// the managment of port_groups creation, destroy, port adding and removing will be done later
-	unsigned int num_of_threads = 1;
 
-	if((iomanager_grp_id = iomanager_create_group_wrapper(num_of_threads)) != ROFL_SUCCESS){
-		return AFA_FAILURE;
-	}
-*/
+	//Initialize the iomanager
+	iomanager::init();
+
 	//Initialize Background Tasks Manager
 	if(launch_background_tasks_manager() != ROFL_SUCCESS){
 		return AFA_FAILURE;
@@ -82,9 +77,12 @@ afa_result_t fwd_module_init(){
 */
 afa_result_t fwd_module_destroy(){
 
-	//destroy group ports
-	//iomanager_delete_all_groups_wrapper();
-	
+	//Destroy all switches
+	//XXX
+
+	//Initialize the iomanager
+	iomanager::destroy();
+
 	//Stop the bg manager
 	stop_background_tasks_manager();
 
@@ -126,7 +124,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	}	
 
 	//Launch switch processing threads
-	if(start_ls_workers_wrapper(sw) < 0){
+	if(start_ls_workers_wrapper(sw) != ROFL_SUCCESS){
 		
 		ROFL_ERR("<%s:%d> error initializing workers from processing manager. Destroying switch...\n",__func__,__LINE__);
 		of_destroy_switch(sw);
@@ -158,7 +156,7 @@ of_switch_t* fwd_module_get_switch_by_dpid(uint64_t dpid){
 */
 afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 
-	int i;
+	unsigned int i;
 	
 	//Try to retrieve the switch
 	of_switch_t* sw = physical_switch_get_logical_switch_by_dpid(dpid);
@@ -167,13 +165,13 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 		return AFA_FAILURE;
 
 	//Stop all ports and remove it from being scheduled by I/O first
-	for(i=0;i<LOGICAL_SWITCH_MAX_LOG_PORTS;i++) //FIXME: use sw->max_logical_ports
-	{
+	for(i=0;i<sw->max_ports;i++){
+
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
 			//Take it out from the group
-			//if(iomanager_remove_port_from_group_wrapper(sw->logical_ports[i].port->platform_port_state) == ROFL_FAILURE){
-			if( iomanager_bring_port_down_wrapper(sw->logical_ports[i].port->platform_port_state) != ROFL_SUCCESS ){
-				//TODO: put trace here?
+			if( iomanager::remove_port((ioport*)sw->logical_ports[i].port->platform_port_state) != ROFL_SUCCESS ){
+				ROFL_ERR("WARNING! Error removing port %s from the iomanager for the switch: %s. This can leave the port unusable in the future.\n", sw->logical_ports[i].port->name, sw->name);
+				assert(0);
 			}
 
 		}
@@ -272,15 +270,21 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 	if(!port)
 		return AFA_FAILURE;
 
-	//Attaching the port
+	//Add it to the iomanager
+	//XXX
+
+
+	//Refresh pipeline state
 	if(*of_port_num == 0){
 		//no port specified, we assign the first available
 		if(physical_switch_attach_port_to_logical_switch(port,lsw,of_port_num) == ROFL_FAILURE){
+			assert(0);
 			return AFA_FAILURE;
 		}
 	}else{
 
 		if(physical_switch_attach_port_to_logical_switch_at_port_num(port,lsw,*of_port_num) == ROFL_FAILURE){
+			assert(0);
 			return AFA_FAILURE;
 		}
 	}
@@ -316,11 +320,14 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	if( !port || port->attached_sw->dpid != dpid)
 		return AFA_FAILURE;
 
-	if(physical_switch_detach_port_from_logical_switch(port,lsw) == ROFL_FAILURE)
+	//Remove it from the iomanager
+	//XXX
+
+	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
 	//notify port dettached
-	if(cmm_notify_port_delete(port)!=AFA_SUCCESS){
+	if(cmm_notify_port_delete(port) != AFA_SUCCESS){
 		return AFA_FAILURE;
 	}
 
@@ -386,11 +393,11 @@ afa_result_t fwd_module_enable_port(const char* name){
 	//Bring it up
 	if(port->attached_sw){
 		//Port is attached and belonging to a port group. Instruct I/O manager to start the port
-		if(iomanager_bring_port_up_wrapper(port->platform_port_state)!=ROFL_SUCCESS)
+		if(iomanager::bring_port_up((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
 			return AFA_SUCCESS;
 	}else{
 		//The port is not attached. Only bring it up (ifconfig up)
-		if(enable_port(port->platform_port_state)==ROFL_FAILURE)
+		if(enable_port(port->platform_port_state)!=ROFL_SUCCESS)
 			return AFA_FAILURE;
 	}
 
@@ -419,7 +426,7 @@ afa_result_t fwd_module_disable_port(const char* name){
 	//Bring it down
 	if(port->attached_sw){
 		//Port is attached and belonging to a port group. Instruct I/O manager to stop the port
-		if( iomanager_bring_port_down_wrapper(port->platform_port_state)==ROFL_FAILURE)
+		if( iomanager::bring_port_down((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
 			return AFA_FAILURE;
 	}else{
 		//The port is not attached. Only bring it down (ifconfig down)
@@ -454,7 +461,7 @@ afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num)
 		return AFA_FAILURE;
 
 	//Call I/O manager to bring it up
-	if(iomanager_bring_port_up_wrapper(lsw->logical_ports[port_num].port->platform_port_state) == ROFL_FAILURE)
+	if(iomanager::bring_port_up((ioport*)lsw->logical_ports[port_num].port->platform_port_state) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
 	if(cmm_notify_port_status_changed(lsw->logical_ports[port_num].port)!=AFA_SUCCESS)
@@ -484,7 +491,7 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
 		return AFA_FAILURE;
 
 	//Call I/O manager to bring it down
-	if(iomanager_bring_port_down_wrapper(lsw->logical_ports[port_num].port->platform_port_state) == ROFL_FAILURE)
+	if(iomanager::bring_port_down((ioport*)lsw->logical_ports[port_num].port->platform_port_state) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
 	if(cmm_notify_port_status_changed(lsw->logical_ports[port_num].port)!=AFA_SUCCESS)

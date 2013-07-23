@@ -48,13 +48,25 @@
 //Num of maximum threads (hw threads) devoted to the I/O of interfaces (Nio)
 #define IO_TOTAL_THREADS 2 
 
-//RX/TX ring size
-//Align to a power of 2
-#define IO_IFACE_RING_SLOTS 2048
+//Number of output queues per interface
+#define IO_IFACE_NUM_QUEUES 8
 
 //Max frame size (WARNING: do not go beyond 8192 bytes, and never underneath 2048 bytes)
 //Align to a power of 2
 #define IO_IFACE_FRAME_SIZE 8192
+
+//RX/TX ring size
+//Align to a power of 2
+#define IO_IFACE_RING_SLOTS 2048
+
+//Required buffers per interface
+//(bufferpool will be dimensioned to be at least Nifaces*IO_IFACE_REQUIRED_BUFFERS)
+#define IO_IFACE_REQUIRED_BUFFERS 2048
+
+//Buffer storage(PKT_IN) max buffers
+#define IO_PKT_IN_STORAGE_MAX_BUF 512
+//Buffer storage(PKT_IN) expiration time (seconds)
+#define IO_PKT_IN_STORAGE_EXPIRATION_S 180
 
 /*
 * Processing subsystem parameters

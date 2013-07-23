@@ -21,6 +21,7 @@
 #include "io/datapacket_storage_c_wrapper.h"
 #include "io/bufferpool_c_wrapper.h"
 #include "processing/ls_internal_state.h"
+#include "io/ctl_packets.h"
 #include "util/time.h"
 
 //Local static variable for background manager thread
@@ -307,8 +308,20 @@ void* x86_background_tasks_routine(void* param)
 		ROFL_ERR("<%s:%d> Error in epoll_create1\n",__func__,__LINE__);
 		return NULL;
 	}
-	
+
+	//Add netlink	
 	epe_port.data.fd = events_socket;
+	epe_port.events = EPOLLIN | EPOLLET;
+	
+	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
+		ROFL_ERR("<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
+		return NULL;
+	}
+
+	//Add PKT_IN
+	init_packetin_pipe();
+
+	epe_port.data.fd = get_packet_in_notify_fd();
 	epe_port.events = EPOLLIN | EPOLLET;
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
@@ -336,17 +349,25 @@ void* x86_background_tasks_routine(void* param)
 				close(event_list[i].data.fd); //fd gets removed automatically from efd's
 				continue;
 			}else{
-				//something is going on with the i/o system
-				if(read_netlink_message(event_list[i].data.fd)!=ROFL_SUCCESS)
-					continue;
+				//Is 				
+				if(get_packet_in_read_fd() == event_list[i].data.fd){
+					//PKT_IN
+					process_packet_ins();	
+				}else{
+					//Netlink message
+					read_netlink_message(event_list[i].data.fd);
+				}
 			}
 		}
 		
 		//check timers expiration 
 		process_timeouts();
 	}
+
+	//Cleanup packet-in
+	destroy_packetin_pipe();
 	
-	//Cleanup
+	//Cleanup epoll fd
 	close(efd);
 	
 	//Printing some information
@@ -364,8 +385,6 @@ rofl_result_t launch_background_tasks_manager()
 	//Set flag
 	bg_continue_execution = true;
 
-	
-	
 	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0){
 		ROFL_ERR("<%s:%d> pthread_create failed\n",__func__,__LINE__);
 		return ROFL_FAILURE;

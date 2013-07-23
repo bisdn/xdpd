@@ -18,6 +18,7 @@
 #include "../io/datapacketx86_c_wrapper.h"
 #include "../io/datapacket_storage.h"
 #include "../processing/ls_internal_state.h"
+#include "../io/ctl_packets.h"
 
 
 #define DATAPACKET_STORE_EXPIRATION_TIME 180
@@ -83,30 +84,27 @@ rofl_result_t platform_pre_destroy_of12_switch(of12_switch_t* sw){
 
 void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
-	uint16_t pkt_size;
+	datapacketx86* pkt_x86;
 	struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
 
 	assert(OF_VERSION_12 == sw->of_ver);
 
-	//Store packet in the storage system. Packet is NOT returned to the bufferpool
-	storeid id = ls_state->storage->store_packet(pkt);
+	ROFL_DEBUG("Enqueuing PKT_IN event for packet(%p) in switch: %s\n",pkt,sw->name);
 
-	//Get real packet
-	pkt_size = dpx86_get_packet_size(pkt);
-
-	ROFL_DEBUG("Sending PKT_IN event towards CMM for packet(%p) in switch: %s\n",pkt,sw->name);
+	//Recover platform state
+	pkt_x86 = (datapacketx86*)pkt->platform_state;
 	
-	//Normalize
-	if(pkt_size > sw->pipeline->miss_send_len )
-		pkt_size = sw->pipeline->miss_send_len;
-
-	//Enqueue
-	if( ls_state->pkt_in_queue->non_blocking_write(pkt) != ROFL_SUCCESS ){
-		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
+	//Recover platform state and fill it so that state can be recovered afterwards
+	pkt_x86 = (datapacketx86*)pkt->platform_state;
+	pkt_x86->pktin_table_id = table_id;
+	pkt_x86->pktin_reason = reason;
 		
-		//Take packet out from the storage
-		pkt = ls_state->storage->get_packet(id);
-
+	//Enqueue
+	if( ls_state->pkt_in_queue->non_blocking_write(pkt) == ROFL_SUCCESS ){
+		//Notify
+		notify_packet_in();
+	}else{
+		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
 		//Return to the bufferpool
 		bufferpool::release_buffer(pkt);
 	}

@@ -25,7 +25,7 @@
 *
 */
 
-typedef uint32_t storeid;
+typedef int32_t storeid;
 
 class datapacket_storage
 {

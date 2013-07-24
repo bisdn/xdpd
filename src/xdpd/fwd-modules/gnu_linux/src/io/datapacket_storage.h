@@ -25,7 +25,7 @@
 *
 */
 
-typedef int32_t storeid;
+typedef uint32_t storeid;
 
 class datapacket_storage
 {
@@ -74,6 +74,9 @@ public:
 #ifdef DEBUG
 	void change_expiration_time(uint16_t sec);
 #endif
+
+	//Define error constant
+	static const storeid ERROR = 0xFFFFFFFF;
 
 private:
 	

@@ -48,7 +48,7 @@ static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
 		//Store packet in the storage system. Packet is NOT returned to the bufferpool
 		id = ls_int->storage->store_packet(pkt);
 
-		if(id < 0){
+		if(id == datapacket_storage::ERROR){
 			ROFL_DEBUG("PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
 	
 			//Return to the bufferpool

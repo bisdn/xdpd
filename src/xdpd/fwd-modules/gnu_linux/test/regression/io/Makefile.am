@@ -19,6 +19,7 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/datapacket_storage.cc \
 	$(top_srcdir)/src/io/datapacket_storage_c_wrapper.cc \
 	$(top_srcdir)/src/io/packet_classifiers/packetclassifier.cc \
+	$(top_srcdir)/src/io/packet_classifiers/static_pktclassifier.cc \
 	$(top_srcdir)/src/io/packet_classifiers/rofl_pktclassifier.cc \
 	$(top_srcdir)/src/io/ports/ioport.cc \
 	$(top_srcdir)/src/io/ports/mockup/ioport_mockup.cc \
@@ -39,6 +40,7 @@ datapacketx86test_SOURCES= $(top_srcdir)/src/io/datapacketx86.cc\
 			$(top_srcdir)/src/pipeline-imp/memory.c \
 			$(top_srcdir)/src/io/packet_classifiers/packetclassifier.cc \
 			$(top_srcdir)/src/io/packet_classifiers/rofl_pktclassifier.cc \
+			$(top_srcdir)/src/io/packet_classifiers/static_pktclassifier.cc \
 			datapacketx86test.cc 
 			
 datapacketx86test_LDADD= -lrofl -lcppunit -lpthread

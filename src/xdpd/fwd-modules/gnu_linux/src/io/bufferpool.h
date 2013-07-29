@@ -10,6 +10,9 @@
 #include <pthread.h>
 #include <vector>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <rofl/common/utils/c_logger.h>
+#include "../util/likely.h"
+#include "datapacketx86.h"
 
 /**
 * @file bufferpool.h
@@ -47,12 +50,12 @@ public:
 	static void increase_capacity(long long unsigned int new_capacity);
 
 	//Public interface of the pool (static)
-	static datapacket_t* get_free_buffer(bool blocking = true);
+	static inline datapacket_t* get_free_buffer(bool blocking = true);
 	static inline datapacket_t* get_free_buffer_nonblocking() {
 		return get_free_buffer(false);
 	}
 
-	static void release_buffer(datapacket_t* buf);
+	static inline void release_buffer(datapacket_t* buf);
 	
 	static void destroy();
 	
@@ -65,6 +68,8 @@ protected:
 	std::vector<datapacket_t*> pool;	
 	std::vector<bufferpool_slot_state_t> pool_status;	
 	long long unsigned int pool_size; //This might be different from pool.size during initialization/resizing
+	long long unsigned int next_index; //Next item index
+	
 
 	//Mutex and cond
 	static pthread_mutex_t mutex;
@@ -75,7 +80,106 @@ protected:
 	~bufferpool();
 
 	//get instance
-	static bufferpool* get_instance(void);
+	static inline bufferpool* get_instance(void);
 };
+
+/*
+* Protected static singleton instance
+*/
+bufferpool* bufferpool::get_instance(void){
+
+	//Be lock-less once initialized	
+	if(unlikely(bufferpool::instance == NULL)){
+		//Wait init
+		pthread_mutex_lock(&bufferpool::mutex);		
+		pthread_cond_wait(&bufferpool::cond,&bufferpool::mutex); 
+		pthread_mutex_unlock(&bufferpool::mutex);		
+	}
+	return bufferpool::instance;
+}
+
+//Public interface of the pool
+
+/*
+* Retreives an available buffer. This method is BLOCKING
+*/
+datapacket_t* bufferpool::get_free_buffer(bool blocking){
+
+	long long unsigned int i, initial_index;
+	
+	
+	bufferpool* bp = get_instance();
+
+	i = initial_index = bp->next_index;
+
+	//Loop all the bufferpool size
+	for(;;){ 
+
+		//Trying to minimize locking.	
+		if(bp->pool_status[i] == BUFFERPOOL_SLOT_AVAILABLE){
+			
+			//Take mutex
+			pthread_mutex_lock(&bufferpool::mutex);		
+	
+			//Recheck
+			if(likely(bp->pool_status[i] == BUFFERPOOL_SLOT_AVAILABLE)){
+				//Mark as in-use		
+				bp->pool_status[i] = BUFFERPOOL_SLOT_IN_USE;
+	
+				if( unlikely( (bp->next_index+1) == bp->pool_size) )
+					bp->next_index = 0;
+				else
+					bp->next_index++;
+	
+				//Release
+				pthread_mutex_unlock(&bufferpool::mutex);		
+			
+				//return buffer 
+				return bp->pool[i];
+			}else{
+				//There has been an undesired scheduling of threads 
+				pthread_mutex_unlock(&bufferpool::mutex);		
+			}
+		}
+	
+		//Circular increment
+		if( unlikely( (i+1) == bp->pool_size) )
+			i = 0;
+		else
+			i++;
+		
+		//Wait in cond variable before restarting from the first item of the pool
+		//if blocking, otherwise return NULL (no buffers) 
+		if ( unlikely(i == initial_index) ) {
+			if (blocking) {
+				pthread_mutex_lock(&bufferpool::mutex);
+				pthread_cond_wait(&bufferpool::cond,&bufferpool::mutex);
+				pthread_mutex_unlock(&bufferpool::mutex);
+			} else {
+				return NULL;
+			}
+		}
+	}
+}
+
+/*
+* Releases a previously acquired buffer.
+*/
+void bufferpool::release_buffer(datapacket_t* buf){
+
+	bufferpool* bp = get_instance();
+
+	unsigned int id = ((datapacketx86*)buf->platform_state)->internal_buffer_id;
+	
+	//Release
+	if(bp->pool_status[id] != BUFFERPOOL_SLOT_IN_USE){
+		//Attempting to release an unallocated/unavailable buffer
+		ROFL_ERR("Attempting to release an unallocated/unavailable buffer. Ignoring..");
+	}else{ 
+		buf->is_replica = false; //Make sure this flag is 0
+		bp->pool_status[id] = BUFFERPOOL_SLOT_AVAILABLE;
+		pthread_cond_broadcast(&bufferpool::cond);
+	}
+}
 
 #endif /* BUFFERPOOL_H_ */

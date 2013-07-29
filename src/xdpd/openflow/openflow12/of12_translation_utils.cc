@@ -1163,19 +1163,13 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of12_packet_matches
 	//if(packet_matches->metadata)
 	//	match.set_metadata(packet_matches->metadata);
 	if(packet_matches->eth_dst){
-		uint64_t addr = packet_matches->eth_dst;
-		cmacaddr maddr((uint8_t*)&addr,OFP_ETH_ALEN);
-		addr = 0x0000FFFFFFFFFFFF; 
-		cmacaddr mmask((uint8_t*)&addr,OFP_ETH_ALEN);
-		
+		cmacaddr maddr(packet_matches->eth_dst);
+		cmacaddr mmask(0x0000FFFFFFFFFFFF);
 		match.set_eth_dst(maddr, mmask);
 	}
 	if(packet_matches->eth_src){
-		uint64_t addr = packet_matches->eth_src;
-		cmacaddr maddr((uint8_t*)&addr,OFP_ETH_ALEN);
-		addr = 0x0000FFFFFFFFFFFF; 
-		cmacaddr mmask((uint8_t*)&addr,OFP_ETH_ALEN);
-		
+		cmacaddr maddr(packet_matches->eth_src);
+		cmacaddr mmask(0x0000FFFFFFFFFFFF);
 		match.set_eth_src(maddr, mmask);
 	}
 	if(packet_matches->eth_type)

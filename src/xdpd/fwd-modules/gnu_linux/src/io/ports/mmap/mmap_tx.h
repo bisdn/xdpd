@@ -22,6 +22,7 @@
 #include <rofl/common/cerror.h>
 #include <rofl/common/caddress.h>
 #include <rofl/common/utils/c_logger.h>
+#include "../../../util/likely.h"
 
 /**
 * @file mmap_tx.h
@@ -72,7 +73,7 @@ public:
 	inline struct tpacket2_hdr* get_free_slot(){
 		struct tpacket2_hdr *hdr = (struct tpacket2_hdr*)((uint8_t*)map + tpos * req.tp_frame_size);
 	
-		if (hdr->tp_status == TP_STATUS_AVAILABLE) {
+		if ( likely(hdr->tp_status == TP_STATUS_AVAILABLE) ) {
 		
 			//Increment and return
 			tpos++;
@@ -88,7 +89,7 @@ public:
 	inline rofl_result_t send(void){
 		ROFL_DEBUG_VERBOSE("%s() on socket descriptor %d\n", __FUNCTION__, sd);
 
-		if ((::sendto(sd, NULL, 0, MSG_DONTWAIT, NULL, 0)) < 0) {
+		if ( unlikely( ::sendto(sd, NULL, 0, MSG_DONTWAIT, NULL, 0) ) < 0) {
 
 			ROFL_ERR("[%s:mmap_tx]: Error in port's sendto(), errno:%d, %s\n", devname.c_str(), errno, strerror(errno));
 				return ROFL_FAILURE;	

@@ -1,6 +1,7 @@
 #include "ioport_mmapv2.h"
 #include "../../bufferpool.h"
 #include "../../datapacketx86.h"
+#include "../../../util/likely.h"
 
 #include <linux/ethtool.h>
 #include <rofl/common/utils/c_logger.h>
@@ -63,12 +64,12 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	datapacketx86* pkt_x86 = (datapacketx86*) pkt->platform_state;
 	len = pkt_x86->get_buffer_length();
 
-	if (of_port_state->up && 
-		of_port_state->forward_packets &&
-		len >= MIN_PKT_LEN) {
+	if ( likely(of_port_state->up) && 
+		likely(of_port_state->forward_packets) &&
+		likely(len >= MIN_PKT_LEN) ) {
 
 		//Safe check for q_id
-		if(q_id >= get_num_of_queues()){
+		if( unlikely(q_id >= get_num_of_queues()) ){
 			ROFL_DEBUG("[mmap:%s] Packet(%p) trying to be enqueued in an invalid q_id: %u\n",  of_port_state->name, pkt, q_id);
 			q_id = 0;
 			bufferpool::release_buffer(pkt);
@@ -169,7 +170,7 @@ next:
 		return NULL;
 
 	//Sanity check 
-	if (hdr->tp_mac + hdr->tp_snaplen > rx->get_tpacket_req()->tp_frame_size) {
+	if ( unlikely(hdr->tp_mac + hdr->tp_snaplen > rx->get_tpacket_req()->tp_frame_size) ) {
 		ROFL_DEBUG_VERBOSE("[mmap:%s] sanity check during read mmap failed\n",of_port_state->name);
 		//Increment error statistics
 		switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
@@ -261,7 +262,7 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 
 	ringbuffer* queue = &output_queues[q_id];
 
-	if (!tx) {
+	if ( unlikely(tx == NULL) ) {
 		return num_of_buckets;
 	}
 

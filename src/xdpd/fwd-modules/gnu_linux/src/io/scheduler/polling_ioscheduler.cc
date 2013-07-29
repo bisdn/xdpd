@@ -20,16 +20,15 @@
 */
 
 //Static members initialization
-const unsigned int polling_ioscheduler::READ_BUCKETS[3]={polling_ioscheduler::READ_BUCKETSPP, polling_ioscheduler::READ_BUCKETSPP*2, polling_ioscheduler::READ_BUCKETSPP*3};
-const unsigned int polling_ioscheduler::WRITE_BUCKETS[3]= {polling_ioscheduler::WRITE_BUCKETSPP, polling_ioscheduler::WRITE_BUCKETSPP*2, polling_ioscheduler::WRITE_BUCKETSPP*3};
 const float polling_ioscheduler::WRITE_QOS_QUEUE_FACTOR[ioport::MAX_OUTPUT_QUEUES]={1,1.2,1.5,2,2.2,2.5,2.7,3.0};
+
 #ifdef DEBUG
 bool polling_ioscheduler::by_pass_processing = false;
 #endif
+
 /*
 * Call port based on scheduling algorithm 
 */
-
 inline void polling_ioscheduler::process_port_io(ioport* port){
 
 	unsigned int i, q_id, n_buckets;
@@ -38,20 +37,15 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 	if(!port || !port->of_port_state)
 		return;
 
-	//Process input(up to READ_BUCKETS[buffer_state])
-	n_buckets = READ_BUCKETS[port->get_input_queue_state()];
-
 	//Perform up_to n_buckets_read
-	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d. Queue state: %d\n", port->of_port_state->name, n_buckets, port->get_input_queue_state());
+	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, n_buckets);
 	
-	for(i=0; i<n_buckets; i++){
+	for(i=0; i< READ_BUCKETS_PP; ++i){
 		
 		//Attempt to read (non-blocking)
-		//do {
 		pkt = port->read();
 		
 		if(pkt){
-
 #ifdef DEBUG
 			if(by_pass_processing){
 				//By-pass processing and schedule to write in the same port
@@ -80,13 +74,13 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 		}
 	}
 
-	//Process output (up to WRITE_BUCKETS[output_queue_state])
-	for(q_id=0; q_id < port->get_num_of_queues(); q_id++){
+	//Process output up to WRITE_BUCKETS_PP
+	for(q_id=0; q_id < IO_IFACE_NUM_QUEUES; ++q_id){
 		
 		//Increment number of buckets
-		n_buckets = WRITE_BUCKETS[port->get_output_queue_state(q_id)]*WRITE_QOS_QUEUE_FACTOR[q_id];
+		n_buckets = WRITE_BUCKETS_PP*WRITE_QOS_QUEUE_FACTOR[q_id];
 
-		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d. Queue state: %d\n", port->of_port_state->name, q_id, n_buckets,port->get_output_queue_state(q_id));
+		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
 		
 		//Perform up to n_buckets write	
 		port->write(q_id,n_buckets);

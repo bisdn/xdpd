@@ -48,12 +48,10 @@ protected:
 
 	/* WRR stuff */
 	//READing buckets
-	static const unsigned int READ_BUCKETSPP=4;
-	static const unsigned int READ_BUCKETS[3];
+	static const unsigned int READ_BUCKETS_PP=4;
 
 	//WRITing buckets	
-	static const unsigned int WRITE_BUCKETSPP=4;
-	static const unsigned int WRITE_BUCKETS[3];
+	static const unsigned int WRITE_BUCKETS_PP=4;
 	static const float WRITE_QOS_QUEUE_FACTOR[ioport::MAX_OUTPUT_QUEUES];
 
 	/* Methods */

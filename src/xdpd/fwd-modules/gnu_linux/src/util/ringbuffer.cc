@@ -59,8 +59,6 @@ datapacket_t* ringbuffer::non_blocking_read(void)
 	pthread_mutex_unlock(&mutex_readers);
 #endif
 
-	update_buffer_state();
-
 	pthread_cond_broadcast(&write_cond);
 	return pkt;
 #endif
@@ -130,7 +128,6 @@ rofl_result_t ringbuffer::non_blocking_write(datapacket_t* pkt)
 #ifdef RB_MULTI_WRITERS
 	pthread_mutex_unlock(&mutex_writers);
 #endif
-	update_buffer_state();
 
 	pthread_cond_broadcast(&read_cond);
 

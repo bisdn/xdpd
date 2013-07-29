@@ -45,6 +45,7 @@ public:
 	//Get buffer state
 	inline ringbuffer_state_t get_buffer_state(void)
 	{
+		update_buffer_state();
 		return state;
 	}
 

@@ -10,23 +10,31 @@
 #include <rofl.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <semaphore.h>
+#include "../config.h"
 #include "scheduler/ioscheduler.h"
 #include "ports/ioport.h"
 #include "../util/safevector.h" 
+#include "../util/compiler_assert.h" 
 
 /**
 * @file iomanager.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief Class in charge of launch/stopping of the I/O threads, 
+* @brief This static class is in charge of of launch/stopping of the I/O threads, 
 * dealing with data packet tx/rx.
+*
+* TODO: in depth explanation
 * 
 */
+
+#define DEFAULT_MAX_THREADS_PER_PG 5
+//WARNING: you don't want to change this, unless you really know what you are doing
+#define DEFAULT_THREADS_PER_PG 1
+COMPILER_ASSERT( INVALID_default_threads_per_pg , (DEFAULT_THREADS_PER_PG == 1) );
+
 /*
 * Portgroup thread state
 */
-#define DEFAULT_MAX_THREADS_PER_PORTGROUP 5
-
 class portgroup_state {
 
 public:
@@ -35,7 +43,7 @@ public:
 
 	//Threading information
 	unsigned int num_of_threads;
-	pthread_t thread_state[DEFAULT_MAX_THREADS_PER_PORTGROUP];
+	pthread_t thread_state[DEFAULT_MAX_THREADS_PER_PG];
 
 	//State synchronization condition
 	sem_t sync_sem;
@@ -56,15 +64,15 @@ class iomanager{
 public:
 	/* Methods */
 	//Group mgmt
-	static unsigned int create_group(unsigned int num_of_threads=DEFAULT_THREADS_PER_PORTGROUP);
-	static rofl_result_t delete_group(unsigned int grp_id);
-	
-	static int get_group_id_by_port(ioport* port);
-		
-	//Port mgmt
-	static rofl_result_t add_port_to_group(unsigned int grp_id, ioport* port);
-	static rofl_result_t remove_port_from_group(unsigned int grp_id, ioport* port, bool mutex_locked=false);
-	
+	static rofl_result_t init( unsigned int _num_of_groups = IO_TOTAL_THREADS );
+	static rofl_result_t destroy( void ){ return delete_all_groups(); };
+
+	/*
+	* Port management (external interface)
+	*/	
+	static rofl_result_t add_port(ioport* port);
+	static rofl_result_t remove_port(ioport* port);
+
 	/*
 	* Port control
 	*/
@@ -79,12 +87,17 @@ public:
 	/*
 	* Signal that PG state has been syncrhonized within a particular I/O thread 
 	*/
-	inline static void signal_as_synchronized(portgroup_state* pg){ sem_post(&pg->sync_sem); };	
+	inline static void signal_as_synchronized(portgroup_state* pg){ sem_post(&pg->sync_sem); };
+
 protected:
 
 	//Constants
-	static const unsigned int DEFAULT_THREADS_PER_PORTGROUP = 1;
-	static const unsigned int MAX_THREADS_PER_PORTGROUP = DEFAULT_MAX_THREADS_PER_PORTGROUP;
+	static const unsigned int DEFAULT_THREADS_PER_PORTGROUP = DEFAULT_THREADS_PER_PG;
+	static const unsigned int MAX_THREADS_PER_PORTGROUP = DEFAULT_MAX_THREADS_PER_PG;
+
+	//Number of port_groups created
+	static unsigned int num_of_groups;
+	static unsigned int curr_group_sched_pointer;
 
 	//Number of buffers currently required by the ports to operate
 	static unsigned long long int num_of_port_buffers;
@@ -95,6 +108,20 @@ protected:
 	
 	//Handle mutual exclusion over the portgroup state
 	static pthread_mutex_t mutex;
+
+	/*
+	* Group mgmt (internal API)
+	*/
+	static int create_group(unsigned int num_of_threads=DEFAULT_THREADS_PER_PG, bool mutex_locked=false);
+	static rofl_result_t delete_group(unsigned int grp_id);
+	static rofl_result_t delete_all_groups(void);
+	
+	/*
+	* Port mgmt (internal API)
+	*/
+	static int get_group_id_by_port(ioport* port);
+	static rofl_result_t add_port_to_group(unsigned int grp_id, ioport* port);
+	static rofl_result_t remove_port_from_group(unsigned int grp_id, ioport* port, bool mutex_locked=false);
 
 	/* Start/Stop portgroup threads */
 	static void start_portgroup_threads(portgroup_state* pg);

@@ -70,7 +70,12 @@ ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id)
 		}
 	
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
-		output_queues[q_id].blocking_write(pkt);
+		if(output_queues[q_id].non_blocking_write(pkt) != ROFL_SUCCESS){
+			ROFL_DEBUG("[mmap:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
+			//Drop packet
+			bufferpool::release_buffer(pkt);
+			return;
+		}
 
 		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
 	
@@ -100,11 +105,11 @@ ioport_mmap::read()
 	ret = ::read(notify_pipe[READ],&c,sizeof(c));
 	(void)ret; // todo use the value
 	
-	if (input_queue->is_empty() && rx ) {
+	if (input_queue.is_empty() && rx ) {
 		read_loop(rx->sd, 1);
 	}
 
-	return input_queue->non_blocking_read();
+	return input_queue.non_blocking_read();
 }
 
 int
@@ -235,7 +240,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			ROFL_DEBUG("[mmap:%s] packet(%p) recieved\n", of_port_state->name ,pkt);
 
 			// fill input_queue
-			if(input_queue->non_blocking_write(pkt) != ROFL_SUCCESS){
+			if(input_queue.non_blocking_write(pkt) != ROFL_SUCCESS){
 				ROFL_DEBUG("[mmap:%s] Congestion in input intermediate buffer, dropping packet(%p)\n", of_port_state->name ,pkt);
 				bufferpool::release_buffer(pkt);
 				goto next;
@@ -321,7 +326,7 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 			tx_bytes_local += hdr->tp_len;
 
 		} else {
-			ROFL_DEBUG_VERBOSE("no free slot in ringbuffer\n");
+			ROFL_DEBUG_VERBOSE("no free slot in circular_queue\n");
 
 			//Increment error statistics
 			switch_port_stats_inc(of_port_state,0,0,0,0,0,1);

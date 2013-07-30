@@ -26,7 +26,7 @@ storeid
 datapacket_storage::store_packet(datapacket_t* pkt)
 {	
 	if (store.size() >= max_size) {
-		return -1;
+		return this->ERROR;
 	}
 
 	store_mapping map;

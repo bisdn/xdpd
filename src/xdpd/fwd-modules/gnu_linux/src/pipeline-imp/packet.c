@@ -13,7 +13,6 @@
 #include "../io/datapacketx86_c_wrapper.h"
 #include "../io/bufferpool_c_wrapper.h"
 
-#include "../ls_internal_state.h"
 #include "../io/datapacket_storage_c_wrapper.h"
 
 /*
@@ -431,8 +430,8 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	datapacket_t* copy = bufferpool_get_buffer_wrapper();
 	
 	//Make sure everything is memseted to 0
-	copy->matches = NULL;
-	copy->write_actions = NULL;
+	memcpy(&copy->matches, &pkt->matches, sizeof(pkt->matches));
+	memcpy(&copy->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
 
 	//mark as replica
 	copy->is_replica = true;

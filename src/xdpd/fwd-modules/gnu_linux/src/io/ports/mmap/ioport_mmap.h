@@ -102,15 +102,6 @@ public:
 	 */
 	virtual rofl_result_t disable(void);
 
-#if 0
-	// todo implement states?
-	//Get buffer status
-	virtual ringbuffer_state_t
-	get_input_queue_state(void);
-
-	virtual ringbuffer_state_t
-	get_output_queue_state(unsigned int q_id = 0);
-#endif
 
 protected:
 	//Queues

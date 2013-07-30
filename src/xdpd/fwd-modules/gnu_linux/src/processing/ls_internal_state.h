@@ -5,19 +5,29 @@
 #ifndef LS_INTERNAL_STATE_H_
 #define LS_INTERNAL_STATE_H_
 
-#include "util/ringbuffer_c_wrapper.h"
-#include "io/datapacket_storage_c_wrapper.h"
+#include "../config.h"
+#include "../util/circular_queue.h"
+#include "../io/datapacket_storage.h"
 
 /**
 * @file ls_internal_state.h
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 * @author Marc Sune<marc.sune (at) bisdn.de>
-*
+* @brief Implements the internal (platform state) logical switch
+* state
 */
 
+#define PROCESSING_MAX_LSI_THREADS 16
+
 typedef struct logical_switch_internals {
-	ringbuffer_handle_p ringbuffer; //ringbuffer_handle is a pointer!
-	datapacket_store_handle store_handle;
+	//Input queues
+	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* input_queues[PROCESSING_MAX_LSI_THREADS];
+
+	//PKT_IN queue
+	circular_queue<datapacket_t, PROCESSING_PKT_IN_QUEUE_SLOTS>* pkt_in_queue; 
+	
+	//Packet storage pointer 
+	datapacket_storage* storage;
 }logical_switch_internals_t;
 
 #endif /* LS_INTERNAL_STATE_H_ */

@@ -62,7 +62,7 @@ datapacket_t* ioport_mockup::read(){
 
 
 	//First attempt drain local buffers from previous reads that failed to push 
-	pkt = input_queue->non_blocking_read();	
+	pkt = input_queue.non_blocking_read();	
 	if(pkt)
 		return pkt;		
 

@@ -75,6 +75,9 @@ public:
 	void change_expiration_time(uint16_t sec);
 #endif
 
+	//Define error constant
+	static const storeid ERROR = 0xFFFFFFFF;
+
 private:
 	
 	storeid next_id;

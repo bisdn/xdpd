@@ -18,7 +18,7 @@
 #include "io/datapacketx86_c_wrapper.h"
 #include "io/datapacket_storage.h"
 #include "processing/ls_internal_state.h"
-#include "io/ctl_packets.h"
+#include "io/pktin_dispatcher.h"
 
 
 #define DATAPACKET_STORE_EXPIRATION_TIME 180

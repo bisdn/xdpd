@@ -13,8 +13,8 @@ libfwd_module_gnu_linux_io_la_SOURCES = \
 	bufferpool.h \
 	bufferpool_c_wrapper.h \
 	bufferpool_c_wrapper.cc \
-	ctl_packets.cc \
-	ctl_packets.h \
+	pktin_dispatcher.cc \
+	pktin_dispatcher.h \
 	datapacket_storage.cc \
 	datapacket_storage.h \
 	datapacket_storage_c_wrapper.cc \

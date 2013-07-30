@@ -21,7 +21,7 @@
 #include "io/datapacket_storage_c_wrapper.h"
 #include "io/bufferpool_c_wrapper.h"
 #include "processing/ls_internal_state.h"
-#include "io/ctl_packets.h"
+#include "io/pktin_dispatcher.h"
 #include "util/time_utils.h"
 
 //Local static variable for background manager thread

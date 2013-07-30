@@ -57,6 +57,8 @@ private:
 	datapacket_t* pkt_vlan;
 };
 
+#define PKT_SIZE 1400
+
 /* Setup and tear down */
 void
 MMAPPortTest::setUp()
@@ -204,7 +206,7 @@ MMAPPortTest::mmap_single_read_test()
 
 	int rv;
 
-	rv = send(sd, pkt_x86->get_buffer(), pkt_x86->get_buffer_length(), 0);
+	rv = send(sd, pkt_x86->get_buffer(), PKT_SIZE, 0);
 
 //	if (-1 == rv) {
 //		fprintf(stderr, "Error in send() - %s\n", strerror(errno));
@@ -226,10 +228,10 @@ MMAPPortTest::mmap_single_read_test()
 	datapacketx86* rpkt_x86 = (datapacketx86*)rpkt->platform_state;
 
 	// check for correct length
-	CPPUNIT_ASSERT(pkt_x86->get_buffer_length() == rpkt_x86->get_buffer_length());
+	CPPUNIT_ASSERT(PKT_SIZE == rpkt_x86->get_buffer_length());
 
 	// check the content
-	CPPUNIT_ASSERT(0 == memcmp(pkt_x86->get_buffer(), rpkt_x86->get_buffer(), pkt_x86->get_buffer_length()));
+	CPPUNIT_ASSERT(0 == memcmp(pkt_x86->get_buffer(), rpkt_x86->get_buffer(), PKT_SIZE));
 
 	// free the resource
 	bufferpool::release_buffer(rpkt);
@@ -247,12 +249,10 @@ MMAPPortTest::mmap_single_write_test()
 	/* get another buffer for sending, because the send packet will be consumed */
 	datapacket_t *send_pkt = bufferpool::get_free_buffer();
 	datapacketx86* send_x86_pkt = ((datapacketx86*)send_pkt->platform_state);
-	send_x86_pkt->init(pkt_x86->get_buffer(), pkt_x86->get_buffer_length(), NULL, 1, 0,true);
+	send_x86_pkt->init(pkt_x86->get_buffer(), PKT_SIZE, NULL, 1, 0,true);
 
 	// write a single packet to the output queue
 	port->enqueue_packet(send_pkt, 0);
-	send_pkt = NULL; /* packet will be consumed by port */
-	send_x86_pkt = NULL;
 
 	// schedule a single packet from queue 0
 	buckets_left = port->write(0, 1);
@@ -268,14 +268,15 @@ MMAPPortTest::mmap_single_write_test()
 	CPPUNIT_ASSERT(NULL != rpkt);
 
 	datapacketx86 *rpkt_x86 = ((datapacketx86*)rpkt->platform_state);
+	rpkt_x86->init(rpkt_x86->get_buffer(), PKT_SIZE, NULL, 1, 0,true);
 
 	// read into rpkt buffer
-	size_t read_bytes = read(sd, rpkt_x86->get_buffer(), rpkt_x86->get_buffer_length());
+	size_t read_bytes = read(sd, rpkt_x86->get_buffer(), PKT_SIZE);
 
 	std::cout << "read_bytes: " << read_bytes << std::endl;
 
 	// check the size
-	CPPUNIT_ASSERT(read_bytes == pkt_x86->get_buffer_length());
+	CPPUNIT_ASSERT(read_bytes == send_x86_pkt->get_buffer_length());
 
 	// check the contents of the packet
 	CPPUNIT_ASSERT(0 == memcmp(rpkt_x86->get_buffer(), pkt_x86->get_buffer(), rpkt_x86->get_buffer_length()));
@@ -295,7 +296,7 @@ MMAPPortTest::mmap_single_read_vlan_test()
 
 	int rv;
 
-	rv = send(sd, pkt_x86->get_buffer(), pkt_x86->get_buffer_length(), 0);
+	rv = send(sd, pkt_x86->get_buffer(), PKT_SIZE, 0);
 
 //	if (-1 == rv) {
 //		fprintf(stderr, "Error in send() - %s\n", strerror(errno));
@@ -318,13 +319,13 @@ MMAPPortTest::mmap_single_read_vlan_test()
 	datapacketx86* rpkt_x86 = (datapacketx86*)rpkt->platform_state;
 
 	// check for correct length
-	CPPUNIT_ASSERT(pkt_x86->get_buffer_length() == rpkt_x86->get_buffer_length());
+	CPPUNIT_ASSERT(PKT_SIZE == rpkt_x86->get_buffer_length());
 
 //	pkt_x86->headers->dump();
 //	rpkt_x86->headers->dump();
 
 	// check the content
-	CPPUNIT_ASSERT(0 == memcmp(pkt_x86->get_buffer(), rpkt_x86->get_buffer(), pkt_x86->get_buffer_length()));
+	CPPUNIT_ASSERT(0 == memcmp(pkt_x86->get_buffer(), rpkt_x86->get_buffer(), rpkt_x86->get_buffer_length()));
 
 	// free the resource
 	bufferpool::release_buffer(rpkt);
@@ -341,12 +342,10 @@ MMAPPortTest::mmap_single_write_vlan_test()
 
 	datapacket_t *send_pkt = bufferpool::get_free_buffer();
 	datapacketx86* send_x86_pkt = ((datapacketx86*)send_pkt->platform_state);
-	send_x86_pkt->init(pkt_x86->get_buffer(), pkt_x86->get_buffer_length(), NULL, 1, 0, true);
+	send_x86_pkt->init(pkt_x86->get_buffer(), PKT_SIZE, NULL, 1, 0, true);
 
 	// write a single packet to the output queue
 	port->enqueue_packet(send_pkt, 0);
-	send_pkt = NULL; /* packet will be consumed by port */
-	send_x86_pkt = NULL;
 
 	// schedule a single packet from queue 0
 	buckets_left = port->write(0, 1);
@@ -362,12 +361,13 @@ MMAPPortTest::mmap_single_write_vlan_test()
 	CPPUNIT_ASSERT(NULL != rpkt);
 
 	datapacketx86 *rpkt_x86 = ((datapacketx86*)rpkt->platform_state);
+	rpkt_x86->init(rpkt_x86->get_buffer(), PKT_SIZE, NULL, 1, 0,true);
 
 	// read into rpkt buffer
 	size_t read_bytes = read(sd, rpkt_x86->get_buffer(), rpkt_x86->get_buffer_length());
 
 	// check the size
-	CPPUNIT_ASSERT(read_bytes == pkt_x86->get_buffer_length());
+	CPPUNIT_ASSERT(read_bytes == send_x86_pkt->get_buffer_length());
 
 	// check the contents of the packet
 	CPPUNIT_ASSERT(0 == memcmp(rpkt_x86->get_buffer(), pkt_x86->get_buffer(), rpkt_x86->get_buffer_length()));

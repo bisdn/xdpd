@@ -38,7 +38,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 		return;
 
 	//Perform up_to n_buckets_read
-	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, n_buckets);
+	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
 	
 	for(i=0; i< READ_BUCKETS_PP; ++i){
 		
@@ -69,7 +69,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 			}
 #endif
 		}else{
-			ROFL_DEBUG_VERBOSE("[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, n_buckets);
+			ROFL_DEBUG_VERBOSE("[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, READ_BUCKETS_PP);
 			break;
 		}
 	}

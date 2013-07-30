@@ -13,7 +13,6 @@
 #include "io/datapacketx86_c_wrapper.h"
 #include "io/bufferpool_c_wrapper.h"
 
-#include "ls_internal_state.h"
 #include "io/datapacket_storage_c_wrapper.h"
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
 

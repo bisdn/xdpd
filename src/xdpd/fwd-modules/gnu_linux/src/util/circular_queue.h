@@ -57,7 +57,9 @@ public:
 	bool
 	is_empty(void);
 
-	static const long long unsigned int MAX_SLOTS=SLOTS;
+	static const long long unsigned int MAX_SLOTS = SLOTS;
+	static const long long unsigned int SLOT_MASK = MAX_SLOTS - 1;
+
 private:
 	//MAX slots. Should be power of 2	
 	static const float FULL_LIMIT = 0.75*SLOTS;
@@ -95,7 +97,7 @@ private:
 template<typename T, long long unsigned int SLOTS>
 inline bool circular_queue<T, SLOTS>::is_full(){
 	// todo would perform slightly better using "int readpos,writepos"
-	return (writep + 1 - elements) == (readp - elements);
+	return ((size_t)(writep + 1 - elements) & SLOT_MASK) == (size_t)(readp - elements);
 }
 
 template<typename T, long long unsigned int SLOTS>

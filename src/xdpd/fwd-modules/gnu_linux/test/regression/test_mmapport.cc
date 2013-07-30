@@ -9,7 +9,6 @@
 #include <endian.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include "util/ringbuffer.h"
 #include "io/iomanager.h"
 #include "io/ports/mmap/ioport_mmap.h"
 #include "processing/processingmanager.h"

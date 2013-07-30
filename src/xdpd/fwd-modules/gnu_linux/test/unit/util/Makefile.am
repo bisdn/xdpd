@@ -1,7 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-ringbuffertest_SOURCES= $(top_srcdir)/src/util/ringbuffer.cc \
-	$(top_srcdir)/src/util/ringbuffer.h \
+ringbuffertest_SOURCES= \
 	ringbuffertest.cc	
 
 ringbuffertest_LDADD= -lrofl \

@@ -10,7 +10,7 @@
 #include <rofl/datapath/pipeline/platform/cutil.h>
 #include "../iomanager.h"
 #include "../bufferpool.h"
-#include "../../util/ringbuffer.h"
+#include "../../util/circular_queue.h"
 
 /*
 * 

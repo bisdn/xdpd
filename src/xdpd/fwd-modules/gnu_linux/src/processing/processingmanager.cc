@@ -4,7 +4,8 @@
 #include <unistd.h>
 #include <rofl/common/utils/c_logger.h>
 #include "../io/bufferpool.h"
-#include "../util/ringbuffer.h"
+#include "../util/circular_queue.h"
+#include "../util/likely.h"
 #include "ls_internal_state.h"
 
 
@@ -102,7 +103,7 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 	unsigned int q_id;
 	datapacket_t* pkt;
 	of_switch_t* sw;
-	ringbuffer* sw_input_queue;
+	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_input_queue;
 	ls_processing_threads_state* ps;
 	
 	//Init 	
@@ -128,12 +129,12 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 	}
 
 	//Main processing loop
-	while(ps->keep_on_working){
+	while( likely(ps->keep_on_working == true) ){
 
 		//Get a packet to process
 		pkt = sw_input_queue->blocking_read(PROCESSING_THREADS_TIMEOUT_S_READ);
 
-		if(!pkt)
+		if(unlikely(pkt == NULL))
 			continue;
 #ifdef DEBUG
 		if(by_pass_pipeline){

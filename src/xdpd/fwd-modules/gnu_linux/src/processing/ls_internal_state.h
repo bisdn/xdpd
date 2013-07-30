@@ -5,7 +5,8 @@
 #ifndef LS_INTERNAL_STATE_H_
 #define LS_INTERNAL_STATE_H_
 
-#include "../util/ringbuffer.h"
+#include "../config.h"
+#include "../util/circular_queue.h"
 #include "../io/datapacket_storage.h"
 
 /**
@@ -20,10 +21,10 @@
 
 typedef struct logical_switch_internals {
 	//Input queues
-	ringbuffer* input_queues[PROCESSING_MAX_LSI_THREADS];
+	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* input_queues[PROCESSING_MAX_LSI_THREADS];
 
 	//PKT_IN queue
-	ringbuffer* pkt_in_queue; 
+	circular_queue<datapacket_t, PROCESSING_PKT_IN_QUEUE_SLOTS>* pkt_in_queue; 
 	
 	//Packet storage pointer 
 	datapacket_storage* storage;

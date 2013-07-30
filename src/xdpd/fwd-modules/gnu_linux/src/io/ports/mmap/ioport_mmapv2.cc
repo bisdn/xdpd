@@ -260,7 +260,7 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 	unsigned int cnt = 0;
 	int tx_bytes_local = 0;
 
-	ringbuffer* queue = &output_queues[q_id];
+	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS>* queue = &output_queues[q_id];
 
 	if ( unlikely(tx == NULL) ) {
 		return num_of_buckets;

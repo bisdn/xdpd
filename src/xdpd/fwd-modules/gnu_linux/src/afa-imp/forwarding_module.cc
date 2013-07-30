@@ -23,7 +23,6 @@
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
-#include "../util/ringbuffer_c_wrapper.h"
 #include "../processing/processingmanager.h"
 #include "../io/bufferpool_c_wrapper.h"
 #include "../io/iomanager.h"

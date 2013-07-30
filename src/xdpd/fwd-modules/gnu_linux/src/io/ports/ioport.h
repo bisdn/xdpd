@@ -12,7 +12,7 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include "../../config.h"
-#include "../../util/ringbuffer.h" 
+#include "../../util/circular_queue.h" 
 
 /**
 * @file ioport.h
@@ -30,7 +30,7 @@ public:
 	* Constructs the ioport. The state of the port is explicitely undefined
 	* (usually down) unless enable/disable is called AFTER the constructor.
 	*/
-	ioport(switch_port_t* of_ps, unsigned int q_num=MAX_OUTPUT_QUEUES);
+	ioport(switch_port_t* of_ps, unsigned int q_num=IO_IFACE_NUM_QUEUES);
 
 	/**
 	* Destructor
@@ -91,12 +91,12 @@ public:
 	//Get buffer status; generally used to create "smart" schedulers. TODO: evaluate if they should be 
 	//non-virtual (inline+virtual does not make a lot of sense here), and evaluate if they are necessary
 	//at all.
-	virtual inline ringbuffer_state_t get_input_queue_state(void){
-		return input_queue->get_buffer_state();
+	virtual inline circular_queue_state_t get_input_queue_state(void){
+		return input_queue.get_queue_state();
 	}; 
-	virtual inline ringbuffer_state_t get_output_queue_state(unsigned int q_id=0){
+	virtual inline circular_queue_state_t get_output_queue_state(unsigned int q_id=0){
 		if(q_id<num_of_queues)
-			return output_queues[q_id].get_buffer_state();
+			return output_queues[q_id].get_queue_state();
 		else{
 			assert(0);
 			return RB_BUFFER_AVAILABLE;
@@ -146,11 +146,11 @@ public:
 	/**
 	 * Sets the port switch queue where processed packets shall be sent.
 	 */
-	void set_sw_processing_queue(ringbuffer* queue){
+	void set_sw_processing_queue(circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* queue){
 		sw_processing_queue = queue;
 	};
 
-	inline ringbuffer* get_sw_processing_queue(void){
+	inline circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* get_sw_processing_queue(void){
 		return sw_processing_queue;
 	};
 
@@ -159,7 +159,7 @@ public:
 	switch_port_t* of_port_state;
 	
 	//Switch processing queue to which the port is attached
-	ringbuffer* sw_processing_queue;
+	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_processing_queue;
 	
 	static const unsigned int MAX_OUTPUT_QUEUES=IO_IFACE_NUM_QUEUES; /*!< Constant max output queues */
 	unsigned int port_group;
@@ -177,7 +177,7 @@ protected:
 	* for QoS purposes (set-queue). output_queues[0] is always the queue with 
 	* least priority (best effort)
 	*/
-	ringbuffer* output_queues;
+	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> output_queues[IO_IFACE_NUM_QUEUES];
 
 	/**
 	* Input queue (intermediate-buffering). 
@@ -187,7 +187,7 @@ protected:
 	* to the appropiate LS processing queue.
 	*
 	*/
-	ringbuffer* input_queue;
+	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> input_queue;
 };
 
 #endif /* IOPORT_H_ */

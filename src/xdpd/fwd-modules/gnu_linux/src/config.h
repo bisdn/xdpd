@@ -53,7 +53,10 @@
 
 //Max frame size (WARNING: do not go beyond 8192 bytes, and never underneath 2048 bytes)
 //Align to a power of 2
-#define IO_IFACE_FRAME_SIZE 8192
+#define IO_IFACE_MMAP_FRAME_SIZE 8192
+//Do not touch these values unless you know what your are doing
+#define IO_IFACE_MMAP_BLOCKS 2 
+#define IO_IFACE_MMAP_BLOCK_SIZE 96*2*4
 
 //RX/TX ring size
 //Align to a power of 2

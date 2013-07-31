@@ -30,7 +30,7 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 		}
 
 		//Memset datapacket
-		memset(dp,0,sizeof(dp));
+		memset(dp,0,sizeof(*dp));
 		
 		//Init datapacketx86
 		try {
@@ -163,6 +163,9 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 			continue;
 		}
 
+		//Memset datapacket
+		memset(dp,0,sizeof(*dp));
+	
 		//Init datapacketx86
 		try {
 			dpx86 = new datapacketx86();

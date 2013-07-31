@@ -74,7 +74,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	switch(of_version){
 		case OF_VERSION_12: 
-			sw = (of_switch_t*)of12_init_switch(name, dpid, num_of_tables, (enum matching_algorithm_available*) ma_list);
+			sw = (of_switch_t*)of12_init_switch(name, dpid, num_of_tables, (enum of12_matching_algorithm_available*) ma_list);
 			break;
 
 		//Add more here..
@@ -309,5 +309,8 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
  * @return
  */
 afa_result_t fwd_module_list_matching_algorithms(of_version_t of_version, const char * const** name_list, int *count){
-	return of_get_switch_matching_algorithms(of_version, name_list, count);
+
+	if(of_get_switch_matching_algorithms(of_version, name_list, count) == ROFL_SUCCESS)
+		return AFA_SUCCESS;
+	return AFA_FAILURE;
 }

@@ -8,7 +8,7 @@
 
 #include <rofl/datapath/pipeline/openflow/openflow12/openflow12.h>
 
-#define FWD_MOD_NAME "example"
+#include "../../../config.h"
 
 //Port config
 

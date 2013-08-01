@@ -12,8 +12,16 @@
 #include <string.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../config.h"
 
-#define FWD_MOD_NAME "example"
+//DPDK includes
+#include <rte_common.h> 
+#include <rte_eal.h> 
+#include <rte_launch.h> 
+#include <rte_mempool.h> 
+#include <rte_mbuf.h> 
+
+
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself

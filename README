@@ -1,0 +1,4 @@
+
+xdpd needs to be configured like this (if libraries are not installed):
+
+CFLAGS="-L$RTE_SDK/build/lib/" CXXFLAGS="$CFLAGS" ../configure --enable-gnu-linux-dpdk --disable-silent-rules 

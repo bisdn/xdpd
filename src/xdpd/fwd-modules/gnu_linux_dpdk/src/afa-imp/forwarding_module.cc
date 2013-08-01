@@ -29,6 +29,8 @@
 */
 afa_result_t fwd_module_init(){
 
+	int ret;
+	struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
 	
@@ -42,6 +44,33 @@ afa_result_t fwd_module_init(){
 	//Initialize some form of background task manager
 	
 	//And initialize or setup any other state your platform needs...	
+        /* init EAL */
+	ret = rte_eal_init(0, NULL);
+	if (ret < 0)
+		rte_exit(EXIT_FAILURE, "rte_eal_init failed");
+
+
+	/* create the mbuf pools */
+	pool_direct = rte_mempool_create("pool_direct", NB_MBUF,
+			MBUF_SIZE, 32,
+			sizeof(struct rte_pktmbuf_pool_private),
+			rte_pktmbuf_pool_init, NULL,
+			rte_pktmbuf_init, NULL,
+			SOCKET0, 0);
+
+	if (pool_direct == NULL)
+		rte_panic("Cannot init direct mbuf pool\n");
+
+
+	pool_indirect = rte_mempool_create("pool_indirect", NB_MBUF,
+			sizeof(struct rte_mbuf), 32,
+			0,
+			NULL, NULL,
+			rte_pktmbuf_init, NULL,
+			SOCKET0, 0);
+
+	if (pool_indirect == NULL)
+		rte_panic("Cannot init indirect mbuf pool\n");
 	
 	return AFA_SUCCESS; 
 }

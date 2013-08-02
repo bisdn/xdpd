@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <net/if.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
@@ -21,33 +22,40 @@
 #include <rte_mempool.h> 
 #include <rte_mbuf.h> 
 
+extern int optind; 
 
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself
 * @ingroup fwd_module_management
 */
+
+#define EAL_ARGS 6
+
 afa_result_t fwd_module_init(){
 
 	int ret;
 	struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
+	const char* argv_fake[EAL_ARGS] = {"xdpd", "-c","1", "-n", "1", NULL};
+	
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
-	//if(physical_switch_init() != ROFL_SUCCESS)
-	//	return AFA_FAILURE;
+	if(physical_switch_init() != ROFL_SUCCESS)
+		return AFA_FAILURE;
 
 	//Likely here you are going to discover platform ports;
 	//If using ROFL_pipeline you would then add them (physical_switch_add_port()
 
 	//Initialize some form of background task manager
 	
-	//And initialize or setup any other state your platform needs...	
-        /* init EAL */
-	ret = rte_eal_init(0, NULL);
+        /* init EAL library */
+	optind=1;
+	ret = rte_eal_init(EAL_ARGS-1, (char**)argv_fake);
 	if (ret < 0)
 		rte_exit(EXIT_FAILURE, "rte_eal_init failed");
+	optind=1;
 
 
 	/* create the mbuf pools */

@@ -472,37 +472,49 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
+		coxmatch_ofx_pppoe_code oxm_pppoe_code(
+				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_PPPOE_CODE));
+
 		of12_match_t *match = of12_init_pppoe_code_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_pppoe_code());
+								oxm_pppoe_code.get_pppoe_code());
 
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
+		coxmatch_ofx_pppoe_type oxm_pppoe_type(
+				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_PPPOE_TYPE));
+
 		of12_match_t *match = of12_init_pppoe_type_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_pppoe_type());
+								oxm_pppoe_type.get_pppoe_type());
 
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
+		coxmatch_ofx_pppoe_sid oxm_pppoe_sid(
+				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_PPPOE_SID));
+
 		of12_match_t *match = of12_init_pppoe_session_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_pppoe_sessid());
+								oxm_pppoe_sid.get_pppoe_sid());
 
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
+		coxmatch_ofx_ppp_prot oxm_ppp_prot(
+				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_PPP_PROT));
+
 		of12_match_t *match = of12_init_ppp_prot_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_ppp_prot());
+								oxm_ppp_prot.get_ppp_prot());
 
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
@@ -714,15 +726,34 @@ of12_translation_utils::of12_map_flow_entry_actions(
 			}
 		}
 			break;
-		case OFPAT_PUSH_PPPOE:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_PUSH_PPPOE, be16toh(raction.oac_push->ethertype), NULL, NULL);
-			break;
-		case OFPAT_POP_PPPOE:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_POP_PPPOE, be16toh(raction.oac_pop_pppoe->ethertype), NULL, NULL);
-			break;
-		case OFPAT_EXPERIMENTER:
-			// TODO
-			break;
+		case OFPAT_EXPERIMENTER: {
+
+			cofaction_experimenter eaction(raction);
+
+			switch (eaction.get_exp_id()) {
+			case ROFL_EXPERIMENTER_ID: {
+
+				// ROFL experimental actions contain experimental action type at position data[0]
+				uint8_t acttype = eaction.oac_experimenter_header->data[0];
+
+				switch (acttype) {
+				case cofaction_push_pppoe::OFXAT_PUSH_PPPOE: {
+					cofaction_push_pppoe paction(eaction);
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_PUSH_PPPOE, be16toh(paction.eoac_push->ethertype), NULL, NULL);
+				} break;
+				case cofaction_pop_pppoe::OFXAT_POP_PPPOE: {
+					cofaction_pop_pppoe paction(eaction);
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_POP_PPPOE, be16toh(paction.eoac_pop_pppoe->ethertype), NULL, NULL);
+				} break;
+				}
+
+			} break;
+			default: {
+				// TODO
+			} break;
+			}
+
+			} break;
 		}
 
 		if (NULL != apply_actions)
@@ -881,16 +912,16 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			match.set_mpls_tc(((utern8_t*)(m->value))->value);
 			break;
 		case OF12_MATCH_PPPOE_CODE:
-			match.set_pppoe_code(((utern8_t*)(m->value))->value);
+			match.insert(coxmatch_ofx_pppoe_code(((utern8_t*)(m->value))->value));
 			break;
 		case OF12_MATCH_PPPOE_TYPE:
-			match.set_pppoe_type(((utern8_t*)(m->value))->value);
+			match.insert(coxmatch_ofx_pppoe_type(((utern8_t*)(m->value))->value));
 			break;
 		case OF12_MATCH_PPPOE_SID:
-			match.set_pppoe_sessid(((utern16_t*)(m->value))->value);
+			match.insert(coxmatch_ofx_pppoe_sid(((utern16_t*)(m->value))->value));
 			break;
 		case OF12_MATCH_PPP_PROT:
-			match.set_ppp_prot(((utern16_t*)(m->value))->value);
+			match.insert(coxmatch_ofx_ppp_prot(((utern16_t*)(m->value))->value));
 			break;
 		default:
 			break;
@@ -1214,13 +1245,13 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of12_packet_matches
 	if(packet_matches->mpls_tc)
 		match.set_mpls_tc(packet_matches->mpls_tc);
 	if(packet_matches->pppoe_code)
-		match.set_pppoe_code(packet_matches->pppoe_code);
+		match.insert(coxmatch_ofx_pppoe_code(packet_matches->pppoe_code));
 	if(packet_matches->pppoe_type)
-		match.set_pppoe_type(packet_matches->pppoe_type);
+		match.insert(coxmatch_ofx_pppoe_type(packet_matches->pppoe_type));
 	if(packet_matches->pppoe_sid)
-		match.set_pppoe_sessid(packet_matches->pppoe_sid);
+		match.insert(coxmatch_ofx_pppoe_sid(packet_matches->pppoe_sid));
 	if(packet_matches->ppp_proto)
-		match.set_ppp_prot(packet_matches->ppp_proto);
+		match.insert(coxmatch_ofx_ppp_prot(packet_matches->ppp_proto));
 
 }
 

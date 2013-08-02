@@ -714,15 +714,34 @@ of12_translation_utils::of12_map_flow_entry_actions(
 			}
 		}
 			break;
-		case OFPAT_PUSH_PPPOE:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_PUSH_PPPOE, be16toh(raction.oac_push->ethertype), NULL, NULL);
-			break;
-		case OFPAT_POP_PPPOE:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_POP_PPPOE, be16toh(raction.oac_pop_pppoe->ethertype), NULL, NULL);
-			break;
-		case OFPAT_EXPERIMENTER:
-			// TODO
-			break;
+		case OFPAT_EXPERIMENTER: {
+
+			cofaction_experimenter eaction(raction);
+
+			switch (eaction.get_exp_id()) {
+			case ROFL_EXPERIMENTER_ID: {
+
+				// ROFL experimental actions contain experimental action type at position data[0]
+				uint8_t acttype = eaction.oac_experimenter_header->data[0];
+
+				switch (acttype) {
+				case cofaction_push_pppoe::OFXAT_PUSH_PPPOE: {
+					cofaction_push_pppoe paction(eaction);
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_PUSH_PPPOE, be16toh(paction.eoac_push->ethertype), NULL, NULL);
+				} break;
+				case cofaction_pop_pppoe::OFXAT_POP_PPPOE: {
+					cofaction_pop_pppoe paction(eaction);
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_POP_PPPOE, be16toh(paction.eoac_pop_pppoe->ethertype), NULL, NULL);
+				} break;
+				}
+
+			} break;
+			default: {
+				// TODO
+			} break;
+			}
+
+			} break;
 		}
 
 		if (NULL != apply_actions)

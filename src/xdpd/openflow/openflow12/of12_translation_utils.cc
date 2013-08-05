@@ -12,10 +12,10 @@ using namespace rofl;
 
 //Non-multiple of byte masks
 #define OF12_AT_20_BITS_MASK 0x00000000000FFFFF
-#define OF12_AT_13_BITS_MASK 0x00000000000FFFFF
-#define OF12_AT_6_BITS_MASK 0x00000000000FFFFF
-#define OF12_AT_3_BITS_MASK 0x00000000000FFFFF
-#define OF12_AT_2_BITS_MASK 0x00000000000FFFFF
+#define OF12_AT_13_BITS_MASK 0x0000000000001FFF
+#define OF12_AT_6_BITS_MASK 0x000000000000003F
+#define OF12_AT_3_BITS_MASK 0x0000000000000007
+#define OF12_AT_2_BITS_MASK 0x0000000000000003
 
 
 /*
@@ -518,6 +518,31 @@ of12_translation_utils::of12_map_flow_entry_matches(
 
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
+
+	try {
+		coxmatch_ofx_gtp_msg_type oxm_gtp_msg_type(
+				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_GTP_MSG_TYPE));
+
+		of12_match_t *match = of12_init_gtp_msg_type_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								oxm_gtp_msg_type.get_msg_type());
+
+		of12_add_match_to_entry(entry, match);
+	} catch (eOFmatchNotFound& e) {}
+
+	try {
+		coxmatch_ofx_gtp_teid oxm_gtp_teid(
+				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_GTP_TEID));
+
+		of12_match_t *match = of12_init_gtp_teid_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								oxm_gtp_teid.get_teid_value(),
+								oxm_gtp_teid.get_teid_mask());
+
+		of12_add_match_to_entry(entry, match);
+	} catch (eOFmatchNotFound& e) {}
 }
 
 
@@ -710,6 +735,16 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				case OFPXMT_OFX_PPP_PROT:
 				{
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPP_PROT, oxm.uint16_value(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFX_GTP_MSG_TYPE:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_GTP_MSG_TYPE, oxm.uint8_value(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFX_GTP_TEID:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_GTP_TEID, oxm.uint32_value(), NULL, NULL);
 				}
 					break;
 				}
@@ -922,6 +957,12 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			break;
 		case OF12_MATCH_PPP_PROT:
 			match.insert(coxmatch_ofx_ppp_prot(((utern16_t*)(m->value))->value));
+			break;
+		case OF12_MATCH_GTP_MSG_TYPE:
+			match.insert(coxmatch_ofx_gtp_msg_type(((utern8_t*)(m->value))->value));
+			break;
+		case OF12_MATCH_GTP_TEID:
+			match.insert(coxmatch_ofx_gtp_teid(((utern32_t*)(m->value))->value));
 			break;
 		default:
 			break;
@@ -1166,6 +1207,12 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	case OF12_AT_SET_FIELD_PPP_PROT: {
 		action = cofaction_set_field(coxmatch_ofx_ppp_prot((uint16_t)(of12_action->field & OF12_AT_2_BYTE_MASK)));
 	} break;
+	case OF12_AT_SET_FIELD_GTP_MSG_TYPE: {
+		action = cofaction_set_field(coxmatch_ofx_gtp_msg_type((uint8_t)(of12_action->field & OF12_AT_1_BYTE_MASK)));
+	} break;
+	case OF12_AT_SET_FIELD_GTP_TEID: {
+		action = cofaction_set_field(coxmatch_ofx_gtp_teid((uint32_t)(of12_action->field & OF12_AT_4_BYTE_MASK)));
+	} break;
 	case OF12_AT_GROUP: {
 		action = cofaction_group((uint32_t)(of12_action->field & OF12_AT_4_BYTE_MASK));
 	} break;
@@ -1252,6 +1299,9 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of12_packet_matches
 		match.insert(coxmatch_ofx_pppoe_sid(packet_matches->pppoe_sid));
 	if(packet_matches->ppp_proto)
 		match.insert(coxmatch_ofx_ppp_prot(packet_matches->ppp_proto));
-
+	if(packet_matches->gtp_msg_type)
+		match.insert(coxmatch_ofx_gtp_msg_type(packet_matches->gtp_msg_type));
+	if(packet_matches->gtp_teid)
+		match.insert(coxmatch_ofx_gtp_teid(packet_matches->gtp_teid));
 }
 

@@ -151,6 +151,13 @@ dpx86_set_pppoe_sid(datapacket_t* pkt, uint16_t sid);
 void
 dpx86_set_ppp_proto(datapacket_t* pkt, uint16_t proto);
 
+//GTP
+void
+dpx86_set_gtp_msg_type(datapacket_t* pkt, uint8_t gtp_msg_type);
+
+void
+dpx86_set_gtp_teid(datapacket_t* pkt, uint32_t teid);
+
 /* Output action */
 void
 dpx86_output_packet(datapacket_t* pkt, switch_port_t* port);
@@ -255,6 +262,13 @@ dpx86_get_packet_pppoe_sid(datapacket_t * const pkt);
 //PPP related extensions
 uint16_t
 dpx86_get_packet_ppp_proto(datapacket_t * const pkt);
+
+//GTP related extensions
+uint8_t
+dpx86_get_packet_gtp_msg_type(datapacket_t * const pkt);
+
+uint32_t
+dpx86_get_packet_gtp_teid(datapacket_t * const pkt);
 
 
 

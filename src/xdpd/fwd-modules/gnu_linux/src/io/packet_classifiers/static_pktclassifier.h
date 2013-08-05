@@ -53,6 +53,7 @@ public:
 	virtual rofl::fsctpframe* 	sctp(int idx = 0) 	const;
 	virtual rofl::fpppoeframe* 	pppoe(int idx = 0)	const;
 	virtual rofl::fpppframe* 	ppp(int idx = 0) 	const;
+	virtual rofl::fgtpuframe*	gtp(int idx = 0)	const;
 
 	/*
 	 * pop operations
@@ -60,6 +61,7 @@ public:
 	virtual void pop_vlan(void);
 	virtual void pop_mpls(uint16_t ether_type);
 	virtual void pop_pppoe(uint16_t ether_type);
+	virtual void pop_gtp(uint16_t ether_type);
 
 	/*
 	 * push operations
@@ -67,6 +69,7 @@ public:
 	virtual rofl::fvlanframe* 	push_vlan(uint16_t ether_type);
 	virtual rofl::fmplsframe* 	push_mpls(uint16_t ether_type);
 	virtual rofl::fpppoeframe* 	push_pppoe(uint16_t ether_type);
+	virtual rofl::fgtpuframe*	push_gtp(uint16_t ether_type);
 
 	/*
 	* dump
@@ -103,6 +106,7 @@ protected:
 		HEADER_TYPE_SCTP = 8,	
 		HEADER_TYPE_PPPOE = 9,	
 		HEADER_TYPE_PPP = 10,	
+		HEADER_TYPE_GTP = 11,
 
 		//Must be the last one
 		HEADER_TYPE_MAX = 11	
@@ -120,6 +124,7 @@ protected:
 	static const unsigned int MAX_SCTP_FRAMES = 2;
 	static const unsigned int MAX_PPPOE_FRAMES = 1;
 	static const unsigned int MAX_PPP_FRAMES = 1;
+	static const unsigned int MAX_GTP_FRAMES = 1;
 
 	//Total maximum header occurrences
 	static const unsigned int MAX_HEADERS = MAX_ETHER_FRAMES +
@@ -132,7 +137,8 @@ protected:
 							MAX_TCP_FRAMES +
 							MAX_SCTP_FRAMES +
 							MAX_PPPOE_FRAMES + 
-							MAX_PPP_FRAMES; 
+							MAX_PPP_FRAMES +
+							MAX_GTP_FRAMES;
 
 
 	//Relative positions within the array;
@@ -147,6 +153,7 @@ protected:
 	static const unsigned int FIRST_SCTP_FRAME_POS = FIRST_TCP_FRAME_POS+MAX_TCP_FRAMES;
 	static const unsigned int FIRST_PPPOE_FRAME_POS = FIRST_SCTP_FRAME_POS+MAX_SCTP_FRAMES;
 	static const unsigned int FIRST_PPP_FRAME_POS = FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES;
+	static const unsigned int FIRST_GTP_FRAME_POS = FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES;
 
 	//Just to be on the safe side of life
 	//assert( (FIRST_PPP_FRAME_POS + MAX_PPP_FRAMES) == MAX_HEADERS);
@@ -189,6 +196,7 @@ protected:
 	void parse_udp(uint8_t *data, size_t datalen);
 	void parse_tcp(uint8_t *data, size_t datalen);
 	void parse_sctp	(uint8_t *data, size_t datalen);
+	void parse_gtp(uint8_t *data, size_t datalen);
 
 	//Insert/pop frame
 	void pop_header(enum header_type type, unsigned int start, unsigned int end);

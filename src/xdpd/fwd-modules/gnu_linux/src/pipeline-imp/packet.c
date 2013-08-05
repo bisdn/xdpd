@@ -169,6 +169,18 @@ platform_packet_get_ppp_proto(datapacket_t * const pkt)
 	return dpx86_get_packet_ppp_proto(pkt);
 }
 
+uint8_t
+platform_packet_get_gtp_msg_type(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_gtp_msg_type(pkt);
+}
+
+uint32_t
+platform_packet_get_gtp_teid(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_gtp_teid(pkt);
+}
+
 
 //Actions
 void
@@ -387,6 +399,18 @@ void
 platform_packet_set_ppp_proto(datapacket_t* pkt, uint16_t proto)
 {
 	dpx86_set_ppp_proto(pkt, proto);
+}
+
+void
+platform_packet_set_gtp_msg_type(datapacket_t* pkt, uint8_t msg_type)
+{
+	dpx86_set_gtp_msg_type(pkt, msg_type);
+}
+
+void
+platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
+{
+	dpx86_set_gtp_teid(pkt, teid);
 }
 
 void

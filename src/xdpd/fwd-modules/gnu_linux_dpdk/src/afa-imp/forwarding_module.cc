@@ -23,6 +23,7 @@
 #include <rte_mbuf.h> 
 
 extern int optind; 
+struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
 
 /*
 * @name    fwd_module_init
@@ -35,7 +36,6 @@ extern int optind;
 afa_result_t fwd_module_init(){
 
 	int ret;
-	struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
 	const char* argv_fake[EAL_ARGS] = {"xdpd", "-c","1", "-n", "1", NULL};
 	
 	

@@ -109,7 +109,7 @@ protected:
 		HEADER_TYPE_GTP = 11,
 
 		//Must be the last one
-		HEADER_TYPE_MAX = 11	
+		HEADER_TYPE_MAX
 	};
 
 	//Maximum header occurrences per type

@@ -8,13 +8,18 @@
 #include "../config.h"
 
 typedef struct dpdk_port_state{
-	//RX queue
-	unsigned int rx_len;
-	struct rte_mbuf* rx_queue;
-	
+
+	//Core attachement state
+	bool scheduled;
+	unsigned int core_id;
+	unsigned int core_port_slot;
+
+	//port id (dpdk)
+	unsigned int port_id;
+
 	//TX queue(s)
 	unsigned int tx_len;
-	struct rte_mbuf* tx_queues[IO_IFACE_NUM_QUEUES];
+	struct rte_ring* tx_queues[IO_IFACE_NUM_QUEUES];
 }dpdk_port_state_t;
 
 #endif //_PORT_STATE_H_

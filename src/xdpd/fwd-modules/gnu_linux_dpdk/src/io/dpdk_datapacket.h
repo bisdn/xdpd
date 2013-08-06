@@ -14,10 +14,10 @@
 /*
 * Binds datapacket with dpdk's mbuf
 */
-typedef struct dpdk_port_platform_state{
+typedef struct dpdk_pkt_platform_state{
 	struct rte_mbuf* mbuf;
-	datapacketx86 pkt_x86;
-}dpdk_port_platform_state_t;
+	datapacketx86* pkt_x86;
+}dpdk_pkt_platform_state_t;
 
 
 #endif //_DPDK_DATAPACKET_H_

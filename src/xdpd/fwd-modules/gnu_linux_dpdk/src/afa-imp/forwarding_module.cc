@@ -26,6 +26,10 @@
 extern int optind; 
 struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
 
+//Some useful macros
+#define STR(a) #a
+#define XSTR(a) STR(a)
+
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself
@@ -37,7 +41,7 @@ struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
 afa_result_t fwd_module_init(){
 
 	int ret;
-	const char* argv_fake[EAL_ARGS] = {"xdpd", "-c", "RTE_CORE_MASK", "-n", "RTE_MEM_CHANNELS", NULL};
+	const char* argv_fake[EAL_ARGS] = {"xdpd", "-c", XSTR(RTE_CORE_MASK), "-n", XSTR(RTE_MEM_CHANNELS), NULL};
 	
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");

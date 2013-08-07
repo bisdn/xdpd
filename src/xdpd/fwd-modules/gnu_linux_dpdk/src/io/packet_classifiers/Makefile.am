@@ -11,7 +11,8 @@ libfwd_module_gnu_linux_dpdk_src_io_packet_classifiers_la_SOURCES = static_pktcl
 						static_pktclassifier.h\
 						rofl_pktclassifier.h\
 						rofl_pktclassifier.cc\
-						packetclassifier.h
+						packetclassifier.h\
+						packetclassifier.cc
 libfwd_module_gnu_linux_dpdk_src_io_packet_classifiers_la_LIBADD =  
 		
 library_include_HEADERS=

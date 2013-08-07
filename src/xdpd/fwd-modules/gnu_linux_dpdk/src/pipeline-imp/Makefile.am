@@ -1,12 +1,12 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-noinst_LTLIBRARIES = libfwd_module_gnu_linux_dpdk_pipeline_imp.la
+noinst_LTLIBRARIES = libfwd_module_gnu_linux_dpdk_src_pipeline_imp.la
 
-libfwd_module_gnu_linux_dpdk_pipeline_imp_la_SOURCES = \
+libfwd_module_gnu_linux_dpdk_src_pipeline_imp_la_SOURCES = \
 					memory.c\
 					packet.c\
 					platform_hooks_of12.cc\
 					pthread_atomic_operations.c\
 					pthread_lock.c
 
-libfwd_module_gnu_linux_dpdk_pipeline_imp_la_LIBADD = 
+libfwd_module_gnu_linux_dpdk_src_pipeline_imp_la_LIBADD = 

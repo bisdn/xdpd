@@ -33,12 +33,6 @@ typedef struct core_tasks{
 }core_tasks_t;
 
 /**
-* Task lists
-*/
-core_tasks_t core_tasks[RTE_MAX_LCORE];
-
-
-/**
 * Initialize data structures for processing to work 
 */
 rofl_result_t processing_init(void);

@@ -15,6 +15,8 @@
 static unsigned int current_core_index;
 static unsigned int max_cores;
 static rte_spinlock_t mutex;
+core_tasks_t processing_cores[RTE_MAX_LCORE];
+
 
 /*
 * Initialize data structures for processing to work 
@@ -26,7 +28,7 @@ rofl_result_t processing_init(void){
 	enum rte_lcore_role_t role;
 
 	//Cleanup
-	memset(core_tasks,0,sizeof(core_tasks_t)*RTE_MAX_LCORE);	
+	memset(processing_cores,0,sizeof(core_tasks_t)*RTE_MAX_LCORE);	
 
 	//Init 
 	current_core_index = 0;
@@ -38,7 +40,7 @@ rofl_result_t processing_init(void){
 	for(i=0; i < max_cores; ++i){
 		role = rte_eal_lcore_role(i);
 		if(role == ROLE_RTE)
-			core_tasks[i].available = true;
+			processing_cores[i].available = true;
 	}
 
 	return ROFL_SUCCESS;
@@ -52,11 +54,15 @@ rofl_result_t processing_destroy(void){
 
 	unsigned int i;
 
-	//All of them to stop
-	for(i=0;i<RTE_MAX_LCORE;++i)
-		core_tasks[i].active = false;
+	//Stop all cores and wait for them to complete execution tasks
+	for(i=0;i<RTE_MAX_LCORE;++i){
+		if(processing_cores[i].available && processing_cores[i].active){
+			processing_cores[i].active = false;
+			//Join core
+			rte_eal_wait_lcore(i);
+		}
+	}
 
-	//Join all cores 
 	
 	return ROFL_SUCCESS;
 }
@@ -113,7 +119,7 @@ int processing_core_process_packets(void* not_used){
 	unsigned int i;
 	switch_port_t* port;
 	struct rte_mbuf* pkts_burst[IO_IFACE_MAX_PKT_BURST];
-	core_tasks_t* tasks = &core_tasks[rte_lcore_id()];
+	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
 
 	//Parsing and pipeline extra state
 	datapacket_t pkt;
@@ -176,12 +182,12 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			assert(0);		
 			return ROFL_FAILURE;
 		}
-	}while( core_tasks[current_core_index].available == false || core_tasks[current_core_index].num_of_ports == MAX_PORTS_PER_CORE);
+	}while( processing_cores[current_core_index].available == false || processing_cores[current_core_index].num_of_ports == MAX_PORTS_PER_CORE);
 
-	num_of_ports = &core_tasks[current_core_index].num_of_ports;
+	num_of_ports = &processing_cores[current_core_index].num_of_ports;
 
 	//Assign port and exit
-	if(core_tasks[current_core_index].port_list[*num_of_ports] != NULL){
+	if(processing_cores[current_core_index].port_list[*num_of_ports] != NULL){
 		ROFL_ERR("Corrupted state on the core task list\n");
 		assert(0);
 		rte_spinlock_unlock(&mutex);
@@ -192,14 +198,14 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	port_state->core_id = current_core_index; 
 	port_state->core_port_slot = *num_of_ports;
 	
-	core_tasks[current_core_index].port_list[*num_of_ports] = port;
+	processing_cores[current_core_index].port_list[*num_of_ports] = port;
 	(*num_of_ports)++;
 	
 	index = current_core_index;
 	
 	rte_spinlock_unlock(&mutex);
 
-	if(!core_tasks[index].active){
+	if(!processing_cores[index].active){
 		if(rte_eal_get_lcore_state(index) != WAIT){
 			assert(0);
 			rte_panic("Core status corrupted!");
@@ -222,7 +228,7 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 
 	unsigned int i;
 	dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;	
-	core_tasks_t* core_task = &core_tasks[port_state->core_id];
+	core_tasks_t* core_task = &processing_cores[port_state->core_id];
 
 	if(port_state->scheduled == false){
 		ROFL_ERR("Tyring to descheduled an unscheduled port\n");
@@ -242,7 +248,7 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	core_task->num_of_ports--;
 	core_task->port_list[core_task->num_of_ports] = NULL;
 
-	//If there are no more ports, so simply stop core
+	//There are no more ports, so simply stop core
 	if(core_task->num_of_ports == 0){
 		if(rte_eal_get_lcore_state(port_state->core_id) != RUNNING){
 			ROFL_ERR("Corrupted state; port was marked as active, but EAL informs it was not running..\n");
@@ -271,7 +277,7 @@ void processing_dump_core_state(void){
 	core_tasks_t* core_task;
 	
 	for(i=0;i<max_cores;++i){
-		core_task = &core_tasks[i];
+		core_task = &processing_cores[i];
 		if(!core_task->available)
 			continue;
 

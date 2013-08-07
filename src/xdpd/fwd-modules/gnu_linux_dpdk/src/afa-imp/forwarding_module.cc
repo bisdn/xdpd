@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <net/if.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/afa/cmm.h>
@@ -14,6 +13,7 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "../config.h"
+#include "../processing/processing.h"
 
 //DPDK includes
 #include <rte_common.h> 
@@ -46,22 +46,13 @@ afa_result_t fwd_module_init(){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
 	
-	//If using ROFL-PIPELINE, the physical switch must be inited
-	if(physical_switch_init() != ROFL_SUCCESS)
-		return AFA_FAILURE;
 
-	//Likely here you are going to discover platform ports;
-	//If using ROFL_pipeline you would then add them (physical_switch_add_port()
-
-	//Initialize some form of background task manager
-	
         /* init EAL library */
 	optind=1;
 	ret = rte_eal_init(EAL_ARGS-1, (char**)argv_fake);
 	if (ret < 0)
 		rte_exit(EXIT_FAILURE, "rte_eal_init failed");
 	optind=1;
-
 
 	/* create the mbuf pools */
 	pool_direct = rte_mempool_create("pool_direct", NB_MBUF,
@@ -85,6 +76,15 @@ afa_result_t fwd_module_init(){
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
 
+	//Initialize pipeline
+	if(physical_switch_init() != ROFL_SUCCESS)
+		return AFA_FAILURE;
+
+	//XXX: discover ports	
+
+	//Initialize processing
+	processing_init();
+	
 	ROFL_ERR("Found %u DPDK-enabled interfaces\n", rte_eth_dev_count());
 	
 	return AFA_SUCCESS; 
@@ -99,6 +99,8 @@ afa_result_t fwd_module_destroy(){
 
 	//In this function you allow the platform
 	//to be properly cleaning its own state
+
+	processing_destroy();
 
 	//If using the pipeline you should call
 	//physical_switch_destroy();

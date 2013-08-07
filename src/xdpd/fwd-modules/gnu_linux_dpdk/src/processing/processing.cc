@@ -41,6 +41,8 @@ rofl_result_t processing_init(void){
 		role = rte_eal_lcore_role(i);
 		if(role == ROLE_RTE)
 			processing_cores[i].available = true;
+		
+		ROFL_DEBUG("Marking core %u as available\n",i);
 	}
 
 	return ROFL_SUCCESS;
@@ -54,16 +56,17 @@ rofl_result_t processing_destroy(void){
 
 	unsigned int i;
 
+	ROFL_DEBUG("Shutting down all active cores\n");
+	
 	//Stop all cores and wait for them to complete execution tasks
 	for(i=0;i<RTE_MAX_LCORE;++i){
 		if(processing_cores[i].available && processing_cores[i].active){
+			ROFL_DEBUG("Shutting downi active core %u\n",i);
 			processing_cores[i].active = false;
 			//Join core
 			rte_eal_wait_lcore(i);
 		}
 	}
-
-	
 	return ROFL_SUCCESS;
 }
 
@@ -211,6 +214,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			rte_panic("Core status corrupted!");
 		}
 		
+		ROFL_DEBUG("Launching core %u due to scheduling action of port %p\n", index, port);
 		//Launch
 		if( rte_eal_remote_launch(processing_core_process_packets, NULL, index) < 0)
 			rte_panic("Unable to launch core %u! Status was NOT wait (race-condition?)", index);
@@ -255,6 +259,9 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 			assert(0);
 			
 		}
+		
+		ROFL_DEBUG("Shutting down core %u, since port list is empty\n",i);
+		
 		core_task->active = false;
 		
 		//Wait for core to stop

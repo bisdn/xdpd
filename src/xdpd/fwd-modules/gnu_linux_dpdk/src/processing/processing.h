@@ -32,6 +32,9 @@ typedef struct core_tasks{
 	switch_port_t* port_list[MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
 }core_tasks_t;
 
+//C++ extern C
+ROFL_BEGIN_DECLS
+
 /**
 * Initialize data structures for processing to work 
 */
@@ -63,5 +66,7 @@ int processing_core_process_packets(void*);
 */
 void processing_dump_core_state(void);
 
+//C++ extern C
+ROFL_END_DECLS
 
 #endif //_PROCESSING_H_

@@ -13,6 +13,7 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "../config.h"
+#include "../io/port_manager.h"
 #include "../processing/processing.h"
 
 //DPDK includes
@@ -80,10 +81,13 @@ afa_result_t fwd_module_init(){
 	if(physical_switch_init() != ROFL_SUCCESS)
 		return AFA_FAILURE;
 
-	//XXX: discover ports	
+	//Discover and initialize rofl-pipeline state
+	if(port_manager_discover_system_ports() != ROFL_SUCCESS)
+		return AFA_FAILURE;
 
 	//Initialize processing
-	processing_init();
+	if(processing_init() != ROFL_SUCCESS)
+		return AFA_FAILURE;
 	
 	ROFL_ERR("Found %u DPDK-enabled interfaces\n", rte_eth_dev_count());
 	

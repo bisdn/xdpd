@@ -8,6 +8,8 @@ library_includedir=$(includedir)/fwd-modules/gnu_linux_dpdk/io
 include_HEADERS=
 
 libfwd_module_gnu_linux_dpdk_src_io_la_SOURCES = \
+					port_manager.h\
+					port_manager.cc\
 					datapacketx86.h\
 					datapacketx86.cc
 libfwd_module_gnu_linux_dpdk_src_io_la_LIBADD = \

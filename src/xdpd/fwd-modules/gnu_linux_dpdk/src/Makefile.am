@@ -12,6 +12,7 @@ libfwd_module_gnu_linux_dpdk_src_la_LIBADD = \
 		afa-imp/libfwd_module_gnu_linux_dpdk_afa_imp.la\
 		pipeline-imp/libfwd_module_gnu_linux_dpdk_pipeline_imp.la\
 		-lrte_eal\
+		-lethdev\
 		-lrte_hash\
 		-lrte_kni\
 		-lrte_lpm\

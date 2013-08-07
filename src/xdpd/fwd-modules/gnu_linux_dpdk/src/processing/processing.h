@@ -64,4 +64,10 @@ rofl_result_t processing_deschedule_port(switch_port_t* port);
 */
 void processing_process_packets_core(void);
 
+/**
+* Dump core state
+*/
+void processing_dump_core_state(void);
+
+
 #endif //_PROCESSING_H_

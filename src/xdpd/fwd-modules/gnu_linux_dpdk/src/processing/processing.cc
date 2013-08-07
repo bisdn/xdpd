@@ -234,5 +234,36 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	return ROFL_SUCCESS;
 }
 
+/*
+* Dump core state
+*/
+void processing_dump_core_state(void){
+
+	unsigned int i,j;
+	core_tasks_t* core_task;
+	
+	for(i=0;i<max_cores;++i){
+		core_task = &core_tasks[i];
+		if(!core_task->available)
+			continue;
+
+		//Print basic info	
+		ROFL_ERR("Core: %u ",i);
+		
+		if(!core_task->active)
+			ROFL_DEBUG("IN");
+		ROFL_DEBUG("ACTIVE port-list:[");
+	
+		for(j=0;j<core_task->num_of_ports;++j){
+			if(core_task->port_list[j] == NULL){
+				ROFL_DEBUG("error_NULL,");
+				continue;
+			}
+			ROFL_DEBUG("%s,",core_task->port_list[j]->name);
+		}
+		ROFL_DEBUG("]\n");
+	}
+}
+
 
 

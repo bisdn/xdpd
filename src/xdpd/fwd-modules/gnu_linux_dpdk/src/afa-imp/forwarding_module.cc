@@ -21,6 +21,7 @@
 #include <rte_launch.h> 
 #include <rte_mempool.h> 
 #include <rte_mbuf.h> 
+#include <rte_ethdev.h> 
 
 extern int optind; 
 struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
@@ -79,6 +80,8 @@ afa_result_t fwd_module_init(){
 
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
+
+	ROFL_ERR("Found %u DPDK-enabled interfaces\n", rte_eth_dev_count());
 	
 	return AFA_SUCCESS; 
 }

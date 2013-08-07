@@ -134,6 +134,60 @@ platform_packet_get_icmpv4_code(datapacket_t * const pkt)
 	return dpx86_get_packet_icmpv4_code(pkt);
 }
 
+uint128__t
+platform_packet_get_ipv6_src(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_ipv6_src(pkt);
+}
+
+uint128__t
+platform_packet_get_ipv6_dst(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_ipv6_dst(pkt);
+}
+
+uint64_t
+platform_packet_get_ipv6_flabel(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_ipv6_flabel(pkt);
+}
+
+uint128__t
+platform_packet_get_ipv6_nd_target(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_ipv6_nd_target(pkt);
+}
+
+uint64_t
+platform_packet_get_ipv6_nd_sll(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_ipv6_nd_sll(pkt);
+}
+
+uint64_t
+platform_packet_get_ipv6_nd_tll(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_ipv6_nd_tll(pkt);
+}
+
+uint64_t
+platform_packet_get_ipv6_exthdr(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_ipv6_exthdr(pkt);
+}
+
+uint64_t
+platform_packet_get_icmpv6_type(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_icmpv6_type(pkt);
+}
+
+uint64_t
+platform_packet_get_icmpv6_code(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_icmpv6_code(pkt);
+}
+
 uint32_t
 platform_packet_get_mpls_label(datapacket_t * const pkt)
 {
@@ -352,6 +406,60 @@ void
 platform_packet_set_icmpv4_code(datapacket_t* pkt, uint8_t code)
 {
 	dpx86_set_icmpv4_code(pkt, code);
+}
+
+void
+platform_packet_set_ipv6_src(datapacket_t* pkt, uint128__t ipv6_src)
+{
+	/*TODO IPV6*/
+}
+
+void
+platform_packet_set_ipv6_dst(datapacket_t* pkt, uint128__t ipv6_dst)
+{
+	/*TODO IPV6*/
+}
+
+void
+platform_packet_set_ipv6_flabel(datapacket_t* pkt, uint64_t ipv6_flabel)
+{
+	/*TODO IPV6*/
+}
+
+void
+platform_packet_set_ipv6_nd_target(datapacket_t* pkt, uint128__t ipv6_nd_target)
+{
+	/*TODO IPV6*/
+}
+
+void
+platform_packet_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll)
+{
+	/*TODO IPV6*/
+}
+
+void
+platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
+{
+	/*TODO IPV6*/
+}
+
+void
+platform_packet_set_ipv6_exthdr(datapacket_t* pkt, uint64_t ipv6_exthdr)
+{
+	/*TODO IPV6*/
+}
+
+void
+platform_packet_set_icmpv6_type(datapacket_t* pkt, uint64_t icmpv6_type)
+{
+	/*TODO ICMPV6*/
+}
+
+void
+platform_packet_set_icmpv6_code(datapacket_t* pkt, uint64_t icmpv6_code)
+{
+	/*TODO ICMPV6*/
 }
 
 void

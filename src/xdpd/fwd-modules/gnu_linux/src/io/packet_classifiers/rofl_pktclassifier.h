@@ -51,6 +51,8 @@ public:
 	virtual rofl::farpv4frame* 	arpv4(int idx = 0) const;
 	virtual rofl::fipv4frame* 	ipv4(int idx = 0) 	const;
 	virtual rofl::ficmpv4frame* icmpv4(int idx = 0) const;
+	virtual rofl::fipv6frame* 	ipv6(int idx = 0) 	const;
+	virtual rofl::ficmpv6frame* icmpv6(int idx = 0) const;
 	virtual rofl::fudpframe* 	udp(int idx = 0) 	const;
 	virtual rofl::ftcpframe* 	tcp(int idx = 0) 	const;
 	virtual rofl::fsctpframe* 	sctp(int idx = 0) 	const;
@@ -143,6 +145,8 @@ protected:
 	void parse_arpv4(uint8_t *data, size_t datalen);
 	void parse_ipv4	(uint8_t *data, size_t datalen);
 	void parse_icmpv4(uint8_t *data, size_t datalen);
+	void parse_ipv6	(uint8_t *data, size_t datalen);
+	void parse_icmpv6(uint8_t *data, size_t datalen);
 	void parse_udp(uint8_t *data, size_t datalen);
 	void parse_tcp(uint8_t *data, size_t datalen);
 	void parse_sctp	(uint8_t *data, size_t datalen);

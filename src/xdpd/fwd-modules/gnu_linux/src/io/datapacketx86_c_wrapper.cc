@@ -14,11 +14,6 @@
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
-//Debug
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_packet_matches.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_match.h>
-
-
 //Flood meta port
 extern switch_port_t* flood_meta_port;
 
@@ -371,7 +366,6 @@ static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, s
 	if(port && port->platform_port_state){
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
-		of12_dump_packet_matches((of12_packet_matches_t*)pkt->matches);
 
 		//Schedule in the port
 		ioport* ioport_inst = (ioport*)port->platform_port_state; 
@@ -464,8 +458,6 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			//send the replica
 			dpx86_output_single_packet(replica, replica_pack, port_it);
 		}
-
-		of12_dump_packet_matches((of12_packet_matches_t*)pkt->matches);
 			
 		//discard the original packet always (has been replicated)
 		bufferpool::release_buffer(pkt);
@@ -661,6 +653,99 @@ dpx86_get_packet_icmpv4_code(datapacket_t * const pkt)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == pack->headers->icmpv4(0))) return 0;
 	return pack->headers->icmpv4(0)->get_icmp_code();
+}
+
+//IPv6
+uint128__t
+dpx86_get_packet_ipv6_src(datapacket_t * const pkt)
+{
+	
+	uint128__t ipv6_src = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}; //memset 0?
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->ipv6(0))) return ipv6_src;
+	ipv6_src = pack->headers->ipv6(0)->get_ipv6_src().get_ipv6_addr();
+	return ipv6_src;
+}
+
+uint128__t dpx86_get_packet_ipv6_dst(datapacket_t*const pkt)
+{
+	
+	uint128__t ipv6_dst = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}; //memset 0?
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->ipv6(0))) return ipv6_dst;
+	ipv6_dst = pack->headers->ipv6(0)->get_ipv6_dst().get_ipv6_addr();
+	return ipv6_dst;
+}
+
+uint64_t
+dpx86_get_packet_ipv6_flabel(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->ipv6(0))) return 0;
+	return pack->headers->ipv6(0)->get_flow_label();
+}
+
+uint128__t dpx86_get_packet_ipv6_nd_target(datapacket_t*const pkt)
+{
+	
+	uint128__t ipv6_nd_target = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}; //memset 0?
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->icmpv6(0))) return ipv6_nd_target;
+	ipv6_nd_target = pack->headers->icmpv6(0)->get_icmpv6_neighbor_taddr().get_ipv6_addr();
+	return ipv6_nd_target;
+}
+
+uint64_t
+dpx86_get_packet_ipv6_nd_sll(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->icmpv6(0))) return 0;
+	try{
+		return pack->headers->icmpv6(0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).get_ll_saddr().get_mac();
+	}catch(...){
+		return 0;
+	}
+}
+
+uint64_t
+dpx86_get_packet_ipv6_nd_tll(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->icmpv6(0))) return 0;
+	try{
+		return pack->headers->icmpv6(0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET)	.get_ll_taddr().get_mac();
+	}catch(...)	{
+		return 0;
+	}
+	
+}
+
+uint64_t
+dpx86_get_packet_ipv6_exthdr(datapacket_t * const pkt)
+{
+	/*
+	 * TODO 
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->ipv6(0))) return 0;
+	return pack->headers->ipv6(0)->get_ipv6_ext_hdr();
+	*/
+	return 0;
+}
+//ICMPv6
+uint64_t
+dpx86_get_packet_icmpv6_type(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->icmpv6(0))) return 0;
+	return pack->headers->icmpv6(0)->get_icmpv6_type();
+}
+
+uint64_t
+dpx86_get_packet_icmpv6_code(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if((NULL==pkt) || (NULL == pack->headers->icmpv6(0))) return 0;
+	return pack->headers->icmpv6(0)->get_icmpv6_code();
 }
 
 //MPLS-outermost label

@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <rofl/datapath/pipeline/common/ternary_fields.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 
 /**
@@ -234,6 +235,35 @@ dpx86_get_packet_icmpv4_type(datapacket_t * const pkt);
 
 uint8_t
 dpx86_get_packet_icmpv4_code(datapacket_t * const pkt);
+
+//IPv6
+uint128__t
+dpx86_get_packet_ipv6_src(datapacket_t * const pkt);
+
+uint128__t
+dpx86_get_packet_ipv6_dst(datapacket_t * const pkt);
+
+uint64_t
+dpx86_get_packet_ipv6_flabel(datapacket_t * const pkt);
+
+uint128__t
+dpx86_get_packet_ipv6_nd_target(datapacket_t * const pkt);
+
+uint64_t
+dpx86_get_packet_ipv6_nd_sll(datapacket_t * const pkt);
+
+uint64_t
+dpx86_get_packet_ipv6_nd_tll(datapacket_t * const pkt);
+
+uint64_t
+dpx86_get_packet_ipv6_exthdr(datapacket_t * const pkt);
+
+//ICMPv6
+uint64_t
+dpx86_get_packet_icmpv6_type(datapacket_t * const pkt);
+
+uint64_t
+dpx86_get_packet_icmpv6_code(datapacket_t * const pkt);
 
 //MPLS-outermost label
 uint32_t

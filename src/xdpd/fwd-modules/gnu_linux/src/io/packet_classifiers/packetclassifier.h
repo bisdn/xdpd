@@ -18,6 +18,8 @@
 #include <rofl/common/protocols/farpv4frame.h>
 #include <rofl/common/protocols/fipv4frame.h>
 #include <rofl/common/protocols/ficmpv4frame.h>
+#include <rofl/common/protocols/fipv6frame.h>
+#include <rofl/common/protocols/ficmpv6frame.h>
 #include <rofl/common/protocols/fudpframe.h>
 #include <rofl/common/protocols/ftcpframe.h>
 #include <rofl/common/protocols/fsctpframe.h>
@@ -64,6 +66,8 @@ public:
 	virtual rofl::farpv4frame* arpv4(int idx = 0) const=0;
 	virtual rofl::fipv4frame* ipv4(int idx = 0) const=0;
 	virtual rofl::ficmpv4frame* icmpv4(int idx = 0) const=0;
+	virtual rofl::fipv6frame* ipv6(int idx = 0) const=0;
+	virtual rofl::ficmpv6frame* icmpv6(int idx = 0) const=0;
 	virtual rofl::fudpframe* udp(int idx = 0) const=0;
 	virtual rofl::ftcpframe* tcp(int idx = 0) const=0;
 	virtual rofl::fsctpframe* sctp(int idx = 0) const=0;

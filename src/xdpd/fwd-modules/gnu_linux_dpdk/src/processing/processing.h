@@ -16,6 +16,7 @@
 #include <rte_mbuf.h> 
 #include <rte_ethdev.h>
 #include <rte_ring.h>
+#include <rte_launch.h>
 
 #include "../io/dpdk_datapacket.h"
 
@@ -27,7 +28,6 @@
 typedef struct core_tasks{
 	bool available;
 	bool active;
-	bool stop;
 	unsigned int num_of_ports;
 	switch_port_t* port_list[MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
 }core_tasks_t;
@@ -62,7 +62,7 @@ rofl_result_t processing_deschedule_port(switch_port_t* port);
 /**
 * Packet processing routine for cores 
 */
-void processing_process_packets_core(void);
+int processing_core_process_packets(void*);
 
 /**
 * Dump core state

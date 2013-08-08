@@ -141,7 +141,8 @@ static rofl_result_t netfpga_delete_entry_hw(unsigned int pos){
 
 	//Creating empty tmp entry	
 	netfpga_flow_entry_t* hw_entry = netfpga_init_flow_entry();
-	
+	hw_entry->hw_pos=pos;
+
 	if(!hw_entry)
 		return ROFL_FAILURE; 
 	
@@ -172,7 +173,7 @@ static rofl_result_t netfpga_init_dma_mechanism(){
 	for (i = 0; i < 4; ++i) {
 		entry->matches->src_port = 0x1 << (i * 2);
 		entry->actions->forward_bitmask = 0x1 << ((i * 2) + 1);
-		entry->hw_pos =(NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE - 4) + i; 	
+		entry->hw_pos =(NETFPGA_OPENFLOW_WILDCARD_FULL_TABLE_SIZE - 4) + i; 				//entry->hw_pos =(NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE - 4) + i; 	
 		
 		//Install entry
 		if(netfpga_add_entry_hw(entry) != ROFL_SUCCESS)
@@ -183,7 +184,7 @@ static rofl_result_t netfpga_init_dma_mechanism(){
 	for (i = 0; i < 4; ++i) {
 		entry->matches->src_port = 0x1 << ((i * 2) + 1);
 		entry->actions->forward_bitmask = 0x1 << (i * 2);
-		entry->hw_pos =(NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE - 8) + i; 	
+		entry->hw_pos =(NETFPGA_OPENFLOW_WILDCARD_FULL_TABLE_SIZE - 8) + i; 	//entry->hw_pos =(NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE - 8) + i; 	
 	
 		//Install entry
 		if(netfpga_add_entry_hw(entry) != ROFL_SUCCESS)
@@ -206,7 +207,7 @@ netfpga_device_t* netfpga_get(){
 	return nfpga;
 }
 
-//Initializes the netfpga shared state, including appropiate state of registers and bootstrap.
+//Initializes the netfpga shared state, including appropiate state of registers and bootstrap. 
 rofl_result_t netfpga_init(){
 
 	if(nfpga){
@@ -365,7 +366,8 @@ rofl_result_t netfpga_delete_all_entries(void){
 	//Attempt to delete all entries in the table
 	//for wildcarded flow entries
 	entry->type = NETFPGA_FE_WILDCARDED;
-	for(i=0; i< (NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE - NETFPGA_RESERVED_FOR_CPU2NETFPGA) ; ++i){
+	for(i=NETFPGA_WILDCARD_BASE ; i< (NETFPGA_WILDCARD_BASE + NETFPGA_OPENFLOW_WILDCARD_FULL_TABLE_SIZE - NETFPGA_RESERVED_FOR_CPU2NETFPGA) ; ++i){ 
+		//fixed +0x8000 NETFPGA_WILDCARD_BASE and NETFPGA_OPENFLOW_WILDCARD_FULL_TABLE_SIZE
 		entry->hw_pos = i;
 		netfpga_delete_entry_hw(entry->hw_pos);	
 	}

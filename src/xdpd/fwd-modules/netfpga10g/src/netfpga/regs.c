@@ -18,6 +18,8 @@ rofl_result_t netfpga_read_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_
 
 	//Put value and return	
 	*value = reg.reg_val;
+
+	ROFL_DEBUG(stderr, "READ on addr: 0x%x value: 0x%x\n",reg_id, reg.reg_val);
 	
 	return ROFL_SUCCESS;
 }
@@ -35,6 +37,8 @@ rofl_result_t netfpga_write_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32
 		
 		return ROFL_FAILURE;
 	}
+
+	ROFL_DEBUG(stderr, "WRITING on addr: 0x%x value: 0x%x\n", reg_id, value);
 
 	return ROFL_SUCCESS;
 }

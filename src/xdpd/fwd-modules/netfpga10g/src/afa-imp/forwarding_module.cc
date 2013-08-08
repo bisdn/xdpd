@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <net/if.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/afa/cmm.h>
@@ -11,9 +10,11 @@
 #include <string.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../io/bufferpool.h"
 #include "../bg_taskmanager.h"
 #include "../netfpga/netfpga.h"
 #include "../netfpga/ports.h"
+#include "../config.h"
 
 #define FWD_MOD_NAME "netfpga10g"
 
@@ -48,6 +49,9 @@ afa_result_t fwd_module_init(){
 		return AFA_FAILURE;	
 	}
 
+	//Init bufferpool
+	bufferpool::init();
+
 	//Initialize some form of background task manager
 	launch_background_tasks_manager();
 	
@@ -74,6 +78,9 @@ afa_result_t fwd_module_destroy(){
 
 	//If using the pipeline you should call
 	physical_switch_destroy();
+
+	//Destroy bufferpool
+	bufferpool::destroy();
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_destroy()\n");
 	
@@ -353,5 +360,8 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
  * @return
  */
 afa_result_t fwd_module_list_matching_algorithms(of_version_t of_version, const char * const** name_list, int *count){
-	return of_get_switch_matching_algorithms(of_version, name_list, count);
+	if(of_get_switch_matching_algorithms(of_version, name_list, count) != ROFL_SUCCESS)
+		return AFA_FAILURE;
+	
+	return AFA_SUCCESS;
 }

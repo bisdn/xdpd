@@ -7,7 +7,7 @@ noinst_LTLIBRARIES = libfwd_module_netfpga10g_src.la
 library_includedir=$(includedir)/fwd-modules/netfpga10g
 include_HEADERS=
 
-libfwd_module_netfpga10g_src_la_SOURCES = bg_taskmanager.c 
+libfwd_module_netfpga10g_src_la_SOURCES = bg_taskmanager.cc config.cc 
 libfwd_module_netfpga10g_src_la_LIBADD = \
 		afa-imp/libfwd_module_netfpga10g_afa_imp.la\
 		io/libfwd_module_netfpga10g_io.la\

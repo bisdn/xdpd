@@ -7,7 +7,6 @@
 #include <linux/rtnetlink.h>
 #include <linux/ethtool.h>
 #include <linux/sockios.h>
-#include <net/if.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/epoll.h>
@@ -22,6 +21,9 @@
 #include "netfpga/netfpga.h"
 #include "netfpga/ports.h"
 #include "io/packet_io.h"
+#include "io/bufferpool.h"
+#include "pipeline-imp/ls_internal_state.h"
+#include "util/time_utils.h"
 
 //Local static variable for background manager thread
 static pthread_t bg_thread;
@@ -35,21 +37,6 @@ static bool bg_continue_execution = true;
  * - TODO: free space in the buffer pool when a buffer is too old
  * - more?
  */
-
-/**
- * @name get_time_difference_ms
- * @brief returns the time difference between 2 timeval structs in ms
- * @param now latest time
- * @param last oldest time
- */
-uint64_t get_time_difference_ms(struct timeval *now, struct timeval *last)
-{
-	/*diff = now -last; now > last !!*/
-	struct timeval res;
-	timersub(now,last,&res);
-	
-	return res.tv_sec * 1000 + res.tv_usec/1000;
-}
 
 /**
  * @name update_port_status
@@ -67,10 +54,11 @@ rofl_result_t update_port_status(char * name){
  */
 int process_timeouts()
 {
+	datapacket_t* pkt;
 	unsigned int i, max_switches;
 	struct timeval now;
 	of_switch_t** logical_switches;
-	static struct timeval last_time_entries_checked={0,0} /*, last_time_pool_checked={0,0}*/;
+	static struct timeval last_time_entries_checked={0,0} , last_time_pool_checked={0,0};
 	gettimeofday(&now,NULL);
 
 	//Retrieve the logical switches list
@@ -102,27 +90,28 @@ int process_timeouts()
 #endif
 		last_time_entries_checked = now;
 	}
-#if 0
-//DISABLED!	
+	
 	if(get_time_difference_ms(&now, &last_time_pool_checked)>=LSW_TIMER_BUFFER_POOL_MS){
 		uint32_t buffer_id;
-		datapacket_store_handle *dps=NULL;
+		datapacket_storage *dps=NULL;
 		
 		for(i=0; i<max_switches; i++){
 
 			if(logical_switches[i] != NULL){
 
-				dps = ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->store_handle ;
+				dps = ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
 				//TODO process buffers in the storage
-				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
+				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
 					ROFL_DEBUG_VERBOSE("<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
-
-					if(datapacket_storage_get_packet_wrapper(dps,buffer_id)==NULL){
-						ROFL_DEBUG_VERBOSE("<%s:%d> Error in get_packet_wrapper\n",__func__,__LINE__);
+					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
+						ROFL_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
-						ROFL_DEBUG_VERBOSE("<%s:%d> datapacket expired correctly\n",__func__,__LINE__);
+						ROFL_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
+						//Return buffer to bufferpool
+						bufferpool::release_buffer(pkt);
 					}
+
 				}
 			}
 		}
@@ -132,7 +121,7 @@ int process_timeouts()
 #endif
 		last_time_pool_checked = now;
 	}
-#endif	
+
 	return ROFL_SUCCESS;
 }
 

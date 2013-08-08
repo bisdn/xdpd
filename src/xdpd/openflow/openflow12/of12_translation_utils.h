@@ -17,6 +17,9 @@
 
 #include "../openflow_switch.h"
 
+#include <rofl/common/openflow/experimental/matches/pppoe_matches.h>
+#include <rofl/common/openflow/experimental/actions/pppoe_actions.h>
+
 /**
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 * @author Marc Sune<marc.sune (at) bisdn.de>

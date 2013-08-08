@@ -11,20 +11,15 @@
 //Constructor and destructor
 ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
 {
-	//Input queue
-	input_queue = new ringbuffer();
-
 	//Output queues
 	num_of_queues = q_num;	
-	output_queues = new ringbuffer[num_of_queues];
 
 	//of_port_state
 	of_port_state = of_ps;
+	sw_processing_queue = NULL;
 }
 ioport::~ioport(){
 
-	delete input_queue;
-	delete [] output_queues;
 }
 
 /**

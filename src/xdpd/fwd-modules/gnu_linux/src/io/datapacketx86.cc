@@ -24,6 +24,8 @@ datapacketx86::datapacketx86() :
 	 tcp_recalc_checksum(false),
 	 udp_recalc_checksum(false),
 	 icmpv4_recalc_checksum(false),
+	 pktin_table_id(0),
+	 pktin_reason(0),
 	 headers(new pktclassifier(this)),
 	 buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY)
 {

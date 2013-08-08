@@ -5,7 +5,6 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//Include ringbuffer
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> 
@@ -13,7 +12,6 @@
 #include <pthread.h>
 #include <rofl/pipeline/common/datapacket.h>
 #include <rofl/pipeline/switch_port.h>
-#include "util/ringbuffer.h"
 #include "io/scheduler/epoll_ioscheduler.h"
 #include "io/ports/mockup/ioport_mockup.h"
 #include "io/iomanager.h"

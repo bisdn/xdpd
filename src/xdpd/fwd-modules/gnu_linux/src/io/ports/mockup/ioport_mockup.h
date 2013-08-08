@@ -38,8 +38,8 @@ public:
 	inline virtual int get_write_fd(void){return notify_pipe[READ];};
 
 	//Get buffer status
-	//virtual ringbuffer_state_t get_input_queue_state(void); 
-	//virtual ringbuffer_state_t get_output_queue_state(unsigned int q_id=0);
+	//virtual circular_queue_state_t get_input_queue_state(void); 
+	//virtual circular_queue_state_t get_output_queue_state(unsigned int q_id=0);
 
 	virtual rofl_result_t 
 	disable();

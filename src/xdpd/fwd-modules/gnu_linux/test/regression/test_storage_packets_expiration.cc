@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include "ls_internal_state.h"
+#include "processing/ls_internal_state.h"
 #include "io/datapacket_storage.h"
 #include "bg_taskmanager.h"
 
@@ -64,7 +64,7 @@ void DriverStoragePacketsExpirationTestCase::setUp(){
 	CPPUNIT_ASSERT(sw->platform_state); /* internal state */
 	
 	//change expiration time
-	( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->store_handle)->change_expiration_time(EXPIRATION_TIME);
+	( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->storage)->change_expiration_time(EXPIRATION_TIME);
 
 }
 
@@ -94,21 +94,21 @@ void DriverStoragePacketsExpirationTestCase::test_buffers_expiration(void )
 		
 		fprintf(stderr,"<%s:%d> ************** test_buffers_expiration ************\n",__func__,__LINE__);
 		
-		sto_size = ( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->store_handle)->get_storage_size();
+		sto_size = ( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->storage)->get_storage_size();
 		fprintf(stderr,"<%s:%d> size of storage= %d\n",__func__,__LINE__,sto_size);
 		CPPUNIT_ASSERT(sto_size == 0);
 		
-		id = ( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->store_handle)->store_packet(&pkt);
+		id = ( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->storage)->store_packet(&pkt);
 		CPPUNIT_ASSERT(id>=0);
 		//wait and check expiration
 		
-		sto_size = ( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->store_handle)->get_storage_size();
+		sto_size = ( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->storage)->get_storage_size();
 		fprintf(stderr,"<%s:%d> size of storage= %d\n",__func__,__LINE__,sto_size);
 		CPPUNIT_ASSERT(sto_size == 1);
 		
 		sleep(EXPIRATION_TIME+LSW_TIMER_BUFFER_POOL_MS/1000+1);
 		
-		sto_size = ( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->store_handle)->get_storage_size();
+		sto_size = ( (datapacket_storage*) ((struct logical_switch_internals*) sw->platform_state)->storage)->get_storage_size();
 		fprintf(stderr,"<%s:%d> size of storage= %d\n",__func__,__LINE__,sto_size);
 		CPPUNIT_ASSERT(sto_size == 0);
 }

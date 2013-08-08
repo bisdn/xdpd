@@ -58,6 +58,10 @@ public:
 	bool udp_recalc_checksum;
 	bool icmpv4_recalc_checksum;
 
+	//Temporary store for pkt_in information
+	uint8_t pktin_table_id;
+	of_packet_in_reason_t pktin_reason;	
+
 public: // methods
 
 	//Initialize the already constructed object

@@ -13,7 +13,6 @@
 #include "io/datapacketx86_c_wrapper.h"
 #include "io/bufferpool_c_wrapper.h"
 
-#include "ls_internal_state.h"
 #include "io/datapacket_storage_c_wrapper.h"
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
 
@@ -169,6 +168,17 @@ platform_packet_get_ppp_proto(datapacket_t * const pkt)
 	 return 0x0;
 }
 
+uint8_t
+platform_packet_get_gtp_msg_type(datapacket_t * const pkt)
+{
+	 return 0x0;
+}
+
+uint32_t
+platform_packet_get_gtp_teid(datapacket_t * const pkt)
+{
+	 return 0x0;
+}
 
 /*
 * Actions
@@ -425,6 +435,20 @@ platform_packet_set_ppp_proto(datapacket_t* pkt, uint16_t proto)
 {
 	fprintf(stderr,"SET PPP PROTO\n");
 	dpx86_set_ppp_proto(pkt, proto);
+}
+
+void
+platform_packet_set_gtp_msg_type(datapacket_t* pkt, uint8_t msg_type)
+{
+	fprintf(stderr,"SET GTP MSG TYPE\n");
+	dpx86_set_gtp_msg_type(pkt, msg_type);
+}
+
+void
+platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
+{
+	fprintf(stderr,"SET GTP TEID\n");
+	dpx86_set_gtp_teid(pkt, teid);
 }
 
 void

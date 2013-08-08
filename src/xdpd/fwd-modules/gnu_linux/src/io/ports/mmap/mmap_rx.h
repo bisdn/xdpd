@@ -23,6 +23,7 @@
 #include <rofl/common/cerror.h>
 #include <rofl/common/caddress.h>
 #include <rofl/common/utils/c_logger.h>
+#include "../../../util/likely.h"
 
 /**
 * @file mmap_rx.h
@@ -92,10 +93,11 @@ next:
 		}
 
 		//Check if is valid 
-		if( ( hdr->tp_status&(TP_STATUS_COPY|TP_STATUS_CSUMNOTREADY) ) == 0){
+		if( likely( ( hdr->tp_status&(TP_STATUS_COPY|TP_STATUS_CSUMNOTREADY) ) == 0 ) ){
 #ifdef DEBUG
-			if( ( hdr->tp_status&(TP_STATUS_LOSING) ) > 0)
-				ROFL_DEBUG("[mmap_rx:%s] Congestion in RX of the port\n", devname.c_str());
+			//if( ( hdr->tp_status&(TP_STATUS_LOSING) ) > 0){
+			//	ROFL_DEBUG_VERBOSE("[mmap_rx:%s] Congestion in RX of the port\n", devname.c_str());
+			//}
 		
 #endif
 

@@ -5,8 +5,10 @@
 #include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
 #include <rofl/common/utils/c_logger.h>
 
+#include "../config.h"
 #include "../netfpga/netfpga.h" 
 #include "../netfpga/stats.h" 
+#include "../pipeline-imp/ls_internal_state.h"
 
 #define FWD_MOD_NAME "netfpga10g"
 /*
@@ -14,7 +16,26 @@
 */
 rofl_result_t platform_post_init_of12_switch(of12_switch_t* sw){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	//Set OF12 flow table 
+	unsigned int i;
+	of12_flow_table_t* table;
+
+	table = sw->pipeline->tables; 
+	
+	for(i=0;i<sw->pipeline->num_of_tables;++i){
+		//Set appropiate flags
+		table->default_action = OF12_TABLE_MISS_CONTROLLER;
+	}
+	
+	//Create GNU/Linux FWD_Module additional state (platform state)
+	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));
+
+	ls_int->storage = new datapacket_storage( IO_PKT_IN_STORAGE_MAX_BUF, IO_PKT_IN_STORAGE_EXPIRATION_S); // todo make this value configurable
+
+	sw->platform_state = (of_switch_platform_state_t*)ls_int;
+
+	//Set number of buffers
+	sw->pipeline->num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
 
 	return ROFL_SUCCESS;
 }
@@ -22,6 +43,10 @@ rofl_result_t platform_post_init_of12_switch(of12_switch_t* sw){
 rofl_result_t platform_pre_destroy_of12_switch(of12_switch_t* sw){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	struct logical_switch_internals* ls_int =  (struct logical_switch_internals*)sw->platform_state;
+	
+	delete ls_int->storage;
+	free(sw->platform_state);
 	
 	return ROFL_SUCCESS;
 }

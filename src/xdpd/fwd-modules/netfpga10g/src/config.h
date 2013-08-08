@@ -21,4 +21,10 @@
 //I/O
 #define IO_BUFFERPOOL_SIZE 1024
 
+//Buffer storage(PKT_IN) max buffers
+#define IO_PKT_IN_STORAGE_MAX_BUF 512
+//Buffer storage(PKT_IN) expiration time (seconds)
+#define IO_PKT_IN_STORAGE_EXPIRATION_S 180
+
+
 #endif //XDPD_NETFGPA_10G_CONFIG_H

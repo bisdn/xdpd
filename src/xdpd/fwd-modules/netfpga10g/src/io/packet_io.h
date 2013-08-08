@@ -9,6 +9,7 @@
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include "../netfpga/ports.h"
 
 //C++ extern C
 ROFL_BEGIN_DECLS

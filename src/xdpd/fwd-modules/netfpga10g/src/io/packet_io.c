@@ -6,7 +6,8 @@ void netpfga_io_read_from_port(switch_port_t* port){
 
 	netfpga_port_t* state = (netfpga_port_t*)port->platform_port_state;
 
-	ROFL_ERR("["FWD_MOD_NAME"] Got a packet from kernel (PKT_IN) in port %s!\n", port->name);
+	ROFL_ERR("["FWD_MOD_NAME"] Got a packet from kernel (PKT_IN) in port %s %p!\n", port->name, state);
+
 
 	//Retrieve an empty buffer
 

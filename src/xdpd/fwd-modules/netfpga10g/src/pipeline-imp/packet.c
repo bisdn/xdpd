@@ -189,6 +189,17 @@ platform_packet_get_ppp_proto(datapacket_t * const pkt)
 	return 0x0;
 }
 
+uint8_t
+platform_packet_get_gtp_msg_type(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint32_t
+platform_packet_get_gtp_teid(datapacket_t * const pkt)
+{
+	return 0x0;
+}
 
 //Actions
 void
@@ -437,6 +448,17 @@ platform_packet_set_pppoe_sid(datapacket_t* pkt, uint16_t sid)
 
 void
 platform_packet_set_ppp_proto(datapacket_t* pkt, uint16_t proto)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+void
+platform_packet_set_gtp_msg_type(datapacket_t* pkt, uint8_t msg_type)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+
+void
+platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
 {
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 }

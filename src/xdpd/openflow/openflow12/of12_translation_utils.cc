@@ -376,33 +376,64 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_arp_opcode();
+		of12_match_t *match = of12_init_arp_opcode_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								ofmatch.get_arp_opcode());
 
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_ARP_OP is missing")); // TODO
+		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_arp_spa();
+		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();;
+		uint64_t mmask = ofmatch.get_eth_dst_mask().get_mac();
 
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_ARP_SPA is missing")); // TODO
+		of12_match_t *match = of12_init_arp_sha_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								maddr,
+								mmask);
+
+		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_arp_tpa();
+		caddress value(ofmatch.get_ipv4_src_value());
+		caddress mask (ofmatch.get_ipv4_src_mask());
 
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_ARP_TPA is missing")); // TODO
+		of12_match_t *match = of12_init_arp_spa_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								be32toh(value.ca_s4addr->sin_addr.s_addr),
+								be32toh( mask.ca_s4addr->sin_addr.s_addr));
+
+		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_arp_sha();
+		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();;
+		uint64_t mmask = ofmatch.get_eth_dst_mask().get_mac();
 
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_ARP_SHA is missing")); // TODO
+		of12_match_t *match = of12_init_arp_tha_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								maddr,
+								mmask);
+
+		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_arp_tha();
+		caddress value(ofmatch.get_ipv4_src_value());
+		caddress mask (ofmatch.get_ipv4_src_mask());
 
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_ARP_THA is missing")); // TODO
+		of12_match_t *match = of12_init_arp_tpa_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								be32toh(value.ca_s4addr->sin_addr.s_addr),
+								be32toh( mask.ca_s4addr->sin_addr.s_addr));
+
+		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
@@ -630,6 +661,33 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_TYPE, oxm.uint16_value(), NULL, NULL);
 				}
 					break;
+				case OFPXMT_OFB_ARP_OP:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_OPCODE, oxm.uint16_value(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFB_ARP_SHA:
+				{
+					cmacaddr mac(oxm.oxm_uint48t->value, 6);
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_SHA, mac.get_mac(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFB_ARP_SPA:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_SPA, oxm.uint32_value(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFB_ARP_THA:
+				{
+					cmacaddr mac(oxm.oxm_uint48t->value, 6);
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_THA, mac.get_mac(), NULL, NULL);
+				}
+					break;
+				case OFPXMT_OFB_ARP_TPA:
+				{
+					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_TPA, oxm.uint32_value(), NULL, NULL);
+				}
+					break;
 				case OFPXMT_OFB_ICMPV4_CODE:
 				{
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ICMPV4_CODE, oxm.uint8_value(), NULL, NULL);
@@ -849,6 +907,37 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		case OF12_MATCH_VLAN_PCP:
 			match.set_vlan_pcp(((utern8_t*)(m->value))->value);
 			break;
+		case OF12_MATCH_ARP_OP:
+			match.set_arp_opcode(((utern16_t*)(m->value))->value);
+			break;
+		case OF12_MATCH_ARP_SHA:
+		{
+			cmacaddr maddr(((utern64_t*)m->value)->value);
+			cmacaddr mmask(((utern64_t*)m->value)->mask);
+			match.set_arp_sha(maddr, mmask);
+		}
+			break;
+		case OF12_MATCH_ARP_SPA:
+		{
+			caddress addr(AF_INET, "0.0.0.0");
+			addr.ca_s4addr->sin_addr.s_addr = htonl(((utern32_t*)(m->value))->value);
+			match.set_arp_spa(addr);
+		}
+			break;
+		case OF12_MATCH_ARP_THA:
+		{
+			cmacaddr maddr(((utern64_t*)m->value)->value);
+			cmacaddr mmask(((utern64_t*)m->value)->mask);
+			match.set_arp_tha(maddr, mmask);
+		}
+			break;
+		case OF12_MATCH_ARP_TPA:
+		{
+			caddress addr(AF_INET, "0.0.0.0");
+			addr.ca_s4addr->sin_addr.s_addr = htonl(((utern32_t*)(m->value))->value);
+			match.set_arp_tpa(addr);
+		}
+			break;
 		case OF12_MATCH_IP_DSCP:
 			match.set_ip_dscp(((utern8_t*)(m->value))->value);
 			break;
@@ -896,33 +985,6 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			break;
 		case OF12_MATCH_ICMPV4_CODE:
 			match.set_icmpv4_code(((utern8_t*)(m->value))->value);
-			break;
-		case OF12_MATCH_ARP_OP:
-			match.set_arp_opcode(((utern16_t*)(m->value))->value);
-			break;
-		case OF12_MATCH_ARP_SPA:
-		{
-			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = htonl(((utern32_t*)(m->value))->value);
-			match.set_arp_spa(addr);
-		}
-			break;
-		case OF12_MATCH_ARP_TPA:
-		{
-			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = htonl(((utern32_t*)(m->value))->value);
-			match.set_arp_tpa(addr);
-		}
-			break;
-		case OF12_MATCH_ARP_SHA:
-		{
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() ARP_SHA"));
-		}
-			break;
-		case OF12_MATCH_ARP_THA:
-		{
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() ARP_THA"));
-		}
 			break;
 		case OF12_MATCH_IPV6_SRC:
 			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPV6_SRC"));
@@ -1156,6 +1218,23 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	case OF12_AT_SET_FIELD_VLAN_PCP: {
 		action = cofaction_set_field(coxmatch_ofb_vlan_pcp((uint8_t)(of12_action->field & OF12_AT_1_BYTE_MASK)));
 	} break;
+	case OF12_AT_SET_FIELD_ARP_OPCODE: {
+		action = cofaction_set_field(coxmatch_ofb_arp_opcode((uint16_t)(of12_action->field & OF12_AT_2_BYTE_MASK)));
+	} break;
+	case OF12_AT_SET_FIELD_ARP_SHA: {
+		cmacaddr maddr(of12_action->field);
+		action = cofaction_set_field(coxmatch_ofb_arp_sha(maddr));
+	} break;
+	case OF12_AT_SET_FIELD_ARP_SPA: {
+		action = cofaction_set_field(coxmatch_ofb_arp_spa((uint32_t)(of12_action->field & OF12_AT_4_BYTE_MASK)));
+	} break;
+	case OF12_AT_SET_FIELD_ARP_THA: {
+		cmacaddr maddr(of12_action->field);
+		action = cofaction_set_field(coxmatch_ofb_arp_tha(maddr));
+	} break;
+	case OF12_AT_SET_FIELD_ARP_TPA: {
+		action = cofaction_set_field(coxmatch_ofb_arp_tpa((uint32_t)(of12_action->field & OF12_AT_4_BYTE_MASK)));
+	} break;
 	case OF12_AT_SET_FIELD_IP_DSCP: {
 		action = cofaction_set_field(coxmatch_ofb_ip_dscp((uint8_t)(of12_action->field & OF12_AT_1_BYTE_MASK)));
 	} break;
@@ -1256,6 +1335,22 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of12_packet_matches
 		match.set_vlan_vid(packet_matches->vlan_vid);
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
+	if(packet_matches->arp_opcode)
+		match.set_arp_opcode(packet_matches->arp_opcode);
+	if(packet_matches->arp_sha)
+		match.set_arp_sha(cmacaddr(packet_matches->arp_sha));
+	if(packet_matches->arp_spa) {
+		caddress addr(AF_INET, "0.0.0.0");
+		addr.ca_s4addr->sin_addr.s_addr = packet_matches->arp_spa;
+		match.set_arp_spa(addr);
+	}
+	if(packet_matches->arp_tha)
+		match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
+	if(packet_matches->arp_tpa) {
+		caddress addr(AF_INET, "0.0.0.0");
+		addr.ca_s4addr->sin_addr.s_addr = packet_matches->arp_tpa;
+		match.set_arp_tpa(addr);
+	}
 	if(packet_matches->ip_dscp)
 		match.set_ip_dscp(packet_matches->ip_dscp);
 	if(packet_matches->ip_ecn)

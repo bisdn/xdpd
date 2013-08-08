@@ -203,6 +203,47 @@ dpx86_set_vlan_pcp(datapacket_t* pkt, uint8_t vlan_pcp)
 	pack->headers->vlan(0)->set_dl_vlan_pcp(vlan_pcp);
 }
 
+//ARP
+void
+dpx86_set_arp_opcode(datapacket_t* pkt, uint16_t arp_opcode)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_opcode(arp_opcode);
+}
+
+void
+dpx86_set_arp_sha(datapacket_t* pkt, uint64_t arp_sha)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_dl_src(arp_sha);
+}
+
+void
+dpx86_set_arp_spa(datapacket_t* pkt, uint32_t arp_spa)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_nw_src(arp_spa); // FIXME: arp_spa is stored in network byte order
+}
+
+void
+dpx86_set_arp_tha(datapacket_t* pkt, uint64_t arp_tha)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_dl_dst(arp_tha);
+}
+
+void
+dpx86_set_arp_tpa(datapacket_t* pkt, uint32_t arp_tpa)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_nw_dst(arp_tpa); // FIXME: arp_tpa is stored in network byte order
+}
+
 //IP, IPv4
 void
 dpx86_set_ip_dscp(datapacket_t* pkt, uint8_t ip_dscp)
@@ -584,6 +625,47 @@ dpx86_get_packet_vlan_pcp(datapacket_t * const pkt)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == pack->headers->vlan(0))) return 0;
 	return pack->headers->vlan(0)->get_dl_vlan_pcp()&0x07;
+}
+
+//ARP
+uint16_t
+dpx86_get_packet_arp_opcode(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return pack->headers->arpv4(0)->get_opcode();
+}
+
+uint64_t
+dpx86_get_packet_arp_sha(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return pack->headers->arpv4(0)->get_dl_src().get_mac();
+}
+
+uint32_t
+dpx86_get_packet_arp_spa(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return be32toh(pack->headers->arpv4(0)->get_nw_src().ca_s4addr->sin_addr.s_addr);
+}
+
+uint64_t
+dpx86_get_packet_arp_tha(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return pack->headers->arpv4(0)->get_dl_dst().get_mac();
+}
+
+uint32_t
+dpx86_get_packet_arp_tpa(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return be32toh(pack->headers->arpv4(0)->get_nw_dst().ca_s4addr->sin_addr.s_addr);
 }
 
 //IP

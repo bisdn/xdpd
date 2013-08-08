@@ -93,6 +93,22 @@ dpx86_set_vlan_vid(datapacket_t* pkt, uint16_t vlan_vid);
 void
 dpx86_set_vlan_pcp(datapacket_t* pkt, uint8_t vlan_pcp);
 
+//ARP
+void
+dpx86_set_arp_opcode(datapacket_t* pkt, uint16_t arp_opcode);
+
+void
+dpx86_set_arp_sha(datapacket_t* pkt, uint64_t arp_sha);
+
+void
+dpx86_set_arp_spa(datapacket_t* pkt, uint32_t arp_spa);
+
+void
+dpx86_set_arp_tha(datapacket_t* pkt, uint64_t arp_tha);
+
+void
+dpx86_set_arp_tpa(datapacket_t* pkt, uint32_t arp_tpa);
+
 //IP, IPv4
 void
 dpx86_set_ip_dscp(datapacket_t* pkt, uint8_t ip_dscp);
@@ -205,6 +221,22 @@ dpx86_get_packet_vlan_vid(datapacket_t * const pkt);
 
 uint8_t
 dpx86_get_packet_vlan_pcp(datapacket_t * const pkt);
+
+//ARP
+uint16_t
+dpx86_get_packet_arp_opcode(datapacket_t * const pkt);
+
+uint64_t
+dpx86_get_packet_arp_sha(datapacket_t * const pkt);
+
+uint32_t
+dpx86_get_packet_arp_spa(datapacket_t * const pkt);
+
+uint64_t
+dpx86_get_packet_arp_tha(datapacket_t * const pkt);
+
+uint32_t
+dpx86_get_packet_arp_tpa(datapacket_t * const pkt);
 
 //IP
 uint8_t

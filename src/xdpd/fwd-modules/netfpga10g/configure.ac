@@ -74,6 +74,7 @@ AC_CONFIG_FILES([
 	src/Makefile
 	src/afa-imp/Makefile
 	src/io/Makefile
+	src/io/packet_classifiers/Makefile
 	src/netfpga/Makefile
 	src/afa-imp/openflow/openflow12/Makefile
 	src/pipeline-imp/Makefile

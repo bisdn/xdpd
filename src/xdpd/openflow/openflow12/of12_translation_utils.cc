@@ -385,8 +385,8 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();;
-		uint64_t mmask = ofmatch.get_eth_dst_mask().get_mac();
+		uint64_t maddr = ofmatch.get_arp_sha_addr().get_mac();
+		uint64_t mmask = ofmatch.get_arp_sha_mask().get_mac();
 
 		of12_match_t *match = of12_init_arp_sha_match(
 								/*prev*/NULL,
@@ -398,8 +398,8 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		caddress value(ofmatch.get_ipv4_src_value());
-		caddress mask (ofmatch.get_ipv4_src_mask());
+		caddress value(ofmatch.get_arp_spa_value());
+		caddress mask (ofmatch.get_arp_spa_mask());
 
 		of12_match_t *match = of12_init_arp_spa_match(
 								/*prev*/NULL,
@@ -411,8 +411,8 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();;
-		uint64_t mmask = ofmatch.get_eth_dst_mask().get_mac();
+		uint64_t maddr = ofmatch.get_arp_tha_addr().get_mac();
+		uint64_t mmask = ofmatch.get_arp_tha_mask().get_mac();
 
 		of12_match_t *match = of12_init_arp_tha_match(
 								/*prev*/NULL,
@@ -424,8 +424,8 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		caddress value(ofmatch.get_ipv4_src_value());
-		caddress mask (ofmatch.get_ipv4_src_mask());
+		caddress value(ofmatch.get_arp_tpa_value());
+		caddress mask (ofmatch.get_arp_tpa_mask());
 
 		of12_match_t *match = of12_init_arp_tpa_match(
 								/*prev*/NULL,

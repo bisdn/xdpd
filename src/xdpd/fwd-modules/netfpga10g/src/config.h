@@ -18,6 +18,8 @@
 * General parameters
 */
 
+#define FWD_MOD_NAME "netfpga10g"
+
 //I/O
 #define IO_BUFFERPOOL_SIZE 1024
 

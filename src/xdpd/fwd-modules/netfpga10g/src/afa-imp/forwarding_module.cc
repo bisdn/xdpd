@@ -16,9 +16,6 @@
 #include "../netfpga/ports.h"
 #include "../config.h"
 
-#define FWD_MOD_NAME "netfpga10g"
-
-
 //Static pipeline switch instance
 static of_switch_t* sw=NULL;
 

@@ -169,6 +169,8 @@ void* x86_background_tasks_routine(void* param)
 			exit(EXIT_FAILURE);		
 		}
 	}
+
+	//FIXME: add the NETLINK stuff
 	
 	while(bg_continue_execution){
 		

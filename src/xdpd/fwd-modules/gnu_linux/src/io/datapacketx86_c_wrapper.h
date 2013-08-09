@@ -110,6 +110,35 @@ dpx86_set_ipv4_src(datapacket_t* pkt, uint32_t ip_src);
 void
 dpx86_set_ipv4_dst(datapacket_t* pkt, uint32_t ip_dst);
 
+//IPv6
+void
+dpx86_set_ipv6_src(datapacket_t* pkt, uint128__t ipv6_src);
+
+void
+dpx86_set_ipv6_dst(datapacket_t* pkt, uint128__t ipv6_dst);
+
+void
+dpx86_set_ipv6_flabel(datapacket_t* pkt, uint64_t ipv6_flabel);
+
+void
+dpx86_set_ipv6_exthdr(datapacket_t* pkt, uint64_t ipv6_exthdr);
+
+//ICMPv6
+void
+dpx86_set_ipv6_nd_target(datapacket_t* pkt, uint128__t ipv6_nd_target);
+
+void
+dpx86_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll);
+
+void
+dpx86_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll);
+
+void
+dpx86_set_icmpv6_type(datapacket_t* pkt, uint64_t icmpv6_type);
+
+void
+dpx86_set_icmpv6_code(datapacket_t* pkt, uint64_t icmpv6_code);
+
 //TCP
 void
 dpx86_set_tcp_src(datapacket_t* pkt, uint16_t tcp_src);

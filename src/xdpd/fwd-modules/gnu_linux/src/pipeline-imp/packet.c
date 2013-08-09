@@ -411,55 +411,55 @@ platform_packet_set_icmpv4_code(datapacket_t* pkt, uint8_t code)
 void
 platform_packet_set_ipv6_src(datapacket_t* pkt, uint128__t ipv6_src)
 {
-	/*TODO IPV6*/
+	dpx86_set_ipv6_src(pkt,ipv6_src);
 }
 
 void
 platform_packet_set_ipv6_dst(datapacket_t* pkt, uint128__t ipv6_dst)
 {
-	/*TODO IPV6*/
+	dpx86_set_ipv6_dst(pkt,ipv6_dst);
 }
 
 void
 platform_packet_set_ipv6_flabel(datapacket_t* pkt, uint64_t ipv6_flabel)
 {
-	/*TODO IPV6*/
+	dpx86_set_ipv6_flabel(pkt,ipv6_flabel);
 }
 
 void
 platform_packet_set_ipv6_nd_target(datapacket_t* pkt, uint128__t ipv6_nd_target)
 {
-	/*TODO IPV6*/
+	dpx86_set_ipv6_nd_target(pkt,ipv6_nd_target);
 }
 
 void
 platform_packet_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll)
 {
-	/*TODO IPV6*/
+	dpx86_set_ipv6_nd_sll(pkt,ipv6_nd_sll);
 }
 
 void
 platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
 {
-	/*TODO IPV6*/
+	dpx86_set_ipv6_nd_tll(pkt,ipv6_nd_tll);
 }
 
 void
 platform_packet_set_ipv6_exthdr(datapacket_t* pkt, uint64_t ipv6_exthdr)
 {
-	/*TODO IPV6*/
+	dpx86_set_ipv6_exthdr(pkt,ipv6_exthdr);
 }
 
 void
 platform_packet_set_icmpv6_type(datapacket_t* pkt, uint64_t icmpv6_type)
 {
-	/*TODO ICMPV6*/
+	dpx86_set_icmpv6_type(pkt,icmpv6_type);
 }
 
 void
 platform_packet_set_icmpv6_code(datapacket_t* pkt, uint64_t icmpv6_code)
 {
-	/*TODO ICMPV6*/
+	dpx86_set_icmpv6_code(pkt,icmpv6_code);
 }
 
 void

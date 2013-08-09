@@ -414,24 +414,15 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		caddress value(ofmatch.get_ipv6_src());
 		//caddress mask (ofmatch.get_ipv6_src_mask()); TODO?
 		
-		double64_t address, mask;
-		//WARNING I might be mess up the bit order
-		address.high = be64toh(((uint64_t)value.ca_s6addr->sin6_addr.__in6_u.__u6_addr32[0]<<32) 
-						| value.ca_s6addr->sin6_addr.__in6_u.__u6_addr32[1]);
-		
-		address.low  = be64toh(((uint64_t)value.ca_s6addr->sin6_addr.__in6_u.__u6_addr32[2]<<32) 
-						| value.ca_s6addr->sin6_addr.__in6_u.__u6_addr32[3]);
-		
 		of12_match_t *match = of12_init_ip6_src_match(
-										/*prev*/NULL,
-										/*prev*/NULL,
-										address,
-										mask);
+								/*prev*/NULL,
+								/*prev*/NULL,
+								value,
+								mask);
 		
 		of12_add_match_to_entry(entry,match);
-#else
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_SRC is missing")); // TODO
 #endif
+		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_SRC is missing")); // TODO
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
@@ -439,18 +430,11 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		caddress value(ofmatch.get_ipv6_dst());
 		//caddress mask (ofmatch.get_ipv6_dst_mask()); TODO?
 		
-		double64_t address, mask;
-		//WARNING I might be mess up the bit order
-		address.high = be64toh(((uint64_t)value.ca_s6addr->sin6_addr.__in6_u.__u6_addr32[0]<<32) 
-						| value.ca_s6addr->sin6_addr.__in6_u.__u6_addr32[1]);
-		address.low  = be64toh(((uint64_t)value.ca_s6addr->sin6_addr.__in6_u.__u6_addr32[2]<<32) 
-						| value.ca_s6addr->sin6_addr.__in6_u.__u6_addr32[3]);
-		
 		of12_match_t *match = of12_init_ip6_src_match(
-										/*prev*/NULL,
-										/*prev*/NULL,
-										address,
-										mask);
+								/*prev*/NULL,
+								/*prev*/NULL,
+								value,
+								mask);
 		
 		of12_add_match_to_entry(entry,match);
 #else
@@ -459,41 +443,68 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_ipv6_flabel();
-
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_FLABEL is missing")); // TODO
+		of12_match_t *match = of12_init_ip6_flabel_match(
+								NULL,
+								NULL,
+								ofmatch.get_ipv6_flabel());
+		of12_add_match_to_entry(entry,match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_icmpv6_type();
-
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_TYPE is missing")); // TODO
+		of12_match_t *match = of12_init_icmpv6_type_match(
+								NULL,
+								NULL,
+								ofmatch.get_icmpv6_type());
+		of12_add_match_to_entry(entry,match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_icmpv6_code();
-
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_CODE is missing")); // TODO
+		of12_match_t *match = of12_init_icmpv6_code_match(
+								NULL,
+								NULL,
+								ofmatch.get_icmpv6_code());
+		of12_add_match_to_entry(entry,match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_ipv6_nd_target();
-
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_ND_TARGET is missing")); // TODO
+		caddress value(ofmatch.get_ipv6_nd_target());
+		of12_match_t *match = of12_init_ip6_nd_target_match(
+								NULL,
+								NULL,
+						      		value.get_ipv6_addr());
+		of12_add_match_to_entry(entry,match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_icmpv6_neighbor_source_lladdr();
-
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_ND_SLL is missing")); // TODO
+		uint64_t mac = ofmatch.get_icmpv6_neighbor_source_lladdr().get_mac();
+		of12_match_t *match = of12_init_ip6_nd_sll_match(
+								NULL,
+								NULL,
+								mac);
+		of12_add_match_to_entry(entry,match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		ofmatch.get_icmpv6_neighbor_target_lladdr();
-
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_ND_TLL is missing")); // TODO
+		uint64_t mac = ofmatch.get_icmpv6_neighbor_target_lladdr().get_mac();
+		of12_match_t *match = of12_init_ip6_nd_tll_match(
+								NULL,
+								NULL,
+								mac);
+		of12_add_match_to_entry(entry,match);
 	} catch (eOFmatchNotFound& e) {}
-
+	
+	try{
+#if 0
+		/*TODO IPV6_EXTHDR*/
+		of12_match_t *match = of12_init_ip6_exthdr_match(
+								NULL,
+								NULL,
+								ofmatch.get_ipv6_exthdr());
+		of12_add_match_to_entry(entry,match);
+#endif
+		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_EXTHDR is missing")); // TODO
+	}catch (eOFmatchNotFound& e) {}
+	
 	try {
 		of12_match_t *match = of12_init_mpls_label_match(
 								/*prev*/NULL,
@@ -742,18 +753,44 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_UDP_SRC, field, NULL, NULL);
 				}
 					break;
-				/*TODO IPV6 ICMPV6*/
-				case OFPXMT_OFB_IPV6_SRC:
-				case OFPXMT_OFB_IPV6_DST:
-				case OFPXMT_OFB_IPV6_FLABEL:
-				case OFPXMT_OFB_IPV6_ND_TARGET:
-				case OFPXMT_OFB_IPV6_ND_SLL:
-				case OFPXMT_OFB_IPV6_ND_TLL:
-				case OFPXMT_OFB_IPV6_EXTHDR:
-				case OFPXMT_OFB_ICMPV6_TYPE:
-				case OFPXMT_OFB_ICMPV6_CODE:
-					throw eNotImplemented(std::string("of12_translation_utils::of12_map_flow_entry_actions() IPV6 ICMPV6"));
-					break;
+
+				case OFPXMT_OFB_IPV6_SRC: {
+					field.u128 = oxm.u128addr().get_ipv6_addr();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_IPV6_SRC, field, NULL, NULL);
+				}break;
+				case OFPXMT_OFB_IPV6_DST: {
+					field.u128 = oxm.u128addr().get_ipv6_addr();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_IPV6_DST, field, NULL, NULL);
+				}break;
+				case OFPXMT_OFB_IPV6_FLABEL: {
+					field.u64 = oxm.uint64_value();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_IPV6_FLABEL, field, NULL, NULL);
+				}break;
+				case OFPXMT_OFB_IPV6_ND_TARGET: {
+					field.u128 = oxm.u128addr().get_ipv6_addr();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_IPV6_ND_TARGET, field, NULL, NULL);
+				}break;
+				case OFPXMT_OFB_IPV6_ND_SLL: {
+					field.u64 = oxm.uint64_value();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_IPV6_ND_SLL, field, NULL, NULL);
+				}break;
+				case OFPXMT_OFB_IPV6_ND_TLL: {
+					field.u64 = oxm.uint64_value();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_IPV6_ND_TLL, field, NULL, NULL);
+				}break;
+				case OFPXMT_OFB_IPV6_EXTHDR: {
+					field.u64 = oxm.uint64_value();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_IPV6_EXTHDR, field, NULL, NULL);
+				}break;
+				case OFPXMT_OFB_ICMPV6_TYPE: {
+					field.u64 = oxm.uint64_value();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_ICMPV6_TYPE, field, NULL, NULL);
+				}break;
+				case OFPXMT_OFB_ICMPV6_CODE: {
+					field.u64 = oxm.uint64_value();
+					action = of12_init_packet_action(OF12_AT_SET_FIELD_ICMPV6_CODE, field, NULL, NULL);
+				}break;
+					
 				default:
 				{
 					WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::of12_map_flow_entry() "
@@ -951,22 +988,39 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		}
 			break;
 		/*TODO IPV6 ICMPV6*/
-		case OF12_MATCH_IPV6_SRC:
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPV6_SRC"));
-		case OF12_MATCH_IPV6_DST:
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPV6_DST"));
+		case OF12_MATCH_IPV6_SRC: {
+			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+			/*TODO deal with endianess??*/
+			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val), sizeof(uint128__t));
+			match.set_ipv6_src(addr);
+		}break;
+		case OF12_MATCH_IPV6_DST:{
+			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+			/*TODO deal with endianess??*/
+			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val), sizeof(addr));
+			match.set_ipv6_dst(addr);
+		}break;
 		case OF12_MATCH_IPV6_FLABEL:
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPV6_FLABEL"));
+			match.set_ipv6_flabel(m->value->value.u64);
+			break;
 		case OF12_MATCH_ICMPV6_TYPE:
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPCMPV6_TYPE"));
+			match.set_icmpv6_type(m->value->value.u64);
+			break;
 		case OF12_MATCH_ICMPV6_CODE:
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPCMPV6_CODE"));
-		case OF12_MATCH_IPV6_ND_TARGET:
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPV6_ND_TARGET"));
+			match.set_icmpv6_code(m->value->value.u64);
+			break;
+		case OF12_MATCH_IPV6_ND_TARGET:{
+			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+			/*TODO deal with endianess??*/
+			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val),sizeof(addr));
+			match.set_ipv6_nd_target(addr);
+		}break;
 		case OF12_MATCH_IPV6_ND_SLL:
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPV6_ND_SLL"));
+			match.set_icmpv6_neighbor_source_lladdr(m->value->value.u64);
+			break;
 		case OF12_MATCH_IPV6_ND_TLL:
-			throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_matches() IPV6_ND_TLL"));
+			match.set_icmpv6_neighbor_target_lladdr(m->value->value.u64);
+			break;
 		case OF12_MATCH_MPLS_LABEL:
 			match.set_mpls_label(m->value->value.u32);
 			break;
@@ -1210,18 +1264,37 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	case OF12_AT_SET_FIELD_ICMPV4_CODE: {
 		action = cofaction_set_field(coxmatch_ofb_icmpv4_code((uint8_t)(of12_action->field.u64 & OF12_AT_1_BYTE_MASK)));
 	} break;
-	/*TODO IPV6 ICMPV6*/
-	case OF12_AT_SET_FIELD_IPV6_SRC:
-	case OF12_AT_SET_FIELD_IPV6_DST:
-	case OF12_AT_SET_FIELD_IPV6_FLABEL:
-	case OF12_AT_SET_FIELD_IPV6_ND_TARGET:
-	case OF12_AT_SET_FIELD_IPV6_ND_SLL:
-	case OF12_AT_SET_FIELD_IPV6_ND_TLL:
+	
+	case OF12_AT_SET_FIELD_IPV6_SRC: {
+		action = cofaction_set_field(coxmatch_ofb_ipv6_src((uint8_t*)(of12_action->field.u128.val),16));
+	} break;
+	case OF12_AT_SET_FIELD_IPV6_DST: {
+		action = cofaction_set_field(coxmatch_ofb_ipv6_dst((uint8_t*)(of12_action->field.u128.val),16));
+	} break;
+	case OF12_AT_SET_FIELD_IPV6_FLABEL: {
+		action = cofaction_set_field(coxmatch_ofb_ipv6_flabel((uint32_t)(of12_action->field.u64 & OF12_AT_4_BYTE_MASK)));
+	} break;
+	case OF12_AT_SET_FIELD_IPV6_ND_TARGET: {
+		action = cofaction_set_field(coxmatch_ofb_ipv6_nd_target((uint8_t*)(of12_action->field.u128.val),16));
+	} break;
+	case OF12_AT_SET_FIELD_IPV6_ND_SLL: {
+		cmacaddr maddr(of12_action->field.u64);
+		action = cofaction_set_field(coxmatch_ofb_ipv6_nd_sll(maddr));
+	} break;
+	case OF12_AT_SET_FIELD_IPV6_ND_TLL: {
+		cmacaddr maddr(of12_action->field.u64);
+		action = cofaction_set_field(coxmatch_ofb_ipv6_nd_tll(maddr));
+	} break;
+	/*TODO EXT HDR*/
 	case OF12_AT_SET_FIELD_IPV6_EXTHDR:
-	case OF12_AT_SET_FIELD_ICMPV6_TYPE:
-	case OF12_AT_SET_FIELD_ICMPV6_CODE:
 		throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_action() IPV6 ICMPV6"));
 		break;
+	case OF12_AT_SET_FIELD_ICMPV6_TYPE: {
+		action = cofaction_set_field(coxmatch_ofb_icmpv6_type((uint8_t)(of12_action->field.u64 & OF12_AT_1_BYTE_MASK)));
+	}
+	case OF12_AT_SET_FIELD_ICMPV6_CODE: {
+		action = cofaction_set_field(coxmatch_ofb_icmpv6_code((uint8_t)(of12_action->field.u64 & OF12_AT_1_BYTE_MASK)));
+	}
 	case OF12_AT_SET_FIELD_MPLS_LABEL: {
 		action = cofaction_set_field(coxmatch_ofb_mpls_label((uint32_t)(of12_action->field.u64 & OF12_AT_4_BYTE_MASK)));
 	} break;
@@ -1319,19 +1392,28 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of12_packet_matches
 	if(packet_matches->icmpv4_code)
 		match.set_icmpv4_code(packet_matches->icmpv4_code);
 		
-	//if(packet_matches->ipv6_src)
-		//match.set_ipv6_src(packet_matches->ipv6_src);
-	//if(packet_matches->ipv6_dst)
-		//match.set_ipv6_dst(packet_matches->ipv6_dst);
+	if( UINT128__T_HI(packet_matches->ipv6_src) || UINT128__T_LO(packet_matches->ipv6_src) ){
+		caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+		addr.set_ipv6_addr(packet_matches->ipv6_src);
+		match.set_ipv6_src(addr);
+	}
+	if( UINT128__T_HI(packet_matches->ipv6_dst) || UINT128__T_LO(packet_matches->ipv6_dst) ){
+		caddress addr(AF_INET6,"0:0:0:0");
+		addr.set_ipv6_addr(packet_matches->ipv6_dst);
+		match.set_ipv6_dst(addr);
+	}
 	if(packet_matches->ipv6_flabel)
 		match.set_ipv6_flabel(packet_matches->ipv6_flabel);
-	//if(packet_matches->ipv6_nd_target)
-		//match.set_ipv6_nd_target(packet_matches->ipv6_nd_target);
+	if( UINT128__T_HI(packet_matches->ipv6_nd_target) || UINT128__T_LO(packet_matches->ipv6_nd_target) ){
+		caddress addr(AF_INET6,"0:0:0:0");
+		addr.set_ipv6_addr(packet_matches->ipv6_nd_target);
+		match.set_ipv6_nd_target(addr);
+	}
 	if(packet_matches->ipv6_nd_sll)
 		match.set_icmpv6_neighbor_source_lladdr(packet_matches->ipv6_nd_sll);
 	if(packet_matches->ipv6_nd_tll)
 		match.set_icmpv6_neighbor_target_lladdr(packet_matches->ipv6_nd_tll);
-	//TODO IPv6 ext hdr
+	//TODO IPv6 ext hdr not yet implemented in cofmatch
 	//if(packet_matches->ipv6_exthdr)
 		//match.set_ipv6_exthdr(packet_matches->ipv6_exthdr);
 	

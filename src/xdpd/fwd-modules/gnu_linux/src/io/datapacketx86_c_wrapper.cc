@@ -13,6 +13,7 @@
 #include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <rofl/datapath/pipeline/common/ipv6_exthdr.h>
 
 //Flood meta port
 extern switch_port_t* flood_meta_port;
@@ -111,10 +112,16 @@ void
 dpx86_dec_nw_ttl(datapacket_t* pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == pack) || (NULL == pack->headers->ipv4(0))) return;
-	// TODO IPv6
-	pack->headers->ipv4(0)->dec_ipv4_ttl();
-	pack->ipv4_recalc_checksum = true;
+	if (NULL == pack)
+		return;
+	if(NULL != pack->headers->ipv4(0)){
+		pack->headers->ipv4(0)->dec_ipv4_ttl();
+		pack->ipv4_recalc_checksum = true;
+	}
+	if(NULL != pack->headers->ipv6(0)){
+		// TODO IPv6
+		//pack->headers->ipv6(0)->dec_ipv6_ttl();
+	}
 }
 
 void
@@ -138,10 +145,16 @@ void
 dpx86_set_nw_ttl(datapacket_t* pkt, uint8_t new_ttl)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == pack) || (NULL == pack->headers->ipv4(0))) return;
-	// TODO IPv6
-	pack->headers->ipv4(0)->set_ipv4_ttl(new_ttl);
-	pack->ipv4_recalc_checksum = true;
+	if (NULL == pack) return;
+	if (NULL != pack->headers->ipv4(0)){
+		pack->headers->ipv4(0)->set_ipv4_ttl(new_ttl);
+		pack->ipv4_recalc_checksum = true;
+	}
+	if (NULL != pack->headers->ipv6(0)){
+		// TODO IPv6
+		//pack->headers->ipv6(0)->set_ipv6_ttl(new_ttl);
+	}
+	
 }
 
 void
@@ -203,30 +216,45 @@ void
 dpx86_set_ip_dscp(datapacket_t* pkt, uint8_t ip_dscp)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == pack) || (NULL == pack->headers->ipv4(0))) return;
-	// TODO IPv6
-	pack->headers->ipv4(0)->set_ipv4_dscp(ip_dscp);
-	pack->ipv4_recalc_checksum = true;
+	if (NULL == pack) return;
+	if (NULL != pack->headers->ipv4(0)) {
+		pack->headers->ipv4(0)->set_ipv4_dscp(ip_dscp);
+		pack->ipv4_recalc_checksum = true;
+	}
+	if (NULL != pack->headers->ipv6(0)) {
+		// TODO IPv6
+		//pack->headers->ipv6(0)->set_ipv6_dscp(ip_dscp);
+	}
 }
 
 void
 dpx86_set_ip_ecn(datapacket_t* pkt, uint8_t ip_ecn)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == pack) || (NULL == pack->headers->ipv4(0))) return;
-	// TODO IPv6
-	pack->headers->ipv4(0)->set_ipv4_ecn(ip_ecn);
-	pack->ipv4_recalc_checksum = true;
+	if (NULL == pack) return;
+	if (NULL != pack->headers->ipv4(0)){
+		pack->headers->ipv4(0)->set_ipv4_ecn(ip_ecn);
+		pack->ipv4_recalc_checksum = true;
+	}
+	if (NULL != pack->headers->ipv6(0)){
+		// TODO IPv6
+		//pack->headers->ipv6(0)->set_ipv6_ecn(ip_ecn);
+	}
 }
 
 void
 dpx86_set_ip_proto(datapacket_t* pkt, uint8_t ip_proto)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == pack) || (NULL == pack->headers->ipv4(0))) return;
-	// TODO IPv6
-	pack->headers->ipv4(0)->set_ipv4_proto(ip_proto);
-	pack->ipv4_recalc_checksum = true;
+	if (NULL == pack) return;
+	if (NULL != pack->headers->ipv4(0)) {
+		pack->headers->ipv4(0)->set_ipv4_proto(ip_proto);
+		pack->ipv4_recalc_checksum = true;
+	}
+	if (NULL != pack->headers->ipv6(0)) {
+		// TODO IPv6
+		//pack->headers->ipv6(0)->set_ipv6_proto(ip_proto);
+	}
 }
 
 void
@@ -251,6 +279,75 @@ dpx86_set_ipv4_dst(datapacket_t* pkt, uint32_t ip_dst)
 	pack->udp_recalc_checksum = true;
 }
 
+//IPV6
+void
+dpx86_set_ipv6_src(datapacket_t* pkt, uint128__t ipv6_src){
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->ipv6(0))) return;
+	pack->headers->ipv6(0)->set_ipv6_src((uint8_t*)&ipv6_src.val,16);
+	pack->tcp_recalc_checksum = true;
+	pack->udp_recalc_checksum = true;
+}
+void
+dpx86_set_ipv6_dst(datapacket_t* pkt, uint128__t ipv6_dst){
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->ipv6(0))) return;
+	pack->headers->ipv6(0)->set_ipv6_dst((uint8_t*)&ipv6_dst.val,16);
+	pack->tcp_recalc_checksum = true;
+	pack->udp_recalc_checksum = true;
+}
+void
+dpx86_set_ipv6_flabel(datapacket_t* pkt, uint64_t ipv6_flabel)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->ipv6(0))) return;
+	pack->headers->ipv6(0)->set_flow_label(ipv6_flabel);
+}
+void
+dpx86_set_ipv6_exthdr(datapacket_t* pkt, uint64_t ipv6_exthdr)
+{
+	/*TODO Extension headers not yet implemented*/
+}
+
+//ICMPV6
+void
+dpx86_set_ipv6_nd_target(datapacket_t* pkt, uint128__t ipv6_nd_target){
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->icmpv6(0))) return;
+	caddress addr(AF_INET6,"0:0:0:0:0");
+	addr.set_ipv6_addr(ipv6_nd_target);
+	pack->headers->icmpv6(0)->set_icmpv6_neighbor_taddr(addr);
+}
+void
+dpx86_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->icmpv6(0))) return;
+	cmacaddr mac(ipv6_nd_sll);
+	pack->headers->icmpv6(0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).set_ll_saddr(mac);
+}
+void
+dpx86_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->icmpv6(0))) return;
+	cmacaddr mac(ipv6_nd_tll);
+	pack->headers->icmpv6(0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).set_ll_taddr(mac);
+}
+void
+dpx86_set_icmpv6_type(datapacket_t* pkt, uint64_t icmpv6_type)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->icmpv6(0))) return;
+	pack->headers->icmpv6(0)->set_icmpv6_type(icmpv6_type);
+}
+void
+dpx86_set_icmpv6_code(datapacket_t* pkt, uint64_t icmpv6_code)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->icmpv6(0))) return;
+	pack->headers->icmpv6(0)->set_icmpv6_code(icmpv6_code);
+}
 //TCP
 void
 dpx86_set_tcp_src(datapacket_t* pkt, uint16_t tcp_src)
@@ -667,7 +764,8 @@ dpx86_get_packet_ipv6_src(datapacket_t * const pkt)
 	return ipv6_src;
 }
 
-uint128__t dpx86_get_packet_ipv6_dst(datapacket_t*const pkt)
+uint128__t
+dpx86_get_packet_ipv6_dst(datapacket_t*const pkt)
 {
 	
 	uint128__t ipv6_dst = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}; //memset 0?
@@ -685,7 +783,8 @@ dpx86_get_packet_ipv6_flabel(datapacket_t * const pkt)
 	return pack->headers->ipv6(0)->get_flow_label();
 }
 
-uint128__t dpx86_get_packet_ipv6_nd_target(datapacket_t*const pkt)
+uint128__t
+dpx86_get_packet_ipv6_nd_target(datapacket_t*const pkt)
 {
 	
 	uint128__t ipv6_nd_target = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}; //memset 0?
@@ -723,14 +822,39 @@ dpx86_get_packet_ipv6_nd_tll(datapacket_t * const pkt)
 uint64_t
 dpx86_get_packet_ipv6_exthdr(datapacket_t * const pkt)
 {
-	/*
-	 * TODO 
+	uint64_t mask=0x0;
+/* TODO EXTENSION HEADERS NOT YET IMPLEMENTED	
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if((NULL==pkt) || (NULL == pack->headers->ipv6(0))) return 0;
-	return pack->headers->ipv6(0)->get_ipv6_ext_hdr();
-	*/
-	return 0;
+	//return pack->headers->ipv6(0)->get_ipv6_ext_hdr();
+	try{
+		pack->headers->ipv6(0)->get_ext_hdr(fipv6frame::IPPROTO_IPV6_NONXT);
+		mask |= IPV6_EH_NONEXT;
+	}catch(...){}
+	
+	//if(pack->headers->ipv6(0)->get_ext_hdr(fipv6frame::IPPROTO_IPV6_NONXT)) //encripted
+	//if(pack->headers->ipv6(0)->get_ext_hdr(fipv6frame::IPPROTO_IPV6_NONXT)) //authentication
+	//if(pack->headers->ipv6(0)->get_ext_hdr(fipv6frame::IPPROTO_IPV6_NONXT)) //destination headers
+	try{
+		pack->headers->ipv6(0)->get_ext_hdr(fipv6frame::IPPROTO_IPV6_FRAG);
+		mask |= IPV6_EH_FRAG;
+	}catch(...){}
+	
+	try{
+		pack->headers->ipv6(0)->get_ext_hdr(fipv6frame::IPPROTO_IPV6_ROUTE);
+		mask |= IPV6_EH_ROUTER;
+	}catch(...){}
+	
+	try{
+		pack->headers->ipv6(0)->get_ext_hdr(fipv6frame::IPPROTO_IPV6_HOPOPT);
+		mask |= IPV6_EH_HOP;
+	}catch(...){}
+	//if(pack->headers->ipv6(0)->get_ipv6_ext_hdr(fipv6frame::IPPROTO_IPV6_NONXT)) //unexpected repeats
+	//if(pack->headers->ipv6(0)->get_ipv6_ext_hdr(fipv6frame::IPPROTO_IPV6_NONXT)) //unexpected sequencing
+*/
+	return mask;
 }
+
 //ICMPv6
 uint64_t
 dpx86_get_packet_icmpv6_type(datapacket_t * const pkt)

@@ -58,7 +58,7 @@
 #define IO_IFACE_MMAP_BLOCKS 2 
 #define IO_IFACE_MMAP_BLOCK_SIZE 96*2*4
 
-//RX/TX ring size
+//RX/TX ring size and output queue dimensions
 //Align to a power of 2
 #define IO_IFACE_RING_SLOTS 2048
 

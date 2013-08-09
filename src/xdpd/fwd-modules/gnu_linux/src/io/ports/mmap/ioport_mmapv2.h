@@ -35,10 +35,10 @@ public:
 	ioport_mmapv2(
 			/*int port_no,*/
 			switch_port_t* of_ps,
-			int block_size = 96*4*2,
-			int n_blocks = 2,
-			int frame_size = 2048*4*2, //Jumbo frames.
-			unsigned int num_queues = MMAP_DEFAULT_NUM_OF_QUEUES);
+			int block_size = IO_IFACE_MMAP_BLOCK_SIZE,
+			int n_blocks = IO_IFACE_MMAP_BLOCKS,
+			int frame_size = IO_IFACE_MMAP_FRAME_SIZE,
+			unsigned int num_queues = IO_IFACE_NUM_QUEUES);
 
 	virtual
 	~ioport_mmapv2();
@@ -84,19 +84,7 @@ public:
 	 */
 	virtual rofl_result_t disable(void);
 
-#if 0
-	// todo implement states?
-	//Get buffer status
-	virtual ringbuffer_state_t
-	get_input_queue_state(void);
-
-	virtual ringbuffer_state_t
-	get_output_queue_state(unsigned int q_id = 0);
-#endif
-
 protected:
-	//Queues
-	static const unsigned int MMAP_DEFAULT_NUM_OF_QUEUES = 8;
 
 private:
 	

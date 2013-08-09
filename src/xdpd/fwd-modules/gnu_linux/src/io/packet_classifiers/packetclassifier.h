@@ -25,6 +25,7 @@
 #include <rofl/common/protocols/fsctpframe.h>
 #include <rofl/common/protocols/fpppoeframe.h>
 #include <rofl/common/protocols/fpppframe.h>
+#include <rofl/common/protocols/fgtpuframe.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 //#include <rofl/datapath/pipeline/util/rofl_pipeline_utils.h>
 
@@ -73,6 +74,7 @@ public:
 	virtual rofl::fsctpframe* sctp(int idx = 0) const=0;
 	virtual rofl::fpppoeframe* pppoe(int idx = 0) const=0;
 	virtual rofl::fpppframe* ppp(int idx = 0) const=0;
+	virtual rofl::fgtpuframe* gtp(int idx = 0) const=0;
 
 	/*
 	 * pop operations

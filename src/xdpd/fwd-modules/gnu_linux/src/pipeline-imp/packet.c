@@ -13,7 +13,6 @@
 #include "../io/datapacketx86_c_wrapper.h"
 #include "../io/bufferpool_c_wrapper.h"
 
-#include "../ls_internal_state.h"
 #include "../io/datapacket_storage_c_wrapper.h"
 
 /*
@@ -67,6 +66,36 @@ uint8_t
 platform_packet_get_vlan_pcp(datapacket_t * const pkt)
 {
 	return dpx86_get_packet_vlan_pcp(pkt);
+}
+
+uint16_t
+platform_packet_get_arp_opcode(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_arp_opcode(pkt);
+}
+
+uint64_t
+platform_packet_get_arp_sha(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_arp_sha(pkt);
+}
+
+uint32_t
+platform_packet_get_arp_spa(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_arp_spa(pkt);
+}
+
+uint64_t
+platform_packet_get_arp_tha(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_arp_tha(pkt);
+}
+
+uint32_t
+platform_packet_get_arp_tpa(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_arp_tpa(pkt);
 }
 
 uint8_t
@@ -224,6 +253,18 @@ platform_packet_get_ppp_proto(datapacket_t * const pkt)
 	return dpx86_get_packet_ppp_proto(pkt);
 }
 
+uint8_t
+platform_packet_get_gtp_msg_type(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_gtp_msg_type(pkt);
+}
+
+uint32_t
+platform_packet_get_gtp_teid(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_gtp_teid(pkt);
+}
+
 
 //Actions
 void
@@ -340,6 +381,36 @@ void
 platform_packet_set_vlan_pcp(datapacket_t* pkt, uint8_t vlan_pcp)
 {
 	dpx86_set_vlan_pcp(pkt, vlan_pcp);
+}
+
+void
+platform_packet_set_arp_opcode(datapacket_t* pkt, uint16_t arp_opcode)
+{
+	dpx86_set_arp_opcode(pkt, arp_opcode);
+}
+
+void
+platform_packet_set_arp_sha(datapacket_t* pkt, uint64_t arp_sha)
+{
+	dpx86_set_arp_sha(pkt, arp_sha);
+}
+
+void
+platform_packet_set_arp_spa(datapacket_t* pkt, uint32_t arp_spa)
+{
+	dpx86_set_arp_spa(pkt, arp_spa);
+}
+
+void
+platform_packet_set_arp_tha(datapacket_t* pkt, uint64_t arp_tha)
+{
+	dpx86_set_arp_tha(pkt, arp_tha);
+}
+
+void
+platform_packet_set_arp_tpa(datapacket_t* pkt, uint32_t arp_tpa)
+{
+	dpx86_set_arp_tpa(pkt, arp_tpa);
 }
 
 void
@@ -499,6 +570,18 @@ platform_packet_set_ppp_proto(datapacket_t* pkt, uint16_t proto)
 }
 
 void
+platform_packet_set_gtp_msg_type(datapacket_t* pkt, uint8_t msg_type)
+{
+	dpx86_set_gtp_msg_type(pkt, msg_type);
+}
+
+void
+platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
+{
+	dpx86_set_gtp_teid(pkt, teid);
+}
+
+void
 platform_packet_drop(datapacket_t* pkt)
 {
 	ROFL_DEBUG("Dropping packet(%p)\n",pkt);
@@ -539,8 +622,8 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	datapacket_t* copy = bufferpool_get_buffer_wrapper();
 	
 	//Make sure everything is memseted to 0
-	copy->matches = NULL;
-	copy->write_actions = NULL;
+	memcpy(&copy->matches, &pkt->matches, sizeof(pkt->matches));
+	memcpy(&copy->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
 
 	//mark as replica
 	copy->is_replica = true;

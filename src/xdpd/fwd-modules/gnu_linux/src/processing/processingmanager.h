@@ -13,9 +13,9 @@
 #include <rofl.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include "../util/safevector.h" 
-
-//This is the limit on the number of threads per LS
-#define PM_MAX_THREADS_PER_LS 10
+#include "../io/ports/ioport.h"
+#include "ls_internal_state.h"
+#include "../config.h" 
 
 /**
 * @file processingmanager.h
@@ -29,15 +29,15 @@
 class ls_processing_threads_state {
 
 public:
-	//Group id
-	unsigned int id;	
-	
 	//Switch to be processed
 	of_switch_t* sw;
 
 	//Threading information
 	unsigned int num_of_threads;
-	pthread_t thread_state[PM_MAX_THREADS_PER_LS];
+	pthread_t thread_state[PROCESSING_MAX_LSI_THREADS];
+
+	//Input queues sched index
+	unsigned int current_in_queue_index;
 	
 	//State of the threads
 	bool keep_on_working;	
@@ -50,9 +50,8 @@ class processingmanager{
 
 public:
 	//Default number of threads per logical switch
-	//static const unsigned int DEFAULT_THREADS_PER_LS = 2;
-	static const unsigned int DEFAULT_THREADS_PER_LS = 1;
-	static const unsigned int MAX_THREADS_PER_LS = PM_MAX_THREADS_PER_LS;
+	static const unsigned int DEFAULT_THREADS_PER_LS = PROCESSING_THREADS_PER_LSI;
+	static const unsigned int MAX_THREADS_PER_LS = PROCESSING_MAX_LSI_THREADS;
 	
 	/*
 	* start_ls_workers start N processing threads to work on processing packets in the logical switch (ls). Default is DEFAULT_THREADS_PER_LS, and default processing routine is pprocessingmanager::process_packets_through_pipeline
@@ -64,7 +63,16 @@ public:
 	*/	
 	static rofl_result_t stop_ls_workers(of_switch_t* ls);	
 
+	/**
+	* Binds a port to a processing queue of the switch (which it is already attached to)
+	*/
+	static rofl_result_t bind_port_to_sw_processing_queue(ioport* port);	
 	
+	/**
+	* Unbinds the port from the processing queue of the switch
+	*/
+	static rofl_result_t unbind_port_from_sw_processing_queue(ioport* port);
+		
 #if DEBUG 
 	/* 
 	* By passing the pipeline for testing 

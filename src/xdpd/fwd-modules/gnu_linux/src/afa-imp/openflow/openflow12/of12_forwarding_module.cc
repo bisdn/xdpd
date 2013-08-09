@@ -9,7 +9,7 @@
 #include "../../../io/datapacket_storage.h"
 #include "../../../io/datapacketx86.h"
 #include "../../../io/ports/ioport.h"
-#include "../../../ls_internal_state.h"
+#include "../../../processing/ls_internal_state.h"
 
 //FIXME move this definition out of here
 #define OF12P_NO_BUFFER	0xffffffff
@@ -233,7 +233,7 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	if(!action_group_of12_packet_in_contains_output(action_group)){
 
 		if (OF12P_NO_BUFFER != buffer_id) {
-			pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
+			pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
 			if (NULL != pkt) {
 				bufferpool::release_buffer(pkt);
 			}
@@ -247,7 +247,7 @@ afa_result_t fwd_module_of12_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	if(buffer_id != OF12P_NO_BUFFER){
 	
 		//Retrieve the packet
-		pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
+		pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
 
 		//Buffer has expired
 		if(!pkt){
@@ -309,7 +309,7 @@ afa_result_t fwd_module_of12_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 
 	if(buffer_id != OF12P_NO_BUFFER){
 	
-		datapacket_t* pkt = datapacket_storage_get_packet_wrapper(((struct logical_switch_internals*)lsw->platform_state)->store_handle, buffer_id);
+		datapacket_t* pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
 	
 		if(!pkt){
 			assert(0);

@@ -1341,14 +1341,14 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of12_packet_matches
 		match.set_arp_sha(cmacaddr(packet_matches->arp_sha));
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = packet_matches->arp_spa;
+		addr.ca_s4addr->sin_addr.s_addr = htonl(packet_matches->arp_spa);
 		match.set_arp_spa(addr);
 	}
 	if(packet_matches->arp_tha)
 		match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
 	if(packet_matches->arp_tpa) {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = packet_matches->arp_tpa;
+		addr.ca_s4addr->sin_addr.s_addr = htonl(packet_matches->arp_tpa);
 		match.set_arp_tpa(addr);
 	}
 	if(packet_matches->ip_dscp)

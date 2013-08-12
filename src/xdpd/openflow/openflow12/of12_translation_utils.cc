@@ -1359,13 +1359,13 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of12_packet_matches
 		match.set_ip_proto(packet_matches->ip_proto);
 	if(packet_matches->ipv4_src){
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = packet_matches->ipv4_src;
+			addr.ca_s4addr->sin_addr.s_addr = htonl(packet_matches->ipv4_src);
 			match.set_ipv4_src(addr);
 
 	}
 	if(packet_matches->ipv4_dst){
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = packet_matches->ipv4_dst;
+		addr.ca_s4addr->sin_addr.s_addr = htonl(packet_matches->ipv4_dst);
 		match.set_ipv4_dst(addr);
 	}
 	if(packet_matches->tcp_src)

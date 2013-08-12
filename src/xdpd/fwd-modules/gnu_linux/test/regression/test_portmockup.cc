@@ -147,6 +147,7 @@ void DriverPortMockupTestCase::test_drop_packets(void )
 void DriverPortMockupTestCase::test_output(){
 	ssize_t res;
 	int number_of_packets = 20;
+	wrap_uint_t field;
 	char buffer[ioport_mockup::SIMULATED_PKT_SIZE];
 	//Initialize buffer (prevent valgrind to complain)
 	memset(buffer,0,sizeof(buffer));
@@ -160,7 +161,8 @@ void DriverPortMockupTestCase::test_output(){
 	entry->priority = 1;
 	
 	of12_add_match_to_entry(entry,match);
-	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, 1, NULL,NULL));
+	field.u64 = 1;
+	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, field, NULL,NULL));
 	of12_add_instruction_to_group(&entry->inst_grp, OF12_IT_APPLY_ACTIONS, ac_group , NULL, 0);
 	of12_add_flow_entry_table( ((of12_switch_t *)sw)->pipeline, 0, entry, false, false );
 	
@@ -189,6 +191,7 @@ void DriverPortMockupTestCase::test_output(){
 void DriverPortMockupTestCase::test_flow_expiration(){
 	/*add a flow mod in the table and check that is expiring*/
 	int sec_exp = 2;
+	wrap_uint_t field;
 	
 	fprintf(stderr,"<%s:%d>************** Initialize test flow expiration **************\n",__func__,__LINE__);
 	of12_match_t *match = of12_init_port_in_match(NULL,NULL,1);
@@ -199,7 +202,8 @@ void DriverPortMockupTestCase::test_flow_expiration(){
 	__of12_fill_new_timer_entry_info(entry,sec_exp,0); /*idle TO disabled*/
 	
 	of12_add_match_to_entry(entry,match);
-	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, 1, NULL,NULL));
+	field.u64 = 1;
+	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, field, NULL,NULL));
 	of12_add_instruction_to_group(&entry->inst_grp, OF12_IT_APPLY_ACTIONS, ac_group , NULL, 0);
 	of12_add_flow_entry_table( ((of12_switch_t *)sw)->pipeline, 0, entry, false, false );
 	

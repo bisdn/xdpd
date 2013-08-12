@@ -96,6 +96,63 @@ platform_packet_get_ipv4_dst(datapacket_t * const pkt)
 	 return 0x0;
 }
 
+uint128__t
+platform_packet_get_ipv6_src(datapacket_t * const pkt)
+{
+	uint128__t addr={{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+	return addr;
+}
+
+uint128__t
+platform_packet_get_ipv6_dst(datapacket_t * const pkt)
+{
+	uint128__t addr={{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+	return addr;
+}
+
+uint64_t
+platform_packet_get_ipv6_flabel(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint128__t
+platform_packet_get_ipv6_nd_target(datapacket_t * const pkt)
+{
+	uint128__t addr={{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+	return addr;
+}
+
+uint64_t
+platform_packet_get_ipv6_exthdr(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t
+platform_packet_get_ipv6_nd_sll(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t
+platform_packet_get_ipv6_nd_tll(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t
+platform_packet_get_icmpv6_type(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t
+platform_packet_get_icmpv6_code(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
 uint16_t
 platform_packet_get_tcp_dst(datapacket_t * const pkt)
 {
@@ -142,6 +199,36 @@ uint8_t
 platform_packet_get_mpls_tc(datapacket_t * const pkt)
 {
 	 return 0x0;
+}
+
+uint16_t
+platform_packet_get_arp_opcode(datapacket_t * const  pkt)
+{
+	return 0x0;
+}
+
+uint64_t
+platform_packet_get_arp_tha(datapacket_t * const  pkt)
+{
+	return 0x0;
+}
+
+uint64_t
+platform_packet_get_arp_sha(datapacket_t * const  pkt)
+{
+	return 0x0;
+}
+
+uint32_t
+platform_packet_get_arp_tpa(datapacket_t * const  pkt)
+{
+	return 0x0;
+}
+
+uint32_t
+platform_packet_get_arp_spa(datapacket_t * const  pkt)
+{
+	return 0x0;
 }
 
 uint8_t
@@ -262,6 +349,41 @@ platform_packet_set_mpls_ttl(datapacket_t* pkt, uint8_t new_ttl)
 }
 
 void
+platform_packet_set_arp_opcode(datapacket_t* pkt, uint16_t opcode)
+{
+	fprintf(stderr,"SET ARP OPCODE\n");
+	dpx86_set_arp_opcode(pkt, opcode);
+}
+
+void
+platform_packet_set_arp_tha(datapacket_t* pkt, uint64_t tha)
+{
+	fprintf(stderr,"SET ARP THA\n");
+	dpx86_set_arp_tha(pkt, tha);
+}
+
+void
+platform_packet_set_arp_sha(datapacket_t* pkt, uint64_t sha)
+{
+	fprintf(stderr,"SET ARP SHA\n");
+	dpx86_set_arp_sha(pkt, sha);
+}
+
+void
+platform_packet_set_arp_tpa(datapacket_t* pkt, uint32_t tpa)
+{
+	fprintf(stderr,"SET ARP TPA\n");
+	dpx86_set_arp_tpa(pkt, tpa);
+}
+
+void
+platform_packet_set_arp_spa(datapacket_t* pkt, uint32_t spa)
+{
+	fprintf(stderr,"SET ARP SPA\n");
+	dpx86_set_arp_spa(pkt, spa);
+}
+
+void
 platform_packet_set_nw_ttl(datapacket_t* pkt, uint8_t new_ttl)
 {
 	fprintf(stderr,"SET NW TTL\n");
@@ -351,6 +473,69 @@ platform_packet_set_ipv4_dst(datapacket_t* pkt, uint32_t ip_dst)
 {
 	fprintf(stderr,"SET IPv4 DST\n");
 	dpx86_set_ipv4_dst(pkt, ip_dst);
+}
+
+void
+platform_packet_set_ipv6_src(datapacket_t* pkt, uint128__t ip_src)
+{
+	fprintf(stderr,"SET IPv6 SRC\n");
+	dpx86_set_ipv6_src(pkt, ip_src);
+}
+
+void
+platform_packet_set_ipv6_dst(datapacket_t* pkt, uint128__t ip_dst)
+{
+	fprintf(stderr,"SET IPv6 DST\n");
+	dpx86_set_ipv6_dst(pkt, ip_dst);
+}
+
+void
+platform_packet_set_ipv6_flabel(datapacket_t* pkt, uint64_t flabel)
+{
+	fprintf(stderr,"SET IPv6 FLABEL\n");
+	dpx86_set_ipv6_flabel(pkt, flabel);
+}
+
+void
+platform_packet_set_ipv6_nd_target(datapacket_t* pkt, uint128__t nd_target)
+{
+	fprintf(stderr,"SET IPv6 ND TARGET\n");
+	dpx86_set_ipv6_nd_target(pkt, nd_target);
+}
+
+void
+platform_packet_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t sll)
+{
+	fprintf(stderr,"SET IPv6 ND SLL\n");
+	dpx86_set_ipv6_nd_sll(pkt, sll);
+}
+
+void
+platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t tll)
+{
+	fprintf(stderr,"SET IPv6 ND TLL\n");
+	dpx86_set_ipv6_nd_tll(pkt, tll);
+}
+
+void
+platform_packet_set_ipv6_exthdr(datapacket_t* pkt, uint64_t exthdr)
+{
+	fprintf(stderr,"SET IPv6 ND TLL\n");
+	dpx86_set_ipv6_exthdr(pkt, exthdr);
+}
+
+void
+platform_packet_set_icmpv6_type(datapacket_t* pkt, uint64_t type)
+{
+	fprintf(stderr,"SET ICMPv6 TYPE\n");
+	dpx86_set_icmpv6_type(pkt, type);
+}
+
+void
+platform_packet_set_icmpv6_code(datapacket_t* pkt, uint64_t code)
+{
+	fprintf(stderr,"SET ICMPv6 CODE\n");
+	dpx86_set_icmpv6_code(pkt, code);
 }
 
 void

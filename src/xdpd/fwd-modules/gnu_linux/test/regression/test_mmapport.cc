@@ -102,11 +102,15 @@ void DriverMMAPPortTestCase::install_flow_mod(){
 	of12_action_group_t* ac_group = of12_init_action_group(NULL);
 	entry->priority = 1;
 	
+	wrap_uint_t field;
+	field.u64 = (htobe64(0x012345678901)>>16)&0xFFFFFFFFFFFF;
+	
 	of12_add_match_to_entry(entry,match);
 	of12_add_match_to_entry(entry,match2);
-	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, (htobe64(0x012345678901)>>16)&0xFFFFFFFFFFFF, NULL,NULL));
+	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, field, NULL,NULL));
 	fprintf(stderr,"Big endian MAC: %lx",htobe64(0x0000012345678901));
-	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, 1, NULL,NULL));
+	field.u64 = 1;
+	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, field, NULL,NULL));
 	of12_add_instruction_to_group(&entry->inst_grp, OF12_IT_APPLY_ACTIONS, ac_group , NULL, 0);
 	of12_add_flow_entry_table( ((of12_switch_t *)sw)->pipeline, 0,entry,false,false );
 	

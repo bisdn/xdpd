@@ -4,16 +4,20 @@
  *  Created on: Jan 17, 2013
  *      Author: tobi
  */
-
-#include "datapacketx86.h"
-#include "bufferpool.h"
-#include "ports/ioport.h"
-#include "datapacketx86_c_wrapper.h"
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/ipv6_exthdr.h>
+
+#ifdef DEBUG
+	#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
+#endif
+
+#include "datapacketx86.h"
+#include "bufferpool.h"
+#include "ports/ioport.h"
+#include "datapacketx86_c_wrapper.h"
 
 //Flood meta port
 extern switch_port_t* flood_meta_port;

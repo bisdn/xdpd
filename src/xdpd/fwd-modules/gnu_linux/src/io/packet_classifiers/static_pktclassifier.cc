@@ -45,6 +45,16 @@ static_pktclassifier::static_pktclassifier(datapacketx86* pkt_ref) :
 		headers[FIRST_ICMPV4_FRAME_POS+i].frame = new rofl::ficmpv4frame(NULL, 0);		
 		headers[FIRST_ICMPV4_FRAME_POS+i].type = HEADER_TYPE_ICMPV4;
 	}
+	//ipv6
+	for(i=0;i<MAX_IPV6_FRAMES;i++){
+		headers[FIRST_IPV6_FRAME_POS+i].frame = new rofl::fipv6frame(NULL, 0);		
+		headers[FIRST_IPV6_FRAME_POS+i].type = HEADER_TYPE_IPV6;
+	}
+	//icmpv6
+	for(i=0;i<MAX_ICMPV6_FRAMES;i++){
+		headers[FIRST_ICMPV6_FRAME_POS+i].frame = new rofl::ficmpv6frame(NULL, 0);
+		headers[FIRST_ICMPV6_FRAME_POS+i].type = HEADER_TYPE_ICMPV6;
+	}
 	//udp
 	for(i=0;i<MAX_UDP_FRAMES;i++){
 		headers[FIRST_UDP_FRAME_POS+i].frame = new rofl::fudpframe(NULL, 0);		
@@ -212,6 +222,43 @@ rofl::ficmpv4frame* static_pktclassifier::icmpv4(int idx) const
 
 }
 
+rofl::fipv6frame* static_pktclassifier::ipv6(int idx) const
+{
+	unsigned int pos;	
+
+	if(idx > (int)MAX_IPV6_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_IPV6_FRAME_POS + num_of_headers[HEADER_TYPE_IPV6] - 1;
+	else
+		pos = FIRST_IPV6_FRAME_POS + idx;
+
+	//Return the index
+	if(headers[pos].present)
+		return (rofl::fipv6frame*) headers[pos].frame;
+	return NULL;
+}
+
+rofl::ficmpv6frame* static_pktclassifier::icmpv6(int idx) const
+{
+	unsigned int pos;	
+
+	if(idx > (int)MAX_ICMPV6_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_ICMPV6_FRAME_POS + num_of_headers[HEADER_TYPE_ICMPV6] - 1;
+	else
+		pos = FIRST_ICMPV6_FRAME_POS + idx;	
+
+	//Return the index
+	if(headers[pos].present)
+		return (rofl::ficmpv6frame*) headers[pos].frame;
+	return NULL;
+
+}
+
 rofl::fudpframe* static_pktclassifier::udp(int idx) const
 {
 	unsigned int pos;	
@@ -370,6 +417,11 @@ void static_pktclassifier::parse_ether(uint8_t *data, size_t datalen){
 		case rofl::fipv4frame::IPV4_ETHER:
 			{
 				parse_ipv4(data, datalen);
+			}
+			break;
+		case rofl::fipv6frame::IPV6_ETHER:
+			{
+				parse_ipv6(data,datalen);
 			}
 			break;
 		default:
@@ -664,7 +716,94 @@ void static_pktclassifier::parse_icmpv4( uint8_t *data, size_t datalen){
 	}
 }
 
+//IPv6 & ICMPv6
+void static_pktclassifier::parse_ipv6(uint8_t *data, size_t datalen){
 
+	if (datalen < sizeof(struct rofl::fipv6frame::ipv6_hdr_t)) { return; }
+	
+	//Set frame
+	unsigned int num_of_ipv6 = num_of_headers[HEADER_TYPE_IPV4];
+	headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame->reset(data, datalen);
+	headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].present = true;
+	num_of_headers[HEADER_TYPE_IPV6] = num_of_ipv6+1;
+
+	//Set reference
+	rofl::fipv6frame *ipv6 = (rofl::fipv6frame*) headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame; 
+
+	//Increment pointers and decrement remaining payload size
+	data += sizeof(struct rofl::fipv6frame::ipv6_hdr_t);
+	datalen -= sizeof(struct rofl::fipv6frame::ipv6_hdr_t);
+
+	// FIXME: IP header with options
+
+	switch (ipv6->get_traffic_class()) {
+		case rofl::fipv4frame::IPV4_IP_PROTO:
+			{
+				parse_ipv4(data, datalen);
+			}
+			break;
+		case rofl::ficmpv4frame::ICMPV4_IP_PROTO:
+			{
+				parse_icmpv4(data, datalen);
+			}
+			break;
+		case rofl::fipv6frame::IPV6_IP_PROTO:
+			{
+				parse_ipv6(data, datalen);
+			}
+			break;
+		case rofl::ficmpv6frame::ICMPV6_IP_PROTO:
+			{
+				parse_icmpv6(data, datalen);
+			}
+			break;
+		case rofl::fudpframe::UDP_IP_PROTO:
+			{
+				parse_udp(data, datalen);
+			}
+			break;
+		case rofl::ftcpframe::TCP_IP_PROTO:
+			{
+				parse_tcp(data, datalen);
+			}
+			break;
+		case rofl::fsctpframe::SCTP_IP_PROTO:
+			{
+				parse_sctp(data, datalen);
+			}
+			break;
+		default:
+			{
+			
+			}
+			break;
+	}
+}
+
+
+
+void static_pktclassifier::parse_icmpv6( uint8_t *data, size_t datalen){
+
+	if (datalen < sizeof(struct rofl::ficmpv6frame::icmpv6_hdr_t)) { return; }
+
+	//Set frame
+	unsigned int num_of_icmpv6 = num_of_headers[HEADER_TYPE_ICMPV6];
+	headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame->reset(data, datalen);
+	headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].present = true;
+	num_of_headers[HEADER_TYPE_ICMPV6] = num_of_icmpv6+1;
+
+	//Set reference
+	//rofl::ficmpv6frame *icmpv6 = (rofl::ficmpv6frame*) headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame; 
+
+	//Increment pointers and decrement remaining payload size
+	data += sizeof(struct rofl::ficmpv6frame::icmpv6_hdr_t);
+	datalen -= sizeof(struct rofl::ficmpv6frame::icmpv6_hdr_t);
+
+
+	if (datalen > 0){
+		//TODO: something?	
+	}
+}
 
 void static_pktclassifier::parse_udp(uint8_t *data, size_t datalen){
 

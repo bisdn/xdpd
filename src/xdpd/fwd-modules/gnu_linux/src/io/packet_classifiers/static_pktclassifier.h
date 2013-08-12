@@ -48,6 +48,8 @@ public:
 	virtual rofl::farpv4frame* 	arpv4(int idx = 0)	const;
 	virtual rofl::fipv4frame* 	ipv4(int idx = 0) 	const;
 	virtual rofl::ficmpv4frame* 	icmpv4(int idx = 0)	const;
+	virtual rofl::fipv6frame* 	ipv6(int idx = 0) 	const;
+	virtual rofl::ficmpv6frame* 	icmpv6(int idx = 0)	const;
 	virtual rofl::fudpframe* 	udp(int idx = 0) 	const;
 	virtual rofl::ftcpframe* 	tcp(int idx = 0) 	const;
 	virtual rofl::fsctpframe* 	sctp(int idx = 0) 	const;
@@ -100,13 +102,15 @@ protected:
 		HEADER_TYPE_MPLS = 2,	
 		HEADER_TYPE_ARPV4 = 3,	
 		HEADER_TYPE_IPV4 = 4,	
-		HEADER_TYPE_ICMPV4 = 5,	
-		HEADER_TYPE_UDP = 6,	
-		HEADER_TYPE_TCP = 7,	
-		HEADER_TYPE_SCTP = 8,	
-		HEADER_TYPE_PPPOE = 9,	
-		HEADER_TYPE_PPP = 10,	
-		HEADER_TYPE_GTP = 11,
+		HEADER_TYPE_ICMPV4 = 5,
+		HEADER_TYPE_IPV6 = 6,	
+		HEADER_TYPE_ICMPV6 = 7,	
+		HEADER_TYPE_UDP = 8,	
+		HEADER_TYPE_TCP = 9,	
+		HEADER_TYPE_SCTP = 10,	
+		HEADER_TYPE_PPPOE = 11,	
+		HEADER_TYPE_PPP = 12,	
+		HEADER_TYPE_GTP = 13,
 
 		//Must be the last one
 		HEADER_TYPE_MAX
@@ -119,6 +123,8 @@ protected:
 	static const unsigned int MAX_ARPV4_FRAMES = 1;
 	static const unsigned int MAX_IPV4_FRAMES = 2;
 	static const unsigned int MAX_ICMPV4_FRAMES = 2;
+	static const unsigned int MAX_IPV6_FRAMES = 2;
+	static const unsigned int MAX_ICMPV6_FRAMES = 2;
 	static const unsigned int MAX_UDP_FRAMES = 2;
 	static const unsigned int MAX_TCP_FRAMES = 2;
 	static const unsigned int MAX_SCTP_FRAMES = 2;
@@ -133,6 +139,8 @@ protected:
 							MAX_ARPV4_FRAMES +
 							MAX_IPV4_FRAMES +
 							MAX_ICMPV4_FRAMES +
+							MAX_IPV6_FRAMES +
+							MAX_ICMPV6_FRAMES +
 							MAX_UDP_FRAMES +
 							MAX_TCP_FRAMES +
 							MAX_SCTP_FRAMES +
@@ -148,7 +156,9 @@ protected:
 	static const unsigned int FIRST_ARPV4_FRAME_POS = FIRST_MPLS_FRAME_POS+MAX_MPLS_FRAMES;
 	static const unsigned int FIRST_IPV4_FRAME_POS = FIRST_ARPV4_FRAME_POS+MAX_ARPV4_FRAMES;
 	static const unsigned int FIRST_ICMPV4_FRAME_POS = FIRST_IPV4_FRAME_POS+MAX_IPV4_FRAMES;
-	static const unsigned int FIRST_UDP_FRAME_POS = FIRST_ICMPV4_FRAME_POS+MAX_ICMPV4_FRAMES;
+	static const unsigned int FIRST_IPV6_FRAME_POS = FIRST_ICMPV4_FRAME_POS+MAX_ICMPV4_FRAMES;
+	static const unsigned int FIRST_ICMPV6_FRAME_POS = FIRST_IPV6_FRAME_POS+MAX_IPV6_FRAMES;
+	static const unsigned int FIRST_UDP_FRAME_POS = FIRST_ICMPV6_FRAME_POS+MAX_ICMPV6_FRAMES;
 	static const unsigned int FIRST_TCP_FRAME_POS = FIRST_UDP_FRAME_POS+MAX_UDP_FRAMES;
 	static const unsigned int FIRST_SCTP_FRAME_POS = FIRST_TCP_FRAME_POS+MAX_TCP_FRAMES;
 	static const unsigned int FIRST_PPPOE_FRAME_POS = FIRST_SCTP_FRAME_POS+MAX_SCTP_FRAMES;
@@ -193,6 +203,8 @@ protected:
 	void parse_arpv4(uint8_t *data, size_t datalen);
 	void parse_ipv4	(uint8_t *data, size_t datalen);
 	void parse_icmpv4(uint8_t *data, size_t datalen);
+	void parse_ipv6	(uint8_t *data, size_t datalen);
+	void parse_icmpv6(uint8_t *data, size_t datalen);
 	void parse_udp(uint8_t *data, size_t datalen);
 	void parse_tcp(uint8_t *data, size_t datalen);
 	void parse_sctp	(uint8_t *data, size_t datalen);

@@ -441,36 +441,28 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-#if 0
-		caddress value(ofmatch.get_ipv6_src());
-		//caddress mask (ofmatch.get_ipv6_src_mask()); TODO?
+		caddress value(ofmatch.get_ipv6_src_value());
+		caddress mask (ofmatch.get_ipv6_src_mask());
 		
 		of12_match_t *match = of12_init_ip6_src_match(
 								/*prev*/NULL,
 								/*prev*/NULL,
-								value,
-								mask);
-		
+								value.get_ipv6_addr(),
+								mask.get_ipv6_addr());
+		/*WARNING we are swapping the values 3 times here!! coxmatch, cofmatch and caddress*/
 		of12_add_match_to_entry(entry,match);
-#endif
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_SRC is missing")); // TODO
 	} catch (eOFmatchNotFound& e) {}
-
+	
 	try {
-#if 0
-		caddress value(ofmatch.get_ipv6_dst());
-		//caddress mask (ofmatch.get_ipv6_dst_mask()); TODO?
-		
-		of12_match_t *match = of12_init_ip6_src_match(
+		caddress value(ofmatch.get_ipv6_dst_value());
+		caddress mask (ofmatch.get_ipv6_dst_mask());
+		of12_match_t *match = of12_init_ip6_dst_match(
 								/*prev*/NULL,
 								/*prev*/NULL,
-								value,
-								mask);
-		
+								value.get_ipv6_addr(),
+								mask.get_ipv6_addr());
+		/*WARNING we are swapping the values 3 times here!! coxmatch, cofmatch and caddress*/
 		of12_add_match_to_entry(entry,match);
-#else
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_DST is missing")); // TODO
-#endif
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
@@ -523,19 +515,19 @@ of12_translation_utils::of12_map_flow_entry_matches(
 								mac);
 		of12_add_match_to_entry(entry,match);
 	} catch (eOFmatchNotFound& e) {}
-	
+#if 0	
 	try{
-#if 0
+
 		/*TODO IPV6_EXTHDR*/
 		of12_match_t *match = of12_init_ip6_exthdr_match(
 								NULL,
 								NULL,
 								ofmatch.get_ipv6_exthdr());
 		of12_add_match_to_entry(entry,match);
-#endif
+
 		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_EXTHDR is missing")); // TODO
 	}catch (eOFmatchNotFound& e) {}
-	
+#endif	
 	try {
 		of12_match_t *match = of12_init_mpls_label_match(
 								/*prev*/NULL,

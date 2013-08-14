@@ -722,7 +722,7 @@ void static_pktclassifier::parse_ipv6(uint8_t *data, size_t datalen){
 	if (datalen < sizeof(struct rofl::fipv6frame::ipv6_hdr_t)) { return; }
 	
 	//Set frame
-	unsigned int num_of_ipv6 = num_of_headers[HEADER_TYPE_IPV4];
+	unsigned int num_of_ipv6 = num_of_headers[HEADER_TYPE_IPV6];
 	headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame->reset(data, datalen);
 	headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].present = true;
 	num_of_headers[HEADER_TYPE_IPV6] = num_of_ipv6+1;

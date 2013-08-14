@@ -71,6 +71,43 @@ platform_packet_get_vlan_pcp(datapacket_t * const pkt)
 	return 0x0;
 }
 
+uint16_t
+platform_packet_get_arp_opcode(datapacket_t * const pkt)
+{
+
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	return 0x0; 
+}
+
+uint64_t
+platform_packet_get_arp_sha(datapacket_t * const pkt)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	return 0x0; 
+}
+
+uint32_t
+platform_packet_get_arp_spa(datapacket_t * const pkt)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	return 0x0; 
+}
+
+uint64_t
+platform_packet_get_arp_tha(datapacket_t * const pkt)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	return 0x0; 
+}
+
+uint32_t
+platform_packet_get_arp_tpa(datapacket_t * const pkt)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	return 0x0; 
+}
+
+
 uint8_t
 platform_packet_get_ip_ecn(datapacket_t * const pkt)
 {
@@ -188,7 +225,19 @@ platform_packet_get_ppp_proto(datapacket_t * const pkt)
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	return 0x0;
 }
+uint8_t
+platform_packet_get_gtp_msg_type(datapacket_t * const pkt)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	return 0x0;
+}
 
+uint32_t
+platform_packet_get_gtp_teid(datapacket_t * const pkt)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	return 0x0;
+}
 
 //Actions
 void
@@ -326,6 +375,36 @@ platform_packet_set_vlan_pcp(datapacket_t* pkt, uint8_t vlan_pcp)
 }
 
 void
+platform_packet_set_arp_opcode(datapacket_t* pkt, uint16_t arp_opcode)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+
+void
+platform_packet_set_arp_sha(datapacket_t* pkt, uint64_t arp_sha)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+
+void
+platform_packet_set_arp_spa(datapacket_t* pkt, uint32_t arp_spa)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+
+void
+platform_packet_set_arp_tha(datapacket_t* pkt, uint64_t arp_tha)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+
+void
+platform_packet_set_arp_tpa(datapacket_t* pkt, uint32_t arp_tpa)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+
+void
 platform_packet_set_ip_dscp(datapacket_t* pkt, uint8_t ip_dscp)
 {
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
@@ -440,6 +519,19 @@ platform_packet_set_ppp_proto(datapacket_t* pkt, uint16_t proto)
 {
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 }
+
+void
+platform_packet_set_gtp_msg_type(datapacket_t* pkt, uint8_t msg_type)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+
+void
+platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
+{
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+}
+
 
 void
 platform_packet_drop(datapacket_t* pkt)

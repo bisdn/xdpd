@@ -736,7 +736,7 @@ void static_pktclassifier::parse_ipv6(uint8_t *data, size_t datalen){
 
 	// FIXME: IP header with options
 
-	switch (ipv6->get_traffic_class()) {
+	switch (ipv6->get_next_header()) {
 		case rofl::fipv4frame::IPV4_IP_PROTO:
 			{
 				parse_ipv4(data, datalen);

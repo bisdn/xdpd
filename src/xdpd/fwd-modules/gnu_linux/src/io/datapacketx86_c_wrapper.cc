@@ -787,9 +787,12 @@ uint8_t
 dpx86_get_packet_ip_proto(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == pack) || (NULL == pack->headers->ipv4(0))) return 0;
-
-	return pack->headers->ipv4(0)->get_ipv4_proto()&0xFF;
+	if (NULL == pack) return 0;
+	if (NULL != pack->headers->ipv4(0))
+		return pack->headers->ipv4(0)->get_ipv4_proto()&0xFF;
+	if (NULL != pack->headers->ipv6(0))
+		return pack->headers->ipv6(0)->get_next_header()&0xFF;
+	return 0;
 }
 
 //IPv4

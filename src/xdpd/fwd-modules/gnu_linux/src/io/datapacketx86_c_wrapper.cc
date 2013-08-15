@@ -925,7 +925,7 @@ dpx86_get_packet_ipv6_nd_tll(datapacket_t * const pkt)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if((NULL==pkt) || (NULL == pack->headers->icmpv6(0))) return 0;
 	try{
-		return pack->headers->icmpv6(0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET)	.get_ll_taddr().get_mac();
+		return pack->headers->icmpv6(0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).get_ll_taddr().get_mac();
 	}catch(...)	{
 		return 0;
 	}

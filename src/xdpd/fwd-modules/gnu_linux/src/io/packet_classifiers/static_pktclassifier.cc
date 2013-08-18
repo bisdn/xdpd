@@ -748,7 +748,7 @@ void static_pktclassifier::parse_sctp( uint8_t *data, size_t datalen){
 
 void static_pktclassifier::parse_gtp( uint8_t *data, size_t datalen){
 
-	if (datalen < sizeof(struct rofl::fgtpuframe::gtpu_short_hdr_t)) { return; }
+	if (datalen < sizeof(struct rofl::fgtpuframe::gtpu_base_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_gtp = num_of_headers[HEADER_TYPE_GTP];
@@ -760,8 +760,8 @@ void static_pktclassifier::parse_gtp( uint8_t *data, size_t datalen){
 	//rofl::fgtpuframe *gtp = (rofl::fgtpuframe*) headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame;
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct rofl::fgtpuframe::gtpu_short_hdr_t);
-	datalen -= sizeof(struct rofl::fgtpuframe::gtpu_short_hdr_t);
+	data += sizeof(struct rofl::fgtpuframe::gtpu_base_hdr_t);
+	datalen -= sizeof(struct rofl::fgtpuframe::gtpu_base_hdr_t);
 
 	if (datalen > 0){
 		//TODO: something
@@ -939,49 +939,47 @@ void static_pktclassifier::pop_gtp(uint16_t ether_type){
 
 	// assumption: UDP -> GTP
 
-	// a single udp header must be present
+	// an ip header must be present
+	if((num_of_headers[HEADER_TYPE_IPV4] == 0) || (!headers[FIRST_IPV4_FRAME_POS].present) || (num_of_headers[HEADER_TYPE_IPV4] > 1))
+		return;
+
+	// a udp header must be present
 	if((num_of_headers[HEADER_TYPE_UDP] == 0) || (!headers[FIRST_UDP_FRAME_POS].present) || (num_of_headers[HEADER_TYPE_UDP] > 1))
 		return;
 
-	// a single gtp header must be present
+	// a gtp header must be present
 	if(num_of_headers[HEADER_TYPE_GTP] == 0 || !headers[FIRST_GTP_FRAME_POS].present)
 		return;
 
-#if 0
-	pkt_pop(gtp(0)->soframe(), sizeof(struct rofl::fgtpframe))
-	pkt_pop(ipv4(-1)->soframe(), sizeof(struct rofl::fipv4frame::ipv4_hdr_t));
 
-	uint16_t eth_type = 0;
-	if (vlan(-1)) {
-		eth_type = vlan(-1)->get_dl_type();
-	} else {
-		eth_type = ether(-1)->get_dl_type();
-	}
+	// determine effective length of GTP header
+	size_t pop_length = sizeof(struct rofl::fipv4frame::ipv4_hdr_t) +
+							sizeof(struct rofl::fudpframe::udp_hdr_t);
+								gtp(0)->get_hdr_length(); // based on flags set to 1 in GTP header
 
-	switch (eth_type) {
-	case rofl::fipv4frame::IPV4_ETHER: {
-		pop_header(HEADER_TYPE_IPV4, FIRST_IPV4_FRAME_POS, FIRST_IPV4_FRAME_POS+MAX_IPV4_FRAMES);
-	} break;
-	case rofl::fipv6frame::IPV6_ETHER: {
-		// TODO
-		//pop_header(HEADER_TYPE_IPV6, FIRST_IPV6_FRAME_POS, FIRST_IPV6_FRAME_POS+MAX_IPV6_FRAMES);
-	}
-	}
+	//Remove bytes from packet
+	pkt_pop(ipv4(0)->soframe(), pop_length);
 
-	pop_header(HEADER_TYPE_UDP, FIRST_UDP_FRAME_POS, FIRST_UDP_FRAME_POS+MAX_UDP_FRAMES);
+	//Take headers out
 	pop_header(HEADER_TYPE_GTP, FIRST_GTP_FRAME_POS, FIRST_GTP_FRAME_POS+MAX_GTP_FRAMES);
+	pop_header(HEADER_TYPE_UDP, FIRST_UDP_FRAME_POS, FIRST_UDP_FRAME_POS+MAX_UDP_FRAMES);
+	pop_header(HEADER_TYPE_IPV4, FIRST_IPV4_FRAME_POS, FIRST_IPV4_FRAME_POS+MAX_IPV4_FRAMES);
+
 
 	for (int i = MAX_VLAN_FRAMES-1; i >= 0; ++i) {
-		vlan(i)->shift_right(stripped);
-		vlan(i)->reset(vlan(i)->soframe(), vlan(i)->framelen() - stripped);
+		vlan(i)->shift_right(pop_length);
+		vlan(i)->reset(vlan(i)->soframe(), vlan(i)->framelen() - pop_length);
 	}
 	for (int i = MAX_ETHER_FRAMES-1; i >= 0; ++i) {
-		ether(i)->shift_right(stripped);
-		ether(i)->reset(ether(i)->soframe(), ether(i)->framelen() - stripped);
+		ether(i)->shift_right(pop_length);
+		ether(i)->reset(ether(i)->soframe(), ether(i)->framelen() - pop_length);
 	}
 
-	vlan(-1)->set_dl_type(ether_type);
-#endif
+	if (vlan(-1)) {
+		vlan(-1)->set_dl_type(ether_type);
+	} else {
+		ether(-1)->set_dl_type(ether_type);
+	}
 }
 
 /* PUSH operations

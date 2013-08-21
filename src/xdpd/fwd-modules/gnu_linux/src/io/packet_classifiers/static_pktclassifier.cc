@@ -1225,7 +1225,65 @@ rofl::fpppoeframe* static_pktclassifier::push_pppoe(uint16_t ether_type){
 
 
 rofl::fgtpuframe* static_pktclassifier::push_gtp(uint16_t ether_type){
+#if 0
+	rofl::fetherframe* ether_header;
+	rofl::fmplsframe* mpls_header;
+	unsigned int current_length;
 
+	if(!is_classified)
+		classify();
+
+	//Recover the ether(0)
+	ether_header = ether(0);
+	current_length = ether_header->framelen();
+
+	/*
+	 * this invalidates ether(0), as it shifts ether(0) to the left
+	 */
+	if (pkt_push(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fmplsframe::mpls_hdr_t)) == ROFL_FAILURE){
+		// TODO: log error
+		return 0;
+	}
+
+
+	/*
+	 * adjust ether(0): move one mpls tag to the left
+	 */
+	ether_header->shift_left(sizeof(struct rofl::fmplsframe::mpls_hdr_t));
+	ether_header->set_dl_type(ether_type);
+
+	/*
+	 * append the new fmplsframe instance to ether(0)
+	 */
+	push_header(HEADER_TYPE_MPLS, FIRST_MPLS_FRAME_POS, FIRST_MPLS_FRAME_POS+MAX_MPLS_FRAMES);
+
+	//Now reset frame
+	//Size of ethernet needs to be extended with + MPLS size
+	//MPLS size needs to be ether_header->size + MPLS - ether_header
+	ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fmplsframe::mpls_hdr_t));
+	headers[FIRST_MPLS_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fmplsframe::mpls_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
+
+
+	/*
+	 * set default values in mpls tag
+	 */
+	mpls_header = this->mpls(0);
+
+	if (this->mpls(1)){
+		mpls_header->set_mpls_bos(false);
+		mpls_header->set_mpls_label(this->mpls(1)->get_mpls_label());
+		mpls_header->set_mpls_tc(this->mpls(1)->get_mpls_tc());
+		mpls_header->set_mpls_ttl(this->mpls(1)->get_mpls_ttl());
+	} else {
+		mpls_header->set_mpls_bos(true);
+		mpls_header->set_mpls_label(0x0000);
+		mpls_header->set_mpls_tc(0x00);
+		mpls_header->set_mpls_ttl(0x00);
+	}
+
+	return mpls_header;
+#endif
+	return NULL;
 #if 0
 	rofl::fetherframe* ether_header;
 	unsigned int current_length;

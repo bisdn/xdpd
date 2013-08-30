@@ -389,7 +389,30 @@ rofl_result_t ioport_mmapv2::enable() {
 
 		}
 	}
-	
+
+	eval.cmd = ETHTOOL_GFLAGS;
+	ifr.ifr_data = (caddr_t)&eval;
+	eval.data = 0;//Make valgrind happy
+
+	if (ioctl(sd, SIOCETHTOOL, &ifr) < 0) {
+		ROFL_WARN("[mmap:%s] Unable to detect if the Large Receive Offload (LRO) feature on the NIC is enabled or not. Please make sure it is disabled using ethtool or similar...\n", of_port_state->name);
+	} else {
+		if ((eval.data & ETH_FLAG_LRO) == 0) {
+			//Show nice messages in debug mode
+			ROFL_DEBUG("[mmap:%s] LRO already disabled.\n", of_port_state->name);
+		} else {
+			//Do it
+			eval.cmd = ETHTOOL_SFLAGS;
+			eval.data = (eval.data & ~ETH_FLAG_LRO);
+			ifr.ifr_data = (caddr_t)&eval;
+
+			if (ioctl(sd, SIOCETHTOOL, &ifr) < 0)
+				ROFL_ERR("[mmap:%s] Could not disable Large Receive Offload (LRO) feature on the NIC. This can be potentially dangeros...be advised!\n",  of_port_state->name);
+			else
+				ROFL_DEBUG("[mmap:%s] LRO successfully disabled.\n", of_port_state->name);
+		}
+	}
+
 	//Recover flags
 	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
 		close(sd);

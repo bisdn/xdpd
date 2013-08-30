@@ -24,6 +24,7 @@ ioport_mmapv2::ioport_mmapv2(
 			block_size(block_size),
 			n_blocks(n_blocks),
 			frame_size(frame_size),	
+			mtu(0),	
 			hwaddr(of_ps->hwaddr, OFP_ETH_ALEN)
 {
 	int rc;
@@ -300,9 +301,23 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 		}
 	
 		pkt_x86 = (datapacketx86*) pkt->platform_state;
+
+		if(unlikely(pkt_x86->get_buffer_length() > mtu)){
+			//This should NEVER happen
+			ROFL_ERR("[mmap:%s] Packet length above the MTU. Packet length: %u, MTU %u.. discarting\n", of_port_state->name, pkt_x86->get_buffer_length(), mtu);
+			assert(0);
 		
-		// todo check the right size
-		fill_tx_slot(hdr, pkt_x86);
+			//Return buffer to the pool
+			bufferpool::release_buffer(pkt);
+		
+			//Increment errors
+			switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, 1);	
+			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, 1);	
+			continue;
+		}else{	
+			// todo check the right size
+			fill_tx_slot(hdr, pkt_x86);
+		}
 		
 		//Return buffer to the pool
 		bufferpool::release_buffer(pkt);
@@ -358,7 +373,7 @@ rofl_result_t ioport_mmapv2::enable() {
 	}
 
 	/*
-	* Make sure we are disabling Receive Offload from the NIC.
+	* Make sure we are disabling Generic and Large Receive Offload from the NIC.
 	* This screws up the MMAP
 	*/
 
@@ -390,6 +405,7 @@ rofl_result_t ioport_mmapv2::enable() {
 		}
 	}
 
+	//Now LRO
 	eval.cmd = ETHTOOL_GFLAGS;
 	ifr.ifr_data = (caddr_t)&eval;
 	eval.data = 0;//Make valgrind happy
@@ -411,6 +427,18 @@ rofl_result_t ioport_mmapv2::enable() {
 			else
 				ROFL_DEBUG("[mmap:%s] LRO successfully disabled.\n", of_port_state->name);
 		}
+	}
+
+	//Recover MTU
+	memset((void*)&ifr, 0, sizeof(ifr));
+	strncpy(ifr.ifr_name, of_port_state->name, sizeof(ifr.ifr_name));
+	
+	if(ioctl(sd, SIOCGIFMTU, &ifr) < 0) {
+		ROFL_ERR("[mmap:%s] Could not retreive MTU value from NIC. Default %u bytes will be used. Packets exceeding this size will be DROPPED (Jumbo frames).\n",  of_port_state->name, PORT_DEFAULT_MTU);
+		mtu = PORT_DEFAULT_MTU;	
+	}else{
+		mtu = ifr.ifr_mtu;
+		ROFL_ERR("[mmap:%s] Discovered MTU of %u.\n",  of_port_state->name, mtu);
 	}
 
 	//Recover flags

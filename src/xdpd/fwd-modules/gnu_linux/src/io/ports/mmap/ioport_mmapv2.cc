@@ -315,7 +315,6 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, 1);	
 			continue;
 		}else{	
-			// todo check the right size
 			fill_tx_slot(hdr, pkt_x86);
 		}
 		

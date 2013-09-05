@@ -8,4 +8,5 @@ libfwd_module_gnu_linux_processing_la_HEADERS = processingmanager.h
 
 libfwd_module_gnu_linux_processing_la_SOURCES = \
 	processingmanager.cc \
-	processingmanager.h
+	processingmanager.h \
+	ls_internal_state.h

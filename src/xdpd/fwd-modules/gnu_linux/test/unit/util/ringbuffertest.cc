@@ -5,16 +5,18 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//Include ringbuffer
+//Include circular_queue<datapacket_t,SLOTS>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> 
 #include <unistd.h>
 #include <pthread.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
-#include "util/ringbuffer.h"
+#include "util/circular_queue.h"
 
 using namespace std;
+
+#define SLOTS 1024
 
 class RingBufferTestCase : public CppUnit::TestCase{
 
@@ -36,7 +38,7 @@ class RingBufferTestCase : public CppUnit::TestCase{
 	static const unsigned int SLEEP_TIME_MS=200;	
 	static const unsigned int MIN_ITERATIONS=5000;	
 	static const unsigned int MAX_ITERATIONS=12000;	
-	ringbuffer buffer;
+	circular_queue<datapacket_t,SLOTS> buffer;
 
 	public:
 		void setUp(void);
@@ -70,8 +72,10 @@ void RingBufferTestCase::tearDown(){
 void RingBufferTestCase::bufferFilling(){
 
 	//Fills buffer and checks that it accepts MAX_SLOTS-1
-	ringbuffer buf;
+	circular_queue<datapacket_t,SLOTS> buf;
 	int ret;
+
+	fprintf(stderr,"MAx slots: %llu\n",buf.MAX_SLOTS);
 
 	for(unsigned int i=0;i<buf.MAX_SLOTS;i++){
 		
@@ -79,7 +83,7 @@ void RingBufferTestCase::bufferFilling(){
 
 		ret = buf.non_blocking_write(NULL); //Fill
 		
-		if(i != buf.MAX_SLOTS-1){
+		if(i != (buf.MAX_SLOTS-1)){
 			CPPUNIT_ASSERT(ROFL_SUCCESS == ret);
 		}else{
 			CPPUNIT_ASSERT(ROFL_FAILURE == ret);
@@ -159,7 +163,7 @@ void RingBufferTestCase::concurrentAccess(){
 
 	//asserts
 	CPPUNIT_ASSERT(buffer.size() == 0);
-	CPPUNIT_ASSERT(buffer.get_buffer_state() == RB_BUFFER_AVAILABLE);
+	CPPUNIT_ASSERT(buffer.get_queue_state() == RB_BUFFER_AVAILABLE);
 }
 
 

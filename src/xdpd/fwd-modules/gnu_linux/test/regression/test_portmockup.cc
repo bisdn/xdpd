@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include "util/ringbuffer.h"
-#include "ls_internal_state.h"
 #include "io/iomanager.h"
 #include "io/datapacket_storage.h"
 #include "io/datapacket_storage_c_wrapper.h"
@@ -125,7 +123,7 @@ void DriverPortMockupTestCase::test_drop_packets(void )
 	
 
 	//Get ringbuffer
-	ringbuffer *rbuffer = (ringbuffer *)((logical_switch_internals_t*)sw->platform_state)->ringbuffer;
+	circular_queue<datapacket_t, 1024>* rbuffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];
 	
 	//Enqueue packets
 	for(int i=0;i<number_of_packets;i++){
@@ -169,7 +167,7 @@ void DriverPortMockupTestCase::test_output(){
 	//Start port XXX: this should NOT be done this way. Driver
 	iomanager::bring_port_up(mport);
 	
-	ringbuffer *rbuffer = (ringbuffer *) ((struct logical_switch_internals*)sw->platform_state)->ringbuffer;
+	circular_queue<datapacket_t, 1024>* rbuffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];
 	
 	//Enqueue packets
 	for(int i=0;i<number_of_packets;i++){
@@ -231,7 +229,7 @@ void DriverPortMockupTestCase::test_bufferpool_saturation(){
 	//Initialize buffer (prevent valgrind to complain)
 	memset(buffer,0,sizeof(buffer));
 	
-	ringbuffer *rbuffer = (ringbuffer *) ((struct logical_switch_internals*)sw->platform_state)->ringbuffer;
+	circular_queue<datapacket_t, 1024>* rbuffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];
 
 	//We are going to force LS threads to be stopped and fill in the LS queue
 	processingmanager::stop_ls_workers(sw);

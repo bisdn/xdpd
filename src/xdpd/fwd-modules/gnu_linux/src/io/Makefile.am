@@ -13,6 +13,8 @@ libfwd_module_gnu_linux_io_la_SOURCES = \
 	bufferpool.h \
 	bufferpool_c_wrapper.h \
 	bufferpool_c_wrapper.cc \
+	pktin_dispatcher.cc \
+	pktin_dispatcher.h \
 	datapacket_storage.cc \
 	datapacket_storage.h \
 	datapacket_storage_c_wrapper.cc \
@@ -24,7 +26,7 @@ libfwd_module_gnu_linux_io_la_SOURCES = \
 	iface_utils.cc\
 	iface_utils.h\
 	iomanager.cc \
-	iomanager_c_wrapper.cc \
+	iomanager.cc \
 	iomanager.h
 
 libfwd_module_gnu_linux_io_la_LIBADD = \

@@ -5,7 +5,7 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//Include ringbuffer
+//Include circular_queue
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> 
@@ -16,12 +16,10 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/matching_algorithms/matching_algorithms_available.h>
-#include "util/ringbuffer.h"
 #include "io/iomanager.h"
 #include "io/bufferpool.h"
 #include "processing/processingmanager.h"
-#include "ls_internal_state.h"
-#include "util/ringbuffer_c_wrapper.h"
+#include "processing/ls_internal_state.h"
 
 #ifndef DEBUG
 	#error "This test can only run in debug mode..."
@@ -40,7 +38,7 @@ class ProcessingManagerTestCase : public CppUnit::TestFixture{
 
 	//Suff
 	of_switch_t* sw;
-	ringbuffer* buffer;
+	circular_queue<datapacket_t, 1024>* buffer;
 	struct logical_switch_internals lsi;
 
 	public:
@@ -60,7 +58,7 @@ void ProcessingManagerTestCase::setUp(){
 	sw = (of_switch_t*)of12_init_switch("test",0x12345,4, matching_algorithms);
 
 	
-	buffer = (ringbuffer*) ((struct logical_switch_internals*) sw->platform_state )->ringbuffer;
+	buffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];
 }
 
 void ProcessingManagerTestCase::tearDown(){

@@ -1,6 +1,7 @@
 #include "ioport_mmapv2.h"
 #include "../../bufferpool.h"
 #include "../../datapacketx86.h"
+#include "../../../util/likely.h"
 
 #include <linux/ethtool.h>
 #include <rofl/common/utils/c_logger.h>
@@ -23,6 +24,7 @@ ioport_mmapv2::ioport_mmapv2(
 			block_size(block_size),
 			n_blocks(n_blocks),
 			frame_size(frame_size),	
+			mtu(0),	
 			hwaddr(of_ps->hwaddr, OFP_ETH_ALEN)
 {
 	int rc;
@@ -63,12 +65,12 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	datapacketx86* pkt_x86 = (datapacketx86*) pkt->platform_state;
 	len = pkt_x86->get_buffer_length();
 
-	if (of_port_state->up && 
-		of_port_state->forward_packets &&
-		len >= MIN_PKT_LEN) {
+	if ( likely(of_port_state->up) && 
+		likely(of_port_state->forward_packets) &&
+		likely(len >= MIN_PKT_LEN) ) {
 
 		//Safe check for q_id
-		if(q_id >= get_num_of_queues()){
+		if( unlikely(q_id >= get_num_of_queues()) ){
 			ROFL_DEBUG("[mmap:%s] Packet(%p) trying to be enqueued in an invalid q_id: %u\n",  of_port_state->name, pkt, q_id);
 			q_id = 0;
 			bufferpool::release_buffer(pkt);
@@ -76,7 +78,12 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 		}
 	
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
-		output_queues[q_id].blocking_write(pkt);
+		if(output_queues[q_id].non_blocking_write(pkt) != ROFL_SUCCESS){
+			ROFL_DEBUG("[mmap:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
+			//Drop packet
+			bufferpool::release_buffer(pkt);
+			return;
+		}
 
 		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
 	
@@ -164,7 +171,7 @@ next:
 		return NULL;
 
 	//Sanity check 
-	if (hdr->tp_mac + hdr->tp_snaplen > rx->get_tpacket_req()->tp_frame_size) {
+	if ( unlikely(hdr->tp_mac + hdr->tp_snaplen > rx->get_tpacket_req()->tp_frame_size) ) {
 		ROFL_DEBUG_VERBOSE("[mmap:%s] sanity check during read mmap failed\n",of_port_state->name);
 		//Increment error statistics
 		switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
@@ -254,7 +261,9 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 	unsigned int cnt = 0;
 	int tx_bytes_local = 0;
 
-	if (0 == output_queues[q_id].size() || !tx) {
+	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS>* queue = &output_queues[q_id];
+
+	if ( unlikely(tx == NULL) ) {
 		return num_of_buckets;
 	}
 
@@ -263,7 +272,7 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 
 		
 		//Check
-		if(output_queues[q_id].size() == 0){
+		if(queue->size() == 0){
 			ROFL_DEBUG_VERBOSE("[mmap:%s] no packet left in output_queue %u left, %u buckets left\n",
 					of_port_state->name,
 					q_id,
@@ -279,7 +288,7 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			break;
 		
 		//Retrieve the buffer
-		pkt = output_queues[q_id].non_blocking_read();
+		pkt = queue->non_blocking_read();
 		
 		if(!pkt){
 			ROFL_ERR("[mmap:%s] A packet has been discarted due to race condition on the output queue. Are you really running the I/O subsystem with a single thread? output_queue %u left, %u buckets left\n",
@@ -292,9 +301,22 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 		}
 	
 		pkt_x86 = (datapacketx86*) pkt->platform_state;
+
+		if(unlikely(pkt_x86->get_buffer_length() > mtu)){
+			//This should NEVER happen
+			ROFL_ERR("[mmap:%s] Packet length above the MTU. Packet length: %u, MTU %u.. discarting\n", of_port_state->name, pkt_x86->get_buffer_length(), mtu);
+			assert(0);
 		
-		// todo check the right size
-		fill_tx_slot(hdr, pkt_x86);
+			//Return buffer to the pool
+			bufferpool::release_buffer(pkt);
+		
+			//Increment errors
+			switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, 1);	
+			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, 1);	
+			continue;
+		}else{	
+			fill_tx_slot(hdr, pkt_x86);
+		}
 		
 		//Return buffer to the pool
 		bufferpool::release_buffer(pkt);
@@ -350,7 +372,7 @@ rofl_result_t ioport_mmapv2::enable() {
 	}
 
 	/*
-	* Make sure we are disabling Receive Offload from the NIC.
+	* Make sure we are disabling Generic and Large Receive Offload from the NIC.
 	* This screws up the MMAP
 	*/
 
@@ -381,7 +403,43 @@ rofl_result_t ioport_mmapv2::enable() {
 
 		}
 	}
+
+	//Now LRO
+	eval.cmd = ETHTOOL_GFLAGS;
+	ifr.ifr_data = (caddr_t)&eval;
+	eval.data = 0;//Make valgrind happy
+
+	if (ioctl(sd, SIOCETHTOOL, &ifr) < 0) {
+		ROFL_WARN("[mmap:%s] Unable to detect if the Large Receive Offload (LRO) feature on the NIC is enabled or not. Please make sure it is disabled using ethtool or similar...\n", of_port_state->name);
+	} else {
+		if ((eval.data & ETH_FLAG_LRO) == 0) {
+			//Show nice messages in debug mode
+			ROFL_DEBUG("[mmap:%s] LRO already disabled.\n", of_port_state->name);
+		} else {
+			//Do it
+			eval.cmd = ETHTOOL_SFLAGS;
+			eval.data = (eval.data & ~ETH_FLAG_LRO);
+			ifr.ifr_data = (caddr_t)&eval;
+
+			if (ioctl(sd, SIOCETHTOOL, &ifr) < 0)
+				ROFL_ERR("[mmap:%s] Could not disable Large Receive Offload (LRO) feature on the NIC. This can be potentially dangeros...be advised!\n",  of_port_state->name);
+			else
+				ROFL_DEBUG("[mmap:%s] LRO successfully disabled.\n", of_port_state->name);
+		}
+	}
+
+	//Recover MTU
+	memset((void*)&ifr, 0, sizeof(ifr));
+	strncpy(ifr.ifr_name, of_port_state->name, sizeof(ifr.ifr_name));
 	
+	if(ioctl(sd, SIOCGIFMTU, &ifr) < 0) {
+		ROFL_ERR("[mmap:%s] Could not retreive MTU value from NIC. Default %u bytes will be used. Packets exceeding this size will be DROPPED (Jumbo frames).\n",  of_port_state->name, PORT_DEFAULT_MTU);
+		mtu = PORT_DEFAULT_MTU;	
+	}else{
+		mtu = ifr.ifr_mtu;
+		ROFL_ERR("[mmap:%s] Discovered MTU of %u.\n",  of_port_state->name, mtu);
+	}
+
 	//Recover flags
 	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
 		close(sd);

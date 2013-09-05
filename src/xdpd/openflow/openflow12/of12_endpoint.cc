@@ -1,6 +1,7 @@
 #include "of12_endpoint.h"
 
 #include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/common/utils/c_logger.h>
 #include "of12_translation_utils.h"
 
 using namespace rofl;
@@ -1376,7 +1377,7 @@ of12_endpoint::handle_experimenter_message(
 void
 of12_endpoint::handle_ctrl_open(cofctl *ctrl)
 {
-
+	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , ctrl->get_peer_addr().c_str()); //FIXME: add role
 }
 
 
@@ -1384,6 +1385,7 @@ of12_endpoint::handle_ctrl_open(cofctl *ctrl)
 void
 of12_endpoint::handle_ctrl_close(cofctl *ctrl)
 {
+	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() ,ctrl->get_peer_addr().c_str()); //FIXME: add role
 
 }
 

@@ -10,8 +10,6 @@
 #include <rofl.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include "ls_internal_state.h"
-#include "util/ringbuffer.h"
 #include "io/iomanager.h"
 #include "io/ports/mockup/ioport_mockup.h"
 #include "processing/processingmanager.h"
@@ -142,7 +140,7 @@ void DriverMultiPortMockupTestCase::test_drop_packets(void )
 	
 
 	//srand(time(NULL)); //random seed
-	ringbuffer *rbuffer = (ringbuffer *) ((struct logical_switch_internals*)sw->platform_state)->ringbuffer;
+	circular_queue<datapacket_t, 1024>* rbuffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];
 	
 	//Enqueue packets
 	for(int i=0;i<number_of_packets;i++){

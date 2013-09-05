@@ -203,6 +203,47 @@ dpx86_set_vlan_pcp(datapacket_t* pkt, uint8_t vlan_pcp)
 	pack->headers->vlan(0)->set_dl_vlan_pcp(vlan_pcp);
 }
 
+//ARP
+void
+dpx86_set_arp_opcode(datapacket_t* pkt, uint16_t arp_opcode)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_opcode(arp_opcode);
+}
+
+void
+dpx86_set_arp_sha(datapacket_t* pkt, uint64_t arp_sha)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_dl_src(arp_sha);
+}
+
+void
+dpx86_set_arp_spa(datapacket_t* pkt, uint32_t arp_spa)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_nw_src(arp_spa); // FIXME: arp_spa is stored in network byte order
+}
+
+void
+dpx86_set_arp_tha(datapacket_t* pkt, uint64_t arp_tha)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_dl_dst(arp_tha);
+}
+
+void
+dpx86_set_arp_tpa(datapacket_t* pkt, uint32_t arp_tpa)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return;
+	pack->headers->arpv4(0)->set_nw_dst(arp_tpa); // FIXME: arp_tpa is stored in network byte order
+}
+
 //IP, IPv4
 void
 dpx86_set_ip_dscp(datapacket_t* pkt, uint8_t ip_dscp)
@@ -364,6 +405,23 @@ dpx86_set_ppp_proto(datapacket_t* pkt, uint16_t proto)
 	pack->headers->ppp(0)->set_ppp_prot(proto);
 }
 
+//GTP
+void
+dpx86_set_gtp_msg_type(datapacket_t* pkt, uint8_t gtp_msg_type)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->gtp(0))) return;
+	pack->headers->gtp(0)->set_msg_type(gtp_msg_type);
+}
+
+void
+dpx86_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->gtp(0))) return;
+	pack->headers->gtp(0)->set_teid(teid);
+}
+
 
 static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_port_t* port){
 
@@ -371,7 +429,9 @@ static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, s
 	if(port && port->platform_port_state){
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
-		of12_dump_packet_matches((of12_packet_matches_t*)pkt->matches);
+#ifdef DEBUG
+		of12_dump_packet_matches(&pkt->matches);
+#endif
 
 		//Schedule in the port
 		ioport* ioport_inst = (ioport*)port->platform_port_state; 
@@ -465,7 +525,9 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			dpx86_output_single_packet(replica, replica_pack, port_it);
 		}
 
-		of12_dump_packet_matches((of12_packet_matches_t*)pkt->matches);
+#ifdef DEBUG
+		of12_dump_packet_matches(&pkt->matches);
+#endif
 			
 		//discard the original packet always (has been replicated)
 		bufferpool::release_buffer(pkt);
@@ -563,6 +625,47 @@ dpx86_get_packet_vlan_pcp(datapacket_t * const pkt)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == pack->headers->vlan(0))) return 0;
 	return pack->headers->vlan(0)->get_dl_vlan_pcp()&0x07;
+}
+
+//ARP
+uint16_t
+dpx86_get_packet_arp_opcode(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return pack->headers->arpv4(0)->get_opcode();
+}
+
+uint64_t
+dpx86_get_packet_arp_sha(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return pack->headers->arpv4(0)->get_dl_src().get_mac();
+}
+
+uint32_t
+dpx86_get_packet_arp_spa(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return be32toh(pack->headers->arpv4(0)->get_nw_src().ca_s4addr->sin_addr.s_addr);
+}
+
+uint64_t
+dpx86_get_packet_arp_tha(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return pack->headers->arpv4(0)->get_dl_dst().get_mac();
+}
+
+uint32_t
+dpx86_get_packet_arp_tpa(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->arpv4(0))) return 0;
+	return be32toh(pack->headers->arpv4(0)->get_nw_dst().ca_s4addr->sin_addr.s_addr);
 }
 
 //IP
@@ -713,4 +816,23 @@ dpx86_get_packet_ppp_proto(datapacket_t * const pkt)
 	if ((NULL == pack) || (NULL == pack->headers->ppp(0))) return 0;
 	return pack->headers->ppp(0)->get_ppp_prot();
 }
+
+//GTP related extensions
+uint8_t
+dpx86_get_packet_gtp_msg_type(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->gtp(0))) return 0;
+	return pack->headers->gtp(0)->get_msg_type();
+}
+
+uint32_t
+dpx86_get_packet_gtp_teid(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->gtp(0))) return 0;
+	return pack->headers->gtp(0)->get_teid();
+}
+
+
 

@@ -71,6 +71,11 @@ static_pktclassifier::static_pktclassifier(datapacketx86* pkt_ref) :
 		headers[FIRST_PPP_FRAME_POS+i].frame = new rofl::fpppframe(NULL, 0);		
 		headers[FIRST_PPP_FRAME_POS+i].type = HEADER_TYPE_PPP;
 	}
+	//gtp
+	for (i=0;i<MAX_GTP_FRAMES;i++){
+		headers[FIRST_GTP_FRAME_POS+i].frame = new rofl::fgtpuframe(NULL, 0);
+		headers[FIRST_GTP_FRAME_POS+i].type = HEADER_TYPE_GTP;
+	}
 
 	//Add more here...
 }
@@ -87,7 +92,8 @@ static_pktclassifier::~static_pktclassifier(){
 
 
 void static_pktclassifier::classify(void){
-	classify_reset();
+	if(is_classified)
+		classify_reset();
 	parse_ether(pkt->get_buffer(), pkt->get_buffer_length());
 	is_classified = true;
 }
@@ -293,6 +299,24 @@ rofl::fpppframe* static_pktclassifier::ppp(int idx) const
 	//Return the index
 	if(headers[pos].present)
 		return (rofl::fpppframe*) headers[pos].frame;
+	return NULL;
+}
+
+rofl::fgtpuframe* static_pktclassifier::gtp(int idx) const
+{
+	unsigned int pos;
+
+	if(idx > (int)MAX_GTP_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_GTP_FRAME_POS + num_of_headers[HEADER_TYPE_GTP] - 1;
+	else
+		pos = FIRST_GTP_FRAME_POS + idx;
+
+	//Return the index
+	if(headers[pos].present)
+		return (rofl::fgtpuframe*) headers[pos].frame;
 	return NULL;
 }
 
@@ -653,15 +677,21 @@ void static_pktclassifier::parse_udp(uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_UDP] = num_of_udp+1;
 
 	//Set reference
-	//rofl::fudpframe *udp = (rofl::fudpframe*) headers[FIRST_UDP_FRAME_POS + num_of_udp].frame; 
+	rofl::fudpframe *udp = (rofl::fudpframe*) headers[FIRST_UDP_FRAME_POS + num_of_udp].frame;
 	
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::fudpframe::udp_hdr_t);
 	datalen -= sizeof(struct rofl::fudpframe::udp_hdr_t);
 
-
 	if (datalen > 0){
-		//TODO: something 
+		switch (udp->get_dport()) {
+		case rofl::fgtpuframe::GTPU_UDP_PORT: {
+			parse_gtp(data, datalen);
+		} break;
+		default: {
+			//TODO: something
+		} break;
+		}
 	}
 }
 
@@ -714,6 +744,32 @@ void static_pktclassifier::parse_sctp( uint8_t *data, size_t datalen){
 	}
 
 }
+
+
+void static_pktclassifier::parse_gtp( uint8_t *data, size_t datalen){
+
+	if (datalen < sizeof(struct rofl::fgtpuframe::gtpu_base_hdr_t)) { return; }
+
+	//Set frame
+	unsigned int num_of_gtp = num_of_headers[HEADER_TYPE_GTP];
+	headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame->reset(data, datalen);
+	headers[FIRST_GTP_FRAME_POS + num_of_gtp].present = true;
+	num_of_headers[HEADER_TYPE_GTP] = num_of_gtp+1;
+
+	//Set reference
+	//rofl::fgtpuframe *gtp = (rofl::fgtpuframe*) headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame;
+
+	//Increment pointers and decrement remaining payload size
+	data += sizeof(struct rofl::fgtpuframe::gtpu_base_hdr_t);
+	datalen -= sizeof(struct rofl::fgtpuframe::gtpu_base_hdr_t);
+
+	if (datalen > 0){
+		//TODO: something
+	}
+
+}
+
+
 
 //Simply moves the first element(start) to the end-1 (rotates), and resets it
 void static_pktclassifier::pop_header(enum header_type type, unsigned int start, unsigned int end){
@@ -879,6 +935,52 @@ void static_pktclassifier::pop_pppoe(uint16_t ether_type){
 
 }
 
+void static_pktclassifier::pop_gtp(uint16_t ether_type){
+
+	// assumption: UDP -> GTP
+
+	// an ip header must be present
+	if((num_of_headers[HEADER_TYPE_IPV4] == 0) || (!headers[FIRST_IPV4_FRAME_POS].present) || (num_of_headers[HEADER_TYPE_IPV4] > 1))
+		return;
+
+	// a udp header must be present
+	if((num_of_headers[HEADER_TYPE_UDP] == 0) || (!headers[FIRST_UDP_FRAME_POS].present) || (num_of_headers[HEADER_TYPE_UDP] > 1))
+		return;
+
+	// a gtp header must be present
+	if(num_of_headers[HEADER_TYPE_GTP] == 0 || !headers[FIRST_GTP_FRAME_POS].present)
+		return;
+
+
+	// determine effective length of GTP header
+	size_t pop_length = sizeof(struct rofl::fipv4frame::ipv4_hdr_t) +
+							sizeof(struct rofl::fudpframe::udp_hdr_t);
+								gtp(0)->get_hdr_length(); // based on flags set to 1 in GTP header
+
+	//Remove bytes from packet
+	pkt_pop(ipv4(0)->soframe(), pop_length);
+
+	//Take headers out
+	pop_header(HEADER_TYPE_GTP, FIRST_GTP_FRAME_POS, FIRST_GTP_FRAME_POS+MAX_GTP_FRAMES);
+	pop_header(HEADER_TYPE_UDP, FIRST_UDP_FRAME_POS, FIRST_UDP_FRAME_POS+MAX_UDP_FRAMES);
+	pop_header(HEADER_TYPE_IPV4, FIRST_IPV4_FRAME_POS, FIRST_IPV4_FRAME_POS+MAX_IPV4_FRAMES);
+
+
+	for (int i = MAX_VLAN_FRAMES-1; i >= 0; ++i) {
+		vlan(i)->shift_right(pop_length);
+		vlan(i)->reset(vlan(i)->soframe(), vlan(i)->framelen() - pop_length);
+	}
+	for (int i = MAX_ETHER_FRAMES-1; i >= 0; ++i) {
+		ether(i)->shift_right(pop_length);
+		ether(i)->reset(ether(i)->soframe(), ether(i)->framelen() - pop_length);
+	}
+
+	if (vlan(-1)) {
+		vlan(-1)->set_dl_type(ether_type);
+	} else {
+		ether(-1)->set_dl_type(ether_type);
+	}
+}
 
 /* PUSH operations
  *
@@ -1118,6 +1220,177 @@ rofl::fpppoeframe* static_pktclassifier::push_pppoe(uint16_t ether_type){
 	n_pppoe->set_pppoe_type(rofl::fpppoeframe::PPPOE_TYPE);
 	n_pppoe->set_pppoe_vers(rofl::fpppoeframe::PPPOE_VERSION);
 
+	return NULL;
+}
+
+
+rofl::fgtpuframe* static_pktclassifier::push_gtp(uint16_t ether_type){
+#if 0
+	rofl::fetherframe* ether_header;
+	rofl::fmplsframe* mpls_header;
+	unsigned int current_length;
+
+	if(!is_classified)
+		classify();
+
+	//Recover the ether(0)
+	ether_header = ether(0);
+	current_length = ether_header->framelen();
+
+	/*
+	 * this invalidates ether(0), as it shifts ether(0) to the left
+	 */
+	if (pkt_push(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fmplsframe::mpls_hdr_t)) == ROFL_FAILURE){
+		// TODO: log error
+		return 0;
+	}
+
+
+	/*
+	 * adjust ether(0): move one mpls tag to the left
+	 */
+	ether_header->shift_left(sizeof(struct rofl::fmplsframe::mpls_hdr_t));
+	ether_header->set_dl_type(ether_type);
+
+	/*
+	 * append the new fmplsframe instance to ether(0)
+	 */
+	push_header(HEADER_TYPE_MPLS, FIRST_MPLS_FRAME_POS, FIRST_MPLS_FRAME_POS+MAX_MPLS_FRAMES);
+
+	//Now reset frame
+	//Size of ethernet needs to be extended with + MPLS size
+	//MPLS size needs to be ether_header->size + MPLS - ether_header
+	ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fmplsframe::mpls_hdr_t));
+	headers[FIRST_MPLS_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fmplsframe::mpls_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
+
+
+	/*
+	 * set default values in mpls tag
+	 */
+	mpls_header = this->mpls(0);
+
+	if (this->mpls(1)){
+		mpls_header->set_mpls_bos(false);
+		mpls_header->set_mpls_label(this->mpls(1)->get_mpls_label());
+		mpls_header->set_mpls_tc(this->mpls(1)->get_mpls_tc());
+		mpls_header->set_mpls_ttl(this->mpls(1)->get_mpls_ttl());
+	} else {
+		mpls_header->set_mpls_bos(true);
+		mpls_header->set_mpls_label(0x0000);
+		mpls_header->set_mpls_tc(0x00);
+		mpls_header->set_mpls_ttl(0x00);
+	}
+
+	return mpls_header;
+#endif
+	return NULL;
+#if 0
+	rofl::fetherframe* ether_header;
+	unsigned int current_length;
+
+	if(!is_classified)
+		classify();
+
+	if (pppoe(0)){
+		// TODO: log error => pppoe tag already exists
+		return NULL;
+	}
+
+	//Recover the ether(0)
+	ether_header = ether(0);
+	current_length = ether_header->framelen();
+
+	rofl::fpppoeframe *n_pppoe = NULL;
+	rofl::fpppframe *n_ppp = NULL;
+
+	switch (ether_type) {
+		case rofl::fpppoeframe::PPPOE_ETHER_SESSION:
+		{
+			unsigned int bytes_to_insert = sizeof(struct rofl::fpppoeframe::pppoe_hdr_t) +
+											 sizeof(struct rofl::fpppframe::ppp_hdr_t);
+
+			/*
+			 * this invalidates ether(0), as it shifts ether(0) to the left
+			 */
+			if (pkt_push(sizeof(struct rofl::fetherframe::eth_hdr_t), bytes_to_insert) == ROFL_FAILURE){
+				// TODO: log error
+				return NULL;
+			}
+
+			/*
+			 * adjust ether(0): move one pppoe tag to the left
+			 */
+			ether_header->shift_left(bytes_to_insert);
+
+			ether_header->set_dl_type(rofl::fpppoeframe::PPPOE_ETHER_SESSION);
+
+			/*
+			 * append the new fpppoeframe instance to ether(0)
+			 */
+			push_header(HEADER_TYPE_PPPOE, FIRST_PPPOE_FRAME_POS, FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES);
+			push_header(HEADER_TYPE_PPP, FIRST_PPP_FRAME_POS, FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES);
+
+			n_pppoe = (rofl::fpppoeframe*)headers[FIRST_PPPOE_FRAME_POS].frame;
+			n_ppp = (rofl::fpppframe*)headers[FIRST_PPP_FRAME_POS].frame;
+
+			//Now reset frames
+			ether_header->reset(ether_header->soframe(), current_length + bytes_to_insert);
+			n_pppoe->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), ether_header->framelen() - sizeof(struct rofl::fetherframe::eth_hdr_t) );
+			n_ppp->reset(n_pppoe->soframe() + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t), n_pppoe->framelen() - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
+
+			/*
+			 * TODO: check if this is an appropiate fix
+			 */
+			n_pppoe->set_hdr_length(pkt->get_buffer_length() - sizeof(struct rofl::fetherframe::eth_hdr_t) - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
+			n_ppp->set_ppp_prot(0x0000);
+		}
+			break;
+
+		case rofl::fpppoeframe::PPPOE_ETHER_DISCOVERY:
+		{
+			unsigned int bytes_to_insert = sizeof(struct rofl::fpppoeframe::pppoe_hdr_t);
+
+			/*
+			 * this invalidates ether(0), as it shifts ether(0) to the left
+			 */
+			if (pkt_push(ether_header->payload(), bytes_to_insert) == ROFL_FAILURE){
+				// TODO: log error
+				return NULL;
+			}
+
+			/*
+			 * adjust ether(0): move one pppoe tag to the left
+			 */
+			ether_header->shift_left(bytes_to_insert);
+
+			ether_header->set_dl_type(rofl::fpppoeframe::PPPOE_ETHER_DISCOVERY);
+
+			/*
+			 * append the new fpppoeframe instance to ether(0)
+			 */
+			push_header(HEADER_TYPE_PPPOE, FIRST_PPPOE_FRAME_POS, FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES);
+
+			//Now reset frame
+			//Size of ethernet needs to be extended with +PPPOE size
+			//PPPOE size needs to be ether_header->size + PPPOE - ether_header
+			ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
+			headers[FIRST_PPPOE_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
+
+			n_pppoe = (rofl::fpppoeframe*)headers[FIRST_PPPOE_FRAME_POS].frame;
+
+
+		}
+			break;
+	}
+
+	/*
+	 * set default values in pppoe tag
+	 */
+	n_pppoe->set_pppoe_code(0x00);
+	n_pppoe->set_pppoe_sessid(0x0000);
+	n_pppoe->set_pppoe_type(rofl::fpppoeframe::PPPOE_TYPE);
+	n_pppoe->set_pppoe_vers(rofl::fpppoeframe::PPPOE_VERSION);
+#endif
 	return NULL;
 }
 

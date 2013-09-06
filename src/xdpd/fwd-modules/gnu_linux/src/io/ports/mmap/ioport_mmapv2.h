@@ -17,6 +17,8 @@
 #include "mmap_tx.h"
 #include "../../datapacketx86.h"
 
+#define PORT_DEFAULT_MTU 1500
+
 /**
 * @file ioport_mmapv2.h
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
@@ -100,7 +102,10 @@ private:
 	int n_blocks;
 	int frame_size;
 
-	/* todo move to parent? */
+	//MTU TODO: move to parent?
+	unsigned int mtu;
+
+	/*TODO: move to parent? Remove dependency of cmacaddr */
 	cmacaddr hwaddr;
 	
 	//Pipe used to

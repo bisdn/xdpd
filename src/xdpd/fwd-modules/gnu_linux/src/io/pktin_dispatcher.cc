@@ -85,7 +85,7 @@ static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
 	}
 
 	//Empty pipe (n tokens)
-	read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf,i);
+	(void)read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf,i);
 }
 
 //Initialize pkt in notification pipe

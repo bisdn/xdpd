@@ -68,6 +68,36 @@ platform_packet_get_vlan_pcp(datapacket_t * const pkt)
 	 return 0x0;
 }
 
+uint16_t
+platform_packet_get_arp_opcode(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t
+platform_packet_get_arp_sha(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint32_t
+platform_packet_get_arp_spa(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t
+platform_packet_get_arp_tha(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint32_t
+platform_packet_get_arp_tpa(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
 uint8_t
 platform_packet_get_ip_proto(datapacket_t * const pkt)
 {
@@ -439,6 +469,42 @@ platform_packet_set_vlan_pcp(datapacket_t* pkt, uint8_t vlan_pcp)
 	fprintf(stderr,"SET VLAN PCP\n");
 	dpx86_set_vlan_pcp(pkt, vlan_pcp);
 }
+
+void
+platform_packet_set_arp_opcode(datapacket_t* pkt, uint16_t arp_opcode)
+{
+	fprintf(stderr,"SET ARP OPCODE\n");
+	dpx86_set_arp_opcode(pkt, arp_opcode);
+}
+
+void
+platform_packet_set_arp_sha(datapacket_t* pkt, uint64_t arp_sha)
+{
+	fprintf(stderr,"SET ARP SHA\n");
+	dpx86_set_arp_sha(pkt, arp_sha);
+}
+
+void
+platform_packet_set_arp_spa(datapacket_t* pkt, uint32_t arp_spa)
+{
+	fprintf(stderr,"SET ARP SPA\n");
+	dpx86_set_arp_spa(pkt, arp_spa);
+}
+
+void
+platform_packet_set_arp_tha(datapacket_t* pkt, uint64_t arp_tha)
+{
+	fprintf(stderr,"SET ARP THA\n");
+	dpx86_set_arp_sha(pkt, arp_tha);
+}
+
+void
+platform_packet_set_arp_tpa(datapacket_t* pkt, uint32_t arp_tpa)
+{
+	fprintf(stderr,"SET ARP TPA\n");
+	dpx86_set_arp_spa(pkt, arp_tpa);
+}
+
 
 void
 platform_packet_set_ip_dscp(datapacket_t* pkt, uint8_t ip_dscp)

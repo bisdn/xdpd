@@ -124,7 +124,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();;
-		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF"); // no mask in OF1.0
+		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
 
 		of12_match_t *match = of12_init_eth_dst_match(
 								/*prev*/NULL,
@@ -137,7 +137,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
-		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF"); // no mask in OF1.0
+		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
 
 		of12_match_t *match = of12_init_eth_src_match(
 								/*prev*/NULL,
@@ -253,49 +253,117 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	// no SCTP-dst/src in OF1.0
 
+	/* FIXME: OF 1.0 allows the following situation:
+	 * all matches wildcard, except:
+	 * - transport protocol source and destination
+	 *
+	 * this flow-mod matches TCP, UDP and ICMP packets
+	 * This behaviour cannot be reproduced in OF1.2.
+	 *
+	 * We make an assumption here:
+	 * The control plane designed has to define the
+	 * ip_proto field as a match, thus indicating which
+	 * protocol he assumes and we use ip_proto to
+	 * set the correct match valies in structure of12_match.
+	 *
+	 */
+
 	try {
-		of12_match_t *match = of12_init_icmpv4_type_match(
+		uint8_t ip_proto = ofmatch.get_ip_proto();
+
+		of12_match_t *match = (of12_match_t*)0;
+
+		switch (ip_proto) {
+		case ftcpframe::TCP_IP_PROTO: {
+			match = of12_init_tcp_src_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_icmpv4_type());
+								ofmatch.get_tcp_src());
+		} break;
+		case fudpframe::UDP_IP_PROTO: {
+			match = of12_init_udp_src_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								ofmatch.get_tcp_src());
+		} break;
+		case ficmpv4frame::ICMPV4_IP_PROTO: {
+			match = of12_init_icmpv4_type_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								ofmatch.get_tcp_src());
+		} break;
+		}
 
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		of12_match_t *match = of12_init_icmpv4_code_match(
+		uint8_t ip_proto = ofmatch.get_ip_proto();
+
+		of12_match_t *match = (of12_match_t*)0;
+
+		switch (ip_proto) {
+		case ftcpframe::TCP_IP_PROTO: {
+			match = of12_init_tcp_dst_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_icmpv4_code());
+								ofmatch.get_tcp_dst());
+		} break;
+		case fudpframe::UDP_IP_PROTO: {
+			match = of12_init_udp_dst_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								ofmatch.get_tcp_dst());
+		} break;
+		case ficmpv4frame::ICMPV4_IP_PROTO: {
+			match = of12_init_icmpv4_code_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								ofmatch.get_tcp_dst());
+		} break;
+		}
 
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
+	/* FIXME: same situation as above: OF1.0 defines
+	 * IP-src/dst and IP-proto with ambiguities, as the same fields
+	 * may be used for multiple protocols.
+	 *
+	 * Same strategy as above: control plane has to specify,
+	 * which protocol is assumed by setting the ethernet type
+	 * match field.
+	 *
+	 */
+
 	try {
-		of12_match_t *match = of12_init_arp_opcode_match(
+		uint16_t ethtype = ofmatch.get_eth_type();
+
+		of12_match_t *match = (of12_match_t*)0;
+
+		switch (ethtype) {
+		case fipv4frame::IPV4_ETHER: {
+			match = of12_init_ip_proto_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_arp_opcode());
+								ofmatch.get_ip_proto());
+		} break;
+		case farpv4frame::ARPV4_ETHER: {
+			match = of12_init_arp_opcode_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								ofmatch.get_ip_proto());
+		} break;
+		}
 
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
-	try {
-		uint64_t maddr = ofmatch.get_arp_sha_addr().get_mac();
-		uint64_t mmask = ofmatch.get_arp_sha_mask().get_mac();
-
-		of12_match_t *match = of12_init_arp_sha_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								maddr,
-								mmask);
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
+	// no ARP-SHA in OF1.0
 
 	try {
-		caddress value(ofmatch.get_arp_spa_value());
-		caddress mask (ofmatch.get_arp_spa_mask());
+		caddress value(ofmatch.get_ipv4_src_value());
+		caddress mask (ofmatch.get_ipv4_src_mask());
 
 		of12_match_t *match = of12_init_arp_spa_match(
 								/*prev*/NULL,
@@ -306,22 +374,11 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
-	try {
-		uint64_t maddr = ofmatch.get_arp_tha_addr().get_mac();
-		uint64_t mmask = ofmatch.get_arp_tha_mask().get_mac();
-
-		of12_match_t *match = of12_init_arp_tha_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								maddr,
-								mmask);
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
+	// no ARP_THA in OF1.0
 
 	try {
-		caddress value(ofmatch.get_arp_tpa_value());
-		caddress mask (ofmatch.get_arp_tpa_mask());
+		caddress value(ofmatch.get_ipv4_dst_value());
+		caddress mask (ofmatch.get_ipv4_dst_mask());
 
 		of12_match_t *match = of12_init_arp_tpa_match(
 								/*prev*/NULL,
@@ -332,144 +389,11 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of12_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
-	try {
-		ofmatch.get_ipv6_src();
+	// no IPv6 support in OF1.0
 
-		throw eNotImplemented(std::string("of10_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_SRC is missing")); // TODO
-	} catch (eOFmatchNotFound& e) {}
+	// no ICMPv6 support in OF1.0
 
-	try {
-		ofmatch.get_ipv6_dst();
-
-		throw eNotImplemented(std::string("of10_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_DST is missing")); // TODO
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		ofmatch.get_ipv6_flabel();
-
-		throw eNotImplemented(std::string("of10_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_FLABEL is missing")); // TODO
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		ofmatch.get_icmpv6_type();
-
-		throw eNotImplemented(std::string("of10_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_TYPE is missing")); // TODO
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		ofmatch.get_icmpv6_code();
-
-		throw eNotImplemented(std::string("of10_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_CODE is missing")); // TODO
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		ofmatch.get_ipv6_nd_target();
-
-		throw eNotImplemented(std::string("of10_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_ND_TARGET is missing")); // TODO
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		ofmatch.get_icmpv6_neighbor_source_lladdr();
-
-		throw eNotImplemented(std::string("of10_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_ND_SLL is missing")); // TODO
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		ofmatch.get_icmpv6_neighbor_target_lladdr();
-
-		throw eNotImplemented(std::string("of10_translation_utils::flow_mod_add() OFPXMT_OFB_IPV6_ND_TLL is missing")); // TODO
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		of12_match_t *match = of12_init_mpls_label_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_mpls_label());
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		of12_match_t *match = of12_init_mpls_tc_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_mpls_tc());
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		coxmatch_ofx_pppoe_code oxm_pppoe_code(
-				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_PPPOE_CODE));
-
-		of12_match_t *match = of12_init_pppoe_code_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								oxm_pppoe_code.get_pppoe_code());
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		coxmatch_ofx_pppoe_type oxm_pppoe_type(
-				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_PPPOE_TYPE));
-
-		of12_match_t *match = of12_init_pppoe_type_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								oxm_pppoe_type.get_pppoe_type());
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		coxmatch_ofx_pppoe_sid oxm_pppoe_sid(
-				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_PPPOE_SID));
-
-		of12_match_t *match = of12_init_pppoe_session_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								oxm_pppoe_sid.get_pppoe_sid());
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		coxmatch_ofx_ppp_prot oxm_ppp_prot(
-				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_PPP_PROT));
-
-		of12_match_t *match = of12_init_ppp_prot_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								oxm_ppp_prot.get_ppp_prot());
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		coxmatch_ofx_gtp_msg_type oxm_gtp_msg_type(
-				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_GTP_MSG_TYPE));
-
-		of12_match_t *match = of12_init_gtp_msg_type_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								oxm_gtp_msg_type.get_msg_type());
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		coxmatch_ofx_gtp_teid oxm_gtp_teid(
-				ofmatch.get_const_match(OFPXMC_EXPERIMENTER, OFPXMT_OFX_GTP_TEID));
-
-		of12_match_t *match = of12_init_gtp_teid_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								oxm_gtp_teid.get_teid_value(),
-								oxm_gtp_teid.get_teid_mask());
-
-		of12_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
+	// no MPLS support in OF1.0
 }
 
 
@@ -496,253 +420,43 @@ of10_translation_utils::of12_map_flow_entry_actions(
 		case OFPAT_OUTPUT:
 			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, be32toh(raction.oac_output->port), NULL, NULL);
 			break;
-		case OFPAT_COPY_TTL_OUT:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_COPY_TTL_OUT, 0, NULL, NULL);
+		case OFP10AT_SET_VLAN_VID:
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_VLAN_VID, be16toh(raction.oac_vlanvid->vlan_vid), NULL, NULL);
 			break;
-		case OFPAT_COPY_TTL_IN:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_COPY_TTL_IN, 0, NULL, NULL);
+		case OFP10AT_SET_VLAN_PCP:
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_VLAN_PCP, be16toh(raction.oac_vlanpcp->vlan_pcp), NULL, NULL);
 			break;
-		case OFPAT_SET_MPLS_TTL:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_MPLS_TTL, raction.oac_mpls_ttl->mpls_ttl, NULL, NULL);
+		case OFP10AT_STRIP_VLAN:
+			// FIXME: we need the ethertype here for the OF1.2 pipeline, but this field does not exist in OF1.0 and must be drawn from the removed VLAN tag
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_POP_VLAN, be16toh(0), NULL, NULL);
 			break;
-		case OFPAT_DEC_MPLS_TTL:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_DEC_MPLS_TTL, 0, NULL, NULL);
-			break;
-		case OFPAT_PUSH_VLAN:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_PUSH_VLAN, be16toh(raction.oac_oacu.oacu_push->ethertype), NULL, NULL);
-			break;
-		case OFPAT_POP_VLAN:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_POP_VLAN, be16toh(raction.oac_push->ethertype), NULL, NULL);
-			break;
-		case OFPAT_PUSH_MPLS:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_PUSH_MPLS, be16toh(raction.oac_push->ethertype), NULL, NULL);
-			break;
-		case OFPAT_POP_MPLS:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_POP_MPLS,  be16toh(raction.oac_push->ethertype), NULL, NULL);
-			break;
-		case OFPAT_SET_QUEUE:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_QUEUE, be32toh(raction.oac_set_queue->queue_id), NULL, NULL);
-			break;
-		case OFPAT_GROUP:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_GROUP, be32toh(raction.oac_group->group_id), NULL, NULL);
-			break;
-		case OFPAT_SET_NW_TTL:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_NW_TTL, raction.oac_nw_ttl->nw_ttl, NULL, NULL);
-			break;
-		case OFPAT_DEC_NW_TTL:
-			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_DEC_NW_TTL, 0, NULL, NULL);
-			break;
-		case OFPAT_SET_FIELD:
-		{
-			coxmatch oxm = raction.get_oxm();
-
-			switch (oxm.get_oxm_class()) {
-			case OFPXMC_OPENFLOW_BASIC:
-			{
-				switch (oxm.get_oxm_field()) {
-				case OFPXMT_OFB_ETH_DST:
-				{
-					cmacaddr mac(oxm.oxm_uint48t->value, 6);
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_DST, mac.get_mac(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ETH_SRC:
-				{
-					cmacaddr mac(oxm.oxm_uint48t->value, 6);
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, mac.get_mac(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ETH_TYPE:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_TYPE, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ARP_OP:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_OPCODE, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ARP_SHA:
-				{
-					cmacaddr mac(oxm.oxm_uint48t->value, 6);
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_SHA, mac.get_mac(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ARP_SPA:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_SPA, oxm.uint32_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ARP_THA:
-				{
-					cmacaddr mac(oxm.oxm_uint48t->value, 6);
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_THA, mac.get_mac(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ARP_TPA:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_TPA, oxm.uint32_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ICMPV4_CODE:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ICMPV4_CODE, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_ICMPV4_TYPE:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ICMPV4_TYPE, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_IPV4_DST:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_IPV4_DST, oxm.uint32_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_IPV4_SRC:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_IPV4_SRC, oxm.uint32_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_IP_DSCP:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_IP_DSCP, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_IP_ECN:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_IP_ECN, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_IP_PROTO:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_IP_PROTO, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_MPLS_LABEL:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_MPLS_LABEL, oxm.uint32_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_MPLS_TC:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_MPLS_TC, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_VLAN_VID:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_VLAN_VID, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_VLAN_PCP:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_VLAN_PCP, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_TCP_DST:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_TCP_DST, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_TCP_SRC:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_TCP_SRC, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_UDP_DST:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_UDP_DST, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFB_UDP_SRC:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_UDP_SRC, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				default:
-				{
-					WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::of12_map_flow_entry() "
-							"unknown OXM type in action SET-FIELD found: %s",
-							sw->dpname.c_str(), raction.c_str());
-				}
-					break;
-				}
-			}
-				break;
-			case OFPXMC_EXPERIMENTER: {
-				switch (oxm.get_oxm_field()) {
-				case OFPXMT_OFX_PPPOE_CODE:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_CODE, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFX_PPPOE_TYPE:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_TYPE, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFX_PPPOE_SID:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPPOE_SID, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFX_PPP_PROT:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_PPP_PROT, oxm.uint16_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFX_GTP_MSG_TYPE:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_GTP_MSG_TYPE, oxm.uint8_value(), NULL, NULL);
-				}
-					break;
-				case OFPXMT_OFX_GTP_TEID:
-				{
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_GTP_TEID, oxm.uint32_value(), NULL, NULL);
-				}
-					break;
-				}
-
-			}
-				break;
-			default:
-			{
-				WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::of12_map_flow_entry() "
-						"unknown OXM class in action SET-FIELD found: %s",
-						sw->dpname.c_str(), raction.c_str());
-			}
-				break;
-			}
-		}
-			break;
-		case OFPAT_EXPERIMENTER: {
-
-			cofaction_experimenter eaction(raction);
-
-			switch (eaction.get_exp_id()) {
-			case ROFL_EXPERIMENTER_ID: {
-
-				// ROFL experimental actions contain experimental action type at position data[0]
-				uint8_t acttype = eaction.oac_experimenter_header->data[0];
-
-				switch (acttype) {
-				case cofaction_push_pppoe::OFXAT_PUSH_PPPOE: {
-					cofaction_push_pppoe paction(eaction);
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_PUSH_PPPOE, be16toh(paction.eoac_push->ethertype), NULL, NULL);
-				} break;
-				case cofaction_pop_pppoe::OFXAT_POP_PPPOE: {
-					cofaction_pop_pppoe paction(eaction);
-					action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_POP_PPPOE, be16toh(paction.eoac_pop_pppoe->ethertype), NULL, NULL);
-				} break;
-				}
-
+		case OFP10AT_SET_DL_SRC: {
+			cmacaddr mac(raction.oac_dladdr->dl_addr, 6);
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, mac.get_mac(), NULL, NULL);
 			} break;
-			default: {
-				// TODO
+		case OFP10AT_SET_DL_DST: {
+			cmacaddr mac(raction.oac_dladdr->dl_addr, 6);
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_DST, mac.get_mac(), NULL, NULL);
 			} break;
-			}
-
-			} break;
+		case OFP10AT_SET_NW_SRC:
+#if 0
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ARP_SPA, oxm.uint32_value(), NULL, NULL);
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_IPV4_SRC, oxm.uint32_value(), NULL, NULL);
+#endif
+			break;
+		case OFP10AT_SET_NW_DST:
+			break;
+		case OFP10AT_SET_NW_TOS:
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_IP_DSCP, raction.oac_nwtos->nw_tos, NULL, NULL);
+			break;
+		case OFP10AT_SET_TP_SRC:
+			break;
+		case OFP10AT_SET_TP_DST:
+			break;
+		case OFP10AT_ENQUEUE:
+			// FIXME: what to do with the port field in struct ofp10_action_enqueue?
+			action = of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_QUEUE, be32toh(raction.oac_enqueue->queue_id), NULL, NULL);
+			break;
 		}
 
 		if (NULL != apply_actions)

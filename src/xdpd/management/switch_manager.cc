@@ -4,6 +4,7 @@
 
 //Add here the headers of the version-dependant Openflow switchs 
 #include "../openflow/openflow_switch.h"
+#include "../openflow/openflow10/openflow10_switch.h"
 #include "../openflow/openflow12/openflow12_switch.h"
 
 using namespace rofl;
@@ -37,6 +38,10 @@ openflow_switch* switch_manager::create_switch(
 	}
 
 	switch(version){
+
+		case OF_VERSION_10:
+			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, controller_addr, binding_addr);
+			break;
 
 		case OF_VERSION_12:
 			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, controller_addr, binding_addr);

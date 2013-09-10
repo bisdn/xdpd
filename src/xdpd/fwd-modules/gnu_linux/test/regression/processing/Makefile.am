@@ -1,7 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 SHARED_SRC=\
-	../of12_cmm_mockup.c \
+	../of1x_cmm_mockup.c \
 	$(top_srcdir)/src/afa-imp/forwarding_module.cc\
 	$(top_srcdir)/src/io/iface_utils.cc \
 	$(top_srcdir)/src/pipeline-imp/memory.c \
@@ -35,7 +35,7 @@ SHARED_SRC=\
 
 if DEBUG
 processingmanagertest_SOURCES= $(SHARED_SRC)\
-			../platform_hooks_of12_mockup.cc\
+			../platform_hooks_of1x_mockup.cc\
 			processingmanagertest.cc 
 			
 processingmanagertest_LDADD= -lrofl -lcppunit -lpthread -lrofl_pipeline

@@ -2,10 +2,10 @@ MAINTAINERCLEANFILES = Makefile.in
 
 #Shared stuff
 SHARED_SRC=\
-	../of12_cmm_mockup.c \
+	../of1x_cmm_mockup.c \
 	$(top_srcdir)/src/afa-imp/forwarding_module.cc\
 	$(top_srcdir)/src/io/iface_utils.cc \
-	$(top_srcdir)/src/pipeline-imp/platform_hooks_of12.cc \
+	$(top_srcdir)/src/pipeline-imp/platform_hooks_of1x.cc \
 	$(top_srcdir)/src/pipeline-imp/pthread_lock.c \
 	$(top_srcdir)/src/pipeline-imp/pthread_atomic_operations.c \
 	$(top_srcdir)/src/io/pktin_dispatcher.cc \

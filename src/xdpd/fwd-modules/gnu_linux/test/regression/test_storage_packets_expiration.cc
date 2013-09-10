@@ -58,7 +58,7 @@ void DriverStoragePacketsExpirationTestCase::setUp(){
 	(void)res;
 	
 	char switch_name[] = "switch1";
-	of12_matching_algorithm_available ma_list[] = { of12_matching_algorithm_loop };
+	of1x_matching_algorithm_available ma_list[] = { of1x_matching_algorithm_loop };
 	/* 0->CONTROLLER, 1->CONTINUE, 2->DROP, 3->MASK */
 	sw = fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list);
 	CPPUNIT_ASSERT(sw->platform_state); /* internal state */

@@ -5,9 +5,9 @@
 #ifndef OPENFLOW12_SWITCH_H
 #define OPENFLOW12_SWITCH_H 
 
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_fwd_module.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
 #include "../openflow_switch.h"
 #include "of12_endpoint.h"
 
@@ -57,9 +57,9 @@ public:
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of12_packet_matches_t matches);
+					of1x_packet_matches_t matches);
 	
-	afa_result_t process_flow_removed(uint8_t reason, of12_flow_entry_t* removed_flow_entry);
+	afa_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry);
 
 	/*
 	* Port async notifications

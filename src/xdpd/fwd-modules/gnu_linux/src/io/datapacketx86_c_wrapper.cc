@@ -11,7 +11,7 @@
 #include <rofl/datapath/pipeline/common/ipv6_exthdr.h>
 
 #ifdef DEBUG
-	#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
+	#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #endif
 
 #include "datapacketx86.h"
@@ -526,7 +526,7 @@ static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, s
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
 #ifdef DEBUG
-		of12_dump_packet_matches(&pkt->matches);
+		of1x_dump_packet_matches(&pkt->matches);
 #endif
 
 		//Schedule in the port
@@ -622,7 +622,7 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 		}
 
 #ifdef DEBUG
-		of12_dump_packet_matches(&pkt->matches);
+		of1x_dump_packet_matches(&pkt->matches);
 #endif
 			
 		//discard the original packet always (has been replicated)

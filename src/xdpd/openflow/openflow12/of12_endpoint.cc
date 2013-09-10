@@ -13,7 +13,7 @@ of12_endpoint::of12_endpoint(openflow_switch* sw, caddress const& controller_add
 
 	//Reference back to the sw
 	this->sw = sw;
-	of12switch = (of12_switch_t*)sw->get_fwd_module_sw_ref();
+	of12switch = (of1x_switch_t*)sw->get_fwd_module_sw_ref();
 
 
 	//FIXME: make controller and binding optional somehow
@@ -308,21 +308,21 @@ of12_endpoint::handle_flow_stats_request(
 		cofctl *ctl,
 		cofmsg_flow_stats_request *msg)
 {
-	of12_stats_flow_msg_t* fp_msg = NULL;
-	of12_flow_entry_t* entry = NULL;
+	of1x_stats_flow_msg_t* fp_msg = NULL;
+	of1x_flow_entry_t* entry = NULL;
 
-	//Map the match structure from OpenFlow to of12_packet_matches_t
-	entry = of12_init_flow_entry(NULL, NULL, false);
+	//Map the match structure from OpenFlow to of1x_packet_matches_t
+	entry = of1x_init_flow_entry(NULL, NULL, false);
 	
 	try{
 		of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_flow_stats().get_match(), sw, entry);
 	}catch(...){
-		of12_destroy_flow_entry(entry);	
+		of1x_destroy_flow_entry(entry);	
 		throw eBadRequestBadStat(); 
 	}
 
 	//Ask the Forwarding Plane to process stats
-	fp_msg = fwd_module_of12_get_flow_stats(sw->dpid,
+	fp_msg = fwd_module_of1x_get_flow_stats(sw->dpid,
 			msg->get_flow_stats().get_table_id(),
 			msg->get_flow_stats().get_cookie(),
 			msg->get_flow_stats().get_cookie_mask(),
@@ -331,12 +331,12 @@ of12_endpoint::handle_flow_stats_request(
 					entry->matchs);
 	
 	if(!fp_msg){
-		of12_destroy_flow_entry(entry);	
+		of1x_destroy_flow_entry(entry);	
 		throw eBadRequestBadStat(); 
 	}
 
 	//Construct OF message
-	of12_stats_single_flow_msg_t *elem = fp_msg->flows_head;
+	of1x_stats_single_flow_msg_t *elem = fp_msg->flows_head;
 
 	std::vector<cofflow_stats_reply> flow_stats;
 
@@ -346,7 +346,7 @@ of12_endpoint::handle_flow_stats_request(
 		of12_translation_utils::of12_map_reverse_flow_entry_matches(elem->matches, match);
 
 		cofinlist instructions;
-		of12_translation_utils::of12_map_reverse_flow_entry_instructions((of12_instruction_group_t*)(elem->inst_grp), instructions);
+		of12_translation_utils::of12_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
 
 		flow_stats.push_back(
@@ -370,13 +370,13 @@ of12_endpoint::handle_flow_stats_request(
 		//Send message
 		send_flow_stats_reply(ctl, msg->get_xid(), flow_stats);
 	}catch(...){
-		of12_destroy_stats_flow_msg(fp_msg);	
-		of12_destroy_flow_entry(entry);	
+		of1x_destroy_stats_flow_msg(fp_msg);	
+		of1x_destroy_flow_entry(entry);	
 		throw;
 	}
 	//Destroy FP stats
-	of12_destroy_stats_flow_msg(fp_msg);	
-	of12_destroy_flow_entry(entry);	
+	of1x_destroy_stats_flow_msg(fp_msg);	
+	of1x_destroy_flow_entry(entry);	
 
 	delete msg;
 }
@@ -388,14 +388,14 @@ of12_endpoint::handle_aggregate_stats_request(
 		cofctl *ctl,
 		cofmsg_aggr_stats_request *msg)
 {
-	of12_stats_flow_aggregate_msg_t* fp_msg;
-	of12_flow_entry_t* entry;
+	of1x_stats_flow_aggregate_msg_t* fp_msg;
+	of1x_flow_entry_t* entry;
 
 //	cmemory body(sizeof(struct ofp_flow_stats));
 //	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
 
-	//Map the match structure from OpenFlow to of12_packet_matches_t
-	entry = of12_init_flow_entry(NULL, NULL, false);
+	//Map the match structure from OpenFlow to of1x_packet_matches_t
+	entry = of1x_init_flow_entry(NULL, NULL, false);
 
 	if(!entry)
 		throw eBadRequestBadStat(); 
@@ -403,14 +403,14 @@ of12_endpoint::handle_aggregate_stats_request(
 	try{	
 		of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_aggr_stats().get_match(), sw, entry);
 	}catch(...){
-		of12_destroy_flow_entry(entry);	
+		of1x_destroy_flow_entry(entry);	
 		throw eBadRequestBadStat(); 
 	}
 
 	//TODO check error while mapping 
 
 	//Ask the Forwarding Plane to process stats
-	fp_msg = fwd_module_of12_get_flow_aggregate_stats(sw->dpid,
+	fp_msg = fwd_module_of1x_get_flow_aggregate_stats(sw->dpid,
 					msg->get_aggr_stats().get_table_id(),
 					msg->get_aggr_stats().get_cookie(),
 					msg->get_aggr_stats().get_cookie_mask(),
@@ -419,7 +419,7 @@ of12_endpoint::handle_aggregate_stats_request(
 					entry->matchs);
 	
 	if(!fp_msg){
-		of12_destroy_flow_entry(entry);
+		of1x_destroy_flow_entry(entry);
 		throw eBadRequestBadStat(); 
 	}
 
@@ -435,14 +435,14 @@ of12_endpoint::handle_aggregate_stats_request(
 					fp_msg->flow_count),
 				false);
 	}catch(...){
-		of12_destroy_stats_flow_aggregate_msg(fp_msg);	
-		of12_destroy_flow_entry(entry);
+		of1x_destroy_stats_flow_aggregate_msg(fp_msg);	
+		of1x_destroy_flow_entry(entry);
 		throw;
 	}
 
 	//Destroy FP stats
-	of12_destroy_stats_flow_aggregate_msg(fp_msg);	
-	of12_destroy_flow_entry(entry);
+	of1x_destroy_stats_flow_aggregate_msg(fp_msg);	
+	of1x_destroy_flow_entry(entry);
 
 	delete msg;
 }
@@ -543,15 +543,15 @@ of12_endpoint::handle_group_stats_request(
 	unsigned int i;
 	cmemory body(0);
 	unsigned int num_of_buckets;
-	of12_stats_group_msg_t *g_msg, *g_msg_all;
+	of1x_stats_group_msg_t *g_msg, *g_msg_all;
 
 	uint32_t group_id = msg->get_group_stats().get_group_id();
 	
 	if(group_id==OFPG_ALL){
-		g_msg_all = fwd_module_of12_get_group_all_stats(sw->dpid, group_id);
+		g_msg_all = fwd_module_of1x_get_group_all_stats(sw->dpid, group_id);
 	}
 	else{
-		g_msg_all = fwd_module_of12_get_group_stats(sw->dpid, group_id);
+		g_msg_all = fwd_module_of1x_get_group_stats(sw->dpid, group_id);
 	}
 	
 	if(g_msg_all==NULL){
@@ -586,12 +586,12 @@ of12_endpoint::handle_group_stats_request(
 		//Send the group stats
 		send_group_stats_reply(ctl, msg->get_xid(), group_stats, false);
 	}catch(...){
-		of12_destroy_stats_group_msg(g_msg_all);
+		of1x_destroy_stats_group_msg(g_msg_all);
 		throw;
 	}
 	
 	//Destroy the g_msg
-	of12_destroy_stats_group_msg(g_msg_all);
+	of1x_destroy_stats_group_msg(g_msg_all);
 
 	delete msg;
 }
@@ -607,9 +607,9 @@ of12_endpoint::handle_group_desc_stats_request(
 
 	//TODO: fill in std::vector<...> group_desc_stats, when groups are implemented
 
-	of12_group_table_t group_table;
-	of12_group_t *group_it;
-	if(fwd_module_of12_fetch_group_table(sw->dpid,&group_table)!=AFA_SUCCESS){
+	of1x_group_table_t group_table;
+	of1x_group_t *group_it;
+	if(fwd_module_of1x_fetch_group_table(sw->dpid,&group_table)!=AFA_SUCCESS){
 
 		//TODO throw exeption
 		delete msg;	
@@ -675,12 +675,12 @@ of12_endpoint::handle_packet_out(
 		cofctl *ctl,
 		cofmsg_packet_out *msg)
 {
-	of12_action_group_t* action_group = of12_init_action_group(NULL);
+	of1x_action_group_t* action_group = of1x_init_action_group(NULL);
 
 	try{
 		of12_translation_utils::of12_map_flow_entry_actions(ctl, sw, msg->get_actions(), action_group, NULL); //TODO: is this OK always NULL?
 	}catch(...){
-		of12_destroy_action_group(action_group);
+		of1x_destroy_action_group(action_group);
 		throw;
 	}
 
@@ -689,7 +689,7 @@ of12_endpoint::handle_packet_out(
 	 * - buffer_id == OFP_NO_BUFFER and data and datalen both != 0
 	 * - everything else is an error?
 	 */
-	if (AFA_FAILURE == fwd_module_of12_process_packet_out(sw->dpid,
+	if (AFA_FAILURE == fwd_module_of1x_process_packet_out(sw->dpid,
 							msg->get_buffer_id(),
 							msg->get_in_port(),
 							action_group,
@@ -698,7 +698,7 @@ of12_endpoint::handle_packet_out(
 		//FIXME: send error
 	}
 
-	of12_destroy_action_group(action_group);
+	of1x_destroy_action_group(action_group);
 
 	delete msg;
 }
@@ -718,7 +718,7 @@ of12_endpoint::process_packet_in(
 		uint8_t* pkt_buffer,
 		uint32_t buf_len,
 		uint16_t total_len,
-		of12_packet_matches_t matches)
+		of1x_packet_matches_t matches)
 {
 	try {
 		//Transform matches 
@@ -902,7 +902,7 @@ of12_endpoint::flow_mod_add(
 {
 	uint8_t table_id = msg->get_table_id();
 	afa_result_t res;
-	of12_flow_entry_t *entry=NULL;
+	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
 	if ( (table_id > of12switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
@@ -925,7 +925,7 @@ of12_endpoint::flow_mod_add(
 	if(!entry)
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 
-	if (AFA_SUCCESS != (res = fwd_module_of12_process_flow_mod_add(sw->dpid,
+	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
 								msg->get_table_id(),
 								entry,
 								msg->get_buffer_id(),
@@ -933,7 +933,7 @@ of12_endpoint::flow_mod_add(
 								msg->get_flags() & OFPFF_RESET_COUNTS))){
 		// log error
 		WRITELOG(CDATAPATH, ERROR, "Error inserting the flowmod\n");
-		of12_destroy_flow_entry(entry);
+		of1x_destroy_flow_entry(entry);
 
 		if(res == AFA_FM_OVERLAP_FAILURE)
 			throw eFlowModOverlap();
@@ -951,7 +951,7 @@ of12_endpoint::flow_mod_modify(
 		cofmsg_flow_mod *pack,
 		bool strict)
 {
-	of12_flow_entry_t *entry=NULL;
+	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
 	if (pack->get_table_id() > of12switch->pipeline->num_of_tables)
@@ -975,16 +975,16 @@ of12_endpoint::flow_mod_modify(
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 
 
-	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
+	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 
-	if(AFA_SUCCESS != fwd_module_of12_process_flow_mod_modify(sw->dpid,
+	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_modify(sw->dpid,
 								pack->get_table_id(),
 								entry,
 								strictness,
 								pack->get_flags() & OFPFF_RESET_COUNTS)){
 		WRITELOG(CDATAPATH, ERROR, "Error modiying flowmod\n");
-		of12_destroy_flow_entry(entry);
+		of1x_destroy_flow_entry(entry);
 		throw eFlowModBase(); 
 	} 
 
@@ -999,7 +999,7 @@ of12_endpoint::flow_mod_delete(
 		bool strict) //throw (eOfSmPipelineBadTableId)
 {
 
-	of12_flow_entry_t *entry=NULL;
+	of1x_flow_entry_t *entry=NULL;
 	
 	try{
 		entry = of12_translation_utils::of12_map_flow_entry(ctl, pack, sw);
@@ -1013,9 +1013,9 @@ of12_endpoint::flow_mod_delete(
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 
 
-	of12_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
+	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
-	if(AFA_SUCCESS != fwd_module_of12_process_flow_mod_delete(sw->dpid,
+	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_delete(sw->dpid,
 								pack->get_table_id(),
 								entry,
 								pack->get_buffer_id(),
@@ -1023,12 +1023,12 @@ of12_endpoint::flow_mod_delete(
 								pack->get_out_group(),
 								strictness)) {
 		WRITELOG(CDATAPATH, ERROR, "Error deleting flowmod\n");
-		of12_destroy_flow_entry(entry);
+		of1x_destroy_flow_entry(entry);
 		throw eFlowModBase(); 
 	} 
 	
 	//Always delete entry
-	of12_destroy_flow_entry(entry);
+	of1x_destroy_flow_entry(entry);
 
 }
 
@@ -1040,7 +1040,7 @@ of12_endpoint::flow_mod_delete(
 afa_result_t
 of12_endpoint::process_flow_removed(
 		uint8_t reason,
-		of12_flow_entry *entry)
+		of1x_flow_entry *entry)
 {
 	cofmatch match;
 	uint32_t sec,nsec;
@@ -1048,7 +1048,7 @@ of12_endpoint::process_flow_removed(
 	of12_translation_utils::of12_map_reverse_flow_entry_matches(entry->matchs, match);
 
 	//get duration of the flow mod
-	of12_stats_flow_get_duration(entry, &sec, &nsec);
+	of1x_stats_flow_get_duration(entry, &sec, &nsec);
 
 
 	send_flow_removed_message(
@@ -1106,78 +1106,78 @@ of12_endpoint::handle_group_mod(
 	}
 #endif
 
-	rofl_of12_gm_result_t ret_val;
- 	of12_bucket_list_t* bucket_list=of12_init_bucket_list();
+	rofl_of1x_gm_result_t ret_val;
+ 	of1x_bucket_list_t* bucket_list=of1x_init_bucket_list();
 	
 	switch(msg->get_command()){
 		case OFPGC_ADD:
 			of12_translation_utils::of12_map_bucket_list(ctl, sw, msg->get_buckets(), bucket_list);
-			ret_val = fwd_module_of12_group_mod_add(sw->dpid, (of12_group_type_t)msg->get_group_type(), msg->get_group_id(), bucket_list);
+			ret_val = fwd_module_of1x_group_mod_add(sw->dpid, (of1x_group_type_t)msg->get_group_type(), msg->get_group_id(), bucket_list);
 			break;
 			
 		case OFPGC_MODIFY:
 			of12_translation_utils::of12_map_bucket_list(ctl, sw, msg->get_buckets(), bucket_list);
-			ret_val = fwd_module_of12_group_mod_modify(sw->dpid, (of12_group_type_t)msg->get_group_type(), msg->get_group_id(), bucket_list);
+			ret_val = fwd_module_of1x_group_mod_modify(sw->dpid, (of1x_group_type_t)msg->get_group_type(), msg->get_group_id(), bucket_list);
 			break;
 		
 		case OFPGC_DELETE:
-			ret_val = fwd_module_of12_group_mod_delete(sw->dpid, msg->get_group_id());
+			ret_val = fwd_module_of1x_group_mod_delete(sw->dpid, msg->get_group_id());
 			break;
 		
 		default:
-			ret_val = ROFL_OF12_GM_BCOMMAND;
+			ret_val = ROFL_OF1X_GM_BCOMMAND;
 			break;
 	}
-	if( (ret_val != ROFL_OF12_GM_OK) || (msg->get_command() == OFPGC_DELETE) )
-		of12_destroy_bucket_list(bucket_list);
+	if( (ret_val != ROFL_OF1X_GM_OK) || (msg->get_command() == OFPGC_DELETE) )
+		of1x_destroy_bucket_list(bucket_list);
 	
 	//Throw appropiate exception based on the return code
 	switch(ret_val){
-		case ROFL_OF12_GM_OK:
+		case ROFL_OF1X_GM_OK:
 			break;
-		case ROFL_OF12_GM_EXISTS:
+		case ROFL_OF1X_GM_EXISTS:
 			throw eGroupModExists();
 			break;
-		case ROFL_OF12_GM_INVAL:
+		case ROFL_OF1X_GM_INVAL:
 			throw eGroupModInvalGroup();
 			break;
-		case ROFL_OF12_GM_WEIGHT:
+		case ROFL_OF1X_GM_WEIGHT:
 			throw eGroupModWeightUnsupported();
 			break;
-		case ROFL_OF12_GM_OGRUPS:
+		case ROFL_OF1X_GM_OGRUPS:
 			throw eGroupModOutOfGroups();
 			break;
-		case ROFL_OF12_GM_OBUCKETS:
+		case ROFL_OF1X_GM_OBUCKETS:
 			throw eGroupModOutOfBuckets();
 			break;
-		case ROFL_OF12_GM_CHAIN:
+		case ROFL_OF1X_GM_CHAIN:
 			throw eGroupModChainingUnsupported();
 			break;
-		case ROFL_OF12_GM_WATCH:
+		case ROFL_OF1X_GM_WATCH:
 			throw eGroupModWatchUnsupported();
 			break;
-		case ROFL_OF12_GM_LOOP:
+		case ROFL_OF1X_GM_LOOP:
 			throw eGroupModLoop();
 			break;
-		case ROFL_OF12_GM_UNKGRP:
+		case ROFL_OF1X_GM_UNKGRP:
 			throw eGroupModUnknownGroup();
 			break;
-		case ROFL_OF12_GM_CHNGRP:
+		case ROFL_OF1X_GM_CHNGRP:
 			throw eGroupModChainedGroup();
 			break;
-		case ROFL_OF12_GM_BTYPE:
+		case ROFL_OF1X_GM_BTYPE:
 			throw eGroupModBadType();
 			break;
-		case ROFL_OF12_GM_BCOMMAND:
+		case ROFL_OF1X_GM_BCOMMAND:
 			throw eGroupModBadCommand();
 			break;
-		case ROFL_OF12_GM_BBUCKET:
+		case ROFL_OF1X_GM_BBUCKET:
 			throw eGroupModBadBucket();
 			break;
-		case ROFL_OF12_GM_BWATCH:
+		case ROFL_OF1X_GM_BWATCH:
 			throw eGroupModBadWatch();
 			break;
-		case ROFL_OF12_GM_EPERM:
+		case ROFL_OF1X_GM_EPERM:
 			throw eGroupModEperm();
 			break;
 		default:
@@ -1197,24 +1197,24 @@ of12_endpoint::handle_table_mod(
 {
 
 	/*
-	 * the parameters defined in the pipeline OF12_TABLE_...
+	 * the parameters defined in the pipeline OF1X_TABLE_...
 	 * match those defined by the OF1.2 specification.
 	 * This may change in the future for other versions, so map
 	 * the OF official numbers to the ones used by the pipeline.
 	 *
 	 * at least we map network byte order to host byte order here ...
 	 */
-	of12_flow_table_miss_config_t config = OF12_TABLE_MISS_CONTROLLER; //Default 
+	of1x_flow_table_miss_config_t config = OF1X_TABLE_MISS_CONTROLLER; //Default 
 
 	if (msg->get_config() == OFPTC_TABLE_MISS_CONTINUE){
-		config = OF12_TABLE_MISS_CONTINUE;
+		config = OF1X_TABLE_MISS_CONTINUE;
 	}else if (msg->get_config() == OFPTC_TABLE_MISS_CONTROLLER){
-		config = OF12_TABLE_MISS_CONTROLLER;
+		config = OF1X_TABLE_MISS_CONTROLLER;
 	}else if (msg->get_config() == OFPTC_TABLE_MISS_DROP){
-		config = OF12_TABLE_MISS_DROP;
+		config = OF1X_TABLE_MISS_DROP;
 	}
 
-	if( AFA_FAILURE == fwd_module_of12_set_table_config(sw->dpid, msg->get_table_id(), config) ){
+	if( AFA_FAILURE == fwd_module_of1x_set_table_config(sw->dpid, msg->get_table_id(), config) ){
 		//TODO: treat exception
 	} 
 
@@ -1242,20 +1242,20 @@ of12_endpoint::handle_port_mod(
 		
 	//Drop received
 	if( mask &  OFPPC_NO_RECV )
-		if( AFA_FAILURE == fwd_module_of12_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC_NO_RECV ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC_NO_RECV ) )
 			throw ePortModBase(); 
 	//No forward
 	if( mask &  OFPPC_NO_FWD )
-		if( AFA_FAILURE == fwd_module_of12_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) )
 			throw ePortModBase(); 
 	//No packet in
 	if( mask &  OFPPC_NO_PACKET_IN )
-		if( AFA_FAILURE == fwd_module_of12_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC_NO_PACKET_IN) ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC_NO_PACKET_IN) ) )
 			throw ePortModBase(); 
 
 	//Advertised
 	if( advertise )
-		if( AFA_FAILURE == fwd_module_of12_set_port_advertise_config(sw->dpid, port_num, advertise)  )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_advertise_config(sw->dpid, port_num, advertise)  )
 			throw ePortModBase(); 
 
 	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
@@ -1295,7 +1295,7 @@ of12_endpoint::handle_set_config(
 {
 
 	//Instruct the driver to process the set config	
-	if(AFA_FAILURE == fwd_module_of12_set_pipeline_config(sw->dpid, msg->get_flags(), msg->get_miss_send_len())){
+	if(AFA_FAILURE == fwd_module_of1x_set_pipeline_config(sw->dpid, msg->get_flags(), msg->get_miss_send_len())){
 		throw eTableModBadConfig();
 	}
 		

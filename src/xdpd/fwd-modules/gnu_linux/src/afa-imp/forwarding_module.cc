@@ -22,7 +22,7 @@
 #include <rofl/datapath/afa/cmm.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include "../processing/processingmanager.h"
 #include "../io/bufferpool_c_wrapper.h"
 #include "../io/iomanager.h"
@@ -113,7 +113,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	switch(of_version){
 		case OF_VERSION_12: 
-			sw = (of_switch_t*)of12_init_switch(name, dpid, num_of_tables, (enum of12_matching_algorithm_available*) ma_list);
+			sw = (of_switch_t*)of1x_init_switch(name, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 			break;
 
 		//Add more here..

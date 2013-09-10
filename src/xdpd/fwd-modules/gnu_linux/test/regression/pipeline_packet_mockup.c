@@ -231,36 +231,6 @@ platform_packet_get_mpls_tc(datapacket_t * const pkt)
 	 return 0x0;
 }
 
-uint16_t
-platform_packet_get_arp_opcode(datapacket_t * const  pkt)
-{
-	return 0x0;
-}
-
-uint64_t
-platform_packet_get_arp_tha(datapacket_t * const  pkt)
-{
-	return 0x0;
-}
-
-uint64_t
-platform_packet_get_arp_sha(datapacket_t * const  pkt)
-{
-	return 0x0;
-}
-
-uint32_t
-platform_packet_get_arp_tpa(datapacket_t * const  pkt)
-{
-	return 0x0;
-}
-
-uint32_t
-platform_packet_get_arp_spa(datapacket_t * const  pkt)
-{
-	return 0x0;
-}
-
 uint8_t
 platform_packet_get_pppoe_code(datapacket_t * const pkt)
 {
@@ -376,41 +346,6 @@ platform_packet_set_mpls_ttl(datapacket_t* pkt, uint8_t new_ttl)
 {
 	fprintf(stderr,"SET MPLS TTL\n");
 	dpx86_set_mpls_ttl(pkt, new_ttl);
-}
-
-void
-platform_packet_set_arp_opcode(datapacket_t* pkt, uint16_t opcode)
-{
-	fprintf(stderr,"SET ARP OPCODE\n");
-	dpx86_set_arp_opcode(pkt, opcode);
-}
-
-void
-platform_packet_set_arp_tha(datapacket_t* pkt, uint64_t tha)
-{
-	fprintf(stderr,"SET ARP THA\n");
-	dpx86_set_arp_tha(pkt, tha);
-}
-
-void
-platform_packet_set_arp_sha(datapacket_t* pkt, uint64_t sha)
-{
-	fprintf(stderr,"SET ARP SHA\n");
-	dpx86_set_arp_sha(pkt, sha);
-}
-
-void
-platform_packet_set_arp_tpa(datapacket_t* pkt, uint32_t tpa)
-{
-	fprintf(stderr,"SET ARP TPA\n");
-	dpx86_set_arp_tpa(pkt, tpa);
-}
-
-void
-platform_packet_set_arp_spa(datapacket_t* pkt, uint32_t spa)
-{
-	fprintf(stderr,"SET ARP SPA\n");
-	dpx86_set_arp_spa(pkt, spa);
 }
 
 void

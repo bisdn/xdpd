@@ -4,7 +4,7 @@ SUBDIRS = io processing
 
 #Shared stuff
 SHARED_SRC=\
-	of12_cmm_mockup.c \
+	of1x_cmm_mockup.c \
 	$(top_srcdir)/src/afa-imp/forwarding_module.cc\
 	$(top_srcdir)/src/io/iface_utils.cc \
 	$(top_srcdir)/src/pipeline-imp/memory.c \
@@ -33,7 +33,7 @@ SHARED_SRC=\
 	$(top_srcdir)/src/util/time_utils.c \
 	$(top_srcdir)/src/bg_taskmanager.cc \
 	$(top_srcdir)/src/bg_taskmanager.h \
-	platform_hooks_of12_mockup.cc 
+	platform_hooks_of1x_mockup.cc 
 		
 SHARED_LIBS=\
 	-lrofl \

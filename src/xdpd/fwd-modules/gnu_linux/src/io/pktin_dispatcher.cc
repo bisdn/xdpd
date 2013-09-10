@@ -1,10 +1,10 @@
 #include "pktin_dispatcher.h"
 
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_async_events_hooks.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_table.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_async_events_hooks.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include "../config.h"
@@ -21,7 +21,7 @@
 int pktin_not_pipe[2];
 
 //Processes the pkt_ins up to BUCKETS_PER_LS 
-static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
+static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 
 	unsigned int i, pkt_size;
 	datapacket_t* pkt;
@@ -62,7 +62,7 @@ static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
 			pkt_size = sw->pipeline->miss_send_len;
 			
 		//Process packet in
-        	rv = cmm_process_of12_packet_in(sw, 
+        	rv = cmm_process_of1x_packet_in(sw, 
 						pkt_x86->pktin_table_id, 	
 						pkt_x86->pktin_reason, 	
 						pkt_x86->in_port, 
@@ -70,7 +70,7 @@ static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
 						dpx86_get_raw_data(pkt), 
 						pkt_size, 
 						dpx86_get_packet_size(pkt), 
-						*((of12_packet_matches_t*)&pkt->matches)
+						*((of1x_packet_matches_t*)&pkt->matches)
 				);
 
 		if(rv != AFA_SUCCESS){
@@ -127,7 +127,7 @@ void process_packet_ins(){
 			for(r=0; r<max_switches; ++r){
 				if(logical_switches[r] != NULL){
 					//if( logical_switches[r]->of_ver == OF_VERSION_12 )
-					process_sw_of12_packet_ins((of12_switch_t*)logical_switches[r]);
+					process_sw_of1x_packet_ins((of1x_switch_t*)logical_switches[r]);
 				}
 			}
 		}

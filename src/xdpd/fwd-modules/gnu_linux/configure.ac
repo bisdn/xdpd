@@ -73,7 +73,7 @@ AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	src/afa-imp/Makefile
-	src/afa-imp/openflow/openflow12/Makefile
+	src/afa-imp/openflow/openflow1x/Makefile
 	src/io/Makefile
 	src/io/packet_classifiers/Makefile
 	src/io/ports/Makefile

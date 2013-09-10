@@ -2,7 +2,7 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/platform/packet.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include <assert.h>

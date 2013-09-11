@@ -87,6 +87,12 @@ public:
 	*
 	*/
 	static void of12_map_reverse_packet_matches(of1x_packet_matches_t* packet_matches, cofmatch& match);
+
+	static uint64_t of12_map_bitmap_matches(uint64_t* bitmap);
+
+	static uint32_t of12_map_bitmap_actions(uint32_t* bitmap);
+
+	static uint32_t of12_map_bitmap_instructions(uint32_t* bitmap);
 };
 
 }// namespace rofl

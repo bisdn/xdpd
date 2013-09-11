@@ -28,16 +28,7 @@
 * Hooks for configuration of the switch
 */
 rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
-	//Set OF1X flow table 
 	unsigned int i;
-	of1x_flow_table_t* table;
-
-	table = sw->pipeline->tables; 
-	
-	for(i=0;i<sw->pipeline->num_of_tables;++i){
-		//Set appropiate flags
-		table->default_action = OF1X_TABLE_MISS_CONTROLLER;
-	}
 	
 	//Create GNU/Linux FWD_Module additional state (platform state)
 	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));

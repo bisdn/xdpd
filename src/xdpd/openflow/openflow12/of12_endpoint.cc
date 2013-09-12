@@ -334,7 +334,7 @@ of12_endpoint::handle_flow_stats_request(
 			msg->get_flow_stats().get_cookie_mask(),
 			msg->get_flow_stats().get_out_port(),
 			msg->get_flow_stats().get_out_group(),
-					entry->matchs);
+					entry->matches.head);
 	
 	if(!fp_msg){
 		of1x_destroy_flow_entry(entry);	
@@ -422,7 +422,7 @@ of12_endpoint::handle_aggregate_stats_request(
 					msg->get_aggr_stats().get_cookie_mask(),
 					msg->get_aggr_stats().get_out_port(),
 					msg->get_aggr_stats().get_out_group(),
-					entry->matchs);
+					entry->matches.head);
 	
 	if(!fp_msg){
 		of1x_destroy_flow_entry(entry);
@@ -1051,7 +1051,7 @@ of12_endpoint::process_flow_removed(
 	cofmatch match;
 	uint32_t sec,nsec;
 
-	of12_translation_utils::of12_map_reverse_flow_entry_matches(entry->matchs, match);
+	of12_translation_utils::of12_map_reverse_flow_entry_matches(entry->matches.head, match);
 
 	//get duration of the flow mod
 	of1x_stats_flow_get_duration(entry, &sec, &nsec);

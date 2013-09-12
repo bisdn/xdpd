@@ -55,7 +55,7 @@ void ProcessingManagerTestCase::setUp(){
 	bufferpool::init(2048);	
 
 	//Initializae a switch
-	sw = (of_switch_t*)of1x_init_switch("test",0x12345,4, matching_algorithms);
+	sw = (of_switch_t*)of1x_init_switch("test",OF_VERSION_12, 0x12345,4, matching_algorithms);
 
 	
 	buffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];

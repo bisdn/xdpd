@@ -151,6 +151,16 @@ platform_packet_get_udp_src(datapacket_t * const pkt)
 	return dpx86_get_packet_udp_src(pkt);
 }
 
+uint16_t platform_packet_get_sctp_dst(datapacket_t *const pkt){
+	//TODO: add implementation when supported
+	return 0x0;
+}
+uint16_t platform_packet_get_sctp_src(datapacket_t *const pkt){
+	//TODO: add implementation when supported
+	return 0x0;
+}
+
+
 uint8_t
 platform_packet_get_icmpv4_type(datapacket_t * const pkt)
 {
@@ -199,19 +209,19 @@ platform_packet_get_ipv6_nd_tll(datapacket_t * const pkt)
 	return dpx86_get_packet_ipv6_nd_tll(pkt);
 }
 
-uint64_t
+uint16_t
 platform_packet_get_ipv6_exthdr(datapacket_t * const pkt)
 {
 	return dpx86_get_packet_ipv6_exthdr(pkt);
 }
 
-uint64_t
+uint8_t
 platform_packet_get_icmpv6_type(datapacket_t * const pkt)
 {
 	return dpx86_get_packet_icmpv6_type(pkt);
 }
 
-uint64_t
+uint8_t
 platform_packet_get_icmpv6_code(datapacket_t * const pkt)
 {
 	return dpx86_get_packet_icmpv6_code(pkt);
@@ -228,6 +238,18 @@ platform_packet_get_mpls_tc(datapacket_t * const pkt)
 {
 	return dpx86_get_packet_mpls_tc(pkt);
 }
+
+uint32_t platform_packet_get_pbb_isid(datapacket_t *const pkt){
+	//TODO: add implementation when supported
+	return 0x0;
+}
+
+//Tunnel id
+uint64_t platform_packet_get_tunnel_id(datapacket_t *const pkt){
+	//TODO: add implementation when supported
+	return 0x0ULL;
+}
+
 
 uint8_t
 platform_packet_get_pppoe_code(datapacket_t * const pkt)
@@ -516,19 +538,19 @@ platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
 }
 
 void
-platform_packet_set_ipv6_exthdr(datapacket_t* pkt, uint64_t ipv6_exthdr)
+platform_packet_set_ipv6_exthdr(datapacket_t* pkt, uint16_t ipv6_exthdr)
 {
 	dpx86_set_ipv6_exthdr(pkt,ipv6_exthdr);
 }
 
 void
-platform_packet_set_icmpv6_type(datapacket_t* pkt, uint64_t icmpv6_type)
+platform_packet_set_icmpv6_type(datapacket_t* pkt, uint8_t icmpv6_type)
 {
 	dpx86_set_icmpv6_type(pkt,icmpv6_type);
 }
 
 void
-platform_packet_set_icmpv6_code(datapacket_t* pkt, uint64_t icmpv6_code)
+platform_packet_set_icmpv6_code(datapacket_t* pkt, uint8_t icmpv6_code)
 {
 	dpx86_set_icmpv6_code(pkt,icmpv6_code);
 }

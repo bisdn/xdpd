@@ -137,7 +137,7 @@ void
 dpx86_set_ipv6_flabel(datapacket_t* pkt, uint64_t ipv6_flabel);
 
 void
-dpx86_set_ipv6_exthdr(datapacket_t* pkt, uint64_t ipv6_exthdr);
+dpx86_set_ipv6_exthdr(datapacket_t* pkt, uint16_t ipv6_exthdr);
 
 //ICMPv6
 void
@@ -150,10 +150,10 @@ void
 dpx86_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll);
 
 void
-dpx86_set_icmpv6_type(datapacket_t* pkt, uint64_t icmpv6_type);
+dpx86_set_icmpv6_type(datapacket_t* pkt, uint8_t icmpv6_type);
 
 void
-dpx86_set_icmpv6_code(datapacket_t* pkt, uint64_t icmpv6_code);
+dpx86_set_icmpv6_code(datapacket_t* pkt, uint8_t icmpv6_code);
 
 //TCP
 void
@@ -323,14 +323,14 @@ dpx86_get_packet_ipv6_nd_sll(datapacket_t * const pkt);
 uint64_t
 dpx86_get_packet_ipv6_nd_tll(datapacket_t * const pkt);
 
-uint64_t
+uint16_t
 dpx86_get_packet_ipv6_exthdr(datapacket_t * const pkt);
 
 //ICMPv6
-uint64_t
+uint8_t
 dpx86_get_packet_icmpv6_type(datapacket_t * const pkt);
 
-uint64_t
+uint8_t
 dpx86_get_packet_icmpv6_code(datapacket_t * const pkt);
 
 //MPLS-outermost label

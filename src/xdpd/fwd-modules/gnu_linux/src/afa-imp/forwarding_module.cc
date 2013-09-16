@@ -111,16 +111,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	of_switch_t* sw;
 	
-	switch(of_version){
-		case OF_VERSION_12: 
-			sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
-			break;
-
-		//Add more here..
-			
-		default: 
-			return NULL;
-	}	
+	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
 	//Launch switch processing threads
 	if(start_ls_workers_wrapper(sw) != ROFL_SUCCESS){

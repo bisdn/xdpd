@@ -18,7 +18,8 @@ using namespace rofl;
 /*
 * Constructor and destructor
 */
-of10_endpoint::of10_endpoint(openflow_switch* sw, caddress const& controller_addr, caddress const& binding_addr) throw (eOfSmErrorOnCreation){
+of10_endpoint::of10_endpoint(openflow_switch* sw, caddress const& controller_addr, caddress const& binding_addr) throw (eOfSmErrorOnCreation) :
+	of_endpoint(1 << OFP10_VERSION) {
 
 	//Reference back to the sw
 	this->sw = sw;

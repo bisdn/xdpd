@@ -44,6 +44,11 @@ class openflow_switch;
 class of_endpoint : public crofbase {
 
 public:
+
+	of_endpoint(uint32_t supported_ofp_versions = /*(1 << OFP10_VERSION) |*/ (1 << OFP12_VERSION)) : sw(NULL) {};
+
+	virtual ~of_endpoint() {};
+
 	/*
 	* Port notifications
 	*/

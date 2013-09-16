@@ -14,7 +14,7 @@
 #include "io/bufferpool_c_wrapper.h"
 
 #include "io/datapacket_storage_c_wrapper.h"
-#include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 
 
 /*
@@ -153,7 +153,7 @@ platform_packet_get_ipv6_nd_target(datapacket_t * const pkt)
 	return addr;
 }
 
-uint64_t
+uint16_t
 platform_packet_get_ipv6_exthdr(datapacket_t * const pkt)
 {
 	return 0x0;
@@ -171,13 +171,13 @@ platform_packet_get_ipv6_nd_tll(datapacket_t * const pkt)
 	return 0x0;
 }
 
-uint64_t
+uint8_t
 platform_packet_get_icmpv6_type(datapacket_t * const pkt)
 {
 	return 0x0;
 }
 
-uint64_t
+uint8_t
 platform_packet_get_icmpv6_code(datapacket_t * const pkt)
 {
 	return 0x0;
@@ -213,6 +213,18 @@ platform_packet_get_icmpv4_type(datapacket_t * const pkt)
 	 return 0x0;
 }
 
+uint16_t
+platform_packet_get_sctp_dst(datapacket_t * const pkt)
+{
+	 return 0x0;
+}
+
+uint16_t
+platform_packet_get_sctp_src(datapacket_t * const pkt)
+{
+	 return 0x0;
+}
+
 uint8_t
 platform_packet_get_icmpv4_code(datapacket_t * const pkt)
 {
@@ -231,6 +243,21 @@ platform_packet_get_mpls_tc(datapacket_t * const pkt)
 	 return 0x0;
 }
 
+bool
+platform_packet_get_mpls_bos(datapacket_t * const pkt)
+{
+	 return 0x0;
+}
+uint32_t platform_packet_get_pbb_isid(datapacket_t *const pkt){
+	//TODO: add implementation when supported
+	return 0x0;
+}
+
+//Tunnel id
+uint64_t platform_packet_get_tunnel_id(datapacket_t *const pkt){
+	//TODO: add implementation when supported
+	return 0x0ULL;
+}
 uint8_t
 platform_packet_get_pppoe_code(datapacket_t * const pkt)
 {
@@ -312,6 +339,15 @@ platform_packet_push_mpls(datapacket_t* pkt, uint16_t ether_type)
 	fprintf(stderr,"PUSH MPLS\n");
 	dpx86_push_mpls(pkt, ether_type);
 }
+void platform_packet_pop_gtp(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+void platform_packet_push_gtp(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
 
 void
 platform_packet_push_vlan(datapacket_t* pkt, uint16_t ether_type)
@@ -319,7 +355,14 @@ platform_packet_push_vlan(datapacket_t* pkt, uint16_t ether_type)
 	fprintf(stderr,"PUSH VLAN\n");
 	dpx86_push_vlan(pkt, ether_type);
 }
-
+void platform_packet_pop_pbb(datapacket_t* pkt, uint16_t ether_type)
+{
+	//TODO: implement
+}
+void platform_packet_push_pbb(datapacket_t* pkt, uint16_t ether_type)
+{
+	//TODO: implement
+}
 void
 platform_packet_copy_ttl_out(datapacket_t* pkt)
 {
@@ -519,21 +562,21 @@ platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t tll)
 }
 
 void
-platform_packet_set_ipv6_exthdr(datapacket_t* pkt, uint64_t exthdr)
+platform_packet_set_ipv6_exthdr(datapacket_t* pkt, uint16_t exthdr)
 {
 	fprintf(stderr,"SET IPv6 ND TLL\n");
 	dpx86_set_ipv6_exthdr(pkt, exthdr);
 }
 
 void
-platform_packet_set_icmpv6_type(datapacket_t* pkt, uint64_t type)
+platform_packet_set_icmpv6_type(datapacket_t* pkt, uint8_t type)
 {
 	fprintf(stderr,"SET ICMPv6 TYPE\n");
 	dpx86_set_icmpv6_type(pkt, type);
 }
 
 void
-platform_packet_set_icmpv6_code(datapacket_t* pkt, uint64_t code)
+platform_packet_set_icmpv6_code(datapacket_t* pkt, uint8_t code)
 {
 	fprintf(stderr,"SET ICMPv6 CODE\n");
 	dpx86_set_icmpv6_code(pkt, code);
@@ -561,12 +604,25 @@ platform_packet_set_udp_src(datapacket_t* pkt, uint16_t udp_src)
 }
 
 void
+platform_packet_set_sctp_dst(datapacket_t* pkt, uint16_t sctp_dst)
+{
+	fprintf(stderr,"SET UDP DST\n");
+	dpx86_set_udp_dst(pkt, sctp_dst);
+}
+
+void
+platform_packet_set_sctp_src(datapacket_t* pkt, uint16_t sctp_src)
+{
+	fprintf(stderr,"SET UDP SRC\n");
+	dpx86_set_udp_src(pkt, sctp_src);
+}
+
+void
 platform_packet_set_udp_dst(datapacket_t* pkt, uint16_t udp_dst)
 {
 	fprintf(stderr,"SET UDP DST\n");
 	dpx86_set_udp_dst(pkt, udp_dst);
 }
-
 void
 platform_packet_set_icmpv4_type(datapacket_t* pkt, uint8_t type)
 {
@@ -595,6 +651,21 @@ platform_packet_set_mpls_tc(datapacket_t* pkt, uint8_t tc)
 	dpx86_set_mpls_tc(pkt, tc);
 }
 
+void
+platform_packet_set_mpls_bos(datapacket_t* pkt, bool bos)
+{
+	fprintf(stderr,"SET MPLS BOS\n");
+	dpx86_set_mpls_bos(pkt, bos);
+}
+
+void platform_packet_set_pbb_isid(datapacket_t*pkt, uint32_t pbb_isid)
+{
+	//TODO: implement
+}
+void platform_packet_set_tunnel_id(datapacket_t*pkt, uint64_t tunnel_id)
+{
+	//TODO: implement
+}
 void
 platform_packet_set_pppoe_type(datapacket_t* pkt, uint8_t type)
 {

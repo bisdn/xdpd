@@ -87,6 +87,7 @@ of12_translation_utils::of12_map_flow_entry(
 					OF1X_IT_APPLY_ACTIONS,
 					(of1x_action_group_t*)apply_actions,
 					NULL,
+					NULL,
 					/*go_to_table*/0);
 		}
 			break;
@@ -95,6 +96,7 @@ of12_translation_utils::of12_map_flow_entry(
 			of1x_add_instruction_to_group(
 					&(entry->inst_grp),
 					OF1X_IT_CLEAR_ACTIONS,
+					NULL,
 					NULL,
 					NULL,
 					/*go_to_table*/0);
@@ -107,6 +109,7 @@ of12_translation_utils::of12_map_flow_entry(
 					OF1X_IT_EXPERIMENTER,
 					NULL,
 					NULL,
+					NULL,
 					/*go_to_table*/0);
 		}
 			break;
@@ -115,6 +118,7 @@ of12_translation_utils::of12_map_flow_entry(
 			of1x_add_instruction_to_group(
 					&(entry->inst_grp),
 					OF1X_IT_GOTO_TABLE,
+					NULL,
 					NULL,
 					NULL,
 					/*go_to_table*/(*it).oin_goto_table->table_id);
@@ -137,19 +141,20 @@ of12_translation_utils::of12_map_flow_entry(
 					OF1X_IT_WRITE_ACTIONS,
 					NULL,
 					(of1x_write_actions_t*)write_actions,
+					NULL,
 					/*go_to_table*/0);
 		}
 			break;
 		case OFPIT_WRITE_METADATA:
 		{
-			/*
-			 * TODO: How do I write metadata and metadata-mask into the pipeline instruction?
-			 */
+			of1x_write_metadata_t metadata = {(*it).oin_write_metadata->metadata, (*it).oin_write_metadata->metadata_mask};
+			
 			of1x_add_instruction_to_group(
 					&(entry->inst_grp),
 					OF1X_IT_WRITE_METADATA,
 					NULL,
 					NULL,
+					&metadata,
 					/*go_to_table*/0);
 		}
 			break;
@@ -1488,8 +1493,8 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of1x_packet_matches
 		match.set_in_port(packet_matches->port_in);
 	if(packet_matches->phy_port_in)
 		match.set_in_phy_port(packet_matches->phy_port_in);
-	//if(packet_matches->metadata)
-	//	match.set_metadata(packet_matches->metadata);
+	if(packet_matches->metadata)
+		match.set_metadata(packet_matches->metadata);
 	if(packet_matches->eth_dst){
 		cmacaddr maddr(packet_matches->eth_dst);
 		cmacaddr mmask(0x0000FFFFFFFFFFFF);

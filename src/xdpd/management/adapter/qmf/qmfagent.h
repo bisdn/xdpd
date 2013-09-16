@@ -66,24 +66,16 @@ private:
 	std::string						qmf_package;
 	qmf::Schema						sch_exception;
 	qmf::Schema						sch_xdpd;
+	qmf::Schema						sch_lsi;
 
 	struct qmf_data_t {
 		qmf::Data 					data;
 		qmf::DataAddr 				addr;
 	};
 
-	std::map<uint64_t, struct qmf_data_t>	qnodes;
-	std::map<uint64_t, std::map<int, struct qmf_data_t> >	qlinks;
-	std::map<uint64_t, std::map<int, std::map<int, struct qmf_data_t> > > qaddrs;
-	std::map<uint64_t, std::map<int, struct qmf_data_t> >	qbearers;
-	std::map<uint64_t, std::map<int, struct qmf_data_t> > 	qroutes;
-	std::map<uint64_t, std::map<int, std::map<int, struct qmf_data_t> > > qnexthops;
-	std::map<uint64_t, std::map<int, struct qmf_data_t> >	qneighs;
+	struct qmf_data_t				qxdpd;
 
-	enum addr_cmd_t {
-		ADDR_ADD = 1,
-		ADDR_DEL = 2,
-	};
+	std::map<uint64_t, struct qmf_data_t>	qLSIs;
 
 public:
 
@@ -132,6 +124,18 @@ private:
 	 */
 	bool
 	methodLsiDestroy(qmf::AgentEvent& event);
+
+	/**
+	 *
+	 */
+	bool
+	methodPortAttach(qmf::AgentEvent& event);
+
+	/**
+	 *
+	 */
+	bool
+	methodPortDetach(qmf::AgentEvent& event);
 
 	/**
 	 *

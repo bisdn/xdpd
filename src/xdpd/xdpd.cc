@@ -93,7 +93,11 @@ int main(int argc, char** argv){
 	xdpd_cli* cli = new xdpd_cli(
 			caddress(AF_INET, cunixenv::getInstance().get_arg('a').c_str(),
 					atoi(cunixenv::getInstance().get_arg('p').c_str())));
-	cli->read_config_file(cunixenv::getInstance().get_arg("config-file"));
+	try {
+		cli->read_config_file(cunixenv::getInstance().get_arg("config-file"));
+	} catch (std::runtime_error& e) {
+	} catch (rofl::eCliConfigFileNotFound& e) {
+	}
 
 #ifdef HAVE_CONFIG_QMF
 	try {

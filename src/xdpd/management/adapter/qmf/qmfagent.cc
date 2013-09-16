@@ -43,6 +43,11 @@ qmfagent::qmfagent(
 
 	set_qmf_schema();
 
+	// create single qxdpd instance
+	qxdpd.data = qmf::Data(sch_xdpd);
+	std::stringstream name("xdpd");
+	qxdpd.addr = session.addData(qxdpd.data, name.str());
+
 	register_filedesc_r(notifier.getHandle());
 }
 
@@ -106,9 +111,8 @@ qmfagent::set_qmf_schema()
 	sch_exception.addProperty(qmf::SchemaProperty("howBad", 		qmf::SCHEMA_DATA_INT));
 	sch_exception.addProperty(qmf::SchemaProperty("details", 		qmf::SCHEMA_DATA_MAP));
 
-    // node
+    // xdpd
     sch_xdpd = qmf::Schema(qmf::SCHEMA_TYPE_DATA, qmf_package, "xdpd");
-    sch_xdpd.addProperty(qmf::SchemaProperty("dpid", qmf::SCHEMA_DATA_INT));
 
     qmf::SchemaMethod lsiCreateMethod("lsiCreate", "{desc:'add LSI'}");
     lsiCreateMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
@@ -124,8 +128,28 @@ qmfagent::set_qmf_schema()
     lsiDestroyMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
     sch_xdpd.addMethod(lsiDestroyMethod);
 
+
+
+    // lsi
+    sch_lsi = qmf::Schema(qmf::SCHEMA_TYPE_DATA, qmf_package, "lsi");
+    sch_lsi.addProperty(qmf::SchemaProperty("dpid", qmf::SCHEMA_DATA_INT));
+
+    qmf::SchemaMethod portAttachMethod("portAttach", "{desc:'attach port'}");
+    portAttachMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    portAttachMethod.addArgument(qmf::SchemaProperty("devname",	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
+    sch_lsi.addMethod(portAttachMethod);
+
+    qmf::SchemaMethod portDetachMethod("portDetach", "{desc:'detach port'}");
+    portDetachMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    portDetachMethod.addArgument(qmf::SchemaProperty("devname",	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
+    sch_lsi.addMethod(portDetachMethod);
+
+
+
+
     session.registerSchema(sch_exception);
     session.registerSchema(sch_xdpd);
+    session.registerSchema(sch_lsi);
 }
 
 
@@ -143,6 +167,12 @@ qmfagent::method(qmf::AgentEvent& event)
 		}
 		else if (name == "lsiDestroy") {
 			return methodLsiDestroy(event);
+		}
+		else if (name == "portAttach") {
+			return methodPortAttach(event);
+		}
+		else if (name == "portDetach") {
+			return methodPortDetach(event);
 		}
 		else {
 			session.raiseException(event, "command not found");
@@ -178,6 +208,12 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 		rofl::caddress caddr(ctlaf, ctladdr.c_str(), ctlport);
 		rofl::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, caddr);
 
+		// create QMF LSI object
+		qLSIs[dpid].data = qmf::Data(sch_lsi);
+		qLSIs[dpid].data.setProperty("dpid", dpid);
+		std::stringstream name("lsi-"); name << dpid;
+		qLSIs[dpid].addr = session.addData(qLSIs[dpid].data, name.str());
+
 		session.methodSuccess(event);
 
 		return true;
@@ -207,6 +243,10 @@ qmfagent::methodLsiDestroy(qmf::AgentEvent& event)
 
 		rofl::switch_manager::destroy_switch(dpid);
 
+		// destroy QMF LSI object
+		session.delData(qLSIs[dpid].addr);
+		qLSIs.erase(dpid);
+
 		session.methodSuccess(event);
 
 		return true;
@@ -218,5 +258,70 @@ qmfagent::methodLsiDestroy(qmf::AgentEvent& event)
 	return false;
 }
 
+
+
+
+bool
+qmfagent::methodPortAttach(qmf::AgentEvent& event)
+{
+	try {
+		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
+		std::string devname		= event.getArguments()["devname"].asString();
+
+		rofl::port_manager::attach_port_to_switch(dpid, devname);
+
+		// TODO: create QMF port object (if this is deemed useful one day ...)
+		event.addReturnArgument("dpid", dpid);
+		session.methodSuccess(event);
+
+		return true;
+
+	} catch (rofl::eOfSmDoesNotExist& e) {
+		session.raiseException(event, "port attachment failed: LSI does not exist");
+
+	} catch (rofl::eOfSmErrorOnCreation& e) {
+		session.raiseException(event, "port attachment failed: physical port does not exist");
+
+	} catch (rofl::eOfSmGeneralError& e) {
+		session.raiseException(event, "port attachment failed: internal error");
+
+	} catch (...) {
+		session.raiseException(event, "port attachment failed: internal error");
+	}
+	return false;
+}
+
+
+
+bool
+qmfagent::methodPortDetach(qmf::AgentEvent& event)
+{
+	try {
+		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
+		std::string devname		= event.getArguments()["devname"].asString();
+
+		rofl::port_manager::detach_port_from_switch(dpid, devname);
+
+		// TODO: destroy QMF port object (if this is deemed useful one day ...)
+		event.addReturnArgument("dpid", dpid);
+		session.methodSuccess(event);
+
+		return true;
+
+	} catch (rofl::eOfSmDoesNotExist& e) {
+		session.raiseException(event, "port detachment failed: LSI does not exist");
+
+	} catch (rofl::eOfSmErrorOnCreation& e) {
+		session.raiseException(event, "port detachment failed: physical port does not exist");
+
+	} catch (rofl::eOfSmGeneralError& e) {
+		session.raiseException(event, "port detachment failed: internal error");
+
+	} catch (...) {
+		session.raiseException(event, "port attachment failed: internal error");
+
+	}
+	return false;
+}
 
 

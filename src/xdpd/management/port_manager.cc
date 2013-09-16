@@ -6,7 +6,7 @@
 //FIXME remove this dependency
 #include <rofl/datapath/pipeline/physical_switch.h>
 
-using namespace rofl;
+using namespace xdpd;
 
 
 void port_manager::check_port_existance(std::string port_name) throw (ePmInvalidPort){

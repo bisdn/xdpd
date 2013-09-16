@@ -7,9 +7,10 @@
 #include <rofl/common/utils/c_logger.h>
 #include "management/switch_manager.h"
 #include "management/port_manager.h"
-#include "management/adapter/cli/xdpd_cli.h"
+#include "management/plugins/cli/xdpd_cli.h"
 
 using namespace rofl;
+using namespace xdpd;
 
 #define XDPD_LOG_FILE "xdpd.log"
 

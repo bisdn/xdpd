@@ -37,7 +37,9 @@
 * (e.g. create/destroy new logical switches)
 */
 
-namespace rofl {
+using namespace rofl;
+
+namespace xdpd {
 
 class eOfSmBase				: public cerror {};	// base error class for all switch_manager related errors
 class eOfSmGeneralError			: public eOfSmBase {};

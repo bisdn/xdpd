@@ -29,7 +29,9 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 */
 
-namespace rofl {
+using namespace rofl;
+
+namespace xdpd {
 
 class of10_translation_utils : public csyslog{
 

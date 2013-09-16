@@ -15,7 +15,9 @@
 #define XDPD_CLI_H_
 
 
-namespace rofl
+using namespace rofl;
+
+namespace xdpd 
 {
 class xdpd_cli : public ccli
 {

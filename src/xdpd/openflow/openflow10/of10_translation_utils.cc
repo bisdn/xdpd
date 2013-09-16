@@ -7,10 +7,9 @@
 
 
 #include "of10_translation_utils.h"
-
 #include <inttypes.h>
 
-using namespace rofl;
+using namespace xdpd;
 
 /*
 * Port utils

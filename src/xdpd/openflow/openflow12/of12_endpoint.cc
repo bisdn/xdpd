@@ -4,7 +4,7 @@
 #include <rofl/common/utils/c_logger.h>
 #include "of12_translation_utils.h"
 
-using namespace rofl;
+using namespace xdpd;
 
 /*
 * Constructor and destructor

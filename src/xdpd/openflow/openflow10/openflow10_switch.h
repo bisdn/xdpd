@@ -26,7 +26,9 @@
 *
 */
 
-namespace rofl {
+using namespace rofl;
+
+namespace xdpd {
 
 
 class openflow10_switch : public openflow_switch {

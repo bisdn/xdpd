@@ -11,7 +11,7 @@
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 
-using namespace rofl;
+using namespace xdpd;
 
 /*
 * Constructor and destructor for the openflow 1.0 switch

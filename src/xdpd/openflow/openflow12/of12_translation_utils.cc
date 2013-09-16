@@ -5,7 +5,7 @@
 #include <inttypes.h>
 #include <stdint.h>
 
-using namespace rofl;
+using namespace xdpd;
 
 //FIXME: why is this workaround necessary?
 #ifndef UINT64_C

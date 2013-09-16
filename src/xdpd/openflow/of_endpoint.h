@@ -32,7 +32,9 @@
 * 
 */
 
-namespace rofl {
+using namespace rofl;
+
+namespace xdpd {
 
 /*
 * This is an abstract class. TODO change the name of crofbase to of_endpoint or something similar, and get rid of this

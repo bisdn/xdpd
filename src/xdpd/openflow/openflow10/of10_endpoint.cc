@@ -11,9 +11,7 @@
 #include <rofl/common/utils/c_logger.h>
 #include "of10_translation_utils.h"
 
-
-
-using namespace rofl;
+using namespace xdpd;
 
 /*
 * Constructor and destructor

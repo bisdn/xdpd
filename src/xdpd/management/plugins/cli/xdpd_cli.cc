@@ -25,7 +25,7 @@ enum mode_config {
 	MODE_CONFIG_OPENFLOW_CONFIGURE
 };
 
-using namespace rofl;
+using namespace xdpd;
 
 
 class cli_print_helper {

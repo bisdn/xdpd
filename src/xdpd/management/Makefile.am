@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = adapter/cli
+SUBDIRS = plugins/cli
 
 noinst_LTLIBRARIES = libxmgmt.la
 
@@ -11,7 +11,7 @@ libxmgmt_la_SOURCES = \
 	port_manager.h
 
 if ENABLE_CONFIG_CLI
-CLILIB = adapter/cli/libxdpd_config_cli.la
+CLILIB = plugins/cli/libxdpd_config_cli.la
 endif
 
 libxmgmt_la_LIBADD = \

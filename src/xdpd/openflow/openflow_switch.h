@@ -20,7 +20,7 @@
 * 
 */
 
-namespace rofl {
+namespace xdpd {
 
 class openflow_switch {
 

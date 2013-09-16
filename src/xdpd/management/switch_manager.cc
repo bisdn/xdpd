@@ -7,7 +7,7 @@
 #include "../openflow/openflow10/openflow10_switch.h"
 #include "../openflow/openflow12/openflow12_switch.h"
 
-using namespace rofl;
+using namespace xdpd;
 
 const caddress switch_manager::controller_addr = caddress(AF_INET, "127.0.0.1", 6633);
 const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 0);

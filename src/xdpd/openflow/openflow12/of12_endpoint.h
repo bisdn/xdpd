@@ -27,7 +27,9 @@
 #include "../of_endpoint.h"
 #include "../../management/switch_manager.h"
 
-namespace rofl {
+using namespace rofl;
+
+namespace xdpd {
 
 class of12_endpoint : public of_endpoint {
 	

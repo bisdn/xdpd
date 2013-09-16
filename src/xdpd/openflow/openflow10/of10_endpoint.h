@@ -8,7 +8,7 @@
 #ifndef OF10_ENDPOINT_H_
 #define OF10_ENDPOINT_H_
 
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h> // use OF12 pipeline for emulating OF10 data path element
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h> // use OF12 pipeline for emulating OF10 data path element
 #include "../openflow_switch.h"
 #include "../of_endpoint.h"
 #include "../../management/switch_manager.h"
@@ -34,7 +34,7 @@ public:
 			uint8_t* pkt_buffer,
 			uint32_t buf_len,
 			uint16_t total_len,
-			of12_packet_matches_t matches);
+			of1x_packet_matches_t matches);
 
 
 	/**
@@ -43,7 +43,7 @@ public:
 	afa_result_t
 	process_flow_removed(
 			uint8_t reason,
-			of12_flow_entry *removed_flow_entry);
+			of1x_flow_entry *removed_flow_entry);
 
 	/*
 	* Port notifications
@@ -60,7 +60,7 @@ public:
 private:
 
 	//Commodity pointer
-	of12_switch_t* of12switch;
+	of1x_switch_t* of12switch;
 
 	/* *
 	 ** This section is in charge of the handling of the OF messages

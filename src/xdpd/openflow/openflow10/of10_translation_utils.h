@@ -13,11 +13,11 @@
 #include <rofl/common/openflow/messages/cofmsg_features.h>
 #include <rofl/common/openflow/messages/cofmsg_flow_mod.h>
 #include <rofl/platform/unix/csyslog.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_entry.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_action.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_match.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_instruction.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_action.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_match.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_instruction.h>
 
 #include "../openflow_switch.h"
 
@@ -40,47 +40,47 @@ public:
 	*/
 	static uint32_t get_port_speed_kb(port_features_t features);
 	/**
-	* Maps a of12_flow_entry from an OF1.0 Header
+	* Maps a of1x_flow_entry from an OF1.0 Header
 	*/
-	static of12_flow_entry_t* of12_map_flow_entry(cofctl *ctl,  cofmsg_flow_mod *msg, openflow_switch* sw);
+	static of1x_flow_entry_t* of1x_map_flow_entry(cofctl *ctl,  cofmsg_flow_mod *msg, openflow_switch* sw);
 
 	/**
-	* Maps a of12_match from an OF1.0 Header
+	* Maps a of1x_match from an OF1.0 Header
 	*/
-	static void of10_map_flow_entry_matches(cofctl *ctl, cofmatch const& match, openflow_switch* sw, of12_flow_entry* entry);
+	static void of10_map_flow_entry_matches(cofctl *ctl, cofmatch const& match, openflow_switch* sw, of1x_flow_entry* entry);
 
-
-
-	/**
-	* Maps a of12_action from an OF1.0 Header
-	*/
-	static void of12_map_flow_entry_actions(cofctl *ctl, openflow_switch* sw, cofaclist& actions, of12_action_group_t *apply_actions, of12_write_actions_t *write_actions);
 
 
 	/**
-	* Maps a of12_match from an OF1.0 Header
+	* Maps a of1x_action from an OF1.0 Header
 	*/
-	static void of12_map_reverse_flow_entry_matches(of12_match_t* m, cofmatch& match);
+	static void of1x_map_flow_entry_actions(cofctl *ctl, openflow_switch* sw, cofaclist& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
+
 
 	/**
-	*
+	* Maps a of1x_match from an OF1.0 Header
 	*/
-	static void of12_map_reverse_flow_entry_instructions(of12_instruction_group_t* group, cofinlist& instructions);
+	static void of1x_map_reverse_flow_entry_matches(of1x_match_t* m, cofmatch& match);
 
 	/**
 	*
 	*/
-	static void of12_map_reverse_flow_entry_instruction(of12_instruction_t* inst, cofinst& instruction);
+	static void of1x_map_reverse_flow_entry_instructions(of1x_instruction_group_t* group, cofinlist& instructions);
 
 	/**
 	*
 	*/
-	static void of12_map_reverse_flow_entry_action(of12_packet_action_t* of12_action, cofaction& action);
+	static void of1x_map_reverse_flow_entry_instruction(of1x_instruction_t* inst, cofinst& instruction);
 
 	/**
 	*
 	*/
-	static void of12_map_reverse_packet_matches(of12_packet_matches_t* packet_matches, cofmatch& match);
+	static void of1x_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, cofaction& action);
+
+	/**
+	*
+	*/
+	static void of1x_map_reverse_packet_matches(of1x_packet_matches_t* packet_matches, cofmatch& match);
 };
 
 }// namespace rofl

@@ -8,8 +8,8 @@
 #include "openflow10_switch.h"
 
 #include <rofl/platform/unix/csyslog.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_fwd_module.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 
 using namespace rofl;
 
@@ -59,7 +59,7 @@ afa_result_t openflow10_switch::process_packet_in(uint8_t table_id,
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of12_packet_matches_t matches){
+					of1x_packet_matches_t matches){
 
 	return ((of10_endpoint*)endpoint)->process_packet_in(table_id,
 					reason,
@@ -71,7 +71,7 @@ afa_result_t openflow10_switch::process_packet_in(uint8_t table_id,
 					matches);
 }
 
-afa_result_t openflow10_switch::process_flow_removed(uint8_t reason, of12_flow_entry_t* removed_flow_entry){
+afa_result_t openflow10_switch::process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
 	return ((of10_endpoint*)endpoint)->process_flow_removed(reason, removed_flow_entry);
 }
 
@@ -94,7 +94,7 @@ afa_result_t openflow10_switch::notify_port_status_changed(switch_port_t* port){
 * Driver HAL calls. Demultiplexing to the appropiate openflow10_switch instance.
 */
 
-afa_result_t cmm_process_of10_packet_in(const of12_switch_t* sw,
+afa_result_t cmm_process_of10_packet_in(const of1x_switch_t* sw,
 					uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
@@ -102,7 +102,7 @@ afa_result_t cmm_process_of10_packet_in(const of12_switch_t* sw,
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of12_packet_matches_t matches)
+					of1x_packet_matches_t matches)
 {
 	openflow10_switch* dp=NULL;
 
@@ -128,7 +128,7 @@ afa_result_t cmm_process_of10_packet_in(const of12_switch_t* sw,
 					matches);
 }
 
-afa_result_t cmm_process_of10_flow_removed(const of12_switch_t* sw, uint8_t reason, of12_flow_entry_t* removed_flow_entry){
+afa_result_t cmm_process_of10_flow_removed(const of1x_switch_t* sw, uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
 
 	openflow10_switch* dp=NULL;
 

@@ -172,6 +172,7 @@ AC_CONFIG_FILES([
 	src/xdpd/fwd-modules/Makefile
 	src/xdpd/management/Makefile
 	src/xdpd/openflow/Makefile
+	src/xdpd/openflow/openflow10/Makefile
 	src/xdpd/openflow/openflow12/Makefile
 ])
 

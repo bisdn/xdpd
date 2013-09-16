@@ -467,6 +467,14 @@ dpx86_set_mpls_tc(datapacket_t* pkt, uint8_t tc)
 	pack->headers->mpls(0)->set_mpls_tc(tc);
 }
 
+void
+dpx86_set_mpls_bos(datapacket_t* pkt, bool bos)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->mpls(0))) return;
+	pack->headers->mpls(0)->set_mpls_bos(bos);
+}
+
 //PPPOE
 void
 dpx86_set_pppoe_type(datapacket_t* pkt, uint8_t type)
@@ -1002,6 +1010,13 @@ dpx86_get_packet_mpls_tc(datapacket_t * const pkt)
 	return pack->headers->mpls(0)->get_mpls_tc()&0x07;
 }
 
+bool
+dpx86_get_packet_mpls_bos(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == pack) || (NULL == pack->headers->mpls(0))) return 0;
+	return pack->headers->mpls(0)->get_mpls_bos()&0x01;
+}
 //PPPoE related extensions
 uint8_t
 dpx86_get_packet_pppoe_code(datapacket_t * const pkt)

@@ -239,6 +239,11 @@ platform_packet_get_mpls_tc(datapacket_t * const pkt)
 	return dpx86_get_packet_mpls_tc(pkt);
 }
 
+bool
+platform_packet_get_mpls_bos(datapacket_t * const pkt)
+{
+	return dpx86_get_packet_mpls_bos(pkt);
+}
 uint32_t platform_packet_get_pbb_isid(datapacket_t *const pkt){
 	//TODO: add implementation when supported
 	return 0x0;
@@ -490,6 +495,17 @@ platform_packet_set_udp_dst(datapacket_t* pkt, uint16_t udp_dst)
 }
 
 void
+platform_packet_set_sctp_src(datapacket_t* pkt, uint16_t sctp_src)
+{
+	//TODO: implement
+}
+
+void
+platform_packet_set_sctp_dst(datapacket_t* pkt, uint16_t sctp_dst)
+{
+	//TODO: implement
+}
+void
 platform_packet_set_icmpv4_type(datapacket_t* pkt, uint8_t type)
 {
 	dpx86_set_icmpv4_type(pkt, type);
@@ -566,7 +582,27 @@ platform_packet_set_mpls_tc(datapacket_t* pkt, uint8_t tc)
 {
 	dpx86_set_mpls_tc(pkt, tc);
 }
-
+void
+platform_packet_set_mpls_bos(datapacket_t* pkt, bool bos)
+{
+	dpx86_set_mpls_bos(pkt, bos);
+}
+void platform_packet_set_pbb_isid(datapacket_t*pkt, uint32_t pbb_isid)
+{
+	//TODO: implement
+}
+void platform_packet_set_tunnel_id(datapacket_t*pkt, uint64_t tunnel_id)
+{
+	//TODO: implement
+}
+void platform_packet_pop_pbb(datapacket_t* pkt, uint16_t ether_type)
+{
+	//TODO: implement
+}
+void platform_packet_push_pbb(datapacket_t* pkt, uint16_t ether_type)
+{
+	//TODO: implement
+}
 void
 platform_packet_set_pppoe_type(datapacket_t* pkt, uint8_t type)
 {
@@ -602,6 +638,15 @@ platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
 {
 	dpx86_set_gtp_teid(pkt, teid);
 }
+void platform_packet_pop_gtp(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+void platform_packet_push_gtp(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
 
 void
 platform_packet_drop(datapacket_t* pkt)

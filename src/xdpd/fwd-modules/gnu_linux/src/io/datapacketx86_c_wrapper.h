@@ -183,6 +183,10 @@ dpx86_set_mpls_label(datapacket_t* pkt, uint32_t label);
 void
 dpx86_set_mpls_tc(datapacket_t* pkt, uint8_t tc);
 
+void
+dpx86_set_mpls_bos(datapacket_t* pkt, bool bos);
+
+
 //PPPOE
 void
 dpx86_set_pppoe_type(datapacket_t* pkt, uint8_t type);
@@ -339,6 +343,10 @@ dpx86_get_packet_mpls_label(datapacket_t * const pkt);
 
 uint8_t
 dpx86_get_packet_mpls_tc(datapacket_t * const pkt);
+
+bool
+dpx86_get_packet_mpls_bos(datapacket_t * const pkt);
+
 
 //PPPoE related extensions
 uint8_t

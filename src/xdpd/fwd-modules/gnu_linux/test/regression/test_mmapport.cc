@@ -111,7 +111,7 @@ void DriverMMAPPortTestCase::install_flow_mod(){
 	fprintf(stderr,"Big endian MAC: %lx",htobe64(0x0000012345678901));
 	field.u64 = 1;
 	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, NULL,NULL));
-	of1x_add_instruction_to_group(&entry->inst_grp, OF1X_IT_APPLY_ACTIONS, ac_group , NULL, 0);
+	of1x_add_instruction_to_group(&entry->inst_grp, OF1X_IT_APPLY_ACTIONS, ac_group , NULL, NULL, 0);
 	of1x_add_flow_entry_table( ((of1x_switch_t *)sw)->pipeline, 0,entry,false,false );
 	
 	CPPUNIT_ASSERT(((of1x_switch_t*)sw)->pipeline->tables[0].num_of_entries == 1 );

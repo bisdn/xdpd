@@ -89,8 +89,6 @@ afa_result_t fwd_module_init(){
 	if(processing_init() != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
-	ROFL_ERR("Found %u DPDK-enabled interfaces\n", rte_eth_dev_count());
-	
 	return AFA_SUCCESS; 
 }
 
@@ -101,15 +99,16 @@ afa_result_t fwd_module_init(){
 */
 afa_result_t fwd_module_destroy(){
 
-	//In this function you allow the platform
-	//to be properly cleaning its own state
-
+	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_destroy()\n");
+	
+	//Cleanup processing. This must be the first thing to do
 	processing_destroy();
 
-	//If using the pipeline you should call
-	//physical_switch_destroy();
+	//Destroy pipeline platform state
+	physical_switch_destroy();
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_destroy()\n");
+	//Shutdown ports
+	
 	
 	return AFA_SUCCESS; 
 }

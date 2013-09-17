@@ -61,7 +61,7 @@ rofl_result_t processing_destroy(void){
 	//Stop all cores and wait for them to complete execution tasks
 	for(i=0;i<RTE_MAX_LCORE;++i){
 		if(processing_cores[i].available && processing_cores[i].active){
-			ROFL_DEBUG("Shutting downi active core %u\n",i);
+			ROFL_DEBUG("Shutting down active core %u\n",i);
 			processing_cores[i].active = false;
 			//Join core
 			rte_eal_wait_lcore(i);

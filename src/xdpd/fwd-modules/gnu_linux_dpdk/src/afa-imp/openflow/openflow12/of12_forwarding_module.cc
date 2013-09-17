@@ -6,8 +6,6 @@
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_statistics.h>
 
-#include <rofl/datapath/pipeline/openflow/openflow12/openflow12.h>
-
 #include "../../../config.h"
 
 //Port config
@@ -308,6 +306,8 @@ of12_stats_group_msg_t * fwd_module_of12_get_group_stats(uint64_t dpid, uint32_t
 of12_stats_group_msg_t * fwd_module_of12_get_group_all_stats(uint64_t dpid, uint32_t id){
 	
 	of12_switch_t* lsw = (of12_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
-	
-		return of12_get_group_all_stats(lsw->pipeline,id);
+	if(!lsw)
+		return NULL;
+
+	return of12_get_group_all_stats(lsw->pipeline,id);
 }

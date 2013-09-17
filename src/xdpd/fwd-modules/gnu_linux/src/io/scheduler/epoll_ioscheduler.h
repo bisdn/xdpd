@@ -31,6 +31,12 @@
 
 class portgroup_state;
 
+//Hold fd AND ioport reference
+typedef struct epoll_event_data{
+	int fd;
+	ioport* port;
+}epoll_event_data_t;
+
 class epoll_ioscheduler: public ioscheduler{ 
 
 public:
@@ -40,7 +46,6 @@ public:
 protected:
 	/* EPOLL stuff */
 	static const unsigned int EPOLL_TIMEOUT_MS=200;
-	static const unsigned int EPOLL_MAX_EVENTS=48*2;
 
 	//FDs constants
 	static const unsigned int READ=0;
@@ -56,9 +61,11 @@ protected:
 
 	/* Methods */
 	//WRR
-	static void process_port_io(ioport* port);
+	static void process_port_rx(ioport* port);
+	static void process_port_tx(ioport* port);
 
 	//EPOLL related	
+	static void release_resources(int epfd, struct epoll_event* ev, struct epoll_event* events, unsigned int current_num_of_ports);
 	static void add_fd_epoll(struct epoll_event* ev, int epfd, ioport* port, int fd);
 	static void init_or_update_fds(portgroup_state* pg, int* epfd, struct epoll_event** ev, struct epoll_event** events, unsigned int* current_num_of_ports, unsigned int* current_hash );
 

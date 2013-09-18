@@ -269,6 +269,7 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 		std::string devname		= event.getArguments()["devname"].asString();
 
 		rofl::port_manager::attach_port_to_switch(dpid, devname);
+		rofl::port_manager::enable_port(devname);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);
@@ -300,6 +301,7 @@ qmfagent::methodPortDetach(qmf::AgentEvent& event)
 		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
 		std::string devname		= event.getArguments()["devname"].asString();
 
+		rofl::port_manager::disable_port(devname);
 		rofl::port_manager::detach_port_from_switch(dpid, devname);
 
 		// TODO: destroy QMF port object (if this is deemed useful one day ...)

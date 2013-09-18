@@ -337,6 +337,63 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	return AFA_SUCCESS; 
 }
 
+/**
+* @name    fwd_module_connect_switches
+* @brief   Attemps to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. 
+* @ingroup management
+*
+* @param dpid_lsi1 Datapath ID of the LSI1
+* @param dpid_lsi2 Datapath ID of the LSI2 
+*/
+afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1, uint64_t dpid_lsi2, unsigned int* port_num2){
+
+	of_switch_t *lsw1, *lsw2;
+	ioport *vport1, *vport2;
+	unsigned int port_num;
+
+	//Check existance of the dpid
+	lsw1 = physical_switch_get_logical_switch_by_dpid(dpid_lsi1);
+	lsw2 = physical_switch_get_logical_switch_by_dpid(dpid_lsi2);
+
+	if(!lsw1 || !lsw2){
+		assert(0);
+		return AFA_FAILURE;
+	}
+#if 0
+	//Create virtual port pair
+	if( create_virtual_port_pair(&vport1, &vport2) != ROFL_SUCCESS){
+		assert(0);
+		return AFA_FAILURE;
+	}
+#else
+	vport1 = vport2 = NULL;
+#endif
+
+	//Attach to LSI1
+	port_num = 0;
+	if(physical_switch_attach_port_to_logical_switch(vport1->of_port_state,lsw1,&port_num) != ROFL_SUCCESS){
+		delete vport1;
+		delete vport2;
+		assert(0);
+		return AFA_FAILURE;
+	}
+	
+	//Attach to LSI2
+	port_num = 0;
+	if(physical_switch_attach_port_to_logical_switch(vport2->of_port_state,lsw1,&port_num) != ROFL_SUCCESS){
+		delete vport1;
+		delete vport2;
+		assert(0);
+		return AFA_FAILURE;
+	}
+	
+	//Schedule port (enable it)
+	
+	
+	return AFA_SUCCESS; 
+}
+
+
 /*
 * @name    fwd_module_detach_port_from_switch_at_port_num
 * @brief   Detaches port_num of the logical switch identified with dpid 

@@ -45,11 +45,28 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name) t
 	check_port_existance(port_name);
 
 	//Check DP existance
-	//TODO
+	if(!switch_manager::find_by_dpid(dpid))
+		throw eOfSmDoesNotExist();	
 
 	if (fwd_module_attach_port_to_switch(dpid,port_name.c_str(),&i) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
 
+}
+
+//Port attachment/detachment
+void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1, uint64_t dpid_lsi2, std::string& port_name2) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
+
+	unsigned int port_num1, port_num2;
+
+	//Check lsi existance 
+	if(!switch_manager::find_by_dpid(dpid_lsi1) || !switch_manager::find_by_dpid(dpid_lsi2) )
+		throw eOfSmDoesNotExist();	
+
+	if (fwd_module_connect_switches(dpid_lsi1, &port_num1, dpid_lsi2, &port_num2) != AFA_SUCCESS)
+		throw eOfSmGeneralError();
+	
+	//Recover port names
+	//TODO 
 }
 
 void port_manager::detach_port_from_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){

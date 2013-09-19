@@ -92,8 +92,6 @@ of10_endpoint::handle_features_request(
 			port.set_advertised(_port->advertised);
 			port.set_supported(_port->supported);
 			port.set_peer(_port->peer);
-			port.set_curr_speed(of10_translation_utils::get_port_speed_kb(_port->curr_speed));
-			port.set_max_speed(of10_translation_utils::get_port_speed_kb(_port->curr_max_speed));
 
 			portlist.next() = port;
 		}

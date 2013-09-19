@@ -242,7 +242,9 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	//Y is the edge 0 (left) 1 (right) of the connectio
 	char port_name[PORT_QUEUE_MAX_LEN_NAME];
 	switch_port_t *port1, *port2;	
-	
+	uint64_t port_capabilities=0x0;
+	uint64_t mac_addr;
+
 	//Init the pipeline ports
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%.5s-%.5s/%d", lsw1->name, lsw2->name, 0);
 	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
@@ -279,8 +281,25 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		return ROFL_FAILURE;
 	}
 
-	//Initalize port features
-	//FIXME TODO
+	//Initalize port features(Marking as 1G)
+	port_capabilities |= PORT_FEATURE_1GB_FD;
+	
+	switch_port_add_capabilities(&port1->curr, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port1->advertised, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port1->supported, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port1->peer, (port_features_t)port_capabilities);	
+	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
+	memcpy(port1->hwaddr, &mac_addr, sizeof(port1->hwaddr));
+
+	switch_port_add_capabilities(&port2->curr, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port2->advertised, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port2->supported, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port2->peer, (port_features_t)port_capabilities);	
+	
+	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
+	memcpy(port2->hwaddr, &mac_addr, sizeof(port1->hwaddr));
+
+	//Add output queues
 	fill_port_queues(port1, *vport1);
 	fill_port_queues(port2, *vport2);
 

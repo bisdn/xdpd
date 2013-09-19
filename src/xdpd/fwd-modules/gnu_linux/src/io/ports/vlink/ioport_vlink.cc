@@ -133,6 +133,8 @@ unsigned int ioport_vlink::write(unsigned int q_id, unsigned int num_of_buckets)
 		if(!pkt)
 			break;
 		
+		empty_pipe(tx_notify_pipe);
+		
 		//Store in the input queue in the 
 		if(connected_port->tx_pkt(pkt) != ROFL_SUCCESS){
 			//Congestion in the input queue of the vlink, drop

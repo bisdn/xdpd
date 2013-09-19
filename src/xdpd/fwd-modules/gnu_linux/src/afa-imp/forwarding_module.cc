@@ -337,6 +337,14 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_t** por
 		return AFA_FAILURE;
 	}
 
+	//Enable interfaces (start packet transmission)
+	if(fwd_module_enable_port(vport1->of_port_state->name) != AFA_SUCCESS || fwd_module_enable_port(vport2->of_port_state->name) != AFA_SUCCESS){
+		ROFL_ERR("ERROR: unable to bring up vlink ports.\n");
+		assert(0);
+		return AFA_FAILURE;
+	}
+	
+
 	//Set switch ports and return
 	*port1 = vport1->of_port_state;
 	*port2 = vport2->of_port_state;

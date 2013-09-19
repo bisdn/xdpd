@@ -27,7 +27,7 @@ of10_endpoint::of10_endpoint(openflow_switch* sw, caddress const& controller_add
 	//FIXME: make controller and binding optional somehow
 	//Active connection
 	//if(controller_addr.port)
-	rpc_connect_to_ctl(controller_addr);
+	rpc_connect_to_ctl(OFP10_VERSION, controller_addr);
 
 	//Passive connection
 	//if(binding_addr.port)

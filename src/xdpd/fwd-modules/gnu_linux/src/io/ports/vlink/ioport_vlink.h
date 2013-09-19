@@ -38,9 +38,8 @@ public:
 	virtual unsigned int write(unsigned int q_id, unsigned int num_of_buckets);
 
 	//Get read&write fds. Return -1 if do not exist
-	inline virtual int get_read_fd(void){return input[READ];};
-	int get_fake_write_fd(void){return input[WRITE];};
-	inline virtual int get_write_fd(void){return notify_pipe[READ];};
+	inline virtual int get_read_fd(void){return rx_notify_pipe[READ];};
+	inline virtual int get_write_fd(void){return tx_notify_pipe[READ];};
 
 	virtual rofl_result_t 
 	disable();
@@ -48,15 +47,25 @@ public:
 	virtual rofl_result_t
 	enable();
 
+	//Emulate transmission of the packet
+	rofl_result_t tx_pkt(datapacket_t* pkt);
+
+	//Connected port
+	ioport_vlink* connected_port;
+	
 protected:
 	//fds
-	int input[2];
-	int notify_pipe[2];
-	
+	int rx_notify_pipe[2];
+	int tx_notify_pipe[2];
+
+
 	//Pipe extremes
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;
 	
+	static const unsigned int MIN_PKT_LEN=14;
+	
+	void empty_pipe(int* pipe);
 };
 
 #endif /* IOPORT_VLINK_H_ */

@@ -243,7 +243,6 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	char port_name[PORT_QUEUE_MAX_LEN_NAME];
 	switch_port_t *port1, *port2;	
 	
-
 	//Init the pipeline ports
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%.5s-%.5s/%d", lsw1->name, lsw2->name, 0);
 	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
@@ -254,11 +253,9 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	if(!port1 || !port2){
 		free(port1);
 		assert(0);
+		ROFL_ERR("<%s:%d> Not enough memory\n",__func__, __LINE__);
 		return ROFL_FAILURE;
 	}
-
-	//Initalize port features
-	//FIXME TODO
 
 	//Create two ioports
 	*vport1 = new ioport_vlink(port1);
@@ -266,6 +263,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	if(!*vport1){
 		free(port1);
 		free(port2);
+		ROFL_ERR("<%s:%d> Not enough memory\n",__func__, __LINE__);
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -276,21 +274,54 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		free(port1);
 		free(port2);
 		delete *vport1;
+		ROFL_ERR("<%s:%d> Not enough memory\n",__func__, __LINE__);
 		assert(0);
 		return ROFL_FAILURE;
 	}
 
+	//Initalize port features
+	//FIXME TODO
+	fill_port_queues(port1, *vport1);
+	fill_port_queues(port2, *vport2);
+
+
 	//Store platform state on switch ports
-	port1->platform_port_state = (platform_port_state_t*)vport1;
-	port2->platform_port_state = (platform_port_state_t*)vport2;
+	port1->platform_port_state = (platform_port_state_t*)*vport1;
+	port2->platform_port_state = (platform_port_state_t*)*vport2;
 	
 	//Set cross link 
 	((ioport_vlink*)*vport1)->set_connected_port((ioport_vlink*)*vport2);
 	((ioport_vlink*)*vport2)->set_connected_port((ioport_vlink*)*vport1);
 
+	//Add them to the platform
+	if( physical_switch_add_port(port1) != ROFL_SUCCESS ){
+		free(port1);
+		free(port2);
+		delete *vport1;
+		delete *vport2;
+		ROFL_ERR("<%s:%d> Unable to add vlink port1 to the physical switch; out of slots?\n",__func__, __LINE__);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+	if( physical_switch_add_port(port2) != ROFL_SUCCESS ){
+		free(port1);
+		free(port2);
+		delete *vport1;
+		delete *vport2;
+		ROFL_ERR("<%s:%d> Unable to add vlink port2 to the physical switch; out of slots?\n",__func__, __LINE__);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
 	return ROFL_SUCCESS;	
 }
 
+switch_port_t* get_vlink_pair(switch_port_t* port){
+	if(((ioport_vlink*)port->platform_port_state)->connected_port)
+		return ((ioport_vlink*)port->platform_port_state)->connected_port->of_port_state; 
+	else 
+		return NULL;
+}
 
 rofl_result_t destroy_port(switch_port_t* port){
 	

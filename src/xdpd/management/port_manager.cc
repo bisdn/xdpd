@@ -102,7 +102,16 @@ std::list<std::string> port_manager::list_available_port_names() throw (eOfSmGen
 			
 	}
 
-	//TODO: add virtual and tunnel. Calls already available in the AFA
+	//Call the forwarding module to list the ports
+	ports = fwd_module_get_virtual_ports(&max_ports);
+	
+	//Run over the ports and get the name
+	for(i=0;i<max_ports;i++){
+		if(ports[i])
+			port_name_list.push_back(std::string(ports[i]->name));
+	}
+
+	//TODO: add tunnel.
 	
 	return port_name_list; 
 }

@@ -36,6 +36,11 @@ rofl_result_t discover_physical_ports(void);
  */
 rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_switch_t* lsw2, ioport** vport2);
 
+/*
+* Get port pair
+*/
+switch_port_t* get_vlink_pair(switch_port_t* port);
+
 
 /**
  * Destroys ports previously created 

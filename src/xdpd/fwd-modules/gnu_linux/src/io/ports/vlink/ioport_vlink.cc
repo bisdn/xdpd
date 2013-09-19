@@ -104,14 +104,15 @@ inline void ioport_vlink::empty_pipe(int* pipe){
 datapacket_t* ioport_vlink::read(){
 
 	datapacket_t* pkt = input_queue.non_blocking_read();
-
+		
 	//Attempt to read one byte from the pipe
 	if(pkt){
+		datapacketx86* pkt_x86 = (datapacketx86*) pkt->platform_state;
 		empty_pipe(rx_notify_pipe);
+		//FIXME statistics
+		pkt_x86->in_port = of_port_state->of_port_num;
 	}
-	
-	//FIXME statistics
-		
+
 	return pkt;
 }
 

@@ -449,7 +449,7 @@ static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, s
 //FIXME TODO XXX this should be stripped from here and moved in a convenient place
 /* Output action */
 void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
-	of_switch_t* sw;
+	of_switch_t const* sw;
 	datapacketx86* pack;
 
 	if(!output_port){
@@ -504,8 +504,13 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 		datapacketx86* replica_pack;
 
 		//Get switch
-		sw = pack->lsw;	
-
+		sw = pkt->sw;	
+		
+		if(unlikely(!sw)){
+			bufferpool::release_buffer(pkt);
+			return;
+		}
+	
 		//We need to flood
 		for(unsigned i=0;i<LOGICAL_SWITCH_MAX_LOG_PORTS;++i){
 

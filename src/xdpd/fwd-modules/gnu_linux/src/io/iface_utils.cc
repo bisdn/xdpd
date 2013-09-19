@@ -21,6 +21,7 @@
 #include "ports/ioport.h" 
 #include "ports/mmap/ioport_mmap.h" 
 #include "ports/mmap/ioport_mmapv2.h" 
+#include "ports/vlink/ioport_vlink.h" 
 
 /*
 *
@@ -231,6 +232,65 @@ rofl_result_t discover_physical_ports(){
 	
 	return ROFL_SUCCESS;
 }
+/*
+ * Creates a virtual port pair between two switches
+ */
+rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_switch_t* lsw2, ioport** vport2){
+
+	//Names are composed following vlinkX-Y
+	//Where X is the virtual port number (0... N-1)
+	//Y is the edge 0 (left) 1 (right) of the connectio
+	char port_name[PORT_QUEUE_MAX_LEN_NAME];
+	switch_port_t *port1, *port2;	
+	
+
+	//Init the pipeline ports
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%.5s-%.5s/%d", lsw1->name, lsw2->name, 0);
+	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
+
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%.5s-%.5s/%d", lsw1->name, lsw2->name, 1);
+	port2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
+
+	if(!port1 || !port2){
+		free(port1);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	//Initalize port features
+	//FIXME TODO
+
+	//Create two ioports
+	*vport1 = new ioport_vlink(port1);
+	
+	if(!*vport1){
+		free(port1);
+		free(port2);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+	
+	*vport2 = new ioport_vlink(port2);
+
+	if(!*vport2){
+		free(port1);
+		free(port2);
+		delete *vport1;
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	//Store platform state on switch ports
+	port1->platform_port_state = (platform_port_state_t*)vport1;
+	port2->platform_port_state = (platform_port_state_t*)vport2;
+	
+	//Set cross link 
+	((ioport_vlink*)*vport1)->set_connected_port((ioport_vlink*)*vport2);
+	((ioport_vlink*)*vport2)->set_connected_port((ioport_vlink*)*vport1);
+
+	return ROFL_SUCCESS;	
+}
+
 
 rofl_result_t destroy_port(switch_port_t* port){
 	
@@ -260,14 +320,20 @@ rofl_result_t destroy_ports(){
 	switch_port_t** array;	
 
 	array = physical_switch_get_physical_ports(&max_ports);
-	
 	for(i=0; i<max_ports ; i++){
 		if(array[i] != NULL){
 			destroy_port(array[i]);
 		}
 	}
 
-	//TODO: add virtual and tun
+	array = physical_switch_get_virtual_ports(&max_ports);
+	for(i=0; i<max_ports ; i++){
+		if(array[i] != NULL){
+			destroy_port(array[i]);
+		}
+	}
+
+	//TODO: add tun
 
 	return ROFL_SUCCESS;
 }

@@ -7,6 +7,7 @@
 
 #include <rofl.h>
 #include <rofl/datapath/afa/fwd_module.h>
+#include "ports/ioport.h" 
 
 /**
 * @file iface_utils.h
@@ -29,6 +30,12 @@ switch_port_t* get_port_by_name(const char *name);
  * Discovers platform physical ports and fills up the switch_port_t sructures
  */
 rofl_result_t discover_physical_ports(void);
+
+/**
+ * Creates a virtual port pair between two switches
+ */
+rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_switch_t* lsw2, ioport** vport2);
+
 
 /**
  * Destroys ports previously created 

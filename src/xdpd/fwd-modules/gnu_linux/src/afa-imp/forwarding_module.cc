@@ -345,7 +345,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 * @param dpid_lsi1 Datapath ID of the LSI1
 * @param dpid_lsi2 Datapath ID of the LSI2 
 */
-afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1, uint64_t dpid_lsi2, unsigned int* port_num2){
+afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_t** port1, uint64_t dpid_lsi2, switch_port_t** port2){
 
 	of_switch_t *lsw1, *lsw2;
 	ioport *vport1, *vport2;
@@ -359,19 +359,16 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, unsigned int* port_
 		assert(0);
 		return AFA_FAILURE;
 	}
-#if 0
+	
 	//Create virtual port pair
-	if( create_virtual_port_pair(&vport1, &vport2) != ROFL_SUCCESS){
+	if(create_virtual_port_pair(lsw1, &vport1, lsw2, &vport2) != ROFL_SUCCESS){
 		assert(0);
 		return AFA_FAILURE;
 	}
-#else
-	vport1 = vport2 = NULL;
-#endif
 
 	//Attach to LSI1
 	port_num = 0;
-	if(physical_switch_attach_port_to_logical_switch(vport1->of_port_state,lsw1,&port_num) != ROFL_SUCCESS){
+	if(physical_switch_attach_port_to_logical_switch(vport1->of_port_state, lsw1, &port_num) != ROFL_SUCCESS){
 		delete vport1;
 		delete vport2;
 		assert(0);
@@ -380,7 +377,7 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, unsigned int* port_
 	
 	//Attach to LSI2
 	port_num = 0;
-	if(physical_switch_attach_port_to_logical_switch(vport2->of_port_state,lsw1,&port_num) != ROFL_SUCCESS){
+	if(physical_switch_attach_port_to_logical_switch(vport2->of_port_state, lsw2,&port_num) != ROFL_SUCCESS){
 		delete vport1;
 		delete vport2;
 		assert(0);
@@ -389,6 +386,10 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, unsigned int* port_
 	
 	//Schedule port (enable it)
 	
+
+	//Set switch ports and return
+	*port1 = vport1->of_port_state;
+	*port2 = vport2->of_port_state;
 	
 	return AFA_SUCCESS; 
 }

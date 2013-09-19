@@ -405,16 +405,16 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		memset(&field,0,sizeof(wrap_uint_t));
 
 		switch (raction.get_type()) {
-		case OFPAT_OUTPUT:
-			field.u64 = be32toh(raction.oac_output->port);
+		case OFP10AT_OUTPUT:
+			field.u64 = be16toh(raction.oac_10output->port);
 			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_VLAN_VID:
-			field.u64 = be16toh(raction.oac_vlanvid->vlan_vid);
+			field.u64 = be16toh(raction.oac_10vlanvid->vlan_vid);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_VLAN_PCP:
-			field.u64 = be16toh(raction.oac_vlanpcp->vlan_pcp);
+			field.u64 = be16toh(raction.oac_10vlanpcp->vlan_pcp);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, NULL, NULL);
 			break;
 		case OFP10AT_STRIP_VLAN:
@@ -422,12 +422,12 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_DL_SRC: {
-			cmacaddr mac(raction.oac_dladdr->dl_addr, 6);
+			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, NULL, NULL);
 			} break;
 		case OFP10AT_SET_DL_DST: {
-			cmacaddr mac(raction.oac_dladdr->dl_addr, 6);
+			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, NULL, NULL);
 			} break;
@@ -440,7 +440,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		case OFP10AT_SET_NW_DST:
 			break;
 		case OFP10AT_SET_NW_TOS:
-			field.u64 = raction.oac_nwtos->nw_tos;
+			field.u64 = raction.oac_10nwtos->nw_tos;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_TP_SRC:
@@ -449,7 +449,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			break;
 		case OFP10AT_ENQUEUE:
 			// FIXME: what to do with the port field in struct ofp10_action_enqueue?
-			field.u64 = be32toh(raction.oac_enqueue->queue_id);
+			field.u64 = be32toh(raction.oac_10enqueue->queue_id);
 			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, NULL, NULL);
 			break;
 		}
@@ -717,145 +717,44 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 	case OF1X_AT_NO_ACTION: {
 		// do nothing
 	} break;
-	case OF1X_AT_COPY_TTL_IN: {
-		action = cofaction_copy_ttl_in();
-	} break;
 	case OF1X_AT_POP_VLAN: {
-		action = cofaction_pop_vlan();
-	} break;
-	case OF1X_AT_POP_MPLS: {
-		action = cofaction_pop_mpls((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
-	} break;
-	case OF1X_AT_POP_PPPOE: {
-		action = cofaction_pop_pppoe((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
-	} break;
-	case OF1X_AT_PUSH_PPPOE: {
-		action = cofaction_push_pppoe((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
-	} break;
-	case OF1X_AT_PUSH_MPLS: {
-		action = cofaction_push_mpls((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
+		action = cofaction_pop_vlan(OFP10_VERSION);
 	} break;
 	case OF1X_AT_PUSH_VLAN: {
-		action = cofaction_push_vlan((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
+		action = cofaction_push_vlan(OFP10_VERSION, (uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
 	} break;
-	case OF1X_AT_COPY_TTL_OUT: {
-		action = cofaction_copy_ttl_out();
-	} break;
-	case OF1X_AT_DEC_NW_TTL: {
-		action = cofaction_dec_nw_ttl();
-	} break;
-	case OF1X_AT_DEC_MPLS_TTL: {
-		action = cofaction_dec_mpls_ttl();
-	} break;
-	case OF1X_AT_SET_MPLS_TTL: {
-		action = cofaction_set_mpls_ttl((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK));
-	} break;
-	case OF1X_AT_SET_NW_TTL: {
-		action = cofaction_set_nw_ttl((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK));
-	} break;
-	case OF1X_AT_SET_QUEUE: {
-		action = cofaction_set_queue((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK));
-	} break;
-	//case OF1X_AT_SET_FIELD_METADATA:
 	case OF1X_AT_SET_FIELD_ETH_DST: {
-		cmacaddr maddr(of1x_action->field.u64);
-		action = cofaction_set_field(coxmatch_ofb_eth_dst(maddr));
+		action = cofaction_set_dl_dst(OFP10_VERSION, cmacaddr(of1x_action->field.u64));
 	} break;
 	case OF1X_AT_SET_FIELD_ETH_SRC: {
-		cmacaddr maddr(of1x_action->field.u64);
-		action = cofaction_set_field(coxmatch_ofb_eth_src(maddr));
-	} break;
-	case OF1X_AT_SET_FIELD_ETH_TYPE: {
-		action = cofaction_set_field(coxmatch_ofb_eth_type((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
+		action = cofaction_set_dl_src(OFP10_VERSION, cmacaddr(of1x_action->field.u64));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_VID: {
-		action = cofaction_set_field(coxmatch_ofb_vlan_vid((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
+		action = cofaction_set_vlan_vid(OFP10_VERSION, (uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_PCP: {
-		action = cofaction_set_field(coxmatch_ofb_vlan_pcp((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_OPCODE: {
-		action = cofaction_set_field(coxmatch_ofb_arp_opcode((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_SHA: {
-		cmacaddr maddr(of1x_action->field.u64);
-		action = cofaction_set_field(coxmatch_ofb_arp_sha(maddr));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_SPA: {
-		action = cofaction_set_field(coxmatch_ofb_arp_spa((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_THA: {
-		cmacaddr maddr(of1x_action->field.u64);
-		action = cofaction_set_field(coxmatch_ofb_arp_tha(maddr));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_TPA: {
-		action = cofaction_set_field(coxmatch_ofb_arp_tpa((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_IP_DSCP: {
-		action = cofaction_set_field(coxmatch_ofb_ip_dscp((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_IP_ECN: {
-		action = cofaction_set_field(coxmatch_ofb_ip_ecn((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
+		action = cofaction_set_vlan_pcp(OFP10_VERSION, (uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK));
 	} break;
 	case OF1X_AT_SET_FIELD_IP_PROTO: {
-		action = cofaction_set_field(coxmatch_ofb_ip_proto((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
+		action = cofaction_set_nw_tos(OFP10_VERSION, ((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
 	} break;
 	case OF1X_AT_SET_FIELD_IPV4_SRC: {
-		action = cofaction_set_field(coxmatch_ofb_ipv4_src((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
+		action = cofaction_set_nw_src(OFP10_VERSION, ((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
 	} break;
 	case OF1X_AT_SET_FIELD_IPV4_DST: {
-		action = cofaction_set_field(coxmatch_ofb_ipv4_dst((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
+		action = cofaction_set_nw_dst(OFP10_VERSION, ((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
 	} break;
-	case OF1X_AT_SET_FIELD_TCP_SRC: {
-		action = cofaction_set_field(coxmatch_ofb_tcp_src((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
+	case OF1X_AT_SET_FIELD_TP_SRC: {
+		action = cofaction_set_field(OFP10_VERSION, ((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
 	} break;
-	case OF1X_AT_SET_FIELD_TCP_DST: {
-		action = cofaction_set_field(coxmatch_ofb_tcp_dst((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_UDP_SRC: {
-		action = cofaction_set_field(coxmatch_ofb_udp_src((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_UDP_DST: {
-		action = cofaction_set_field(coxmatch_ofb_udp_dst((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_ICMPV4_TYPE: {
-		action = cofaction_set_field(coxmatch_ofb_icmpv4_type((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_ICMPV4_CODE: {
-		action = cofaction_set_field(coxmatch_ofb_icmpv4_code((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_MPLS_LABEL: {
-		action = cofaction_set_field(coxmatch_ofb_mpls_label((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_MPLS_TC: {
-		action = cofaction_set_field(coxmatch_ofb_mpls_tc((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_PPPOE_CODE: {
-		action = cofaction_set_field(coxmatch_ofx_pppoe_code((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_PPPOE_TYPE: {
-		action = cofaction_set_field(coxmatch_ofx_pppoe_type((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_PPPOE_SID: {
-		action = cofaction_set_field(coxmatch_ofx_pppoe_sid((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_PPP_PROT: {
-		action = cofaction_set_field(coxmatch_ofx_ppp_prot((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_GTP_MSG_TYPE: {
-		action = cofaction_set_field(coxmatch_ofx_gtp_msg_type((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_GTP_TEID: {
-		action = cofaction_set_field(coxmatch_ofx_gtp_teid((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
-	} break;
-	case OF1X_AT_GROUP: {
-		action = cofaction_group((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK));
+	case OF1X_AT_SET_FIELD_TP_DST: {
+		action = cofaction_set_field(OFP10_VERSION, ((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_EXPERIMENTER: {
 		// TODO
 	} break;
 	case OF1X_AT_OUTPUT: {
-		action = cofaction_output((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK));
+		action = cofaction_output(OFP10_VERSION, (uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK));
 	} break;
 	default: {
 		// do nothing

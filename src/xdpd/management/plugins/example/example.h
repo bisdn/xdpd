@@ -13,7 +13,7 @@
 
 namespace xdpd {
 
-class example_plugin::plugin {
+class example:public plugin {
 	
 public:
 	virtual void init(int args, char** argv){
@@ -23,7 +23,7 @@ public:
 	virtual std::string get_name(void){
 		return std::string("Test plugin");
 	};
-}
+};
 
 }// namespace xdpd 
 

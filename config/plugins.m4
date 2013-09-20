@@ -1,6 +1,10 @@
 ##Management plugins system is in charge of compiling
 ##management plugins defined at configure time
 
+#Just for auto-reconf
+m4_include([config/plugins_list.m4])
+
+
 AC_MSG_CHECKING(the plugins to be compiled...)
 
 AC_ARG_WITH(plugins,

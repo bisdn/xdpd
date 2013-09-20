@@ -35,9 +35,8 @@ m4_include([config/verbose.m4])
 # Check for profiling mode
 m4_include([config/profiling.m4])
 
-#Plugins
-#m4_include([config/plugins.m4])
-
+#Plugin main m4 macros
+m4_include([config/plugins.m4])
 
 #Check hardware support
 m4_include([config/hw.m4])

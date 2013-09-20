@@ -12,15 +12,4 @@ libxmgmt_la_SOURCES = \
 
 libxmgmt_la_LIBADD = 
 
-if ENABLE_CONFIG_CLI
-SUBDIRS += adapter/cli
-CLILIB = adapter/cli/libxdpd_config_cli.la
-libxmgmt_la_LIBADD += $(CLILIB)
-endif
-	
-if ENABLE_CONFIG_QMF
-SUBDIRS += adapter/qmf
-QMFLIB = adapter/qmf/libxdpd_config_qmf.la
-libxmgmt_la_LIBADD += $(QMFLIB)
-endif
-	
+

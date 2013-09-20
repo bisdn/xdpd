@@ -7,13 +7,10 @@
 #include <rofl/common/utils/c_logger.h>
 #include "management/switch_manager.h"
 #include "management/port_manager.h"
-#include "management/adapter/cli/xdpd_cli.h"
-
-#ifdef HAVE_CONFIG_QMF
-#include "management/adapter/qmf/qmfagent.h"
-#endif
+#include "management/plugin_manager.h"
 
 using namespace rofl;
+using namespace xdpd;
 
 #define XDPD_LOG_FILE "xdpd.log"
 
@@ -48,6 +45,8 @@ int main(int argc, char** argv){
 	char s_dbg[32];
 	memset(s_dbg, 0, sizeof(s_dbg));
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
+
+#if 0
 	cunixenv::getInstance().add_option(coption(true,REQUIRED_ARGUMENT,'d',"debug","debug level", std::string(s_dbg)));
 
 	cunixenv::getInstance().add_option(
@@ -62,6 +61,7 @@ int main(int argc, char** argv){
 	cunixenv::getInstance().add_option(
 			coption(true, REQUIRED_ARGUMENT, 'q', "qmfaddr", "qmf broker address",
 					std::string("127.0.0.1")));
+#endif
 #endif
 
 	/* update defaults */
@@ -89,6 +89,7 @@ int main(int argc, char** argv){
 	//Init the ciosrv.
 	ciosrv::init();
 
+#if 0
 	//Parse config file
 	xdpd_cli* cli = new xdpd_cli(
 			caddress(AF_INET, cunixenv::getInstance().get_arg('a').c_str(),
@@ -107,6 +108,18 @@ int main(int argc, char** argv){
 	} catch (std::runtime_error& e) {}
 #endif
 
+	try {
+		//Add a link bwetween dp0 and dp1
+		std::string port1, port2;
+		port_manager::connect_switches(1, port1, 2, port2);
+	} catch (...) {
+		ROFL_ERR("Could not create virtual link.\n");	
+	}
+#endif
+
+	//Load plugins
+	plugin_manager::init(argc, argv);
+
 	//ciosrv run. Only will stop in Ctrl+C
 	ciosrv::run();
 
@@ -116,9 +129,6 @@ int main(int argc, char** argv){
 	//Destroy all state
 	switch_manager::destroy_all_switches();
 
-	//Delete cli
-	delete cli;
-	
 	//ciosrv destroy
 	ciosrv::destroy();
 

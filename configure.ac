@@ -35,12 +35,12 @@ m4_include([config/verbose.m4])
 # Check for profiling mode
 m4_include([config/profiling.m4])
 
+#Plugins
+#m4_include([config/plugins.m4])
+
+
 #Check hardware support
 m4_include([config/hw.m4])
-
-#Plugins
-m4_include([config/qmf.m4])
-m4_include([config/cli.m4])
 
 #Output the files
 AC_CONFIG_FILES([

@@ -223,7 +223,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
 
 	//Check switch and port
-	if(!lsw || lsw->of_ver != OF_VERSION_12) {
+	if(!lsw || ((lsw->of_ver != OF_VERSION_10) && (lsw->of_ver != OF_VERSION_12) && (lsw->of_ver != OF_VERSION_13))) {
 		//TODO: log this... should never happen
 		assert(0);
 		return AFA_FAILURE;

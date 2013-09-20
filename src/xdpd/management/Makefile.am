@@ -2,14 +2,10 @@ MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS = 
 
-noinst_LTLIBRARIES = libxmgmt.la
+noinst_LTLIBRARIES = libxdpd_mgmt.la
 
-libxmgmt_la_SOURCES = \
+libxdpd_mgmt_la_SOURCES = \
+	plugin_manager.cc \
 	switch_manager.cc \
-	switch_manager.h \
-	port_manager.cc \
-	port_manager.h
-
-libxmgmt_la_LIBADD = 
-
+	port_manager.cc
 

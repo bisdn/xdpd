@@ -234,7 +234,7 @@ of10_endpoint::handle_port_stats_request(
 	/*
 	 *  send statistics for all ports
 	 */
-	if (OFPP_ANY == port_no){
+	if (OFPP10_ALL == port_no){
 
 		//we check all the positions in case there are empty slots
 		for (unsigned int n = 1; n < of12switch->max_ports; n++){
@@ -465,7 +465,7 @@ of10_endpoint::handle_queue_stats_request(
 	unsigned int portnum = pack->get_queue_stats().get_port_no();
 	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
 
-	if( ((portnum >= of12switch->max_ports) && (portnum != OFPP_ANY)) || portnum == 0){
+	if( ((portnum >= of12switch->max_ports) && (portnum != OFPP10_ALL)) || portnum == 0){
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
@@ -480,7 +480,7 @@ of10_endpoint::handle_queue_stats_request(
 
 		port = of12switch->logical_ports[n].port;
 
-		if ((OFPP_ALL != portnum) && (port->of_port_num != portnum))
+		if ((OFPP10_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 
@@ -995,16 +995,17 @@ of10_endpoint::handle_port_mod(
 		cofctl *ctl,
 		cofmsg_port_mod *msg)
 {
-	uint32_t config, mask, advertise, port_num;
+	uint32_t config, mask, advertise;
+	uint16_t port_num;
 
 	config 		= msg->get_config();
 	mask 		= msg->get_mask();
 	advertise 	= msg->get_advertise();
-	port_num 	= msg->get_port_no();
+	port_num 	= (uint16_t)msg->get_port_no();
 
 	//Check if port_num FLOOD
 	//TODO: Inspect if this is right. Spec does not clearly define if this should be supported or not
-	if( port_num == OFPP_ANY )
+	if( (port_num != OFPP10_ALL) && (port_num > OFPP10_MAX) )
 		throw ePortModBadPort();
 
 	//Drop received
@@ -1097,7 +1098,7 @@ of10_endpoint::handle_queue_get_config_request(
 		if (of12switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
 			continue;
 
-		if ((OFPP_ALL != portnum) && (port->of_port_num != portnum))
+		if ((OFPP10_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 		for(unsigned int i=0; i<port->max_queues; i++){

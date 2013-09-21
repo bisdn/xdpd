@@ -235,7 +235,7 @@ of12_endpoint::handle_port_stats_request(
 	/*
 	 *  send statistics for all ports
 	 */
-	if (OFPP_ANY == port_no){
+	if (OFPP12_ALL == port_no){
 
 		//we check all the positions in case there are empty slots
 		for (unsigned int n = 1; n < of12switch->max_ports; n++){
@@ -466,7 +466,7 @@ of12_endpoint::handle_queue_stats_request(
 	unsigned int portnum = pack->get_queue_stats().get_port_no();
 	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
 
-	if( ((portnum >= of12switch->max_ports) && (portnum != OFPP_ANY)) || portnum == 0){
+	if( ((portnum >= of12switch->max_ports) && (portnum != OFPP12_ALL)) || portnum == 0){
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
@@ -481,7 +481,7 @@ of12_endpoint::handle_queue_stats_request(
 
 		port = of12switch->logical_ports[n].port;
 
-		if ((OFPP_ALL != portnum) && (port->of_port_num != portnum))
+		if ((OFPP12_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 
@@ -554,7 +554,7 @@ of12_endpoint::handle_group_stats_request(
 
 	uint32_t group_id = msg->get_group_stats().get_group_id();
 	
-	if(group_id==OFPG_ALL){
+	if(group_id==OFPG12_ALL){
 		g_msg_all = fwd_module_of1x_get_group_all_stats(sw->dpid, group_id);
 	}
 	else{
@@ -1244,7 +1244,7 @@ of12_endpoint::handle_port_mod(
 
 	//Check if port_num FLOOD
 	//TODO: Inspect if this is right. Spec does not clearly define if this should be supported or not
-	if( port_num == OFPP_ANY )
+	if( port_num == OFPP12_ALL )
 		throw ePortModBadPort(); 
 		
 	//Drop received
@@ -1337,7 +1337,7 @@ of12_endpoint::handle_queue_get_config_request(
 		if (of12switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
 			continue;
 
-		if ((OFPP_ALL != portnum) && (port->of_port_num != portnum))
+		if ((OFPP12_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 		for(unsigned int i=0; i<port->max_queues; i++){

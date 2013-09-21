@@ -9,6 +9,7 @@
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
 #include "../openflow_switch.h"
+#include "../openflow10/openflow10_switch.h"
 #include "of12_endpoint.h"
 
 /**

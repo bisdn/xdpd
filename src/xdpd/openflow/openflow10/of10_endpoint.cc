@@ -1030,12 +1030,17 @@ of10_endpoint::handle_port_mod(
 	if( mask &  OFPPC10_NO_FWD )
 		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC10_NO_FWD) ) )
 			throw ePortModBase();
-#if 0
+
 	//No forward
 	if( mask &  OFPPC10_NO_FLOOD ) // FIXME: add OFPPC10_NO_FLOOD to pipeline
+	{
+		//assert(0);
+#if 0
 		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, !(config & OFPPC10_NO_FWD) ) )
 			throw ePortModBase();
 #endif
+	}
+
 	//No packet in
 	if( mask &  OFPPC10_NO_PACKET_IN )
 		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC10_NO_PACKET_IN) ) )

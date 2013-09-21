@@ -78,13 +78,13 @@ of10_endpoint::handle_features_request(
 
 			uint32_t config = 0;
 			if(!_port->up)
-				config |= OFPPC_PORT_DOWN;
+				config |= OFPPC10_PORT_DOWN;
 			if(_port->drop_received)
-				config |= OFPPC_NO_RECV;
+				config |= OFPPC10_NO_RECV;
 			if(!_port->forward_packets)
-				config |= OFPPC_NO_FWD;
+				config |= OFPPC10_NO_FWD;
 			if(!_port->of_generate_packet_in)
-				config |= OFPPC_NO_PACKET_IN;
+				config |= OFPPC10_NO_PACKET_IN;
 
 			port.set_config(config);
 			port.set_state(_port->state);
@@ -644,10 +644,10 @@ afa_result_t of10_endpoint::notify_port_add(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFPPC_NO_FWD;
-	if(port->drop_received) config |= OFPPC_NO_RECV;
+	if(!port->up) config |= OFPPC10_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= OFPPC10_NO_PACKET_IN;
+	if(!port->forward_packets) config |= OFPPC10_NO_FWD;
+	if(port->drop_received) config |= OFPPC10_NO_RECV;
 
 
 	cofport ofport(OFP12_VERSION);
@@ -674,10 +674,10 @@ afa_result_t of10_endpoint::notify_port_delete(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFPPC_NO_FWD;
-	if(port->drop_received) config |= OFPPC_NO_RECV;
+	if(!port->up) config |= OFPPC10_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= OFPPC10_NO_PACKET_IN;
+	if(!port->forward_packets) config |= OFPPC10_NO_FWD;
+	if(port->drop_received) config |= OFPPC10_NO_RECV;
 
 	cofport ofport(OFP12_VERSION);
 	ofport.set_port_no(port->of_port_num);
@@ -703,10 +703,10 @@ afa_result_t of10_endpoint::notify_port_status_changed(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFPPC_NO_FWD;
-	if(port->drop_received) config |= OFPPC_NO_RECV;
+	if(!port->up) config |= OFPPC10_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= OFPPC10_NO_PACKET_IN;
+	if(!port->forward_packets) config |= OFPPC10_NO_FWD;
+	if(port->drop_received) config |= OFPPC10_NO_RECV;
 
 	//Notify OF controller
 	cofport ofport(OFP12_VERSION);
@@ -1023,22 +1023,22 @@ of10_endpoint::handle_port_mod(
 
 
 	//Drop received
-	if( mask &  OFPPC_NO_RECV )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC_NO_RECV ) )
+	if( mask &  OFPPC10_NO_RECV )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC10_NO_RECV ) )
 			throw ePortModBase();
 	//No forward
-	if( mask &  OFPPC_NO_FWD )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) )
+	if( mask &  OFPPC10_NO_FWD )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC10_NO_FWD) ) )
 			throw ePortModBase();
 #if 0
 	//No forward
-	if( mask &  OFPPC_NO_FLOOD ) // FIXME: add OFPPC_NO_FLOOD to pipeline
-		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) )
+	if( mask &  OFPPC10_NO_FLOOD ) // FIXME: add OFPPC10_NO_FLOOD to pipeline
+		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, !(config & OFPPC10_NO_FWD) ) )
 			throw ePortModBase();
 #endif
 	//No packet in
-	if( mask &  OFPPC_NO_PACKET_IN )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC_NO_PACKET_IN) ) )
+	if( mask &  OFPPC10_NO_PACKET_IN )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC10_NO_PACKET_IN) ) )
 			throw ePortModBase();
 
 	//Advertised
@@ -1047,8 +1047,8 @@ of10_endpoint::handle_port_mod(
 			throw ePortModBase();
 
 	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
-	if( mask &  OFPPC_PORT_DOWN ){
-		if( (config & OFPPC_PORT_DOWN)  ){
+	if( mask &  OFPPC10_PORT_DOWN ){
+		if( (config & OFPPC10_PORT_DOWN)  ){
 			//Disable port
 			if( AFA_FAILURE == fwd_module_disable_port_by_num(sw->dpid, port_num) ){
 				throw ePortModBase();

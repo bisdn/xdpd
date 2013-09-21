@@ -1008,6 +1008,20 @@ of10_endpoint::handle_port_mod(
 	if( (port_num != OFPP10_ALL) && (port_num > OFPP10_MAX) )
 		throw ePortModBadPort();
 
+	// check for existence of port with id port_num
+	switch_port_t* port = (switch_port_t*)0;
+	bool port_found = false;
+	for(unsigned int n = 1; n < of12switch->max_ports; n++){
+		port = of12switch->logical_ports[n].port;
+		if ((0 != port) && (port->of_port_num == (uint32_t)port_num)) {
+			port_found = true;
+			break;
+		}
+	}
+	if (not port_found)
+		throw eBadRequestBadPort();
+
+
 	//Drop received
 	if( mask &  OFPPC_NO_RECV )
 		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & OFPPC_NO_RECV ) )
@@ -1016,6 +1030,12 @@ of10_endpoint::handle_port_mod(
 	if( mask &  OFPPC_NO_FWD )
 		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) )
 			throw ePortModBase();
+#if 0
+	//No forward
+	if( mask &  OFPPC_NO_FLOOD ) // FIXME: add OFPPC_NO_FLOOD to pipeline
+		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, !(config & OFPPC_NO_FWD) ) )
+			throw ePortModBase();
+#endif
 	//No packet in
 	if( mask &  OFPPC_NO_PACKET_IN )
 		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFPPC_NO_PACKET_IN) ) )

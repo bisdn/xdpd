@@ -42,7 +42,7 @@ void plugin_manager::pre_init(){
 
 rofl_result_t plugin_manager::init(int argc, char** argv){
 
-	ROFL_INFO("Initializing Plugin Manager\n");
+	ROFL_DEBUG("Initializing Plugin Manager\n");
 
 	//Call register
 	plugin_manager::pre_init();

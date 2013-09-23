@@ -25,7 +25,7 @@ namespace xdpd {
 class plugin {
 	
 public:
-	virtual void init(int args, char** argv)=0;
+	virtual void init(int argc, char** argv)=0;
 	
 	virtual std::string get_name(void)=0;
 };

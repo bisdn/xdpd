@@ -22,9 +22,7 @@ class xdpd_cli : public rofl::ccli, public plugin
 public:
 	xdpd_cli(rofl::caddress addr = rofl::caddress(AF_INET, "127.0.0.1", 6620));
 
-	virtual void init(int argc, char** argv){
-		//FIXME TODO
-	}
+	virtual void init(int argc, char** argv);
 
 	virtual std::string get_name(){
 		return std::string("xdpd_cli");

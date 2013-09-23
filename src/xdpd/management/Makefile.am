@@ -19,8 +19,8 @@ libxmgmt_la_LIBADD += $(CLILIB)
 endif
 	
 if ENABLE_CONFIG_QMF
-SUBDIRS += adapter/qmf
-QMFLIB = adapter/qmf/libxdpd_config_qmf.la
+SUBDIRS += plugins/qmf
+QMFLIB = plugins/qmf/libxdpd_config_qmf.la
 libxmgmt_la_LIBADD += $(QMFLIB)
 endif
 	

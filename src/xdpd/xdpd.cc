@@ -10,7 +10,7 @@
 #include "management/plugins/cli/xdpd_cli.h"
 
 #ifdef HAVE_CONFIG_QMF
-#include "management/adapter/qmf/qmfagent.h"
+#include "management/plugins/qmf/qmfagent.h"
 #endif
 
 using namespace rofl;

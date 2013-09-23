@@ -181,7 +181,7 @@ AM_COND_IF(ENABLE_CONFIG_CLI,[AC_CONFIG_FILES([
 ])])
 
 AM_COND_IF(ENABLE_CONFIG_QMF,[AC_CONFIG_FILES([
-	src/xdpd/management/adapter/qmf/Makefile
+	src/xdpd/management/plugins/qmf/Makefile
 ])])
 
 AC_CONFIG_FILES([

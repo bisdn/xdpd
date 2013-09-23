@@ -2,6 +2,9 @@
 #include <rofl/common/utils/c_logger.h>
 
 /* Plugin header inclusion. THEY MUST BE CONDITIONALLY INCLUDED ALWAYS*/
+#ifdef WITH_CONFIG
+	#include "plugins/config/config.h"
+#endif
 #ifdef WITH_CLI
 	#include "plugins/cli/xdpd_cli.h"
 #endif
@@ -26,6 +29,11 @@ std::vector<plugin*> plugin_manager::plugins;
 //Register compiled plugins. ALWAYS conditionally!
 void plugin_manager::pre_init(){
 
+#ifdef WITH_CONFIG
+	//Register CONFIG 
+	register_plugin(new config());	
+#endif
+	
 #ifdef WITH_CLI
 	//Register CLI
 	register_plugin(new xdpd_cli());	

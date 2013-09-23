@@ -10,8 +10,7 @@ AC_ARG_WITH(plugins,
 	PLUGINS=$withval
  ],[
 	#Use default
-	PLUGINS="cli"
-	
+	PLUGINS="config"
 ])
 
 #Check if plugins do exist
@@ -60,6 +59,12 @@ AC_MSG_RESULT($PLUGINS)
 #
 # M4 
 #
+
+#CONFIG
+if ! test -z "$with_config" ; then
+	m4_include([config/plugin_config.m4])
+fi
+
 
 #QMF
 if ! test -z "$with_qmf" ; then

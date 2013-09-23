@@ -1208,11 +1208,11 @@ void of12_translation_utils::of12_map_reverse_bucket_list(
 	
 	for(of1x_bucket_t *bu_it=bucket_list->head;bu_it;bu_it=bu_it->next){
 		//cofbucket single_bucket;
-		cofaclist ac_list;
+		cofaclist ac_list(OFP12_VERSION);
 		for (of1x_packet_action_t *action_it = bu_it->actions->head; action_it != NULL; action_it = action_it->next) {
 			if (OF1X_AT_NO_ACTION == action_it->type)
 				continue;
-			cofaction action;
+			cofaction action(OFP12_VERSION);
 			of12_map_reverse_flow_entry_action(action_it, action);
 			//push this action into the list
 			ac_list.next() = action;

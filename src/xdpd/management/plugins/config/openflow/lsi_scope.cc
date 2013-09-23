@@ -1,4 +1,5 @@
 #include "lsi_scope.h"
+#include <vector>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
@@ -58,6 +59,8 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	unsigned int reconnect_time = 5;
 	
 	std::string bind_address = "0.0.0.0:6634";
+
+	std::vector<std::string> ports;
 
 	//Recover dpid and try to parse
 	dpid = strtoull(setting[LSI_DPID].c_str(),NULL,0);
@@ -138,9 +141,32 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	
 
 	//Parse ports	
+	if(!setting.exists(LSI_PORTS) || !setting[LSI_PORTS].isList()){
+ 		ROFL_ERR("Missing or unable to parse port attachment list.\n");
+		throw eConfParseError(); 	
+	
+	}
+
+
+
+	for(int i=0; i<setting[LSI_PORTS].getLength(); ++i){
+		std::string port = setting[LSI_PORTS][i];
+		if(port != "")
+			ports.push_back(port);	
+	}	
+
+	if(ports.size() < 2){
+ 		ROFL_ERR("An LSI must have at least two ports attached.\n");
+		throw eConfParseError(); 	
+	
+	}
 
 	//Execute
 	if(!dry_run){
 		//TODO
+		
+		//Create switch
+	
+		//Attach ports
 	}
 }

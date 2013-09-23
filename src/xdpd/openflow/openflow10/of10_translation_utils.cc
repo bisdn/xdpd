@@ -671,7 +671,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 		for (of1x_packet_action_t *of1x_action = inst->apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
 				continue;
-			cofaction action;
+			cofaction action(OFP10_VERSION);
 			of1x_map_reverse_flow_entry_action(of1x_action, action);
 			instruction.actions.next() = action;
 		}
@@ -684,7 +684,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 		for (unsigned int i = 0; i < OF1X_IT_GOTO_TABLE; i++) {
 			if (OF1X_AT_NO_ACTION == inst->write_actions->write_actions[i].type)
 				continue;
-			cofaction action;
+			cofaction action(OFP10_VERSION);
 			of1x_map_reverse_flow_entry_action(&(inst->write_actions->write_actions[i]), action);
 			instruction.actions.next() = action;
 		}

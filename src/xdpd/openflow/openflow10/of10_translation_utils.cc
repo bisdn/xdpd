@@ -667,7 +667,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 {
 	switch (inst->type) {
 	case OF1X_IT_APPLY_ACTIONS: {
-		instruction = cofinst_apply_actions();
+		instruction = cofinst_apply_actions(OFP10_VERSION);
 		for (of1x_packet_action_t *of1x_action = inst->apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
 				continue;
@@ -677,10 +677,10 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 		}
 	} break;
 	case OF1X_IT_CLEAR_ACTIONS: {
-		instruction = cofinst_clear_actions();
+		instruction = cofinst_clear_actions(OFP10_VERSION);
 	} break;
 	case OF1X_IT_WRITE_ACTIONS: {
-		instruction = cofinst_write_actions();
+		instruction = cofinst_write_actions(OFP10_VERSION);
 		for (unsigned int i = 0; i < OF1X_IT_GOTO_TABLE; i++) {
 			if (OF1X_AT_NO_ACTION == inst->write_actions->write_actions[i].type)
 				continue;
@@ -694,7 +694,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 		// TODO: both are marked TODO in of1x_pipeline
 	} break;
 	case OF1X_IT_GOTO_TABLE: {
-		instruction = cofinst_goto_table(inst->go_to_table);
+		instruction = cofinst_goto_table(OFP10_VERSION, inst->go_to_table);
 	} break;
 	default: {
 		// do nothing

@@ -1240,7 +1240,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_instructions(
 	for (unsigned int i = 0; i < (sizeof(group->instructions) / sizeof(of1x_instruction_t)); i++) {
 		if (OF1X_IT_NO_INSTRUCTION == group->instructions[i].type)
 			continue;
-		cofinst instruction;
+		cofinst instruction(OFP12_VERSION);
 		of12_map_reverse_flow_entry_instruction(&(group->instructions[i]), instruction);
 		instructions.next() = instruction;
 	}

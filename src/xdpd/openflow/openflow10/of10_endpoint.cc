@@ -618,7 +618,7 @@ of10_endpoint::process_packet_in(
 				reason,
 				table_id,
 				/*cookie=*/0,
-				/*in_port=*/0, // OF1.0 only
+				in_port, // OF1.0 only
 				match,
 				pkt_buffer, buf_len);
 

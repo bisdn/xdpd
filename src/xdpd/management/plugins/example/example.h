@@ -17,7 +17,7 @@ class example:public plugin {
 	
 public:
 	virtual void init(int args, char** argv){
-
+		//DO something
 	};
 	
 	virtual std::string get_name(void){

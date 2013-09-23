@@ -1217,7 +1217,8 @@ void of12_translation_utils::of12_map_reverse_bucket_list(
 			//push this action into the list
 			ac_list.next() = action;
 		}
-		cofbucket &single_bucket = of_buckets.next();
+		of_buckets.next() = cofbucket(OFP12_VERSION);
+		cofbucket &single_bucket = of_buckets.back();
 		// insert action list in the bucket
 		single_bucket.actions=ac_list;
 		single_bucket.watch_port = bu_it->port;

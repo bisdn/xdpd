@@ -160,9 +160,6 @@ datapacket_t* ioport_mmapv2::read(){
 		return NULL;
 
 next:
-	//Empty reading pipe
-	empty_pipe();
-
 	//Retrieve a packet	
  	hdr = rx->read_packet();
 
@@ -300,6 +297,9 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			break;
 		}
 	
+		//Empty reading pipe
+		empty_pipe();
+
 		pkt_x86 = (datapacketx86*) pkt->platform_state;
 
 		if(unlikely(pkt_x86->get_buffer_length() > mtu)){

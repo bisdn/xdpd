@@ -9,6 +9,10 @@
 #include "management/port_manager.h"
 #include "management/plugins/cli/xdpd_cli.h"
 
+#ifdef HAVE_CONFIG_QMF
+#include "management/plugins/qmf/qmfagent.h"
+#endif
+
 using namespace rofl;
 using namespace xdpd;
 
@@ -55,6 +59,12 @@ int main(int argc, char** argv){
 			coption(true, REQUIRED_ARGUMENT, 'p', "port", "cli listen port",
 					std::string("1234")));
 
+#ifdef HAVE_CONFIG_QMF
+	cunixenv::getInstance().add_option(
+			coption(true, REQUIRED_ARGUMENT, 'q', "qmfaddr", "qmf broker address",
+					std::string("127.0.0.1")));
+#endif
+
 	/* update defaults */
 	cunixenv::getInstance().update_default_option("logfile", XDPD_LOG_FILE);
 
@@ -84,7 +94,19 @@ int main(int argc, char** argv){
 	xdpd_cli* cli = new xdpd_cli(
 			caddress(AF_INET, cunixenv::getInstance().get_arg('a').c_str(),
 					atoi(cunixenv::getInstance().get_arg('p').c_str())));
-	cli->read_config_file(cunixenv::getInstance().get_arg("config-file"));
+	try {
+		cli->read_config_file(cunixenv::getInstance().get_arg("config-file"));
+	} catch (std::runtime_error& e) {
+	} catch (rofl::eCliConfigFileNotFound& e) {
+	}
+
+#ifdef HAVE_CONFIG_QMF
+	try {
+		std::string qmf_broker("127.0.0.1");
+		qmf_broker = cunixenv::getInstance().get_arg('q');
+		qmfagent::get_instance(qmf_broker);
+	} catch (std::runtime_error& e) {}
+#endif
 
 	//ciosrv run. Only will stop in Ctrl+C
 	ciosrv::run();

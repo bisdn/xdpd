@@ -54,15 +54,15 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name) t
 
 void port_manager::detach_port_from_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
 
-	//FIXME implement
-	throw eOfSmGeneralError();
+	if (fwd_module_detach_port_from_switch(dpid,port_name.c_str()) != AFA_SUCCESS)
+		throw eOfSmGeneralError();
 	
 }
 
 void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int port_num) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
 
-	//FIXME implement
-	throw eOfSmGeneralError();
+	if (fwd_module_detach_port_from_switch_at_port_num(dpid,port_num) != AFA_SUCCESS)
+		throw eOfSmGeneralError();
 }
 
 std::list<std::string> port_manager::list_available_port_names() throw (eOfSmGeneralError){

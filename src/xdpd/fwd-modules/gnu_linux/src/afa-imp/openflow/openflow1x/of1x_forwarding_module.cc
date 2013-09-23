@@ -255,8 +255,13 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		}
 	}else{
 		//Retrieve a free buffer	
-		pkt = bufferpool::get_free_buffer();
-		
+		pkt = bufferpool::get_free_buffer_nonblocking();
+
+		if(!pkt){
+			//No available buffers
+			return AFA_FAILURE; /* TODO: add specific error */
+		}	
+	
 		//Initialize the packet and copy
 		((datapacketx86*)pkt->platform_state)->init(buffer, buffer_size, lsw, in_port, 0, true);
 	}

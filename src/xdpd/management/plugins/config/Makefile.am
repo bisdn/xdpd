@@ -1,13 +1,14 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS=scopes
+SUBDIRS=openflow
 
 noinst_LTLIBRARIES = libxdpd_mgmt_config.la
 
 libxdpd_mgmt_config_la_SOURCES = \
 	scope.cc \
+	root_scope.cc \
 	config.cc 
 
 libxdpd_mgmt_config_la_LIBADD = \
-	scopes/libxdpd_mgmt_config_scopes.la\
+	openflow/libxdpd_mgmt_config_openflow.la\
 	-lconfig++

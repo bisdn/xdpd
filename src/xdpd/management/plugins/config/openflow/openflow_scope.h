@@ -30,7 +30,6 @@ public:
 protected:
 	
 	virtual void pre_validate(libconfig::Setting& setting, bool dry_run);
-	virtual void post_validate(libconfig::Setting& setting, bool dry_run);
 };
 
 }// namespace xdpd 

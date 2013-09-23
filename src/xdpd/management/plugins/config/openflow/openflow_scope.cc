@@ -32,13 +32,3 @@ void of_lsis_scope::pre_validate(libconfig::Setting& setting, bool dry_run){
 	}
 		
 }
-
-void of_lsis_scope::post_validate(libconfig::Setting& setting, bool dry_run){
-	//Destroy all discovered subscopes. Since in each iteration they will (avoid duplications)
-	std::map<std::string, scope*>::iterator scope_iter;
-	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter)
-		delete scope_iter->second;
-	
-	sub_scopes.clear();
-		
-}

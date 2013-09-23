@@ -17,7 +17,7 @@
 
 namespace xdpd {
 
-class config : public plugin, public scope {
+class config : public plugin {
 	
 public:
 	config();
@@ -29,6 +29,9 @@ public:
 	virtual std::string get_name(void){
 		return std::string("config");
 	};
+
+private:
+	void parse_config(libconfig::Config* cfg);
 };
 
 }// namespace xdpd 

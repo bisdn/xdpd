@@ -30,7 +30,10 @@ class scope {
 public:
 	scope(std::string scope_name, bool mandatory=false);
 	virtual ~scope();
-		
+	
+	void execute(libconfig::Setting& setting, bool dry_run=false);
+	void execute(libconfig::Config& setting, bool dry_run=false);
+
 protected:
 	std::string name;
 	bool mandatory;
@@ -41,9 +44,6 @@ protected:
 	void register_subscope(std::string name, scope* sc);
 	void register_parameter(std::string name, bool mandatory=false);
 	
-	void execute(libconfig::Setting& setting, bool dry_run=false);
-	void execute(libconfig::Config& setting, bool dry_run=false);
-
 	//Allow actions before and after parameter and scope validation	
 	virtual void pre_validate(libconfig::Config& config, bool dry_run){};
 	virtual void post_validate(libconfig::Config& config, bool dry_run){};

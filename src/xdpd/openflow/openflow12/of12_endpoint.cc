@@ -352,7 +352,7 @@ of12_endpoint::handle_flow_stats_request(
 		cofmatch match;
 		of12_translation_utils::of12_map_reverse_flow_entry_matches(elem->matches, match);
 
-		cofinlist instructions;
+		cofinlist instructions(ctl->get_version());
 		of12_translation_utils::of12_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
 
@@ -623,7 +623,7 @@ of12_endpoint::handle_group_desc_stats_request(
 	}
 	
 	for(group_it=group_table.head;group_it;group_it=group_it->next){
-		cofbclist bclist;
+		cofbclist bclist(ctl->get_version());
 		of12_translation_utils::of12_map_reverse_bucket_list(bclist,group_it->bc_list);
 		
 		group_desc_stats.push_back(

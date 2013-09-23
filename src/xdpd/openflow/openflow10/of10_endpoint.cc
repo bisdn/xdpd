@@ -351,9 +351,11 @@ of10_endpoint::handle_flow_stats_request(
 		cofmatch match;
 		of10_translation_utils::of1x_map_reverse_flow_entry_matches(elem->matches, match);
 
-		cofinlist instructions;
+		cofinlist instructions(ctl->get_version());
 		of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
+		if (0 == instructions.size())
+			continue;
 
 		flow_stats.push_back(
 				cofflow_stats_reply(
@@ -368,7 +370,7 @@ of10_endpoint::handle_flow_stats_request(
 						elem->packet_count,
 						elem->byte_count,
 						match,
-						instructions));
+						instructions[0].actions));
 	}
 
 

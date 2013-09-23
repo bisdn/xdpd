@@ -28,6 +28,7 @@ public:
 	virtual void init(int argc, char** argv)=0;
 	
 	virtual std::string get_name(void)=0;
+	virtual ~plugin(){}; 
 };
 
 

@@ -59,6 +59,13 @@ rofl_result_t plugin_manager::init(int argc, char** argv){
 		ROFL_INFO("Initializing plugin [%s]...\n", (*it)->get_name().c_str());
 		(*it)->init(argc,argv);
 	}
+
+	//Destroy all plugins
+	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
+		delete *it;
+	}
+	plugins.clear();
+	
 	return ROFL_SUCCESS;
 }
 	

@@ -1,10 +1,6 @@
 ##Management plugins system is in charge of compiling
 ##management plugins defined at configure time
 
-#Just for auto-reconf to build Makefile.am
-#m4_include([config/plugins_list.m4])
-
-
 AC_MSG_CHECKING(the plugins to be compiled...)
 
 AC_ARG_WITH(plugins,
@@ -56,7 +52,8 @@ done
 #Define subst
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(PLUGIN_DIRS)
-AC_DEFINE(PLUGINS, $PLUGINS)
+#AC_DEFINE(PLUGINS, $PLUGINS)
+#AC_SUBST(PLUGINS, $PLUGINS)
 AC_MSG_RESULT($PLUGINS)
 
 

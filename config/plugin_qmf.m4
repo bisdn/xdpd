@@ -1,3 +1,5 @@
+#Define ALWAYS WITH_$PLUGIN
+AC_DEFINE(WITH_QMF)
 
 #TODO add here LIB checks
 

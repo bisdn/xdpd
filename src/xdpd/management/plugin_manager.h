@@ -41,6 +41,7 @@ public:
 	static void register_plugin(plugin* p);
 
 private:
+	static void pre_init(void);
 	static std::vector<plugin*> plugins;
 };
 

@@ -10,17 +10,25 @@
  */
 
 #include <rofl/common/config/ccli.h>
+#include "../../plugin_manager.h"
 
 #ifndef XDPD_CLI_H_
 #define XDPD_CLI_H_
 
-
-namespace rofl
+namespace xdpd 
 {
-class xdpd_cli : public ccli
+class xdpd_cli : public rofl::ccli, public plugin
 {
 public:
-	xdpd_cli(caddress addr = caddress(AF_INET, "127.0.0.1", 6620));
+	xdpd_cli(rofl::caddress addr = rofl::caddress(AF_INET, "127.0.0.1", 6620));
+
+	virtual void init(int argc, char** argv){
+		//FIXME TODO
+	}
+
+	virtual std::string get_name(){
+		return std::string("xdpd_cli");
+	}
 
 	virtual
 	~xdpd_cli();

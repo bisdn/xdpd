@@ -26,6 +26,7 @@ enum mode_config {
 };
 
 using namespace rofl;
+using namespace xdpd;
 
 
 class cli_print_helper {

@@ -46,24 +46,6 @@ int main(int argc, char** argv){
 	memset(s_dbg, 0, sizeof(s_dbg));
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
 
-#if 0
-	cunixenv::getInstance().add_option(coption(true,REQUIRED_ARGUMENT,'d',"debug","debug level", std::string(s_dbg)));
-
-	cunixenv::getInstance().add_option(
-			coption(true, REQUIRED_ARGUMENT, 'a', "address", "cli listen address",
-					std::string("127.0.0.1")));
-
-	cunixenv::getInstance().add_option(
-			coption(true, REQUIRED_ARGUMENT, 'p', "port", "cli listen port",
-					std::string("1234")));
-
-#ifdef HAVE_CONFIG_QMF
-	cunixenv::getInstance().add_option(
-			coption(true, REQUIRED_ARGUMENT, 'q', "qmfaddr", "qmf broker address",
-					std::string("127.0.0.1")));
-#endif
-#endif
-
 	/* update defaults */
 	cunixenv::getInstance().update_default_option("logfile", XDPD_LOG_FILE);
 
@@ -88,34 +70,6 @@ int main(int argc, char** argv){
 
 	//Init the ciosrv.
 	ciosrv::init();
-
-#if 0
-	//Parse config file
-	xdpd_cli* cli = new xdpd_cli(
-			caddress(AF_INET, cunixenv::getInstance().get_arg('a').c_str(),
-					atoi(cunixenv::getInstance().get_arg('p').c_str())));
-	try {
-		cli->read_config_file(cunixenv::getInstance().get_arg("config-file"));
-	} catch (std::runtime_error& e) {
-	} catch (rofl::eCliConfigFileNotFound& e) {
-	}
-
-#ifdef HAVE_CONFIG_QMF
-	try {
-		std::string qmf_broker("127.0.0.1");
-		qmf_broker = cunixenv::getInstance().get_arg('q');
-		qmfagent::get_instance(qmf_broker);
-	} catch (std::runtime_error& e) {}
-#endif
-
-	try {
-		//Add a link bwetween dp0 and dp1
-		std::string port1, port2;
-		port_manager::connect_switches(1, port1, 2, port2);
-	} catch (...) {
-		ROFL_ERR("Could not create virtual link.\n");	
-	}
-#endif
 
 	//Load plugins
 	plugin_manager::init(argc, argv);

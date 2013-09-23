@@ -17,10 +17,6 @@
 
 namespace xdpd {
 
-class eConfParamNotFound: public rofl::cerror {};
-class eConfFileNotFound: public rofl::cerror {};
-class eConfParseError: public rofl::cerror {};
-
 class config : public plugin, public scope {
 	
 public:

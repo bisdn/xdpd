@@ -16,6 +16,10 @@
 
 namespace xdpd {
 
+class eConfParamNotFound: public rofl::cerror {};
+class eConfFileNotFound: public rofl::cerror {};
+class eConfParseError: public rofl::cerror {};
+
 class eConfDuplicatedScope: public rofl::cerror {};
 class eConfDuplicatedParameter: public rofl::cerror {};
 class eConfMandatoryParameterNotPresent: public rofl::cerror {};
@@ -41,11 +45,11 @@ protected:
 	void execute(libconfig::Config& setting, bool dry_run=false);
 
 	//Allow actions before and after parameter and scope validation	
-	virtual void pre_execute(libconfig::Config& config, bool dry_run){};
-	virtual void post_execute(libconfig::Config& config, bool dry_run){};
+	virtual void pre_validate(libconfig::Config& config, bool dry_run){};
+	virtual void post_validate(libconfig::Config& config, bool dry_run){};
 	
-	virtual void pre_execute(libconfig::Setting& setting, bool dry_run){};
-	virtual void post_execute(libconfig::Setting& setting, bool dry_run){};
+	virtual void pre_validate(libconfig::Setting& setting, bool dry_run){};
+	virtual void post_validate(libconfig::Setting& setting, bool dry_run){};
 
 };
 

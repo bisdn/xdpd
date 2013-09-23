@@ -18,28 +18,28 @@ scope::~scope(){
 		
 }
 		
-void scope::register_subscope(std::string name, scope* sc){
+void scope::register_subscope(std::string _name, scope* sc){
 
-	if(sub_scopes.find(name) != sub_scopes.end())
+	if(sub_scopes.find(_name) != sub_scopes.end())
 		throw eConfDuplicatedScope();
 	
-	sub_scopes[name] = sc;
+	sub_scopes[_name] = sc;
 }
 
-void scope::register_parameter(std::string name, bool mandatory){
+void scope::register_parameter(std::string _name, bool mandatory){
 
-	if(parameters.find(name) != parameters.end())
+	if(parameters.find(_name) != parameters.end())
 		throw eConfDuplicatedParameter();
 	
 
-	parameters[name] = mandatory;
+	parameters[_name] = mandatory;
 }
 
 
 void scope::execute(libconfig::Setting& setting, bool dry_run){
 	
 	//Call pre-hook
-	pre_execute(setting, dry_run);
+	pre_validate(setting, dry_run);
 
 	//Go through parameters and validate if mandatory
 	std::map<std::string, bool>::iterator param_iter;
@@ -65,13 +65,13 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 	}
 
 	//Call post-hook
-	post_execute(setting, dry_run);
+	post_validate(setting, dry_run);
 }
 
 void scope::execute(libconfig::Config& config, bool dry_run){
 
 	//Call pre-hook
-	pre_execute(config, dry_run);
+	pre_validate(config, dry_run);
 	
 	//Go through parameters and validate if mandatory
 	std::map<std::string, bool>::iterator param_iter;
@@ -98,6 +98,6 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 
 	
 	//Call post-hook
-	post_execute(config, dry_run);
+	post_validate(config, dry_run);
 }
 

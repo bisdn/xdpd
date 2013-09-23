@@ -19,6 +19,7 @@ public:
 	lsi_scope(std::string scope_name, bool mandatory=false);
 		
 protected:
+	virtual void post_validate(libconfig::Setting& setting, bool dry_run);
 
 };
 

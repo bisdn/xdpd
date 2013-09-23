@@ -25,12 +25,12 @@ protected:
 class of_lsis_scope:public scope {
 	
 public:
-	of_lsis_scope(std::string scope_name="logical_switches", bool mandatory=true);
+	of_lsis_scope(std::string scope_name="logical-switches", bool mandatory=true);
 		
 protected:
 	
-	virtual void pre_execute(libconfig::Setting& setting, bool dry_run);
-	virtual void post_execute(libconfig::Setting& setting, bool dry_run);
+	virtual void pre_validate(libconfig::Setting& setting, bool dry_run);
+	virtual void post_validate(libconfig::Setting& setting, bool dry_run);
 };
 
 }// namespace xdpd 

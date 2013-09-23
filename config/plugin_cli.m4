@@ -1,5 +1,4 @@
 #Define ALWAYS WITH_MGMT_$PLUGIN
-echo "CLIIII"
 AC_DEFINE(WITH_MGMT_CLI)
 
 #LIB checks

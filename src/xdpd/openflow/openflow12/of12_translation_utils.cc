@@ -78,7 +78,8 @@ of12_translation_utils::of12_map_flow_entry(
 			try{
 				of12_map_flow_entry_actions(ctl, sw, (*it).actions, apply_actions, /*of1x_write_actions_t*/0);
 			}catch(...){
-				of1x_destroy_flow_entry(entry);	
+				of1x_destroy_flow_entry(entry);
+				of1x_destroy_action_group(apply_actions);
 				throw eFlowModUnknown();
 			}
 

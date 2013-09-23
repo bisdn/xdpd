@@ -1,25 +1,51 @@
 #include "config.h"
 #include <rofl/platform/unix/cunixenv.h>
+#include <rofl/common/utils/c_logger.h>
+
+//sub scopes
+#include "scopes/openflow_scope.h" 
 
 using namespace xdpd;
 using namespace rofl;
 using namespace libconfig;
 
+
+config::config():scope("Root"){
+	
+	//Interfaces subhierarchy
+	
+	//Openflow subhierarchy
+	register_subscope("openflow", new openflow_scope());	
+}
+
+config::~config(){
+	//Remove all objects
+}
+
 void config::init(int args, char** argv){
-
-	//DO something
-	std::cerr<<"Initalizing.. config"<<std::endl;
 	Config cfg;
+	std::string conf_file;
 
-	//Read the file. If there is an error, report it and exit.
+	if(!cunixenv::getInstance().is_arg_set("config-file")){
+		ROFL_ERR("No configuration file specified either via -c or --config-file\n");	
+		throw eConfParamNotFound();
+	}
+
 	try{
-		cfg.readFile(cunixenv::getInstance().get_arg("config-file").c_str());
+		conf_file= cunixenv::getInstance().get_arg("config-file").c_str();
+		cfg.readFile(conf_file.c_str());
 	}catch(const FileIOException &fioex){
-		std::cerr << "I/O error while reading file." << std::endl;
+		ROFL_ERR("Config file %s not found. Aborting...\n",conf_file.c_str());	
+		throw eConfFileNotFound();
 		throw fioex;
 	}catch(const ParseException &pex){
-		std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-		<< " - " << pex.getError() << std::endl;
-		throw pex;
+		ROFL_ERR("Error while parsing file %s at line: %u \nAborting...\n",conf_file.c_str(),pex.getLine());
+		throw eConfParseError();
 	}
+	
+	//Dry run
+	execute(cfg,true);
+
+	//Execute
+	execute(cfg);
 }

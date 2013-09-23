@@ -2,8 +2,10 @@
 #define CONFIG_PLUGIN_H 
 
 #include <iostream>
-#include "../../plugin_manager.h"
 #include <libconfig.h++> 
+#include <rofl/common/cerror.h>
+#include "../../plugin_manager.h"
+#include "scope.h"
 
 /**
 * @file config_plugin.h
@@ -15,9 +17,17 @@
 
 namespace xdpd {
 
-class config:public plugin {
+class eConfParamNotFound: public rofl::cerror {};
+class eConfFileNotFound: public rofl::cerror {};
+class eConfParseError: public rofl::cerror {};
+
+class config : public plugin, public scope {
 	
 public:
+	config();
+	virtual ~config();
+		
+	
 	virtual void init(int args, char** argv);
 	
 	virtual std::string get_name(void){

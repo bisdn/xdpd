@@ -1,5 +1,6 @@
-#Define ALWAYS WITH_$PLUGIN
-AC_DEFINE(WITH_PLUGIN_NAME)
+#Define ALWAYS WITH_MGMT_$PLUGIN
+AM_CONDITIONAL([WITH_MGMT_PLUGIN_NAME], true)
+AC_DEFINE(WITH_MGMT_PLUGIN_NAME)
 
 #LIB checks e.g.
 #AC_CHECK_LIB(cli, cli_telnet_protocol,,[AC_MSG_ERROR([cli library not found])]) 

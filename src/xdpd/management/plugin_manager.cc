@@ -2,14 +2,14 @@
 #include <rofl/common/utils/c_logger.h>
 
 /* Plugin header inclusion. THEY MUST BE CONDITIONALLY INCLUDED ALWAYS*/
-#ifdef WITH_CONFIG
+#ifdef WITH_MGMT_CONFIG
 	#include "plugins/config/config.h"
 #endif
-#ifdef WITH_CLI
+#ifdef WITH_MGMT_CLI
 	#include "plugins/cli/xdpd_cli.h"
 #endif
 
-#ifdef WITH_QMF
+#ifdef WITH_MGMT_QMF
 	#include "plugins/cli/qmfagent.h"
 #endif
 //Add more here [+]...
@@ -29,17 +29,17 @@ std::vector<plugin*> plugin_manager::plugins;
 //Register compiled plugins. ALWAYS conditionally!
 void plugin_manager::pre_init(){
 
-#ifdef WITH_CONFIG
+#ifdef WITH_MGMT_CONFIG
 	//Register CONFIG 
 	register_plugin(new config());	
 #endif
 	
-#ifdef WITH_CLI
+#ifdef WITH_MGMT_CLI
 	//Register CLI
 	register_plugin(new xdpd_cli());	
 #endif
 	
-#ifdef WITH_QMF
+#ifdef WITH_MGMT_QMF
 	//Register QMF
 	register_plugin(new qmf());	
 #endif

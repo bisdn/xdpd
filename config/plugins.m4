@@ -45,7 +45,7 @@ for PLUGIN in $PLUGINS; do
 	PLUGIN_DIRS="plugins/$PLUGIN"
 	
 	#Set flag
-	eval with_$PLUGIN="yes"
+	eval with_mgmt_$PLUGIN="yes"
 done
 
 #Define subst
@@ -57,22 +57,18 @@ AC_MSG_RESULT($PLUGINS)
 
 
 #
-# M4 
+# Include M4 plugin scripts conditionally
 #
 
 #CONFIG
-if ! test -z "$with_config" ; then
-	m4_include([config/plugin_config.m4])
-fi
-
+AM_CONDITIONAL(WITH_MGMT_CONFIG, test "$with_mgmt_config" = yes)
+AM_COND_IF(WITH_MGMT_CONFIG, [m4_include([config/plugin_config.m4])],[])
 
 #QMF
-if ! test -z "$with_qmf" ; then
-	m4_include([config/plugin_qmf.m4])
-fi
+AM_CONDITIONAL(WITH_MGMT_QMF, test "$with_mgmt_qmf" = yes)
+AM_COND_IF(WITH_MGMT_QMF, [m4_include([config/plugin_qmf.m4])],[])
 
 #CLI
-if ! test -z "$with_cli" ; then
-	m4_include([config/plugin_cli.m4])
-fi
+AM_CONDITIONAL(WITH_MGMT_CLI, test "$with_mgmt_cli" = yes)
+AM_COND_IF(WITH_MGMT_CLI, [m4_include([config/plugin_cli.m4])],[])
 

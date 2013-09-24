@@ -22,9 +22,18 @@ qmfagent::qmfagent():qmf_package("de.bisdn.xdpd")
 
 void qmfagent::init(int argc, char** argv)
 {
+	cunixenv env_parser;
+ 
+	//Add additional arguments
+	env_parser.add_option(
+		coption(true, REQUIRED_ARGUMENT, 'q', "qmfaddr", "qmf broker address",
+		std::string("127.0.0.1")));
 
-	std::string broker_url("127.0.0.1");
-	broker_url = cunixenv::getInstance().get_arg('q');
+	//Parse
+	env_parser.parse_args(argc, argv);
+	
+	//Recover
+	broker_url = env_parser.get_arg('q');
 
 	connection = qpid::messaging::Connection(broker_url, "{reconnect:True}");
 	connection.open();

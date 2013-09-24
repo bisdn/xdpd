@@ -12,6 +12,8 @@
 using namespace rofl;
 using namespace xdpd;
 
+extern int optind;
+
 //TODO: Redirect C loggers to the output log
 #define XDPD_LOG_FILE "xdpd.log"
 
@@ -25,6 +27,8 @@ void interrupt_handler(int dummy=0) {
  * XDPD Main routine
  */
 int main(int argc, char** argv){
+
+	cunixenv env_parser;
 
 	//Check for root privileges 
 	if(geteuid() != 0){
@@ -46,18 +50,18 @@ int main(int argc, char** argv){
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
 
 	/* update defaults */
-	cunixenv::getInstance().update_default_option("logfile", XDPD_LOG_FILE);
+	env_parser.update_default_option("logfile", XDPD_LOG_FILE);
 
 	//Parse
-	cunixenv::getInstance().parse_args(argc, argv);
+	env_parser.parse_args(argc, argv);
 
-	if (not cunixenv::getInstance().is_arg_set("daemonize")) {
+	if (not env_parser.is_arg_set("daemonize")) {
 		// only do this in non
 		std::string ident(XDPD_LOG_FILE);
 
 		csyslog::initlog(csyslog::LOGTYPE_FILE,
-				static_cast<csyslog::DebugLevel>(atoi(cunixenv::getInstance().get_arg("debug").c_str())), // todo needs checking
-				cunixenv::getInstance().get_arg("logfile"),
+				static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
+				env_parser.get_arg("logfile"),
 				ident.c_str());
 	}
 	
@@ -71,6 +75,7 @@ int main(int argc, char** argv){
 	ciosrv::init();
 
 	//Load plugins
+	optind=0;
 	plugin_manager::init(argc, argv);
 
 	//ciosrv run. Only will stop in Ctrl+C

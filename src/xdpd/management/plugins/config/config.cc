@@ -1,5 +1,4 @@
 #include "config.h"
-#include <rofl/platform/unix/cunixenv.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include "root_scope.h"
@@ -16,17 +15,17 @@ config::~config(){
 	//Remove all objects
 }
 
-void config::parse_config(Config* cfg){
+void config::parse_config(Config* cfg, cunixenv& env_parser){
 
 	std::string conf_file;
 
-	if(!cunixenv::getInstance().is_arg_set("config-file")){
+	if(!env_parser.is_arg_set("config-file")){
 		ROFL_ERR("No configuration file specified either via -c or --config-file\n");	
 		throw eConfParamNotFound();
 	}
 
 	try{
-		conf_file = cunixenv::getInstance().get_arg("config-file").c_str();
+		conf_file = env_parser.get_arg("config-file").c_str();
 		cfg->readFile(conf_file.c_str());
 	}catch(const FileIOException &fioex){
 		ROFL_ERR("Config file %s not found. Aborting...\n",conf_file.c_str());	
@@ -41,9 +40,16 @@ void config::parse_config(Config* cfg){
 void config::init(int args, char** argv){
 	Config* cfg = new Config;
 	root_scope* root = new root_scope();
+	cunixenv env_parser;
+
+	//Add paramters
+	//Not required
+
+	//Parse
+	env_parser.parse_args(args, argv);
 
 	//Dry run
-	parse_config(cfg);
+	parse_config(cfg,env_parser);
 	root->execute(*cfg,true);
 	delete cfg;
 	delete root;
@@ -52,7 +58,7 @@ void config::init(int args, char** argv){
 	cfg = new Config;
 	root = new root_scope();
 
-	parse_config(cfg);
+	parse_config(cfg,env_parser);
 	root->execute(*cfg);
 	delete cfg;
 	delete root;

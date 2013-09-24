@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <libconfig.h++> 
+#include <rofl/platform/unix/cunixenv.h>
 #include <rofl/common/cerror.h>
 #include "../../plugin_manager.h"
 #include "scope.h"
@@ -31,7 +32,7 @@ public:
 	};
 
 private:
-	void parse_config(libconfig::Config* cfg);
+	void parse_config(libconfig::Config* cfg, rofl::cunixenv& env_parser);
 };
 
 }// namespace xdpd 

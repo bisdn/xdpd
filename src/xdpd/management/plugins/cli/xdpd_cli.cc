@@ -497,18 +497,24 @@ xdpd_cli::~xdpd_cli() {
 
 
 void xdpd_cli::init(int argc, char** argv) {
+
+	cunixenv env_parser; 	
 	
-	cunixenv::getInstance().add_option(
+	//Add options
+	env_parser.add_option(
 		coption(true, REQUIRED_ARGUMENT, 'a', "address", "cli listen address",
 		std::string("127.0.0.1")));
 	
-	cunixenv::getInstance().add_option(
+	env_parser.add_option(
 		coption(true, REQUIRED_ARGUMENT, 'p', "port", "cli listen port",
 		std::string("1234")));
 
-	//FIXME set CLI listen socket and port
-	// xdpd_cli* cli = new xdpd_cli(caddress(AF_INET, cunixenv::getInstance().get_arg('a').c_str(),
-	//				atoi(cunixenv::getInstance().get_arg('p').c_str())));
+	//Parse
+	env_parser.parse_args(argc, argv);
 
-	this->read_config_file(cunixenv::getInstance().get_arg("config-file"));
+	//FIXME set CLI listen socket and port
+	// xdpd_cli* cli = new xdpd_cli(caddress(AF_INET, env_parser.get_arg('a').c_str(),
+	//				atoi(env_parser.get_arg('p').c_str())));
+
+	this->read_config_file(env_parser.get_arg("config-file"));
 }

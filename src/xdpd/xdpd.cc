@@ -28,7 +28,6 @@ void interrupt_handler(int dummy=0) {
  */
 int main(int argc, char** argv){
 
-	cunixenv env_parser;
 
 	//Check for root privileges 
 	if(geteuid() != 0){
@@ -49,22 +48,25 @@ int main(int argc, char** argv){
 	memset(s_dbg, 0, sizeof(s_dbg));
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
 
-	/* update defaults */
-	env_parser.update_default_option("logfile", XDPD_LOG_FILE);
+	{ //Make valgrind happy
+		cunixenv env_parser;
+		
+		/* update defaults */
+		env_parser.update_default_option("logfile", XDPD_LOG_FILE);
 
-	//Parse
-	env_parser.parse_args(argc, argv);
+		//Parse
+		env_parser.parse_args(argc, argv);
 
-	if (not env_parser.is_arg_set("daemonize")) {
-		// only do this in non
-		std::string ident(XDPD_LOG_FILE);
+		if (not env_parser.is_arg_set("daemonize")) {
+			// only do this in non
+			std::string ident(XDPD_LOG_FILE);
 
-		csyslog::initlog(csyslog::LOGTYPE_FILE,
-				static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
-				env_parser.get_arg("logfile"),
-				ident.c_str());
+			csyslog::initlog(csyslog::LOGTYPE_FILE,
+					static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
+					env_parser.get_arg("logfile"),
+					ident.c_str());
+		}
 	}
-	
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
 		ROFL_INFO("Init driver failed\n");	

@@ -20,8 +20,7 @@ qmfagent::qmfagent():qmf_package("de.bisdn.xdpd")
 }
 		
 
-void qmfagent::init(int argc, char** argv) :
-		broker_url(broker_url),
+void qmfagent::init(int argc, char** argv)
 {
 
 	std::string broker_url("127.0.0.1");

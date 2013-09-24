@@ -146,11 +146,12 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
 		//FIXME change this messages into warnings "Unable to discover mac address of interface %s"
-		ROFL_WARN("WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
+		if(strncmp("lo",ifa->ifa_name,2) != 0)
+			ROFL_WARN("WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
 	}
 	
 	//Init the port
-	port = switch_port_init(ifa->ifa_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
+	port = switch_port_init(ifa->ifa_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_NONE);
 	if(!port)
 		return NULL;
 
@@ -248,10 +249,10 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 
 	//Init the pipeline ports
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u.%u", num_of_vlinks, 0);
-	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
+	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
 
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u.%u", num_of_vlinks, 1);
-	port2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
+	port2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
 
 	if(!port1 || !port2){
 		free(port1);

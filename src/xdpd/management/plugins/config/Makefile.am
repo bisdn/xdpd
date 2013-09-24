@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS=openflow
+SUBDIRS=interfaces openflow
 
 noinst_LTLIBRARIES = libxdpd_mgmt_config.la
 
@@ -10,5 +10,6 @@ libxdpd_mgmt_config_la_SOURCES = \
 	config.cc 
 
 libxdpd_mgmt_config_la_LIBADD = \
+	interfaces/libxdpd_mgmt_config_interfaces.la\
 	openflow/libxdpd_mgmt_config_openflow.la\
 	-lconfig++

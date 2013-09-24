@@ -4,6 +4,7 @@
 
 //sub scopes
 #include "openflow/openflow_scope.h" 
+#include "interfaces/interfaces_scope.h" 
 
 using namespace xdpd;
 using namespace rofl;
@@ -11,11 +12,11 @@ using namespace libconfig;
 
 
 root_scope::root_scope():scope("Root"){
+	//Openflow subhierarchy
+	register_subscope(new openflow_scope());
 	
 	//Interfaces subhierarchy
-	
-	//Openflow subhierarchy
-	register_subscope("openflow", new openflow_scope());	
+	register_subscope(new interfaces_scope());	
 }
 
 root_scope::~root_scope(){

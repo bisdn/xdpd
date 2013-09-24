@@ -34,14 +34,15 @@ public:
 	void execute(libconfig::Setting& setting, bool dry_run=false);
 	void execute(libconfig::Config& setting, bool dry_run=false);
 
-protected:
 	std::string name;
+protected:
 	bool mandatory;
 	std::map<std::string, scope*> sub_scopes;
 	std::map<std::string, bool> parameters;
 
 	//Register methods
 	void register_subscope(std::string name, scope* sc);
+	void register_subscope(scope* sc){register_subscope(sc->name,sc);};
 	void register_parameter(std::string name, bool mandatory=false);
 	
 	//Allow actions before and after parameter and scope validation	

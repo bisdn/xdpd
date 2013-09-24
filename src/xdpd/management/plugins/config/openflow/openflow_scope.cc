@@ -10,7 +10,7 @@ openflow_scope::openflow_scope(std::string name, bool mandatory):scope(name, man
 
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook
-	register_subscope("logical-switches", new of_lsis_scope());	
+	register_subscope(new of_lsis_scope());	
 
 }
 

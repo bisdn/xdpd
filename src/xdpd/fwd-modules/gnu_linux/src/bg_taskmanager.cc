@@ -101,7 +101,7 @@ rofl_result_t update_port_status(char * name){
 		return ROFL_FAILURE;
 	}
 
-	ROFL_INFO("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
+	ROFL_DEBUG("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
 	
 	last_link_status = port->up;
 
@@ -371,7 +371,7 @@ void* x86_background_tasks_routine(void* param)
 	close(efd);
 	
 	//Printing some information
-	ROFL_INFO("[bg] Finishing thread execution\n"); 
+	ROFL_DEBUG("[bg] Finishing thread execution\n"); 
 
 	//Exit
 	pthread_exit(NULL);	

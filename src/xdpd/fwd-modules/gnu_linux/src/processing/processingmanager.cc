@@ -166,7 +166,7 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 	}
 
 	//Printing some information
-	ROFL_INFO("Finishing execution of processing thread: #%u switch: %s\n",pthread_self(),sw->name);
+	ROFL_DEBUG("Finishing execution of processing thread: #%u switch: %s\n",pthread_self(),sw->name);
 	
 	//Exit
 	pthread_exit(NULL);	

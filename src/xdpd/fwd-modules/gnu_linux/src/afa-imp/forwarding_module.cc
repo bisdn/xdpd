@@ -46,6 +46,8 @@
 * @ingroup fwd_module_management
 */
 afa_result_t fwd_module_init(){
+
+	ROFL_INFO("Initializing GNU/Linux forwarding module...\n");
 	
 	//Init the ROFL-PIPELINE phyisical switch
 	if(physical_switch_init() != ROFL_SUCCESS)
@@ -93,6 +95,8 @@ afa_result_t fwd_module_destroy(){
 	
 	// destroy bufferpool
 	bufferpool_destroy_wrapper();
+	
+	ROFL_INFO("GNU/Linux forwarding module destroyed.\n");
 	
 	return AFA_SUCCESS; 
 }

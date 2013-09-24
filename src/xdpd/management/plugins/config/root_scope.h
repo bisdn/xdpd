@@ -26,6 +26,17 @@ private:
 
 };
 
+class config_scope : public scope {
+	
+public:
+	config_scope();
+	virtual ~config_scope();
+		
+private:
+
+};
+
+
 }// namespace xdpd 
 
 #endif /* ROOT_SCOPE_H_ */

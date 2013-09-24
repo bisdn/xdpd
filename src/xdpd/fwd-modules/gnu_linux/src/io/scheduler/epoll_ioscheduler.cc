@@ -263,7 +263,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 	//Release resources
 	release_resources(epfd, ev, events, current_num_of_ports);
 
-	ROFL_INFO("Finishing execution of I/O thread: #%u\n",pthread_self());
+	ROFL_DEBUG("Finishing execution of I/O thread: #%u\n",pthread_self());
 
 	//Return whatever
 	pthread_exit(NULL);

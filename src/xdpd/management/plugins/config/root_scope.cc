@@ -10,8 +10,17 @@ using namespace xdpd;
 using namespace rofl;
 using namespace libconfig; 
 
+root_scope::root_scope():scope("root"){
+	//config subhierarchy
+	register_subscope(new config_scope());
+}
 
-root_scope::root_scope():scope("Root"){
+root_scope::~root_scope(){
+	//Remove all objects
+}
+
+config_scope::config_scope():scope("config"){
+
 	//Openflow subhierarchy
 	register_subscope(new openflow_scope());
 	
@@ -19,6 +28,6 @@ root_scope::root_scope():scope("Root"){
 	register_subscope(new interfaces_scope());	
 }
 
-root_scope::~root_scope(){
+config_scope::~config_scope(){
 	//Remove all objects
 }

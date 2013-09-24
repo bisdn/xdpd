@@ -49,7 +49,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 	std::map<std::string, bool>::iterator param_iter;
 	for (param_iter = parameters.begin(); param_iter != parameters.end(); ++param_iter) {
 		if(param_iter->second && !setting.exists(param_iter->first.c_str())){
-			ROFL_ERR("Mandatory parameter %s under scope %s not found\n", param_iter->first.c_str(), name.c_str());
+			ROFL_ERR("Mandatory parameter '%s' under scope '%s' not found\n", param_iter->first.c_str(), name.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
 	}
@@ -62,10 +62,12 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 				! setting[(*scope_iter)->name].isGroup()
 			)
 		){
-			ROFL_ERR("Mandatory subscope %s under scope %s not found\n", (*scope_iter)->name.c_str(), name.c_str());
+			ROFL_ERR("Mandatory subscope '%s' under scope '%s' not found\n", (*scope_iter)->name.c_str(), name.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
-		(*scope_iter)->execute(setting[(*scope_iter)->name], dry_run);
+		
+		if(setting.exists((*scope_iter)->name))
+			(*scope_iter)->execute(setting[(*scope_iter)->name], dry_run);
 	}
 
 	//Call post-hook
@@ -81,7 +83,7 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 	std::map<std::string, bool>::iterator param_iter;
 	for (param_iter = parameters.begin(); param_iter != parameters.end(); ++param_iter) {
 		if(param_iter->second && !config.exists(param_iter->first.c_str())){
-			ROFL_ERR("Mandatory parameter %s under scope %s not found\n", param_iter->first.c_str(), name.c_str());
+			ROFL_ERR("Mandatory parameter '%s' under scope '%s' not found\n", param_iter->first.c_str(), name.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
 	}
@@ -94,11 +96,12 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 				! config.lookup((*scope_iter)->name).isGroup()
 			)
 		){
-			ROFL_ERR("Mandatory subscope %s under scope %s not found\n", (*scope_iter)->name.c_str(), name.c_str());
+			ROFL_ERR("Mandatory subscope '%s' under scope '%s' not found\n", (*scope_iter)->name.c_str(), name.c_str());
 	
 			throw eConfMandatoryParameterNotPresent();
 		}
-		(*scope_iter)->execute(config.lookup((*scope_iter)->name), dry_run);
+		if(config.exists((*scope_iter)->name))
+			(*scope_iter)->execute(config.lookup((*scope_iter)->name), dry_run);
 	}
 
 	

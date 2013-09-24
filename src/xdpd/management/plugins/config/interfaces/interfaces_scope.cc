@@ -2,7 +2,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_pipeline.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include "../../../switch_manager.h"
 #include "../../../port_manager.h"
 #include "../../../../openflow/openflow_switch.h"

@@ -2,7 +2,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_pipeline.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include "../../../switch_manager.h"
 #include "../../../port_manager.h"
 
@@ -77,9 +77,9 @@ void lsi_scope::parse_version(libconfig::Setting& setting, of_version_t* version
 		*version = OF_VERSION_10;
 	}else if(of_ver == 1.2){
 		*version = OF_VERSION_12;
-	}/*else if(of_ver == 1.3){
+	}else if(of_ver == 1.3){
 		*version = OF_VERSION_13;
-	}*/else{
+	}else{
 		ROFL_ERR("LSI %s: unable to understand OpenFlow version. Valid version numbers are 1.0, 1.2 and 1.3. Found: %f\n", name.c_str(), of_ver);
 		throw eConfParseError(); 	
 	}
@@ -286,7 +286,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	std::string bind_address_ip = "0.0.0.0";
 	caddress bind_address;
 	std::vector<std::string> ports;
-	int ma_list[OF12_MAX_FLOWTABLES] = { 0 };
+	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
 
 	//Recover dpid and try to parse
 	dpid = strtoull(setting[LSI_DPID].c_str(),NULL,0);

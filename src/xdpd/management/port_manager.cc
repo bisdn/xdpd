@@ -2,6 +2,7 @@
 
 #include "../openflow/openflow_switch.h"
 #include <rofl/datapath/afa/cmm.h>
+#include <rofl/common/utils/c_logger.h>
 
 //FIXME remove this dependency
 #include <rofl/datapath/pipeline/physical_switch.h>
@@ -25,6 +26,7 @@ void port_manager::enable_port(std::string port_name) throw (ePmInvalidPort, eOf
 	if(fwd_module_enable_port(port_name.c_str()) != AFA_SUCCESS)
 		throw eOfSmGeneralError();	
 
+	ROFL_DEBUG("[port_manager] Port %s enabled\n", port_name.c_str());
 }
 
 void port_manager::disable_port(std::string port_name) throw (ePmInvalidPort, eOfSmGeneralError){
@@ -34,6 +36,8 @@ void port_manager::disable_port(std::string port_name) throw (ePmInvalidPort, eO
 
 	if(fwd_module_disable_port(port_name.c_str()) != AFA_SUCCESS)
 		throw eOfSmGeneralError();	
+	
+	ROFL_DEBUG("[port_manager] Port %s disabled\n", port_name.c_str());
 }
 
 //Port attachment/detachment
@@ -51,6 +55,7 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name) t
 	if (fwd_module_attach_port_to_switch(dpid,port_name.c_str(),&i) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
 
+	ROFL_DEBUG("[port_manager] Port %s attached to switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
 }
 
 //Port attachment/detachment

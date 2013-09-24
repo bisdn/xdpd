@@ -53,7 +53,7 @@ void config::init(int args, char** argv){
 	root = new root_scope();
 
 	parse_config(cfg);
-	root->execute(*cfg,true);
+	root->execute(*cfg);
 	delete cfg;
 	delete root;
 }

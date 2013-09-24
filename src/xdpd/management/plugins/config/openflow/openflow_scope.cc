@@ -27,7 +27,7 @@ void of_lsis_scope::pre_validate(libconfig::Setting& setting, bool dry_run){
 	
 	//Detect existing subscopes (logical switches) and register
  	for(int i = 0; i<setting.getLength(); ++i){
-		ROFL_DEBUG("Found logical switch: %s\n", setting[i].getName());
+		ROFL_DEBUG_VERBOSE("Found logical switch: %s\n", setting[i].getName());
 		register_subscope(std::string(setting[i].getName()), new lsi_scope(setting[i].getName()));
 	}
 		

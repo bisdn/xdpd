@@ -33,6 +33,7 @@
 
 #include "../../switch_manager.h"
 #include "../../port_manager.h"
+#include "../../plugin_manager.h"
 
 namespace xdpd 
 {
@@ -42,8 +43,11 @@ class eQmfAgentInval		: public eQmfAgentBase {};
 class eQmfAgentInvalSubcmd	: public eQmfAgentInval {};
 
 class qmfagent :
-		public rofl::ciosrv
+		public rofl::ciosrv,
+		public plugin
 {
+public:
+
 	qmfagent();
 	~qmfagent();
 

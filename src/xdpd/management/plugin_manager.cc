@@ -41,7 +41,7 @@ void plugin_manager::pre_init(){
 	
 #ifdef WITH_MGMT_QMF
 	//Register QMF
-	register_plugin(new qmf_agent());	
+	register_plugin(new qmfagent());
 #endif
 
 //Add more here [+]...

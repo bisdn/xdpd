@@ -10,7 +10,7 @@
 #endif
 
 #ifdef WITH_MGMT_QMF
-	#include "plugins/cli/qmfagent.h"
+	#include "plugins/qmf/qmfagent.h"
 #endif
 //Add more here [+]...
 

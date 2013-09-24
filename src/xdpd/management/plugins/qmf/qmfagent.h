@@ -10,14 +10,7 @@
 #ifndef QMFAGENT_H_
 #define QMFAGENT_H_ 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <inttypes.h>
-#ifdef __cplusplus
-}
-#endif
-
 #include <map>
 #include <string>
 #include <ostream>
@@ -41,7 +34,7 @@ extern "C" {
 #include "../../switch_manager.h"
 #include "../../port_manager.h"
 
-namespace xdpd
+namespace xdpd 
 {
 
 class eQmfAgentBase 		: public std::exception {};
@@ -51,9 +44,7 @@ class eQmfAgentInvalSubcmd	: public eQmfAgentInval {};
 class qmfagent :
 		public rofl::ciosrv
 {
-	static qmfagent 				*qmf_agent;
-	qmfagent(std::string const& broker_url = std::string("127.0.0.1"));
-	qmfagent(qmfagent const& agent);
+	qmfagent();
 	~qmfagent();
 
 private:
@@ -82,8 +73,11 @@ public:
 	/**
 	 *
 	 */
-	static qmfagent&
-	get_instance(std::string const& broker_url = std::string("127.0.0.1"));
+	virtual void init(int argc, char** argv);
+
+	virtual std::string get_name(){
+		return std::string("qmf_agent");
+	}
 
 protected:
 

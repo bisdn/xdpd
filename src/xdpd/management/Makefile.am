@@ -2,25 +2,27 @@ MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS = 
 
-noinst_LTLIBRARIES = libxmgmt.la
-
-libxmgmt_la_SOURCES = \
+noinst_LTLIBRARIES = libxdpd_mgmt.la
+		
+libxdpd_mgmt_la_SOURCES = \
+	plugin_manager.cc \
 	switch_manager.cc \
-	switch_manager.h \
-	port_manager.cc \
-	port_manager.h
+	port_manager.cc
 
-libxmgmt_la_LIBADD = 
+libxdpd_mgmt_la_LIBADD =
 
-if ENABLE_CONFIG_CLI
-SUBDIRS += plugins/cli
-CLILIB = plugins/cli/libxdpd_config_cli.la
-libxmgmt_la_LIBADD += $(CLILIB)
+##Plugins: add yours CONDITIONALLY!
+if WITH_MGMT_CONFIG
+SUBDIRS += plugins/config
+libxdpd_mgmt_la_LIBADD +=plugins/config/libxdpd_mgmt_config.la
 endif
-	
-if ENABLE_CONFIG_QMF
+
+if WITH_MGMT_QMF
 SUBDIRS += plugins/qmf
-QMFLIB = plugins/qmf/libxdpd_config_qmf.la
-libxmgmt_la_LIBADD += $(QMFLIB)
+libxdpd_mgmt_la_LIBADD +=plugins/qmf/libxdpd_mgmt_qmf.la
 endif
-	
+
+if WITH_MGMT_CLI
+SUBDIRS += plugins/cli
+libxdpd_mgmt_la_LIBADD +=plugins/cli/libxdpd_mgmt_cli.la
+endif

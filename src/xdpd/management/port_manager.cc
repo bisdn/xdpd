@@ -2,6 +2,7 @@
 
 #include "../openflow/openflow_switch.h"
 #include <rofl/datapath/afa/cmm.h>
+#include <rofl/common/utils/c_logger.h>
 
 //FIXME remove this dependency
 #include <rofl/datapath/pipeline/physical_switch.h>
@@ -25,6 +26,7 @@ void port_manager::enable_port(std::string port_name) throw (ePmInvalidPort, eOf
 	if(fwd_module_enable_port(port_name.c_str()) != AFA_SUCCESS)
 		throw eOfSmGeneralError();	
 
+	ROFL_INFO("[port_manager] Port %s enabled\n", port_name.c_str());
 }
 
 void port_manager::disable_port(std::string port_name) throw (ePmInvalidPort, eOfSmGeneralError){
@@ -34,6 +36,8 @@ void port_manager::disable_port(std::string port_name) throw (ePmInvalidPort, eO
 
 	if(fwd_module_disable_port(port_name.c_str()) != AFA_SUCCESS)
 		throw eOfSmGeneralError();	
+	
+	ROFL_INFO("[port_manager] Port %s disabled\n", port_name.c_str());
 }
 
 //Port attachment/detachment
@@ -45,11 +49,29 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name) t
 	check_port_existance(port_name);
 
 	//Check DP existance
-	//TODO
+	if(!switch_manager::find_by_dpid(dpid))
+		throw eOfSmDoesNotExist();	
 
 	if (fwd_module_attach_port_to_switch(dpid,port_name.c_str(),&i) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
 
+	ROFL_INFO("[port_manager] Port %s attached to switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
+}
+
+//Port attachment/detachment
+void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1, uint64_t dpid_lsi2, std::string& port_name2) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
+
+	switch_port_t *port1 = NULL, *port2 = NULL;
+
+	//Check lsi existance 
+	if(!switch_manager::find_by_dpid(dpid_lsi1) || !switch_manager::find_by_dpid(dpid_lsi2) )
+		throw eOfSmDoesNotExist();	
+
+	if (fwd_module_connect_switches(dpid_lsi1, &port1, dpid_lsi2, &port2) != AFA_SUCCESS)
+		throw eOfSmGeneralError();
+	
+	//Copy port names
+	//TODO 
 }
 
 void port_manager::detach_port_from_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
@@ -85,7 +107,16 @@ std::list<std::string> port_manager::list_available_port_names() throw (eOfSmGen
 			
 	}
 
-	//TODO: add virtual and tunnel. Calls already available in the AFA
+	//Call the forwarding module to list the ports
+	ports = fwd_module_get_virtual_ports(&max_ports);
+	
+	//Run over the ports and get the name
+	for(i=0;i<max_ports;i++){
+		if(ports[i])
+			port_name_list.push_back(std::string(ports[i]->name));
+	}
+
+	//TODO: add tunnel.
 	
 	return port_name_list; 
 }

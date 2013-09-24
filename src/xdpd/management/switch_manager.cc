@@ -1,6 +1,7 @@
 #include "switch_manager.h"
 
 #include <rofl/datapath/afa/afa.h>
+#include <rofl/common/utils/c_logger.h>
 
 //Add here the headers of the version-dependant Openflow switchs 
 #include "../openflow/openflow_switch.h"
@@ -56,6 +57,8 @@ openflow_switch* switch_manager::create_switch(
 	
 	//Store in the switch list
 	switch_manager::switchs[dpid] = dp;
+	
+	ROFL_INFO("[switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
 
 	return dp; 
 }
@@ -73,6 +76,8 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	//Get switch instance 
 	openflow_switch* dp = switch_manager::switchs[dpid];
 	switch_manager::switchs.erase(dpid);
+
+	ROFL_INFO("[switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
 
 	//Destroy element
 	delete dp;	
@@ -143,7 +148,9 @@ switch_manager::list_matching_algorithms(of_version_t of_version)
 	int i, count;
 
 	const char * const * names;
-	fwd_module_list_matching_algorithms(of_version, &names, &count);
+	if(fwd_module_list_matching_algorithms(of_version, &names, &count) != AFA_SUCCESS){
+		return matching_algorithms;
+	}
 
 	for (i = 0; i < count; i++) {
 		matching_algorithms.push_back(std::string(names[i]));

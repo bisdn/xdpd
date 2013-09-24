@@ -153,7 +153,7 @@ void* polling_ioscheduler::process_io(void* grp){
 			update_running_ports(pg, &running_ports, &num_of_ports, &current_hash);	
 	}
 
-	ROFL_INFO("Finishing execution of I/O thread: #%u\n",pthread_self());
+	ROFL_DEBUG("Finishing execution of I/O thread: #%u\n",pthread_self());
 
 	//Return whatever
 	pthread_exit(NULL);

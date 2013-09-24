@@ -238,18 +238,19 @@ rofl_result_t discover_physical_ports(){
 rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_switch_t* lsw2, ioport** vport2){
 
 	//Names are composed following vlinkX-Y
-	//Where X is the virtual port number (0... N-1)
+	//Where X is the virtual link number (0... N-1)
 	//Y is the edge 0 (left) 1 (right) of the connectio
+	static unsigned int num_of_vlinks=0;
 	char port_name[PORT_QUEUE_MAX_LEN_NAME];
 	switch_port_t *port1, *port2;	
 	uint64_t port_capabilities=0x0;
 	uint64_t mac_addr;
 
 	//Init the pipeline ports
-	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%.5s-%.5s/%d", lsw1->name, lsw2->name, 0);
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u.%u", num_of_vlinks, 0);
 	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
 
-	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%.5s-%.5s/%d", lsw1->name, lsw2->name, 1);
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u.%u", num_of_vlinks, 1);
 	port2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
 
 	if(!port1 || !port2){
@@ -331,6 +332,9 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		assert(0);
 		return ROFL_FAILURE;
 	}
+
+	//Increment counter and return
+	num_of_vlinks++; //TODO: make this atomic jic
 
 	return ROFL_SUCCESS;	
 }

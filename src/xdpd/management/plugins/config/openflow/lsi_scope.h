@@ -27,7 +27,7 @@ protected:
 	void parse_version(libconfig::Setting& setting, of_version_t* version);
 	void parse_active_connections(libconfig::Setting& setting, rofl::caddress& master_controller, rofl::caddress& slave_controller, unsigned int* reconnect_time);
 	void parse_passive_connection(libconfig::Setting& setting, rofl::caddress& bind_address);
-	void parse_matching_algorithms(libconfig::Setting& setting, of_version_t version, unsigned int num_of_tables, int* ma_list);
+	void parse_matching_algorithms(libconfig::Setting& setting, of_version_t version, unsigned int num_of_tables, int* ma_list, bool dry_run);
 	void parse_ports(libconfig::Setting& setting, std::vector<std::string>& ports);
 private:
 	void parse_ip(rofl::caddress& addr, std::string& ip, unsigned int port);

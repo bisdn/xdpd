@@ -223,7 +223,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 	}
 }
 
-void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_version_t version, unsigned int num_of_tables, int* ma_list){
+void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_version_t version, unsigned int num_of_tables, int* ma_list, bool dry_run){
 	
 	std::list<std::string> available_algorithms = switch_manager::list_matching_algorithms(version);
 	std::list<std::string>::iterator it;
@@ -266,7 +266,7 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 		ma_list[i] = std::distance(available_algorithms.begin(), it);
 	}
 
-	if(i != (int)num_of_tables){
+	if(i != (int)num_of_tables && dry_run){
 		ROFL_WARN("LSI %s: a matching algorithm has NOT been specified for all tables. Default algorithm for tables from %u to %u included has been set to the default '%s'\n", name.c_str(), i+1, num_of_tables, (*available_algorithms.begin()).c_str());
 	}
 }
@@ -304,7 +304,8 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		if( mode == LSI_PASSIVE_MODE){
 			passive = true;
 		}else if(mode != LSI_ACTIVE_MODE){	
-			ROFL_WARN("LSI %s: Unable to parse mode.. assuming ACTIVE\n", name.c_str()); 
+			if(dry_run)
+				ROFL_WARN("LSI %s: Unable to parse mode.. assuming ACTIVE\n", name.c_str()); 
 		}
 	}	
 
@@ -332,7 +333,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	}
 
 	//Parse matching algorithms
-	parse_matching_algorithms(setting, version, num_of_tables, ma_list);
+	parse_matching_algorithms(setting, version, num_of_tables, ma_list, dry_run);
 
 	//Parse ports	
 	parse_ports(setting,ports);

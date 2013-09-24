@@ -40,6 +40,7 @@ virtual_ifaces_scope::virtual_ifaces_scope(std::string name, bool mandatory):sco
 void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 	std::map<std::string, std::string> partial_links; //linkname, lsiname
+	std::map<std::string, bool> provisioned_links; //linkname, true 
 	std::string lsi_name;
 
 	if(setting.getLength()%2 != 0){
@@ -66,7 +67,20 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 			//Pop from
 			lsi_name = partial_links[key];
 			partial_links.erase(key);			
- 
+
+			//Check link name is not repeated
+			if(provisioned_links.find(key) != provisioned_links.end()){
+				ROFL_ERR("%s: duplicated vlink '%s' name!\n", name.c_str(), key.c_str());
+				throw eConfParseError(); 
+			
+			}	
+	
+			//Check self connection
+ 			if(lsi_name == value){
+				ROFL_ERR("%s: unable to create vlink. Switch '%s' cannot be connected to itself!\n", name.c_str(), value.c_str());
+				throw eConfParseError(); 
+			}	
+
 			//Complete vlink
 			if(!dry_run){
 				std::string port_name1, port_name2;
@@ -87,14 +101,13 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 					throw eConfParseError(); 	
 					
 				}		
-				if(sw2 == sw1){
-					ROFL_ERR("%s: unable to create vlink. Switch '%s' cannot be connected to itself (loop)!\n", name.c_str(), value.c_str());
-					throw eConfParseError(); 
-					
-				}	
+			
 				//Call port manager API
 				port_manager::connect_switches(sw1->dpid, port_name1, sw2->dpid, port_name2);
 			}
+			
+			//Add to the list of provisioned
+			provisioned_links[key] = true;
 		}
 	}
 	

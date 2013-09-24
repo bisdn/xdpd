@@ -19,7 +19,7 @@ root_scope::~root_scope(){
 	//Remove all objects
 }
 
-config_scope::config_scope():scope("config"){
+config_scope::config_scope():scope("config", true){
 
 	//Openflow subhierarchy
 	register_subscope(new openflow_scope());

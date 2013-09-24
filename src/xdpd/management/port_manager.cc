@@ -71,7 +71,10 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1,
 		throw eOfSmGeneralError();
 	
 	//Copy port names
-	//TODO 
+	port_name1 = std::string(port1->name);
+	port_name2 = std::string(port2->name);
+
+	ROFL_INFO("[port_manager] Link created between switch with dpid 0x%llx and 0x%llx, with virtual interface names %s and %s respectively \n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2, port1->name, port2->name);
 }
 
 void port_manager::detach_port_from_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){

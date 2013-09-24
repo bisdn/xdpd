@@ -80,7 +80,7 @@ void lsi_scope::parse_version(libconfig::Setting& setting, of_version_t* version
 	}else if(of_ver == 1.3){
 		*version = OF_VERSION_13;
 	}else{
-		ROFL_ERR("LSI %s: unable to understand OpenFlow version. Valid version numbers are 1.0, 1.2 and 1.3. Found: %f\n", name.c_str(), of_ver);
+		ROFL_ERR("%s: invalid OpenFlow version. Valid version numbers are 1.0, 1.2 and 1.3. Found: %f\n", setting.getPath().c_str(), of_ver);
 		throw eConfParseError(); 	
 	}
 }
@@ -99,7 +99,7 @@ void lsi_scope::parse_passive_connection(libconfig::Setting& setting, caddress& 
 		bind_address_port = setting[LSI_BIND_ADDRESS_PORT];
 		
 		if(bind_address_port < 1 || bind_address_port > 65535){
-			ROFL_ERR("LSI %s: invalid bind address TCP port number %u. Must be [1-65535]\n", name.c_str(), bind_address_port);
+			ROFL_ERR("%s: invalid bind address TCP port number %u. Must be [1-65535]\n", setting.getPath().c_str(), bind_address_port);
 			throw eConfParseError(); 	
 				
 		}
@@ -107,7 +107,7 @@ void lsi_scope::parse_passive_connection(libconfig::Setting& setting, caddress& 
 	try{
 		parse_ip(bind_address, bind_address_ip, bind_address_port);
 	}catch(...){
-		ROFL_ERR("LSI %s: unable to parse passive bind IP. It must be either an IPv4 or an IPv6 IP\n", name.c_str());
+		ROFL_ERR("%s: unable to parse passive bind IP. It must be either an IPv4 or an IPv6 IP\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	
 	}
@@ -131,7 +131,7 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 		master_controller_port = setting[LSI_MASTER_CONTROLLER_PORT];
 		
 		if(master_controller_port < 1 || master_controller_port > 65535){
-			ROFL_ERR("LSI %s: invalid Master controller TCP port number %u. Must be [1-65535]\n", name.c_str(), master_controller_port);
+			ROFL_ERR("%s: invalid Master controller TCP port number %u. Must be [1-65535]\n", setting.getPath().c_str(), master_controller_port);
 			throw eConfParseError(); 	
 				
 		}
@@ -147,7 +147,7 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 			slave_controller_port = setting[LSI_SLAVE_CONTROLLER_PORT];
 			
 			if(slave_controller_port < 1 || slave_controller_port > 65535){
-				ROFL_ERR("LSI %s: invalid Slave controller TCP port number %u. Must be [1-65535]\n", name.c_str(), master_controller_port);
+				ROFL_ERR("%s: invalid Slave controller TCP port number %u. Must be [1-65535]\n", setting.getPath().c_str(), master_controller_port);
 				throw eConfParseError(); 	
 					
 			}
@@ -159,7 +159,7 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 	try{
 		parse_ip(master_controller, master_controller_ip, master_controller_port);
 	}catch(...){
-		ROFL_ERR("LSI %s: unable to parse Master controller IP. It must be either an IPv4 or an IPv6 IP\n", name.c_str());
+		ROFL_ERR("%s: unable to parse Master controller IP. It must be either an IPv4 or an IPv6 IP\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	
 	}
@@ -169,7 +169,7 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 		try{
 			parse_ip(slave_controller, slave_controller_ip, slave_controller_port);
 		}catch(...){
-			ROFL_ERR("LSI %s: unable to parse Master controller IP. It must be either an IPv4 or an IPv6 IP\n", name.c_str());
+			ROFL_ERR("%s: unable to parse Master controller IP. It must be either an IPv4 or an IPv6 IP\n", setting.getPath().c_str());
 			throw eConfParseError(); 	
 		
 		}
@@ -179,7 +179,7 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 		*reconnect_time = setting[LSI_RECONNECT_TIME];
 	
 	if(*reconnect_time <1 || *reconnect_time > 90){
-		ROFL_ERR("LSI %s: invalid reconnect-time of %u. Value must be > 1 and <= 90\n", name.c_str(), *reconnect_time);
+		ROFL_ERR("%s: invalid reconnect-time of %u. Value must be > 1 and <= 90\n", setting.getPath().c_str(), *reconnect_time);
 		throw eConfParseError(); 	
 
 	}
@@ -192,7 +192,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 	std::list<std::string> platform_ports = port_manager::list_available_port_names();	
 
 	if(!setting.exists(LSI_PORTS) || !setting[LSI_PORTS].isList()){
- 		ROFL_ERR("LSI %s: missing or unable to parse port attachment list.\n", name.c_str());
+ 		ROFL_ERR("%s: missing or unable to parse port attachment list.\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	
 	}
@@ -202,12 +202,12 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 		if(port != ""){
 			//Check if exists
 			if((std::find(platform_ports.begin(), platform_ports.end(), port) == platform_ports.end())){
-				ROFL_ERR("LSI %s: invalid port %s. Port does not exist!\n", name.c_str(), port.c_str());
+				ROFL_ERR("%s: invalid port '%s'. Port does not exist!\n", setting.getPath().c_str(), port.c_str());
 				throw eConfParseError(); 	
 			
 			}
 			if((std::find(ports.begin(), ports.end(), port) != ports.end())){
-				ROFL_ERR("LSI %s: attempting to attach twice port %s!\n", name.c_str(), port.c_str());
+				ROFL_ERR("%s: attempting to attach twice port '%s'!\n", setting.getPath().c_str(), port.c_str());
 				throw eConfParseError(); 	
 			
 			}				
@@ -217,7 +217,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 	}	
 
 	if(ports.size() < 2){
- 		ROFL_ERR("LSI %s: an LSI must have at least two ports attached.\n", name.c_str());
+ 		ROFL_ERR("%s: an LSI must have at least two ports attached.\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	
 	}
@@ -233,12 +233,12 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 		return;
 
 	if(setting.exists(LSI_TABLES_MATCHING_ALGORITHM) && !setting[LSI_TABLES_MATCHING_ALGORITHM].isList()){
- 		ROFL_ERR("LSI %s: unable to parse matching algorithms.\n", name.c_str());
+ 		ROFL_ERR("%s: unable to parse matching algorithms.\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	}
 
 	if(setting[LSI_TABLES_MATCHING_ALGORITHM].getLength() > (int)num_of_tables){
-		ROFL_ERR("LSI %s: error while parsing matching algorithms. The amount of matching algorithms specified (%u) exceeds the number of tables(%u)\n", name.c_str(), setting[LSI_TABLES_MATCHING_ALGORITHM].getLength(), num_of_tables);
+		ROFL_ERR("%s: error while parsing matching algorithms. The amount of matching algorithms specified (%u) exceeds the number of tables(%u)\n", setting.getPath().c_str(), setting[LSI_TABLES_MATCHING_ALGORITHM].getLength(), num_of_tables);
 		throw eConfParseError(); 	
 	}
 
@@ -247,7 +247,7 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 		std::string algorithm = setting[LSI_TABLES_MATCHING_ALGORITHM][i];
 	
 		if(algorithm == ""){
-			ROFL_ERR("LSI %s: unable to parse matching algorithm for table number %u. Empty algorithm.\n", name.c_str(), i);
+			ROFL_ERR("%s: unable to parse matching algorithm for table number %u. Empty algorithm.\n", setting.getPath().c_str(), i+1);
 			throw eConfParseError(); 	
 		}
 	
@@ -255,7 +255,7 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 		it = std::find(available_algorithms.begin(), available_algorithms.end(), algorithm);
 
 		if(it == available_algorithms.end()){
-			ROFL_ERR("LSI %s: unknown matching algorithm '%s' (OFP version 0x%x) for table number %u. Available matching algorithms are: [", name.c_str(), algorithm.c_str(),version, i);
+			ROFL_ERR("%s: unknown matching algorithm '%s' (OFP version 0x%x) for table number %u. Available matching algorithms are: [", setting.getPath().c_str(), algorithm.c_str(),version, i+1);
 			for (it = available_algorithms.begin(); it != available_algorithms.end(); ++it)
 				ROFL_ERR("%s,", (*it).c_str());
 			ROFL_ERR("]\n");
@@ -267,7 +267,7 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 	}
 
 	if(i != (int)num_of_tables && dry_run){
-		ROFL_WARN("LSI %s: a matching algorithm has NOT been specified for all tables. Default algorithm for tables from %u to %u included has been set to the default '%s'\n", name.c_str(), i+1, num_of_tables, (*available_algorithms.begin()).c_str());
+		ROFL_WARN("%s: a matching algorithm has NOT been specified for all tables. Default algorithm for tables from %u to %u included has been set to the default '%s'\n", setting.getPath().c_str(), i+1, num_of_tables, (*available_algorithms.begin()).c_str());
 	}
 }
 
@@ -291,7 +291,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//Recover dpid and try to parse
 	dpid = strtoull(setting[LSI_DPID].c_str(),NULL,0);
 	if(!dpid){
-		ROFL_ERR("LSI %s: Unable to convert parameter DPID to a proper uint64_t\n", name.c_str());
+		ROFL_ERR("%s: Unable to convert parameter DPID to a proper uint64_t\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	}
 
@@ -305,7 +305,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 			passive = true;
 		}else if(mode != LSI_ACTIVE_MODE){	
 			if(dry_run)
-				ROFL_WARN("LSI %s: Unable to parse mode.. assuming ACTIVE\n", name.c_str()); 
+				ROFL_WARN("%s: Unable to parse mode.. assuming ACTIVE\n", setting.getPath().c_str()); 
 		}
 	}	
 
@@ -321,13 +321,13 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		num_of_tables = setting[LSI_NUM_OF_TABLES];
 
 		if(version == OF_VERSION_10 && num_of_tables > 1){
-			ROFL_ERR("LSI %s: number of tables %u > 1. An LSI running in OF 1.0 native mode, can only be instantiated with 1 table.\n", name.c_str(), num_of_tables);
+			ROFL_ERR("%s: number of tables %u > 1. An LSI running in OF 1.0 native mode, can only be instantiated with 1 table.\n", setting.getPath().c_str(), num_of_tables);
 			throw eConfParseError(); 	
 		}	
 	}
 
 	if(num_of_tables < 1 || num_of_tables > 255){
-		ROFL_ERR("LSI %s: invalid num of tables %u. An LSI shall have from 1 to 255 tables.\n", name.c_str(), num_of_tables);
+		ROFL_ERR("%s: invalid num of tables %u. An LSI shall have from 1 to 255 tables.\n", setting.getPath().c_str(), num_of_tables);
 		throw eConfParseError(); 	
 	
 	}
@@ -346,7 +346,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, master_controller, bind_address); //FIXME:: add slave and reconnect
 
 		if(!sw){
-			ROFL_ERR("Unable to create LSI %s; unknown error.\n", name.c_str());
+			ROFL_ERR("%s: Unable to create LSI %s; unknown error.\n", setting.getPath().c_str(), name.c_str());
 			throw eConfParseError(); 	
 		}	
 	
@@ -359,7 +359,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 				//Bring up
 				port_manager::enable_port(*port);
 			}catch(...){	
-				ROFL_ERR("LSI %s: unable to attach port %s. Unknown error.\n", name.c_str(), (*port).c_str());
+				ROFL_ERR("%s: unable to attach port '%s'. Unknown error.\n", setting.getPath().c_str(), (*port).c_str());
 				throw;
 			}
 		}

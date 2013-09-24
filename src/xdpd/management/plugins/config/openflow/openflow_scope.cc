@@ -26,7 +26,7 @@ of_lsis_scope::of_lsis_scope(std::string name, bool mandatory):scope(name, manda
 void of_lsis_scope::pre_validate(libconfig::Setting& setting, bool dry_run){
 
 	if(setting.getLength() == 0){
-		ROFL_ERR("%s: No switches found!\n", name.c_str());
+		ROFL_ERR("%s: No logical switches found!\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 		
 	}

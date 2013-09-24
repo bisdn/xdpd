@@ -44,7 +44,7 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 	std::string lsi_name;
 
 	if(setting.getLength()%2 != 0){
-		ROFL_ERR("%s: malformed virtual interfaces section. There must be defined in pairs\n", name.c_str());
+		ROFL_ERR("%s: malformed virtual interfaces section. There must be defined in pairs\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 		
 	}
@@ -52,7 +52,7 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 	//Detect existing subscopes (logical switches) and register
  	for(int i = 0; i<setting.getLength(); ++i){
 		if( !setting[i].exists(VIF_LINK) || !setting[i].exists(VIF_LSI) ){
-			ROFL_ERR("%s: missing '%s' and/or '%s' mandatory parameters in vif '%s' configuration section.\n", name.c_str(), VIF_LINK, VIF_LSI, setting[i].getName());
+			ROFL_ERR("%s: missing '%s' and/or '%s' mandatory parameters in vif '%s' configuration section.\n", setting.getPath().c_str(), VIF_LINK, VIF_LSI, setting[i].getName());
 			throw eConfParseError(); 	
 	
 		}
@@ -70,14 +70,14 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 
 			//Check link name is not repeated
 			if(provisioned_links.find(key) != provisioned_links.end()){
-				ROFL_ERR("%s: duplicated vlink '%s' name!\n", name.c_str(), key.c_str());
+				ROFL_ERR("%s: duplicated vlink '%s' name!\n", setting.getPath().c_str(), key.c_str());
 				throw eConfParseError(); 
 			
 			}	
 	
 			//Check self connection
  			if(lsi_name == value){
-				ROFL_ERR("%s: unable to create vlink. Switch '%s' cannot be connected to itself!\n", name.c_str(), value.c_str());
+				ROFL_ERR("%s: unable to create vlink. Switch '%s' cannot be connected to itself!\n", setting.getPath().c_str(), value.c_str());
 				throw eConfParseError(); 
 			}	
 
@@ -89,7 +89,7 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 				//Recover switches by name
 				sw1 = switch_manager::find_by_name(lsi_name);
 				if(!sw1){
-					ROFL_ERR("%s: unable to create vlink. Switch '%s' does not exist.\n", name.c_str(), lsi_name.c_str());
+					ROFL_ERR("%s: unable to create vlink. Switch '%s' does not exist.\n", setting.getPath().c_str(), lsi_name.c_str());
 					throw eConfParseError(); 	
 					
 				}
@@ -97,7 +97,7 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 				//Recover switches by name
 				sw2 = switch_manager::find_by_name(value);
 				if(!sw2){
-					ROFL_ERR("%s: unable to create vlink. Switch '%s' does not exist.\n", name.c_str(), value.c_str());
+					ROFL_ERR("%s: unable to create vlink. Switch '%s' does not exist.\n", setting.getPath().c_str(), value.c_str());
 					throw eConfParseError(); 	
 					
 				}		
@@ -113,7 +113,7 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 	
 	//Check size of partial_links. Must be zero
 	if(partial_links.size() > 0){
-		ROFL_ERR("%s: error, some virtual interfaces could not be connected. This is likely due to one or more unpaired '%s' values.\n", name.c_str(), VIF_LINK);
+		ROFL_ERR("%s: error, some virtual interfaces could not be connected. This is likely due to one or more unpaired '%s' values.\n", setting.getPath().c_str(), VIF_LINK);
 		throw eConfParseError(); 	
 	}
 }

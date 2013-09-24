@@ -49,7 +49,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 	std::map<std::string, bool>::iterator param_iter;
 	for (param_iter = parameters.begin(); param_iter != parameters.end(); ++param_iter) {
 		if(param_iter->second && !setting.exists(param_iter->first.c_str())){
-			ROFL_ERR("Mandatory parameter '%s' under scope '%s' not found\n", param_iter->first.c_str(), name.c_str());
+			ROFL_ERR("%s: mandatory parameter '%s' not found\n", setting.getPath().c_str(), param_iter->first.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
 	}
@@ -62,7 +62,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 				! setting[(*scope_iter)->name].isGroup()
 			)
 		){
-			ROFL_ERR("Mandatory subscope '%s' under scope '%s' not found\n", (*scope_iter)->name.c_str(), name.c_str());
+			ROFL_ERR("%s: mandatory subscope '%s' not found\n", setting.getPath().c_str(), (*scope_iter)->name.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
 		
@@ -83,7 +83,7 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 	std::map<std::string, bool>::iterator param_iter;
 	for (param_iter = parameters.begin(); param_iter != parameters.end(); ++param_iter) {
 		if(param_iter->second && !config.exists(param_iter->first.c_str())){
-			ROFL_ERR("Mandatory parameter '%s' under scope '%s' not found\n", param_iter->first.c_str(), name.c_str());
+			ROFL_ERR("%s: mandatory parameter '%s' not found\n", name.c_str(), param_iter->first.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
 	}
@@ -96,7 +96,7 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 				! config.lookup((*scope_iter)->name).isGroup()
 			)
 		){
-			ROFL_ERR("Mandatory subscope '%s' under scope '%s' not found\n", (*scope_iter)->name.c_str(), name.c_str());
+			ROFL_ERR("%s: mandatory subscope '%s' not found\n", name.c_str(), (*scope_iter)->name.c_str());
 	
 			throw eConfMandatoryParameterNotPresent();
 		}

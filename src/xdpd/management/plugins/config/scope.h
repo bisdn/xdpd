@@ -3,6 +3,7 @@
 
 #include <libconfig.h++> 
 #include <map> 
+#include <vector> 
 #include <rofl/common/cerror.h>
 #include <rofl/common/utils/c_logger.h>
 
@@ -37,7 +38,7 @@ public:
 	std::string name;
 protected:
 	bool mandatory;
-	std::map<std::string, scope*> sub_scopes;
+	std::vector<scope*> sub_scopes;
 	std::map<std::string, bool> parameters;
 
 	//Register methods

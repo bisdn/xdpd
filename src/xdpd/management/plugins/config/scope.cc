@@ -11,19 +11,23 @@ scope::scope(std::string scope_name, bool mandatory){
 scope::~scope(){
 
 	//Destroy all subscopes
-	std::map<std::string, scope*>::iterator scope_iter;
+	std::vector<scope*>::iterator scope_iter;
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter)
-		delete scope_iter->second;
+		delete *scope_iter;
 	sub_scopes.clear();
 		
 }
 		
 void scope::register_subscope(std::string _name, scope* sc){
 
-	if(sub_scopes.find(_name) != sub_scopes.end())
-		throw eConfDuplicatedScope();
+	std::vector<scope*>::iterator scope_iter;
+	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
+		if(*scope_iter == sc)
+			throw eConfDuplicatedScope();
+			
+	}
 	
-	sub_scopes[_name] = sc;
+	sub_scopes.push_back(sc);
 }
 
 void scope::register_parameter(std::string _name, bool mandatory){
@@ -51,17 +55,17 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 	}
 	
 	//Go through sub scopes
-	std::map<std::string, scope*>::iterator scope_iter;
+	std::vector<scope*>::iterator scope_iter;
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
-		if(	scope_iter->second->mandatory && 
-			(	! setting.exists(scope_iter->first.c_str()) || 
-				! setting[scope_iter->first].isGroup()
+		if(	(*scope_iter)->mandatory && 
+			(	! setting.exists((*scope_iter)->name) || 
+				! setting[(*scope_iter)->name].isGroup()
 			)
 		){
-			ROFL_ERR("Mandatory subscope %s under scope %s not found\n", scope_iter->first.c_str(), name.c_str());
+			ROFL_ERR("Mandatory subscope %s under scope %s not found\n", (*scope_iter)->name.c_str(), name.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
-		scope_iter->second->execute(setting[scope_iter->first], dry_run);
+		(*scope_iter)->execute(setting[(*scope_iter)->name], dry_run);
 	}
 
 	//Call post-hook
@@ -83,17 +87,18 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 	}
 	
 	//Go through sub scopes
-	std::map<std::string, scope*>::iterator scope_iter;
+	std::vector<scope*>::iterator scope_iter;
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
-		if(	scope_iter->second->mandatory && 
-			(	! config.exists(scope_iter->first.c_str()) || 
-				! config.lookup(scope_iter->first.c_str()).isGroup()
+		if(	(*scope_iter)->mandatory && 
+			(	! config.exists((*scope_iter)->name) || 
+				! config.lookup((*scope_iter)->name).isGroup()
 			)
 		){
-			ROFL_ERR("Mandatory subscope %s under scope %s not found\n", scope_iter->first.c_str(), name.c_str());
+			ROFL_ERR("Mandatory subscope %s under scope %s not found\n", (*scope_iter)->name.c_str(), name.c_str());
+	
 			throw eConfMandatoryParameterNotPresent();
 		}
-		scope_iter->second->execute(config.lookup(scope_iter->first), dry_run);
+		(*scope_iter)->execute(config.lookup((*scope_iter)->name), dry_run);
 	}
 
 	

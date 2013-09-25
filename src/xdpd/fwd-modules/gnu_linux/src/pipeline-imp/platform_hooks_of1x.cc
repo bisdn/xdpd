@@ -79,9 +79,6 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
 
 	ROFL_DEBUG("Enqueuing PKT_IN event for packet(%p) in switch: %s\n",pkt,sw->name);
-
-	//Recover platform state
-	pkt_x86 = (datapacketx86*)pkt->platform_state;
 	
 	//Recover platform state and fill it so that state can be recovered afterwards
 	pkt_x86 = (datapacketx86*)pkt->platform_state;

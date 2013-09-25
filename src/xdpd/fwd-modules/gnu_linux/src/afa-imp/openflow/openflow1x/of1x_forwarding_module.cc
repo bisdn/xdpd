@@ -58,6 +58,32 @@ afa_result_t fwd_module_of1x_set_port_drop_received_config(uint64_t dpid, unsign
 }
 
 /**
+ * @name    fwd_module_of1x_set_port_no_flood_config
+ * @brief   Instructs driver to modify port config state 
+ * @ingroup of1x_fwd_module_async_event_processing
+ *
+ * @param dpid 			Datapath ID of the switch 
+ * @param port_num		Port number 	
+ * @param no_flood		No flood allowed in port
+ */
+afa_result_t fwd_module_of1x_set_port_no_flood_config(uint64_t dpid, unsigned int port_num, bool no_flood){
+	
+	switch_port_t* port = physical_switch_get_port_by_num(dpid,port_num);
+	ioport* ioport_instance;
+
+	if(!port)
+		return AFA_FAILURE;
+
+	ioport_instance = (ioport*)port->platform_port_state;	
+
+	//Set flag
+	if(ioport_instance->set_no_flood_config(no_flood) != ROFL_SUCCESS )
+		return AFA_FAILURE;
+	
+	return AFA_SUCCESS;
+}
+
+/**
  * @name    fwd_module_of1x_set_port_forward_config
  * @brief   Instructs driver to modify port config state 
  * @ingroup of1x_fwd_module_async_event_processing

@@ -530,7 +530,7 @@ dpx86_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
 static void dpx86_output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_port_t* port){
 
 	//Output packet to the appropiate queue and port_num
-	if(port && port->platform_port_state){
+	if(likely(port && port->platform_port_state) && port->up && port->forward_packets){
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
 #ifdef DEBUG
@@ -616,7 +616,7 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			port_it = sw->logical_ports[i].port;
 
 			//Check port is not incomming port, exists, and is up 
-			if(i == pack->in_port || !port_it || !port_it->up)
+			if(i == pack->in_port || !port_it || port_it->no_flood)
 				continue;
 
 			//replicate packet

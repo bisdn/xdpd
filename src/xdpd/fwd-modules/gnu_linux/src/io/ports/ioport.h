@@ -126,6 +126,12 @@ public:
 	virtual rofl_result_t set_drop_received_config(bool drop_received);
 
 	/**
+	 * Sets the port flood output behaviour. This MUST change the of_port_state appropiately
+	 * Inherited classes may override this method if they have specific things to do.
+	 */
+	virtual rofl_result_t set_no_flood_config(bool no_flood);
+	
+	/**
 	 * Sets the port output behaviour. This MUST change the of_port_state appropiately
 	 * Inherited classes may override this method if they have specific things to do.
 	 */

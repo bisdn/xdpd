@@ -31,6 +31,14 @@ rofl_result_t ioport::set_drop_received_config(bool drop_received){
 }
 
 /**
+ * Sets the port flood output behaviour. This MUST change the of_port_state appropiately
+ */
+rofl_result_t ioport::set_no_flood_config(bool no_flood){
+	of_port_state->no_flood = no_flood;
+	return ROFL_SUCCESS;
+}
+
+/**
  * Sets the port output behaviour. This MUST change the of_port_state appropiately
  */
 rofl_result_t ioport::set_forward_config(bool forward_packets){

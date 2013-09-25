@@ -81,6 +81,8 @@ of10_endpoint::handle_features_request(
 				config |= OFPPC10_PORT_DOWN;
 			if(_port->drop_received)
 				config |= OFPPC10_NO_RECV;
+			if(_port->no_flood)
+				config |= OFPPC10_NO_FLOOD;
 			if(!_port->forward_packets)
 				config |= OFPPC10_NO_FWD;
 			if(!_port->of_generate_packet_in)
@@ -907,7 +909,7 @@ of10_endpoint::flow_mod_delete(
 								entry,
 								pack->get_buffer_id(),
 								pack->get_out_port(),
-								pack->get_out_group(),
+								OF1X_GROUP_ANY,
 								strictness)) {
 		WRITELOG(CDATAPATH, ERROR, "Error deleting flowmod\n");
 		of1x_destroy_flow_entry(entry);
@@ -1033,14 +1035,11 @@ of10_endpoint::handle_port_mod(
 		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFPPC10_NO_FWD) ) )
 			throw ePortModBase();
 
-	//No forward
-	if( mask &  OFPPC10_NO_FLOOD ) // FIXME: add OFPPC10_NO_FLOOD to pipeline
+	//No flood
+	if( mask &  OFPPC10_NO_FLOOD )
 	{
-		//assert(0);
-#if 0
-		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, !(config & OFPPC10_NO_FWD) ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, config & OFPPC10_NO_FLOOD ) )
 			throw ePortModBase();
-#endif
 	}
 
 	//No packet in

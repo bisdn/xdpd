@@ -31,7 +31,7 @@ void config::parse_config(Config* cfg, cunixenv& env_parser){
 		ROFL_ERR("Config file %s not found. Aborting...\n",conf_file.c_str());	
 		throw eConfFileNotFound();
 		throw fioex;
-	}catch(const ParseException &pex){
+	}catch(ParseException &pex){
 		ROFL_ERR("Error while parsing file %s at line: %u \nAborting...\n",conf_file.c_str(),pex.getLine());
 		throw eConfParseError();
 	}

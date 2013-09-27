@@ -10,15 +10,15 @@ SUBDIRS = management openflow fwd-modules
 sbin_PROGRAMS = xdpd
 xdpd_SOURCES = xdpd.cc
 xdpd_LDADD = \
+	openflow/.libs/libxdpd_openflow.a\
 	-lrofl_pipeline \
-	openflow/.libs/libxdpd_openflow.a\
 	$(FM_LIB_a)\
 	openflow/.libs/libxdpd_openflow.a\
+	$(FM_LIB_a)\
+	-lrofl_pipeline \
 	management/libxdpd_mgmt.la \
-	$(FM_LIB_a)\
 	-lpthread \
 	-lrofl \
-	-lrofl_pipeline \
 	-ldl
 
 #The .a is a workaround to prevent libtool to strip it...

@@ -80,9 +80,9 @@ of10_endpoint::handle_features_request(
 			if(!_port->up)
 				config |= OFP10PC_PORT_DOWN;
 			if(_port->drop_received)
-				config |= OFPPC10_NO_RECV;
+				config |= OFP10PC_NO_RECV;
 			if(_port->no_flood)
-				config |= OFPPC10_NO_FLOOD;
+				config |= OFP10PC_NO_FLOOD;
 			if(!_port->forward_packets)
 				config |= OFP10PC_NO_FWD;
 			if(!_port->of_generate_packet_in)
@@ -1036,9 +1036,9 @@ of10_endpoint::handle_port_mod(
 			throw ePortModBase();
 
 	//No flood
-	if( mask &  OFPPC10_NO_FLOOD )
+	if( mask &  OFP10PC_NO_FLOOD )
 	{
-		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, config & OFPPC10_NO_FLOOD ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, config & OFP10PC_NO_FLOOD ) )
 			throw ePortModBase();
 	}
 

@@ -1,4 +1,4 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-lib_LTLIBRARIES = libfwd_module_gnu_linux_afa_imp_of1x.la
+noinst_LTLIBRARIES = libfwd_module_gnu_linux_afa_imp_of1x.la
 libfwd_module_gnu_linux_afa_imp_of1x_la_SOURCES = of1x_forwarding_module.cc

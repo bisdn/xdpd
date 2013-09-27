@@ -208,6 +208,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
+#if 0
 	try {
 		of1x_match_t *match = of1x_init_tcp_src_match(
 								/*prev*/NULL,
@@ -234,6 +235,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
+#endif
 
 	// no UDP-dst/src in OF1.0 (TCP-dst/src is used for all transport protocols)
 
@@ -261,22 +263,22 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 		switch (ip_proto) {
 		case ftcpframe::TCP_IP_PROTO: {
-			match = of1x_init_tcp_src_match(
+			match = of1x_init_tp_src_match(
 								/*prev*/NULL,
 								/*next*/NULL,
 								ofmatch.get_tcp_src());
 		} break;
 		case fudpframe::UDP_IP_PROTO: {
-			match = of1x_init_udp_src_match(
+			match = of1x_init_tp_src_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_tcp_src());
+								ofmatch.get_udp_src());
 		} break;
 		case ficmpv4frame::ICMPV4_IP_PROTO: {
-			match = of1x_init_icmpv4_type_match(
+			match = of1x_init_tp_src_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_tcp_src());
+								ofmatch.get_icmpv4_type());
 		} break;
 		}
 
@@ -290,22 +292,22 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 		switch (ip_proto) {
 		case ftcpframe::TCP_IP_PROTO: {
-			match = of1x_init_tcp_dst_match(
+			match = of1x_init_tp_dst_match(
 								/*prev*/NULL,
 								/*next*/NULL,
 								ofmatch.get_tcp_dst());
 		} break;
 		case fudpframe::UDP_IP_PROTO: {
-			match = of1x_init_udp_dst_match(
+			match = of1x_init_tp_dst_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_tcp_dst());
+								ofmatch.get_udp_dst());
 		} break;
 		case ficmpv4frame::ICMPV4_IP_PROTO: {
-			match = of1x_init_icmpv4_code_match(
+			match = of1x_init_tp_dst_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_tcp_dst());
+								ofmatch.get_icmpv4_code());
 		} break;
 		}
 
@@ -345,6 +347,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
+#if 1
 	// no ARP-SHA in OF1.0
 
 	try {
@@ -374,7 +377,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
-
+#endif
 	// no IPv6 support in OF1.0
 
 	// no ICMPv6 support in OF1.0
@@ -444,8 +447,12 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_TP_SRC:
+			field.u64 = be16toh(raction.oac_10tpport->tp_port);
+			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TCP_SRC, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_TP_DST:
+			field.u64 = be16toh(raction.oac_10tpport->tp_port);
+			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TCP_DST, field, NULL, NULL);
 			break;
 		case OFP10AT_ENQUEUE:
 			// FIXME: what to do with the port field in struct ofp10_action_enqueue?

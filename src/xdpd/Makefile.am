@@ -14,7 +14,6 @@ xdpd_LDADD = \
 	-lrofl_pipeline \
 	$(FM_LIB_a)\
 	openflow/.libs/libxdpd_openflow.a\
-	$(FM_LIB_a)\
 	-lrofl_pipeline \
 	management/libxdpd_mgmt.la \
 	-lpthread \

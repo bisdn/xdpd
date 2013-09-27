@@ -164,6 +164,10 @@ public:
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
 	
+	inline void set_link_state(port_state_t state){
+		of_port_state->state = state;
+	}
+	
 	//Switch processing queue to which the port is attached
 	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_processing_queue;
 	

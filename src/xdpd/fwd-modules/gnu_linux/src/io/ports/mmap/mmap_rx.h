@@ -104,7 +104,7 @@ next:
 			return hdr;
 		}else{
 			//TP_STATUS_COPY or TP_STATUS_CSUMNOTREADY (outgoing) => ignore
-			ROFL_DEBUG("[mmap_rx:%s] Discarting frame with status :%d, size: %d\n", devname.c_str(), hdr->tp_status,hdr->tp_len );
+			ROFL_DEBUG("[mmap_rx:%s] Discarding frame with status :%d, size: %d\n", devname.c_str(), hdr->tp_status,hdr->tp_len );
 
 			//Skip
 			hdr->tp_status = TP_STATUS_KERNEL;

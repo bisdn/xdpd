@@ -17,7 +17,8 @@
 #include "mmap_tx.h"
 #include "../../datapacketx86.h"
 
-#define PORT_DEFAULT_MTU 1500
+#define PORT_ETHER_LENGTH 18
+#define PORT_DEFAULT_PKT_SIZE 1518
 
 /**
 * @file ioport_mmapv2.h

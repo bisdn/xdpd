@@ -23,6 +23,7 @@ int pktin_not_pipe[2];
 //Processes the pkt_ins up to BUCKETS_PER_LS 
 static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 
+	int ret;
 	unsigned int i, pkt_size;
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
@@ -85,7 +86,8 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 	}
 
 	//Empty pipe (n tokens)
-	(void)read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf,i);
+	ret = read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf,i);
+	(void)ret;
 }
 
 //Initialize pkt in notification pipe

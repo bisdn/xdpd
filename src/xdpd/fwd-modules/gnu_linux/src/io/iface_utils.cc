@@ -21,6 +21,7 @@
 #include "ports/ioport.h" 
 #include "ports/mmap/ioport_mmap.h" 
 #include "ports/mmap/ioport_mmapv2.h" 
+#include "ports/vlink/ioport_vlink.h" 
 
 /*
 *
@@ -145,11 +146,12 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
 		//FIXME change this messages into warnings "Unable to discover mac address of interface %s"
-		ROFL_WARN("WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
+		if(strncmp("lo",ifa->ifa_name,2) != 0)
+			ROFL_WARN("WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
 	}
 	
 	//Init the port
-	port = switch_port_init(ifa->ifa_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_LIVE/*will be overriden afterwards*/);
+	port = switch_port_init(ifa->ifa_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_NONE);
 	if(!port)
 		return NULL;
 
@@ -231,6 +233,119 @@ rofl_result_t discover_physical_ports(){
 	
 	return ROFL_SUCCESS;
 }
+/*
+ * Creates a virtual port pair between two switches
+ */
+rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_switch_t* lsw2, ioport** vport2){
+
+	//Names are composed following vlinkX-Y
+	//Where X is the virtual link number (0... N-1)
+	//Y is the edge 0 (left) 1 (right) of the connectio
+	static unsigned int num_of_vlinks=0;
+	char port_name[PORT_QUEUE_MAX_LEN_NAME];
+	switch_port_t *port1, *port2;	
+	uint64_t port_capabilities=0x0;
+	uint64_t mac_addr;
+
+	//Init the pipeline ports
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u.%u", num_of_vlinks, 0);
+	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u.%u", num_of_vlinks, 1);
+	port2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+
+	if(!port1 || !port2){
+		free(port1);
+		assert(0);
+		ROFL_ERR("<%s:%d> Not enough memory\n",__func__, __LINE__);
+		return ROFL_FAILURE;
+	}
+
+	//Create two ioports
+	*vport1 = new ioport_vlink(port1);
+	
+	if(!*vport1){
+		free(port1);
+		free(port2);
+		ROFL_ERR("<%s:%d> Not enough memory\n",__func__, __LINE__);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+	
+	*vport2 = new ioport_vlink(port2);
+
+	if(!*vport2){
+		free(port1);
+		free(port2);
+		delete *vport1;
+		ROFL_ERR("<%s:%d> Not enough memory\n",__func__, __LINE__);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	//Initalize port features(Marking as 1G)
+	port_capabilities |= PORT_FEATURE_1GB_FD;
+	
+	switch_port_add_capabilities(&port1->curr, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port1->advertised, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port1->supported, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port1->peer, (port_features_t)port_capabilities);	
+	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
+	memcpy(port1->hwaddr, &mac_addr, sizeof(port1->hwaddr));
+
+	switch_port_add_capabilities(&port2->curr, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port2->advertised, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port2->supported, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port2->peer, (port_features_t)port_capabilities);	
+	
+	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
+	memcpy(port2->hwaddr, &mac_addr, sizeof(port1->hwaddr));
+
+	//Add output queues
+	fill_port_queues(port1, *vport1);
+	fill_port_queues(port2, *vport2);
+
+
+	//Store platform state on switch ports
+	port1->platform_port_state = (platform_port_state_t*)*vport1;
+	port2->platform_port_state = (platform_port_state_t*)*vport2;
+	
+	//Set cross link 
+	((ioport_vlink*)*vport1)->set_connected_port((ioport_vlink*)*vport2);
+	((ioport_vlink*)*vport2)->set_connected_port((ioport_vlink*)*vport1);
+
+	//Add them to the platform
+	if( physical_switch_add_port(port1) != ROFL_SUCCESS ){
+		free(port1);
+		free(port2);
+		delete *vport1;
+		delete *vport2;
+		ROFL_ERR("<%s:%d> Unable to add vlink port1 to the physical switch; out of slots?\n",__func__, __LINE__);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+	if( physical_switch_add_port(port2) != ROFL_SUCCESS ){
+		free(port1);
+		free(port2);
+		delete *vport1;
+		delete *vport2;
+		ROFL_ERR("<%s:%d> Unable to add vlink port2 to the physical switch; out of slots?\n",__func__, __LINE__);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	//Increment counter and return
+	num_of_vlinks++; //TODO: make this atomic jic
+
+	return ROFL_SUCCESS;	
+}
+
+switch_port_t* get_vlink_pair(switch_port_t* port){
+	if(((ioport_vlink*)port->platform_port_state)->connected_port)
+		return ((ioport_vlink*)port->platform_port_state)->connected_port->of_port_state; 
+	else 
+		return NULL;
+}
 
 rofl_result_t destroy_port(switch_port_t* port){
 	
@@ -260,14 +375,20 @@ rofl_result_t destroy_ports(){
 	switch_port_t** array;	
 
 	array = physical_switch_get_physical_ports(&max_ports);
-	
 	for(i=0; i<max_ports ; i++){
 		if(array[i] != NULL){
 			destroy_port(array[i]);
 		}
 	}
 
-	//TODO: add virtual and tun
+	array = physical_switch_get_virtual_ports(&max_ports);
+	for(i=0; i<max_ports ; i++){
+		if(array[i] != NULL){
+			destroy_port(array[i]);
+		}
+	}
+
+	//TODO: add tun
 
 	return ROFL_SUCCESS;
 }

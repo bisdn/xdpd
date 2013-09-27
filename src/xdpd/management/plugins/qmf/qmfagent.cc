@@ -11,26 +11,30 @@
 #include "qmfagent.h"
 
 using namespace xdpd;
+using namespace rofl;
 
-qmfagent* qmfagent::qmf_agent = (qmfagent*)0;
 
-
-qmfagent&
-qmfagent::get_instance(std::string const& broker_url)
+qmfagent::qmfagent():qmf_package("de.bisdn.xdpd")
 {
-	if (0 == qmfagent::qmf_agent) {
-		qmfagent::qmf_agent = new qmfagent(broker_url);
-	}
-	return *(qmfagent::qmf_agent);
+	//Do nothing
 }
+		
 
-
-
-qmfagent::qmfagent(
-		std::string const& broker_url) :
-		broker_url(broker_url),
-		qmf_package("de.bisdn.xdpd")
+void qmfagent::init(int argc, char** argv)
 {
+	cunixenv env_parser;
+ 
+	//Add additional arguments
+	env_parser.add_option(
+		coption(true, REQUIRED_ARGUMENT, 'q', "qmfaddr", "qmf broker address",
+		std::string("127.0.0.1")));
+
+	//Parse
+	env_parser.parse_args(argc, argv);
+	
+	//Recover
+	broker_url = env_parser.get_arg('q');
+
 	connection = qpid::messaging::Connection(broker_url, "{reconnect:True}");
 	connection.open();
 
@@ -49,13 +53,6 @@ qmfagent::qmfagent(
 	qxdpd.addr = session.addData(qxdpd.data, name.str());
 
 	register_filedesc_r(notifier.getHandle());
-}
-
-
-
-qmfagent::qmfagent(qmfagent const& agent)
-{
-
 }
 
 

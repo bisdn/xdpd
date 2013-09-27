@@ -7,18 +7,15 @@
 #include <rofl/common/utils/c_logger.h>
 #include "management/switch_manager.h"
 #include "management/port_manager.h"
-#include "management/plugins/cli/xdpd_cli.h"
-
-#ifdef HAVE_CONFIG_QMF
-#include "management/plugins/qmf/qmfagent.h"
-#endif
+#include "management/plugin_manager.h"
 
 using namespace rofl;
 using namespace xdpd;
 
-#define XDPD_LOG_FILE "xdpd.log"
+extern int optind;
 
 //TODO: Redirect C loggers to the output log
+#define XDPD_LOG_FILE "xdpd.log"
 
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
@@ -30,6 +27,7 @@ void interrupt_handler(int dummy=0) {
  * XDPD Main routine
  */
 int main(int argc, char** argv){
+
 
 	//Check for root privileges 
 	if(geteuid() != 0){
@@ -49,38 +47,26 @@ int main(int argc, char** argv){
 	char s_dbg[32];
 	memset(s_dbg, 0, sizeof(s_dbg));
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
-	cunixenv::getInstance().add_option(coption(true,REQUIRED_ARGUMENT,'d',"debug","debug level", std::string(s_dbg)));
 
-	cunixenv::getInstance().add_option(
-			coption(true, REQUIRED_ARGUMENT, 'a', "address", "cli listen address",
-					std::string("127.0.0.1")));
+	{ //Make valgrind happy
+		cunixenv env_parser;
+		
+		/* update defaults */
+		env_parser.update_default_option("logfile", XDPD_LOG_FILE);
 
-	cunixenv::getInstance().add_option(
-			coption(true, REQUIRED_ARGUMENT, 'p', "port", "cli listen port",
-					std::string("1234")));
+		//Parse
+		env_parser.parse_args(argc, argv);
 
-#ifdef HAVE_CONFIG_QMF
-	cunixenv::getInstance().add_option(
-			coption(true, REQUIRED_ARGUMENT, 'q', "qmfaddr", "qmf broker address",
-					std::string("127.0.0.1")));
-#endif
+		if (not env_parser.is_arg_set("daemonize")) {
+			// only do this in non
+			std::string ident(XDPD_LOG_FILE);
 
-	/* update defaults */
-	cunixenv::getInstance().update_default_option("logfile", XDPD_LOG_FILE);
-
-	//Parse
-	cunixenv::getInstance().parse_args(argc, argv);
-
-	if (not cunixenv::getInstance().is_arg_set("daemonize")) {
-		// only do this in non
-		std::string ident(XDPD_LOG_FILE);
-
-		csyslog::initlog(csyslog::LOGTYPE_FILE,
-				static_cast<csyslog::DebugLevel>(atoi(cunixenv::getInstance().get_arg("debug").c_str())), // todo needs checking
-				cunixenv::getInstance().get_arg("logfile"),
-				ident.c_str());
+			csyslog::initlog(csyslog::LOGTYPE_FILE,
+					static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
+					env_parser.get_arg("logfile"),
+					ident.c_str());
+		}
 	}
-	
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
 		ROFL_INFO("Init driver failed\n");	
@@ -90,23 +76,9 @@ int main(int argc, char** argv){
 	//Init the ciosrv.
 	ciosrv::init();
 
-	//Parse config file
-	xdpd_cli* cli = new xdpd_cli(
-			caddress(AF_INET, cunixenv::getInstance().get_arg('a').c_str(),
-					atoi(cunixenv::getInstance().get_arg('p').c_str())));
-	try {
-		cli->read_config_file(cunixenv::getInstance().get_arg("config-file"));
-	} catch (std::runtime_error& e) {
-	} catch (rofl::eCliConfigFileNotFound& e) {
-	}
-
-#ifdef HAVE_CONFIG_QMF
-	try {
-		std::string qmf_broker("127.0.0.1");
-		qmf_broker = cunixenv::getInstance().get_arg('q');
-		qmfagent::get_instance(qmf_broker);
-	} catch (std::runtime_error& e) {}
-#endif
+	//Load plugins
+	optind=0;
+	plugin_manager::init(argc, argv);
 
 	//ciosrv run. Only will stop in Ctrl+C
 	ciosrv::run();
@@ -117,9 +89,6 @@ int main(int argc, char** argv){
 	//Destroy all state
 	switch_manager::destroy_all_switches();
 
-	//Delete cli
-	delete cli;
-	
 	//ciosrv destroy
 	ciosrv::destroy();
 

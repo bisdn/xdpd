@@ -437,7 +437,7 @@ rofl_result_t ioport_mmapv2::enable() {
 		mtu = PORT_DEFAULT_MTU;	
 	}else{
 		mtu = ifr.ifr_mtu;
-		ROFL_ERR("[mmap:%s] Discovered MTU of %u.\n",  of_port_state->name, mtu);
+		ROFL_DEBUG("[mmap:%s] Discovered MTU of %u.\n",  of_port_state->name, mtu);
 	}
 
 	//Recover flags

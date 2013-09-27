@@ -289,7 +289,8 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
 
 	//Recover dpid and try to parse
-	dpid = strtoull(setting[LSI_DPID].c_str(),NULL,0);
+	std::string dpid_s = setting[LSI_DPID];
+	dpid = strtoull(dpid_s.c_str(),NULL,0);
 	if(!dpid){
 		ROFL_ERR("%s: Unable to convert parameter DPID to a proper uint64_t\n", setting.getPath().c_str());
 		throw eConfParseError(); 	

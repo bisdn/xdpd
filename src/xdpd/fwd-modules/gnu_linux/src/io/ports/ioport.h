@@ -164,8 +164,13 @@ public:
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
 	
-	inline void set_link_state(port_state_t state){
-		of_port_state->state = state;
+	inline void set_link_state(bool up){
+
+		if(!up)
+			of_port_state->state = (port_state_t)(of_port_state->state | (1 << PORT_STATE_LINK_DOWN));
+		else
+			of_port_state->state = (port_state_t)(of_port_state->state & ~(1 << PORT_STATE_LINK_DOWN)); 
+			
 	}
 	
 	//Switch processing queue to which the port is attached

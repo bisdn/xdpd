@@ -246,6 +246,10 @@ void* epoll_ioscheduler::process_io(void* grp){
 
 				ev_port_data = (epoll_event_data_t*)events[i].data.ptr;
 				port = ev_port_data->port;
+#if DEBUG
+				if(events[i].events == EPOLLERR)
+					ROFL_DEBUG("[epoll_ioscheduler] Got EPOLL_ERROR on fd %u\n", ev_port_data->fd); 
+#endif
 				if(ev_port_data->fd == port->get_read_fd()){
 					ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] RX event port %s\n", port->of_port_state->name);
 					epoll_ioscheduler::process_port_rx(port);

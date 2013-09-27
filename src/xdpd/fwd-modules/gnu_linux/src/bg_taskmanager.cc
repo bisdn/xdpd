@@ -78,7 +78,6 @@ rofl_result_t update_port_status(char * name){
 	struct ethtool_value edata;
 	struct ifreq ifr;
 	switch_port_t *port;
-	bool last_link_status;
 	port = fwd_module_get_port_by_name(name);
 	
 	memset(&edata,0,sizeof(edata));//Make valgrind happy
@@ -101,26 +100,24 @@ rofl_result_t update_port_status(char * name){
 		ROFL_ERR("ETHTOOL_GLINK failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
-
-	ROFL_DEBUG("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
 	
-	last_link_status = port->up;
+	//TODO: really split LINK from admin status
+	//Right now edata.data "==" ADMIN_UP & LINK_UP
+	ROFL_DEBUG("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
 
-	if (edata.data){
-		port->up = true;
-		//TODO call iomanager to reset mmap
-		//if(iomanager::bring_port_up((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
-			//return ROFL_FAILURE;
+	//Update link state
+	((ioport*)port->platform_port_state)->set_link_state(edata.data);
+
+	if(edata.data){
+		if(iomanager::bring_port_up((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
+			return ROFL_FAILURE;
 	}else{
-		port->up = false;
-		//TODO call iomanager to reset mmap
-		//if(iomanager::bring_port_down((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
-			//return ROFL_FAILURE;
+		if(iomanager::bring_port_down((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
+			return ROFL_FAILURE;
 	}
 	
 	//port_status message needs to be created if the port id attached to switch
-	if(port->attached_sw != NULL && last_link_status != port->up){
-		//TODO check for both status changed: LINK and ADMIN STATE, and only send 1 message
+	if(port->attached_sw != NULL){
 		cmm_notify_port_status_changed(port);
 	}
 	

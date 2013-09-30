@@ -19,9 +19,6 @@
 #include "ports/ioport.h"
 #include "datapacketx86_c_wrapper.h"
 
-//Flood meta port
-extern switch_port_t* flood_meta_port;
-
 /* Cloning of the packet */
 void
 dpx86_clone_pkt_contents(datapacket_t* src, datapacket_t* dst){
@@ -602,7 +599,7 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 
 	//flood_meta_port is a static variable defined in the physical_switch
 	//the meta_port
-	if(output_port == flood_meta_port){
+	if(output_port == flood_meta_port || output_port == all_meta_port){
 		datapacket_t* replica;
 		switch_port_t* port_it;
 		datapacketx86* replica_pack;
@@ -621,7 +618,7 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			port_it = sw->logical_ports[i].port;
 
 			//Check port is not incomming port, exists, and is up 
-			if(i == pack->in_port || !port_it || port_it->no_flood)
+			if( ((output_port == flood_meta_port) && (i == pack->in_port)) || !port_it || port_it->no_flood)
 				continue;
 
 			//replicate packet
@@ -640,6 +637,26 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			
 		//discard the original packet always (has been replicated)
 		bufferpool::release_buffer(pkt);
+	}else if(output_port == in_port_meta_port){
+		
+		//In port
+		switch_port_t* port;
+		sw = pkt->sw;	
+
+		if(unlikely(pack->in_port >= LOGICAL_SWITCH_MAX_LOG_PORTS)){
+			assert(0);
+			return;
+		}
+
+		port = sw->logical_ports[pack->in_port].port;
+		if( unlikely(port == NULL)){
+			assert(0);
+			return;
+		
+		}
+	
+		//Send to the incomming port 
+		dpx86_output_single_packet(pkt, pack, port);
 	}else{
 		//Single output	
 		dpx86_output_single_packet(pkt, pack, output_port);

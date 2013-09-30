@@ -694,6 +694,7 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 
 	//mark as replica
 	copy->is_replica = true;
+	copy->sw = pkt->sw;
 
 	//Clone contents
 	dpx86_clone_pkt_contents(pkt,copy);

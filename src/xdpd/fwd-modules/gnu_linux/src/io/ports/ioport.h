@@ -22,6 +22,8 @@
 *
 */
 
+#define ETHER_MAC_LEN 6
+
 class ioport{
 
 public:
@@ -184,6 +186,12 @@ protected:
 	
 	//Output QoS queues
 	unsigned int num_of_queues;
+
+	//Max packet size
+	unsigned int mps;
+
+	//MAC address
+	uint8_t mac[ETHER_MAC_LEN];
 
 	/**
 	* @brief Output (TX) queues (num_of_queues) 

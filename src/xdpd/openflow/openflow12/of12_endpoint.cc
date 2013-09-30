@@ -335,7 +335,7 @@ of12_endpoint::handle_flow_stats_request(
 			msg->get_flow_stats().get_cookie_mask(),
 			msg->get_flow_stats().get_out_port(),
 			msg->get_flow_stats().get_out_group(),
-					entry->matches.head);
+					&entry->matches);
 	
 	if(!fp_msg){
 		of1x_destroy_flow_entry(entry);	
@@ -423,7 +423,7 @@ of12_endpoint::handle_aggregate_stats_request(
 					msg->get_aggr_stats().get_cookie_mask(),
 					msg->get_aggr_stats().get_out_port(),
 					msg->get_aggr_stats().get_out_group(),
-					entry->matches.head);
+					&entry->matches);
 	
 	if(!fp_msg){
 		of1x_destroy_flow_entry(entry);

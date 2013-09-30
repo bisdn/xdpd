@@ -336,7 +336,7 @@ of10_endpoint::handle_flow_stats_request(
 			0,
 			msg->get_flow_stats().get_out_port(),
 			OF1X_GROUP_ANY,
-			entry->matches.head);
+			&entry->matches);
 
 	if(!fp_msg){
 		of1x_destroy_flow_entry(entry);
@@ -426,7 +426,7 @@ of10_endpoint::handle_aggregate_stats_request(
 					0,
 					msg->get_aggr_stats().get_out_port(),
 					OF1X_GROUP_ANY,
-					entry->matches.head);
+					&entry->matches);
 
 	if(!fp_msg){
 		of1x_destroy_flow_entry(entry);

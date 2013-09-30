@@ -442,9 +442,9 @@ afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
  * @param cookie_mask	Mask for the cookie
  * @param out_port 	Out port that entry must include
  * @param out_group 	Out group that entry must include	
- * @param matchs	Matchs
+ * @param matchs	Matches
  */
-of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_t* matchs){
+of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_group_t *const matches){
 
 	of1x_switch_t* lsw;
 
@@ -456,7 +456,7 @@ of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
 		return NULL; 
 
 
-	return of1x_get_flow_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matchs);
+	return of1x_get_flow_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
 }
 
  
@@ -473,7 +473,7 @@ of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
  * @param out_group 	Out group that entry must include	
  * @param matchs	Matchs
  */
-of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_t* matchs){
+of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_group_t *const matches){
 
 	of1x_switch_t* lsw;
 
@@ -485,7 +485,7 @@ of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64
 		return NULL; 
 
 
-	return of1x_get_flow_aggregate_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matchs);
+	return of1x_get_flow_aggregate_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
 } 
 /**
  * @name    fwd_module_of1x_group_mod_add

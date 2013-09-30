@@ -28,13 +28,13 @@ bool epoll_ioscheduler::by_pass_processing = false;
 /*
 * Call port based on scheduling algorithm 
 */
-inline void epoll_ioscheduler::process_port_rx(ioport* port){
+inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 
 	unsigned int i;
 	datapacket_t* pkt;
 	
 	if(unlikely(!port) || unlikely(!port->of_port_state))
-		return;
+		return false;
 
 	//Perform up_to n_buckets_read
 	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
@@ -73,15 +73,18 @@ inline void epoll_ioscheduler::process_port_rx(ioport* port){
 			break;
 		}
 	}
+	
+	return i==(READ_BUCKETS_PP-1);
 }
 
-inline void epoll_ioscheduler::process_port_tx(ioport* port){
+inline bool epoll_ioscheduler::process_port_tx(ioport* port){
 	
 	unsigned int q_id;
 	unsigned int n_buckets;
+	bool pkts_remaining = false; 
 
 	if(unlikely(!port) || unlikely(!port->of_port_state))
-		return;
+		return pkts_remaining;
 
 	//Process output (up to WRITE_BUCKETS[output_queue_state])
 	for(q_id=0; q_id < IO_IFACE_NUM_QUEUES; ++q_id){
@@ -92,8 +95,11 @@ inline void epoll_ioscheduler::process_port_tx(ioport* port){
 		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
 		
 		//Perform up to n_buckets write	
-		port->write(q_id, n_buckets);
+		if(port->write(q_id, n_buckets) == 0)
+			pkts_remaining=true;
 	}
+	
+	return pkts_remaining;
 }
 
 /*
@@ -212,12 +218,14 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, int* epfd
 
 void* epoll_ioscheduler::process_io(void* grp){
 
+	unsigned int i;
 	int epfd, res;
 	struct epoll_event *ev=NULL, *events = NULL;
 	unsigned int current_hash=0, current_num_of_ports=0;
 	portgroup_state* pg = (portgroup_state*)grp;
-	epoll_event_data_t* ev_port_data;
+	//epoll_event_data_t* ev_port_data;
 	ioport* port;
+	bool more_packets;
 
 	//Init epoll fd set
 	epfd = -1;
@@ -241,23 +249,18 @@ void* epoll_ioscheduler::process_io(void* grp){
 			//Timeout
 		}else{	
 			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Got %d events\n", res); 
+		
+			do{
+				more_packets = false;	
 
-			for(int i=0; i<res; ++i){
-
-				ev_port_data = (epoll_event_data_t*)events[i].data.ptr;
-				port = ev_port_data->port;
-#if DEBUG
-				if(events[i].events == EPOLLERR)
-					ROFL_DEBUG("[epoll_ioscheduler] Got EPOLL_ERROR on fd %u\n", ev_port_data->fd); 
-#endif
-				if(ev_port_data->fd == port->get_read_fd()){
-					ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] RX event port %s\n", port->of_port_state->name);
-					epoll_ioscheduler::process_port_rx(port);
-				}else if(ev_port_data->fd == port->get_write_fd()){
-					ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] TX event on port %s\n", port->of_port_state->name);
-					epoll_ioscheduler::process_port_tx(port);
+				for(i=0; i<current_num_of_ports; ++i){
+					/* Read */
+					port = (*pg->running_ports)[i];
+	
+					more_packets |= epoll_ioscheduler::process_port_rx(port);
+					more_packets |= epoll_ioscheduler::process_port_tx(port);
 				}
-			}	
+			}while(more_packets);	
 		}
 		//Check for updates in the running ports 
 		if( pg->running_hash != current_hash )

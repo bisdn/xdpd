@@ -932,69 +932,71 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 }
 
 uint64_t of10_translation_utils::get_out_port(uint16_t port){
-	uint64_t ret;
 	switch(port){
 		case OFPP10_MAX:
-			ret = OF1X_PORT_MAX;
+			return OF1X_PORT_MAX;
 			break;
 		case OFPP10_IN_PORT:
-			ret = OF1X_PORT_IN_PORT;
+			return OF1X_PORT_IN_PORT;
 			break;
 		case OFPP10_TABLE:
-			ret = OF1X_PORT_TABLE;
+			return OF1X_PORT_TABLE;
 			break;
 		case OFPP10_NORMAL:
-			ret = OF1X_PORT_NORMAL;
+			return OF1X_PORT_NORMAL;
 			break;
 		case OFPP10_FLOOD:
-			ret = OF1X_PORT_FLOOD;
+			return OF1X_PORT_FLOOD;
 			break;
 		case OFPP10_ALL:
-			ret = OF1X_PORT_ALL;
+			return OF1X_PORT_ALL;
 			break;
 		case OFPP10_CONTROLLER:
-			ret = OF1X_PORT_CONTROLLER;
+			return OF1X_PORT_CONTROLLER;
 			break;
 		case OFPP10_LOCAL:
-			ret = OF1X_PORT_LOCAL;
+			return OF1X_PORT_LOCAL;
 			break;
 		case OFPP10_NONE:
-			ret = OF1X_PORT_ANY; //NOTE needed for deleting flows
+			return OF1X_PORT_ANY; //NOTE needed for deleting flows
+			break;
+		default:
+			return port;
 			break;
 	}
-	return ret;
 }
 
 uint64_t of10_translation_utils::get_out_port_reverse(uint64_t port){
-	uint16_t ret;
 	switch(port){
 		case OF1X_PORT_MAX:
-			ret = OFPP10_MAX;
+			return OFPP10_MAX;
 			break;
 		case OF1X_PORT_IN_PORT:
-			ret = OFPP10_IN_PORT;
+			return OFPP10_IN_PORT;
 			break;
 		case OF1X_PORT_TABLE:
-			ret = OFPP10_TABLE;
+			return OFPP10_TABLE;
 			break;
 		case OF1X_PORT_NORMAL:
-			ret = OFPP10_NORMAL;
+			return OFPP10_NORMAL;
 			break;
 		case OF1X_PORT_FLOOD:
-			ret = OFPP10_FLOOD;
+			return OFPP10_FLOOD;
 			break;
 		case OF1X_PORT_ALL:
-			ret = OFPP10_ALL;
+			return OFPP10_ALL;
 			break;
 		case OF1X_PORT_CONTROLLER:
-			ret = OFPP10_CONTROLLER;
+			return OFPP10_CONTROLLER;
 			break;
 		case OF1X_PORT_LOCAL:
-			ret = OFPP10_LOCAL;
+			return OFPP10_LOCAL;
 			break;
 		case OF1X_PORT_ANY:
-			ret = OFPP10_NONE; //NOTE needed for deleting flows
+			return OFPP10_NONE; //NOTE needed for deleting flows
+			break;
+		default:
+			return port;
 			break;
 	}
-	return ret;
 }

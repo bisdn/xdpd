@@ -28,19 +28,29 @@ bool epoll_ioscheduler::by_pass_processing = false;
 /*
 * Call port based on scheduling algorithm 
 */
-inline void epoll_ioscheduler::process_port_rx(ioport* port){
+inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 
 	unsigned int i;
 	datapacket_t* pkt;
+	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_queue;
 	
 	if(unlikely(!port) || unlikely(!port->of_port_state))
-		return;
-
+		return false;
+	
+	//Retrieve attached queue
+	sw_queue = port->get_sw_processing_queue();
+	
 	//Perform up_to n_buckets_read
 	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
 	
 	for(i=0; i<READ_BUCKETS_PP; ++i){
-		
+
+		//First check wheather the switch is full
+		//Avoid retrieving packets which the switch may not 
+		//be able to process
+		if( unlikely(sw_queue->is_full()) )
+			return true;	
+	
 		//Attempt to read (non-blocking)
 		pkt = port->read();
 		
@@ -57,7 +67,7 @@ inline void epoll_ioscheduler::process_port_rx(ioport* port){
 				* Push packet to the logical switch queue. 
 				* If not successful (congestion), drop it!
 				*/
-				if( port->get_sw_processing_queue()->non_blocking_write(pkt) != ROFL_SUCCESS ){
+				if( sw_queue->non_blocking_write(pkt) != ROFL_SUCCESS ){
 					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 					bufferpool::release_buffer(pkt);
@@ -73,15 +83,18 @@ inline void epoll_ioscheduler::process_port_rx(ioport* port){
 			break;
 		}
 	}
+	
+	return i==(READ_BUCKETS_PP);
 }
 
-inline void epoll_ioscheduler::process_port_tx(ioport* port){
+inline bool epoll_ioscheduler::process_port_tx(ioport* port){
 	
 	unsigned int q_id;
 	unsigned int n_buckets;
+	bool pkts_remaining = false; 
 
 	if(unlikely(!port) || unlikely(!port->of_port_state))
-		return;
+		return pkts_remaining;
 
 	//Process output (up to WRITE_BUCKETS[output_queue_state])
 	for(q_id=0; q_id < IO_IFACE_NUM_QUEUES; ++q_id){
@@ -92,8 +105,11 @@ inline void epoll_ioscheduler::process_port_tx(ioport* port){
 		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
 		
 		//Perform up to n_buckets write	
-		port->write(q_id, n_buckets);
+		if(port->write(q_id, n_buckets) == 0)
+			pkts_remaining=true;
 	}
+	
+	return pkts_remaining;
 }
 
 /*
@@ -143,7 +159,7 @@ inline void epoll_ioscheduler::release_resources( int epfd, struct epoll_event* 
 /*
 * Initializes or updates the EPOLL file descriptor set (epoll_ctl)
 */
-inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, int* epfd, struct epoll_event** ev, struct epoll_event** events, unsigned int* current_num_of_ports, unsigned int* current_hash ){
+inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevector<ioport*>& ports, int* epfd, struct epoll_event** ev, struct epoll_event** events, unsigned int* current_num_of_ports, unsigned int* current_hash ){
 
 	unsigned int i;
 	int fd;
@@ -202,6 +218,9 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, int* epfd
 	//Assign current hash
 	*current_hash = pg->running_hash;	
 
+	//Copy ports
+	ports = *pg->running_ports;
+
 	//Signal as synchronized
 	iomanager::signal_as_synchronized(pg);
 	
@@ -212,16 +231,19 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, int* epfd
 
 void* epoll_ioscheduler::process_io(void* grp){
 
+	unsigned int i;
 	int epfd, res;
 	struct epoll_event *ev=NULL, *events = NULL;
 	unsigned int current_hash=0, current_num_of_ports=0;
 	portgroup_state* pg = (portgroup_state*)grp;
-	epoll_event_data_t* ev_port_data;
+	//epoll_event_data_t* ev_port_data;
 	ioport* port;
-
+	bool more_packets;
+	safevector<ioport*> ports;	//Ports of the group currently performing I/O operations
+	
 	//Init epoll fd set
 	epfd = -1;
-	init_or_update_fds(pg, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
+	init_or_update_fds(pg, ports, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
 
 	ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
 	
@@ -241,27 +263,22 @@ void* epoll_ioscheduler::process_io(void* grp){
 			//Timeout
 		}else{	
 			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Got %d events\n", res); 
+		
+			do{
+				more_packets = false;	
 
-			for(int i=0; i<res; ++i){
-
-				ev_port_data = (epoll_event_data_t*)events[i].data.ptr;
-				port = ev_port_data->port;
-#if DEBUG
-				if(events[i].events == EPOLLERR)
-					ROFL_DEBUG("[epoll_ioscheduler] Got EPOLL_ERROR on fd %u\n", ev_port_data->fd); 
-#endif
-				if(ev_port_data->fd == port->get_read_fd()){
-					ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] RX event port %s\n", port->of_port_state->name);
-					epoll_ioscheduler::process_port_rx(port);
-				}else if(ev_port_data->fd == port->get_write_fd()){
-					ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] TX event on port %s\n", port->of_port_state->name);
-					epoll_ioscheduler::process_port_tx(port);
+				for(i=0; i<current_num_of_ports; ++i){
+					/* Read */
+					port = ports[i];
+	
+					more_packets |= epoll_ioscheduler::process_port_rx(port);
+					more_packets |= epoll_ioscheduler::process_port_tx(port);
 				}
-			}	
+			}while(more_packets);	
 		}
 		//Check for updates in the running ports 
 		if( pg->running_hash != current_hash )
-			init_or_update_fds(pg, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
+			init_or_update_fds(pg, ports, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
 	}
 
 	//Release resources

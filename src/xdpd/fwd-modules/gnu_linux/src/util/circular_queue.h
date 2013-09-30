@@ -56,6 +56,8 @@ public:
 
 	bool
 	is_empty(void);
+	
+	bool is_full(void);
 
 	static const long long unsigned int MAX_SLOTS = SLOTS;
 	static const long long unsigned int SLOT_MASK = MAX_SLOTS - 1;
@@ -86,7 +88,6 @@ private:
 	pthread_mutex_t mutex_writers;
 
 	/* Private methods */
-	bool is_full(void);
 	void update_elements_state();
 	void circ_inc_pointer(T*** pointer);
 

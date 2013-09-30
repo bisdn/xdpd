@@ -12,6 +12,7 @@
 #include <iostream> 
 #include "ioscheduler.h" 
 #include "../ports/ioport.h"
+#include "../../util/safevector.h"
 
 /**
 * @file epoll_ioscheduler.h
@@ -61,13 +62,13 @@ protected:
 
 	/* Methods */
 	//WRR
-	static void process_port_rx(ioport* port);
-	static void process_port_tx(ioport* port);
+	static bool process_port_rx(ioport* port);
+	static bool process_port_tx(ioport* port);
 
 	//EPOLL related	
 	static void release_resources(int epfd, struct epoll_event* ev, struct epoll_event* events, unsigned int current_num_of_ports);
 	static void add_fd_epoll(struct epoll_event* ev, int epfd, ioport* port, int fd);
-	static void init_or_update_fds(portgroup_state* pg, int* epfd, struct epoll_event** ev, struct epoll_event** events, unsigned int* current_num_of_ports, unsigned int* current_hash );
+	static void init_or_update_fds(portgroup_state* pg, safevector<ioport*>& ports, int* epfd, struct epoll_event** ev, struct epoll_event** events, unsigned int* current_num_of_ports, unsigned int* current_hash );
 
 
 	/* Debugging stuff */

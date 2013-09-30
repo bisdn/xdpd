@@ -17,6 +17,12 @@ ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
 	//of_port_state
 	of_port_state = of_ps;
 	sw_processing_queue = NULL;
+	
+	//Maximum packet size
+	mps = 0;
+	
+	//Copy MAC address
+	memcpy(mac, of_ps->hwaddr, ETHER_MAC_LEN); 
 }
 ioport::~ioport(){
 

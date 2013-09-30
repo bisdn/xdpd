@@ -103,12 +103,6 @@ private:
 	int n_blocks;
 	int frame_size;
 
-	//MTU TODO: move to parent?
-	unsigned int mtu;
-
-	/*TODO: move to parent? Remove dependency of cmacaddr */
-	cmacaddr hwaddr;
-	
 	//Pipe used to
 	int notify_pipe[2];
 	

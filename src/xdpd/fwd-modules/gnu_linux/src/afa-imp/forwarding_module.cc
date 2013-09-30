@@ -78,9 +78,6 @@ afa_result_t fwd_module_init(){
 */
 afa_result_t fwd_module_destroy(){
 
-	//Destroy all switches
-	//XXX
-
 	//Initialize the iomanager
 	iomanager::destroy();
 

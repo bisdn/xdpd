@@ -332,11 +332,11 @@ of10_endpoint::handle_flow_stats_request(
 	//Ask the Forwarding Plane to process stats
 	fp_msg = fwd_module_of1x_get_flow_stats(sw->dpid,
 			msg->get_flow_stats().get_table_id(),
-			msg->get_flow_stats().get_cookie(),
-			msg->get_flow_stats().get_cookie_mask(),
+			0,
+			0,
 			msg->get_flow_stats().get_out_port(),
-			msg->get_flow_stats().get_out_group(),
-					entry->matches.head);
+			OF1X_GROUP_ANY,
+			entry->matches.head);
 
 	if(!fp_msg){
 		of1x_destroy_flow_entry(entry);
@@ -422,10 +422,10 @@ of10_endpoint::handle_aggregate_stats_request(
 	//Ask the Forwarding Plane to process stats
 	fp_msg = fwd_module_of1x_get_flow_aggregate_stats(sw->dpid,
 					msg->get_aggr_stats().get_table_id(),
-					msg->get_aggr_stats().get_cookie(),
-					msg->get_aggr_stats().get_cookie_mask(),
+					0,
+					0,
 					msg->get_aggr_stats().get_out_port(),
-					msg->get_aggr_stats().get_out_group(),
+					OF1X_GROUP_ANY,
 					entry->matches.head);
 
 	if(!fp_msg){

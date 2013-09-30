@@ -87,7 +87,7 @@ public:
 	/**
 	 * Actions supported by switch
 	 */
-	static uint32_t get_supported_actions();
+	static uint32_t get_supported_actions(of1x_switch_t* lsw);
 };
 
 }// namespace rofl

@@ -433,6 +433,39 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		switch (raction.get_type()) {
 		case OFP10AT_OUTPUT:
 			field.u64 = be16toh(raction.oac_10output->port);
+			
+			//Translate special values to of1x
+			switch(field.u64){
+				case OFPP10_MAX:
+					field.u64 = OF1X_PORT_MAX;
+					break;
+				case OFPP10_IN_PORT:
+					field.u64 = OF1X_PORT_IN_PORT;
+					break;
+				case OFPP10_TABLE:
+					field.u64 = OF1X_PORT_TABLE;
+					break;
+				case OFPP10_NORMAL:
+					field.u64 = OF1X_PORT_NORMAL;
+					break;
+				case OFPP10_FLOOD:
+					field.u64 = OF1X_PORT_FLOOD;
+					break;
+				case OFPP10_ALL:
+					field.u64 = OF1X_PORT_ALL;
+					break;
+				case OFPP10_CONTROLLER:
+					field.u64 = OF1X_PORT_CONTROLLER;
+					break;
+				case OFPP10_LOCAL:
+					field.u64 = OF1X_PORT_LOCAL;
+					break;
+/*				case OFPP10_NONE:
+					field.u64 = OF1X_PORT_ANY;
+					break;
+*/
+			}
+			
 			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_VLAN_VID:
@@ -471,11 +504,11 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			break;
 		case OFP10AT_SET_TP_SRC:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
-			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TCP_SRC, field, NULL, NULL);
+			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_TP_DST:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
-			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TCP_DST, field, NULL, NULL);
+			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, NULL, NULL);
 			break;
 		case OFP10AT_ENQUEUE:
 			// FIXME: what to do with the port field in struct ofp10_action_enqueue?
@@ -885,58 +918,46 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 		match.insert(coxmatch_ofx_gtp_teid(packet_matches->gtp_teid));
 }
 
-uint32_t of10_translation_utils::get_supported_actions(){
+uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 	uint32_t mask = 0;
-	int of1x_at;
 	
-	for ( of1x_at=OF1X_AT_NO_ACTION ; of1x_at<=OF1X_AT_OUTPUT ; of1x_at++){
-		switch(of1x_at){
-			case OF1X_AT_OUTPUT:
-				mask |= 1 << OFP10AT_OUTPUT;
-				break;
-			case OF1X_AT_SET_FIELD_VLAN_VID:
-				mask |= 1 << OFP10AT_SET_VLAN_VID;
-				break;
-			case OF1X_AT_SET_FIELD_VLAN_PCP:
-				mask |= 1 << OFP10AT_SET_VLAN_PCP;
-				break;
-			case OF1X_AT_POP_VLAN:
-				mask |= 1 << OFP10AT_STRIP_VLAN;
-				break;
-			case OF1X_AT_SET_FIELD_ETH_SRC:
-				mask |= 1 << OFP10AT_SET_DL_SRC;
-				break;
-			case OF1X_AT_SET_FIELD_ETH_DST:
-				mask |= 1 << OFP10AT_SET_DL_DST;
-				break;
-			case OF1X_AT_SET_FIELD_IPV4_SRC:
-				mask |= 1 << OFP10AT_SET_NW_SRC;
-				break;
-			case OF1X_AT_SET_FIELD_IPV4_DST:
-				mask |= 1 << OFP10AT_SET_NW_DST;
-				break;
-			case OF1X_AT_SET_FIELD_IP_DSCP:
-				mask |= 1 << OFP10AT_SET_NW_TOS;
-				break;
-			case OF1X_AT_SET_FIELD_TCP_SRC:
-			case OF1X_AT_SET_FIELD_UDP_SRC:
-			case OF1X_AT_SET_FIELD_ICMPV4_TYPE:
-				mask |= 1 << OFP10AT_SET_TP_SRC;
-				break;
-			case OF1X_AT_SET_FIELD_TCP_DST:
-			case OF1X_AT_SET_FIELD_UDP_DST:
-			case OF1X_AT_SET_FIELD_ICMPV4_CODE:
-				mask |= 1 << OFP10AT_SET_TP_DST;
-				break;
-			/*
-			case QUEUES:
-				mask |= 1 << OFP10AT_ENQUEUE;
-				break;
-			*/
-			default:
-				break;
-		}
+	of1x_flow_table_config_t config = lsw->pipeline->tables[0].config;
 		
-	}
+	if (config.apply_actions&(1UL<<OF12PAT_OUTPUT))
+		mask |= 1 << OFP10AT_OUTPUT;
+	
+	if (config.match&(1UL<<OF1X_MATCH_VLAN_VID))
+		mask |= 1 << OFP10AT_SET_VLAN_VID;
+	
+	if (config.match&(1UL<<OF1X_MATCH_VLAN_PCP))
+		mask |= 1 << OFP10AT_SET_VLAN_PCP;
+	
+	if (config.match&(1UL<<OF12PAT_POP_VLAN))
+		mask |= 1 << OFP10AT_STRIP_VLAN;
+	
+	if (config.match&(1UL<<OF1X_MATCH_ETH_SRC))
+		mask |= 1 << OFP10AT_SET_DL_SRC;
+	
+	if (config.match&(1UL<<OF1X_MATCH_ETH_DST))
+		mask |= 1 << OFP10AT_SET_DL_DST;
+	
+	if (config.match&(1UL<<OF1X_MATCH_IPV4_SRC))
+		mask |= 1 << OFP10AT_SET_NW_SRC;
+	
+	if (config.match&(1UL<<OF1X_MATCH_IPV4_DST))
+		mask |= 1 << OFP10AT_SET_NW_DST;
+	
+	if (config.match&(1UL<<OF1X_MATCH_IP_DSCP))
+		mask |= 1 << OFP10AT_SET_NW_TOS;
+	
+	if (config.match&(1UL<<OF1X_MATCH_TP_SRC))
+		mask |= 1 << OFP10AT_SET_TP_SRC;
+	
+	if (config.match&(1UL<<OF1X_MATCH_TP_DST))
+		mask |= 1 << OFP10AT_SET_TP_DST;
+	
+	if (config.match&(1UL<<OF12PAT_SET_QUEUE))
+		mask |= 1 << OFP10AT_ENQUEUE;
+		
 	return mask;
 }

@@ -334,7 +334,7 @@ of10_endpoint::handle_flow_stats_request(
 			msg->get_flow_stats().get_table_id(),
 			msg->get_flow_stats().get_cookie(),
 			msg->get_flow_stats().get_cookie_mask(),
-			msg->get_flow_stats().get_out_port(),
+			of10_translation_utils::get_out_port(msg->get_flow_stats().get_out_port()),
 			msg->get_flow_stats().get_out_group(),
 					entry->matches.head);
 
@@ -424,7 +424,7 @@ of10_endpoint::handle_aggregate_stats_request(
 					msg->get_aggr_stats().get_table_id(),
 					msg->get_aggr_stats().get_cookie(),
 					msg->get_aggr_stats().get_cookie_mask(),
-					msg->get_aggr_stats().get_out_port(),
+					of10_translation_utils::get_out_port(msg->get_aggr_stats().get_out_port()),
 					msg->get_aggr_stats().get_out_group(),
 					entry->matches.head);
 
@@ -908,7 +908,7 @@ of10_endpoint::flow_mod_delete(
 								pack->get_table_id(),
 								entry,
 								pack->get_buffer_id(),
-								pack->get_out_port(),
+								of10_translation_utils::get_out_port(pack->get_out_port()),
 								OF1X_GROUP_ANY,
 								strictness)) {
 		WRITELOG(CDATAPATH, ERROR, "Error deleting flowmod\n");

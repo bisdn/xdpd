@@ -288,7 +288,7 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 		pkt = queue->non_blocking_read();
 		
 		if(!pkt){
-			ROFL_ERR("[mmap:%s] A packet has been discarted due to race condition on the output queue. Are you really running the I/O subsystem with a single thread? output_queue %u left, %u buckets left\n",
+			ROFL_ERR("[mmap:%s] A packet has been discarded due to race condition on the output queue. Are you really running the I/O subsystem with a single thread? output_queue %u left, %u buckets left\n",
 				of_port_state->name,
 				q_id,
 				num_of_buckets);
@@ -304,7 +304,7 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 
 		if(unlikely(pkt_x86->get_buffer_length() > mtu)){
 			//This should NEVER happen
-			ROFL_ERR("[mmap:%s] Packet length above the MTU. Packet length: %u, MTU %u.. discarting\n", of_port_state->name, pkt_x86->get_buffer_length(), mtu);
+			ROFL_ERR("[mmap:%s] Packet length above the MTU. Packet length: %u, MTU %u.. discarding\n", of_port_state->name, pkt_x86->get_buffer_length(), mtu);
 			assert(0);
 		
 			//Return buffer to the pool
@@ -433,10 +433,10 @@ rofl_result_t ioport_mmapv2::enable() {
 	strncpy(ifr.ifr_name, of_port_state->name, sizeof(ifr.ifr_name));
 	
 	if(ioctl(sd, SIOCGIFMTU, &ifr) < 0) {
-		ROFL_ERR("[mmap:%s] Could not retreive MTU value from NIC. Default %u bytes will be used. Packets exceeding this size will be DROPPED (Jumbo frames).\n",  of_port_state->name, PORT_DEFAULT_MTU);
-		mtu = PORT_DEFAULT_MTU;	
+		ROFL_ERR("[mmap:%s] Could not retreive MTU value from NIC. Default %u MTU size will be used (%u total bytes). Packets exceeding this size will be DROPPED (Jumbo frames).\n",  of_port_state->name, (PORT_DEFAULT_PKT_SIZE-PORT_ETHER_LENGTH), PORT_DEFAULT_PKT_SIZE);
+		mtu = PORT_DEFAULT_PKT_SIZE;	
 	}else{
-		mtu = ifr.ifr_mtu;
+		mtu = ifr.ifr_mtu+PORT_ETHER_LENGTH;
 		ROFL_DEBUG("[mmap:%s] Discovered MTU of %u.\n",  of_port_state->name, mtu);
 	}
 

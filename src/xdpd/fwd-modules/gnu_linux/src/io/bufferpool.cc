@@ -61,6 +61,9 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 	//Set size
 	pool_size = pool_items;
 	next_index = 0;
+#ifdef DEBUG
+	used = 0;
+#endif
 }
 
 bufferpool::~bufferpool(){

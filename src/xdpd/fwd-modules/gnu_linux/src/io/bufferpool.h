@@ -58,6 +58,7 @@ public:
 	static inline void release_buffer(datapacket_t* buf);
 	
 	static void destroy();
+
 	
 protected:
 
@@ -69,7 +70,10 @@ protected:
 	std::vector<bufferpool_slot_state_t> pool_status;	
 	long long unsigned int pool_size; //This might be different from pool.size during initialization/resizing
 	long long unsigned int next_index; //Next item index
-	
+
+#ifdef DEBUG
+	long long unsigned int used;
+#endif
 
 	//Mutex and cond
 	static pthread_mutex_t mutex;
@@ -130,6 +134,10 @@ datapacket_t* bufferpool::get_free_buffer(bool blocking){
 					bp->next_index = 0;
 				else
 					bp->next_index++;
+
+#ifdef DEBUG
+				bp->used++;
+#endif
 	
 				//Release
 				pthread_mutex_unlock(&bufferpool::mutex);		
@@ -179,6 +187,12 @@ void bufferpool::release_buffer(datapacket_t* buf){
 		buf->is_replica = false; //Make sure this flag is 0
 		bp->pool_status[id] = BUFFERPOOL_SLOT_AVAILABLE;
 		pthread_cond_broadcast(&bufferpool::cond);
+
+#ifdef DEBUG
+		pthread_mutex_lock(&bufferpool::mutex);		
+		bp->used--;
+		pthread_mutex_unlock(&bufferpool::mutex);
+#endif
 	}
 }
 

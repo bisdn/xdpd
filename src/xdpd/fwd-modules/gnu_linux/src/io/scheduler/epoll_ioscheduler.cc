@@ -32,15 +32,25 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 
 	unsigned int i;
 	datapacket_t* pkt;
+	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_queue;
 	
 	if(unlikely(!port) || unlikely(!port->of_port_state))
 		return false;
-
+	
+	//Retrieve attached queue
+	sw_queue = port->get_sw_processing_queue();
+	
 	//Perform up_to n_buckets_read
 	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
 	
 	for(i=0; i<READ_BUCKETS_PP; ++i){
-		
+
+		//First check wheather the switch is full
+		//Avoid retrieving packets which the switch may not 
+		//be able to process
+		if( unlikely(sw_queue->is_full()) )
+			return true;	
+	
 		//Attempt to read (non-blocking)
 		pkt = port->read();
 		
@@ -57,7 +67,7 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 				* Push packet to the logical switch queue. 
 				* If not successful (congestion), drop it!
 				*/
-				if( port->get_sw_processing_queue()->non_blocking_write(pkt) != ROFL_SUCCESS ){
+				if( sw_queue->non_blocking_write(pkt) != ROFL_SUCCESS ){
 					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 					bufferpool::release_buffer(pkt);
@@ -74,7 +84,7 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 		}
 	}
 	
-	return i==(READ_BUCKETS_PP-1);
+	return i==(READ_BUCKETS_PP);
 }
 
 inline bool epoll_ioscheduler::process_port_tx(ioport* port){

@@ -106,8 +106,8 @@ of10_endpoint::handle_features_request(
 			num_of_buffers,	// n_buffers
 			num_of_tables,	// n_tables
 			capabilities,	// capabilities
-			0,
-			0,
+			0, //of13_aux_id
+			of10_translation_utils::get_supported_actions(),
 			portlist);
 
 	delete msg;

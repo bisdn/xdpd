@@ -173,6 +173,83 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	// no ip_ecn in OF1.0
 
+	
+		try {
+		uint16_t ethtype = ofmatch.get_eth_type();
+
+		of1x_match_t *match = (of1x_match_t*)0;
+
+		switch (ethtype) {
+		case fipv4frame::IPV4_ETHER: {
+			match = of1x_init_ip_proto_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								ofmatch.get_ip_proto());
+		} break;
+		case farpv4frame::ARPV4_ETHER: {
+			match = of1x_init_arp_opcode_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								ofmatch.get_ip_proto());
+		} break;
+		}
+
+		of1x_add_match_to_entry(entry, match);
+	} catch (eOFmatchNotFound& e) {}
+
+	// no ARP-SHA in OF1.0
+	try {
+		uint16_t ethtype = ofmatch.get_eth_type();
+		of1x_match_t *match = (of1x_match_t*)0;
+		caddress value(ofmatch.get_ipv4_src_value());
+		caddress mask (ofmatch.get_ipv4_src_mask());
+		
+		switch(ethtype){
+			case fipv4frame::IPV4_ETHER: {
+				match = of1x_init_ip4_src_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								be32toh(value.ca_s4addr->sin_addr.s_addr),
+								be32toh( mask.ca_s4addr->sin_addr.s_addr));
+			} break;
+			case farpv4frame::ARPV4_ETHER:{
+				match = of1x_init_arp_spa_match(
+									/*prev*/NULL,
+									/*next*/NULL,
+									be32toh(value.ca_s4addr->sin_addr.s_addr),
+									be32toh( mask.ca_s4addr->sin_addr.s_addr));
+			} break;
+		}
+		of1x_add_match_to_entry(entry, match);
+	} catch (eOFmatchNotFound& e) {}
+
+	// no ARP_THA in OF1.0
+
+	try {
+		uint16_t ethtype = ofmatch.get_eth_type();
+		of1x_match_t *match = (of1x_match_t*)0;
+		caddress value(ofmatch.get_ipv4_dst_value());
+		caddress mask (ofmatch.get_ipv4_dst_mask());
+		switch(ethtype){
+			case fipv4frame::IPV4_ETHER: {
+				match = of1x_init_ip4_dst_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								be32toh(value.ca_s4addr->sin_addr.s_addr),
+								be32toh( mask.ca_s4addr->sin_addr.s_addr));
+			} break;
+			case farpv4frame::ARPV4_ETHER: {
+				match = of1x_init_arp_tpa_match(
+								/*prev*/NULL,
+								/*next*/NULL,
+								be32toh(value.ca_s4addr->sin_addr.s_addr),
+								be32toh( mask.ca_s4addr->sin_addr.s_addr));
+			} break;
+		}
+		of1x_add_match_to_entry(entry, match);
+	} catch (eOFmatchNotFound& e) {}
+
+#if 0	
 	try {
 		of1x_match_t *match = of1x_init_ip_proto_match(
 								/*prev*/NULL,
@@ -207,7 +284,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
-
+#endif
 #if 0
 	try {
 		of1x_match_t *match = of1x_init_tcp_src_match(
@@ -324,60 +401,6 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	 *
 	 */
 
-	try {
-		uint16_t ethtype = ofmatch.get_eth_type();
-
-		of1x_match_t *match = (of1x_match_t*)0;
-
-		switch (ethtype) {
-		case fipv4frame::IPV4_ETHER: {
-			match = of1x_init_ip_proto_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_ip_proto());
-		} break;
-		case farpv4frame::ARPV4_ETHER: {
-			match = of1x_init_arp_opcode_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_ip_proto());
-		} break;
-		}
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-#if 1
-	// no ARP-SHA in OF1.0
-
-	try {
-		caddress value(ofmatch.get_ipv4_src_value());
-		caddress mask (ofmatch.get_ipv4_src_mask());
-
-		of1x_match_t *match = of1x_init_arp_spa_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								be32toh(value.ca_s4addr->sin_addr.s_addr),
-								be32toh( mask.ca_s4addr->sin_addr.s_addr));
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	// no ARP_THA in OF1.0
-
-	try {
-		caddress value(ofmatch.get_ipv4_dst_value());
-		caddress mask (ofmatch.get_ipv4_dst_mask());
-
-		of1x_match_t *match = of1x_init_arp_tpa_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								be32toh(value.ca_s4addr->sin_addr.s_addr),
-								be32toh( mask.ca_s4addr->sin_addr.s_addr));
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-#endif
 	// no IPv6 support in OF1.0
 
 	// no ICMPv6 support in OF1.0
@@ -862,3 +885,58 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 		match.insert(coxmatch_ofx_gtp_teid(packet_matches->gtp_teid));
 }
 
+uint32_t of10_translation_utils::get_supported_actions(){
+	uint32_t mask = 0;
+	int of1x_at;
+	
+	for ( of1x_at=OF1X_AT_NO_ACTION ; of1x_at<=OF1X_AT_OUTPUT ; of1x_at++){
+		switch(of1x_at){
+			case OF1X_AT_OUTPUT:
+				mask |= 1 << OFP10AT_OUTPUT;
+				break;
+			case OF1X_AT_SET_FIELD_VLAN_VID:
+				mask |= 1 << OFP10AT_SET_VLAN_VID;
+				break;
+			case OF1X_AT_SET_FIELD_VLAN_PCP:
+				mask |= 1 << OFP10AT_SET_VLAN_PCP;
+				break;
+			case OF1X_AT_POP_VLAN:
+				mask |= 1 << OFP10AT_STRIP_VLAN;
+				break;
+			case OF1X_AT_SET_FIELD_ETH_SRC:
+				mask |= 1 << OFP10AT_SET_DL_SRC;
+				break;
+			case OF1X_AT_SET_FIELD_ETH_DST:
+				mask |= 1 << OFP10AT_SET_DL_DST;
+				break;
+			case OF1X_AT_SET_FIELD_IPV4_SRC:
+				mask |= 1 << OFP10AT_SET_NW_SRC;
+				break;
+			case OF1X_AT_SET_FIELD_IPV4_DST:
+				mask |= 1 << OFP10AT_SET_NW_DST;
+				break;
+			case OF1X_AT_SET_FIELD_IP_DSCP:
+				mask |= 1 << OFP10AT_SET_NW_TOS;
+				break;
+			case OF1X_AT_SET_FIELD_TCP_SRC:
+			case OF1X_AT_SET_FIELD_UDP_SRC:
+			case OF1X_AT_SET_FIELD_ICMPV4_TYPE:
+				mask |= 1 << OFP10AT_SET_TP_SRC;
+				break;
+			case OF1X_AT_SET_FIELD_TCP_DST:
+			case OF1X_AT_SET_FIELD_UDP_DST:
+			case OF1X_AT_SET_FIELD_ICMPV4_CODE:
+				mask |= 1 << OFP10AT_SET_TP_DST;
+				break;
+			/*
+			case QUEUES:
+				mask |= 1 << OFP10AT_ENQUEUE;
+				break;
+			*/
+			default:
+				break;
+		}
+		
+	}
+	return mask;
+}

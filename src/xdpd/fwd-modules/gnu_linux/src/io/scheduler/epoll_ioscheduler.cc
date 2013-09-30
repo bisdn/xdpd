@@ -149,7 +149,7 @@ inline void epoll_ioscheduler::release_resources( int epfd, struct epoll_event* 
 /*
 * Initializes or updates the EPOLL file descriptor set (epoll_ctl)
 */
-inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, int* epfd, struct epoll_event** ev, struct epoll_event** events, unsigned int* current_num_of_ports, unsigned int* current_hash ){
+inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevector<ioport*>& ports, int* epfd, struct epoll_event** ev, struct epoll_event** events, unsigned int* current_num_of_ports, unsigned int* current_hash ){
 
 	unsigned int i;
 	int fd;
@@ -208,6 +208,9 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, int* epfd
 	//Assign current hash
 	*current_hash = pg->running_hash;	
 
+	//Copy ports
+	ports = *pg->running_ports;
+
 	//Signal as synchronized
 	iomanager::signal_as_synchronized(pg);
 	
@@ -226,10 +229,11 @@ void* epoll_ioscheduler::process_io(void* grp){
 	//epoll_event_data_t* ev_port_data;
 	ioport* port;
 	bool more_packets;
-
+	safevector<ioport*> ports;	//Ports of the group currently performing I/O operations
+	
 	//Init epoll fd set
 	epfd = -1;
-	init_or_update_fds(pg, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
+	init_or_update_fds(pg, ports, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
 
 	ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
 	
@@ -255,7 +259,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 
 				for(i=0; i<current_num_of_ports; ++i){
 					/* Read */
-					port = (*pg->running_ports)[i];
+					port = ports[i];
 	
 					more_packets |= epoll_ioscheduler::process_port_rx(port);
 					more_packets |= epoll_ioscheduler::process_port_tx(port);
@@ -264,7 +268,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 		}
 		//Check for updates in the running ports 
 		if( pg->running_hash != current_hash )
-			init_or_update_fds(pg, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
+			init_or_update_fds(pg, ports, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
 	}
 
 	//Release resources

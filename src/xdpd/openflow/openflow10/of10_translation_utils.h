@@ -83,6 +83,11 @@ public:
 	*
 	*/
 	static void of1x_map_reverse_packet_matches(of1x_packet_matches_t* packet_matches, cofmatch& match);
+	
+	/**
+	 * Actions supported by switch
+	 */
+	static uint32_t get_supported_actions();
 };
 
 }// namespace rofl

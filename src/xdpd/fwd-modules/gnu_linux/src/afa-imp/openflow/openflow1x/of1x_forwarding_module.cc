@@ -176,7 +176,7 @@ afa_result_t fwd_module_of1x_set_pipeline_config(uint64_t dpid, unsigned int fla
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
 
 	//Check switch and port
-	if(!lsw || lsw->of_ver != OF_VERSION_12) {
+	if (!lsw ) {
 		//TODO: log this... should never happen
 		assert(0);
 		return AFA_FAILURE;

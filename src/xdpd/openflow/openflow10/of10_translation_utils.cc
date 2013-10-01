@@ -162,6 +162,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
+	//NW TOS
 	try {
 		of1x_match_t *match = of1x_init_ip_dscp_match(
 								/*prev*/NULL,
@@ -171,85 +172,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
-	// no ip_ecn in OF1.0
-
-	
-		try {
-		uint16_t ethtype = ofmatch.get_eth_type();
-
-		of1x_match_t *match = (of1x_match_t*)0;
-
-		switch (ethtype) {
-		case fipv4frame::IPV4_ETHER: {
-			match = of1x_init_ip_proto_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_ip_proto());
-		} break;
-		case farpv4frame::ARPV4_ETHER: {
-			match = of1x_init_arp_opcode_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_ip_proto());
-		} break;
-		}
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	// no ARP-SHA in OF1.0
-	try {
-		uint16_t ethtype = ofmatch.get_eth_type();
-		of1x_match_t *match = (of1x_match_t*)0;
-		caddress value(ofmatch.get_ipv4_src_value());
-		caddress mask (ofmatch.get_ipv4_src_mask());
-		
-		switch(ethtype){
-			case fipv4frame::IPV4_ETHER: {
-				match = of1x_init_ip4_src_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								be32toh(value.ca_s4addr->sin_addr.s_addr),
-								be32toh( mask.ca_s4addr->sin_addr.s_addr));
-			} break;
-			case farpv4frame::ARPV4_ETHER:{
-				match = of1x_init_arp_spa_match(
-									/*prev*/NULL,
-									/*next*/NULL,
-									be32toh(value.ca_s4addr->sin_addr.s_addr),
-									be32toh( mask.ca_s4addr->sin_addr.s_addr));
-			} break;
-		}
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	// no ARP_THA in OF1.0
-
-	try {
-		uint16_t ethtype = ofmatch.get_eth_type();
-		of1x_match_t *match = (of1x_match_t*)0;
-		caddress value(ofmatch.get_ipv4_dst_value());
-		caddress mask (ofmatch.get_ipv4_dst_mask());
-		switch(ethtype){
-			case fipv4frame::IPV4_ETHER: {
-				match = of1x_init_ip4_dst_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								be32toh(value.ca_s4addr->sin_addr.s_addr),
-								be32toh( mask.ca_s4addr->sin_addr.s_addr));
-			} break;
-			case farpv4frame::ARPV4_ETHER: {
-				match = of1x_init_arp_tpa_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								be32toh(value.ca_s4addr->sin_addr.s_addr),
-								be32toh( mask.ca_s4addr->sin_addr.s_addr));
-			} break;
-		}
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-#if 0	
+	//NW PROTO 
 	try {
 		of1x_match_t *match = of1x_init_ip_proto_match(
 								/*prev*/NULL,
@@ -259,153 +182,56 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
+	//NW SRC
 	try {
-		caddress value(ofmatch.get_ipv4_src_value());
-		caddress mask (ofmatch.get_ipv4_src_mask());
 
-		of1x_match_t *match = of1x_init_ip4_src_match(
+		of1x_match_t *match = NULL; 
+		caddress value(ofmatch.get_nw_src_value());
+		caddress mask(ofmatch.get_nw_src_mask());
+		
+		match = of1x_init_nw_src_match(	/*prev*/NULL,
+						/*next*/NULL,
+						be32toh(value.ca_s4addr->sin_addr.s_addr),
+						be32toh(mask.ca_s4addr->sin_addr.s_addr));
+
+		of1x_add_match_to_entry(entry, match);
+
+	} catch (eOFmatchNotFound& e) {}
+
+	//NW DST 
+	try {
+
+		of1x_match_t *match = NULL; 
+		caddress value(ofmatch.get_nw_dst_value());
+		caddress mask(ofmatch.get_nw_dst_mask());
+		
+		match = of1x_init_nw_dst_match(	/*prev*/NULL,
+						/*next*/NULL,
+						be32toh(value.ca_s4addr->sin_addr.s_addr),
+						be32toh(mask.ca_s4addr->sin_addr.s_addr));
+
+		of1x_add_match_to_entry(entry, match);
+
+	} catch (eOFmatchNotFound& e) {}
+
+	//TP SRC
+	try {
+		of1x_match_t *match = of1x_init_tp_src_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								be32toh(value.ca_s4addr->sin_addr.s_addr),
-								be32toh( mask.ca_s4addr->sin_addr.s_addr));
-
+								ofmatch.get_tp_src());
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
+	//TP DST
 	try {
-		caddress value(ofmatch.get_ipv4_dst_value());
-		caddress mask (ofmatch.get_ipv4_dst_mask());
-
-		of1x_match_t *match = of1x_init_ip4_dst_match(
+		of1x_match_t *match = of1x_init_tp_dst_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								be32toh(value.ca_s4addr->sin_addr.s_addr),
-								be32toh( mask.ca_s4addr->sin_addr.s_addr));
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-#endif
-#if 0
-	try {
-		of1x_match_t *match = of1x_init_tcp_src_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_tcp_src());
-
+								ofmatch.get_tp_dst());
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
-	try {
-		of1x_match_t *match = of1x_init_tcp_dst_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_tcp_dst());
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		of1x_match_t *match = of1x_init_udp_src_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_udp_src());
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-#endif
-
-	// no UDP-dst/src in OF1.0 (TCP-dst/src is used for all transport protocols)
-
-	// no SCTP-dst/src in OF1.0
-
-	/* FIXME: OF 1.0 allows the following situation:
-	 * all matches wildcard, except:
-	 * - transport protocol source and destination
-	 *
-	 * this flow-mod matches TCP, UDP and ICMP packets
-	 * This behaviour cannot be reproduced in OF1.2.
-	 *
-	 * We make an assumption here:
-	 * The control plane designed has to define the
-	 * ip_proto field as a match, thus indicating which
-	 * protocol he assumes and we use ip_proto to
-	 * set the correct match valies in structure of1x_match.
-	 *
-	 */
-
-	try {
-		uint8_t ip_proto = ofmatch.get_ip_proto();
-
-		of1x_match_t *match = (of1x_match_t*)0;
-
-		switch (ip_proto) {
-		case ftcpframe::TCP_IP_PROTO: {
-			match = of1x_init_tp_src_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_tcp_src());
-		} break;
-		case fudpframe::UDP_IP_PROTO: {
-			match = of1x_init_tp_src_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_udp_src());
-		} break;
-		case ficmpv4frame::ICMPV4_IP_PROTO: {
-			match = of1x_init_tp_src_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_icmpv4_type());
-		} break;
-		}
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		uint8_t ip_proto = ofmatch.get_ip_proto();
-
-		of1x_match_t *match = (of1x_match_t*)0;
-
-		switch (ip_proto) {
-		case ftcpframe::TCP_IP_PROTO: {
-			match = of1x_init_tp_dst_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_tcp_dst());
-		} break;
-		case fudpframe::UDP_IP_PROTO: {
-			match = of1x_init_tp_dst_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_udp_dst());
-		} break;
-		case ficmpv4frame::ICMPV4_IP_PROTO: {
-			match = of1x_init_tp_dst_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_icmpv4_code());
-		} break;
-		}
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	/* FIXME: same situation as above: OF1.0 defines
-	 * IP-src/dst and IP-proto with ambiguities, as the same fields
-	 * may be used for multiple protocols.
-	 *
-	 * Same strategy as above: control plane has to specify,
-	 * which protocol is assumed by setting the ethernet type
-	 * match field.
-	 *
-	 */
-
-	// no IPv6 support in OF1.0
-
-	// no ICMPv6 support in OF1.0
-
-	// no MPLS support in OF1.0
 }
 
 
@@ -460,12 +286,10 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, NULL, NULL);
 			} break;
 		case OFP10AT_SET_NW_SRC:
-#if 0
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SPA, oxm.uint32_value(), NULL, NULL);
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IPV4_SRC, oxm.uint32_value(), NULL, NULL);
-#endif
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_NW_DST:
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_NW_TOS:
 			field.u64 = raction.oac_10nwtos->nw_tos;

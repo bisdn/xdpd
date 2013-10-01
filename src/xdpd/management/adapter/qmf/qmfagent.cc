@@ -144,6 +144,19 @@ qmfagent::set_qmf_schema()
     portDetachMethod.addArgument(qmf::SchemaProperty("devname",	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
     sch_lsi.addMethod(portDetachMethod);
 
+    qmf::SchemaMethod ctlConnectMethod("ctlConnect", "{desc:'connect to controller'}");
+    ctlConnectMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    ctlConnectMethod.addArgument(qmf::SchemaProperty("ctlaf",	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    ctlConnectMethod.addArgument(qmf::SchemaProperty("ctladdr",	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
+    ctlConnectMethod.addArgument(qmf::SchemaProperty("ctlport",	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    sch_lsi.addMethod(ctlConnectMethod);
+
+    qmf::SchemaMethod ctlDisconnectMethod("ctlDisconnect", "{desc:'disconnect from controller'}");
+    ctlDisconnectMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    ctlDisconnectMethod.addArgument(qmf::SchemaProperty("ctlaf",	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    ctlDisconnectMethod.addArgument(qmf::SchemaProperty("ctladdr", 	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
+    ctlDisconnectMethod.addArgument(qmf::SchemaProperty("ctlport", 	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    sch_lsi.addMethod(ctlDisconnectMethod);
 
 
 

@@ -369,16 +369,13 @@ qmfagent::methodCtlConnect(qmf::AgentEvent& event)
 		return true;
 
 	} catch (rofl::eOfSmDoesNotExist& e) {
-		session.raiseException(event, "port attachment failed: LSI does not exist");
-
-	} catch (rofl::eOfSmErrorOnCreation& e) {
-		session.raiseException(event, "port attachment failed: physical port does not exist");
+		session.raiseException(event, "controller connect failed: LSI does not exist");
 
 	} catch (rofl::eOfSmGeneralError& e) {
-		session.raiseException(event, "port attachment failed: internal error");
+		session.raiseException(event, "controller connect failed: internal error");
 
 	} catch (...) {
-		session.raiseException(event, "port attachment failed: internal error");
+		session.raiseException(event, "controller connect failed: internal error");
 	}
 	return false;
 }
@@ -405,16 +402,13 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 		return true;
 
 	} catch (rofl::eOfSmDoesNotExist& e) {
-		session.raiseException(event, "port attachment failed: LSI does not exist");
-
-	} catch (rofl::eOfSmErrorOnCreation& e) {
-		session.raiseException(event, "port attachment failed: physical port does not exist");
+		session.raiseException(event, "controller disconnect failed: LSI does not exist");
 
 	} catch (rofl::eOfSmGeneralError& e) {
-		session.raiseException(event, "port attachment failed: internal error");
+		session.raiseException(event, "controller disconnect failed: internal error");
 
 	} catch (...) {
-		session.raiseException(event, "port attachment failed: internal error");
+		session.raiseException(event, "controller disconnect failed: internal error");
 	}
 	return false;
 }

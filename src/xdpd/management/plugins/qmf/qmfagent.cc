@@ -141,6 +141,19 @@ qmfagent::set_qmf_schema()
     portDetachMethod.addArgument(qmf::SchemaProperty("devname",	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
     sch_lsi.addMethod(portDetachMethod);
 
+    qmf::SchemaMethod ctlConnectMethod("ctlConnect", "{desc:'connect to controller'}");
+    ctlConnectMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    ctlConnectMethod.addArgument(qmf::SchemaProperty("ctlaf",	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    ctlConnectMethod.addArgument(qmf::SchemaProperty("ctladdr",	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
+    ctlConnectMethod.addArgument(qmf::SchemaProperty("ctlport",	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    sch_lsi.addMethod(ctlConnectMethod);
+
+    qmf::SchemaMethod ctlDisconnectMethod("ctlDisconnect", "{desc:'disconnect from controller'}");
+    ctlDisconnectMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    ctlDisconnectMethod.addArgument(qmf::SchemaProperty("ctlaf",	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    ctlDisconnectMethod.addArgument(qmf::SchemaProperty("ctladdr", 	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
+    ctlDisconnectMethod.addArgument(qmf::SchemaProperty("ctlport", 	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    sch_lsi.addMethod(ctlDisconnectMethod);
 
 
 
@@ -171,6 +184,13 @@ qmfagent::method(qmf::AgentEvent& event)
 		else if (name == "portDetach") {
 			return methodPortDetach(event);
 		}
+		else if (name == "ctlConnect") {
+			return methodCtlConnect(event);
+		}
+		else if (name == "ctlDisconnect") {
+			return methodCtlDisconnect(event);
+		}
+
 		else {
 			session.raiseException(event, "command not found");
 		}
@@ -322,5 +342,73 @@ qmfagent::methodPortDetach(qmf::AgentEvent& event)
 	}
 	return false;
 }
+
+
+
+
+bool
+qmfagent::methodCtlConnect(qmf::AgentEvent& event)
+{
+	try {
+		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
+		int ctlaf				= event.getArguments()["ctlaf"].asInt32();
+		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
+		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
+
+		rofl::caddress controller_address(ctlaf, ctladdr.c_str(), ctlport);
+
+		xdpd::switch_manager::rpc_connect_to_ctl(dpid, controller_address);
+
+		// TODO: create QMF port object (if this is deemed useful one day ...)
+		event.addReturnArgument("dpid", dpid);
+		session.methodSuccess(event);
+
+		return true;
+
+	} catch (xdpd::eOfSmDoesNotExist& e) {
+		session.raiseException(event, "controller connect failed: LSI does not exist");
+
+	} catch (xdpd::eOfSmGeneralError& e) {
+		session.raiseException(event, "controller connect failed: internal error");
+
+	} catch (...) {
+		session.raiseException(event, "controller connect failed: internal error");
+	}
+	return false;
+}
+
+
+
+bool
+qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
+{
+	try {
+		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
+		int ctlaf				= event.getArguments()["ctlaf"].asInt32();
+		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
+		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
+
+		rofl::caddress controller_address(ctlaf, ctladdr.c_str(), ctlport);
+
+		xdpd::switch_manager::rpc_disconnect_from_ctl(dpid, controller_address);
+
+		// TODO: create QMF port object (if this is deemed useful one day ...)
+		event.addReturnArgument("dpid", dpid);
+		session.methodSuccess(event);
+
+		return true;
+
+	} catch (xdpd::eOfSmDoesNotExist& e) {
+		session.raiseException(event, "controller disconnect failed: LSI does not exist");
+
+	} catch (xdpd::eOfSmGeneralError& e) {
+		session.raiseException(event, "controller disconnect failed: internal error");
+
+	} catch (...) {
+		session.raiseException(event, "controller disconnect failed: internal error");
+	}
+	return false;
+}
+
 
 

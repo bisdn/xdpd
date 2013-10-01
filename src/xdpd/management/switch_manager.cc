@@ -158,3 +158,34 @@ switch_manager::list_matching_algorithms(of_version_t of_version)
 
 	return matching_algorithms;
 }
+
+
+
+void
+switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra)
+{
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		throw eOfSmDoesNotExist();
+	}
+
+	//Get switch instance
+	openflow_switch* dp = switch_manager::switchs[dpid];
+	dp->rpc_connect_to_ctl(ra);
+}
+
+
+
+void
+switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra)
+{
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		throw eOfSmDoesNotExist();
+	}
+
+	//Get switch instance
+	openflow_switch* dp = switch_manager::switchs[dpid];
+	dp->rpc_disconnect_from_ctl(ra);
+}
+
+
+

@@ -138,6 +138,15 @@ public:
 	static std::list<std::string> list_matching_algorithms(of_version_t of_version);
 
 
+	/**
+	 * connect to controller
+	 */
+	static void rpc_connect_to_ctl(uint64_t dpid, caddress const& ra);
+
+	/**
+	 * disconnect from from controller
+	 */
+	static void rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra);
 };
 
 }// namespace rofl

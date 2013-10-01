@@ -290,6 +290,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	
 		//Initialize the packet and copy
 		((datapacketx86*)pkt->platform_state)->init(buffer, buffer_size, lsw, in_port, 0, true);
+		pkt->sw = lsw;
 	}
 
 	//Reclassify the packet
@@ -455,7 +456,6 @@ of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
 	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
 		return NULL; 
 
-
 	return of1x_get_flow_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
 }
 
@@ -483,7 +483,6 @@ of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64
 
 	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
 		return NULL; 
-
 
 	return of1x_get_flow_aggregate_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
 } 

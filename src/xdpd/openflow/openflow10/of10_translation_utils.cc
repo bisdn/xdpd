@@ -239,6 +239,8 @@ of10_translation_utils::of10_map_flow_entry_matches(
 /**
 * Maps a of1x_action from an OF1.2 Header
 */
+
+//FIXME TODO XXX: cofaction should have appropiate getters and setters instead of having  to access internals of the class!
 void
 of10_translation_utils::of1x_map_flow_entry_actions(
 		cofctl *ctl,
@@ -286,9 +288,11 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, NULL, NULL);
 			} break;
 		case OFP10AT_SET_NW_SRC:
+			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_NW_DST:
+			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_NW_TOS:
@@ -749,7 +753,7 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 	if (config.match&(1UL<<OF1X_MATCH_TP_DST))
 		mask |= 1 << OFP10AT_SET_TP_DST;
 	
-	if (config.match&(1UL<<OF12PAT_SET_QUEUE))
+	if (config.apply_actions&(1UL<<OF12PAT_SET_QUEUE))
 		mask |= 1 << OFP10AT_ENQUEUE;
 		
 	return mask;

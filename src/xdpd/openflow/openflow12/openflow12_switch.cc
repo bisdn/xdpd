@@ -82,6 +82,19 @@ afa_result_t openflow12_switch::notify_port_status_changed(switch_port_t* port){
 }
 
 
+/*
+* Connecting and disconnecting from a controller entity
+*/
+void openflow12_switch::rpc_connect_to_ctl(caddress const& controller_addr){
+	return endpoint->rpc_connect_to_ctl(ofswitch->of_ver, 0, controller_addr);
+}
+
+void openflow12_switch::rpc_disconnect_from_ctl(caddress const& controller_addr){
+	return endpoint->rpc_disconnect_from_ctl(controller_addr);
+}
+
+
+
 
 /*
 * Driver HAL calls. Demultiplexing to the appropiate openflow12_switch instance.

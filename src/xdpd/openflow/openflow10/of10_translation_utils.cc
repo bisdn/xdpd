@@ -167,7 +167,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_ip_dscp_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_ip_dscp());
+								ofmatch.get_ip_dscp()>>2);
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}

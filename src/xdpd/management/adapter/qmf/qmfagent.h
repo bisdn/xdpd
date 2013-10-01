@@ -140,6 +140,18 @@ private:
 	/**
 	 *
 	 */
+	bool
+	methodCtlConnect(qmf::AgentEvent& event);
+
+	/**
+	 *
+	 */
+	bool
+	methodCtlDisconnect(qmf::AgentEvent& event);
+
+	/**
+	 *
+	 */
 	void
 	create_switch();
 

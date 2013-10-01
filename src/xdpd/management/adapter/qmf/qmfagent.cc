@@ -187,6 +187,13 @@ qmfagent::method(qmf::AgentEvent& event)
 		else if (name == "portDetach") {
 			return methodPortDetach(event);
 		}
+		else if (name == "ctlConnect") {
+			return methodPortAttach(event);
+		}
+		else if (name == "ctlDisconnect") {
+			return methodPortDetach(event);
+		}
+
 		else {
 			session.raiseException(event, "command not found");
 		}
@@ -338,5 +345,79 @@ qmfagent::methodPortDetach(qmf::AgentEvent& event)
 	}
 	return false;
 }
+
+
+
+
+bool
+qmfagent::methodCtlConnect(qmf::AgentEvent& event)
+{
+	try {
+		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
+		int ctlaf				= event.getArguments()["ctlaf"].asInt32();
+		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
+		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
+
+		rofl::caddress controller_address(ctlaf, ctladdr.c_str(), ctlport);
+
+		rofl::switch_manager::rpc_connect_to_ctl(dpid, controller_address);
+
+		// TODO: create QMF port object (if this is deemed useful one day ...)
+		event.addReturnArgument("dpid", dpid);
+		session.methodSuccess(event);
+
+		return true;
+
+	} catch (rofl::eOfSmDoesNotExist& e) {
+		session.raiseException(event, "port attachment failed: LSI does not exist");
+
+	} catch (rofl::eOfSmErrorOnCreation& e) {
+		session.raiseException(event, "port attachment failed: physical port does not exist");
+
+	} catch (rofl::eOfSmGeneralError& e) {
+		session.raiseException(event, "port attachment failed: internal error");
+
+	} catch (...) {
+		session.raiseException(event, "port attachment failed: internal error");
+	}
+	return false;
+}
+
+
+
+bool
+qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
+{
+	try {
+		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
+		int ctlaf				= event.getArguments()["ctlaf"].asInt32();
+		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
+		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
+
+		rofl::caddress controller_address(ctlaf, ctladdr.c_str(), ctlport);
+
+		rofl::switch_manager::rpc_disconnect_from_ctl(dpid, controller_address);
+
+		// TODO: create QMF port object (if this is deemed useful one day ...)
+		event.addReturnArgument("dpid", dpid);
+		session.methodSuccess(event);
+
+		return true;
+
+	} catch (rofl::eOfSmDoesNotExist& e) {
+		session.raiseException(event, "port attachment failed: LSI does not exist");
+
+	} catch (rofl::eOfSmErrorOnCreation& e) {
+		session.raiseException(event, "port attachment failed: physical port does not exist");
+
+	} catch (rofl::eOfSmGeneralError& e) {
+		session.raiseException(event, "port attachment failed: internal error");
+
+	} catch (...) {
+		session.raiseException(event, "port attachment failed: internal error");
+	}
+	return false;
+}
+
 
 

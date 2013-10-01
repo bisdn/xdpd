@@ -182,7 +182,8 @@ void bufferpool::release_buffer(datapacket_t* buf){
 	//Release
 	if(bp->pool_status[id] != BUFFERPOOL_SLOT_IN_USE){
 		//Attempting to release an unallocated/unavailable buffer
-		ROFL_ERR("Attempting to release an unallocated/unavailable buffer. Ignoring..");
+		ROFL_ERR("Attempting to release an unallocated/unavailable buffer (pkt:%p). Ignoring..",buf);
+		assert(0);
 	}else{ 
 		buf->is_replica = false; //Make sure this flag is 0
 		bp->pool_status[id] = BUFFERPOOL_SLOT_AVAILABLE;

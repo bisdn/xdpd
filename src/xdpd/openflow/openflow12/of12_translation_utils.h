@@ -5,7 +5,7 @@
 #ifndef OF12_TRANSLATION_UTILS_H
 #define OF12_TRANSLATION_UTILS_H 
 
-#include <rofl/common/openflow/cofctl.h>
+#include <rofl/common/crofbase.h>
 #include <rofl/common/openflow/messages/cofmsg_features.h>
 #include <rofl/common/openflow/messages/cofmsg_flow_mod.h>
 #include <rofl/platform/unix/csyslog.h>

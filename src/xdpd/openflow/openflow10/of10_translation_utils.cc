@@ -299,7 +299,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_NW_TOS:
-			field.u64 = raction.oac_10nwtos->nw_tos;
+			field.u64 = raction.oac_10nwtos->nw_tos>>2;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_TP_SRC:

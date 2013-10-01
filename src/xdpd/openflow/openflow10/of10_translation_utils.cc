@@ -174,10 +174,10 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	//NW PROTO 
 	try {
-		of1x_match_t *match = of1x_init_ip_proto_match(
+		of1x_match_t *match = of1x_init_nw_proto_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_ip_proto());
+								ofmatch.get_nw_proto());
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
@@ -409,8 +409,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IP_ECN:
 			match.set_ip_ecn(m->value->value.u8);
 			break;
-		case OF1X_MATCH_IP_PROTO:
-			match.set_ip_proto(m->value->value.u8);
+		case OF1X_MATCH_NW_PROTO:
+			match.set_nw_proto(m->value->value.u8);
 			break;
 		case OF1X_MATCH_IPV4_SRC:
 		{

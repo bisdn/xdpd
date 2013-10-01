@@ -460,12 +460,16 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, NULL, NULL);
 			} break;
 		case OFP10AT_SET_NW_SRC:
+			//TODO action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, oxm.uint32_value(), NULL, NULL);
 #if 0
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SPA, oxm.uint32_value(), NULL, NULL);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IPV4_SRC, oxm.uint32_value(), NULL, NULL);
 #endif
+			throw eNotImplemented();
 			break;
 		case OFP10AT_SET_NW_DST:
+			//TODO action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, oxm.uint32_value(), NULL, NULL);
+			throw eNotImplemented();
 			break;
 		case OFP10AT_SET_NW_TOS:
 			field.u64 = raction.oac_10nwtos->nw_tos;
@@ -925,7 +929,7 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 	if (config.match&(1UL<<OF1X_MATCH_TP_DST))
 		mask |= 1 << OFP10AT_SET_TP_DST;
 	
-	if (config.match&(1UL<<OF12PAT_SET_QUEUE))
+	if (config.apply_actions&(1UL<<OF12PAT_SET_QUEUE))
 		mask |= 1 << OFP10AT_ENQUEUE;
 		
 	return mask;

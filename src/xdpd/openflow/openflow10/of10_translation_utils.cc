@@ -188,13 +188,15 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = NULL; 
 		caddress value(ofmatch.get_nw_src_value());
 		caddress mask(ofmatch.get_nw_src_mask());
-		
-		match = of1x_init_nw_src_match(	/*prev*/NULL,
-						/*next*/NULL,
-						be32toh(value.ca_s4addr->sin_addr.s_addr),
-						be32toh(mask.ca_s4addr->sin_addr.s_addr));
+	
+		if(mask.ca_s4addr->sin_addr.s_addr){	
+			match = of1x_init_nw_src_match(	/*prev*/NULL,
+							/*next*/NULL,
+							be32toh(value.ca_s4addr->sin_addr.s_addr),
+							be32toh(mask.ca_s4addr->sin_addr.s_addr));
 
-		of1x_add_match_to_entry(entry, match);
+			of1x_add_match_to_entry(entry, match);
+		}
 
 	} catch (eOFmatchNotFound& e) {}
 
@@ -205,13 +207,14 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		caddress value(ofmatch.get_nw_dst_value());
 		caddress mask(ofmatch.get_nw_dst_mask());
 		
-		match = of1x_init_nw_dst_match(	/*prev*/NULL,
-						/*next*/NULL,
-						be32toh(value.ca_s4addr->sin_addr.s_addr),
-						be32toh(mask.ca_s4addr->sin_addr.s_addr));
+		if(mask.ca_s4addr->sin_addr.s_addr){	
+			match = of1x_init_nw_dst_match(	/*prev*/NULL,
+							/*next*/NULL,
+							be32toh(value.ca_s4addr->sin_addr.s_addr),
+							be32toh(mask.ca_s4addr->sin_addr.s_addr));
 
-		of1x_add_match_to_entry(entry, match);
-
+			of1x_add_match_to_entry(entry, match);
+		}
 	} catch (eOFmatchNotFound& e) {}
 
 	//TP SRC

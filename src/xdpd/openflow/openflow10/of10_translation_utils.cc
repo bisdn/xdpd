@@ -432,39 +432,8 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 
 		switch (raction.get_type()) {
 		case OFP10AT_OUTPUT:
-			field.u64 = be16toh(raction.oac_10output->port);
-			
 			//Translate special values to of1x
-			switch(field.u64){
-				case OFPP10_MAX:
-					field.u64 = OF1X_PORT_MAX;
-					break;
-				case OFPP10_IN_PORT:
-					field.u64 = OF1X_PORT_IN_PORT;
-					break;
-				case OFPP10_TABLE:
-					field.u64 = OF1X_PORT_TABLE;
-					break;
-				case OFPP10_NORMAL:
-					field.u64 = OF1X_PORT_NORMAL;
-					break;
-				case OFPP10_FLOOD:
-					field.u64 = OF1X_PORT_FLOOD;
-					break;
-				case OFPP10_ALL:
-					field.u64 = OF1X_PORT_ALL;
-					break;
-				case OFPP10_CONTROLLER:
-					field.u64 = OF1X_PORT_CONTROLLER;
-					break;
-				case OFPP10_LOCAL:
-					field.u64 = OF1X_PORT_LOCAL;
-					break;
-/*				case OFPP10_NONE:
-					field.u64 = OF1X_PORT_ANY;
-					break;
-*/
-			}
+			field.u64 = get_out_port(be16toh(raction.oac_10output->port));
 			
 			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
 			break;
@@ -960,4 +929,74 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 		mask |= 1 << OFP10AT_ENQUEUE;
 		
 	return mask;
+}
+
+uint64_t of10_translation_utils::get_out_port(uint16_t port){
+	switch(port){
+		case OFPP10_MAX:
+			return OF1X_PORT_MAX;
+			break;
+		case OFPP10_IN_PORT:
+			return OF1X_PORT_IN_PORT;
+			break;
+		case OFPP10_TABLE:
+			return OF1X_PORT_TABLE;
+			break;
+		case OFPP10_NORMAL:
+			return OF1X_PORT_NORMAL;
+			break;
+		case OFPP10_FLOOD:
+			return OF1X_PORT_FLOOD;
+			break;
+		case OFPP10_ALL:
+			return OF1X_PORT_ALL;
+			break;
+		case OFPP10_CONTROLLER:
+			return OF1X_PORT_CONTROLLER;
+			break;
+		case OFPP10_LOCAL:
+			return OF1X_PORT_LOCAL;
+			break;
+		case OFPP10_NONE:
+			return OF1X_PORT_ANY; //NOTE needed for deleting flows
+			break;
+		default:
+			return port;
+			break;
+	}
+}
+
+uint64_t of10_translation_utils::get_out_port_reverse(uint64_t port){
+	switch(port){
+		case OF1X_PORT_MAX:
+			return OFPP10_MAX;
+			break;
+		case OF1X_PORT_IN_PORT:
+			return OFPP10_IN_PORT;
+			break;
+		case OF1X_PORT_TABLE:
+			return OFPP10_TABLE;
+			break;
+		case OF1X_PORT_NORMAL:
+			return OFPP10_NORMAL;
+			break;
+		case OF1X_PORT_FLOOD:
+			return OFPP10_FLOOD;
+			break;
+		case OF1X_PORT_ALL:
+			return OFPP10_ALL;
+			break;
+		case OF1X_PORT_CONTROLLER:
+			return OFPP10_CONTROLLER;
+			break;
+		case OF1X_PORT_LOCAL:
+			return OFPP10_LOCAL;
+			break;
+		case OF1X_PORT_ANY:
+			return OFPP10_NONE; //NOTE needed for deleting flows
+			break;
+		default:
+			return port;
+			break;
+	}
 }

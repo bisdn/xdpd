@@ -908,7 +908,7 @@ of10_endpoint::flow_mod_delete(
 								pack->get_table_id(),
 								entry,
 								pack->get_buffer_id(),
-								pack->get_out_port(),
+								of10_translation_utils::get_out_port(pack->get_out_port()),
 								OF1X_GROUP_ANY,
 								strictness)) {
 		WRITELOG(CDATAPATH, ERROR, "Error deleting flowmod\n");

@@ -61,6 +61,12 @@ public:
 	
 	virtual afa_result_t notify_port_status_changed(switch_port_t* port)=0;
 
+	/**
+	 * Connecting and disconnecting from a controller entity
+	 */
+	virtual void rpc_connect_to_ctl(caddress const& controller_addr)=0;
+
+	virtual void rpc_disconnect_from_ctl(caddress const& controller_addr)=0;
 };
 
 }// namespace rofl

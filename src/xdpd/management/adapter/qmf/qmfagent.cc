@@ -188,10 +188,10 @@ qmfagent::method(qmf::AgentEvent& event)
 			return methodPortDetach(event);
 		}
 		else if (name == "ctlConnect") {
-			return methodPortAttach(event);
+			return methodCtlConnect(event);
 		}
 		else if (name == "ctlDisconnect") {
-			return methodPortDetach(event);
+			return methodCtlDisconnect(event);
 		}
 
 		else {

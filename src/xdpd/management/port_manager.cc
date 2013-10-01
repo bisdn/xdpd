@@ -1,11 +1,5 @@
 #include "port_manager.h"
-
-#include "../openflow/openflow_switch.h"
-#include <rofl/datapath/afa/cmm.h>
 #include <rofl/common/utils/c_logger.h>
-
-//FIXME remove this dependency
-#include <rofl/datapath/pipeline/physical_switch.h>
 
 using namespace xdpd;
 
@@ -124,58 +118,4 @@ std::list<std::string> port_manager::list_available_port_names() throw (eOfSmGen
 	return port_name_list; 
 }
 
-/**
-*
-* Dispatching of version agnostic messages comming from the driver
-*
-*/
 
-afa_result_t cmm_notify_port_add(switch_port_t* port){
-	
-	openflow_switch* sw;
-	
-	if (!port || !port->attached_sw){
-		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
-		return AFA_FAILURE;	
-
-	//Notify MGMT framework
-	//TODO:
-
-	return sw->notify_port_add(port);
-}
-
-
-afa_result_t cmm_notify_port_delete(switch_port_t* port){
-	
-	openflow_switch* sw;
-	
-	if (!port || !port->attached_sw){
-		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
-		return AFA_FAILURE;	
-
-	//Notify MGMT framework
-	//TODO:
-
-	return sw->notify_port_delete(port);
-}
-
-
-afa_result_t cmm_notify_port_status_changed(switch_port_t* port){
-	
-	openflow_switch* sw;
-	
-	if (!port || !port->attached_sw){
-		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
-		return AFA_FAILURE;	
-
-	//Notify MGMT framework
-	//TODO:
-
-	return sw->notify_port_status_changed(port);
-}

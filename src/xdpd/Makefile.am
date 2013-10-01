@@ -8,7 +8,7 @@ SUBDIRS = management openflow fwd-modules
 
 #Main program
 sbin_PROGRAMS = xdpd
-xdpd_SOURCES = xdpd.cc
+xdpd_SOURCES = cmm.cc xdpd.cc
 xdpd_LDADD = \
 	openflow/.libs/libxdpd_openflow.a\
 	-lrofl_pipeline \
@@ -16,6 +16,7 @@ xdpd_LDADD = \
 	openflow/.libs/libxdpd_openflow.a\
 	-lrofl_pipeline \
 	management/libxdpd_mgmt.la \
+	openflow/.libs/libxdpd_openflow.a\
 	$(FM_LIB_a)\
 	-lpthread \
 	-lrofl \

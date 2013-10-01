@@ -8,6 +8,7 @@
 #include "datapacket_storage.h"
 #include <assert.h>
 #include <rofl/common/thread_helper.h>
+#include "../util/likely.h"
 
 datapacket_storage::datapacket_storage(uint16_t size, uint16_t expiration) :
 		next_id(1),
@@ -35,7 +36,10 @@ datapacket_storage::store_packet(datapacket_t* pkt)
 
 	{
 		rofl::Lock scoped_lock(&lock);
-		map.id = ++next_id&0x7fffffff; //Prevent using 0xffffffff 
+		if(unlikely(next_id+1 == 0xffffffff))
+			map.id = next_id = 1; //Skip error and 0
+		else
+			map.id = ++next_id;
 		store.push_back(map);
 	}
 

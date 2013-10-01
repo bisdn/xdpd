@@ -484,11 +484,11 @@ of10_endpoint::handle_queue_stats_request(
 
 		port = of12switch->logical_ports[n].port;
 
-		if ((OFPP10_ALL != portnum) && (port->of_port_num != portnum))
+		if ( port == NULL || ( (OFPP10_ALL != portnum) && (port->of_port_num != portnum) ) )
 			continue;
 
 
-		if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)/* && (port->of_port_num == portnum)*/){
+		if( of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED /* && (port->of_port_num == portnum)*/){
 
 			if (OFPQ_ALL == queue_id){
 

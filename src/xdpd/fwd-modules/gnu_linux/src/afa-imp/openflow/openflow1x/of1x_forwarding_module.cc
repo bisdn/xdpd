@@ -299,7 +299,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	
 	//Instruct pipeline to process actions. This may reinject the packet	
-	of1x_process_packet_out_pipeline(lsw, pkt, action_group);
+	of1x_process_packet_out_pipeline((of1x_switch_t*)lsw, pkt, action_group);
 	
 	return AFA_SUCCESS;
 }

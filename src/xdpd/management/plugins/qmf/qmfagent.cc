@@ -357,7 +357,7 @@ qmfagent::methodCtlConnect(qmf::AgentEvent& event)
 
 		rofl::caddress controller_address(ctlaf, ctladdr.c_str(), ctlport);
 
-		rofl::switch_manager::rpc_connect_to_ctl(dpid, controller_address);
+		xdpd::switch_manager::rpc_connect_to_ctl(dpid, controller_address);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);
@@ -365,10 +365,10 @@ qmfagent::methodCtlConnect(qmf::AgentEvent& event)
 
 		return true;
 
-	} catch (rofl::eOfSmDoesNotExist& e) {
+	} catch (xdpd::eOfSmDoesNotExist& e) {
 		session.raiseException(event, "controller connect failed: LSI does not exist");
 
-	} catch (rofl::eOfSmGeneralError& e) {
+	} catch (xdpd::eOfSmGeneralError& e) {
 		session.raiseException(event, "controller connect failed: internal error");
 
 	} catch (...) {
@@ -390,7 +390,7 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 
 		rofl::caddress controller_address(ctlaf, ctladdr.c_str(), ctlport);
 
-		rofl::switch_manager::rpc_disconnect_from_ctl(dpid, controller_address);
+		xdpd::switch_manager::rpc_disconnect_from_ctl(dpid, controller_address);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);
@@ -398,10 +398,10 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 
 		return true;
 
-	} catch (rofl::eOfSmDoesNotExist& e) {
+	} catch (xdpd::eOfSmDoesNotExist& e) {
 		session.raiseException(event, "controller disconnect failed: LSI does not exist");
 
-	} catch (rofl::eOfSmGeneralError& e) {
+	} catch (xdpd::eOfSmGeneralError& e) {
 		session.raiseException(event, "controller disconnect failed: internal error");
 
 	} catch (...) {

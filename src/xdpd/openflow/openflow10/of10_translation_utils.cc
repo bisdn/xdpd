@@ -728,7 +728,7 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 	if (config.match&(1UL<<OF1X_MATCH_VLAN_PCP))
 		mask |= 1 << OFP10AT_SET_VLAN_PCP;
 	
-	if (config.match&(1UL<<OF12PAT_POP_VLAN))
+	if (config.apply_actions&(1UL<<OF12PAT_POP_VLAN))
 		mask |= 1 << OFP10AT_STRIP_VLAN;
 	
 	if (config.match&(1UL<<OF1X_MATCH_ETH_SRC))

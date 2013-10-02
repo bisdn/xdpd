@@ -147,7 +147,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_vlan_vid_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								ofmatch.get_vlan_vid_value(),
+								ofmatch.get_vlan_vid_value()|OF1X_VLAN_PRESENT_MASK,
 								0xFFFF); // no mask in OF1.0
 
 		of1x_add_match_to_entry(entry, match);
@@ -273,12 +273,11 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_VLAN_PCP:
-			field.u64 = be16toh(raction.oac_10vlanpcp->vlan_pcp);
+			field.u64 = be16toh(raction.oac_10vlanpcp->vlan_pcp)>>8;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, NULL, NULL);
 			break;
 		case OFP10AT_STRIP_VLAN:
-			// FIXME: we need the ethertype here for the OF1.2 pipeline, but this field does not exist in OF1.0 and must be drawn from the removed VLAN tag
-			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, NULL, NULL); 
 			break;
 		case OFP10AT_SET_DL_SRC: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
@@ -407,7 +406,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		}
 			break;
 		case OF1X_MATCH_IP_DSCP:
-			match.set_ip_dscp(m->value->value.u8);
+			match.set_ip_dscp((m->value->value.u8<<2));
 			break;
 		case OF1X_MATCH_IP_ECN:
 			match.set_ip_ecn(m->value->value.u8);
@@ -596,7 +595,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		action = cofaction_set_vlan_vid(OFP10_VERSION, (uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_PCP: {
-		action = cofaction_set_vlan_pcp(OFP10_VERSION, (uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK));
+		action = cofaction_set_vlan_pcp(OFP10_VERSION, (of1x_action->field.u64 & OF1X_1_BYTE_MASK)<<8);
 	} break;
 	case OF1X_AT_SET_FIELD_IP_PROTO: {
 		action = cofaction_set_nw_tos(OFP10_VERSION, ((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));

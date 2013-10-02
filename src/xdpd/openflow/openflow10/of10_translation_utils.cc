@@ -262,7 +262,6 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		case OFP10AT_OUTPUT:
 			//Translate special values to of1x
 			field.u64 = get_out_port(be16toh(raction.oac_10output->port));
-			
 			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
 			break;
 		case OFP10AT_SET_VLAN_VID:
@@ -308,20 +307,17 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, NULL, NULL);
 			break;
 		case OFP10AT_ENQUEUE:
-			// FIXME: what to do with the port field in struct ofp10_action_enqueue?
 			field.u64 = be32toh(raction.oac_10enqueue->queue_id);
 			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, NULL, NULL);
+			if (NULL != apply_actions) of1x_push_packet_action_to_group(apply_actions, action);
+			field.u64 = get_out_port(be16toh(raction.oac_10enqueue->port));
+			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
 			break;
 		}
 
 		if (NULL != apply_actions)
 		{
 			of1x_push_packet_action_to_group(apply_actions, action);
-		}
-
-		if (NULL != write_actions)
-		{
-			of1x_set_packet_action_on_write_actions(write_actions, action);
 		}
 	}
 

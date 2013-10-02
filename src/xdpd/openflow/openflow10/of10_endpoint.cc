@@ -334,7 +334,7 @@ of10_endpoint::handle_flow_stats_request(
 			msg->get_flow_stats().get_table_id(),
 			0,
 			0,
-			msg->get_flow_stats().get_out_port(),
+			of10_translation_utils::get_out_port(msg->get_flow_stats().get_out_port()),
 			OF1X_GROUP_ANY,
 			&entry->matches);
 

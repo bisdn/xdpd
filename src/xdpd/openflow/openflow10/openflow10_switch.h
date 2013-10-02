@@ -55,7 +55,7 @@ public:
 	* Public interface for the instance
 	*/
 
-	afa_result_t process_packet_in(uint8_t table_id,
+	virtual afa_result_t process_packet_in(uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
 					uint32_t buffer_id,
@@ -64,7 +64,7 @@ public:
 					uint16_t total_len,
 					of1x_packet_matches_t matches);
 
-	afa_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry);
+	virtual afa_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry);
 
 	/*
 	* Port async notifications

@@ -270,7 +270,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	}
 	
 	//Recover pkt buffer if is stored. Otherwise pick a free buffer
-	if(buffer_id != OF1XP_NO_BUFFER){
+	if( buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
 		//Retrieve the packet
 		pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
@@ -299,7 +299,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	
 	//Instruct pipeline to process actions. This may reinject the packet	
-	of1x_process_packet_out_pipeline(lsw, pkt, action_group);
+	of1x_process_packet_out_pipeline((of1x_switch_t*)lsw, pkt, action_group);
 	
 	return AFA_SUCCESS;
 }
@@ -339,7 +339,7 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 		return AFA_FAILURE;
 	}
 
-	if(buffer_id != OF1XP_NO_BUFFER){
+	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
 		datapacket_t* pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
 	

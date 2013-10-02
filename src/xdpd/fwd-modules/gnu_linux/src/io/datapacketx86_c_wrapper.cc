@@ -599,7 +599,7 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 
 	//flood_meta_port is a static variable defined in the physical_switch
 	//the meta_port
-	if(output_port == flood_meta_port || output_port == all_meta_port){
+	if(output_port == flood_meta_port || output_port == all_meta_port){ //We don't have STP, so it is the same
 		datapacket_t* replica;
 		switch_port_t* port_it;
 		datapacketx86* replica_pack;
@@ -618,7 +618,7 @@ void dpx86_output_packet(datapacket_t* pkt, switch_port_t* output_port){
 			port_it = sw->logical_ports[i].port;
 
 			//Check port is not incomming port, exists, and is up 
-			if( ((output_port == flood_meta_port) && (i == pack->in_port)) || !port_it || port_it->no_flood)
+			if( (i == pack->in_port) || !port_it || port_it->no_flood)
 				continue;
 
 			//replicate packet

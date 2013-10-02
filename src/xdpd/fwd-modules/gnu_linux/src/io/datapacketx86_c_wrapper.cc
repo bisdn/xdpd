@@ -736,6 +736,14 @@ dpx86_get_packet_eth_type(datapacket_t * const pkt)
 }
 
 //802.1q VLAN outermost tag
+bool
+dpx86_has_vlan(datapacket_t * const pkt)
+{
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if (NULL == pack)
+		return false;
+	return (NULL != pack->headers->vlan(0));
+}
 uint16_t
 dpx86_get_packet_vlan_vid(datapacket_t * const pkt)
 {

@@ -250,9 +250,10 @@ uint16_t
 dpx86_get_packet_eth_type(datapacket_t * const pkt);
 
 //802.1q VLAN outermost tag
+bool
+dpx86_has_vlan(datapacket_t * const pkt);
 uint16_t
 dpx86_get_packet_vlan_vid(datapacket_t * const pkt);
-
 uint8_t
 dpx86_get_packet_vlan_pcp(datapacket_t * const pkt);
 

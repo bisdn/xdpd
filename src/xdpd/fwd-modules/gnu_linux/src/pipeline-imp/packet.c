@@ -50,12 +50,18 @@ platform_packet_get_eth_src(datapacket_t * const pkt)
 	return dpx86_get_packet_eth_src(pkt);
 }
 
+
 uint16_t
 platform_packet_get_eth_type(datapacket_t * const pkt)
 {
 	return dpx86_get_packet_eth_type(pkt);
 }
 
+bool
+platform_packet_has_vlan(datapacket_t * const pkt)
+{
+	return dpx86_has_vlan(pkt);
+}
 uint16_t
 platform_packet_get_vlan_vid(datapacket_t * const pkt)
 {

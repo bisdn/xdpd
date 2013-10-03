@@ -652,18 +652,18 @@ afa_result_t of10_endpoint::notify_port_add(switch_port_t* port){
 	if(port->drop_received) config |= OFP10PC_NO_RECV;
 
 
-	cofport ofport(OFP12_VERSION);
+	cofport ofport(OFP10_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
-	ofport.set_state(port->state);
+	ofport.set_state(port->state&0x1); //Only first bit is relevant
 	ofport.set_curr(port->curr);
 	ofport.set_advertised(port->advertised);
 	ofport.set_supported(port->supported);
 	ofport.set_peer(port->peer);
-	ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
 	//Send message
 	send_port_status_message(NULL, OFPPR_ADD, ofport);
@@ -681,18 +681,18 @@ afa_result_t of10_endpoint::notify_port_delete(switch_port_t* port){
 	if(!port->forward_packets) config |= OFP10PC_NO_FWD;
 	if(port->drop_received) config |= OFP10PC_NO_RECV;
 
-	cofport ofport(OFP12_VERSION);
+	cofport ofport(OFP10_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
-	ofport.set_state(port->state);
+	ofport.set_state(port->state&0x1); //Only first bit is relevant
 	ofport.set_curr(port->curr);
 	ofport.set_advertised(port->advertised);
 	ofport.set_supported(port->supported);
 	ofport.set_peer(port->peer);
-	ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
 	//Send message
 	send_port_status_message(NULL, OFPPR_DELETE, ofport);
@@ -711,18 +711,18 @@ afa_result_t of10_endpoint::notify_port_status_changed(switch_port_t* port){
 	if(port->drop_received) config |= OFP10PC_NO_RECV;
 
 	//Notify OF controller
-	cofport ofport(OFP12_VERSION);
+	cofport ofport(OFP10_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
-	ofport.set_state(port->state);
+	ofport.set_state(port->state&0x1); //Only first bit is relevant
 	ofport.set_curr(port->curr);
 	ofport.set_advertised(port->advertised);
 	ofport.set_supported(port->supported);
 	ofport.set_peer(port->peer);
-	ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
 	//Send message
 	send_port_status_message(NULL, OFPPR_MODIFY, ofport);

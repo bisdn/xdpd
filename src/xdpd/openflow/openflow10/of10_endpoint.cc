@@ -21,7 +21,7 @@ of10_endpoint::of10_endpoint(openflow_switch* sw, caddress const& controller_add
 
 	//Reference back to the sw
 	this->sw = sw;
-	of12switch = (of1x_switch_t*)sw->get_fwd_module_sw_ref();
+	of10switch = (of1x_switch_t*)sw->get_fwd_module_sw_ref();
 
 
 	//FIXME: make controller and binding optional somehow
@@ -52,17 +52,17 @@ of10_endpoint::handle_features_request(
 	uint32_t num_of_buffers = 0;
 	uint32_t capabilities 	= 0;
 
-	num_of_tables 	= of12switch->pipeline->num_of_tables;
-	num_of_buffers 	= of12switch->pipeline->num_of_buffers;
-	capabilities 	= of12switch->pipeline->capabilities;
+	num_of_tables 	= of10switch->pipeline->num_of_tables;
+	num_of_buffers 	= of10switch->pipeline->num_of_buffers;
+	capabilities 	= of10switch->pipeline->capabilities;
 
 	// array of structures ofp_port
 	cofportlist portlist;
 
 	//we check all the positions in case there are empty slots
-	for (unsigned int n = 1; n < of12switch->max_ports; n++){
+	for (unsigned int n = 1; n < of10switch->max_ports; n++){
 
-		ls_port = &of12switch->logical_ports[n];
+		ls_port = &of10switch->logical_ports[n];
 		_port = ls_port->port;
 
 		if(_port!=NULL && ls_port->attachment_state!=LOGICAL_PORT_STATE_DETACHED){
@@ -107,7 +107,7 @@ of10_endpoint::handle_features_request(
 			num_of_tables,	// n_tables
 			capabilities,	// capabilities
 			0, //of13_aux_id
-			of10_translation_utils::get_supported_actions(of12switch),
+			of10_translation_utils::get_supported_actions(of10switch),
 			portlist);
 
 	delete msg;
@@ -125,8 +125,8 @@ of10_endpoint::handle_get_config_request(
 
 	//FIXME: this should not be made like this!!!
 
-	flags = of12switch->pipeline->capabilities;
-	miss_send_len = of12switch->pipeline->miss_send_len;
+	flags = of10switch->pipeline->capabilities;
+	miss_send_len = of10switch->pipeline->miss_send_len;
 
 	send_get_config_reply(ctl, msg->get_xid(), flags, miss_send_len);
 
@@ -166,7 +166,7 @@ of10_endpoint::handle_table_stats_request(
 		cofctl *ctl,
 		cofmsg_table_stats_request *msg)
 {
-	unsigned int num_of_tables = of12switch->pipeline->num_of_tables;
+	unsigned int num_of_tables = of10switch->pipeline->num_of_tables;
 
 	std::vector<coftable_stats_reply> table_stats;
 
@@ -175,42 +175,42 @@ of10_endpoint::handle_table_stats_request(
 		table_stats.push_back(
 				coftable_stats_reply(
 					ctl->get_version(),
-					of12switch->pipeline->tables[n].number,
-					std::string(of12switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN),
-					(of12switch->pipeline->tables[n].config.match),
-					(of12switch->pipeline->tables[n].config.wildcards),
-					(of12switch->pipeline->tables[n].config.write_actions),
-					(of12switch->pipeline->tables[n].config.apply_actions),
-					(of12switch->pipeline->tables[n].config.write_setfields),
-					(of12switch->pipeline->tables[n].config.apply_setfields),
-					(of12switch->pipeline->tables[n].config.metadata_match),
-					(of12switch->pipeline->tables[n].config.metadata_write),
-					(of12switch->pipeline->tables[n].config.instructions),
-					(of12switch->pipeline->tables[n].config.table_miss_config),
-					(of12switch->pipeline->tables[n].max_entries),
-					(of12switch->pipeline->tables[n].num_of_entries),
-					(of12switch->pipeline->tables[n].stats.lookup_count),
-					(of12switch->pipeline->tables[n].stats.matched_count)
+					of10switch->pipeline->tables[n].number,
+					std::string(of10switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN),
+					(of10switch->pipeline->tables[n].config.match),
+					(of10switch->pipeline->tables[n].config.wildcards),
+					(of10switch->pipeline->tables[n].config.write_actions),
+					(of10switch->pipeline->tables[n].config.apply_actions),
+					(of10switch->pipeline->tables[n].config.write_setfields),
+					(of10switch->pipeline->tables[n].config.apply_setfields),
+					(of10switch->pipeline->tables[n].config.metadata_match),
+					(of10switch->pipeline->tables[n].config.metadata_write),
+					(of10switch->pipeline->tables[n].config.instructions),
+					(of10switch->pipeline->tables[n].config.table_miss_config),
+					(of10switch->pipeline->tables[n].max_entries),
+					(of10switch->pipeline->tables[n].num_of_entries),
+					(of10switch->pipeline->tables[n].stats.lookup_count),
+					(of10switch->pipeline->tables[n].stats.matched_count)
 				));
 
 		coftable_stats_reply a(
 							ctl->get_version(),
-							of12switch->pipeline->tables[n].number,
-							std::string(of12switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN),
-							(of12switch->pipeline->tables[n].config.match),
-							(of12switch->pipeline->tables[n].config.wildcards),
-							(of12switch->pipeline->tables[n].config.write_actions),
-							(of12switch->pipeline->tables[n].config.apply_actions),
-							(of12switch->pipeline->tables[n].config.write_setfields),
-							(of12switch->pipeline->tables[n].config.apply_setfields),
-							(of12switch->pipeline->tables[n].config.metadata_match),
-							(of12switch->pipeline->tables[n].config.metadata_write),
-							(of12switch->pipeline->tables[n].config.instructions),
-							(of12switch->pipeline->tables[n].config.table_miss_config),
-							(of12switch->pipeline->tables[n].max_entries),
-							(of12switch->pipeline->tables[n].num_of_entries),
-							(of12switch->pipeline->tables[n].stats.lookup_count),
-							(of12switch->pipeline->tables[n].stats.matched_count)
+							of10switch->pipeline->tables[n].number,
+							std::string(of10switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN),
+							(of10switch->pipeline->tables[n].config.match),
+							(of10switch->pipeline->tables[n].config.wildcards),
+							(of10switch->pipeline->tables[n].config.write_actions),
+							(of10switch->pipeline->tables[n].config.apply_actions),
+							(of10switch->pipeline->tables[n].config.write_setfields),
+							(of10switch->pipeline->tables[n].config.apply_setfields),
+							(of10switch->pipeline->tables[n].config.metadata_match),
+							(of10switch->pipeline->tables[n].config.metadata_write),
+							(of10switch->pipeline->tables[n].config.instructions),
+							(of10switch->pipeline->tables[n].config.table_miss_config),
+							(of10switch->pipeline->tables[n].max_entries),
+							(of10switch->pipeline->tables[n].num_of_entries),
+							(of10switch->pipeline->tables[n].stats.lookup_count),
+							(of10switch->pipeline->tables[n].stats.matched_count)
 						);
 	}
 
@@ -236,14 +236,14 @@ of10_endpoint::handle_port_stats_request(
 	/*
 	 *  send statistics for all ports
 	 */
-	if (OFPP10_ALL == port_no){
+	if (OFPP10_ALL == port_no || OFPP10_NONE == port_no){
 
 		//we check all the positions in case there are empty slots
-		for (unsigned int n = 1; n < of12switch->max_ports; n++){
+		for (unsigned int n = 1; n < of10switch->max_ports; n++){
 
-			port = of12switch->logical_ports[n].port;
+			port = of10switch->logical_ports[n].port;
 
-			if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
+			if((port != NULL) && (of10switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
 
 				port_stats.push_back(
 						cofport_stats_reply(
@@ -264,44 +264,42 @@ of10_endpoint::handle_port_stats_request(
 			}
 	 	}
 
-	}else{
+	}else if(port_no < of10switch->max_ports){
 		/*
 		 * send statistics for only one port
 		 */
 
 		// search for the port with the specified port-number
 		//we check all the positions in case there are empty slots
-		for (unsigned int n = 1; n < of12switch->max_ports; n++){
+		port = of10switch->logical_ports[port_no].port;
+		if( 	(port != NULL) &&
+			(of10switch->logical_ports[port_no].attachment_state == LOGICAL_PORT_STATE_ATTACHED) &&
+			(port->of_port_num == port_no)
+		){
+			//Mapping of port state
+			port_stats.push_back(
+					cofport_stats_reply(
+							ctl->get_version(),
+							port->of_port_num,
+							port->stats.rx_packets,
+							port->stats.tx_packets,
+							port->stats.rx_bytes,
+							port->stats.tx_bytes,
+							port->stats.rx_dropped,
+							port->stats.tx_dropped,
+							port->stats.rx_errors,
+							port->stats.tx_errors,
+							port->stats.rx_frame_err,
+							port->stats.rx_over_err,
+							port->stats.rx_crc_err,
+							port->stats.collisions));
 
-			port = of12switch->logical_ports[n].port;
-
-			if( 	(port != NULL) &&
-				(of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED) &&
-				(port->of_port_num == port_no)
-			){
-				//Mapping of port state
-				port_stats.push_back(
-						cofport_stats_reply(
-								ctl->get_version(),
-								port->of_port_num,
-								port->stats.rx_packets,
-								port->stats.tx_packets,
-								port->stats.rx_bytes,
-								port->stats.tx_bytes,
-								port->stats.rx_dropped,
-								port->stats.tx_dropped,
-								port->stats.rx_errors,
-								port->stats.tx_errors,
-								port->stats.rx_frame_err,
-								port->stats.rx_over_err,
-								port->stats.rx_crc_err,
-								port->stats.collisions));
-
-				break;
-			}
-	 	}
+		}
 
 		// if port_no was not found, body.memlen() is 0
+	}else{
+		//Unknown port
+		ROFL_ERR("Got a port stats request for an unknown port: %u. Ignoring...\n",port_no);
 	}
 
 	send_port_stats_reply(ctl, msg->get_xid(), port_stats, false);
@@ -469,7 +467,7 @@ of10_endpoint::handle_queue_stats_request(
 	unsigned int portnum = pack->get_queue_stats().get_port_no();
 	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
 
-	if( ((portnum >= of12switch->max_ports) && (portnum != OFPP10_ALL)) || portnum == 0){
+	if( ((portnum >= of10switch->max_ports) && (portnum != OFPP10_ALL)) || portnum == 0){
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
@@ -480,15 +478,15 @@ of10_endpoint::handle_queue_stats_request(
 	*/
 
 	//we check all the positions in case there are empty slots
-	for (unsigned int n = 1; n < of12switch->max_ports; n++){
+	for (unsigned int n = 1; n < of10switch->max_ports; n++){
 
-		port = of12switch->logical_ports[n].port;
+		port = of10switch->logical_ports[n].port;
 
 		if ( port == NULL || ( (OFPP10_ALL != portnum) && (port->of_port_num != portnum) ) )
 			continue;
 
 
-		if( of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED /* && (port->of_port_num == portnum)*/){
+		if( of10switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED /* && (port->of_port_num == portnum)*/){
 
 			if (OFPQ_ALL == queue_id){
 
@@ -794,7 +792,7 @@ of10_endpoint::flow_mod_add(
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
-	if ( (table_id > of12switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
+	if ( (table_id > of10switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
 	{
 		WRITELOG(CDATAPATH, ERROR, "of10_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
@@ -843,7 +841,7 @@ of10_endpoint::flow_mod_modify(
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
-	if (pack->get_table_id() > of12switch->pipeline->num_of_tables)
+	if (pack->get_table_id() > of10switch->pipeline->num_of_tables)
 	{
 		WRITELOG(CDATAPATH, ERROR, "of10_endpoint(%s)::flow_mod_delete() "
 				"invalid table-id:%d in flow-mod command",
@@ -1015,8 +1013,8 @@ of10_endpoint::handle_port_mod(
 	// check for existence of port with id port_num
 	switch_port_t* port = (switch_port_t*)0;
 	bool port_found = false;
-	for(unsigned int n = 1; n < of12switch->max_ports; n++){
-		port = of12switch->logical_ports[n].port;
+	for(unsigned int n = 1; n < of10switch->max_ports; n++){
+		port = of10switch->logical_ports[n].port;
 		if ((0 != port) && (port->of_port_num == (uint32_t)port_num)) {
 			port_found = true;
 			break;
@@ -1114,14 +1112,14 @@ of10_endpoint::handle_queue_get_config_request(
 	cofpacket_queue_list pql(ctl->get_version());
 
 	//we check all the positions in case there are empty slots
-	for(unsigned int n = 1; n < of12switch->max_ports; n++){
+	for(unsigned int n = 1; n < of10switch->max_ports; n++){
 
-		port = of12switch->logical_ports[n].port;
+		port = of10switch->logical_ports[n].port;
 
 		if(port == NULL)
 			continue;
 
-		if (of12switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
+		if (of10switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
 			continue;
 
 		if ((OFPP10_ALL != portnum) && (port->of_port_num != portnum))

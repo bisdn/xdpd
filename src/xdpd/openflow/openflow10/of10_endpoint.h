@@ -62,7 +62,7 @@ public:
 private:
 
 	//Commodity pointer
-	of1x_switch_t* of12switch;
+	of1x_switch_t* of10switch;
 
 	/* *
 	 ** This section is in charge of the handling of the OF messages

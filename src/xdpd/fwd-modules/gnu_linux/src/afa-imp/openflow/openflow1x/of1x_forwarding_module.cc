@@ -207,10 +207,7 @@ afa_result_t fwd_module_of1x_set_table_config(uint64_t dpid, unsigned int table_
 	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
 	//Check switch and port
-	if(!lsw || 
-		lsw->of_ver != OF_VERSION_12 || 
-		( (table_id != OF1X_FLOW_TABLE_ALL) && (table_id >= lsw->pipeline->num_of_tables) )
-	) {
+	if( !lsw || ( (table_id != OF1X_FLOW_TABLE_ALL) && (table_id >= lsw->pipeline->num_of_tables) ) ) {
 		//TODO: log this... should never happen
 		assert(0);
 		return AFA_FAILURE;

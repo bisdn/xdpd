@@ -794,7 +794,7 @@ of10_endpoint::flow_mod_add(
 	// sanity check: table for table-id must exist
 	if ( (table_id > of10switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
 	{
-		WRITELOG(CDATAPATH, ERROR, "of10_endpoint(%s)::flow_mod_add() "
+		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), msg->get_table_id());
 
@@ -804,7 +804,7 @@ of10_endpoint::flow_mod_add(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(ctl, msg,sw);
 	}catch(...){
-		WRITELOG(CDATAPATH, ERROR, "of10_endpoint(%s)::flow_mod_add() "
+		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
 		throw eFlowModUnknown();
 	}
@@ -819,7 +819,7 @@ of10_endpoint::flow_mod_add(
 								msg->get_flags() & OFPFF_CHECK_OVERLAP,
 								msg->get_flags() & OFPFF_RESET_COUNTS))){
 		// log error
-		WRITELOG(CDATAPATH, ERROR, "Error inserting the flowmod\n");
+		ROFL_DEBUG("Error inserting the flowmod\n");
 		of1x_destroy_flow_entry(entry);
 
 		if(res == AFA_FM_OVERLAP_FAILURE)
@@ -843,7 +843,7 @@ of10_endpoint::flow_mod_modify(
 	// sanity check: table for table-id must exist
 	if (pack->get_table_id() > of10switch->pipeline->num_of_tables)
 	{
-		WRITELOG(CDATAPATH, ERROR, "of10_endpoint(%s)::flow_mod_delete() "
+		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), pack->get_table_id());
 
@@ -853,7 +853,7 @@ of10_endpoint::flow_mod_modify(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(ctl, pack, sw);
 	}catch(...){
-		WRITELOG(CDATAPATH, ERROR, "of10_endpoint(%s)::flow_mod_modify() "
+		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
 				"unable to attempt to modify flow-entry", sw->dpname.c_str());
 		throw eFlowModUnknown();
 	}
@@ -870,7 +870,7 @@ of10_endpoint::flow_mod_modify(
 								entry,
 								strictness,
 								pack->get_flags() & OFPFF_RESET_COUNTS)){
-		WRITELOG(CDATAPATH, ERROR, "Error modiying flowmod\n");
+		ROFL_DEBUG("Error modiying flowmod\n");
 		of1x_destroy_flow_entry(entry);
 		throw eFlowModBase();
 	}
@@ -891,7 +891,7 @@ of10_endpoint::flow_mod_delete(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(ctl, pack, sw);
 	}catch(...){
-		WRITELOG(CDATAPATH, ERROR, "of10_endpoint(%s)::flow_mod_delete() "
+		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
 				"unable to attempt to remove flow-entry", sw->dpname.c_str());
 		throw eFlowModUnknown();
 	}
@@ -909,7 +909,7 @@ of10_endpoint::flow_mod_delete(
 								of10_translation_utils::get_out_port(pack->get_out_port()),
 								OF1X_GROUP_ANY,
 								strictness)) {
-		WRITELOG(CDATAPATH, ERROR, "Error deleting flowmod\n");
+		ROFL_DEBUG("Error deleting flowmod\n");
 		of1x_destroy_flow_entry(entry);
 		throw eFlowModBase();
 	}

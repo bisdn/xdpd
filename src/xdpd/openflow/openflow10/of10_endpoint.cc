@@ -812,8 +812,6 @@ of10_endpoint::flow_mod_add(
 	if(!entry)
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 
-	fprintf(stderr,"Flags: 0x%x\n",msg->get_flags());
-
 	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
 								msg->get_table_id(),
 								entry,

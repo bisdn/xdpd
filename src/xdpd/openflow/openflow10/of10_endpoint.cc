@@ -348,11 +348,11 @@ of10_endpoint::handle_flow_stats_request(
 
 	for(elem = fp_msg->flows_head; elem; elem = elem->next){
 
-		cofmatch match;
+		cofmatch match(OFP10_VERSION);
 		of10_translation_utils::of1x_map_reverse_flow_entry_matches(elem->matches, match);
 
 		cofinlist instructions(ctl->get_version());
-		of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
+		of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions, of10switch->pipeline->miss_send_len);
 
 		if (0 == instructions.size())
 			continue;
@@ -422,7 +422,7 @@ of10_endpoint::handle_aggregate_stats_request(
 					msg->get_aggr_stats().get_table_id(),
 					0,
 					0,
-					msg->get_aggr_stats().get_out_port(),
+					of10_translation_utils::get_out_port(msg->get_aggr_stats().get_out_port()),
 					OF1X_GROUP_ANY,
 					&entry->matches);
 
@@ -609,7 +609,7 @@ of10_endpoint::process_packet_in(
 {
 	try {
 		//Transform matches
-		cofmatch match;
+		cofmatch match(OFP10_VERSION);
 		of10_translation_utils::of1x_map_reverse_packet_matches(&matches, match);
 
 
@@ -812,6 +812,8 @@ of10_endpoint::flow_mod_add(
 	if(!entry)
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 
+	fprintf(stderr,"Flags: 0x%x\n",msg->get_flags());
+
 	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
 								msg->get_table_id(),
 								entry,
@@ -929,7 +931,7 @@ of10_endpoint::process_flow_removed(
 		uint8_t reason,
 		of1x_flow_entry *entry)
 {
-	cofmatch match;
+	cofmatch match(OFP10_VERSION);
 	uint32_t sec,nsec;
 
 	of10_translation_utils::of1x_map_reverse_flow_entry_matches(entry->matches.head, match);

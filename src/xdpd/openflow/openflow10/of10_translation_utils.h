@@ -64,20 +64,17 @@ public:
 	*/
 	static void of1x_map_reverse_flow_entry_matches(of1x_match_t* m, cofmatch& match);
 
-	/**
-	*
-	*/
-	static void of1x_map_reverse_flow_entry_instructions(of1x_instruction_group_t* group, cofinlist& instructions);
+	static void of1x_map_reverse_flow_entry_instructions(of1x_instruction_group_t* group, cofinlist& instructions, uint16_t pipeline_miss_send_len);
 
 	/**
 	*
 	*/
-	static void of1x_map_reverse_flow_entry_instruction(of1x_instruction_t* inst, cofinst& instruction);
+	static void of1x_map_reverse_flow_entry_instruction(of1x_instruction_t* inst, cofinst& instruction, uint16_t pipeline_miss_send_len);
 
 	/**
 	*
 	*/
-	static void of1x_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, cofaction& action);
+	static void of1x_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, cofaction& action, uint16_t pipeline_miss_send_len);
 
 	/**
 	*

@@ -335,6 +335,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		of1x_match_t* m,
 		cofmatch& match)
 {
+	bool has_vlan=false;
 	while (NULL != m)
 	{
 		switch (m->type) {
@@ -365,10 +366,11 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			match.set_eth_type(m->value->value.u16);
 			break;
 		case OF1X_MATCH_VLAN_VID:
+			has_vlan = true;
 			match.set_vlan_vid(m->value->value.u16);
 			break;
 		case OF1X_MATCH_VLAN_PCP:
-			match.set_vlan_pcp(m->value->value.u8);
+			match.set_vlan_pcp(m->value->value.u8<<8);
 			break;
 		case OF1X_MATCH_ARP_OP:
 			match.set_arp_opcode(m->value->value.u16);
@@ -410,61 +412,31 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_NW_PROTO:
 			match.set_nw_proto(m->value->value.u8);
 			break;
-		case OF1X_MATCH_IPV4_SRC:
+		case OF1X_MATCH_NW_SRC:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
+			caddress mask(AF_INET, "0.0.0.0");
 			addr.ca_s4addr->sin_addr.s_addr = htonl(m->value->value.u32);
-			match.set_ipv4_src(addr);
+			mask.ca_s4addr->sin_addr.s_addr = htonl(m->value->mask.u32);
+			match.set_nw_src(addr, mask);
 
 		}
 			break;
-		case OF1X_MATCH_IPV4_DST:
+		case OF1X_MATCH_NW_DST:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
+			caddress mask(AF_INET, "0.0.0.0");
 			addr.ca_s4addr->sin_addr.s_addr = htonl(m->value->value.u32);
-			match.set_ipv4_dst(addr);
+			mask.ca_s4addr->sin_addr.s_addr = htonl(m->value->mask.u32);
+			match.set_nw_dst(addr, mask);
 		}
 			break;
-		case OF1X_MATCH_TCP_SRC:
-			match.set_tcp_src(m->value->value.u16);
+		case OF1X_MATCH_TP_SRC:
+			match.set_tp_src(m->value->value.u16);
 			break;
-		case OF1X_MATCH_TCP_DST:
-			match.set_tcp_dst(m->value->value.u16);
+		case OF1X_MATCH_TP_DST:
+			match.set_tp_dst(m->value->value.u16);
 			break;
-		case OF1X_MATCH_UDP_SRC:
-			match.set_udp_src(m->value->value.u16);
-			break;
-		case OF1X_MATCH_UDP_DST:
-			match.set_udp_dst(m->value->value.u16);
-			break;
-		case OF1X_MATCH_SCTP_SRC:
-			match.set_sctp_src(m->value->value.u16);
-			break;
-		case OF1X_MATCH_SCTP_DST:
-			match.set_sctp_dst(m->value->value.u16);
-			break;
-		case OF1X_MATCH_ICMPV4_TYPE:
-			match.set_icmpv4_type(m->value->value.u8);
-			break;
-		case OF1X_MATCH_ICMPV4_CODE:
-			match.set_icmpv4_code(m->value->value.u8);
-			break;
-		case OF1X_MATCH_IPV6_SRC:
-			throw eNotImplemented(std::string("of10_translation_utils::of1x_map_reverse_flow_entry_matches() IPV6_SRC"));
-		case OF1X_MATCH_IPV6_DST:
-			throw eNotImplemented(std::string("of10_translation_utils::of1x_map_reverse_flow_entry_matches() IPV6_DST"));
-		case OF1X_MATCH_IPV6_FLABEL:
-			throw eNotImplemented(std::string("of10_translation_utils::of1x_map_reverse_flow_entry_matches() IPV6_FLABEL"));
-		case OF1X_MATCH_ICMPV6_TYPE:
-			throw eNotImplemented(std::string("of10_translation_utils::of1x_map_reverse_flow_entry_matches() IPCMPV6_TYPE"));
-		case OF1X_MATCH_ICMPV6_CODE:
-			throw eNotImplemented(std::string("of10_translation_utils::of1x_map_reverse_flow_entry_matches() IPCMPV6_CODE"));
-		case OF1X_MATCH_IPV6_ND_TARGET:
-			throw eNotImplemented(std::string("of10_translation_utils::of1x_map_reverse_flow_entry_matches() IPV6_ND_TARGET"));
-		case OF1X_MATCH_IPV6_ND_SLL:
-			throw eNotImplemented(std::string("of10_translation_utils::of1x_map_reverse_flow_entry_matches() IPV6_ND_SLL"));
-		case OF1X_MATCH_IPV6_ND_TLL:
-			throw eNotImplemented(std::string("of10_translation_utils::of1x_map_reverse_flow_entry_matches() IPV6_ND_TLL"));
 		case OF1X_MATCH_MPLS_LABEL:
 			match.set_mpls_label(m->value->value.u32);
 			break;
@@ -496,6 +468,10 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 
 		m = m->next;
 	}
+
+	//In 1.0 if there is no VLAN OFP10_VLAN_NONE has to be set...
+	if(!has_vlan)
+		match.set_vlan_vid(OFP10_VLAN_NONE);
 }
 
 
@@ -506,13 +482,14 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_instructions(
 		of1x_instruction_group_t* group,
-		cofinlist& instructions)
+		cofinlist& instructions,
+		uint16_t pipeline_miss_send_len)
 {
 	for (unsigned int i = 0; i < (sizeof(group->instructions) / sizeof(of1x_instruction_t)); i++) {
 		if (OF1X_IT_NO_INSTRUCTION == group->instructions[i].type)
 			continue;
 		cofinst instruction(OFP10_VERSION);;
-		of1x_map_reverse_flow_entry_instruction(&(group->instructions[i]), instruction);
+		of1x_map_reverse_flow_entry_instruction(&(group->instructions[i]), instruction, pipeline_miss_send_len);
 		instructions.next() = instruction;
 	}
 }
@@ -521,7 +498,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instructions(
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 		of1x_instruction_t* inst,
-		cofinst& instruction)
+		cofinst& instruction,
+		uint16_t pipeline_miss_send_len)
 {
 	switch (inst->type) {
 	case OF1X_IT_APPLY_ACTIONS: {
@@ -530,7 +508,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
 				continue;
 			cofaction action(OFP10_VERSION);
-			of1x_map_reverse_flow_entry_action(of1x_action, action);
+			of1x_map_reverse_flow_entry_action(of1x_action, action, pipeline_miss_send_len);
 			instruction.actions.next() = action;
 		}
 	} break;
@@ -543,7 +521,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 			if (OF1X_AT_NO_ACTION == inst->write_actions->write_actions[i].type)
 				continue;
 			cofaction action(OFP10_VERSION);
-			of1x_map_reverse_flow_entry_action(&(inst->write_actions->write_actions[i]), action);
+			of1x_map_reverse_flow_entry_action(&(inst->write_actions->write_actions[i]), action, pipeline_miss_send_len);
 			instruction.actions.next() = action;
 		}
 	} break;
@@ -564,7 +542,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		of1x_packet_action_t* of1x_action,
-		cofaction& action)
+		cofaction& action,
+		uint16_t pipeline_miss_send_len)
 {
 	/*
 	 * FIXME: add masks for those fields defining masked values in the specification
@@ -612,12 +591,14 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		// TODO
 	} break;
 	case OF1X_AT_OUTPUT: {
-		action = cofaction_output(OFP10_VERSION, (uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK));
+		//Setting max_len to the switch max_len (we do not support per action max_len)
+		action = cofaction_output(OFP10_VERSION, (uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK), pipeline_miss_send_len);
 	} break;
 	default: {
 		// do nothing
 	} break;
 	}
+	
 }
 
 

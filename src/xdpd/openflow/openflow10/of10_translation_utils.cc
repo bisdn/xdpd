@@ -367,10 +367,10 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			break;
 		case OF1X_MATCH_VLAN_VID:
 			has_vlan = true;
-			match.set_vlan_vid(m->value->value.u16);
+			match.set_vlan_vid(m->value->value.u16&OF1X_VLAN_ID_MASK);
 			break;
 		case OF1X_MATCH_VLAN_PCP:
-			match.set_vlan_pcp(m->value->value.u8<<8);
+			match.set_vlan_pcp(m->value->value.u8);
 			break;
 		case OF1X_MATCH_ARP_OP:
 			match.set_arp_opcode(m->value->value.u16);
@@ -385,7 +385,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = htonl(m->value->value.u32);
+			addr.set_ipv4_addr(m->value->value.u32);
 			match.set_arp_spa(addr);
 		}
 			break;
@@ -399,12 +399,12 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_ARP_TPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = htonl(m->value->value.u32);
+			addr.set_ipv4_addr(m->value->value.u32);
 			match.set_arp_tpa(addr);
 		}
 			break;
 		case OF1X_MATCH_IP_DSCP:
-			match.set_ip_dscp((m->value->value.u8<<2));
+			match.set_ip_dscp((m->value->value.u8));
 			break;
 		case OF1X_MATCH_IP_ECN:
 			match.set_ip_ecn(m->value->value.u8);
@@ -416,8 +416,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			caddress mask(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = htonl(m->value->value.u32);
-			mask.ca_s4addr->sin_addr.s_addr = htonl(m->value->mask.u32);
+			addr.set_ipv4_addr(m->value->value.u32);
+			mask.set_ipv4_addr(m->value->mask.u32);
 			match.set_nw_src(addr, mask);
 
 		}
@@ -426,8 +426,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			caddress mask(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = htonl(m->value->value.u32);
-			mask.ca_s4addr->sin_addr.s_addr = htonl(m->value->mask.u32);
+			addr.set_ipv4_addr(m->value->value.u32);
+			mask.set_ipv4_addr(m->value->mask.u32);
 			match.set_nw_dst(addr, mask);
 		}
 			break;
@@ -558,7 +558,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		action = cofaction_pop_vlan(OFP10_VERSION);
 	} break;
 	case OF1X_AT_PUSH_VLAN: {
-		action = cofaction_push_vlan(OFP10_VERSION, (uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
+		action = cofaction_push_vlan(OFP10_VERSION, of1x_action->field.u16);
 	} break;
 	case OF1X_AT_SET_FIELD_ETH_DST: {
 		action = cofaction_set_dl_dst(OFP10_VERSION, cmacaddr(of1x_action->field.u64));
@@ -567,32 +567,36 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		action = cofaction_set_dl_src(OFP10_VERSION, cmacaddr(of1x_action->field.u64));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_VID: {
-		action = cofaction_set_vlan_vid(OFP10_VERSION, (uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK));
+		action = cofaction_set_vlan_vid(OFP10_VERSION, of1x_action->field.u16&OF1X_VLAN_ID_MASK);
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_PCP: {
-		action = cofaction_set_vlan_pcp(OFP10_VERSION, (of1x_action->field.u64 & OF1X_1_BYTE_MASK)<<8);
+		action = cofaction_set_vlan_pcp(OFP10_VERSION, of1x_action->field.u8);
 	} break;
-	case OF1X_AT_SET_FIELD_IP_PROTO: {
-		action = cofaction_set_nw_tos(OFP10_VERSION, ((uint8_t)(of1x_action->field.u64 & OF1X_1_BYTE_MASK)));
+	case OF1X_AT_SET_FIELD_IP_DSCP: {
+		action = cofaction_set_nw_tos(OFP10_VERSION, of1x_action->field.u8<<2);
 	} break;
-	case OF1X_AT_SET_FIELD_IPV4_SRC: {
-		action = cofaction_set_nw_src(OFP10_VERSION, ((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
+	case OF1X_AT_SET_FIELD_NW_SRC: {
+		caddress addr(AF_INET, "0.0.0.0");
+		addr.set_ipv4_addr(of1x_action->field.u32);
+		action = cofaction_set_nw_src(OFP10_VERSION, addr);
 	} break;
-	case OF1X_AT_SET_FIELD_IPV4_DST: {
-		action = cofaction_set_nw_dst(OFP10_VERSION, ((uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK)));
+	case OF1X_AT_SET_FIELD_NW_DST: {
+		caddress addr(AF_INET, "0.0.0.0");
+		addr.set_ipv4_addr(of1x_action->field.u32);
+		action = cofaction_set_nw_dst(OFP10_VERSION, addr);
 	} break;
 	case OF1X_AT_SET_FIELD_TP_SRC: {
-		action = cofaction_set_field(OFP10_VERSION, ((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
+		action = cofaction_set_tp_src(OFP10_VERSION, of1x_action->field.u16);
 	} break;
 	case OF1X_AT_SET_FIELD_TP_DST: {
-		action = cofaction_set_field(OFP10_VERSION, ((uint16_t)(of1x_action->field.u64 & OF1X_2_BYTE_MASK)));
+		action = cofaction_set_tp_dst(OFP10_VERSION, of1x_action->field.u16);
 	} break;
 	case OF1X_AT_EXPERIMENTER: {
 		// TODO
 	} break;
 	case OF1X_AT_OUTPUT: {
 		//Setting max_len to the switch max_len (we do not support per action max_len)
-		action = cofaction_output(OFP10_VERSION, (uint32_t)(of1x_action->field.u64 & OF1X_4_BYTE_MASK), pipeline_miss_send_len);
+		action = cofaction_output(OFP10_VERSION, get_out_port_reverse(of1x_action->field.u64), pipeline_miss_send_len);
 	} break;
 	default: {
 		// do nothing
@@ -635,14 +639,14 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 		match.set_arp_sha(cmacaddr(packet_matches->arp_sha));
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = htonl(packet_matches->arp_spa);
+		addr.set_ipv4_addr(packet_matches->arp_spa);
 		match.set_arp_spa(addr);
 	}
 	if(packet_matches->arp_tha)
 		match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
 	if(packet_matches->arp_tpa) {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = htonl(packet_matches->arp_tpa);
+		addr.set_ipv4_addr(packet_matches->arp_tpa);
 		match.set_arp_tpa(addr);
 	}
 	if(packet_matches->ip_dscp)
@@ -653,13 +657,13 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 		match.set_ip_proto(packet_matches->ip_proto);
 	if(packet_matches->ipv4_src){
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = htonl(packet_matches->ipv4_src);
+			addr.set_ipv4_addr(packet_matches->ipv4_src);
 			match.set_ipv4_src(addr);
 
 	}
 	if(packet_matches->ipv4_dst){
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = htonl(packet_matches->ipv4_dst);
+		addr.set_ipv4_addr(packet_matches->ipv4_dst);
 		match.set_ipv4_dst(addr);
 	}
 	if(packet_matches->tcp_src)
@@ -773,7 +777,7 @@ uint64_t of10_translation_utils::get_out_port(uint16_t port){
 	}
 }
 
-uint64_t of10_translation_utils::get_out_port_reverse(uint64_t port){
+uint32_t of10_translation_utils::get_out_port_reverse(uint64_t port){
 	switch(port){
 		case OF1X_PORT_MAX:
 			return OFPP10_MAX;

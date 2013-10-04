@@ -94,7 +94,7 @@ public:
 	/**
 	 * Reverse translate special port numbers from 1.0 to 1.X
 	 */
-	uint64_t get_out_port_reverse(uint64_t port);
+	static uint32_t get_out_port_reverse(uint64_t port);
 };
 
 }// namespace rofl

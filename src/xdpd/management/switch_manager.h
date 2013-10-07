@@ -149,6 +149,6 @@ public:
 	static void rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra);
 };
 
-}// namespace rofl
+}// namespace xdpd
 
 #endif /* SWITCH_MANAGER_H_ */

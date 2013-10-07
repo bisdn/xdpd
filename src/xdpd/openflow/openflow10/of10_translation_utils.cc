@@ -510,6 +510,14 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 			cofaction action(OFP10_VERSION);
 			of1x_map_reverse_flow_entry_action(of1x_action, action, pipeline_miss_send_len);
 			instruction.actions.next() = action;
+				
+			//Skip next action if action is set-queue (SET-QUEUE-OUTPUT)
+			if(of1x_action->type == OF1X_AT_SET_QUEUE){
+				if(of1x_action->next && !of1x_action->next->next)
+					break;
+				else
+					of1x_action = of1x_action->next; //Skip output
+			}
 		}
 	} break;
 	case OF1X_IT_CLEAR_ACTIONS: {
@@ -594,6 +602,14 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 	case OF1X_AT_EXPERIMENTER: {
 		// TODO
 	} break;
+	case OF1X_AT_SET_QUEUE: {
+		//Right after queue we must have an output
+		if(of1x_action->next)
+			action = cofaction_enqueue(OFP10_VERSION, get_out_port_reverse(of1x_action->next->field.u64), of1x_action->field.u32);
+		else{
+			assert(0);
+		}
+	}break;
 	case OF1X_AT_OUTPUT: {
 		//Setting max_len to the switch max_len (we do not support per action max_len)
 		action = cofaction_output(OFP10_VERSION, get_out_port_reverse(of1x_action->field.u64), pipeline_miss_send_len);

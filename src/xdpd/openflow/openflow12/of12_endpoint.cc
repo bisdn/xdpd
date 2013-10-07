@@ -9,7 +9,11 @@ using namespace xdpd;
 /*
 * Constructor and destructor
 */
-of12_endpoint::of12_endpoint(openflow_switch* sw, caddress const& controller_addr, caddress const& binding_addr)  throw (eOfSmErrorOnCreation) :
+of12_endpoint::of12_endpoint(
+		openflow_switch* sw,
+		int reconnect_start_timeout,
+		caddress const& controller_addr,
+		caddress const& binding_addr)  throw (eOfSmErrorOnCreation) :
 		of_endpoint(1 << OFP12_VERSION) {
 
 	//Reference back to the sw
@@ -20,7 +24,7 @@ of12_endpoint::of12_endpoint(openflow_switch* sw, caddress const& controller_add
 	//FIXME: make controller and binding optional somehow
 	//Active connection
 	//if(controller_addr.port)
-	rpc_connect_to_ctl(OFP12_VERSION, /*reconnect_start_timeout*/0, controller_addr);
+	rpc_connect_to_ctl(OFP12_VERSION, reconnect_start_timeout, controller_addr);
 
 	//Passive connection
 	//if(binding_addr.port)

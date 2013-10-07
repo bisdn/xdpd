@@ -68,3 +68,9 @@ AM_COND_IF(WITH_MGMT_CONFIG, [m4_include([config/plugin_config.m4])],[])
 AM_CONDITIONAL(WITH_MGMT_QMF, test "$with_mgmt_qmf" = yes)
 AM_COND_IF(WITH_MGMT_QMF, [m4_include([config/plugin_qmf.m4])],[])
 
+#Add more here..
+
+#Example
+AM_CONDITIONAL(WITH_MGMT_EXAMPLE, test "$with_mgmt_example" = yes)
+AM_COND_IF(WITH_MGMT_EXAMPLE, [m4_include([config/plugin_example.m4])],[])
+

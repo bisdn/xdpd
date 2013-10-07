@@ -148,7 +148,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 								/*prev*/NULL,
 								/*next*/NULL,
 								ofmatch.get_vlan_vid_value()|OF1X_VLAN_PRESENT_MASK,
-								0x1FFFF); // no mask in OF1.0
+								0x1FFF); // no mask in OF1.0
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}

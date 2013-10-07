@@ -91,6 +91,7 @@ public:
 					std::string const& dpname,
 					unsigned int num_of_tables,
 					int* ma_list,
+					int reconnect_start_timeout = 2,
 					caddress const& controller_addr = switch_manager::controller_addr,
 					caddress const& binding_addr = switch_manager::binding_addr) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
 

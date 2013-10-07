@@ -347,7 +347,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		openflow_switch* sw;
 
 		//Create switch
-		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, master_controller, bind_address); //FIXME:: add slave and reconnect
+		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, /*reconnect_start_timeout*/1, master_controller, bind_address); //FIXME:: add slave and reconnect
 
 		if(!sw){
 			ROFL_ERR("%s: Unable to create LSI %s; unknown error.\n", setting.getPath().c_str(), name.c_str());

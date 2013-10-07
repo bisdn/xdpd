@@ -13,6 +13,7 @@ openflow12_switch::openflow12_switch(uint64_t dpid,
 				std::string const& dpname,
 				unsigned int num_of_tables,
 				int* ma_list,
+				int reconnect_start_timeout,
 				caddress const& controller_addr,
 				caddress const& binding_addr) throw (eOfSmVersionNotSupported)
 		: openflow_switch(dpid, dpname, version)
@@ -27,7 +28,7 @@ openflow12_switch::openflow12_switch(uint64_t dpid,
 	}
 
 	//Initialize the endpoint, and launch control channel
-	endpoint = new of12_endpoint(this, controller_addr, binding_addr);
+	endpoint = new of12_endpoint(this, reconnect_start_timeout, controller_addr, binding_addr);
 	
 }
 

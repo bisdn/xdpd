@@ -68,7 +68,3 @@ AM_COND_IF(WITH_MGMT_CONFIG, [m4_include([config/plugin_config.m4])],[])
 AM_CONDITIONAL(WITH_MGMT_QMF, test "$with_mgmt_qmf" = yes)
 AM_COND_IF(WITH_MGMT_QMF, [m4_include([config/plugin_qmf.m4])],[])
 
-#CLI
-AM_CONDITIONAL(WITH_MGMT_CLI, test "$with_mgmt_cli" = yes)
-AM_COND_IF(WITH_MGMT_CLI, [m4_include([config/plugin_cli.m4])],[])
-

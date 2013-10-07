@@ -22,7 +22,3 @@ SUBDIRS += plugins/qmf
 libxdpd_mgmt_la_LIBADD +=plugins/qmf/libxdpd_mgmt_qmf.la
 endif
 
-if WITH_MGMT_CLI
-SUBDIRS += plugins/cli
-libxdpd_mgmt_la_LIBADD +=plugins/cli/libxdpd_mgmt_cli.la
-endif

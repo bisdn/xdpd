@@ -28,6 +28,7 @@ class ePmInvalidPort	: public ePmBase {};
 *
 * The port manager API is a C++ interface that can be consumed
 * by the add-on management modules for general port(interface) management operations.
+* @ingroup cmm_mgmt
 */
 class port_manager {
 

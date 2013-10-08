@@ -23,12 +23,15 @@ namespace xdpd {
 *
 * The concept of a management plugin in xdpd is NOT a "hot" pluggable module as usually
 * refered to as "plugin", but a module that can be loaded at compile time (compiled, indeed).
+* @ingroup cmm_mgmt
 */
 class plugin {
 	
 public:
-	/*
-	* The init method must be overwritten by the
+	/**
+	* @brief Initializes the plugin
+	*
+	* @description The init method must be overwritten by the
 	* derived plugin and must contain the initialization
 	* of the plugin itself. The method shall return immediately
 	* after bootstrapping of the plugin. If the plugin needs to continue
@@ -36,7 +39,7 @@ public:
 	* within this method. Please consider using ciosrv APIs to avoid wasting
 	* of pthreads.
 	*
-	* argc and argc are xdpd's shell parameters. The plugin can, at its wish
+	* argc and argc are xdpd's command-line parameters. The plugin can, at its wish
 	* define its own arguments and parse them, usually using optargs or cunixenv
 	* APIs. Plugin Manager will reset argc for each plugin.
 	*
@@ -47,7 +50,7 @@ public:
 	*/
 	virtual void init(int argc, char** argv)=0;
 	
-	/*
+	/**
 	* Returns the plugin name
 	*/
 	virtual std::string get_name(void)=0;
@@ -58,6 +61,7 @@ public:
 
 /**
  * @brief The plugin manager orchestrates the initialization of the plugins at bootstrap time 
+* @ingroup cmm_mgmt
  */
 class plugin_manager {
 

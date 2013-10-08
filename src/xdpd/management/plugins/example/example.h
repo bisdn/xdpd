@@ -4,7 +4,7 @@
 #include "../../plugin_manager.h"
 
 /**
-* @file example_plugin.h
+* @file example.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
 * @brief Simple example of a plugin
@@ -13,6 +13,10 @@
 
 namespace xdpd {
 
+/**
+* @brief Dummy management plugin example
+* @ingroup cmm_mgmt_plugins
+*/
 class example:public plugin {
 	
 public:

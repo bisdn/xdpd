@@ -30,7 +30,7 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 *
-* @brief Logical Switch (LS) management API file.
+* @brief Logical Switch Instance (LSI) management API file.
 */
 
 using namespace rofl;
@@ -58,6 +58,7 @@ class openflow_switch;
 * The switch manager API is a C++ interface that can be consumed
 * by the add-on management modules for general logical switch management
 * (e.g. create/destroy logical switches)
+* @ingroup cmm_mgmt
 */
 class switch_manager {
 

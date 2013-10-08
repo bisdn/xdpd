@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 #ifndef CONFIG_PLUGIN_H
 #define CONFIG_PLUGIN_H 
 
@@ -12,12 +16,15 @@
 * @file config_plugin.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief libconfig based configuration plugin
-* 
+* @brief libconfig based configuration plugin file
 */
 
 namespace xdpd {
 
+/**
+* @brief libconfig based configuration plugin
+* @ingroup cmm_mgmt_plugins
+*/
 class config : public plugin {
 	
 public:

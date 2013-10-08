@@ -4,6 +4,8 @@
 #include "../../bufferpool.h" 
 #include <fcntl.h>
 
+using namespace xdpd::gnu_linux;
+
 //Constructor and destructor
 ioport_vlink::ioport_vlink(switch_port_t* of_ps, unsigned int num_queues) : ioport(of_ps,num_queues){
 	

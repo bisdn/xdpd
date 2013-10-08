@@ -24,6 +24,10 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+
 /* Auxiliary state for x86 datapacket*/
 //buffering status
 typedef enum{
@@ -174,6 +178,9 @@ datapacketx86::init_internal_buffer_location_defaults(
 			break;
 	}
 }
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 
 

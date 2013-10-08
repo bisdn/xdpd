@@ -13,10 +13,7 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 *
-* @brief Port management API.
-* 
-* The port manager API is a C++ interface that can be consumed
-* by the add-on management modules for general port management operations.
+* @brief Port management API file.
 */
 
 using namespace rofl;
@@ -26,11 +23,17 @@ namespace xdpd {
 class ePmBase		: public cerror {};	// base error class for all switch_manager related errors
 class ePmInvalidPort	: public ePmBase {};
 
-
+/**
+* @brief Port management API.
+*
+* The port manager API is a C++ interface that can be consumed
+* by the add-on management modules for general port(interface) management operations.
+* @ingroup cmm_mgmt
+*/
 class port_manager {
 
 public:
-	/**
+	/*
 	* This section contains the API to manage ports. This includes system port management and
 	* port attachment to logical switchs
 	*/
@@ -57,7 +60,7 @@ public:
 	 * @brief Attaches a port to a logical switch previously created. 
 	 *
 	 */
-	static void attach_port_to_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError);
+	static void attach_port_to_switch(uint64_t dpid, std::string port_name, unsigned int *of_port_num = 0) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError);
 
 	/**
 	 * @brief Creates a virtual (xdpd) internal connection between two logical switch instances. On success

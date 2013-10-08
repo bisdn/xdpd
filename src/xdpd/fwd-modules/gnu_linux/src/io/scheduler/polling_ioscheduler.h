@@ -34,6 +34,9 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 class portgroup_state;
 
 class polling_ioscheduler: public ioscheduler{ 
@@ -76,5 +79,8 @@ private:
 
 
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* POLLING_IOSCHEDULER_H_ */

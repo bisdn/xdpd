@@ -23,6 +23,8 @@
 #include "ports/mmap/ioport_mmapv2.h" 
 #include "ports/vlink/ioport_vlink.h" 
 
+using namespace xdpd::gnu_linux;
+
 /*
 *
 * Port management

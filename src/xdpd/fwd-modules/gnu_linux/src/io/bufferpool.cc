@@ -1,5 +1,7 @@
 #include "bufferpool.h"
 
+using namespace xdpd::gnu_linux;
+
 /* Static member initialization */
 bufferpool* bufferpool::instance = NULL;
 pthread_mutex_t bufferpool::mutex = PTHREAD_MUTEX_INITIALIZER; 

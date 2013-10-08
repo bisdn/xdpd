@@ -9,7 +9,7 @@
 
 using namespace xdpd;
 
-/**
+/*
 * Dispatching of platform related messages comming from the fwd_module 
 */
 

@@ -8,6 +8,8 @@
 #include <net/if.h>
 #include <unistd.h>
 
+using namespace xdpd::gnu_linux;
+
 //Constructor and destructor
 ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
 {

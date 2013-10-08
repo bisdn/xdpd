@@ -35,7 +35,8 @@
 *
 */
 
-using namespace rofl;
+namespace xdpd {
+namespace gnu_linux {
 
 class eConstructorMmapRx : public rofl::cerror {};
 
@@ -52,7 +53,7 @@ private:
 	std::string devname; // device name e.g. "eth0"
 	
 	int sd; // socket descriptor
-	caddress ll_addr; // link layer sockaddr
+	rofl::caddress ll_addr; // link layer sockaddr
 	struct tpacket_req req; // ring buffer
 	//struct iovec *ring; // auxiliary pointers into the mmap'ed area
 
@@ -127,5 +128,9 @@ next:
 		return &req;
 	};
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* MMAP_RX_H_ */

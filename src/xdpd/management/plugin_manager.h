@@ -13,7 +13,7 @@
 * @file plugin_manager.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief defines the main abstraction of plugins and the plugin manager.
+* @brief Plugin management API file.
 */
 
 namespace xdpd {
@@ -23,12 +23,15 @@ namespace xdpd {
 *
 * The concept of a management plugin in xdpd is NOT a "hot" pluggable module as usually
 * refered to as "plugin", but a module that can be loaded at compile time (compiled, indeed).
+* @ingroup cmm_mgmt
 */
 class plugin {
 	
 public:
-	/*
-	* The init method must be overwritten by the
+	/**
+	* @brief Initializes the plugin
+	*
+	* @description The init method must be overwritten by the
 	* derived plugin and must contain the initialization
 	* of the plugin itself. The method shall return immediately
 	* after bootstrapping of the plugin. If the plugin needs to continue
@@ -36,7 +39,7 @@ public:
 	* within this method. Please consider using ciosrv APIs to avoid wasting
 	* of pthreads.
 	*
-	* argc and argc are xdpd's shell parameters. The plugin can, at its wish
+	* argc and argc are xdpd's command-line parameters. The plugin can, at its wish
 	* define its own arguments and parse them, usually using optargs or cunixenv
 	* APIs. Plugin Manager will reset argc for each plugin.
 	*
@@ -47,7 +50,7 @@ public:
 	*/
 	virtual void init(int argc, char** argv)=0;
 	
-	/*
+	/**
 	* Returns the plugin name
 	*/
 	virtual std::string get_name(void)=0;
@@ -57,29 +60,30 @@ public:
 
 
 /**
- * The plugin manager manages the initialization of the plugins at bootstrap time 
+ * @brief The plugin manager orchestrates the initialization of the plugins at bootstrap time 
+* @ingroup cmm_mgmt
  */
 class plugin_manager {
 
 public:
 	/**
-	* Initialize all the compiled plugins
+	* Initializes all the compiled plugins
 	*/
 	static rofl_result init(int args, char** argv);
 	
 	/*
-	* Register a plugin must be called on pre_init()
+	* Registers a plugin must be called on pre_init()
 	*/
 	static void register_plugin(plugin* p);
 
 private:
 	/**
-	* Pre-init hook where plugins can be added (registered)
+	* Pre-init hook where plugins can and must be added (registered)
 	*/
 	static void pre_init(void);
 
 	/**
-	* Registered plugins
+	* Registered plugins vector
 	*/	
 	static std::vector<plugin*> plugins;
 };

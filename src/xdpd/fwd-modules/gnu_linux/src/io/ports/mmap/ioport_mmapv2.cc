@@ -10,6 +10,7 @@
 #include <rofl/common/protocols/fvlanframe.h>
 
 using namespace rofl;
+using namespace xdpd::gnu_linux;
 
 //Constructor and destructor
 ioport_mmapv2::ioport_mmapv2(

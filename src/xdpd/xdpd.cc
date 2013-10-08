@@ -23,8 +23,8 @@ void interrupt_handler(int dummy=0) {
 	ciosrv::stop();
 }
 
-/**
- * XDPD Main routine
+/*
+ * xDPd Main routine
  */
 int main(int argc, char** argv){
 

@@ -4,6 +4,8 @@
 #include "packet_classifiers/rofl_pktclassifier.h"
 #include "packet_classifiers/static_pktclassifier.h"
 
+using namespace xdpd::gnu_linux;
+
 /*
  * x86 datapacket related methods
  */

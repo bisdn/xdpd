@@ -25,6 +25,9 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 typedef uint32_t storeid;
 
 class datapacket_storage
@@ -96,5 +99,8 @@ private:
 	datapacket_storage(const datapacket_storage&);
 	datapacket_storage& operator=(const datapacket_storage&);
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* DATAPACKET_STORAGE_H_ */

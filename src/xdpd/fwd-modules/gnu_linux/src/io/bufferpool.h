@@ -6,6 +6,7 @@
 #define BUFFERPOOL_H 
 
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <vector>
@@ -21,6 +22,10 @@
 * @brief Data packet buffer pool management 
 *
 */
+
+namespace xdpd {
+namespace gnu_linux {
+
 
 typedef enum{
 	BUFFERPOOL_SLOT_UNAVAILABLE=0,
@@ -196,5 +201,9 @@ void bufferpool::release_buffer(datapacket_t* buf){
 #endif
 	}
 }
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* BUFFERPOOL_H_ */

@@ -19,6 +19,8 @@
 *
 */
 
+using namespace xdpd::gnu_linux;
+
 //Static members initialization
 const float epoll_ioscheduler::WRITE_QOS_QUEUE_FACTOR[ioport::MAX_OUTPUT_QUEUES]={1,1.2,1.5,2,2.2,2.5,2.7,3.0};
 #ifdef DEBUG

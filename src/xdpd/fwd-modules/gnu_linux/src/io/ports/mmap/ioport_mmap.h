@@ -27,6 +27,9 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 //fwd decl
 class packet_mmap;
 
@@ -128,5 +131,8 @@ private:
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* IOPORT_MMAP_H_ */

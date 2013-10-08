@@ -1,9 +1,14 @@
-/*
- * of10_endpoint.h
- *
- *  Created on: 06.09.2013
- *      Author: andreas
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/**
+* @file of10_endpoint.h
+* @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
+* @author Marc Sune<marc.sune (at) bisdn.de>
+*
+* @brief OF1.0 endpoint implementation
+*/
 
 #ifndef OF10_ENDPOINT_H_
 #define OF10_ENDPOINT_H_
@@ -17,6 +22,10 @@ using namespace rofl;
 
 namespace xdpd {
 
+/**
+* @brief of10_endpoint is an OpenFlow 1.0 OF agent implementation
+* @ingroup cmm_of
+**/
 class of10_endpoint : public of_endpoint {
 
 public:

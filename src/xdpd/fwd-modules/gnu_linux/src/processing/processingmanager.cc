@@ -8,6 +8,7 @@
 #include "../util/likely.h"
 #include "ls_internal_state.h"
 
+using namespace xdpd::gnu_linux;
 
 /* Static member initialization */
 pthread_mutex_t processingmanager::mutex = PTHREAD_MUTEX_INITIALIZER; 

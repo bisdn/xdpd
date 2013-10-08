@@ -1,10 +1,6 @@
-/*
- * of10_translation_utils.h
- *
- *  Created on: 06.09.2013
- *      Author: andreas
- */
-
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef OF10_TRANSLATION_UTILS_H
 #define OF10_TRANSLATION_UTILS_H
@@ -25,15 +21,23 @@
 #include <rofl/common/openflow/experimental/actions/pppoe_actions.h>
 
 /**
+* @file of10_translation_utils.h
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 * @author Marc Sune<marc.sune (at) bisdn.de>
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief OpenFlow 1.0 translation utils
 */
 
 using namespace rofl;
 
 namespace xdpd {
 
-class of10_translation_utils : public csyslog{
+/**
+* @brief Translates ROFL OF1.0 objects to AFA-compliant structures and vice-versa
+* @ingroup cmm_of
+*/
+class of10_translation_utils{
 
 
 public:

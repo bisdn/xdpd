@@ -1,14 +1,9 @@
-/*
- * qmfagent.h
- *
- * Copyright (C) 2013 BISDN GmbH <andi@bisdn.de>
- *
- *  Created on: 26.07.2013
- *      Author: andreas
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef QMFAGENT_H_
-#define QMFAGENT_H_ 1
+#define QMFAGENT_H_ 
 
 #include <inttypes.h>
 #include <map>
@@ -34,6 +29,14 @@
 #include "../../switch_manager.h"
 #include "../../port_manager.h"
 #include "../../plugin_manager.h"
+#include "../../../openflow/openflow_switch.h"
+
+/**
+* @file qmfagent.h
+* @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
+*
+* @brief QMF management plugin file
+*/
 
 namespace xdpd 
 {
@@ -42,6 +45,12 @@ class eQmfAgentBase 		: public std::exception {};
 class eQmfAgentInval		: public eQmfAgentBase {};
 class eQmfAgentInvalSubcmd	: public eQmfAgentInval {};
 
+/**
+* @brief Qpid Management Framework (QMF) management plugin
+*
+* @description This plugin exposes xDPd's Port and Switch management APIs via a QMF broker
+* @ingroup cmm_mgmt_plugins
+*/
 class qmfagent :
 		public rofl::ciosrv,
 		public plugin

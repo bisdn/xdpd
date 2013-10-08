@@ -16,13 +16,16 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 *
-* @brief openflow_switch is a version-agnostic abstraction of a complete
-* (logical) Openflow switch (complete datapath as the spec defines).
-* 
+* @brief Defines the abstraction of an OpenFlow (logical) switch
 */
 
 namespace xdpd {
 
+/**
+* @brief Version-agnostic abstraction of a complete
+* (logical) OpenFlow switch.
+* @ingroup cmm_of 
+*/
 class openflow_switch {
 
 protected:

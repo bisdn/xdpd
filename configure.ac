@@ -55,5 +55,7 @@ AC_CONFIG_FILES([
 	src/xdpd/openflow/openflow12/Makefile
 ])
 
+# Doxygen (here to be the last Makefile) 
+m4_include([config/doxygen.m4])
 
 AC_OUTPUT

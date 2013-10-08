@@ -17,6 +17,9 @@
 #include "mmap_tx.h"
 #include "../../datapacketx86.h"
 
+namespace xdpd {
+namespace gnu_linux {
+
 #define PORT_ETHER_LENGTH 18
 #define PORT_DEFAULT_PKT_SIZE 1518
 
@@ -114,5 +117,8 @@ private:
 	void fill_tx_slot(struct tpacket2_hdr *hdr, datapacketx86 *packet);
 	void empty_pipe(void);
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* IOPORTV2_MMAP_H_ */

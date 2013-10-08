@@ -19,18 +19,20 @@
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief openflowf12_switch is the representation of an Openflow v1.2
-* switch (logical switch).
-*
-* The switch contains the of1x_endpoint, but may contain other more.
-*
+* @brief OF1.0 switch implementation 
 */
 
 using namespace rofl;
 
 namespace xdpd {
 
-
+/**
+* @brief Implementation of a (logical) OpenFlow v1.0 switch.
+* @ingroup cmm_of 
+*
+* @description This includes the OF endpoint and the binding with the
+* forwarding plane (through AFA)
+*/
 class openflow10_switch : public openflow_switch {
 
 

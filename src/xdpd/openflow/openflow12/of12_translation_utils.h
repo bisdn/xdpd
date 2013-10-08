@@ -21,15 +21,23 @@
 #include <rofl/common/openflow/experimental/actions/pppoe_actions.h>
 
 /**
+* @file of12_translation_utils.h
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 * @author Marc Sune<marc.sune (at) bisdn.de>
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief OpenFlow 1.2 translation utils
 */
 
 using namespace rofl;
 
 namespace xdpd {
 
-class of12_translation_utils : public csyslog{
+/**
+* @brief Translates ROFL OF1.2 objects to AFA-compliant structures and vice-versa
+* @ingroup cmm_of
+*/
+class of12_translation_utils{
 	
 
 public:

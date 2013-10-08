@@ -3,20 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
-* @file of1x_endpoint.h
+* @file of12_endpoint.h
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 *
-* @brief of1x_endpoint is the implementation of an Openflow v1.2 endpoint
-* using ROFL libraries. 
-*
-* The endpoint may consume underlying hardware APIs
-* exposed via the Abstract Forwarding API (AFA).
-*
-* This class is hardware agnostic.
-* 
+* @brief OF1.2 endpoint implementation
 */
 
 #ifndef OF12_ENDPOINT_H
@@ -31,6 +24,10 @@ using namespace rofl;
 
 namespace xdpd {
 
+/**
+* @brief of12_endpoint is an OpenFlow 1.2 OF agent implementation
+* @ingroup cmm_of
+**/
 class of12_endpoint : public of_endpoint {
 	
 

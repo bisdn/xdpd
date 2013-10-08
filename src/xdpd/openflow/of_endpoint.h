@@ -25,24 +25,26 @@
 
 /**
 * @file of_endpoint.h
-* @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 * @author Marc Sune<marc.sune (at) bisdn.de>
-*
-* @brief of_endpoint is a version-agnostic abstractio of the openflow agent
+* @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 * 
+* @brief OpenFlow endpoint abstraction. 
 */
 
 using namespace rofl;
 
 namespace xdpd {
 
-/*
-* This is an abstract class. TODO change the name of crofbase to of_endpoint or something similar, and get rid of this
-*/
-
 //Fwd declaration
 class openflow_switch;
 
+/**
+* @brief of_endpoint is an OpenFlow version-agnostic abstraction of the OF agent.
+* @ingroup cmm_of
+*
+* @description An OpenFlow endpoint is not a single connection endpoint, but rather the agent which
+* manages both ACTIVE and PASSIVE mode connections
+*/
 class of_endpoint : public crofbase {
 
 public:

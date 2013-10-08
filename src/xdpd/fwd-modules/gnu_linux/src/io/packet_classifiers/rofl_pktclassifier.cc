@@ -2,6 +2,8 @@
 #include <rofl/common/utils/c_logger.h>
 #include "../datapacketx86.h"
 
+using namespace xdpd::gnu_linux;
+
 #define ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES 16
 #define ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(a) do{ if(a>ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES) a = ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES; }while(0)
 

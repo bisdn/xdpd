@@ -33,6 +33,7 @@
 #include "../io/ports/ioport.h"
 
 using namespace rofl;
+using namespace xdpd::gnu_linux;
 
 /* Cloning of the packet */
 static void clone_pkt_contents(datapacket_t* src, datapacket_t* dst){

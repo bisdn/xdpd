@@ -25,6 +25,8 @@
 #include "io/iomanager.h"
 #include "util/time_utils.h"
 
+using namespace xdpd::gnu_linux;
+
 //Local static variable for background manager thread
 static pthread_t bg_thread;
 static bool bg_continue_execution = true;

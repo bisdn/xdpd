@@ -30,6 +30,9 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 class portgroup_state;
 
 //Hold fd AND ioport reference
@@ -82,5 +85,8 @@ private:
 
 
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* EPOLL_IOSCHEDULER_H_ */

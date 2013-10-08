@@ -20,6 +20,9 @@
 * @brief TODO 
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 class ioport_vlink : public ioport{
 
 public:
@@ -67,5 +70,9 @@ protected:
 	
 	void empty_pipe(int* pipe);
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* IOPORT_VLINK_H_ */

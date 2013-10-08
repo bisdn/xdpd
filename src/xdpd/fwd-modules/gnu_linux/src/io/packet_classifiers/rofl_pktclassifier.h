@@ -30,6 +30,9 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 class rofl_pktclassifier: public packetclassifier{
 
 public:
@@ -167,5 +170,7 @@ protected:
 
 };
 
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* ROFL_PKTCLASSIFIER_H_ */

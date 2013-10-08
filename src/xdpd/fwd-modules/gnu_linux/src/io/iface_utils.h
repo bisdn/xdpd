@@ -34,7 +34,7 @@ rofl_result_t discover_physical_ports(void);
 /**
  * Creates a virtual port pair between two switches
  */
-rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_switch_t* lsw2, ioport** vport2);
+rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, xdpd::gnu_linux::ioport** vport1, of_switch_t* lsw2, xdpd::gnu_linux::ioport** vport2);
 
 /*
 * Get port pair

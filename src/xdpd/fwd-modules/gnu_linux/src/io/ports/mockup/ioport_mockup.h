@@ -13,6 +13,9 @@
 #include "../../datapacketx86.h" 
 
 
+namespace xdpd {
+namespace gnu_linux {
+
 /*
 * Simple mockup of a port. It opens two files, on for input and another for output.
 * Used only for testing purposes.
@@ -62,5 +65,9 @@ protected:
 	static const unsigned int WRITE=1;
 	
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* IOPORT_MOCKUP_H_ */

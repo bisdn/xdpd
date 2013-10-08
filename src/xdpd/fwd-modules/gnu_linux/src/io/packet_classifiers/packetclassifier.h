@@ -26,8 +26,8 @@
 *
 */
 
+
 //fwd declarations (avoid circular dependencies)
-class datapacketx86;
 namespace rofl{
 	class fframe;
 	class fetherframe;
@@ -46,6 +46,10 @@ namespace rofl{
 	class fgtpuframe;
 }
 
+namespace xdpd {
+namespace gnu_linux {
+
+class datapacketx86;
 
 class packetclassifier{
 
@@ -123,6 +127,7 @@ protected:
 	
 };
 
-
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* PACKETCLASSIFIER_H_ */

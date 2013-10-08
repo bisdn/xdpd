@@ -12,6 +12,8 @@
 
 #include <rofl/common/utils/c_logger.h>
 
+using namespace xdpd::gnu_linux;
+
 mmap_int::mmap_int(
 		int __type,
 		std::string __devname,

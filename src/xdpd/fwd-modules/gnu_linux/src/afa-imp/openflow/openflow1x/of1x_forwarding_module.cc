@@ -11,6 +11,8 @@
 #include "../../../io/ports/ioport.h"
 #include "../../../processing/ls_internal_state.h"
 
+using namespace xdpd::gnu_linux;
+
 //FIXME move this definition out of here
 #define OF1XP_NO_BUFFER	0xffffffff
 

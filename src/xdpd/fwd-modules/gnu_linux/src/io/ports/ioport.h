@@ -22,6 +22,10 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+
 #define ETHER_MAC_LEN 6
 
 class ioport{
@@ -212,5 +216,8 @@ protected:
 	*/
 	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> input_queue;
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* IOPORT_H_ */

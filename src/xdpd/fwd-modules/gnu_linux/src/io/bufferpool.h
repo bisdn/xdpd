@@ -23,6 +23,10 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+
 typedef enum{
 	BUFFERPOOL_SLOT_UNAVAILABLE=0,
 	BUFFERPOOL_SLOT_AVAILABLE=1,
@@ -197,5 +201,9 @@ void bufferpool::release_buffer(datapacket_t* buf){
 #endif
 	}
 }
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* BUFFERPOOL_H_ */

@@ -27,6 +27,9 @@
 * 
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 #define DEFAULT_MAX_THREADS_PER_PG 5
 //WARNING: you don't want to change this, unless you really know what you are doing
 #define DEFAULT_THREADS_PER_PG 1
@@ -130,5 +133,9 @@ protected:
 	static void stop_portgroup_threads(portgroup_state* pg);
 	
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* IOMANAGER_H_ */

@@ -17,6 +17,10 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+
 class ioscheduler{ 
 
 public:
@@ -32,5 +36,8 @@ public:
 #endif
 
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* IOSCHEDULER_H_ */

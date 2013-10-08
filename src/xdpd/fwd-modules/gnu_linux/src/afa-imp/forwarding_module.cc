@@ -39,6 +39,8 @@
 
 #define NUM_ELEM_INIT_BUFFERPOOL 2048 //This is cache for fast port addition
 
+using namespace xdpd::gnu_linux;
+
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself

@@ -15,6 +15,9 @@
  * Implementation of a ring elements
  */
 
+namespace xdpd {
+namespace gnu_linux {
+
 //#define RB_ASM_IMP 1 
 #define RB_MULTI_READERS 1 
 #define RB_MULTI_WRITERS 1 
@@ -293,5 +296,8 @@ rofl_result_t circular_queue<T, SLOTS>::blocking_write(T* elem, unsigned int sec
 
 	return result;
 }
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* CIRCULAR_QUEUE_H_ */

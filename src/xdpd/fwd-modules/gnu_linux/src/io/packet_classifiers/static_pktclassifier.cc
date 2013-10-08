@@ -2,6 +2,7 @@
 #include <rofl/common/utils/c_logger.h>
 #include "../datapacketx86.h"
 
+using namespace xdpd::gnu_linux;
 
 //Constructor&destructor
 static_pktclassifier::static_pktclassifier(datapacketx86* pkt_ref) :

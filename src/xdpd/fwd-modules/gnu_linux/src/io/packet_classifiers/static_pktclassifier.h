@@ -30,6 +30,9 @@
 * @brief Static memory data packet header classifier 
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 class static_pktclassifier: public packetclassifier{
 
 public:
@@ -230,5 +233,7 @@ protected:
 	void push_header(enum header_type type, unsigned int start, unsigned int end);
 };
 
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* STATIC_PKTCLASSIFIER_H_ */

@@ -1,14 +1,9 @@
-/*
- * datapacket_storage.cc
- *
- *  Created on: Jan 17, 2013
- *      Author: tobi
- */
-
 #include "datapacket_storage.h"
 #include <assert.h>
 #include <rofl/common/thread_helper.h>
 #include "../util/likely.h"
+
+using namespace xdpd::gnu_linux;
 
 datapacket_storage::datapacket_storage(uint16_t size, uint16_t expiration) :
 		next_id(1),

@@ -35,9 +35,8 @@
 *
 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace xdpd {
+namespace gnu_linux {
 
 using namespace rofl;
 
@@ -108,8 +107,7 @@ private:
 	cmemory ringptrs; // memory for storing the (struct iovec*) pointers
 };
 
-#ifdef __cplusplus
-}
-#endif
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* CPKTLINE_H_ */

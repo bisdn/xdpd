@@ -14,6 +14,7 @@
 #include "../io/datapacket_storage.h"
 #include "../processing/ls_internal_state.h"
 
+using namespace xdpd::gnu_linux;
 
 #define BUCKETS_PER_LS 10
 #define ITERATIONS_PER_ROUND 2

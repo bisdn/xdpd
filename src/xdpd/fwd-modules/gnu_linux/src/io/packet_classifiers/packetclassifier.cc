@@ -4,6 +4,7 @@
 /*
 * Implementation of the wrappers
 */
+using namespace xdpd::gnu_linux;
 
 rofl_result_t packetclassifier::pkt_push(unsigned int num_of_bytes, unsigned int offset){
 	return pkt->push(num_of_bytes,offset);

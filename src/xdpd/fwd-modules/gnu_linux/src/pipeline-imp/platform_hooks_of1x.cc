@@ -19,6 +19,7 @@
 #include "../processing/ls_internal_state.h"
 #include "../io/pktin_dispatcher.h"
 
+using namespace xdpd::gnu_linux;
 
 #define DATAPACKET_STORE_EXPIRATION_TIME 180
 #define DATAPACKET_STORE_MAX_BUFFERS bufferpool::RESERVED_SLOTS/2 

@@ -264,8 +264,7 @@ dpx86_set_ip_dscp(datapacket_t* pkt, uint8_t ip_dscp)
 		pack->ipv4_recalc_checksum = true;
 	}
 	if (NULL != pack->headers->ipv6(0)) {
-		// TODO IPv6
-		//pack->headers->ipv6(0)->set_ipv6_dscp(ip_dscp);
+		pack->headers->ipv6(0)->set_dscp(ip_dscp);
 	}
 }
 
@@ -279,8 +278,7 @@ dpx86_set_ip_ecn(datapacket_t* pkt, uint8_t ip_ecn)
 		pack->ipv4_recalc_checksum = true;
 	}
 	if (NULL != pack->headers->ipv6(0)){
-		// TODO IPv6
-		//pack->headers->ipv6(0)->set_ipv6_ecn(ip_ecn);
+		pack->headers->ipv6(0)->set_ecn(ip_ecn);
 	}
 }
 
@@ -807,18 +805,24 @@ uint8_t
 dpx86_get_packet_ip_ecn(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == pack) || (NULL == pack->headers->ipv4(0))) return 0;
-
-	return pack->headers->ipv4(0)->get_ipv4_ecn()&0xFF;
+	if (NULL == pack) return 0;
+	if (NULL != pack->headers->ipv4(0))
+		return pack->headers->ipv4(0)->get_ipv4_ecn()&0xFF;
+	if (NULL != pack->headers->ipv6(0))
+		return pack->headers->ipv6(0)->get_ecn();
+	return 0;
 }
 
 uint8_t
 dpx86_get_packet_ip_dscp(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == pack) || (NULL == pack->headers->ipv4(0))) return 0;
-
-	return pack->headers->ipv4(0)->get_ipv4_dscp()&0xFF;
+	if (NULL == pack) return 0;
+	if (NULL != pack->headers->ipv4(0))
+		return pack->headers->ipv4(0)->get_ipv4_dscp()&0xFF;
+	if (NULL != pack->headers->ipv6(0))
+		return pack->headers->ipv6(0)->get_dscp();
+	return 0;
 }
 
 uint8_t

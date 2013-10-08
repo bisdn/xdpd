@@ -31,6 +31,11 @@ switch_port_t* get_port_by_name(const char *name);
 rofl_result_t discover_physical_ports(void);
 
 /**
+ * @name update_port_status
+ */
+rofl_result_t update_port_status(char * name);
+	
+/**
  * Update physical port list 
  */
 rofl_result_t update_physical_ports(void);

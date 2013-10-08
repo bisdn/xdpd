@@ -14,7 +14,7 @@
 #include <sys/epoll.h>
 #include <sys/time.h>
 #include <sys/types.h>
-// Maybe needs to be in hal.h
+#include <string>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
@@ -38,6 +38,27 @@ static bool bg_continue_execution = true;
  * - purge old buffers in the buffer storage of a logical switch(pkt-in) 
  * - more?
  */
+
+
+//Try to guess if it is a veth, and return the pair
+//FIXME use netlink/ethtool for that instead of assuming the naming convention
+static rofl_result_t get_veth_peer_name(char* iface_name, char* peer){
+	unsigned int num;
+	std::string name(iface_name);
+	
+	if(name.find("veth") != 0)
+		return ROFL_FAILURE;
+	
+	//Extract number
+	sscanf(name.c_str(),"veth%u",&num);  
+
+	if(num %2 == 0)
+		snprintf(peer, IFNAMSIZ, "veth%u", num+1);
+	else
+		snprintf(peer, IFNAMSIZ, "veth%u", num-1);
+
+	return ROFL_SUCCESS;
+}
 
 /**
  * @name prepare_event_socket
@@ -69,65 +90,6 @@ int prepare_event_socket()
 	}
 
 	return sock;
-}
-
-/**
- * @name update_port_status
- */
-rofl_result_t update_port_status(char * name){
-	int skfd;
-	struct ethtool_value edata;
-	struct ifreq ifr;
-	switch_port_t *port;
-	bool last_link_status;
-
-	
-	memset(&edata,0,sizeof(edata));//Make valgrind happy
-	
-	//Update all ports
-	if(update_physical_ports() != ROFL_SUCCESS){
-		ROFL_ERR("Update physical ports failed \n");
-		assert(0);
-	}
-
-	port = fwd_module_get_port_by_name(name);
-	
-	//If there is no port after the update, just skip
-	if(!port)
-		return ROFL_FAILURE;
-	
-	if (( skfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ){
-		ROFL_ERR("Socket call error, errno(%d): %s\n", errno, strerror(errno));
-		return ROFL_FAILURE;
-	}
-	
-	edata.cmd = ETHTOOL_GLINK;
-	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name)-1);
-	
-	ifr.ifr_data = (char *) &edata;
-	if (ioctl(skfd, SIOCETHTOOL, &ifr) < 0){
-		//This may fail if the interface has been deleted from the system. Just return	
-		return ROFL_FAILURE;
-	}
-
-	ROFL_INFO("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
-	
-	last_link_status = port->up;
-
-	if(edata.data)
-		port->up = true;
-	else
-		port->up = false;
-
-	//port->forward_packets;
-	/*more*/
-	
-	//port_status message needs to be created if the port id attached to switch
-	if(port->attached_sw != NULL && last_link_status != port->up){
-		cmm_notify_port_status_changed(port);
-	}
-	
-	return ROFL_SUCCESS;
 }
 
 /*
@@ -187,6 +149,7 @@ static rofl_result_t read_netlink_message(int fd){
 	
 	struct ifinfomsg *ifi;
 	char name[IFNAMSIZ];
+	char peer_name[IFNAMSIZ];
 	
 	len = read_netlink_socket(fd,(char*)nlh, 0, getpid());
 	if(len == -1)
@@ -204,6 +167,12 @@ static rofl_result_t read_netlink_message(int fd){
 				// HERE change the status to the port structure
 				if(update_port_status(name)!=ROFL_SUCCESS)
 					return ROFL_FAILURE;
+				
+				//If the interface is a veth, then the other edge must also be updated
+				if(get_veth_peer_name(name,peer_name) == ROFL_SUCCESS){
+					//Update pair
+					update_port_status(peer_name);
+				}
 	    }else{
 		return update_physical_ports();
 	    }

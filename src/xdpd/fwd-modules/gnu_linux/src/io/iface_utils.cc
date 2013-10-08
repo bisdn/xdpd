@@ -15,6 +15,7 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
+#include <rofl/datapath/afa/cmm.h>
 #include "iface_utils.h" 
 #include "iomanager.h"
 
@@ -29,6 +30,65 @@
 * All of the functions related to physical port management 
 *
 */
+
+/**
+ * @name update_port_status
+ */
+rofl_result_t update_port_status(char * name){
+	int skfd;
+	struct ethtool_value edata;
+	struct ifreq ifr;
+	switch_port_t *port;
+	bool last_link_status;
+
+	
+	memset(&edata,0,sizeof(edata));//Make valgrind happy
+	
+	//Update all ports
+	if(update_physical_ports() != ROFL_SUCCESS){
+		ROFL_ERR("Update physical ports failed \n");
+		assert(0);
+	}
+
+	port = fwd_module_get_port_by_name(name);
+	
+	//If there is no port after the update, just skip
+	if(!port)
+		return ROFL_FAILURE;
+	
+	if (( skfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ){
+		ROFL_ERR("Socket call error, errno(%d): %s\n", errno, strerror(errno));
+		return ROFL_FAILURE;
+	}
+	
+	edata.cmd = ETHTOOL_GLINK;
+	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name)-1);
+	
+	ifr.ifr_data = (char *) &edata;
+	if (ioctl(skfd, SIOCETHTOOL, &ifr) < 0){
+		//This may fail if the interface has been deleted from the system. Just return	
+		return ROFL_FAILURE;
+	}
+
+	ROFL_INFO("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
+	
+	last_link_status = port->up;
+
+	if(edata.data)
+		port->up = true;
+	else
+		port->up = false;
+
+	//port->forward_packets;
+	/*more*/
+	
+	//port_status message needs to be created if the port id attached to switch
+	if(port->attached_sw != NULL && last_link_status != port->up){
+		cmm_notify_port_status_changed(port);
+	}
+	
+	return ROFL_SUCCESS;
+}
 
 static void fill_port_queues(switch_port_t* port, ioport* io_port){
 
@@ -193,7 +253,8 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
  */
 rofl_result_t discover_physical_ports(){
 	
-	switch_port_t* port;
+	unsigned int i, max_ports;
+	switch_port_t* port, **array;
 	int sock;
 	
 	struct ifaddrs *ifaddr, *ifa;
@@ -223,10 +284,27 @@ rofl_result_t discover_physical_ports(){
 		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
 			ROFL_ERR("<%s:%d> All physical port slots are occupied\n",__func__, __LINE__);
 			freeifaddrs(ifaddr);
+			assert(0);
 			return ROFL_FAILURE;
 		}
+
 	}
-	
+
+	//This MUST be here and NOT in the previous loop, or the ports will be discovered (duplicated)
+	//via update_physical_ports. FIXME: this needs to be implemented properly	
+	array = physical_switch_get_physical_ports(&max_ports);
+	for(i=0; i<max_ports ; i++){
+		if(array[i] != NULL){
+			//Update status
+			if(update_port_status(array[i]->name) != ROFL_SUCCESS){
+				ROFL_ERR("<%s:%d> Unable to retrieve link and/or admin status of the interface\n",__func__, __LINE__);
+				freeifaddrs(ifaddr);
+				assert(0);
+				return ROFL_FAILURE;
+			}
+		}
+	}
+
 	freeifaddrs(ifaddr);
 	
 	return ROFL_SUCCESS;
@@ -317,7 +395,7 @@ rofl_result_t update_physical_ports(){
 	std::map<std::string, struct ifaddrs*> system_ifaces;
 	std::map<std::string, switch_port_t*> pipeline_ifaces;
 	
-	ROFL_DEBUG("Trying to update the list of physical interfaces...\n");	
+	ROFL_DEBUG_VERBOSE("Trying to update the list of physical interfaces...\n");	
 	
 	/*real way to find interfaces*/
 	//getifaddrs(&ifap); -> there are examples on how to get the ip addresses
@@ -389,7 +467,7 @@ rofl_result_t update_physical_ports(){
 
 	}
 	
-	ROFL_DEBUG("Update of interfaces done.\n");	
+	ROFL_DEBUG_VERBOSE("Update of interfaces done.\n");	
 
 	freeifaddrs(ifaddr);
 	close(sock);

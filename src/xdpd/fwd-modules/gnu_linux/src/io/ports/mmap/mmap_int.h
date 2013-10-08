@@ -43,6 +43,11 @@ using namespace rofl;
 class ePktLineBase 		: public cerror {};
 class ePktLineFailed 	: public ePktLineBase {};
 
+/**
+* @brief MMAP internals DEPRECATED
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class mmap_int :
 		public csyslog
 {

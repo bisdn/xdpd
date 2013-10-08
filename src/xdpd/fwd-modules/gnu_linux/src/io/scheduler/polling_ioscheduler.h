@@ -20,8 +20,20 @@
 *
 * @brief (experimental) I/O scheduler base class which defines the way
 * way I/O threads go through the ports for TX and RX.
+*/
+
+namespace xdpd {
+namespace gnu_linux {
+
+class portgroup_state;
+
+/**
+* @brief (experimental) I/O scheduler base class which defines the way
+* way I/O threads go through the ports for TX and RX.
 *
-* Implements a simple I/O scheduler based on pure polling over
+* @ingroup fm_gnu_linux_io_schedulers
+*
+* @description Implements a simple I/O scheduler based on pure polling over
 * the interfaces. This scheduler sacrifices 1 virtual/real CPU
 * core for the I/O over the portgroup. Be advised that the usage
 * of the CPU by this scheduler will be around 100%. Optimal #threads
@@ -30,15 +42,9 @@
 * It uses a weighted round-robin approach to implement
 * scheduling policy.
 *
-* WARNING: this is an experimental scheduler.
-*
+* @warning this is an experimental scheduler. If you don't know what
+* you are doing use epoll_ioscheduler instead
 */
-
-namespace xdpd {
-namespace gnu_linux {
-
-class portgroup_state;
-
 class polling_ioscheduler: public ioscheduler{ 
 
 public:

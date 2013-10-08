@@ -19,15 +19,8 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 *
-* @brief I/O scheduler base class which defines the way
+* @brief I/O scheduler abstract class which defines the way
 * way I/O threads go through the ports for TX and RX.
-*
-* Implements a simple I/O scheduler based on async epoll
-* events.
-* 
-* It uses a weighted round-robin approach to implement
-* scheduling policy.
-*
 */
 
 namespace xdpd {
@@ -41,6 +34,18 @@ typedef struct epoll_event_data{
 	ioport* port;
 }epoll_event_data_t;
 
+/**
+* @brief I/O scheduler base class which defines the way
+* way I/O threads go through the ports for TX and RX.
+*
+* @ingroup fm_gnu_linux_io_schedulers
+* 
+* @description Implements a simple I/O scheduler based on async epoll
+* events.
+* 
+* It uses a weighted round-robin approach to implement
+* scheduling policy.
+*/
 class epoll_ioscheduler: public ioscheduler{ 
 
 public:

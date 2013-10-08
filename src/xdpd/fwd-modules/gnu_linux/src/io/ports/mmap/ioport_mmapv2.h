@@ -33,6 +33,13 @@ namespace gnu_linux {
 * region (MMAP) using PF_PACKET TX/RX rings 
 */
 
+
+/**
+* @brief GNU/Linux interface access via Memory Mapped
+* region (MMAP) using PF_PACKET TX/RX rings (v2) 
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class ioport_mmapv2 : public ioport{
 
 

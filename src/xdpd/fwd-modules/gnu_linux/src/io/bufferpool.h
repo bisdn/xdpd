@@ -33,6 +33,11 @@ typedef enum{
 	BUFFERPOOL_SLOT_IN_USE=2
 }bufferpool_slot_state_t;
 
+/**
+* @brief I/O subsystem datapacket buffer pool management class
+*
+* @ingroup fm_gnu_linux_io
+*/
 class bufferpool{
 
 public:

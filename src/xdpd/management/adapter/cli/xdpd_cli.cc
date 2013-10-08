@@ -381,12 +381,13 @@ cmd_config_openflow_configure_attach_port(struct cli_def *cli, UNUSED(const char
 	dpname.erase(dpname.size()-1, 1); // remove ')'
 
 	openflow_switch* sw = switch_manager::find_by_name(dpname);
+	unsigned int port_num;
 
 	if (NULL == sw) {
 		cli_print(cli, "internal error");
 	} else {
 		try {
-			port_manager::attach_port_to_switch(sw->dpid, portname);
+			port_manager::attach_port_to_switch(sw->dpid, portname, &port_num);
 			port_manager::enable_port(portname);
 			cli_print(cli, "attached port %s", argv[0]);
 		} catch (eOfSmDoesNotExist &e) {

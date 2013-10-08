@@ -194,27 +194,6 @@ of12_endpoint::handle_table_stats_request(
 					(table->stats.lookup_count),
 					(table->stats.matched_count)
 				));
-
-		coftable_stats_reply a(
-							ctl->get_version(),
-							table->number,
-							std::string(table->name, OFP_MAX_TABLE_NAME_LEN),
-							of12_translation_utils::of12_map_bitmap_matches(&tc->match),
-							of12_translation_utils::of12_map_bitmap_matches(&tc->wildcards),
-							of12_translation_utils::of12_map_bitmap_actions(&tc->write_actions),
-							of12_translation_utils::of12_map_bitmap_actions(&tc->apply_actions),
-							of12_translation_utils::of12_map_bitmap_matches(&tc->write_setfields),
-							of12_translation_utils::of12_map_bitmap_matches(&tc->apply_setfields),
-							tc->metadata_match, //FIXME: this needs to be properly mapped once METADATA is implemented
-							tc->metadata_write, //FIXME: this needs to be properly mapped once METADATA is implemented
-			
-							of12_translation_utils::of12_map_bitmap_instructions(&tc->instructions),
-							tc->table_miss_config,
-							(table->max_entries),
-							(table->num_of_entries),
-							(table->stats.lookup_count),
-							(table->stats.matched_count)
-						);
 	}
 
 

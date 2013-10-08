@@ -45,6 +45,31 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 
 	//Set number of buffers
 	sw->pipeline->num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
+	
+	//Set the actions and matches supported by this platform
+	for(i=0; i<sw->pipeline->num_of_tables; i++){
+		of1x_flow_table_config_t *config = &(sw->pipeline->tables[i].config);
+		//Lets set to zero the unssuported matches and actions.
+		config->apply_actions &= ~(1 << OF12PAT_COPY_TTL_OUT);
+		config->apply_actions &= ~(1 << OF12PAT_COPY_TTL_IN);
+		config->write_actions &= ~(1 << OF12PAT_COPY_TTL_OUT);
+		config->write_actions &= ~(1 << OF12PAT_COPY_TTL_IN);
+		
+		config->match &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		config->wildcards &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		config->apply_setfields &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		config->write_setfields &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		
+		config->match &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		config->wildcards &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		config->apply_setfields &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		config->write_setfields &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		
+		config->match &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+		config->wildcards &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+		config->apply_setfields &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+		config->write_setfields &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+	}
 
 	return ROFL_SUCCESS;
 }

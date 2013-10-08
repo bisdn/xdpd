@@ -1775,9 +1775,12 @@ uint32_t of12_translation_utils::of12_map_bitmap_instructions(uint32_t* bitmap){
 
 	if(*bitmap & ( 1 << OF1X_IT_WRITE_METADATA))
 		mapped_bitmap |= (1 << OFPIT_WRITE_METADATA);
-
+	
 	if(*bitmap & ( 1 << OF1X_IT_GOTO_TABLE))
 		mapped_bitmap |= (1 << OFPIT_GOTO_TABLE);
+	
+	if(*bitmap & ( 1 << OF1X_IT_METER))
+		mapped_bitmap |= (1 << OFPIT_METER);
 	
 	return mapped_bitmap;	
 }

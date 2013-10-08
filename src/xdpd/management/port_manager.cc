@@ -37,7 +37,7 @@ void port_manager::disable_port(std::string port_name) throw (ePmInvalidPort, eO
 }
 
 //Port attachment/detachment
-void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
+void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name, unsigned int *of_port_num) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
 
 	unsigned int i=0;
 
@@ -50,6 +50,7 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name) t
 	if (fwd_module_attach_port_to_switch(dpid,port_name.c_str(),&i) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
 
+	*of_port_num = i;
 }
 
 void port_manager::detach_port_from_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){

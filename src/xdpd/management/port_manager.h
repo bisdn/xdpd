@@ -55,7 +55,7 @@ public:
 	 * @brief Attaches a port to a logical switch previously created. 
 	 *
 	 */
-	static void attach_port_to_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError);
+	static void attach_port_to_switch(uint64_t dpid, std::string port_name, unsigned int *of_port_num = 0) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError);
 
 	/**
 	 * @brief Detaches a port from the logical, previously attached by port name. 

@@ -291,9 +291,10 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 
 		uint32_t portno = 0;
 
-		rofl::port_manager::attach_port_to_switch(dpid, devname);
+		rofl::port_manager::attach_port_to_switch(dpid, devname, &portno);
 		rofl::port_manager::enable_port(devname);
 
+#if 0
 		rofl::openflow_switch *openflow_sw = rofl::switch_manager::find_by_dpid(dpid);
 
 		if (0 == openflow_sw) {
@@ -322,6 +323,7 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 			session.raiseException(event, "port not found, internal error");
 			return false;
 		}
+#endif
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);

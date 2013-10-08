@@ -1,5 +1,6 @@
 #include "bg_taskmanager.h"
 
+#include <assert.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -22,6 +23,7 @@
 #include "io/bufferpool_c_wrapper.h"
 #include "processing/ls_internal_state.h"
 #include "io/pktin_dispatcher.h"
+#include "io/iface_utils.h"
 #include "util/time_utils.h"
 
 //Local static variable for background manager thread
@@ -78,14 +80,21 @@ rofl_result_t update_port_status(char * name){
 	struct ifreq ifr;
 	switch_port_t *port;
 	bool last_link_status;
-	port = fwd_module_get_port_by_name(name);
+
 	
 	memset(&edata,0,sizeof(edata));//Make valgrind happy
 	
-	if(port == NULL){
-		ROFL_ERR("Error port with name %s not found\n",name);
-		return ROFL_FAILURE;
+	//Update all ports
+	if(update_physical_ports() != ROFL_SUCCESS){
+		ROFL_ERR("Update physical ports failed \n");
+		assert(0);
 	}
+
+	port = fwd_module_get_port_by_name(name);
+	
+	//If there is no port after the update, just skip
+	if(!port)
+		return ROFL_FAILURE;
 	
 	if (( skfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ){
 		ROFL_ERR("Socket call error, errno(%d): %s\n", errno, strerror(errno));
@@ -96,8 +105,8 @@ rofl_result_t update_port_status(char * name){
 	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name)-1);
 	
 	ifr.ifr_data = (char *) &edata;
-	if (ioctl(skfd, SIOCETHTOOL, &ifr) == -1){
-		ROFL_ERR("ETHTOOL_GLINK failed, errno(%d): %s\n", errno, strerror(errno));
+	if (ioctl(skfd, SIOCETHTOOL, &ifr) < 0){
+		//This may fail if the interface has been deleted from the system. Just return	
 		return ROFL_FAILURE;
 	}
 
@@ -196,8 +205,7 @@ static rofl_result_t read_netlink_message(int fd){
 				if(update_port_status(name)!=ROFL_SUCCESS)
 					return ROFL_FAILURE;
 	    }else{
-				ROFL_ERR("Received a different RTM message type\n");
-				return ROFL_FAILURE;
+		return update_physical_ports();
 	    }
 	}
 	

@@ -1,6 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = 
+SUBDIRS = $(PLUGIN_DIRS)
+DIST_SUBDIRS = $(PLUGIN_DIRS)
 
 noinst_LTLIBRARIES = libxdpd_mgmt.la
 		
@@ -9,16 +10,4 @@ libxdpd_mgmt_la_SOURCES = \
 	switch_manager.cc \
 	port_manager.cc
 
-libxdpd_mgmt_la_LIBADD =
-
-##Plugins: add yours CONDITIONALLY!
-if WITH_MGMT_CONFIG
-SUBDIRS += plugins/config
-libxdpd_mgmt_la_LIBADD +=plugins/config/libxdpd_mgmt_config.la
-endif
-
-if WITH_MGMT_QMF
-SUBDIRS += plugins/qmf
-libxdpd_mgmt_la_LIBADD +=plugins/qmf/libxdpd_mgmt_qmf.la
-endif
-
+libxdpd_mgmt_la_LIBADD = $(PLUGIN_LIBS)

@@ -37,7 +37,11 @@ class of12_endpoint : public of_endpoint {
 public:
 
 	//Main constructor
-	of12_endpoint(openflow_switch* sw, caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633), caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmErrorOnCreation);
+	of12_endpoint(
+			openflow_switch* sw,
+			int reconnect_start_timeout,
+			caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633),
+			caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmErrorOnCreation);
 
 	/**
 	 *

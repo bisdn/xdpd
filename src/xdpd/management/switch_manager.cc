@@ -25,6 +25,7 @@ openflow_switch* switch_manager::create_switch(
 		std::string const& dpname,
 		unsigned int num_of_tables,
 		int* ma_list,
+		int reconnect_start_timeout,
 		caddress const& controller_addr,
 		caddress const& binding_addr) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported){
 
@@ -41,11 +42,11 @@ openflow_switch* switch_manager::create_switch(
 	switch(version){
 
 		case OF_VERSION_10:
-			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, controller_addr, binding_addr);
+			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
 			break;
 
 		case OF_VERSION_12:
-			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, controller_addr, binding_addr);
+			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
 			break;
 	
 		//Add more here...

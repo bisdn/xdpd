@@ -88,6 +88,6 @@ private:
 	
 };
 
-}// namespace rofl
+}// namespace xdpd 
 
 #endif /* PORT_MANAGER_H_ */

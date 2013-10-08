@@ -3,7 +3,7 @@ AM_CONDITIONAL([WITH_MGMT_PLUGIN_NAME], true)
 AC_DEFINE(WITH_MGMT_PLUGIN_NAME)
 
 #LIB checks e.g.
-#AC_CHECK_LIB(cli, cli_telnet_protocol,,[AC_MSG_ERROR([cli library not found])]) 
+#AC_CHECK_LIB(pthread, pthread_kill,,AC_MSG_ERROR([pthread library not found])) 
 
 #Add files
 AC_CONFIG_FILES([

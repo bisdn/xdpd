@@ -91,6 +91,7 @@ public:
 					std::string const& dpname,
 					unsigned int num_of_tables,
 					int* ma_list,
+					int reconnect_start_timeout = 2,
 					caddress const& controller_addr = switch_manager::controller_addr,
 					caddress const& binding_addr = switch_manager::binding_addr) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
 
@@ -149,6 +150,6 @@ public:
 	static void rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra);
 };
 
-}// namespace rofl
+}// namespace xdpd
 
 #endif /* SWITCH_MANAGER_H_ */

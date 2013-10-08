@@ -16,12 +16,10 @@ namespace xdpd {
 class example:public plugin {
 	
 public:
-	virtual void init(int args, char** argv){
-		//DO something
-	};
-	
+	virtual void init(int args, char** argv);
+
 	virtual std::string get_name(void){
-		return std::string("Test plugin");
+		return std::string("Example plugin");
 	};
 };
 

@@ -40,6 +40,7 @@ extern "C" {
 
 #include "../../switch_manager.h"
 #include "../../port_manager.h"
+#include "../../../openflow/openflow_switch.h"
 
 namespace rofl
 {

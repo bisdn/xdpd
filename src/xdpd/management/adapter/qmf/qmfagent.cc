@@ -136,6 +136,7 @@ qmfagent::set_qmf_schema()
 
     qmf::SchemaMethod portAttachMethod("portAttach", "{desc:'attach port'}");
     portAttachMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    portAttachMethod.addArgument(qmf::SchemaProperty("portno", 	qmf::SCHEMA_DATA_INT, 		"{dir:OUT}"));
     portAttachMethod.addArgument(qmf::SchemaProperty("devname",	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
     sch_lsi.addMethod(portAttachMethod);
 
@@ -288,11 +289,41 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
 		std::string devname		= event.getArguments()["devname"].asString();
 
+		uint32_t portno = 0;
+
 		rofl::port_manager::attach_port_to_switch(dpid, devname);
 		rofl::port_manager::enable_port(devname);
 
+		rofl::openflow_switch *openflow_sw = rofl::switch_manager::find_by_dpid(dpid);
+
+		if (0 == openflow_sw) {
+			session.raiseException(event, "openflow_switch instance not found, internal error");
+			return false;
+		}
+
+		of_switch_t* sw = openflow_sw->get_fwd_module_sw_ref();
+
+		if (0 == sw) {
+			session.raiseException(event, "of_switch_t instance not found, internal error");
+			return false;
+		}
+
+		for (unsigned int i = 0; i < sw->num_of_ports; i++) {
+			std::string pdevname(sw->logical_ports[i].port->name);
+			if (pdevname == devname) {
+				portno = sw->logical_ports[i].port->of_port_num;
+				break;
+			}
+		}
+
+		if (0 == portno) {
+			session.raiseException(event, "port not found, internal error");
+			return false;
+		}
+
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);
+		event.addReturnArgument("portno", portno);
 		session.methodSuccess(event);
 
 		return true;

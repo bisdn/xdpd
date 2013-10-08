@@ -18,9 +18,9 @@
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/datapath/afa/cmm.h>
-#include "io/datapacket_storage_c_wrapper.h"
-#include "io/bufferpool_c_wrapper.h"
 #include "processing/ls_internal_state.h"
+#include "io/bufferpool.h"
+#include "io/datapacket_storage.h"
 #include "io/pktin_dispatcher.h"
 #include "io/iomanager.h"
 #include "util/time_utils.h"
@@ -253,25 +253,25 @@ int process_timeouts()
 	
 	if(get_time_difference_ms(&now, &last_time_pool_checked)>=LSW_TIMER_BUFFER_POOL_MS){
 		uint32_t buffer_id;
-		datapacket_store_handle dps=NULL;
+		datapacket_storage* dps=NULL;
 		
 		for(i=0; i<max_switches; i++){
 
 			if(logical_switches[i] != NULL){
 
 				//Recover storage pointer
-				dps =(datapacket_store_handle) ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
+				dps =( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
 				//Loop until the oldest expired packet is taken out
-				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
+				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
 					ROFL_DEBUG_VERBOSE("Trying to erase a datapacket from storage: %u\n", buffer_id);
 
-					if( (pkt = datapacket_storage_get_packet_wrapper(dps,buffer_id) ) == NULL ){
+					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
 						ROFL_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
 						ROFL_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
 						//Return buffer to bufferpool
-						bufferpool_release_buffer_wrapper(pkt);
+						bufferpool::release_buffer(pkt);
 					}
 				}
 			}

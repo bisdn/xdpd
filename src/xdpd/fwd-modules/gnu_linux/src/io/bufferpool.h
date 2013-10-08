@@ -6,6 +6,7 @@
 #define BUFFERPOOL_H 
 
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <vector>

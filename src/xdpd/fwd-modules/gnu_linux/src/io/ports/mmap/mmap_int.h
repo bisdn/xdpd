@@ -6,8 +6,8 @@
 #define CPKTLINE_H 
 
 #include <string>
-
 #include <unistd.h>
+#include <assert.h>
 #include <string.h>
 #include <strings.h>
 #include <fcntl.h>

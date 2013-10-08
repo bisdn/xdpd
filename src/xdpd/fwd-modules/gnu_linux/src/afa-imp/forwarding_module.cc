@@ -16,7 +16,6 @@
 
 
 #include <stdio.h>
-#include <net/if.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/afa/cmm.h>
@@ -24,7 +23,7 @@
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include "../processing/processingmanager.h"
-#include "../io/bufferpool_c_wrapper.h"
+#include "../io/bufferpool.h"
 #include "../io/iomanager.h"
 #include "../bg_taskmanager.h"
 
@@ -55,7 +54,7 @@ afa_result_t fwd_module_init(){
 	
 
 	//create bufferpool
-	bufferpool_init_wrapper(NUM_ELEM_INIT_BUFFERPOOL);
+	bufferpool::init(NUM_ELEM_INIT_BUFFERPOOL);
 
 	if(discover_physical_ports() != ROFL_SUCCESS)
 		return AFA_FAILURE;
@@ -91,7 +90,7 @@ afa_result_t fwd_module_destroy(){
 	physical_switch_destroy();
 	
 	// destroy bufferpool
-	bufferpool_destroy_wrapper();
+	bufferpool::destroy();
 	
 	ROFL_INFO("GNU/Linux forwarding module destroyed.\n");
 	

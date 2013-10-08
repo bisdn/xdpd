@@ -5,6 +5,20 @@
 #ifndef ROFL_PKTCLASSIFIER_H
 #define ROFL_PKTCLASSIFIER_H 
 
+#include <rofl/common/protocols/fetherframe.h>
+#include <rofl/common/protocols/fvlanframe.h>
+#include <rofl/common/protocols/fmplsframe.h>
+#include <rofl/common/protocols/farpv4frame.h>
+#include <rofl/common/protocols/fipv4frame.h>
+#include <rofl/common/protocols/ficmpv4frame.h>
+#include <rofl/common/protocols/fipv6frame.h>
+#include <rofl/common/protocols/ficmpv6frame.h>
+#include <rofl/common/protocols/fudpframe.h>
+#include <rofl/common/protocols/ftcpframe.h>
+#include <rofl/common/protocols/fsctpframe.h>
+#include <rofl/common/protocols/fpppoeframe.h>
+#include <rofl/common/protocols/fpppframe.h>
+#include <rofl/common/protocols/fgtpuframe.h>
 #include "packetclassifier.h"
 
 /**

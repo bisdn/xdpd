@@ -5,12 +5,12 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
+#include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include "../config.h"
 #include "../io/bufferpool.h"
 #include "../io/datapacketx86.h"
-#include "../io/datapacketx86_c_wrapper.h"
 #include "../io/datapacket_storage.h"
 #include "../processing/ls_internal_state.h"
 
@@ -58,7 +58,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 		}
 
 		//Normalize size
-		pkt_size = dpx86_get_packet_size(pkt);
+		pkt_size = pkt_x86->get_buffer_length();
 		if(pkt_size > sw->pipeline->miss_send_len)
 			pkt_size = sw->pipeline->miss_send_len;
 			
@@ -68,9 +68,9 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 						pkt_x86->pktin_reason, 	
 						pkt_x86->in_port, 
 						id, 	
-						dpx86_get_raw_data(pkt), 
-						pkt_size, 
-						dpx86_get_packet_size(pkt), 
+						pkt_x86->get_buffer(), 
+						pkt_size,
+						pkt_x86->get_buffer_length(),
 						*((of1x_packet_matches_t*)&pkt->matches)
 				);
 

@@ -1,0 +1,76 @@
+//
+// Doxygen group definition
+//
+
+//CMM
+/**
+* @defgroup cmm Control and Management Module
+* @brief TODO
+*
+* TODO long description
+*/
+
+//AFA
+/**
+* @defgroup afa Abstract Forwarding API (AFA)
+* @brief TODO
+*
+* TODO long description
+*/
+
+//Forwarding modules
+/**
+* @defgroup fm Forwarding Modules (FMs)
+* @brief TODO
+*
+* TODO long description
+*/
+
+
+////////////////
+// GNU/Linux //
+//////////////
+
+//Main group
+/**
+* @defgroup fm_gnu_linux GNU/Linux Forwarding Module
+* @brief TODO
+*
+* TODO long description
+* @ingroup fm
+*/
+
+//IO
+/**
+* @defgroup fm_gnu_linux_io GNU/Linux I/O subsystem
+* @brief TODO
+*
+* TODO long description
+* @ingroup fm_gnu_linux
+*/
+
+//IO-ports
+/**
+* @defgroup fm_gnu_linux_io_ports GNU/Linux I/O ports
+* @brief TODO
+*
+* TODO long description
+* @ingroup fm_gnu_linux_io
+*/
+//IO-schedulers
+/**
+* @defgroup fm_gnu_linux_io_schedulers GNU/Linux I/O schedulers
+* @brief TODO
+*
+* TODO long description
+* @ingroup fm_gnu_linux_io
+*/
+
+//Processing
+/**
+* @defgroup fm_gnu_linux_processing GNU/Linux processing subsystem 
+* @brief TODO
+*
+* TODO long description
+* @ingroup fm_gnu_linux
+*/

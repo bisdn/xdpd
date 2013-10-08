@@ -30,11 +30,7 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 *
-* @brief Logical Switch (LS) management API.
-* 
-* The switch manager API is a C++ interface that can be consumed
-* by the add-on management modules for general logical switch management
-* (e.g. create/destroy new logical switches)
+* @brief Logical Switch (LS) management API file.
 */
 
 using namespace rofl;
@@ -56,10 +52,13 @@ class eOfSmVersionNotSupported		: public eOfSmBase {};
 //Fwd declaration
 class openflow_switch;
 
-/*
- * Switch manager. Manages the switch 
- */
-
+/**
+* @brief Logical Switch (LS) management API.
+* 
+* The switch manager API is a C++ interface that can be consumed
+* by the add-on management modules for general logical switch management
+* (e.g. create/destroy logical switches)
+*/
 class switch_manager {
 
 protected:
@@ -72,11 +71,6 @@ public:
 
 	static const caddress controller_addr;
 	static const caddress binding_addr;
-
-	/**
-	** This section contains the factory-like static calls for managment of the
-	** switch instances. This is the interface exposed to the management entities.
-	**/
 
 	/**
 	 * @brief	static factory method for creating a logical switch (LS) 

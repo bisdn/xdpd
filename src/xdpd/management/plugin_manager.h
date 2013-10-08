@@ -13,7 +13,7 @@
 * @file plugin_manager.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief defines the main abstraction of plugins and the plugin manager.
+* @brief Plugin management API file.
 */
 
 namespace xdpd {
@@ -57,29 +57,29 @@ public:
 
 
 /**
- * The plugin manager manages the initialization of the plugins at bootstrap time 
+ * @brief The plugin manager orchestrates the initialization of the plugins at bootstrap time 
  */
 class plugin_manager {
 
 public:
 	/**
-	* Initialize all the compiled plugins
+	* Initializes all the compiled plugins
 	*/
 	static rofl_result init(int args, char** argv);
 	
 	/*
-	* Register a plugin must be called on pre_init()
+	* Registers a plugin must be called on pre_init()
 	*/
 	static void register_plugin(plugin* p);
 
 private:
 	/**
-	* Pre-init hook where plugins can be added (registered)
+	* Pre-init hook where plugins can and must be added (registered)
 	*/
 	static void pre_init(void);
 
 	/**
-	* Registered plugins
+	* Registered plugins vector
 	*/	
 	static std::vector<plugin*> plugins;
 };

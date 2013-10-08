@@ -13,10 +13,7 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 *
-* @brief Port management API.
-* 
-* The port manager API is a C++ interface that can be consumed
-* by the add-on management modules for general port management operations.
+* @brief Port management API file.
 */
 
 using namespace rofl;
@@ -26,11 +23,16 @@ namespace xdpd {
 class ePmBase		: public cerror {};	// base error class for all switch_manager related errors
 class ePmInvalidPort	: public ePmBase {};
 
-
+/**
+* @brief Port management API.
+*
+* The port manager API is a C++ interface that can be consumed
+* by the add-on management modules for general port(interface) management operations.
+*/
 class port_manager {
 
 public:
-	/**
+	/*
 	* This section contains the API to manage ports. This includes system port management and
 	* port attachment to logical switchs
 	*/

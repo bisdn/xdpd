@@ -1,0 +1,28 @@
+/**
+*
+* @mainpage The eXtensible OpenFlow Data Path daemon (xDPd)
+*
+* @section intro_sec Introduction
+*
+* TODO...
+* @section rel_proj Related projects:
+*
+*  TODO: ROFL, xDP, ROFL-AFA (Abstract Forwarding API)
+*
+* @section author Authors:
+*  - Marc Sune Clos <marc.sune (at) bisdn.de>
+*  - Victor Alvarez Roig <victor.alvarez (at) bisdn.de>
+*  - Tobias Jungel <tobias.jungel (at) bisdn.de>
+*  - Andreas Koepsel <andreas.koepsel (at) bisdn.de>
+*
+* TODO: link to BISDN website
+*
+* @section license Licensing:
+*
+* The code is distributed under MPL v2: http://www.mozilla.org/MPL/ 
+*
+* The ROFL pipeline library is part of a more extensive C/C++ library called ROFL (Revised OpenFlow Library).
+* 
+*/
+
+

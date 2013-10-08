@@ -5,6 +5,8 @@
 #include <inttypes.h>
 #include <stdint.h>
 
+#include <rofl/common/utils/c_logger.h>
+
 using namespace xdpd;
 
 //FIXME: why is this workaround necessary?
@@ -884,7 +886,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					
 				default:
 				{
-					WRITELOG(CDATAPATH, ERROR, "of1x_endpoint(%s)::of12_map_flow_entry() "
+					ROFL_ERR("of1x_endpoint(%s)::of12_map_flow_entry() "
 							"unknown OXM type in action SET-FIELD found: %s",
 							sw->dpname.c_str(), raction.c_str());
 				}
@@ -936,7 +938,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				break;
 			default:
 			{
-				WRITELOG(CDATAPATH, ERROR, "of1x_endpoint(%s)::of12_map_flow_entry() "
+				ROFL_ERR("of1x_endpoint(%s)::of12_map_flow_entry() "
 						"unknown OXM class in action SET-FIELD found: %s",
 						sw->dpname.c_str(), raction.c_str());
 			}

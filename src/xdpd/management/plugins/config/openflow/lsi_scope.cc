@@ -345,6 +345,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//Execute
 	if(!dry_run){
 		openflow_switch* sw;
+		unsigned int port_num;
 
 		//Create switch
 		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, reconnect_time, master_controller, bind_address); //FIXME:: add slave and reconnect
@@ -359,7 +360,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		for(port = ports.begin(); port != ports.end(); ++port){
 			try{
 				//Attach
-				port_manager::attach_port_to_switch(dpid, *port);
+				port_manager::attach_port_to_switch(dpid, *port, &port_num);
 				//Bring up
 				port_manager::enable_port(*port);
 			}catch(...){	

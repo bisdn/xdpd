@@ -309,6 +309,8 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 		}
 
 		for (unsigned int i = 0; i < sw->num_of_ports; i++) {
+			if (0 == sw->logical_ports[i].port)
+				continue;
 			std::string pdevname(sw->logical_ports[i].port->name);
 			if (pdevname == devname) {
 				portno = sw->logical_ports[i].port->of_port_num;

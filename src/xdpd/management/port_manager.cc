@@ -35,7 +35,7 @@ void port_manager::disable_port(std::string port_name) throw (ePmInvalidPort, eO
 }
 
 //Port attachment/detachment
-void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
+void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name, unsigned int *of_port_num) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
 
 	unsigned int i=0;
 
@@ -50,6 +50,7 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name) t
 		throw eOfSmGeneralError();
 
 	ROFL_INFO("[port_manager] Port %s attached to switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
+	*of_port_num = i;
 }
 
 //Port attachment/detachment

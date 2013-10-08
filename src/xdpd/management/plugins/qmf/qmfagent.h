@@ -29,6 +29,7 @@
 #include "../../switch_manager.h"
 #include "../../port_manager.h"
 #include "../../plugin_manager.h"
+#include "../../../openflow/openflow_switch.h"
 
 /**
 * @file qmfagent.h

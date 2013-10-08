@@ -133,7 +133,8 @@ qmfagent::set_qmf_schema()
 
     qmf::SchemaMethod portAttachMethod("portAttach", "{desc:'attach port'}");
     portAttachMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
-    portAttachMethod.addArgument(qmf::SchemaProperty("devname",	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
+    portAttachMethod.addArgument(qmf::SchemaProperty("devname",	qmf::SCHEMA_DATA_STRING, 	"{dir:INOUT}"));
+    portAttachMethod.addArgument(qmf::SchemaProperty("portno", 	qmf::SCHEMA_DATA_INT, 		"{dir:OUT}"));
     sch_lsi.addMethod(portAttachMethod);
 
     qmf::SchemaMethod portDetachMethod("portDetach", "{desc:'detach port'}");
@@ -285,11 +286,14 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
 		std::string devname		= event.getArguments()["devname"].asString();
 
-		xdpd::port_manager::attach_port_to_switch(dpid, devname);
-		xdpd::port_manager::enable_port(devname);
+		uint32_t portno = 0;
+		rofl::port_manager::attach_port_to_switch(dpid, devname, &portno);
+		rofl::port_manager::enable_port(devname);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);
+		event.addReturnArgument("portno", portno);
+		event.addReturnArgument("devname", devname);
 		session.methodSuccess(event);
 
 		return true;

@@ -44,8 +44,12 @@
 //Main group
 /**
 * @defgroup fm_gnu_linux GNU/Linux Forwarding Module
-* @brief User-space GNU/Linux forwarding backend
 * @ingroup fm
+* @brief User-space GNU/Linux forwarding backend
+*
+* @description The GNU/Linux forwarding module is a user-space (only) forwarding backend. It implements an entire I/O susbystem (currently using PACKET_MMAP RX/TX rings), processing subsystem and AFA handling code. 
+* 
+* To know more about xdpd GNU/Linux forwarding module, please check the <a href="https://www.codebasin.net/redmine/projects/xdpd/wiki">wiki</a>.
 */
 
 //IO

@@ -28,6 +28,11 @@ namespace gnu_linux {
 
 #define ETHER_MAC_LEN 6
 
+/**
+* @brief Abstract class representing a network interface (port)
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class ioport{
 
 public:

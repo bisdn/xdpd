@@ -33,6 +33,12 @@ namespace gnu_linux {
 //fwd decl
 class packet_mmap;
 
+/**
+* @brief GNU/Linux interface access via Memory Mapped
+* region (MMAP). THIS VERSION IS DEPRECATED! 
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class ioport_mmap : public ioport{
 
 

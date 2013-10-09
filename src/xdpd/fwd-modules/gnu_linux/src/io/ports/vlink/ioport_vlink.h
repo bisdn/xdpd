@@ -17,12 +17,18 @@
 * @file ioport_vlink.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief TODO 
+* @brief Contains the implementation of a virtual link among two LSIs
 */
 
 namespace xdpd {
 namespace gnu_linux {
 
+/**
+* @brief Virtual port used in a virtual link, conceptually similar to 
+* a veth in GNU/Linux. 
+*
+* ioport_vlink ports shall always be created in pairs and connected each other.
+*/
 class ioport_vlink : public ioport{
 
 public:
@@ -30,10 +36,11 @@ public:
 	ioport_vlink(switch_port_t* of_ps, unsigned int num_queues= IO_IFACE_NUM_QUEUES);
 	virtual ~ioport_vlink();
 	 
-	//Set other vlink edge
+	/**
+	* Set other vlink edge (ioport)
+	*/
 	virtual void set_connected_port(ioport_vlink* connected_port);
 	
-	//Enque packet for transmission (blocking)
 	virtual void enqueue_packet(datapacket_t* pkt, unsigned int q_id);
 
 	//Non-blocking read and write
@@ -50,10 +57,14 @@ public:
 	virtual rofl_result_t
 	enable();
 
-	//Emulate transmission of the packet
+	/**
+	* Emulate transmission of the packet
+	*/
 	rofl_result_t tx_pkt(datapacket_t* pkt);
 
-	//Connected port
+	/**
+	* Reference to the other edge (connected ioport)
+	*/
 	ioport_vlink* connected_port;
 	
 protected:

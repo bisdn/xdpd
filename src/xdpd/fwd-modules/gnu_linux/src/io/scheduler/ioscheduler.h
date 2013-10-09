@@ -20,7 +20,12 @@
 namespace xdpd {
 namespace gnu_linux {
 
-
+/**
+* @brief I/O scheduler base class which defines the way
+* way I/O threads go through the ports for TX and RX.
+*
+* @ingroup fm_gnu_linux_io_schedulers
+*/
 class ioscheduler{ 
 
 public:

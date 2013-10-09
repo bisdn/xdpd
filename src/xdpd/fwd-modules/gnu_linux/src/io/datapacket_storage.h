@@ -30,6 +30,11 @@ namespace gnu_linux {
 
 typedef uint32_t storeid;
 
+/**
+* @brief Temporal storage for datapackets (PKT_IN events). 
+*
+* @ingroup fm_gnu_linux_io
+*/
 class datapacket_storage
 {
 public:

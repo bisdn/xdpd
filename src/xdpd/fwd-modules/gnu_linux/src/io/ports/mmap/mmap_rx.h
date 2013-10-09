@@ -40,6 +40,11 @@ namespace gnu_linux {
 
 class eConstructorMmapRx : public rofl::cerror {};
 
+/**
+* @brief MMAP RX internals (v2)
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class mmap_rx{
 
 private:

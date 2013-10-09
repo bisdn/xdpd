@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef IOPORT_MOCKUP_H
-#define IOPORT_MOCKUP_H 1
+#define IOPORT_MOCKUP_H 
 
 #include <unistd.h>
 #include <rofl.h>
@@ -16,11 +16,11 @@
 namespace xdpd {
 namespace gnu_linux {
 
-/*
-* Simple mockup of a port. It opens two files, on for input and another for output.
-* Used only for testing purposes.
+/**
+* @brief Simple mockup of a port, used for testing purposes only.
+* 
+* It opens two files, on for input and another for output.
 */
-
 class ioport_mockup : public ioport{
 
 public:

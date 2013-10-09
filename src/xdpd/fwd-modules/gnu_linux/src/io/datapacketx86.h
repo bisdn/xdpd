@@ -36,6 +36,13 @@ typedef enum{
 	X86_DATAPACKET_BUFFERED_IN_USER_SPACE
 }x86buffering_status_t;
 
+/**
+* @brief Datapacket abstraction for an x86 (GNU/Linux)
+*
+* @ingroup fm_gnu_linux_io
+*
+* @ingroup fm_gnu_linux_io
+*/
 class datapacketx86{
 
 public:

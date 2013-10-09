@@ -35,8 +35,10 @@ namespace gnu_linux {
 #define DEFAULT_THREADS_PER_PG 1
 COMPILER_ASSERT( INVALID_default_threads_per_pg , (DEFAULT_THREADS_PER_PG == 1) );
 
-/*
-* Portgroup thread state
+/**
+* @brief Portgroup thread state
+*
+* @ingroup fm_gnu_linux_io
 */
 class portgroup_state {
 
@@ -59,8 +61,10 @@ public:
 };
 
 /**
-* I/O manager, creates and destroys (launches and stops) I/O threads to work on the ports, or specifically a set of ports (portgroups). 
+* @brief I/O manager, creates and destroys (launches and stops) I/O threads to work on the ports, or specifically a set of ports (portgroups). 
 * This class is purely static.
+*
+* @ingroup fm_gnu_linux_io
 */
 class iomanager{ 
 

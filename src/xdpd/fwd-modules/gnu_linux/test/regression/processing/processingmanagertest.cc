@@ -26,6 +26,7 @@
 #endif
 
 using namespace std;
+using namespace xdpd::gnu_linux;
 
 class ProcessingManagerTestCase : public CppUnit::TestFixture{
 

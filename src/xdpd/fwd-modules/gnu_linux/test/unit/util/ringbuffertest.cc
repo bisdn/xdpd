@@ -15,6 +15,7 @@
 #include "util/circular_queue.h"
 
 using namespace std;
+using namespace xdpd::gnu_linux;
 
 #define SLOTS 1024
 

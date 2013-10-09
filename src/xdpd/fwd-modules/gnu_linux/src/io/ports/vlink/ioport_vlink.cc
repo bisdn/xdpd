@@ -153,6 +153,7 @@ unsigned int ioport_vlink::write(unsigned int q_id, unsigned int num_of_buckets)
 
 rofl_result_t ioport_vlink::tx_pkt(datapacket_t* pkt){
 
+	int ret;
 	char c='a';
 
 	if (unlikely(of_port_state->up == false))
@@ -163,7 +164,8 @@ rofl_result_t ioport_vlink::tx_pkt(datapacket_t* pkt){
 	}
 
 	//Notify read event and return
-	::write(rx_notify_pipe[WRITE],&c,sizeof(c));
+	ret = ::write(rx_notify_pipe[WRITE],&c,sizeof(c));
+	(void)ret;
 	
 	return ROFL_SUCCESS;
 }

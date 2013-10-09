@@ -10,11 +10,8 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/pktin_dispatcher.cc \
 	$(top_srcdir)/src/io/iomanager.cc \
 	$(top_srcdir)/src/io/bufferpool.cc \
-	$(top_srcdir)/src/io/bufferpool_c_wrapper.cc \
-	$(top_srcdir)/src/io/datapacketx86_c_wrapper.cc \
 	$(top_srcdir)/src/io/datapacketx86.cc \
 	$(top_srcdir)/src/io/datapacket_storage.cc \
-	$(top_srcdir)/src/io/datapacket_storage_c_wrapper.cc \
 	$(top_srcdir)/src/io/packet_classifiers/packetclassifier.cc \
 	$(top_srcdir)/src/io/packet_classifiers/rofl_pktclassifier.cc \
 	$(top_srcdir)/src/io/packet_classifiers/static_pktclassifier.cc \
@@ -25,12 +22,13 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/ports/mmap/ioport_mmapv2.cc \
 	$(top_srcdir)/src/io/ports/mmap/mmap_rx.cc \
 	$(top_srcdir)/src/io/ports/mmap/mmap_tx.cc \
+	$(top_srcdir)/src/io/ports/vlink/ioport_vlink.cc \
 	$(top_srcdir)/src/io/scheduler/epoll_ioscheduler.cc \
 	$(top_srcdir)/src/processing/processingmanager.cc \
 	$(top_srcdir)/src/util/time_utils.c \
 	$(top_srcdir)/src/bg_taskmanager.cc \
 	$(top_srcdir)/src/bg_taskmanager.h \
-	$(top_srcdir)/src/pipeline-imp/packet.c 
+	$(top_srcdir)/src/pipeline-imp/packet.cc 
 	
 
 if DEBUG

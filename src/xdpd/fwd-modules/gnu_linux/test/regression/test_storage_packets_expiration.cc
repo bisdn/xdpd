@@ -16,6 +16,8 @@
 #define TEST_DPID 0x1015
 #define EXPIRATION_TIME 3
 
+using namespace xdpd::gnu_linux;
+
 /**
  * This test is suposed to check how the background tasks manager is 
  * exiring the old buffers from the datapacket_storage bin.

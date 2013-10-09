@@ -18,6 +18,7 @@
 #define EXPIRATION_SEC 3
 
 using namespace std;
+using namespace xdpd::gnu_linux;
 
 class DataPacketStorageTestCase : public CppUnit::TestFixture{
 	CPPUNIT_TEST_SUITE(DataPacketStorageTestCase);

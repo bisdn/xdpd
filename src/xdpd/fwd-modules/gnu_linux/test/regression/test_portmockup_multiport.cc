@@ -18,6 +18,7 @@
 #define TEST_DPID 0x1015
 
 using namespace std;
+using namespace xdpd::gnu_linux;
 
 class DriverMultiPortMockupTestCase : public CppUnit::TestFixture{
 

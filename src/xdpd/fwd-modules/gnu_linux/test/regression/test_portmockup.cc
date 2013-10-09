@@ -10,7 +10,6 @@
 #include <rofl/datapath/afa/fwd_module.h>
 #include "io/iomanager.h"
 #include "io/datapacket_storage.h"
-#include "io/datapacket_storage_c_wrapper.h"
 #include "io/ports/mockup/ioport_mockup.h"
 #include "processing/processingmanager.h"
 
@@ -18,6 +17,7 @@
 #define TEST_DPID 0x1015
 
 using namespace std;
+using namespace xdpd::gnu_linux;
 
 class DriverPortMockupTestCase : public CppUnit::TestFixture{
 

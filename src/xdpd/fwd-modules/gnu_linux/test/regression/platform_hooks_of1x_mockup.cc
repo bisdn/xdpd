@@ -15,7 +15,6 @@
 #include "config.h"
 #include "io/bufferpool.h"
 #include "io/datapacketx86.h"
-#include "io/datapacketx86_c_wrapper.h"
 #include "io/datapacket_storage.h"
 #include "processing/ls_internal_state.h"
 #include "io/pktin_dispatcher.h"
@@ -23,6 +22,8 @@
 
 #define DATAPACKET_STORE_EXPIRATION_TIME 180
 #define DATAPACKET_STORE_MAX_BUFFERS bufferpool::RESERVED_SLOTS/2 
+
+using namespace xdpd::gnu_linux;
 
 /*
 * Hooks for configuration of the switch

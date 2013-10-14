@@ -287,8 +287,8 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 		std::string devname		= event.getArguments()["devname"].asString();
 
 		uint32_t portno = 0;
-		rofl::port_manager::attach_port_to_switch(dpid, devname, &portno);
-		rofl::port_manager::enable_port(devname);
+		port_manager::attach_port_to_switch(dpid, devname, &portno);
+		port_manager::enable_port(devname);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);

@@ -27,6 +27,22 @@ afa_result_t fwd_module_of1x_set_port_drop_received_config(uint64_t dpid, unsign
 }
 
 /**
+ * @name    fwd_module_of1x_set_port_no_flood_config
+ * @brief   Instructs driver to modify port config state 
+ * @ingroup of1x_fwd_module_async_event_processing
+ *
+ * @param dpid 			Datapath ID of the switch 
+ * @param port_num		Port number 	
+ * @param no_flood		No flood allowed in port
+ */
+afa_result_t fwd_module_of1x_set_port_no_flood_config(uint64_t dpid, unsigned int port_num, bool no_flood){
+	
+	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	
+	return AFA_SUCCESS;
+}
+
+/**
  * @name    fwd_module_of1x_set_port_forward_config
  * @brief   Instructs driver to modify port config state 
  * @ingroup of1x_fwd_module_async_event_processing
@@ -200,9 +216,9 @@ afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
  * @param cookie_mask	Mask for the cookie
  * @param out_port 	Out port that entry must include
  * @param out_group 	Out group that entry must include	
- * @param matchs	Matchs
+ * @param matches	Matches
  */
-of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_t* matchs){
+of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_group_t* matches){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
@@ -221,9 +237,9 @@ of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
  * @param cookie_mask	Mask for the cookie
  * @param out_port 	Out port that entry must include
  * @param out_group 	Out group that entry must include	
- * @param matchs	Matchs
+ * @param matches	Matches
  */
-of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_t* matchs){
+of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_group_t* matches){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 

@@ -1,4 +1,0 @@
-MAINTAINERCLEANFILES = Makefile.in
-
-lib_LTLIBRARIES = libfwd_module_gnu_linux_dpdk_afa_imp_of12.la
-libfwd_module_gnu_linux_dpdk_afa_imp_of12_la_SOURCES = of12_forwarding_module.cc

@@ -1,9 +1,9 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS=openflow/openflow12
+SUBDIRS=openflow/openflow1x
 
 noinst_LTLIBRARIES = libfwd_module_gnu_linux_dpdk_src_afa_imp.la
 
 libfwd_module_gnu_linux_dpdk_src_afa_imp_la_SOURCES = forwarding_module.cc	
 
-libfwd_module_gnu_linux_dpdk_src_afa_imp_la_LIBADD = openflow/openflow12/libfwd_module_gnu_linux_dpdk_afa_imp_of12.la
+libfwd_module_gnu_linux_dpdk_src_afa_imp_la_LIBADD = openflow/openflow1x/libfwd_module_gnu_linux_dpdk_afa_imp_of1x.la

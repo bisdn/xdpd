@@ -9,6 +9,9 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 
+using namespace xdpd::gnu_linux;
+using namespace xdpd::gnu_linux_dpdk;
+
 //
 // Processing state 
 //

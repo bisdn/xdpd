@@ -62,6 +62,11 @@ rofl_result_t plugin_manager::init(int argc, char** argv){
 		(*it)->init(argc,argv);
 		optind=0; //Reset getopt
 	}
+	
+	return ROFL_SUCCESS;
+}
+
+rofl_result_t plugin_manager::destroy(){
 
 	//Destroy all plugins
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {

@@ -119,6 +119,7 @@ qmfagent::set_qmf_schema()
     lsiCreateMethod.addArgument(qmf::SchemaProperty("ctlaf",	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
     lsiCreateMethod.addArgument(qmf::SchemaProperty("ctladdr", 	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
     lsiCreateMethod.addArgument(qmf::SchemaProperty("ctlport", 	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    lsiCreateMethod.addArgument(qmf::SchemaProperty("reconnect",qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
     sch_xdpd.addMethod(lsiCreateMethod);
 
     qmf::SchemaMethod lsiDestroyMethod("lsiDestroy", "{desc:'destroy LSI'}");
@@ -219,12 +220,13 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 		int ctlaf				= event.getArguments()["ctlaf"].asInt32();
 		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
 		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
+		unsigned int reconnect  = event.getArguments()["reconnect"].asUint32();
 
 		event.addReturnArgument("dpid", dpid);
 
 		int ma_list[256] = { 0 };
 		rofl::caddress caddr(ctlaf, ctladdr.c_str(), ctlport);
-		xdpd::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, caddr);
+		xdpd::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, reconnect, caddr);
 
 		// create QMF LSI object
 		qLSIs[dpid].data = qmf::Data(sch_lsi);

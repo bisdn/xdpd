@@ -11,7 +11,7 @@
 using namespace xdpd;
 
 const caddress switch_manager::controller_addr = caddress(AF_INET, "127.0.0.1", 6633);
-const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 0);
+const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 6632);
 
 //Static initialization
 std::map<uint64_t, openflow_switch*> switch_manager::switchs;

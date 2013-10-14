@@ -1,19 +1,20 @@
 #include "pktin_dispatcher.h"
 
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_async_events_hooks.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_table.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_async_events_hooks.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
+#include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include "../config.h"
 #include "../io/bufferpool.h"
 #include "../io/datapacketx86.h"
-#include "../io/datapacketx86_c_wrapper.h"
 #include "../io/datapacket_storage.h"
 #include "../processing/ls_internal_state.h"
 
+using namespace xdpd::gnu_linux;
 
 #define BUCKETS_PER_LS 10
 #define ITERATIONS_PER_ROUND 2
@@ -21,8 +22,9 @@
 int pktin_not_pipe[2];
 
 //Processes the pkt_ins up to BUCKETS_PER_LS 
-static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
+static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 
+	int ret;
 	unsigned int i, pkt_size;
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
@@ -57,20 +59,20 @@ static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
 		}
 
 		//Normalize size
-		pkt_size = dpx86_get_packet_size(pkt);
+		pkt_size = pkt_x86->get_buffer_length();
 		if(pkt_size > sw->pipeline->miss_send_len)
 			pkt_size = sw->pipeline->miss_send_len;
 			
 		//Process packet in
-        	rv = cmm_process_of12_packet_in(sw, 
+        	rv = cmm_process_of1x_packet_in(sw, 
 						pkt_x86->pktin_table_id, 	
 						pkt_x86->pktin_reason, 	
 						pkt_x86->in_port, 
 						id, 	
-						dpx86_get_raw_data(pkt), 
-						pkt_size, 
-						dpx86_get_packet_size(pkt), 
-						*((of12_packet_matches_t*)&pkt->matches)
+						pkt_x86->get_buffer(), 
+						pkt_size,
+						pkt_x86->get_buffer_length(),
+						*((of1x_packet_matches_t*)&pkt->matches)
 				);
 
 		if(rv != AFA_SUCCESS){
@@ -85,7 +87,8 @@ static inline void process_sw_of12_packet_ins(of12_switch_t* sw){
 	}
 
 	//Empty pipe (n tokens)
-	(void)read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf,i);
+	ret = read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf,i);
+	(void)ret;
 }
 
 //Initialize pkt in notification pipe
@@ -127,7 +130,7 @@ void process_packet_ins(){
 			for(r=0; r<max_switches; ++r){
 				if(logical_switches[r] != NULL){
 					//if( logical_switches[r]->of_ver == OF_VERSION_12 )
-					process_sw_of12_packet_ins((of12_switch_t*)logical_switches[r]);
+					process_sw_of1x_packet_ins((of1x_switch_t*)logical_switches[r]);
 				}
 			}
 		}

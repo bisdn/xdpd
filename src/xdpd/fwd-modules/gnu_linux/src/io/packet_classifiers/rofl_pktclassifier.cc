@@ -2,6 +2,8 @@
 #include <rofl/common/utils/c_logger.h>
 #include "../datapacketx86.h"
 
+using namespace xdpd::gnu_linux;
+
 #define ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES 16
 #define ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(a) do{ if(a>ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES) a = ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES; }while(0)
 
@@ -182,6 +184,11 @@ rofl_pktclassifier::parse_ether(
 			parse_ipv4(p_ptr, p_len);
 		}
 		break;
+	case rofl::fipv6frame::IPV6_ETHER:
+		{
+			parse_ipv6(p_ptr,p_len);
+		}
+		break;	
 	default:
 		{
 			if (p_len > 0)
@@ -530,6 +537,107 @@ rofl_pktclassifier::parse_icmpv4(
 	}
 }
 
+
+
+void
+rofl_pktclassifier::parse_ipv6(
+		uint8_t *data,
+		size_t datalen)
+{
+	uint8_t 	*p_ptr 		= data;
+	size_t 		 p_len 		= datalen;
+
+	if (p_len < sizeof(struct rofl::fipv6frame::ipv6_hdr_t)) { return; }
+
+	rofl::fipv6frame *ipv6 =
+			new rofl::fipv6frame(p_ptr, sizeof(struct rofl::fipv6frame::ipv6_hdr_t));
+
+	frame_append(ipv6);
+	t_frames[ROFL_PKT_CLASSIFIER_IPV6].push_back(ipv6);
+
+	p_ptr += sizeof(struct rofl::fipv6frame::ipv6_hdr_t);
+	p_len -= sizeof(struct rofl::fipv6frame::ipv6_hdr_t);
+
+	// TODO Header extensions
+
+	switch (ipv6->get_next_header()) {
+	case rofl::fipv4frame::IPV4_IP_PROTO:
+		{
+			parse_ipv4(p_ptr, p_len);
+		}
+		break;
+	case rofl::ficmpv4frame::ICMPV4_IP_PROTO:
+		{
+			parse_icmpv4(p_ptr, p_len);
+		}
+		break;
+	case rofl::fipv6frame::IPV6_IP_PROTO:
+		{
+			parse_ipv6(p_ptr, p_len);
+		}
+		break;
+	case rofl::ficmpv6frame::ICMPV6_IP_PROTO:
+		{
+			parse_icmpv6(p_ptr, p_len);
+		}
+		break;
+	case rofl::fudpframe::UDP_IP_PROTO:
+		{
+			parse_udp(p_ptr, p_len);
+		}
+		break;
+	case rofl::ftcpframe::TCP_IP_PROTO:
+		{
+			parse_tcp(p_ptr, p_len);
+		}
+		break;
+	case rofl::fsctpframe::SCTP_IP_PROTO:
+		{
+			parse_sctp(p_ptr, p_len);
+		}
+		break;
+	default:
+		{
+			if (p_len > 0)
+			{
+				rofl::fframe *payload = new rofl::fframe(p_ptr, p_len);
+
+				frame_append(payload);
+			}
+		}
+		break;
+	}
+}
+
+
+
+void
+rofl_pktclassifier::parse_icmpv6(
+		uint8_t *data,
+		size_t datalen)
+{
+	uint8_t 	*p_ptr 		= data;
+	size_t 		 p_len 		= datalen;
+
+	if (p_len < sizeof(struct rofl::ficmpv6frame::icmpv6_hdr_t)) { return; }
+
+	rofl::ficmpv6frame *icmpv6 =
+			new rofl::ficmpv6frame(p_ptr, sizeof(struct rofl::ficmpv6frame::icmpv6_hdr_t));
+
+	frame_append(icmpv6);
+	t_frames[ROFL_PKT_CLASSIFIER_ICMPV4].push_back(icmpv6);
+
+	p_ptr += sizeof(struct rofl::ficmpv6frame::icmpv6_hdr_t);
+	p_len -= sizeof(struct rofl::ficmpv6frame::icmpv6_hdr_t);
+
+
+	if (p_len > 0)
+	{
+		rofl::fframe *payload = new rofl::fframe(p_ptr, p_len);
+
+		frame_append(payload);
+	}
+}
 
 
 void
@@ -1010,6 +1118,16 @@ rofl::ftcpframe* rofl_pktclassifier::tcp(int idx) const
 rofl::fsctpframe* rofl_pktclassifier::sctp(int idx) const
 {
 	return rofl_pktclassifier::header<rofl::fsctpframe>(idx);
+}
+
+rofl::fipv6frame* rofl_pktclassifier::ipv6(int idx) const
+{
+	return rofl_pktclassifier::header<rofl::fipv6frame>(idx);
+}
+
+rofl::ficmpv6frame* rofl_pktclassifier::icmpv6(int idx) const
+{
+	return rofl_pktclassifier::header<rofl::ficmpv6frame>(idx);
 }
 
 rofl::fpppoeframe* rofl_pktclassifier::pppoe(int idx) const

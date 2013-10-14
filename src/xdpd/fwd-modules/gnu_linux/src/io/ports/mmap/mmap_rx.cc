@@ -1,6 +1,8 @@
 #include "mmap_rx.h"
 #include <assert.h> 
 
+using namespace xdpd::gnu_linux;
+
 mmap_rx::mmap_rx(
 		std::string __devname,
 		int __block_size,

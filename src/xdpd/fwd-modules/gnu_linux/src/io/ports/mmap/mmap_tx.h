@@ -34,10 +34,16 @@
 *
 */
 
-using namespace rofl;
+namespace xdpd {
+namespace gnu_linux {
 
 class eConstructorMmapTx : public rofl::cerror {};
 
+/**
+* @brief MMAP TX internals (v2)
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class mmap_tx{
 
 private:
@@ -50,7 +56,7 @@ private:
 	std::string devname; // device name e.g. "eth0"
 	
 	int sd; // socket descriptor
-	caddress ll_addr; // link layer sockaddr
+	rofl::caddress ll_addr; // link layer sockaddr
 	struct tpacket_req req; // ring buffer
 
 	//Circular buffer pointer
@@ -97,5 +103,8 @@ public:
 		return ROFL_SUCCESS;	
 	};
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* MMAP_TX_H_ */

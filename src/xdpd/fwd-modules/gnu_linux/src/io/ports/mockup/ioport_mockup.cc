@@ -4,6 +4,8 @@
 #include "../../bufferpool.h" 
 #include <fcntl.h>
 
+using namespace xdpd::gnu_linux;
+
 //Constructor and destructor
 ioport_mockup::ioport_mockup(switch_port_t* of_ps, unsigned int num_queues):ioport(of_ps,num_queues){
 	

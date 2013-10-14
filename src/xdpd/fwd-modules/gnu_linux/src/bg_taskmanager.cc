@@ -18,11 +18,14 @@
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/datapath/afa/cmm.h>
-#include "io/datapacket_storage_c_wrapper.h"
-#include "io/bufferpool_c_wrapper.h"
 #include "processing/ls_internal_state.h"
+#include "io/bufferpool.h"
+#include "io/datapacket_storage.h"
 #include "io/pktin_dispatcher.h"
+#include "io/iomanager.h"
 #include "util/time_utils.h"
+
+using namespace xdpd::gnu_linux;
 
 //Local static variable for background manager thread
 static pthread_t bg_thread;
@@ -77,7 +80,6 @@ rofl_result_t update_port_status(char * name){
 	struct ethtool_value edata;
 	struct ifreq ifr;
 	switch_port_t *port;
-	bool last_link_status;
 	port = fwd_module_get_port_by_name(name);
 	
 	memset(&edata,0,sizeof(edata));//Make valgrind happy
@@ -100,21 +102,24 @@ rofl_result_t update_port_status(char * name){
 		ROFL_ERR("ETHTOOL_GLINK failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
-
-	ROFL_INFO("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
 	
-	last_link_status = port->up;
+	//TODO: really split LINK from admin status
+	//Right now edata.data "==" ADMIN_UP & LINK_UP
+	ROFL_DEBUG("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
 
-	if(edata.data)
-		port->up = true;
-	else
-		port->up = false;
+	//Update link state
+	((ioport*)port->platform_port_state)->set_link_state(edata.data);
 
-	//port->forward_packets;
-	/*more*/
+	if(edata.data){
+		if(iomanager::bring_port_up((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
+			return ROFL_FAILURE;
+	}else{
+		if(iomanager::bring_port_down((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
+			return ROFL_FAILURE;
+	}
 	
 	//port_status message needs to be created if the port id attached to switch
-	if(port->attached_sw != NULL && last_link_status != port->up){
+	if(port->attached_sw != NULL){
 		cmm_notify_port_status_changed(port);
 	}
 	
@@ -236,7 +241,7 @@ int process_timeouts()
 				
 #ifdef DEBUG
 				if(dummy%20 == 0)
-					of12_full_dump_switch((of12_switch_t*)logical_switches[i]);
+					of1x_full_dump_switch((of1x_switch_t*)logical_switches[i]);
 #endif
 			}
 		}
@@ -250,25 +255,25 @@ int process_timeouts()
 	
 	if(get_time_difference_ms(&now, &last_time_pool_checked)>=LSW_TIMER_BUFFER_POOL_MS){
 		uint32_t buffer_id;
-		datapacket_store_handle dps=NULL;
+		datapacket_storage* dps=NULL;
 		
 		for(i=0; i<max_switches; i++){
 
 			if(logical_switches[i] != NULL){
 
 				//Recover storage pointer
-				dps =(datapacket_store_handle) ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
+				dps =( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
 				//Loop until the oldest expired packet is taken out
-				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
+				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
 					ROFL_DEBUG_VERBOSE("Trying to erase a datapacket from storage: %u\n", buffer_id);
 
-					if( (pkt = datapacket_storage_get_packet_wrapper(dps,buffer_id) ) == NULL ){
+					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
 						ROFL_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
 						ROFL_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
 						//Return buffer to bufferpool
-						bufferpool_release_buffer_wrapper(pkt);
+						bufferpool::release_buffer(pkt);
 					}
 				}
 			}
@@ -371,7 +376,7 @@ void* x86_background_tasks_routine(void* param)
 	close(efd);
 	
 	//Printing some information
-	ROFL_INFO("[bg] Finishing thread execution\n"); 
+	ROFL_DEBUG("[bg] Finishing thread execution\n"); 
 
 	//Exit
 	pthread_exit(NULL);	

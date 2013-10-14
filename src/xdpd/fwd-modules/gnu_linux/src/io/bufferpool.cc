@@ -1,5 +1,7 @@
 #include "bufferpool.h"
 
+using namespace xdpd::gnu_linux;
+
 /* Static member initialization */
 bufferpool* bufferpool::instance = NULL;
 pthread_mutex_t bufferpool::mutex = PTHREAD_MUTEX_INITIALIZER; 
@@ -61,6 +63,9 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 	//Set size
 	pool_size = pool_items;
 	next_index = 0;
+#ifdef DEBUG
+	used = 0;
+#endif
 }
 
 bufferpool::~bufferpool(){

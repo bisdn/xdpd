@@ -1,10 +1,10 @@
 #include "openflow12_switch.h"
 
 #include <rofl/platform/unix/csyslog.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_fwd_module.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 
-using namespace rofl;
+using namespace xdpd;
 
 /*
 * Constructor and destructor for the openflow 1.2 switch
@@ -13,6 +13,7 @@ openflow12_switch::openflow12_switch(uint64_t dpid,
 				std::string const& dpname,
 				unsigned int num_of_tables,
 				int* ma_list,
+				int reconnect_start_timeout,
 				caddress const& controller_addr,
 				caddress const& binding_addr) throw (eOfSmVersionNotSupported)
 		: openflow_switch(dpid, dpname, version)
@@ -27,7 +28,7 @@ openflow12_switch::openflow12_switch(uint64_t dpid,
 	}
 
 	//Initialize the endpoint, and launch control channel
-	endpoint = new of12_endpoint(this, controller_addr, binding_addr);
+	endpoint = new of12_endpoint(this, reconnect_start_timeout, controller_addr, binding_addr);
 	
 }
 
@@ -52,7 +53,7 @@ afa_result_t openflow12_switch::process_packet_in(uint8_t table_id,
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of12_packet_matches_t matches){
+					of1x_packet_matches_t matches){
 	
 	return ((of12_endpoint*)endpoint)->process_packet_in(table_id,
 					reason,
@@ -64,7 +65,7 @@ afa_result_t openflow12_switch::process_packet_in(uint8_t table_id,
 					matches);
 }
 
-afa_result_t openflow12_switch::process_flow_removed(uint8_t reason, of12_flow_entry_t* removed_flow_entry){
+afa_result_t openflow12_switch::process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
 	return ((of12_endpoint*)endpoint)->process_flow_removed(reason, removed_flow_entry);
 }
 
@@ -82,61 +83,17 @@ afa_result_t openflow12_switch::notify_port_status_changed(switch_port_t* port){
 }
 
 
-
 /*
-* Driver HAL calls. Demultiplexing to the appropiate openflow12_switch instance.
-*/ 
-
-afa_result_t cmm_process_of12_packet_in(const of12_switch_t* sw,
-					uint8_t table_id,
-					uint8_t reason,
-					uint32_t in_port,
-					uint32_t buffer_id,
-					uint8_t* pkt_buffer,
-					uint32_t buf_len,
-					uint16_t total_len,
-					of12_packet_matches_t matches)
-{
-	openflow12_switch* dp=NULL;
-	
-	if (!sw) 
-		return AFA_FAILURE;
- 	
-	try{
-		dp = dynamic_cast<openflow12_switch*> (switch_manager::find_by_dpid(sw->dpid));
-        }catch (const std::bad_cast& e){
-		return AFA_FAILURE;	
-        }
-	
-	if(!dp) 
-		return AFA_FAILURE;
-
-	return dp->process_packet_in(table_id,
-					reason,
-					in_port,
-					buffer_id,
-					pkt_buffer,
-					buf_len,
-					total_len,
-					matches);
+* Connecting and disconnecting from a controller entity
+*/
+void openflow12_switch::rpc_connect_to_ctl(caddress const& controller_addr){
+	return endpoint->rpc_connect_to_ctl(ofswitch->of_ver, 0, controller_addr);
 }
 
-afa_result_t cmm_process_of12_flow_removed(const of12_switch_t* sw, uint8_t reason, of12_flow_entry_t* removed_flow_entry){
-
-	openflow12_switch* dp=NULL;
-	
-	if (!sw) 
-		return AFA_FAILURE;
- 	
-	try{
-		dp = dynamic_cast<openflow12_switch*> (switch_manager::find_by_dpid(sw->dpid));
-        }catch (const std::bad_cast& e){
-		return AFA_FAILURE;	
-        }
-	
-	if(!dp) 
-		return AFA_FAILURE;	
-
-	return dp->process_flow_removed(reason, removed_flow_entry);
+void openflow12_switch::rpc_disconnect_from_ctl(caddress const& controller_addr){
+	return endpoint->rpc_disconnect_from_ctl(controller_addr);
 }
+
+
+
 

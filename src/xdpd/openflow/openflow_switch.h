@@ -7,6 +7,7 @@
 
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 
 #include "of_endpoint.h"
 
@@ -15,13 +16,16 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 *
-* @brief openflow_switch is a version-agnostic abstraction of a complete
-* (logical) Openflow switch (complete datapath as the spec defines).
-* 
+* @brief Defines the abstraction of an OpenFlow (logical) switch
 */
 
-namespace rofl {
+namespace xdpd {
 
+/**
+* @brief Version-agnostic abstraction of a complete
+* (logical) OpenFlow switch.
+* @ingroup cmm_of 
+*/
 class openflow_switch {
 
 protected:
@@ -50,6 +54,21 @@ public:
 	*/
 	of_switch_t* get_fwd_module_sw_ref(void){return ofswitch;};
 
+
+	/*
+	* Pure virtual methods
+	*/
+	virtual afa_result_t process_packet_in(
+					uint8_t table_id,
+					uint8_t reason,
+					uint32_t in_port,
+					uint32_t buffer_id,
+					uint8_t* pkt_buffer,
+					uint32_t buf_len,
+					uint16_t total_len,
+					of1x_packet_matches_t matches)=0;
+	virtual afa_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry)=0;
+
 	/**
 	*
 	* Dispatching of version agnostic messages comming from the driver
@@ -61,6 +80,12 @@ public:
 	
 	virtual afa_result_t notify_port_status_changed(switch_port_t* port)=0;
 
+	/**
+	 * Connecting and disconnecting from a controller entity
+	 */
+	virtual void rpc_connect_to_ctl(caddress const& controller_addr)=0;
+
+	virtual void rpc_disconnect_from_ctl(caddress const& controller_addr)=0;
 };
 
 }// namespace rofl

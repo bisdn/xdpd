@@ -8,6 +8,8 @@
 #include <net/if.h>
 #include <unistd.h>
 
+using namespace xdpd::gnu_linux;
+
 //Constructor and destructor
 ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
 {
@@ -17,6 +19,12 @@ ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
 	//of_port_state
 	of_port_state = of_ps;
 	sw_processing_queue = NULL;
+	
+	//Maximum packet size
+	mps = 0;
+	
+	//Copy MAC address
+	memcpy(mac, of_ps->hwaddr, ETHER_MAC_LEN); 
 }
 ioport::~ioport(){
 
@@ -27,6 +35,14 @@ ioport::~ioport(){
  */
 rofl_result_t ioport::set_drop_received_config(bool drop_received){
 	of_port_state->drop_received = drop_received;
+	return ROFL_SUCCESS;
+}
+
+/**
+ * Sets the port flood output behaviour. This MUST change the of_port_state appropiately
+ */
+rofl_result_t ioport::set_no_flood_config(bool no_flood){
+	of_port_state->no_flood = no_flood;
 	return ROFL_SUCCESS;
 }
 

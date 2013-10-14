@@ -6,8 +6,8 @@
 #define CPKTLINE_H 
 
 #include <string>
-
 #include <unistd.h>
+#include <assert.h>
 #include <string.h>
 #include <strings.h>
 #include <fcntl.h>
@@ -35,15 +35,19 @@
 *
 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace xdpd {
+namespace gnu_linux {
 
 using namespace rofl;
 
 class ePktLineBase 		: public cerror {};
 class ePktLineFailed 	: public ePktLineBase {};
 
+/**
+* @brief MMAP internals DEPRECATED
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class mmap_int :
 		public csyslog
 {
@@ -108,8 +112,7 @@ private:
 	cmemory ringptrs; // memory for storing the (struct iovec*) pointers
 };
 
-#ifdef __cplusplus
-}
-#endif
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* CPKTLINE_H_ */

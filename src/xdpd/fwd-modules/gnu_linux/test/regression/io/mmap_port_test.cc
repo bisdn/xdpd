@@ -15,11 +15,14 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <rofl/common/protocols/fetherframe.h>
+#include <rofl/common/protocols/fvlanframe.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include "io/ports/mmap/ioport_mmap.h"
 #include "io/bufferpool.h"
 
 using namespace std;
+using namespace xdpd::gnu_linux;
 
 class MMAPPortTest: public CppUnit::TestFixture
 {

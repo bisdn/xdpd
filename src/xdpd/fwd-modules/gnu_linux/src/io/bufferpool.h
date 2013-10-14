@@ -6,6 +6,7 @@
 #define BUFFERPOOL_H 
 
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <vector>
@@ -22,12 +23,21 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+
 typedef enum{
 	BUFFERPOOL_SLOT_UNAVAILABLE=0,
 	BUFFERPOOL_SLOT_AVAILABLE=1,
 	BUFFERPOOL_SLOT_IN_USE=2
 }bufferpool_slot_state_t;
 
+/**
+* @brief I/O subsystem datapacket buffer pool management class
+*
+* @ingroup fm_gnu_linux_io
+*/
 class bufferpool{
 
 public:
@@ -58,6 +68,7 @@ public:
 	static inline void release_buffer(datapacket_t* buf);
 	
 	static void destroy();
+
 	
 protected:
 
@@ -69,7 +80,10 @@ protected:
 	std::vector<bufferpool_slot_state_t> pool_status;	
 	long long unsigned int pool_size; //This might be different from pool.size during initialization/resizing
 	long long unsigned int next_index; //Next item index
-	
+
+#ifdef DEBUG
+	long long unsigned int used;
+#endif
 
 	//Mutex and cond
 	static pthread_mutex_t mutex;
@@ -130,6 +144,10 @@ datapacket_t* bufferpool::get_free_buffer(bool blocking){
 					bp->next_index = 0;
 				else
 					bp->next_index++;
+
+#ifdef DEBUG
+				bp->used++;
+#endif
 	
 				//Release
 				pthread_mutex_unlock(&bufferpool::mutex);		
@@ -174,12 +192,23 @@ void bufferpool::release_buffer(datapacket_t* buf){
 	//Release
 	if(bp->pool_status[id] != BUFFERPOOL_SLOT_IN_USE){
 		//Attempting to release an unallocated/unavailable buffer
-		ROFL_ERR("Attempting to release an unallocated/unavailable buffer. Ignoring..");
+		ROFL_ERR("Attempting to release an unallocated/unavailable buffer (pkt:%p). Ignoring..",buf);
+		assert(0);
 	}else{ 
 		buf->is_replica = false; //Make sure this flag is 0
 		bp->pool_status[id] = BUFFERPOOL_SLOT_AVAILABLE;
 		pthread_cond_broadcast(&bufferpool::cond);
+
+#ifdef DEBUG
+		pthread_mutex_lock(&bufferpool::mutex);		
+		bp->used--;
+		pthread_mutex_unlock(&bufferpool::mutex);
+#endif
 	}
 }
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* BUFFERPOOL_H_ */

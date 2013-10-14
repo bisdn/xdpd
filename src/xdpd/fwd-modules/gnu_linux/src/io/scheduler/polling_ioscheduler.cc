@@ -19,6 +19,8 @@
 *
 */
 
+using namespace xdpd::gnu_linux;
+
 //Static members initialization
 const float polling_ioscheduler::WRITE_QOS_QUEUE_FACTOR[ioport::MAX_OUTPUT_QUEUES]={1,1.2,1.5,2,2.2,2.5,2.7,3.0};
 
@@ -153,7 +155,7 @@ void* polling_ioscheduler::process_io(void* grp){
 			update_running_ports(pg, &running_ports, &num_of_ports, &current_hash);	
 	}
 
-	ROFL_INFO("Finishing execution of I/O thread: #%u\n",pthread_self());
+	ROFL_DEBUG("Finishing execution of I/O thread: #%u\n",pthread_self());
 
 	//Return whatever
 	pthread_exit(NULL);

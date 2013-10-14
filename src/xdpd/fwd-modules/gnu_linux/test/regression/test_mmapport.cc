@@ -58,7 +58,7 @@ void DriverMMAPPortTestCase::setUp(){
 
 	//Create switch
 	char switch_name[] = "switch1";
-	of12_matching_algorithm_available ma_list[] = { of12_matching_algorithm_loop };
+	of1x_matching_algorithm_available ma_list[] = { of1x_matching_algorithm_loop };
 	/* 0->CONTROLLER, 1->CONTINUE, 2->DROP, 3->MASK */
 	sw = fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list);
 	CPPUNIT_ASSERT(sw->platform_state); /*ringbuffer*/
@@ -96,21 +96,25 @@ void DriverMMAPPortTestCase::tearDown(){
 void DriverMMAPPortTestCase::install_flow_mod(){
 	fprintf(stderr,"Installing flow_mod\n");
 
-	of12_match_t *match = of12_init_port_in_match(NULL,NULL,1);
-	of12_match_t *match2 = of12_init_eth_src_match(NULL,NULL, (htobe64(0x86f3d23e8c30)>>16)&0xFFFFFFFFFFFF, 0xFFFFFFFFFFFF);
-	of12_flow_entry_t *entry = of12_init_flow_entry(NULL,NULL,false);
-	of12_action_group_t* ac_group = of12_init_action_group(NULL);
+	of1x_match_t *match = of1x_init_port_in_match(NULL,NULL,1);
+	of1x_match_t *match2 = of1x_init_eth_src_match(NULL,NULL, (htobe64(0x86f3d23e8c30)>>16)&0xFFFFFFFFFFFF, 0xFFFFFFFFFFFF);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(NULL,NULL,false);
+	of1x_action_group_t* ac_group = of1x_init_action_group(NULL);
 	entry->priority = 1;
 	
-	of12_add_match_to_entry(entry,match);
-	of12_add_match_to_entry(entry,match2);
-	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_SET_FIELD_ETH_SRC, (htobe64(0x012345678901)>>16)&0xFFFFFFFFFFFF, NULL,NULL));
-	fprintf(stderr,"Big endian MAC: %lx",htobe64(0x0000012345678901));
-	of12_push_packet_action_to_group(ac_group, of12_init_packet_action(/*(of12_switch_t*)sw,*/ OF12_AT_OUTPUT, 1, NULL,NULL));
-	of12_add_instruction_to_group(&entry->inst_grp, OF12_IT_APPLY_ACTIONS, ac_group , NULL, 0);
-	of12_add_flow_entry_table( ((of12_switch_t *)sw)->pipeline, 0,entry,false,false );
+	wrap_uint_t field;
+	field.u64 = (htobe64(0x012345678901)>>16)&0xFFFFFFFFFFFF;
 	
-	CPPUNIT_ASSERT(((of12_switch_t*)sw)->pipeline->tables[0].num_of_entries == 1 );
+	of1x_add_match_to_entry(entry,match);
+	of1x_add_match_to_entry(entry,match2);
+	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_SET_FIELD_ETH_SRC, field, NULL,NULL));
+	fprintf(stderr,"Big endian MAC: %lx",htobe64(0x0000012345678901));
+	field.u64 = 1;
+	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, NULL,NULL));
+	of1x_add_instruction_to_group(&entry->inst_grp, OF1X_IT_APPLY_ACTIONS, ac_group , NULL, NULL, 0);
+	of1x_add_flow_entry_table( ((of1x_switch_t *)sw)->pipeline, 0,entry,false,false );
+	
+	CPPUNIT_ASSERT(((of1x_switch_t*)sw)->pipeline->tables[0].num_of_entries == 1 );
 
 }	
 

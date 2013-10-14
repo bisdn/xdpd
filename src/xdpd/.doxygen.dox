@@ -1,0 +1,51 @@
+/**
+* @mainpage The eXtensible OpenFlow Data Path daemon (xDPd)
+*
+* @section intro_sec Introduction
+* 
+* The eXtensible DataPath daemon (xDPd) is a multi-platform, multi OF version, open-source datapath built focussing on <b>performance</b> and <b>extensibility</b>. xDPd can also be considered <i>a framework for building OpenFlow datapath elements</i>, as it is designed to be easily extended with the support of new forwarding devices. 
+*
+* The areas in which xDPd can be extended are mainly:
+*
+* - New platforms: Network processors, FPGAs, ASICs.. as well as non-ethernet devices
+* - New OpenFlow versions (without breaking or disabling existing ones!)
+* - New OpenFlow extensions (header matches, actions...)
+* - New software matching algorithms on software or hw/sw switches (flow_mod lookup)
+* - Support multiple management interfaces or RPCs (OFConfig, CLI, AMQP, Netconf...)
+*
+* xDPd is written in C/C++. It uses extensibly the Revised OpenFlow Libary (ROFL) libraries, mainly for OpenFlow endpoint management (ROFL-common) and as a forwarding plane engine (ROFL-pipeline).
+*
+* @section features_sec Features 
+*
+* - Available platforms:
+*    - GNU/Linux user-space (MMAP-based): open-source.
+*    - OCTEON Network Processors: contact <a href="http://www.bisdn.de">BISDN</a> for details.
+*    - Broadcom Triumph2: contact <a href="http://www.bisdn.de">BISDN</a> for details. 
+*    - NetFPGA 10G: open-source. FPGA forwarding plane based on OF switch contrib (under development)
+*    - GNU/Linux <a href="http://www.dpdk.org/">DPDK-accelerated</a>: contact <a href="http://www.bisdn.de">BISDN</a> for details (under development).
+* - Support multiple Logical Switch Instances (LSIs) or virtual switches.
+* - Support for multiple OpenFlow versions; 1.0 and 1.2 running simultaneously on different LSIs (1.3.2 coming soon).
+* - EICT/BISDN extensions: PPPoE/PPP and GTP.
+*
+* @section arch_sec Architecture
+
+* You can have a look on xDPd's architecture checking xDPd's wiki <a href="https://www.codebasin.net/redmine/projects/xdpd/wiki/Architecture">here</a>
+* 
+* @section rel_proj Related projects
+*
+* <a href="https://www.codebasin.net/redmine/projects/rofl-core/wiki"> ROFL(Revised OpenFlow Library) </a>
+*
+* @section author Authors:
+*  - Marc Sune Clos <marc.sune (at) bisdn.de>
+*  - Victor Alvarez Roig <victor.alvarez (at) bisdn.de>
+*  - Tobias Jungel <tobias.jungel (at) bisdn.de>
+*  - Andreas Koepsel <andreas.koepsel (at) bisdn.de>
+*
+* <a href ="http://www.bisdn.de"> BISDN GmbH </a>
+*
+* @section license Licensing
+*
+* The code is distributed under MPL v2: http://www.mozilla.org/MPL/ 
+*/
+
+

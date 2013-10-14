@@ -10,6 +10,8 @@
 #include "scheduler/epoll_ioscheduler.h"
 #include "scheduler/polling_ioscheduler.h"
 
+using namespace xdpd::gnu_linux;
+
 /* Static members */
 unsigned int iomanager::num_of_groups = 0;
 unsigned int iomanager::curr_group_sched_pointer = 0;

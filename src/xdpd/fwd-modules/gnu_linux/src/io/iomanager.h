@@ -27,13 +27,18 @@
 * 
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 #define DEFAULT_MAX_THREADS_PER_PG 5
 //WARNING: you don't want to change this, unless you really know what you are doing
 #define DEFAULT_THREADS_PER_PG 1
 COMPILER_ASSERT( INVALID_default_threads_per_pg , (DEFAULT_THREADS_PER_PG == 1) );
 
-/*
-* Portgroup thread state
+/**
+* @brief Portgroup thread state
+*
+* @ingroup fm_gnu_linux_io
 */
 class portgroup_state {
 
@@ -56,8 +61,10 @@ public:
 };
 
 /**
-* I/O manager, creates and destroys (launches and stops) I/O threads to work on the ports, or specifically a set of ports (portgroups). 
+* @brief I/O manager, creates and destroys (launches and stops) I/O threads to work on the ports, or specifically a set of ports (portgroups). 
 * This class is purely static.
+*
+* @ingroup fm_gnu_linux_io
 */
 class iomanager{ 
 
@@ -89,6 +96,9 @@ public:
 	*/
 	inline static void signal_as_synchronized(portgroup_state* pg){ sem_post(&pg->sync_sem); };
 
+	/* Utils */ 
+	static portgroup_state* get_group(int grp_id);	
+	static int get_group_id_by_port(ioport* port);
 protected:
 
 	//Constants
@@ -119,7 +129,6 @@ protected:
 	/*
 	* Port mgmt (internal API)
 	*/
-	static int get_group_id_by_port(ioport* port);
 	static rofl_result_t add_port_to_group(unsigned int grp_id, ioport* port);
 	static rofl_result_t remove_port_from_group(unsigned int grp_id, ioport* port, bool mutex_locked=false);
 
@@ -127,8 +136,10 @@ protected:
 	static void start_portgroup_threads(portgroup_state* pg);
 	static void stop_portgroup_threads(portgroup_state* pg);
 	
-	/* Utils */ 
-	static portgroup_state* get_group(int grp_id);	
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* IOMANAGER_H_ */

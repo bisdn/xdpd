@@ -14,8 +14,8 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/matching_algorithms/matching_algorithms_available.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/matching_algorithms/matching_algorithms_available.h>
 #include "io/iomanager.h"
 #include "io/bufferpool.h"
 #include "processing/processingmanager.h"
@@ -26,6 +26,7 @@
 #endif
 
 using namespace std;
+using namespace xdpd::gnu_linux;
 
 class ProcessingManagerTestCase : public CppUnit::TestFixture{
 
@@ -49,13 +50,13 @@ class ProcessingManagerTestCase : public CppUnit::TestFixture{
 /* Setup and tear down */
 void ProcessingManagerTestCase::setUp(){
 	
-	of12_matching_algorithm_available matching_algorithms[4] = {of12_matching_algorithm_loop,of12_matching_algorithm_loop,of12_matching_algorithm_loop,of12_matching_algorithm_loop};
+	of1x_matching_algorithm_available matching_algorithms[4] = {of1x_matching_algorithm_loop,of1x_matching_algorithm_loop,of1x_matching_algorithm_loop,of1x_matching_algorithm_loop};
 	
 	//Init bufferpool
 	bufferpool::init(2048);	
 
 	//Initializae a switch
-	sw = (of_switch_t*)of12_init_switch("test",0x12345,4, matching_algorithms);
+	sw = (of_switch_t*)of1x_init_switch("test",OF_VERSION_12, 0x12345,4, matching_algorithms);
 
 	
 	buffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];

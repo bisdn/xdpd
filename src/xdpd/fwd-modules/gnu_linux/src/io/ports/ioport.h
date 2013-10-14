@@ -22,6 +22,17 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+
+#define ETHER_MAC_LEN 6
+
+/**
+* @brief Abstract class representing a network interface (port)
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class ioport{
 
 public:
@@ -126,6 +137,12 @@ public:
 	virtual rofl_result_t set_drop_received_config(bool drop_received);
 
 	/**
+	 * Sets the port flood output behaviour. This MUST change the of_port_state appropiately
+	 * Inherited classes may override this method if they have specific things to do.
+	 */
+	virtual rofl_result_t set_no_flood_config(bool no_flood);
+	
+	/**
 	 * Sets the port output behaviour. This MUST change the of_port_state appropiately
 	 * Inherited classes may override this method if they have specific things to do.
 	 */
@@ -158,6 +175,15 @@ public:
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
 	
+	inline void set_link_state(bool up){
+
+		if(!up)
+			of_port_state->state = (port_state_t)(of_port_state->state | (1 << PORT_STATE_LINK_DOWN));
+		else
+			of_port_state->state = (port_state_t)(of_port_state->state & ~(1 << PORT_STATE_LINK_DOWN)); 
+			
+	}
+	
 	//Switch processing queue to which the port is attached
 	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_processing_queue;
 	
@@ -169,6 +195,12 @@ protected:
 	
 	//Output QoS queues
 	unsigned int num_of_queues;
+
+	//Max packet size
+	unsigned int mps;
+
+	//MAC address
+	uint8_t mac[ETHER_MAC_LEN];
 
 	/**
 	* @brief Output (TX) queues (num_of_queues) 
@@ -189,5 +221,8 @@ protected:
 	*/
 	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> input_queue;
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* IOPORT_H_ */

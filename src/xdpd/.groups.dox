@@ -1,0 +1,76 @@
+//
+// Doxygen group definition
+//
+
+//CMM
+/**
+* @defgroup cmm Control and Management Module
+* @brief Platform agnostic control and management module (hardware independent)
+*/
+
+/**
+* @defgroup cmm_of CMM OpenFlow control submodule
+* @ingroup cmm 
+*/
+
+/**
+* @defgroup cmm_mgmt CMM Management submodule
+* @ingroup cmm 
+*/
+
+/**
+* @defgroup cmm_mgmt_plugins Management plugins
+* @ingroup cmm_mgmt
+*/
+
+//AFA
+/**
+* @defgroup afa Abstract Forwarding API (AFA)
+* @brief Refer to rofl-afa documentation for details on the AFA interface. 
+*
+*/
+
+//Forwarding modules
+/**
+* @defgroup fm Forwarding Modules (FMs)
+* @brief Forwarding backends (platforms) 
+*/
+
+
+////////////////
+// GNU/Linux //
+//////////////
+
+//Main group
+/**
+* @defgroup fm_gnu_linux GNU/Linux Forwarding Module
+* @ingroup fm
+* @brief User-space GNU/Linux forwarding backend
+*
+* @description The GNU/Linux forwarding module is a user-space (only) forwarding backend. It implements an entire I/O susbystem (currently using PACKET_MMAP RX/TX rings), processing subsystem and AFA handling code. 
+* 
+* To know more about xdpd GNU/Linux forwarding module, please check the <a href="https://www.codebasin.net/redmine/projects/xdpd/wiki">wiki</a>.
+*/
+
+//IO
+/**
+* @defgroup fm_gnu_linux_io GNU/Linux I/O subsystem
+* @ingroup fm_gnu_linux
+*/
+
+//IO-ports
+/**
+* @defgroup fm_gnu_linux_io_ports GNU/Linux I/O ports
+* @ingroup fm_gnu_linux_io
+*/
+//IO-schedulers
+/**
+* @defgroup fm_gnu_linux_io_schedulers GNU/Linux I/O schedulers
+* @ingroup fm_gnu_linux_io
+*/
+
+//Processing
+/**
+* @defgroup fm_gnu_linux_processing GNU/Linux processing subsystem 
+* @ingroup fm_gnu_linux
+*/

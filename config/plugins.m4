@@ -55,6 +55,8 @@ AC_SUBST(PLUGIN_DIRS)
 #AC_SUBST(PLUGINS, $PLUGINS)
 AC_MSG_RESULT($PLUGINS)
 
+#Force recompiling of plugin_manager
+touch $srcdir/src/xdpd/management/pm_timestamp.h
 
 #
 # Include M4 plugin scripts conditionally

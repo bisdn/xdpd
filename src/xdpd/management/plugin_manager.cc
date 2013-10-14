@@ -1,5 +1,6 @@
 #include "plugin_manager.h"
 #include <rofl/common/utils/c_logger.h>
+#include "pm_timestamp.h" //Regenerate every time configure script is launched
 
 /* Plugin header inclusion. They must be conditionally included ALWAYS! */
 #ifdef WITH_MGMT_CONFIG

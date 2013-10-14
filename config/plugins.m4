@@ -41,8 +41,8 @@ for PLUGIN in $PLUGINS; do
 	#])
 
 	#Add plugin to the list of PLUGIN sources
-	PLUGIN_LIBS="plugins/$PLUGIN/libxdpd_mgmt_$PLUGIN.la"
-	PLUGIN_DIRS="plugins/$PLUGIN"
+        PLUGIN_LIBS+="plugins/$PLUGIN/libxdpd_mgmt_$PLUGIN.la "
+        PLUGIN_DIRS+="plugins/$PLUGIN "
 	
 	#Set flag
 	eval with_mgmt_$PLUGIN="yes"

@@ -119,11 +119,19 @@ qmfagent::set_qmf_schema()
     lsiCreateMethod.addArgument(qmf::SchemaProperty("ctlaf",	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
     lsiCreateMethod.addArgument(qmf::SchemaProperty("ctladdr", 	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
     lsiCreateMethod.addArgument(qmf::SchemaProperty("ctlport", 	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    lsiCreateMethod.addArgument(qmf::SchemaProperty("reconnect",qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
     sch_xdpd.addMethod(lsiCreateMethod);
 
     qmf::SchemaMethod lsiDestroyMethod("lsiDestroy", "{desc:'destroy LSI'}");
     lsiDestroyMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
     sch_xdpd.addMethod(lsiDestroyMethod);
+
+    qmf::SchemaMethod lsiCreateVirtualLinkMethod("lsiCreateVirtualLink", "{desc:'create a virtual link between two LSIs'}");
+    lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("dpid1", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("dpid2", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("devname1",	qmf::SCHEMA_DATA_STRING, 	"{dir:OUT}"));
+    lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("devname2",	qmf::SCHEMA_DATA_STRING, 	"{dir:OUT}"));
+    sch_xdpd.addMethod(lsiCreateVirtualLinkMethod);
 
 
 
@@ -191,6 +199,9 @@ qmfagent::method(qmf::AgentEvent& event)
 		else if (name == "ctlDisconnect") {
 			return methodCtlDisconnect(event);
 		}
+		else if (name == "lsiCreateVirtualLink") {
+			return methodLsiCreateVirtualLink(event);
+		}
 
 		else {
 			session.raiseException(event, "command not found");
@@ -219,12 +230,13 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 		int ctlaf				= event.getArguments()["ctlaf"].asInt32();
 		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
 		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
+		unsigned int reconnect  = event.getArguments()["reconnect"].asUint32();
 
 		event.addReturnArgument("dpid", dpid);
 
 		int ma_list[256] = { 0 };
 		rofl::caddress caddr(ctlaf, ctladdr.c_str(), ctlport);
-		xdpd::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, caddr);
+		xdpd::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, reconnect, caddr);
 
 		// create QMF LSI object
 		qLSIs[dpid].data = qmf::Data(sch_lsi);
@@ -287,8 +299,8 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 		std::string devname		= event.getArguments()["devname"].asString();
 
 		uint32_t portno = 0;
-		rofl::port_manager::attach_port_to_switch(dpid, devname, &portno);
-		rofl::port_manager::enable_port(devname);
+		port_manager::attach_port_to_switch(dpid, devname, &portno);
+		port_manager::enable_port(devname);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);
@@ -414,5 +426,35 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 	return false;
 }
 
+
+
+
+bool
+qmfagent::methodLsiCreateVirtualLink(qmf::AgentEvent& event)
+{
+	try {
+		uint64_t dpid1 			= event.getArguments()["dpid1"].asUint64();
+		uint64_t dpid2 			= event.getArguments()["dpid2"].asUint64();
+		std::string devname1;
+		std::string devname2;
+
+		xdpd::port_manager::connect_switches(dpid1, devname1, dpid2, devname2);
+
+		event.addReturnArgument("devname1", devname1);
+		event.addReturnArgument("devname2", devname2);
+
+		session.methodSuccess(event);
+
+		return true;
+
+	} catch (xdpd::eOfSmDoesNotExist& e) {
+		session.raiseException(event, "VirtualLink creation failed: dpid does not exist");
+
+	} catch (xdpd::eOfSmGeneralError& e) {
+		session.raiseException(event, "VirtualLink creation failed: internal error");
+
+	}
+	return false;
+}
 
 

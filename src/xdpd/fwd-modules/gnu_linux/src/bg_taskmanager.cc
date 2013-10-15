@@ -76,46 +76,47 @@ int prepare_event_socket()
  * @name update_port_status
  */
 rofl_result_t update_port_status(char * name){
-	int skfd;
-	struct ethtool_value edata;
+
 	struct ifreq ifr;
+	int sd, rc;
+ 
 	switch_port_t *port;
 	port = fwd_module_get_port_by_name(name);
+	ioport* io_port = ((ioport*)port->platform_port_state);
 	
-	memset(&edata,0,sizeof(edata));//Make valgrind happy
-	
-	if(port == NULL){
-		ROFL_ERR("Error port with name %s not found\n",name);
+	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
+		return ROFL_FAILURE;
+	}
+
+	memset(&ifr, 0, sizeof(struct ifreq));
+	strcpy(ifr.ifr_name, port->name);
+
+	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0){
+		return ROFL_FAILURE;
+	}
+
+	//Make sure there are no race conditions between ioctl() calls
+	pthread_rwlock_rdlock(&io_port->rwlock);
+		
+	//Recover flags
+	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
+		close(sd);
+		pthread_rwlock_unlock(&io_port->rwlock);
 		return ROFL_FAILURE;
 	}
 	
-	if (( skfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ){
-		ROFL_ERR("Socket call error, errno(%d): %s\n", errno, strerror(errno));
-		return ROFL_FAILURE;
-	}
+	//Release mutex
+	pthread_rwlock_unlock(&io_port->rwlock);
 	
-	edata.cmd = ETHTOOL_GLINK;
-	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name)-1);
-	
-	ifr.ifr_data = (char *) &edata;
-	if (ioctl(skfd, SIOCETHTOOL, &ifr) == -1){
-		ROFL_ERR("ETHTOOL_GLINK failed, errno(%d): %s\n", errno, strerror(errno));
-		return ROFL_FAILURE;
-	}
-	
-	//TODO: really split LINK from admin status
-	//Right now edata.data "==" ADMIN_UP & LINK_UP
-	ROFL_DEBUG("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
+	ROFL_DEBUG("[bg] Interface %s is %s, and link is %s\n", name,( ((IFF_UP & ifr.ifr_flags) > 0) ? "up" : "down"), ( ((IFF_RUNNING & ifr.ifr_flags) > 0) ? "detected" : "not detected"));
 
 	//Update link state
-	((ioport*)port->platform_port_state)->set_link_state(edata.data);
+	io_port->set_link_state( ((IFF_RUNNING & ifr.ifr_flags) > 0) );
 
-	if(edata.data){
-		if(iomanager::bring_port_up((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
-			return ROFL_FAILURE;
+	if(IFF_UP & ifr.ifr_flags){
+		iomanager::bring_port_up(io_port);
 	}else{
-		if(iomanager::bring_port_down((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
-			return ROFL_FAILURE;
+		iomanager::bring_port_down(io_port);
 	}
 	
 	//port_status message needs to be created if the port id attached to switch

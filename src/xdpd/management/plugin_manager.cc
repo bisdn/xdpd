@@ -1,5 +1,6 @@
 #include "plugin_manager.h"
 #include <rofl/common/utils/c_logger.h>
+#include "pm_timestamp.h" //Regenerate every time configure script is launched
 
 /* Plugin header inclusion. They must be conditionally included ALWAYS! */
 #ifdef WITH_MGMT_CONFIG
@@ -62,6 +63,11 @@ rofl_result_t plugin_manager::init(int argc, char** argv){
 		(*it)->init(argc,argv);
 		optind=0; //Reset getopt
 	}
+	
+	return ROFL_SUCCESS;
+}
+
+rofl_result_t plugin_manager::destroy(){
 
 	//Destroy all plugins
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {

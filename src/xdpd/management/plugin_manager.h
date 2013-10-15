@@ -71,6 +71,12 @@ public:
 	*/
 	static rofl_result init(int args, char** argv);
 	
+	/**
+	* Destroys registered plugins 
+	*/
+	static rofl_result destroy(void);
+	
+
 	/*
 	* Registers a plugin must be called on pre_init()
 	*/

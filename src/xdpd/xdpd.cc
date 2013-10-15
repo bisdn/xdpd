@@ -89,6 +89,9 @@ int main(int argc, char** argv){
 	//Destroy all state
 	switch_manager::destroy_all_switches();
 
+	//Let plugin manager destroy all registered plugins
+	plugin_manager::destroy();
+	
 	//ciosrv destroy
 	ciosrv::destroy();
 

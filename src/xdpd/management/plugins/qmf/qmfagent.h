@@ -159,6 +159,12 @@ private:
 	/**
 	 *
 	 */
+	bool
+	methodLsiCreateVirtualLink(qmf::AgentEvent& event);
+
+	/**
+	 *
+	 */
 	void
 	create_switch();
 

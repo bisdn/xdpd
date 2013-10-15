@@ -126,7 +126,7 @@ qmfagent::set_qmf_schema()
     lsiDestroyMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
     sch_xdpd.addMethod(lsiDestroyMethod);
 
-    qmf::SchemaMethod lsiCreateVirtualLinkMethod("lsiCreateVirtLink", "{desc:'create a virtual link between two LSIs'}");
+    qmf::SchemaMethod lsiCreateVirtualLinkMethod("lsiCreateVirtualLink", "{desc:'create a virtual link between two LSIs'}");
     lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("dpid1", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
     lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("dpid2", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
     lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("devname1",	qmf::SCHEMA_DATA_STRING, 	"{dir:OUT}"));

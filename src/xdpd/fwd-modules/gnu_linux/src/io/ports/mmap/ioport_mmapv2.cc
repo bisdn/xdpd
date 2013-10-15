@@ -574,13 +574,21 @@ rofl_result_t ioport_mmapv2::disable() {
 		return ROFL_SUCCESS;
 	}
 
+	//Prevent race conditions with LINK/STATUS notification threads (bg)
+	pthread_rwlock_wrlock(&rwlock);
+
 	ifr.ifr_flags &= ~IFF_UP;
 
 	if ((rc = ioctl(sd, SIOCSIFFLAGS, &ifr)) < 0) {
 		ROFL_DEBUG("[mmap:%s] Unable to bring interface down via ioctl\n",of_port_state->name);
 		close(sd);
+		pthread_rwlock_unlock(&rwlock);
 		return ROFL_FAILURE;
 	}
+
+	//Release mutex		
+	pthread_rwlock_unlock(&rwlock);
+
 
 	// todo recheck?
 	// todo check link state IFF_RUNNING

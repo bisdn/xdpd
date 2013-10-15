@@ -74,10 +74,11 @@ rofl_result_t update_port_status(char * name){
 	
 	last_link_status = port->up;
 
-	if(edata.data)
-		port->up = true;
-	else
-		port->up = false;
+	if(edata.data){
+		iomanager::bring_port_up((ioport*)port->platform_port_state);
+	}else{
+		iomanager::bring_port_down((ioport*)port->platform_port_state);
+	}
 
 	//port->forward_packets;
 	/*more*/

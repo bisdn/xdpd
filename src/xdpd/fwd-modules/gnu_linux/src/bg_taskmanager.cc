@@ -76,6 +76,57 @@ int prepare_event_socket()
  * @name update_port_status
  */
 rofl_result_t update_port_status(char * name){
+
+#if 1
+	struct ifreq ifr;
+	int sd, rc;
+ 
+	switch_port_t *port;
+	port = fwd_module_get_port_by_name(name);
+	ioport* io_port = ((ioport*)port->platform_port_state);
+	
+	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
+		return ROFL_FAILURE;
+	}
+
+	memset(&ifr, 0, sizeof(struct ifreq));
+	strcpy(ifr.ifr_name, port->name);
+
+	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0){
+		return ROFL_FAILURE;
+	}
+
+	//Make sure there are no race conditions between ioctl() calls
+	pthread_rwlock_rdlock(&io_port->rwlock);
+		
+	//Recover flags
+	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
+		close(sd);
+		pthread_rwlock_unlock(&io_port->rwlock);
+		return ROFL_FAILURE;
+	}
+	
+	//Release mutex
+	pthread_rwlock_unlock(&io_port->rwlock);
+	
+	ROFL_DEBUG("[bg] Interface %s is %s, and link is %s\n", name,( ((IFF_UP & ifr.ifr_flags) > 0) ? "up" : "down"), ( ((IFF_RUNNING & ifr.ifr_flags) > 0) ? "detected" : "not detected"));
+
+	//Update link state
+	io_port->set_link_state( ((IFF_RUNNING & ifr.ifr_flags) > 0) );
+
+	if(IFF_UP & ifr.ifr_flags){
+		iomanager::bring_port_up(io_port);
+	}else{
+		iomanager::bring_port_down(io_port);
+	}
+	
+	//port_status message needs to be created if the port id attached to switch
+	if(port->attached_sw != NULL){
+		cmm_notify_port_status_changed(port);
+	}
+	
+	return ROFL_SUCCESS;
+#else
 	int skfd;
 	struct ethtool_value edata;
 	struct ifreq ifr;
@@ -132,6 +183,7 @@ rofl_result_t update_port_status(char * name){
 	}
 	
 	return ROFL_SUCCESS;
+#endif
 }
 
 /*

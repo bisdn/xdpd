@@ -457,7 +457,7 @@ rofl_result_t ioport_mmapv2::enable() {
 		mps = PORT_DEFAULT_PKT_SIZE;	
 	}else{
 		mps = ifr.ifr_mtu+PORT_ETHER_LENGTH;
-		ROFL_DEBUG("[mmap:%s] Discovered MTU of %u.\n",  of_port_state->name, mps);
+		ROFL_DEBUG("[mmap:%s] Discovered Max Packet Size(MPS) of %u.\n",  of_port_state->name, mps);
 	}
 
 	//Recover flags

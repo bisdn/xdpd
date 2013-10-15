@@ -7,6 +7,7 @@
 
 #include <string>
 #include <assert.h>
+#include <pthread.h>
 
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -189,6 +190,7 @@ public:
 	
 	static const unsigned int MAX_OUTPUT_QUEUES=IO_IFACE_NUM_QUEUES; /*!< Constant max output queues */
 	unsigned int port_group;
+	pthread_rwlock_t rwlock; //Serialize management actions
 
 protected:
 	static const unsigned int NUM_OF_REQUIRED_BUFFERS=IO_IFACE_REQUIRED_BUFFERS; /* Required buffers for the port to operate at line rate */

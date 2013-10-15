@@ -81,6 +81,7 @@ rofl_result_t update_port_status(char * name){
 	struct ifreq ifr;
 	switch_port_t *port;
 	port = fwd_module_get_port_by_name(name);
+	ioport* io_port = ((ioport*)port->platform_port_state);
 	
 	memset(&edata,0,sizeof(edata));//Make valgrind happy
 	
@@ -96,25 +97,32 @@ rofl_result_t update_port_status(char * name){
 	
 	edata.cmd = ETHTOOL_GLINK;
 	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name)-1);
-	
+
+	//Make sure there are no race conditions between ioctl() calls
+	pthread_rwlock_rdlock(&io_port->rwlock);
+		
 	ifr.ifr_data = (char *) &edata;
 	if (ioctl(skfd, SIOCETHTOOL, &ifr) == -1){
 		ROFL_ERR("ETHTOOL_GLINK failed, errno(%d): %s\n", errno, strerror(errno));
+		pthread_rwlock_unlock(&io_port->rwlock);
 		return ROFL_FAILURE;
 	}
 	
+	//Release mutex
+	pthread_rwlock_unlock(&io_port->rwlock);
+	
 	//TODO: really split LINK from admin status
 	//Right now edata.data "==" ADMIN_UP & LINK_UP
-	ROFL_DEBUG("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
+	ROFL_DEBUG("[bg] Interface %s link is now %s\n", name,(edata.data ? "up" : "down"));
 
 	//Update link state
-	((ioport*)port->platform_port_state)->set_link_state(edata.data);
+	io_port->set_link_state(edata.data);
 
 	if(edata.data){
-		if(iomanager::bring_port_up((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
+		if(iomanager::bring_port_up(io_port)!=ROFL_SUCCESS)
 			return ROFL_FAILURE;
 	}else{
-		if(iomanager::bring_port_down((ioport*)port->platform_port_state)!=ROFL_SUCCESS)
+		if(iomanager::bring_port_down(io_port)!=ROFL_SUCCESS)
 			return ROFL_FAILURE;
 	}
 	

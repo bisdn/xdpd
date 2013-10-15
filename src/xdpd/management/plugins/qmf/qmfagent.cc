@@ -126,6 +126,13 @@ qmfagent::set_qmf_schema()
     lsiDestroyMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
     sch_xdpd.addMethod(lsiDestroyMethod);
 
+    qmf::SchemaMethod lsiCreateVirtualLinkMethod("lsiCreateVirtualLink", "{desc:'create a virtual link between two LSIs'}");
+    lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("dpid1", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("dpid2", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
+    lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("devname1",	qmf::SCHEMA_DATA_STRING, 	"{dir:OUT}"));
+    lsiCreateVirtualLinkMethod.addArgument(qmf::SchemaProperty("devname2",	qmf::SCHEMA_DATA_STRING, 	"{dir:OUT}"));
+    sch_xdpd.addMethod(lsiCreateVirtualLinkMethod);
+
 
 
     // lsi
@@ -191,6 +198,9 @@ qmfagent::method(qmf::AgentEvent& event)
 		}
 		else if (name == "ctlDisconnect") {
 			return methodCtlDisconnect(event);
+		}
+		else if (name == "lsiCreateVirtualLink") {
+			return methodLsiCreateVirtualLink(event);
 		}
 
 		else {
@@ -416,5 +426,35 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 	return false;
 }
 
+
+
+
+bool
+qmfagent::methodLsiCreateVirtualLink(qmf::AgentEvent& event)
+{
+	try {
+		uint64_t dpid1 			= event.getArguments()["dpid1"].asUint64();
+		uint64_t dpid2 			= event.getArguments()["dpid2"].asUint64();
+		std::string devname1;
+		std::string devname2;
+
+		xdpd::port_manager::connect_switches(dpid1, devname1, dpid2, devname2);
+
+		event.addReturnArgument("devname1", devname1);
+		event.addReturnArgument("devname2", devname2);
+
+		session.methodSuccess(event);
+
+		return true;
+
+	} catch (xdpd::eOfSmDoesNotExist& e) {
+		session.raiseException(event, "VirtualLink creation failed: dpid does not exist");
+
+	} catch (xdpd::eOfSmGeneralError& e) {
+		session.raiseException(event, "VirtualLink creation failed: internal error");
+
+	}
+	return false;
+}
 
 

@@ -13,7 +13,12 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AUTOCONF_ENV="SHELL=/bin/sh"
 LT_INIT
+link_all_deplibs=yes
+link_all_deplibs_CXX=yes
 AC_ENABLE_STATIC
+LIBTOOL="$LIBTOOL --preserve-dup-deps"
+AC_SUBST(LIBTOOL)dnl
+
 
 # default flags
 CFLAGS="-Werror -Wall -Wl,-export-dynamic $CFLAGS"

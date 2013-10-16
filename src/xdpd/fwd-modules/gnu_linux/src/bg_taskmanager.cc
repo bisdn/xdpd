@@ -1,5 +1,6 @@
 #include "bg_taskmanager.h"
 
+#include <assert.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -13,7 +14,9 @@
 #include <sys/epoll.h>
 #include <sys/time.h>
 #include <sys/types.h>
-// Maybe needs to be in hal.h
+#include <string>
+#include <vector>
+#include <algorithm>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
@@ -23,6 +26,7 @@
 #include "io/datapacket_storage.h"
 #include "io/pktin_dispatcher.h"
 #include "io/iomanager.h"
+#include "io/iface_utils.h"
 #include "util/time_utils.h"
 
 using namespace xdpd::gnu_linux;
@@ -39,6 +43,27 @@ static bool bg_continue_execution = true;
  * - purge old buffers in the buffer storage of a logical switch(pkt-in) 
  * - more?
  */
+
+
+//Try to guess if it is a veth, and return the pair
+//FIXME use netlink/ethtool for that instead of assuming the naming convention
+static rofl_result_t get_veth_peer_name(char* iface_name, char* peer){
+	unsigned int num;
+	std::string name(iface_name);
+	
+	if(name.find("veth") != 0)
+		return ROFL_FAILURE;
+	
+	//Extract number
+	sscanf(name.c_str(),"veth%u",&num);  
+
+	if(num %2 == 0)
+		snprintf(peer, IFNAMSIZ, "veth%u", num+1);
+	else
+		snprintf(peer, IFNAMSIZ, "veth%u", num-1);
+
+	return ROFL_SUCCESS;
+}
 
 /**
  * @name prepare_event_socket
@@ -70,61 +95,6 @@ int prepare_event_socket()
 	}
 
 	return sock;
-}
-
-/**
- * @name update_port_status
- */
-rofl_result_t update_port_status(char * name){
-
-	struct ifreq ifr;
-	int sd, rc;
- 
-	switch_port_t *port;
-	port = fwd_module_get_port_by_name(name);
-	ioport* io_port = ((ioport*)port->platform_port_state);
-	
-	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
-		return ROFL_FAILURE;
-	}
-
-	memset(&ifr, 0, sizeof(struct ifreq));
-	strcpy(ifr.ifr_name, port->name);
-
-	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0){
-		return ROFL_FAILURE;
-	}
-
-	//Make sure there are no race conditions between ioctl() calls
-	pthread_rwlock_rdlock(&io_port->rwlock);
-		
-	//Recover flags
-	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
-		close(sd);
-		pthread_rwlock_unlock(&io_port->rwlock);
-		return ROFL_FAILURE;
-	}
-	
-	//Release mutex
-	pthread_rwlock_unlock(&io_port->rwlock);
-	
-	ROFL_DEBUG("[bg] Interface %s is %s, and link is %s\n", name,( ((IFF_UP & ifr.ifr_flags) > 0) ? "up" : "down"), ( ((IFF_RUNNING & ifr.ifr_flags) > 0) ? "detected" : "not detected"));
-
-	//Update link state
-	io_port->set_link_state( ((IFF_RUNNING & ifr.ifr_flags) > 0) );
-
-	if(IFF_UP & ifr.ifr_flags){
-		iomanager::bring_port_up(io_port);
-	}else{
-		iomanager::bring_port_down(io_port);
-	}
-	
-	//port_status message needs to be created if the port id attached to switch
-	if(port->attached_sw != NULL){
-		cmm_notify_port_status_changed(port);
-	}
-	
-	return ROFL_SUCCESS;
 }
 
 /*
@@ -184,7 +154,8 @@ static rofl_result_t read_netlink_message(int fd){
 	
 	struct ifinfomsg *ifi;
 	char name[IFNAMSIZ];
-	
+	char peer_name[IFNAMSIZ];
+
 	len = read_netlink_socket(fd,(char*)nlh, 0, getpid());
 	if(len == -1)
 		return ROFL_FAILURE; 
@@ -192,18 +163,31 @@ static rofl_result_t read_netlink_message(int fd){
 	for (; NLMSG_OK(nlh, (unsigned int)len); nlh = NLMSG_NEXT(nlh, len)) {
 
 	    if (nlh->nlmsg_type == RTM_NEWLINK){
+				
+				memset(name, 0, IFNAMSIZ);
+				memset(peer_name, 0, IFNAMSIZ);
+				
 				ifi = (struct ifinfomsg *) NLMSG_DATA(nlh);
 				
-				if_indextoname(ifi->ifi_index, name);
+				if(!if_indextoname(ifi->ifi_index, name))
+					continue; //Unable to map interface
 				
-				ROFL_DEBUG_VERBOSE("interface changed status\n",name);
+				ROFL_DEBUG("--------> Interface changed status %s (%u)\n",name, ifi->ifi_index);
 				
 				// HERE change the status to the port structure
 				if(update_port_status(name)!=ROFL_SUCCESS)
 					return ROFL_FAILURE;
+
+				//If the interface is a veth, then the other edge must also be updated
+				//otherwise LINK will never be updated.
+				if(get_veth_peer_name(name,peer_name) == ROFL_SUCCESS){
+					//Update pair
+					update_port_status(peer_name);
+				}
 	    }else{
-				ROFL_ERR("Received a different RTM message type\n");
-				return ROFL_FAILURE;
+		ROFL_DEBUG("--------> Else message type (%u)\n", nlh->nlmsg_type);
+		//Likely triggered by an addition of a port
+		return update_physical_ports();
 	    }
 	}
 	

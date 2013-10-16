@@ -148,13 +148,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 */
 of_switch_t* fwd_module_get_switch_by_dpid(uint64_t dpid){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_switch_by_dpid()\n");
-	
-	//Call directly the bank
-	//If using the ROFL-pipeline library you would likely call
-	//physical_switch_get_logical_switch_by_dpid(dpid); 
-	
-	return NULL;
+	return physical_switch_get_logical_switch_by_dpid(dpid); 
 }
 
 /*
@@ -165,7 +159,7 @@ of_switch_t* fwd_module_get_switch_by_dpid(uint64_t dpid){
 afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling destroy_switch_by_dpid()\n");
-	
+	//XXX	
 	return AFA_SUCCESS;
 }
 
@@ -192,10 +186,7 @@ switch_port_t* fwd_module_list_platform_ports(){
  * @ingroup port_management
  */
 switch_port_t* fwd_module_get_port_by_name(const char *name){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_port_by_name()\n");
-	
-	return NULL;
+	return physical_switch_get_port_by_name(name);
 }
 
 /*
@@ -205,10 +196,7 @@ switch_port_t* fwd_module_get_port_by_name(const char *name){
 * @retval  Pointer to the first port. 
 */
 switch_port_t** fwd_module_get_physical_ports(unsigned int* num_of_ports){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_physical_ports()\n");
-
-	return NULL;
+	return physical_switch_get_physical_ports(num_of_ports);
 }
 
 /*
@@ -218,10 +206,7 @@ switch_port_t** fwd_module_get_physical_ports(unsigned int* num_of_ports){
 * @retval  Pointer to the first port. 
 */
 switch_port_t** fwd_module_get_virtual_ports(unsigned int* num_of_ports){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_virtual_ports()\n");
-	
-	return NULL;
+	return physical_switch_get_virtual_ports(num_of_ports);
 }
 
 /*
@@ -231,10 +216,7 @@ switch_port_t** fwd_module_get_virtual_ports(unsigned int* num_of_ports){
 * @retval  Pointer to the first port. 
 */
 switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
-	
-	ROFL_INFO("["FWD_MOD_NAME"] calling get_tunnel_ports()\n");
-	
-	return NULL;
+	return physical_switch_get_tunnel_ports(num_of_ports);
 }
 /*
 * @name    fwd_module_attach_physical_port_to_switch
@@ -248,6 +230,7 @@ switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
 afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling attach_port_to_switch()\n");
+	//XXX
 	
 	return AFA_SUCCESS;
 }
@@ -263,8 +246,8 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_t** port1, uint64_t dpid_lsi2, switch_port_t** port2){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling connect_switches()\n");
-
-	return AFA_SUCCESS; 
+	//XXX
+	return AFA_FAILURE; 
 }
 
 /*
@@ -278,8 +261,9 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_t** por
 afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling detach_port_from_switch()\n");
+	//XXX
 
-	return AFA_SUCCESS; 
+	return AFA_FAILURE; 
 }
 
 /*
@@ -294,7 +278,8 @@ afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling detach_port_from_switch_at_port_num()\n");
 	
-	return AFA_SUCCESS;
+	//XXX
+	return AFA_FAILURE;
 }
 
 
@@ -315,7 +300,8 @@ afa_result_t fwd_module_enable_port(const char* name){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling enable_port()\n");
 	
-	return AFA_SUCCESS;
+	//XXX
+	return AFA_FAILURE;
 }
 
 /*
@@ -329,7 +315,8 @@ afa_result_t fwd_module_disable_port(const char* name){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling disable_port()\n");
 	
-	return AFA_SUCCESS;
+	//XXX
+	return AFA_FAILURE;
 }
 
 /*
@@ -344,7 +331,8 @@ afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num)
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling enable_port_by_num()\n");
 	
-	return AFA_SUCCESS;
+	//XXX
+	return AFA_FAILURE;
 }
 
 /*
@@ -359,7 +347,8 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling disable_port_by_num()\n");
 	
-	return AFA_SUCCESS;
+	//XXX
+	return AFA_FAILURE;
 }
 
 /**
@@ -372,10 +361,5 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
  * @return
  */
 afa_result_t fwd_module_list_matching_algorithms(of_version_t of_version, const char * const** name_list, int *count){
-
-	if(of_get_switch_matching_algorithms(of_version, name_list, count) == ROFL_SUCCESS)
-		return AFA_SUCCESS;
-
-	return AFA_FAILURE;
-
+	return (afa_result_t)of_get_switch_matching_algorithms(of_version, name_list, count);
 }

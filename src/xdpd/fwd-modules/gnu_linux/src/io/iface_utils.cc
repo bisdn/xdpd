@@ -247,7 +247,8 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	char port_name[PORT_QUEUE_MAX_LEN_NAME];
 	switch_port_t *port1, *port2;	
 	uint64_t port_capabilities=0x0;
-	uint64_t mac_addr;
+	//uint64_t mac_addr;
+	uint16_t randnum = 0;
 
 	//Init the pipeline ports
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 0);
@@ -292,18 +293,41 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	switch_port_add_capabilities(&port1->advertised, (port_features_t)port_capabilities);	
 	switch_port_add_capabilities(&port1->supported, (port_features_t)port_capabilities);	
 	switch_port_add_capabilities(&port1->peer, (port_features_t)port_capabilities);	
-	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
-	mac_addr &= 0x0000feffffffffff;
-	memcpy(port1->hwaddr, &mac_addr, sizeof(port1->hwaddr));
+	//mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
+
+	randnum = (uint16_t)rand();
+	port1->hwaddr[0] = ((uint8_t*)&randnum)[0];
+	port1->hwaddr[1] = ((uint8_t*)&randnum)[1];
+	randnum = (uint16_t)rand();
+	port1->hwaddr[2] = ((uint8_t*)&randnum)[0];
+	port1->hwaddr[3] = ((uint8_t*)&randnum)[1];
+	randnum = (uint16_t)rand();
+	port1->hwaddr[4] = ((uint8_t*)&randnum)[0];
+	port1->hwaddr[5] = ((uint8_t*)&randnum)[1];
+
+	port1->hwaddr[0] &= 0xfe;
+
+	//memcpy(port1->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 
 	switch_port_add_capabilities(&port2->curr, (port_features_t)port_capabilities);	
 	switch_port_add_capabilities(&port2->advertised, (port_features_t)port_capabilities);	
 	switch_port_add_capabilities(&port2->supported, (port_features_t)port_capabilities);	
 	switch_port_add_capabilities(&port2->peer, (port_features_t)port_capabilities);	
-	
-	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
-	mac_addr &= 0x0000feffffffffff;
-	memcpy(port2->hwaddr, &mac_addr, sizeof(port1->hwaddr));
+	//mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
+
+	randnum = (uint16_t)rand();
+	port2->hwaddr[0] = ((uint8_t*)&randnum)[0];
+	port2->hwaddr[1] = ((uint8_t*)&randnum)[1];
+	randnum = (uint16_t)rand();
+	port2->hwaddr[2] = ((uint8_t*)&randnum)[0];
+	port2->hwaddr[3] = ((uint8_t*)&randnum)[1];
+	randnum = (uint16_t)rand();
+	port2->hwaddr[4] = ((uint8_t*)&randnum)[0];
+	port2->hwaddr[5] = ((uint8_t*)&randnum)[1];
+
+	port2->hwaddr[0] &= 0xfe;
+
+	//memcpy(port2->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 
 	//Add output queues
 	fill_port_queues(port1, *vport1);

@@ -44,27 +44,6 @@ static bool bg_continue_execution = true;
  * - more?
  */
 
-
-//Try to guess if it is a veth, and return the pair
-//FIXME use netlink/ethtool for that instead of assuming the naming convention
-static rofl_result_t get_veth_peer_name(char* iface_name, char* peer){
-	unsigned int num;
-	std::string name(iface_name);
-	
-	if(name.find("veth") != 0)
-		return ROFL_FAILURE;
-	
-	//Extract number
-	sscanf(name.c_str(),"veth%u",&num);  
-
-	if(num %2 == 0)
-		snprintf(peer, IFNAMSIZ, "veth%u", num+1);
-	else
-		snprintf(peer, IFNAMSIZ, "veth%u", num-1);
-
-	return ROFL_SUCCESS;
-}
-
 /**
  * @name prepare_event_socket
  * @brief creates socket and binds it to the NETLINK events
@@ -87,7 +66,7 @@ int prepare_event_socket()
 
 	memset(&addr, 0, sizeof(addr));
 	addr.nl_family = AF_NETLINK;
-	addr.nl_groups = RTNLGRP_LINK;//RTMGRP_IPV4_IFADDR;
+	addr.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
 
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1){
 		ROFL_ERR("couldn't bind, errno(%d): %s\n", errno, strerror(errno));
@@ -154,38 +133,25 @@ static rofl_result_t read_netlink_message(int fd){
 	
 	struct ifinfomsg *ifi;
 	char name[IFNAMSIZ];
-	char peer_name[IFNAMSIZ];
 
 	len = read_netlink_socket(fd,(char*)nlh, 0, getpid());
-	if(len == -1)
+	if(len <= 0)
 		return ROFL_FAILURE; 
 
 	for (; NLMSG_OK(nlh, (unsigned int)len); nlh = NLMSG_NEXT(nlh, len)) {
 
 	    if (nlh->nlmsg_type == RTM_NEWLINK){
-				
-				memset(name, 0, IFNAMSIZ);
-				memset(peer_name, 0, IFNAMSIZ);
-				
 				ifi = (struct ifinfomsg *) NLMSG_DATA(nlh);
 				
 				if(!if_indextoname(ifi->ifi_index, name))
 					continue; //Unable to map interface
 				
-				ROFL_DEBUG("--------> Interface changed status %s (%u)\n",name, ifi->ifi_index);
+				ROFL_DEBUG_VERBOSE("--------> Interface changed status %s (%u)\n",name, ifi->ifi_index);
 				
 				// HERE change the status to the port structure
 				if(update_port_status(name)!=ROFL_SUCCESS)
 					return ROFL_FAILURE;
-
-				//If the interface is a veth, then the other edge must also be updated
-				//otherwise LINK will never be updated.
-				if(get_veth_peer_name(name,peer_name) == ROFL_SUCCESS){
-					//Update pair
-					update_port_status(peer_name);
-				}
 	    }else{
-		ROFL_DEBUG("--------> Else message type (%u)\n", nlh->nlmsg_type);
 		//Likely triggered by an addition of a port
 		return update_physical_ports();
 	    }
@@ -301,7 +267,7 @@ void* x86_background_tasks_routine(void* param)
 
 	//Add netlink	
 	epe_port.data.fd = events_socket;
-	epe_port.events = EPOLLIN | EPOLLET;
+	epe_port.events = EPOLLIN; //| EPOLLET;
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
 		ROFL_ERR("Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));

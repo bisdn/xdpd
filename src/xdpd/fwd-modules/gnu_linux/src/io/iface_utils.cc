@@ -250,10 +250,10 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	uint64_t mac_addr;
 
 	//Init the pipeline ports
-	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u.%u", num_of_vlinks, 0);
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 0);
 	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
 
-	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u.%u", num_of_vlinks, 1);
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 1);
 	port2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
 
 	if(!port1 || !port2){
@@ -293,6 +293,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	switch_port_add_capabilities(&port1->supported, (port_features_t)port_capabilities);	
 	switch_port_add_capabilities(&port1->peer, (port_features_t)port_capabilities);	
 	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
+	mac_addr &= 0xfeffffffffff;
 	memcpy(port1->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 
 	switch_port_add_capabilities(&port2->curr, (port_features_t)port_capabilities);	
@@ -301,6 +302,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	switch_port_add_capabilities(&port2->peer, (port_features_t)port_capabilities);	
 	
 	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
+	mac_addr &= 0xfeffffffffff;
 	memcpy(port2->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 
 	//Add output queues

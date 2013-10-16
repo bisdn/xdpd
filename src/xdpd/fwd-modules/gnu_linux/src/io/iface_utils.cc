@@ -293,7 +293,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	switch_port_add_capabilities(&port1->supported, (port_features_t)port_capabilities);	
 	switch_port_add_capabilities(&port1->peer, (port_features_t)port_capabilities);	
 	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
-	mac_addr &= 0xfeffffffffff;
+	mac_addr &= 0x0000feffffffffff;
 	memcpy(port1->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 
 	switch_port_add_capabilities(&port2->curr, (port_features_t)port_capabilities);	
@@ -302,7 +302,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	switch_port_add_capabilities(&port2->peer, (port_features_t)port_capabilities);	
 	
 	mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
-	mac_addr &= 0xfeffffffffff;
+	mac_addr &= 0x0000feffffffffff;
 	memcpy(port2->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 
 	//Add output queues

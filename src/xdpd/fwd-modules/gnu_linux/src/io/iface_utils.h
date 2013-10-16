@@ -41,6 +41,15 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, xdpd::gnu_linux::iopor
 */
 switch_port_t* get_vlink_pair(switch_port_t* port);
 
+/*
+ * @name update_port_status
+ */
+rofl_result_t update_port_status(char * name);
+	
+/**
+ * Update physical port list 
+ */
+rofl_result_t update_physical_ports(void);
 
 /**
  * Destroys ports previously created 

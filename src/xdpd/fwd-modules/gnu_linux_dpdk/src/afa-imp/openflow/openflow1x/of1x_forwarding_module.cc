@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
@@ -9,6 +10,21 @@
 #include "../../../config.h"
 
 //Port config
+
+/*
+* Checks wheather the action group contains at least an action output
+*/
+static inline bool action_group_of1x_packet_in_contains_output(of1x_action_group_t* action_group){
+
+	of1x_packet_action_t* action;
+	
+	for(action=action_group->head;action;action = action->next){
+		if(action->type == OF1X_AT_OUTPUT)
+			return true; 
+	}
+	
+	return false;
+}
 
 /**
  * @name    fwd_module_of1x_set_port_drop_received_config
@@ -22,8 +38,9 @@
 afa_result_t fwd_module_of1x_set_port_drop_received_config(uint64_t dpid, unsigned int port_num, bool drop_received){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	//XXX
 
-	return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 
 /**
@@ -39,7 +56,9 @@ afa_result_t fwd_module_of1x_set_port_no_flood_config(uint64_t dpid, unsigned in
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return AFA_SUCCESS;
+	//XXX
+	
+	return AFA_FAILURE;
 }
 
 /**
@@ -55,7 +74,9 @@ afa_result_t fwd_module_of1x_set_port_forward_config(uint64_t dpid, unsigned int
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return AFA_SUCCESS;
+	//XXX
+	
+	return AFA_FAILURE;
 }
 /**
  * @name    fwd_module_of1x_set_port_generate_packet_in_config
@@ -70,7 +91,9 @@ afa_result_t fwd_module_of1x_set_port_generate_packet_in_config(uint64_t dpid, u
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return AFA_SUCCESS;
+	//XXX
+	
+	return AFA_FAILURE;
 }
 
 /**
@@ -86,7 +109,9 @@ afa_result_t fwd_module_of1x_set_port_advertise_config(uint64_t dpid, unsigned i
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return AFA_SUCCESS;
+	//XXX
+	
+	return AFA_FAILURE;
 }
 
 /**
@@ -101,6 +126,22 @@ afa_result_t fwd_module_of1x_set_port_advertise_config(uint64_t dpid, unsigned i
 afa_result_t fwd_module_of1x_set_pipeline_config(uint64_t dpid, unsigned int flags, uint16_t miss_send_len){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	
+	of_switch_t* lsw;
+
+	//Recover switch 
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+
+	//Check switch and port
+	if (!lsw ) {
+		//TODO: log this... should never happen
+		assert(0);
+		return AFA_FAILURE;
+	}	
+
+	//Simply store the new config
+	((of1x_switch_t*)lsw)->pipeline->capabilities = flags;
+	((of1x_switch_t*)lsw)->pipeline->miss_send_len = miss_send_len;
 
 	return AFA_SUCCESS;
 }
@@ -117,6 +158,28 @@ afa_result_t fwd_module_of1x_set_pipeline_config(uint64_t dpid, unsigned int fla
 afa_result_t fwd_module_of1x_set_table_config(uint64_t dpid, unsigned int table_id, of1x_flow_table_miss_config_t config){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+
+	of1x_switch_t* lsw;
+	unsigned int i;
+
+	//Recover switch 
+	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+	//Check switch and port
+	if( !lsw || ( (table_id != OF1X_FLOW_TABLE_ALL) && (table_id >= lsw->pipeline->num_of_tables) ) ) {
+		//TODO: log this... should never happen
+		assert(0);
+		return AFA_FAILURE;
+	}	
+
+	//Simply store the new config
+	if( table_id == OF1X_FLOW_TABLE_ALL ){
+		for( i=0; i < lsw->pipeline->num_of_tables; i++){
+			lsw->pipeline->tables[i].default_action = config;
+		}
+	}else{
+		lsw->pipeline->tables[table_id].default_action = config;
+	}
 
 	return AFA_SUCCESS;
 }
@@ -137,8 +200,10 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 {
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
-	return AFA_SUCCESS;
+
+	//XXX	
+
+	return AFA_FAILURE;
 }
 
 /**
@@ -158,8 +223,10 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t buffer_id, bool check_overlap, bool reset_counts){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+
+	//XXX
 	
-	return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 
 /**
@@ -177,7 +244,9 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 
-	return AFA_SUCCESS;
+	//XXX
+	
+	return AFA_FAILURE;
 }
 
 
@@ -198,7 +267,9 @@ afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	
-	return AFA_SUCCESS;
+	//XXX
+	
+	return AFA_FAILURE;
 } 
 
 //
@@ -219,10 +290,23 @@ afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
  * @param matches	Matches
  */
 of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_group_t* matches){
+	
+	of1x_switch_t* lsw;
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+
+	//Recover port	
+	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+	if(!lsw){
+		assert(0);
+		return NULL;
+	}
 	
-	return NULL; 
+	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+		return NULL; 
+
+	return of1x_get_flow_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
 }
 
  
@@ -243,8 +327,22 @@ of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 
-	return NULL; 
+	of1x_switch_t* lsw;
+
+	//Recover port	
+	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+	if(!lsw){
+		assert(0);
+		return NULL;
+	}
+
+	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+		return NULL; 
+
+	return of1x_get_flow_aggregate_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
 } 
+
 /**
  * @name    fwd_module_of1x_group_mod_add
  * @brief   Instructs driver to add a new GROUP
@@ -255,8 +353,15 @@ of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64
 rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t *buckets){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+		
+	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
-	return ROFL_OF1X_GM_OK;
+	if(!lsw){
+		assert(0);
+		return ROFL_OF1X_GM_UNKGRP;
+	}
+	
+	return of1x_group_add(lsw->pipeline->groups, type, id, buckets);
 }
 
 /**
@@ -269,8 +374,15 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_ty
 rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t *buckets){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+		
+	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
-	return ROFL_OF1X_GM_OK;
+	if(!lsw){
+		assert(0);
+		return ROFL_OF1X_GM_UNKGRP;
+	}
+	
+	return of1x_group_modify(lsw->pipeline->groups, type, id, buckets);
 }
 
 /**
@@ -283,8 +395,15 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group
 rofl_of1x_gm_result_t fwd_module_of1x_group_mod_delete(uint64_t dpid, uint32_t id){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+		
+	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
-	return ROFL_OF1X_GM_OK;
+	if(!lsw){
+		assert(0);
+		return ROFL_OF1X_GM_UNKGRP;
+	}
+	
+	return of1x_group_delete(lsw->pipeline, lsw->pipeline->groups, id);
 }
 
 /**
@@ -295,8 +414,18 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_delete(uint64_t dpid, uint32_t i
  * @param dpid 		Datapath ID of the switch to search the GROUP
  */
 afa_result_t fwd_module_of1x_fetch_group_table(uint64_t dpid, of1x_group_table_t *group_table){
+		
+	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
-	return AFA_FAILURE;
+	if(!lsw){
+		assert(0);
+		return AFA_FAILURE;
+	}
+	
+	if(of1x_fetch_group_table(lsw->pipeline,group_table)!=ROFL_SUCCESS)
+		return AFA_FAILURE;
+	
+	return AFA_SUCCESS;
 }
 /**
  * @name    fwd_module_of1x_get_group_stats
@@ -308,8 +437,15 @@ afa_result_t fwd_module_of1x_fetch_group_table(uint64_t dpid, of1x_group_table_t
 of1x_stats_group_msg_t * fwd_module_of1x_get_group_stats(uint64_t dpid, uint32_t id){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+		
+	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
-	return NULL; 
+	if(!lsw){
+		assert(0);
+		return NULL;
+	}
+	
+	return of1x_get_group_stats(lsw->pipeline,id);
 }
 
 /**
@@ -320,10 +456,13 @@ of1x_stats_group_msg_t * fwd_module_of1x_get_group_stats(uint64_t dpid, uint32_t
  * @param dpid 		Datapath ID of the switch where the GROUPS are
  */
 of1x_stats_group_msg_t * fwd_module_of1x_get_group_all_stats(uint64_t dpid, uint32_t id){
-	
+		
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
-	if(!lsw)
+
+	if(!lsw){
+		assert(0);
 		return NULL;
+	}
 
 	return of1x_get_group_all_stats(lsw->pipeline,id);
 }

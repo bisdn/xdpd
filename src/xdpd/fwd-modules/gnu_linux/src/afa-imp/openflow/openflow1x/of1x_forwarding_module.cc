@@ -325,6 +325,10 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 	//Recover port	
 	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
+	if(!lsw){
+		assert(0);
+		return AFA_FAILURE;
+	}
 
 	if(table_id >= lsw->pipeline->num_of_tables)
 		return AFA_FAILURE;
@@ -376,6 +380,10 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 	//Recover port	
 	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
+	if(!lsw){
+		assert(0);
+		return AFA_FAILURE;
+	}
 
 	if(table_id >= lsw->pipeline->num_of_tables)
 		return AFA_FAILURE;
@@ -408,6 +416,10 @@ afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
 	//Recover port	
 	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
+	if(!lsw){
+		assert(0);
+		return AFA_FAILURE;
+	}
 
 	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
 		return AFA_FAILURE;
@@ -451,6 +463,10 @@ of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
 	//Recover port	
 	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
+	if(!lsw){
+		assert(0);
+		return NULL;
+	}
 
 	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
 		return NULL; 
@@ -479,6 +495,10 @@ of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64
 	//Recover port	
 	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
+	if(!lsw){
+		assert(0);
+		return NULL;
+	}
 
 	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
 		return NULL; 
@@ -496,6 +516,11 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_ty
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
+	if(!lsw){
+		assert(0);
+		return ROFL_OF1X_GM_UNKGRP;
+	}
+
 	return of1x_group_add(lsw->pipeline->groups, type, id, buckets);
 }
 
@@ -509,7 +534,12 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_ty
 rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t *buckets){
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
-	
+		
+	if(!lsw){
+		assert(0);
+		return ROFL_OF1X_GM_UNKGRP;
+	}
+
 	return of1x_group_modify(lsw->pipeline->groups, type, id, buckets);
 }
 
@@ -523,7 +553,12 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group
 rofl_of1x_gm_result_t fwd_module_of1x_group_mod_delete(uint64_t dpid, uint32_t id){
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
-	
+		
+	if(!lsw){
+		assert(0);
+		return ROFL_OF1X_GM_UNKGRP;
+	}
+
 	return of1x_group_delete(lsw->pipeline, lsw->pipeline->groups, id);
 }
 
@@ -537,7 +572,12 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_delete(uint64_t dpid, uint32_t i
 afa_result_t fwd_module_of1x_fetch_group_table(uint64_t dpid, of1x_group_table_t *group_table){
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
-	
+		
+	if(!lsw){
+		assert(0);
+		return AFA_FAILURE;
+	}
+
 	if(of1x_fetch_group_table(lsw->pipeline,group_table)!=ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
@@ -555,6 +595,11 @@ of1x_stats_group_msg_t * fwd_module_of1x_get_group_stats(uint64_t dpid, uint32_t
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
+	if(!lsw){
+		assert(0);
+		return NULL;
+	}
+
 	return of1x_get_group_stats(lsw->pipeline,id);
 }
 
@@ -569,5 +614,10 @@ of1x_stats_group_msg_t * fwd_module_of1x_get_group_all_stats(uint64_t dpid, uint
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
-		return of1x_get_group_all_stats(lsw->pipeline,id);
+	if(!lsw){
+		assert(0);
+		return NULL;
+	}
+
+	return of1x_get_group_all_stats(lsw->pipeline,id);
 }

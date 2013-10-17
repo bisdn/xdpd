@@ -1,5 +1,7 @@
 #include "processing.h"
 #include <rofl/common/utils/c_logger.h>
+#include <rte_common.h>
+#include <rte_cycles.h>
 #include <rte_spinlock.h>
 
 #include "assert.h"
@@ -8,6 +10,11 @@
 #include "../io/port_state.h"
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
+#if 1
+#define BURST_TX_DRAIN 200000ULL /* around 100us at 2 Ghz */
+#else
+#define BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
+#endif
 
 using namespace xdpd::gnu_linux;
 using namespace xdpd::gnu_linux_dpdk;
@@ -117,15 +124,23 @@ inline static void process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_b
 }
 
 inline static void process_port_tx(switch_port_t* port){
-	//XXX	
+	//XXX
+	fprintf(stderr, "Sending burst\n");	
 }
 
 int processing_core_process_packets(void* not_used){
 
 	unsigned int i;
 	switch_port_t* port;
+        uint64_t diff_tsc, prev_tsc;
 	struct rte_mbuf* pkts_burst[IO_IFACE_MAX_PKT_BURST];
 	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
+
+#if 1
+	const uint64_t drain_tsc = BURST_TX_DRAIN; 
+#else
+	const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * BURST_TX_DRAIN_US;
+#endif
 
 	//Parsing and pipeline extra state
 	datapacket_t pkt;
@@ -138,17 +153,35 @@ int processing_core_process_packets(void* not_used){
 
 	//Set flag to active
 	tasks->active = true;
+	
+	//Last drain tsc
+	prev_tsc = 0;
 
 	while(likely(tasks->active)){
-	
+
+		//Calc diff
+		diff_tsc = prev_tsc - rte_rdtsc();  
+
+		//Drain TX if necessary	
+		if(unlikely(diff_tsc > drain_tsc)){
+
+			for(i=0;i<tasks->num_of_ports;++i){
+				port = tasks->port_list[i];
+				if(likely(port != NULL)){ //This CAN happen while deschedulings
+					//Process TX
+					process_port_tx(port);
+
+				}
+			}
+		}
+
+		//Process RX
 		for(i=0;i<tasks->num_of_ports;++i){
 			port = tasks->port_list[i];
 			if(likely(port != NULL)){ //This CAN happen while deschedulings
 				//Process RX&pipeline 
 				process_port_rx(port, pkts_burst, &pkt, &pkt_state, &pkt_x86);
 
-				//Process TX
-				process_port_tx(port);
 			}
 		}
 	}

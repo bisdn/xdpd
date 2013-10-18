@@ -105,5 +105,8 @@ afa_result_t cmm_process_of1x_flow_removed(const of1x_switch_t* sw, uint8_t reas
 	
 	dp = switch_manager::find_by_dpid(sw->dpid);
 
+	if(!dp)
+		return AFA_FAILURE;
+
 	return dp->process_flow_removed(reason, removed_flow_entry);
 }

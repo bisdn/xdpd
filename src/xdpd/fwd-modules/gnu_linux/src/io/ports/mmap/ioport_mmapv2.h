@@ -112,10 +112,15 @@ private:
 	int block_size;
 	int n_blocks;
 	int frame_size;
+	int deferred_drain;
 
 	//Pipe used to
 	int notify_pipe[2];
 	
+	//Used to drain the pipe
+	char draining_buffer[IO_IFACE_RING_SLOTS];
+	
+
 	//Pipe extremes
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;

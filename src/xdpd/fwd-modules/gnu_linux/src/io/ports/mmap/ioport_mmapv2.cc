@@ -25,7 +25,8 @@ ioport_mmapv2::ioport_mmapv2(
 			tx(NULL),
 			block_size(block_size),
 			n_blocks(n_blocks),
-			frame_size(frame_size)
+			frame_size(frame_size),
+			deferred_drain(0)
 {
 	int rc;
 
@@ -105,13 +106,22 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 }
 
 inline void ioport_mmapv2::empty_pipe(){
-	//Whatever
-	char c;
 	int ret;
 
-	//Just take the byte from the pipe	
-	ret = ::read(notify_pipe[READ],&c,sizeof(c));
-	(void)ret; // todo use the value
+	if(unlikely(deferred_drain == 0))
+		return;
+
+	//Just take deferred_drain from the pipe 
+	ret = ::read(notify_pipe[READ], draining_buffer, deferred_drain);
+
+	if(unlikely(ret == -1)){
+		//EAGAIN
+	}else{
+		if(unlikely( (deferred_drain - ret) < 0 ) ){
+			deferred_drain = 0;
+		}else
+			deferred_drain -= ret;
+	}
 }
 
 inline void ioport_mmapv2::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86 *pkt_x86){
@@ -274,6 +284,11 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 					of_port_state->name,
 					q_id,
 					num_of_buckets);
+
+			//Drain notification pipe (pending tokens)
+			if(unlikely(deferred_drain > 0)){
+				empty_pipe();
+			}
 			break;
 		}
 
@@ -297,9 +312,6 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			break;
 		}
 	
-		//Empty reading pipe
-		empty_pipe();
-
 		pkt_x86 = (datapacketx86*) pkt->platform_state;
 
 		if(unlikely(pkt_x86->get_buffer_length() > mps)){
@@ -312,7 +324,8 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 		
 			//Increment errors
 			switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, 1);	
-			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, 1);	
+			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, 1);
+			deferred_drain++;
 			continue;
 		}else{	
 			fill_tx_slot(hdr, pkt_x86);
@@ -324,8 +337,13 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 		// todo statistics
 		tx_bytes_local += hdr->tp_len;
 		cnt++;
+		deferred_drain++;
 	}
 	
+	//Empty reading pipe (batch)
+	empty_pipe();
+
+
 	//Increment stats and return
 	if (cnt) {
 		ROFL_DEBUG_VERBOSE("[mmap:%s] schedule %u packet(s) to be send\n", __FUNCTION__, cnt);

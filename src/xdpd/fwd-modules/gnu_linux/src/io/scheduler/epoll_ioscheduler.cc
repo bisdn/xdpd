@@ -128,7 +128,7 @@ inline void epoll_ioscheduler::add_fd_epoll(struct epoll_event* ev, int epfd, io
 	}
 
 	//Set data	
-	ev->events = EPOLLIN | EPOLLPRI /*| EPOLLET*/;
+	ev->events = EPOLLIN | EPOLLPRI /*| EPOLLERR | EPOLLET*/;
 	port_data->fd = fd;
 	port_data->port = port;
 	ev->data.ptr = (void*)port_data; //Use pointer ONLY
@@ -257,11 +257,17 @@ void* epoll_ioscheduler::process_io(void* grp){
 		//Wait for events or TIMEOUT_MS
 		res = epoll_wait(epfd, events, current_num_of_ports, EPOLL_TIMEOUT_MS);
 		
-		if(res == -1){
-			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] epoll returned -1. Continuing...\n");
+		if(unlikely(res == -1)){
+#ifdef DEBUG
+			if (errno != EINTR){
+				ROFL_DEBUG("[epoll_ioscheduler] epoll returned -1 (%s) Continuing...\n",strerror(errno));
+				assert(0);
+			}
+#endif
 			continue;
 		}
-		if(res == 0){
+
+		if(unlikely(res == 0)){
 			//Timeout
 		}else{	
 			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Got %d events\n", res); 
@@ -278,6 +284,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 				}
 			}while(more_packets);	
 		}
+
 		//Check for updates in the running ports 
 		if( pg->running_hash != current_hash )
 			init_or_update_fds(pg, ports, &epfd, &ev, &events, &current_num_of_ports, &current_hash );

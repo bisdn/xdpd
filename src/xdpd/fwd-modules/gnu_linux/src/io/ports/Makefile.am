@@ -3,6 +3,7 @@ MAINTAINERCLEANFILES = Makefile.in
 SUBDIRS = \
 	mmap \
 	mockup\
+	netmap\
 	vlink	
 
 noinst_LTLIBRARIES = libfwd_module_gnu_linux_io_ports.la
@@ -18,4 +19,5 @@ libfwd_module_gnu_linux_io_ports_la_SOURCES = \
 libfwd_module_gnu_linux_io_ports_la_LIBADD = \
 	mmap/libfwd_module_gnu_linux_io_ports_mmap.la \
 	mockup/libfwd_module_gnu_linux_io_ports_mockup.la\
+	netmap/libfwd_module_gnu_linux_io_ports_netmap.la\
 	vlink/libfwd_module_gnu_linux_io_ports_vlink.la

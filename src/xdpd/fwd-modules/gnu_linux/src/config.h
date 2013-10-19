@@ -51,6 +51,8 @@
 //Number of output queues per interface
 #define IO_IFACE_NUM_QUEUES 8
 
+//#define IO_USE_NETMAP
+
 //Max frame size (WARNING: do not go beyond 8192 bytes, and never underneath 2048 bytes)
 //Align to a power of 2
 #define IO_IFACE_MMAP_FRAME_SIZE 2048

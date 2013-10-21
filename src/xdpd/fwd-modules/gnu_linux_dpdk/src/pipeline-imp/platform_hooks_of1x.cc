@@ -16,6 +16,7 @@
 
 #include "../io/pktin_dispatcher.h"
 #include "../io/bufferpool.h"
+#include "../io/datapacket_storage.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -27,16 +28,47 @@ extern struct rte_mempool* pool_direct;
 */
 rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 
-	ROFL_INFO(" calling %s()\n",__FUNCTION__);
+	unsigned int i;
+
+	sw->platform_state = (of_switch_platform_state_t*)new datapacket_storage( IO_PKT_IN_STORAGE_MAX_BUF, IO_PKT_IN_STORAGE_EXPIRATION_S); // todo make this value configurable
+
+	if(unlikely(!sw->platform_state))
+		return ROFL_FAILURE;
+
+	//Set number of buffers
+	sw->pipeline->num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
+	
+	//Set the actions and matches supported by this platform
+	for(i=0; i<sw->pipeline->num_of_tables; i++){
+		of1x_flow_table_config_t *config = &(sw->pipeline->tables[i].config);
+		//Lets set to zero the unssuported matches and actions.
+		config->apply_actions &= ~(1 << OF12PAT_COPY_TTL_OUT);
+		config->apply_actions &= ~(1 << OF12PAT_COPY_TTL_IN);
+		config->write_actions &= ~(1 << OF12PAT_COPY_TTL_OUT);
+		config->write_actions &= ~(1 << OF12PAT_COPY_TTL_IN);
+		
+		config->match &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		config->wildcards &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		config->apply_setfields &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		config->write_setfields &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		
+		config->match &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		config->wildcards &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		config->apply_setfields &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		config->write_setfields &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		
+		config->match &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+		config->wildcards &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+		config->apply_setfields &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+		config->write_setfields &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+	}
 
 	return ROFL_SUCCESS;
 }
 
 rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
-	ROFL_INFO(" calling %s()\n",__FUNCTION__);
-	
-
+	delete (datapacket_storage*)sw->platform_state;
 	return ROFL_SUCCESS;
 }
 

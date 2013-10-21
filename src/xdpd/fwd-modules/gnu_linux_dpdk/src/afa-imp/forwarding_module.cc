@@ -134,12 +134,8 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	if(!sw)
 		return NULL; //Error
 
-
-	//In software switches, you may have to launch threads that
-	//do the pipeline processing of the packets
-	
 	//If you would fully use ROFL-pipeline you woudl call then
-	//physical_switch_add_logical_switch(sw);
+	physical_switch_add_logical_switch(sw);
 	
 	return sw;
 }
@@ -162,8 +158,25 @@ of_switch_t* fwd_module_get_switch_by_dpid(uint64_t dpid){
 */
 afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling destroy_switch_by_dpid()\n");
-	//XXX	
+	//unsigned int i;
+	
+	//Try to retrieve the switch
+	of_switch_t* sw = physical_switch_get_logical_switch_by_dpid(dpid);
+	
+	if(!sw)
+		return AFA_FAILURE;
+
+	//Desechedule all ports
+	//XXX
+	
+	//Detach ports from switch. Do not feed more packets to the switch
+	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
+		return AFA_FAILURE;
+	
+	//Remove switch from the switch bank
+	if(physical_switch_remove_logical_switch(sw)!=ROFL_SUCCESS)
+		return AFA_FAILURE;
+	
 	return AFA_SUCCESS;
 }
 

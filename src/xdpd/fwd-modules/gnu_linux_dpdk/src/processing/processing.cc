@@ -84,12 +84,13 @@ rofl_result_t processing_destroy(void){
 /*
 * Processes RX in a specific port. The function will process up to MAX_BURST_SIZE 
 */
-inline static void process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t* pkt, dpdk_pkt_platform_state_t* pkt_state, datapacketx86* pkt_x86){
+inline static void process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t* pkt, dpdk_pkt_platform_state_t* pkt_state){
 	
 	unsigned int i, burst_len;
 	of_switch_t* sw = port->attached_sw;
 	struct rte_mbuf* mbuf;
 	dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;
+	datapacketx86* pkt_x86 = pkt_state->pktx86;
 
 	//Read a burst
 	burst_len = rte_eth_rx_burst(port_state->port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
@@ -163,8 +164,9 @@ int processing_core_process_packets(void* not_used){
 	dpdk_pkt_platform_state_t pkt_state;
 
 	//Init values and assign
-	pkt.platform_state = (platform_port_state_t*)&pkt_x86;
-	//pkt_x86.mbuf = 
+	pkt.platform_state = (platform_port_state_t*)&pkt_state;
+	pkt_state.pktx86 = &pkt_x86; 
+	pkt_state.mbuf = NULL;
 
 	//Set flag to active
 	tasks->active = true;
@@ -197,7 +199,7 @@ int processing_core_process_packets(void* not_used){
 			port = tasks->port_list[i];
 			if(likely(port != NULL)){ //This CAN happen while deschedulings
 				//Process RX&pipeline 
-				process_port_rx(port, pkts_burst, &pkt, &pkt_state, &pkt_x86);
+				process_port_rx(port, pkts_burst, &pkt, &pkt_state);
 
 			}
 		}

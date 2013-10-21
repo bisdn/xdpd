@@ -19,6 +19,7 @@ namespace gnu_linux_dpdk {
 */
 typedef struct dpdk_pkt_platform_state{
 
+	xdpd::gnu_linux::datapacketx86* pktx86;
 	struct rte_mbuf* mbuf;
 
 }dpdk_pkt_platform_state_t;

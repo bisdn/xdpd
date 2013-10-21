@@ -8,10 +8,19 @@
 #include "../config.h"
 #include <rte_common.h>
 #include <rte_cycles.h>
+#include <rte_mbuf.h>
+#include <rte_mempool.h>
 #include <rte_spinlock.h>
 #include <rte_ring.h>
 
 
+#include "../io/pktin_dispatcher.h"
+#include "../io/bufferpool.h"
+
+using namespace xdpd::gnu_linux;
+
+//MBUF pool
+extern struct rte_mempool* pool_direct;
 
 /*
 * Hooks for configuration of the switch
@@ -20,9 +29,6 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 
 	ROFL_INFO(" calling %s()\n",__FUNCTION__);
 
-	//Create PKT_IN queue
-	sw->platform_state = (of_switch_platform_state_t*)rte_ring_create(sw->name, IO_PKT_IN_STORAGE_MAX_BUF, SOCKET_ID_ANY, 0x0);	
-
 	return ROFL_SUCCESS;
 }
 
@@ -30,11 +36,7 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
 	ROFL_INFO(" calling %s()\n",__FUNCTION__);
 	
-	//struct rte_ring* ring = (struct rte_ring*)sw->platform_state;
 
-	//Destroy ring?
-	//XXX: not available??
-	
 	return ROFL_SUCCESS;
 }
 
@@ -45,16 +47,83 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 * Packet in
 */
 
+
 void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
+	datapacket_t* pkt_replica=NULL;
+	struct rte_mbuf* mbuf=NULL;
+	datapacketx86* pktx86;
+	datapacketx86* pktx86_replica;
+	
 	ROFL_INFO(" calling %s()\n",__FUNCTION__);
-	//datapacket_t* pkt_replica;
-	
-	//Replicate the packet
-	
-	//Save it in the data storage	
 
-	//Send packet 
+	//Protect
+	if(unlikely(!pkt) || unlikely(!sw))
+		return;
+
+	//datapacket_t* pkt_replica;
+	pkt_replica = bufferpool::get_free_buffer(false);
+	
+	if(unlikely(!pkt_replica)){
+		//TODO: add trace
+		goto PKT_IN_ERROR;
+	}
+
+	pktx86 = (datapacketx86*)pkt->platform_state;
+	pktx86_replica = (datapacketx86*)pkt_replica->platform_state;
+
+	//Retrieve an mbuf, copy contents, and initialize pktx86_replica
+	mbuf = rte_pktmbuf_alloc(pool_direct);
+	
+	if(unlikely(!mbuf)){
+		//TODO: add trace
+		goto PKT_IN_ERROR;
+	}
+
+	//Copy PKT stuff
+	memcpy(&pkt_replica->matches, &pkt->matches, sizeof(pkt->matches));
+	memcpy(&pkt_replica->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
+
+	//mark as replica
+	pkt_replica->is_replica = true;
+	pkt_replica->sw = pkt->sw;
+
+	//Initialize replica buffer (without classification)
+	pktx86->init((uint8_t*)mbuf->buf_addr, mbuf->buf_len, (of_switch_t*)sw, pktx86->in_port, 0, false, false);
+
+	//Replicate the packet(copy contents)	
+	memcpy(pktx86_replica->get_buffer(), pktx86->get_buffer(), pktx86->get_buffer_length());
+	pktx86_replica->ipv4_recalc_checksum 	= pktx86->ipv4_recalc_checksum;
+	pktx86_replica->icmpv4_recalc_checksum 	= pktx86->icmpv4_recalc_checksum;
+	pktx86_replica->tcp_recalc_checksum 	= pktx86->tcp_recalc_checksum;
+	pktx86_replica->udp_recalc_checksum 	= pktx86->udp_recalc_checksum;
+
+	//Classify
+	//TODO: this could be improved by copying the classification state
+	pktx86_replica->headers->classify();	
+
+	//Store in PKT_IN ring
+	if( unlikely( enqueue_pktin(pkt_replica) != ROFL_SUCCESS ) ){
+		//PKT_IN ring full
+		//TODO: add trace
+		goto PKT_IN_ERROR;
+		
+	}
+
+	return; //DO NOT REMOVE
+
+PKT_IN_ERROR:
+	//assert(0); //Sometimes useful while debugging. In general should be disabled
+	
+	//Release packet
+	if(pkt_replica){
+		bufferpool::release_buffer(pkt_replica);
+
+		if(mbuf){
+			rte_pktmbuf_free(mbuf);
+		}
+	}
+	return;
 }
 
 //Flow removed

@@ -14,17 +14,16 @@
 namespace xdpd {
 namespace gnu_linux_dpdk {
 
-
 /*
-* Binds datapacket with dpdk's mbuf
+* Binds datapacket dpdk's state (mbuf...)
 */
 typedef struct dpdk_pkt_platform_state{
+
 	struct rte_mbuf* mbuf;
-	xdpd::gnu_linux::datapacketx86* pkt_x86;
+
 }dpdk_pkt_platform_state_t;
 
 }// namespace xdpd::gnu_linux_dpdk 
 }// namespace xdpd
-
 
 #endif //_DPDK_DATAPACKET_H_

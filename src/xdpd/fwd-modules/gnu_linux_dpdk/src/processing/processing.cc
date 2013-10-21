@@ -10,11 +10,6 @@
 #include "../io/port_state.h"
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
-#if 1
-#define BURST_TX_DRAIN 200000ULL /* around 100us at 2 Ghz */
-#else
-#define BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
-#endif
 
 using namespace xdpd::gnu_linux;
 using namespace xdpd::gnu_linux_dpdk;
@@ -123,9 +118,29 @@ inline static void process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_b
 	}	
 }
 
-inline static void process_port_tx(switch_port_t* port){
-	//XXX
-	fprintf(stderr, "Sending burst\n");	
+inline static void process_port_tx(switch_port_t* port, unsigned int queue_id){
+	struct rte_mbuf **m_table;
+	unsigned ret, n, port_id;
+
+	dpdk_port_state_t* ps = (dpdk_port_state_t*)port->platform_port_state;
+	port_id = ps->port_id;	
+
+	m_table = ps->tx_mbufs[queue_id].m_table;
+	n = ps->tx_mbufs[queue_id].len;
+
+	if( n == 0)
+		return;
+
+	//Send burst
+	ret = rte_eth_tx_burst(port_id, queue_id, m_table, n);
+	//port_statistics[port].tx += ret;
+
+	if (unlikely(ret < n)) {
+		//port_statistics[port].dropped += (n - ret);
+		do {
+			rte_pktmbuf_free(m_table[ret]);
+		} while (++ret < n);
+	}
 }
 
 int processing_core_process_packets(void* not_used){
@@ -137,9 +152,9 @@ int processing_core_process_packets(void* not_used){
 	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
 
 #if 1
-	const uint64_t drain_tsc = BURST_TX_DRAIN; 
+	const uint64_t drain_tsc = IO_BURST_TX_DRAIN; 
 #else
-	const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * BURST_TX_DRAIN_US;
+	const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * IO_BURST_TX_DRAIN_US;
 #endif
 
 	//Parsing and pipeline extra state
@@ -148,8 +163,8 @@ int processing_core_process_packets(void* not_used){
 	dpdk_pkt_platform_state_t pkt_state;
 
 	//Init values and assign
-	pkt_state.pkt_x86 = &pkt_x86;
-	pkt.platform_state = (platform_port_state_t*)&pkt_state;
+	pkt.platform_state = (platform_port_state_t*)&pkt_x86;
+	//pkt_x86.mbuf = 
 
 	//Set flag to active
 	tasks->active = true;
@@ -169,7 +184,9 @@ int processing_core_process_packets(void* not_used){
 				port = tasks->port_list[i];
 				if(likely(port != NULL)){ //This CAN happen while deschedulings
 					//Process TX
-					process_port_tx(port);
+					for( i=(IO_IFACE_NUM_QUEUES-1); i >=0 ; --i ){
+						process_port_tx(port, i);
+					}
 
 				}
 			}

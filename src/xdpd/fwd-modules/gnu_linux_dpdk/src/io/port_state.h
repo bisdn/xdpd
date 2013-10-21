@@ -7,7 +7,14 @@
 
 #include "../config.h"
 
-typedef struct dpdk_port_state{
+#define MAX_PKT_BURST 32
+
+struct mbuf_table {
+	unsigned len;
+	struct rte_mbuf *m_table[IO_IFACE_MAX_PKT_BURST];
+};
+
+struct dpdk_port_state{
 
 	//Core attachement state
 	bool scheduled;
@@ -18,8 +25,9 @@ typedef struct dpdk_port_state{
 	unsigned int port_id;
 
 	//TX queue(s)
-	unsigned int tx_len;
-	struct rte_ring* tx_queues[IO_IFACE_NUM_QUEUES];
-}dpdk_port_state_t;
+	struct mbuf_table tx_mbufs[IO_IFACE_NUM_QUEUES];
+} __rte_cache_aligned;
+
+typedef struct dpdk_port_state dpdk_port_state_t;  
 
 #endif //_PORT_STATE_H_

@@ -73,6 +73,9 @@ public:
 	uint8_t pktin_table_id;
 	of_packet_in_reason_t pktin_reason;	
 
+	//Opaque pointer
+	void* extra;
+
 public: // methods
 
 	//Initialize the already constructed object

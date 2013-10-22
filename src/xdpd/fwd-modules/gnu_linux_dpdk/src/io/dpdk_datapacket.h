@@ -5,6 +5,8 @@
 #ifndef _DPDK_DATAPACKET_H_
 #define _DPDK_DATAPACKET_H_
 
+#include "../config.h"
+
 #include <rte_common.h> 
 #include <rte_eal.h> 
 #include <rte_mbuf.h> 

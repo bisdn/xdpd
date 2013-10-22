@@ -19,6 +19,7 @@
 #include "dpdk_datapacket.h"
 
 #include "port_state.h"
+#include "../processing/processing.h"
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 namespace xdpd {
@@ -31,16 +32,18 @@ namespace gnu_linux_dpdk {
 /*
 * Processes RX in a specific port. The function will process up to MAX_BURST_SIZE 
 */
-inline void process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t* pkt, dpdk_pkt_platform_state_t* pkt_state){
+inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkts_burst, datapacket_t* pkt, dpdk_pkt_platform_state_t* pkt_state){
 	
 	unsigned int i, burst_len;
 	of_switch_t* sw = port->attached_sw;
 	struct rte_mbuf* mbuf;
-	dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;
+	//dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;
 	xdpd::gnu_linux::datapacketx86* pkt_x86 = pkt_state->pktx86;
 
 	//Read a burst
-	burst_len = rte_eth_rx_burst(port_state->port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
+	burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
+
+	//XXX: statistics
 
 	//Process them 
 	for(i=0;i<burst_len;++i){
@@ -66,29 +69,25 @@ inline void process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, d
 	}	
 }
 
-inline void process_port_tx(switch_port_t* port, unsigned int queue_id){
-	struct rte_mbuf **m_table;
-	unsigned ret, n, port_id;
+inline void process_port_tx(switch_port_t* port, unsigned int port_id, struct mbuf_table* queue, unsigned int queue_id){
+	unsigned ret;
 
-	dpdk_port_state_t* ps = (dpdk_port_state_t*)port->platform_port_state;
-	port_id = ps->port_id;	
-
-	m_table = ps->tx_mbufs[queue_id].m_table;
-	n = ps->tx_mbufs[queue_id].len;
-
-	if( n == 0)
+	if(queue->len == 0)
 		return;
 
 	//Send burst
-	ret = rte_eth_tx_burst(port_id, queue_id, m_table, n);
-	//port_statistics[port].tx += ret;
+	ret = rte_eth_tx_burst(port_id, queue_id, queue->m_table, queue->len);
+	//XXX port_statistics[port].tx += ret;
 
-	if (unlikely(ret < n)) {
-		//port_statistics[port].dropped += (n - ret);
+	if (unlikely(ret < queue->len)) {
+		//XXX port_statistics[port].dropped += (n - ret);
 		do {
-			rte_pktmbuf_free(m_table[ret]);
-		} while (++ret < n);
+			rte_pktmbuf_free(queue->m_table[ret]);
+		} while (++ret < queue->len);
 	}
+
+	//Reset queue size	
+	queue->len = 0;
 }
 
 inline void tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){

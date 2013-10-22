@@ -22,6 +22,18 @@
 
 #define MAX_PORTS_PER_CORE 64
 
+//Burst definition(queue)
+struct mbuf_table {
+	unsigned len;
+	struct rte_mbuf *m_table[IO_IFACE_MAX_PKT_BURST];
+};
+
+//Port queues
+typedef struct port_queues{
+	//This are TX-queues of a port 
+	struct mbuf_table tx_mbufs[IO_IFACE_NUM_QUEUES];
+}port_queues_t;
+
 /**
 * Core task list
 */
@@ -30,6 +42,9 @@ typedef struct core_tasks{
 	bool active;
 	unsigned int num_of_ports;
 	switch_port_t* port_list[MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
+	
+	//This are the TX-queues for ALL ports in the system; index is port_id
+	port_queues_t all_ports[MAX_PORTS_PER_CORE];
 }core_tasks_t;
 
 //C++ extern C

@@ -79,10 +79,10 @@ rofl_result_t processing_destroy(void){
 
 int processing_core_process_packets(void* not_used){
 
-	unsigned int i;
+	unsigned int i, port_id;
 	switch_port_t* port;
         uint64_t diff_tsc, prev_tsc;
-	struct rte_mbuf* pkts_burst[IO_IFACE_MAX_PKT_BURST];
+	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST];
 	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
 
 #if 1
@@ -117,10 +117,11 @@ int processing_core_process_packets(void* not_used){
 
 			for(i=0;i<tasks->num_of_ports;++i){
 				port = tasks->port_list[i];
+				port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 				if(likely(port != NULL)){ //This CAN happen while deschedulings
 					//Process TX
 					for( i=(IO_IFACE_NUM_QUEUES-1); i >=0 ; --i ){
-						process_port_tx(port, i);
+						process_port_tx(port, port_id, &tasks->all_ports[port_id].tx_mbufs[i], i);
 					}
 
 				}
@@ -130,9 +131,10 @@ int processing_core_process_packets(void* not_used){
 		//Process RX
 		for(i=0;i<tasks->num_of_ports;++i){
 			port = tasks->port_list[i];
+			port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 			if(likely(port != NULL)){ //This CAN happen while deschedulings
 				//Process RX&pipeline 
-				process_port_rx(port, pkts_burst, &pkt, &pkt_state);
+				process_port_rx(port, port_id, pkt_burst, &pkt, &pkt_state);
 
 			}
 		}

@@ -30,7 +30,8 @@ struct mbuf_table {
 
 //Port queues
 typedef struct port_queues{
-	//This are TX-queues of a port 
+	//This are TX-queues of a port
+	bool present; //signals that it is present AND is attached (usable by I/O subsytem) 
 	struct mbuf_table tx_queues[IO_IFACE_NUM_QUEUES];
 }port_queues_t;
 
@@ -40,7 +41,7 @@ typedef struct port_queues{
 typedef struct core_tasks{
 	bool available;
 	bool active;
-	unsigned int num_of_ports;
+	unsigned int num_of_rx_ports;
 	switch_port_t* port_list[MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
 	
 	//This are the TX-queues for ALL ports in the system; index is port_id
@@ -50,6 +51,9 @@ typedef struct core_tasks{
 
 //Fwd delcaration of core_tasks array
 extern core_tasks_t processing_cores[];
+
+//Fwd declaration total number of ports (scheduled, so usable by the I/O)
+extern unsigned int total_num_of_ports;
 
 //C++ extern C
 ROFL_BEGIN_DECLS

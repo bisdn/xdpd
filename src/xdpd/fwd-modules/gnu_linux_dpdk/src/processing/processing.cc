@@ -22,6 +22,7 @@ static unsigned int current_core_index;
 static unsigned int max_cores;
 static rte_spinlock_t mutex;
 core_tasks_t processing_cores[RTE_MAX_LCORE];
+unsigned int total_num_of_ports = 0;
 
 
 /*
@@ -79,8 +80,9 @@ rofl_result_t processing_destroy(void){
 
 int processing_core_process_packets(void* not_used){
 
-	unsigned int i, port_id;
+	unsigned int i, j, port_id;
 	switch_port_t* port;
+	port_queues_t* port_queues;	
         uint64_t diff_tsc, prev_tsc;
 	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST];
 	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
@@ -115,21 +117,23 @@ int processing_core_process_packets(void* not_used){
 		//Drain TX if necessary	
 		if(unlikely(diff_tsc > drain_tsc)){
 
-			for(i=0;i<tasks->num_of_ports;++i){
-				port = tasks->port_list[i];
-				port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
-				if(likely(port != NULL)){ //This CAN happen while deschedulings
-					//Process TX
-					for( i=(IO_IFACE_NUM_QUEUES-1); i >=0 ; --i ){
-						process_port_queue_tx(port, port_id, &tasks->all_ports[port_id].tx_queues[i], i);
-					}
+			for(i=0;i<total_num_of_ports;){
+				port_queues = &tasks->all_ports[i];
 
+				//Skip non-present ports (un-contiguous port_ids?)	
+				if(unlikely(!port_queues->present))
+					continue;
+
+				//Process TX
+				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; --j ){
+					process_port_queue_tx(port, port_id, &port_queues->tx_queues[j], j);
 				}
+				i++;
 			}
 		}
 
 		//Process RX
-		for(i=0;i<tasks->num_of_ports;++i){
+		for(i=0;i<tasks->num_of_rx_ports;++i){
 			port = tasks->port_list[i];
 			port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 			if(likely(port != NULL)){ //This CAN happen while deschedulings
@@ -155,7 +159,7 @@ int processing_core_process_packets(void* not_used){
 */
 rofl_result_t processing_schedule_port(switch_port_t* port){
 
-	unsigned int index, *num_of_ports;
+	unsigned int i, index, *num_of_ports;
 	dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;	
 
 	rte_spinlock_lock(&mutex);
@@ -175,9 +179,9 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			assert(0);		
 			return ROFL_FAILURE;
 		}
-	}while( processing_cores[current_core_index].available == false || processing_cores[current_core_index].num_of_ports == MAX_PORTS_PER_CORE);
+	}while( processing_cores[current_core_index].available == false || processing_cores[current_core_index].num_of_rx_ports == MAX_PORTS_PER_CORE);
 
-	num_of_ports = &processing_cores[current_core_index].num_of_ports;
+	num_of_ports = &processing_cores[current_core_index].num_of_rx_ports;
 
 	//Assign port and exit
 	if(processing_cores[current_core_index].port_list[*num_of_ports] != NULL){
@@ -195,6 +199,14 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	(*num_of_ports)++;
 	
 	index = current_core_index;
+
+	//Mark port as present (and scheduled) on all cores (TX)
+	for(i=0;i<RTE_MAX_LCORE;++i){
+		processing_cores[i].all_ports[port_state->port_id].present = true;
+	}
+
+	//Increment total counter
+	total_num_of_ports++;
 	
 	rte_spinlock_unlock(&mutex);
 
@@ -235,15 +247,15 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	//This loop copies from descheduled port, all the rest of the ports
 	//one up, so that list of ports is contiguous (0...N-1)
 
-	for(i=(core_task->num_of_ports-1); i > port_state->core_port_slot; i--)
+	for(i=(core_task->num_of_rx_ports-1); i > port_state->core_port_slot; i--)
 		core_task->port_list[i-1] = core_task->port_list[i];	
 	
 	//Cleanup the last position
-	core_task->num_of_ports--;
-	core_task->port_list[core_task->num_of_ports] = NULL;
+	core_task->num_of_rx_ports--;
+	core_task->port_list[core_task->num_of_rx_ports] = NULL;
 
 	//There are no more ports, so simply stop core
-	if(core_task->num_of_ports == 0){
+	if(core_task->num_of_rx_ports == 0){
 		if(rte_eal_get_lcore_state(port_state->core_id) != RUNNING){
 			ROFL_ERR("Corrupted state; port was marked as active, but EAL informs it was not running..\n");
 			assert(0);
@@ -258,6 +270,14 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 		rte_eal_wait_lcore(port_state->core_id);
 	}
 	
+	//Decrement total counter
+	total_num_of_ports--;
+	
+	//Mark port as NOT present anymore (descheduled) on all cores (TX)
+	for(i=0;i<RTE_MAX_LCORE;++i){
+		processing_cores[i].all_ports[port_state->port_id].present = false;
+	}
+
 	rte_spinlock_unlock(&mutex);	
 	
 	port_state->scheduled = false;
@@ -285,7 +305,7 @@ void processing_dump_core_state(void){
 			ROFL_DEBUG("IN");
 		ROFL_DEBUG("ACTIVE port-list:[");
 	
-		for(j=0;j<core_task->num_of_ports;++j){
+		for(j=0;j<core_task->num_of_rx_ports;++j){
 			if(core_task->port_list[j] == NULL){
 				ROFL_DEBUG("error_NULL,");
 				continue;

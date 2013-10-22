@@ -8,6 +8,13 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_statistics.h>
 
 #include "../../../config.h"
+#include "../../../io/bufferpool.h"
+#include "../../../io/dpdk_datapacket.h"
+#include "../../../io/datapacket_storage.h"
+#include "../../../io/datapacketx86.h"
+
+using namespace xdpd::gnu_linux;
+using namespace xdpd::gnu_linux_dpdk;
 
 //Port config
 
@@ -198,12 +205,66 @@ afa_result_t fwd_module_of1x_set_table_config(uint64_t dpid, unsigned int table_
  */
 afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_id, uint32_t in_port, of1x_action_group_t* action_group, uint8_t* buffer, uint32_t buffer_size)
 {
+	of_switch_t* lsw;
+	datapacket_t* pkt;
+
+	//Recover port	
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+
+	//Check switch and port
+	if(!lsw || ((lsw->of_ver != OF_VERSION_10) && (lsw->of_ver != OF_VERSION_12) && (lsw->of_ver != OF_VERSION_13))) {
+		//TODO: log this... should never happen
+		assert(0);
+		return AFA_FAILURE;
+	}	
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	//Avoid DoS. Check whether the action list contains an action ouput, otherwise drop, since the packet will never be freed
+	if(!action_group_of1x_packet_in_contains_output(action_group)){
 
-	//XXX	
+		if (OF1XP_NO_BUFFER != buffer_id) {
+			pkt = ((datapacket_storage*)lsw->platform_state)->get_packet(buffer_id);
+			if (NULL != pkt) {
+				bufferpool::release_buffer(pkt);
+			}
+		}
 
-	return AFA_FAILURE;
+		//FIXME: free action_group??
+		return AFA_FAILURE; /*TODO add specific error */
+	}
+	
+	//Recover pkt buffer if is stored. Otherwise pick a free buffer
+	if( buffer_id && buffer_id != OF1XP_NO_BUFFER){
+	
+		//Retrieve the packet
+		pkt = ((datapacket_storage*)lsw->platform_state)->get_packet(buffer_id);
+
+		//Buffer has expired
+		if(!pkt){
+			return AFA_FAILURE; /* TODO: add specific error */
+		}
+	}else{
+		//Retrieve a free buffer	
+		pkt = bufferpool::get_free_buffer_nonblocking();
+
+		if(!pkt){
+			//No available buffers
+			return AFA_FAILURE; /* TODO: add specific error */
+		}	
+	
+		//Initialize the packet and copy
+		((dpdk_pkt_platform_state_t*)pkt->platform_state)->pktx86->init(buffer, buffer_size, lsw, in_port, 0, true);
+		pkt->sw = lsw;
+	}
+
+	//Reclassify the packet
+	((dpdk_pkt_platform_state_t*)pkt->platform_state)->pktx86->headers->classify();
+
+	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
+	
+	//Instruct pipeline to process actions. This may reinject the packet	
+	of1x_process_packet_out_pipeline((of1x_switch_t*)lsw, pkt, action_group);
+	
+	return AFA_SUCCESS;
 }
 
 /**
@@ -222,11 +283,47 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 
 afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t buffer_id, bool check_overlap, bool reset_counts){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	of1x_switch_t* lsw;
+	rofl_of1x_fm_result_t result;
 
-	//XXX
+	//Recover port	
+	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+	if(!lsw){
+		assert(0);
+		return AFA_FAILURE;
+	}
+
+	if(table_id >= lsw->pipeline->num_of_tables)
+		return AFA_FAILURE;
+
+	//TODO: enhance error codes. Contain invalid matches (pipeline enhancement) 
+	if( (result = of1x_add_flow_entry_table(lsw->pipeline, table_id, flow_entry, check_overlap, reset_counts)) != ROFL_OF1X_FM_SUCCESS){
+
+		if(result == ROFL_OF1X_FM_OVERLAP)
+			return AFA_FM_OVERLAP_FAILURE;
+		
+		return AFA_FAILURE;
+	}
+
+	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
-	return AFA_FAILURE;
+		datapacket_t* pkt = ((datapacket_storage*)lsw->platform_state)->get_packet(buffer_id);
+	
+		if(!pkt){
+			assert(0);
+			return AFA_FAILURE; //TODO: return really failure?
+		}
+
+		of_process_packet_pipeline((of_switch_t*)lsw,pkt);
+	}
+
+
+#ifdef DEBUG
+	of1x_dump_table(&lsw->pipeline->tables[table_id]);
+#endif
+	
+	return AFA_SUCCESS;
 }
 
 /**
@@ -243,11 +340,36 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
  */
 afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t buffer_id, of1x_flow_removal_strictness_t strictness, bool reset_counts){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	of1x_switch_t* lsw;
 
-	//XXX
+	//Recover port	
+	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+	if(!lsw){
+		assert(0);
+		return AFA_FAILURE;
+	}
+
+	if(table_id >= lsw->pipeline->num_of_tables)
+		return AFA_FAILURE;
+
+	if(of1x_modify_flow_entry_table(lsw->pipeline, table_id, flow_entry, strictness, reset_counts) != ROFL_SUCCESS)
+		return AFA_FAILURE;
 	
-	return AFA_FAILURE;
+	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
+	
+		datapacket_t* pkt = ((datapacket_storage*)lsw->platform_state)->get_packet(buffer_id);
+	
+		if(!pkt){
+			assert(0);
+			return AFA_FAILURE; //TODO: return really failure?
+		}
+
+		of_process_packet_pipeline((of_switch_t*)lsw,pkt);
+	}
+
+
+	return AFA_SUCCESS;
 }
 
 
@@ -265,11 +387,33 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
  */
 afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t out_port, uint32_t out_group, of1x_flow_removal_strictness_t strictness){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
-	//XXX
-	
-	return AFA_FAILURE;
+	of1x_switch_t* lsw;
+	unsigned int i;
+
+	//Recover port	
+	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+
+	if(!lsw){
+		assert(0);
+		return AFA_FAILURE;
+	}
+
+	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+		return AFA_FAILURE;
+
+
+	if(table_id == OF1X_FLOW_TABLE_ALL){
+		//Single table
+		for(i = 0; i<lsw->pipeline->num_of_tables; i++){
+			if(of1x_remove_flow_entry_table(lsw->pipeline, i, flow_entry, strictness, out_port, out_group) != ROFL_SUCCESS)
+			return AFA_FAILURE;
+		}	
+	}else{
+		//Single table
+		if(of1x_remove_flow_entry_table(lsw->pipeline, table_id, flow_entry, strictness, out_port, out_group) != ROFL_SUCCESS)
+			return AFA_FAILURE;
+	}
+	return AFA_SUCCESS;
 } 
 
 //

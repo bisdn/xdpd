@@ -13,6 +13,7 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "../config.h"
+#include "../io/bufferpool.h"
 #include "../io/port_manager.h"
 #include "../processing/processing.h"
 
@@ -26,6 +27,8 @@
 
 extern int optind; 
 struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
+
+using namespace xdpd::gnu_linux;
 
 //Some useful macros
 #define STR(a) #a
@@ -47,7 +50,6 @@ afa_result_t fwd_module_init(){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
 	
-
         /* init EAL library */
 	optind=1;
 	ret = rte_eal_init(EAL_ARGS-1, (char**)argv_fake);
@@ -76,6 +78,9 @@ afa_result_t fwd_module_init(){
 
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
+
+	//Init bufferpool
+	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
 
 	//Initialize pipeline
 	if(physical_switch_init() != ROFL_SUCCESS)
@@ -107,8 +112,11 @@ afa_result_t fwd_module_destroy(){
 	//Destroy pipeline platform state
 	physical_switch_destroy();
 
-	//Shutdown ports
+	// destroy bufferpool
+	bufferpool::destroy();
 	
+	//Shutdown ports
+	//XXX	
 	
 	return AFA_SUCCESS; 
 }

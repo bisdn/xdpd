@@ -37,7 +37,6 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
 
-#define NUM_ELEM_INIT_BUFFERPOOL 2048 //This is cache for fast port addition
 
 using namespace xdpd::gnu_linux;
 
@@ -56,7 +55,7 @@ afa_result_t fwd_module_init(){
 	
 
 	//create bufferpool
-	bufferpool::init(NUM_ELEM_INIT_BUFFERPOOL);
+	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
 
 	if(discover_physical_ports() != ROFL_SUCCESS)
 		return AFA_FAILURE;

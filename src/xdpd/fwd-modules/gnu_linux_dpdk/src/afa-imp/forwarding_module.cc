@@ -254,8 +254,45 @@ switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
 */
 afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling attach_port_to_switch()\n");
-	//XXX
+	switch_port_t* port;
+	of_switch_t* lsw;
+
+	//Check switch existance
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw){
+		return AFA_FAILURE;
+	}
+	
+	//Check if the port does exist
+	port = physical_switch_get_port_by_name(name);
+	if(!port)
+		return AFA_FAILURE;
+
+	//Update pipeline state
+	if(*of_port_num == 0){
+		//no port specified, we assign the first available
+		if(physical_switch_attach_port_to_logical_switch(port,lsw,of_port_num) == ROFL_FAILURE){
+			assert(0);
+			return AFA_FAILURE;
+		}
+	}else{
+
+		if(physical_switch_attach_port_to_logical_switch_at_port_num(port,lsw,*of_port_num) == ROFL_FAILURE){
+			assert(0);
+			return AFA_FAILURE;
+		}
+	}
+
+	//Schedule the port in the I/O subsystem
+	if(processing_schedule_port(port) != ROFL_SUCCESS){
+		assert(0);
+		return AFA_FAILURE;
+	}		
+
+	//notify port attached
+	if(cmm_notify_port_add(port)!=AFA_SUCCESS){
+		//return AFA_FAILURE; //Ignore
+	}
 	
 	return AFA_SUCCESS;
 }

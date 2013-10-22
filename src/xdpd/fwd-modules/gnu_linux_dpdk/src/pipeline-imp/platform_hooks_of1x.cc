@@ -17,8 +17,10 @@
 #include "../io/pktin_dispatcher.h"
 #include "../io/bufferpool.h"
 #include "../io/datapacket_storage.h"
+#include "../io/dpdk_datapacket.h"
 
 using namespace xdpd::gnu_linux;
+using namespace xdpd::gnu_linux_dpdk;
 
 //MBUF pool
 extern struct rte_mempool* pool_direct;
@@ -101,8 +103,8 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		goto PKT_IN_ERROR;
 	}
 
-	pktx86 = (datapacketx86*)pkt->platform_state;
-	pktx86_replica = (datapacketx86*)pkt_replica->platform_state;
+	pktx86 = ((dpdk_pkt_platform_state_t*)pkt->platform_state)->pktx86;
+	pktx86_replica = ((dpdk_pkt_platform_state_t*)pkt_replica->platform_state)->pktx86;
 
 	//Retrieve an mbuf, copy contents, and initialize pktx86_replica
 	mbuf = rte_pktmbuf_alloc(pool_direct);

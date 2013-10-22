@@ -17,7 +17,10 @@ libfwd_module_gnu_linux_dpdk_src_io_la_SOURCES = \
 					port_manager.h\
 					port_manager.cc\
 					pktin_dispatcher.h\
-					pktin_dispatcher.cc
+					pktin_dispatcher.cc\
+					tx_rx.cc\
+					tx_rx.cc
+
 libfwd_module_gnu_linux_dpdk_src_io_la_LIBADD = \
 					packet_classifiers/libfwd_module_gnu_linux_dpdk_src_io_packet_classifiers.la 
 		

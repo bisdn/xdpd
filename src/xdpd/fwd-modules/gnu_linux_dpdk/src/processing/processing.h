@@ -31,7 +31,7 @@ struct mbuf_table {
 //Port queues
 typedef struct port_queues{
 	//This are TX-queues of a port 
-	struct mbuf_table tx_mbufs[IO_IFACE_NUM_QUEUES];
+	struct mbuf_table tx_queues[IO_IFACE_NUM_QUEUES];
 }port_queues_t;
 
 /**
@@ -46,6 +46,10 @@ typedef struct core_tasks{
 	//This are the TX-queues for ALL ports in the system; index is port_id
 	port_queues_t all_ports[MAX_PORTS_PER_CORE];
 }core_tasks_t;
+
+
+//Fwd delcaration of core_tasks array
+extern core_tasks_t processing_cores[];
 
 //C++ extern C
 ROFL_BEGIN_DECLS

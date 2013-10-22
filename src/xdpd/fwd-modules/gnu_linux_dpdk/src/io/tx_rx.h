@@ -29,6 +29,7 @@ namespace gnu_linux_dpdk {
 // Packet processing
 //
 
+
 /*
 * Processes RX in a specific port. The function will process up to MAX_BURST_SIZE 
 */
@@ -69,7 +70,7 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 	}	
 }
 
-inline void process_port_tx(switch_port_t* port, unsigned int port_id, struct mbuf_table* queue, unsigned int queue_id){
+inline void process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_table* queue, unsigned int queue_id){
 	unsigned ret;
 
 	if(queue->len == 0)
@@ -92,32 +93,43 @@ inline void process_port_tx(switch_port_t* port, unsigned int port_id, struct mb
 
 inline void tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 
-#if 0
-	//XXX
-	unsigned lcore_id, len;
-	struct lcore_queue_conf *qconf;
+	struct rte_mbuf* mbuf;
+	struct mbuf_table* pkt_burst;
+	unsigned int port_id, len;
 
-	lcore_id = rte_lcore_id();
-
-	qconf = &lcore_queue_conf[lcore_id];
-	len = qconf->tx_mbufs[port].len;
-	qconf->tx_mbufs[port].m_table[len] = m;
-	len++;
-
-	/* enough pkts to be sent */
-	if (unlikely(len == MAX_PKT_BURST)) {
-		l2fwd_send_burst(qconf, MAX_PKT_BURST, port);
-		len = 0;
-	}
-
-	qconf->tx_mbufs[port].len = len;
-	return 0;
+	//Get mbuf pointer
+	mbuf = ((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf;
+	port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 
 	if(unlikely(!mbuf)){
 		assert(0);
 		return;
 	}
-#endif
+	
+	//Recover core task
+	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
+	
+	//Recover burst container
+	pkt_burst = &tasks->all_ports[port_id].tx_queues[queue_id];	
+	
+	if(unlikely(!pkt_burst)){
+		assert(0);
+		return;
+	}
+
+	//Enqueue
+	len = pkt_burst->len; 
+	pkt_burst->m_table[len] = mbuf;
+	len++;
+
+	//If burst is full => trigger send
+	if (unlikely(len == IO_IFACE_MAX_PKT_BURST)) {
+		process_port_queue_tx(port, port_id, pkt_burst, queue_id);
+		len = 0;
+	}
+
+	pkt_burst->len = len;
+	return;
 }
 
 }// namespace xdpd::gnu_linux_dpdk 

@@ -121,7 +121,7 @@ int processing_core_process_packets(void* not_used){
 				if(likely(port != NULL)){ //This CAN happen while deschedulings
 					//Process TX
 					for( i=(IO_IFACE_NUM_QUEUES-1); i >=0 ; --i ){
-						process_port_tx(port, port_id, &tasks->all_ports[port_id].tx_mbufs[i], i);
+						process_port_queue_tx(port, port_id, &tasks->all_ports[port_id].tx_queues[i], i);
 					}
 
 				}

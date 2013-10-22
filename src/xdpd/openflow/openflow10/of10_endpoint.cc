@@ -872,6 +872,7 @@ of10_endpoint::flow_mod_modify(
 	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_modify(sw->dpid,
 								pack->get_table_id(),
 								entry,
+								pack->get_buffer_id(),
 								strictness,
 								pack->get_flags() & OFPFF_RESET_COUNTS)){
 		ROFL_DEBUG("Error modiying flowmod\n");
@@ -909,7 +910,6 @@ of10_endpoint::flow_mod_delete(
 	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_delete(sw->dpid,
 								pack->get_table_id(),
 								entry,
-								pack->get_buffer_id(),
 								of10_translation_utils::get_out_port(pack->get_out_port()),
 								OF1X_GROUP_ANY,
 								strictness)) {

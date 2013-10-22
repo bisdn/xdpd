@@ -115,6 +115,9 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
+	if(unlikely(!sw))
+		return NULL; 
+
 	//Launch switch processing threads
 	if(start_ls_workers_wrapper(sw) != ROFL_SUCCESS){
 		

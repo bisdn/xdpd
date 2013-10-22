@@ -48,6 +48,9 @@ static switch_port_t* configure_port(unsigned int port_id){
 	if(rte_eth_dev_start(port_id) < 0)
 		return NULL; 
 
+	//Set promiscuous mode
+	rte_eth_promiscuous_enable(port_id);	
+
 	//Mark link status as automatic
 	//TODO	
 

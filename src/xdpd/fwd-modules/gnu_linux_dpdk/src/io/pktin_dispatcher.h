@@ -39,12 +39,12 @@ ROFL_BEGIN_DECLS
 /**
 * Initialize packet_in dispatcher
 */
-rofl_result_t init_pktin_dispatcher(void);
+rofl_result_t pktin_dispatcher_init(void);
 
 /**
 * Stop and destroy packet_in dispatcher
 */
-rofl_result_t destroy_pktin_dispatcher(void);
+rofl_result_t pktin_dispatcher_destroy(void);
 
 
 

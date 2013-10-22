@@ -103,7 +103,7 @@ static void process_packet_ins(){
 
 
 // Launch pkt in thread
-rofl_result_t init_pktin_dispatcher(){
+rofl_result_t pktin_dispatcher_init(){
 
 	keep_on_pktins = true;
 
@@ -133,7 +133,7 @@ rofl_result_t init_pktin_dispatcher(){
 }
 
 //Stop and destroy packet in dispatcher
-rofl_result_t destroy_pktin_dispatcher(){
+rofl_result_t pktin_dispatcher_destroy(){
 	
 	keep_on_pktins = false;
 	

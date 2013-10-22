@@ -15,6 +15,7 @@
 #include "../config.h"
 #include "../io/bufferpool.h"
 #include "../io/port_manager.h"
+#include "../io/pktin_dispatcher.h"
 #include "../processing/processing.h"
 
 //DPDK includes
@@ -93,7 +94,12 @@ afa_result_t fwd_module_init(){
 	//Initialize processing
 	if(processing_init() != ROFL_SUCCESS)
 		return AFA_FAILURE;
-	
+
+	//Initialize PKT_IN
+	if(pktin_dispatcher_init() != ROFL_SUCCESS)
+		return AFA_FAILURE;
+
+
 	return AFA_SUCCESS; 
 }
 
@@ -108,6 +114,9 @@ afa_result_t fwd_module_destroy(){
 	
 	//Cleanup processing. This must be the first thing to do
 	processing_destroy();
+
+	//Initialize PKT_IN
+	pktin_dispatcher_destroy();
 
 	//Destroy pipeline platform state
 	physical_switch_destroy();

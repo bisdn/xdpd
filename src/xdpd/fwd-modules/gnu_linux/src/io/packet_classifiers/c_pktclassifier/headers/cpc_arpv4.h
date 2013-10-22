@@ -2,7 +2,7 @@
 #define _CPC_ARPV4_H_
 
 #include <rofl/common/endian_conversion.h>
-#include "ethernet.h"
+#include "cpc_ethernet.h"
 /* ARPv4 constants and definitions */
 enum arpv4_ether_t {
 	ARPV4_ETHER = 0x0806,

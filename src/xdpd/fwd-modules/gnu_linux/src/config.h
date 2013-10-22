@@ -51,6 +51,9 @@
 //Number of output queues per interface
 #define IO_IFACE_NUM_QUEUES 8
 
+//Bufferpool reservoir(PKT_INs); ideally at least X*max_num_lsis
+#define IO_BUFFERPOOL_RESERVOIR 2048
+
 //Max frame size (WARNING: do not go beyond 8192 bytes, and never underneath 2048 bytes)
 //Align to a power of 2
 #define IO_IFACE_MMAP_FRAME_SIZE 2048
@@ -66,7 +69,7 @@
 //(bufferpool will be dimensioned to be at least Nifaces*IO_IFACE_REQUIRED_BUFFERS)
 #define IO_IFACE_REQUIRED_BUFFERS 2048
 
-//Buffer storage(PKT_IN) max buffers
+//Buffer storage(PKT_IN) max buffers per LSI
 #define IO_PKT_IN_STORAGE_MAX_BUF 512
 //Buffer storage(PKT_IN) expiration time (seconds)
 #define IO_PKT_IN_STORAGE_EXPIRATION_S 180

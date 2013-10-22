@@ -11,6 +11,7 @@ pthread_mutex_t pktin_mutex;
 pthread_cond_t pktin_cond;
 struct rte_ring* pkt_ins;
 bool keep_on_pktins;
+static pthread_t pktin_thread;
 
 using namespace xdpd::gnu_linux;
 using namespace xdpd::gnu_linux_dpdk;
@@ -19,7 +20,7 @@ using namespace xdpd::gnu_linux_dpdk;
 extern struct rte_mempool* pool_direct;
 
 //Process packet_ins
-static void process_packet_ins(){
+static void* process_packet_ins(void* param){
 
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
@@ -99,6 +100,8 @@ static void process_packet_ins(){
 		pthread_cond_timedwait(&pktin_cond, &pktin_mutex, &timeout);
 		pthread_mutex_unlock(&pktin_mutex);
 	}
+
+	return NULL;
 }
 
 
@@ -126,9 +129,11 @@ rofl_result_t pktin_dispatcher_init(){
 	}
 
 	//Launch thread
-	//XXX
-	process_packet_ins();
-
+	//XXX: use rte?
+	if(pthread_create(&pktin_thread, NULL, process_packet_ins, NULL)<0){
+		ROFL_ERR("pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
+		return ROFL_FAILURE;
+	}
 	return ROFL_SUCCESS;
 }
 
@@ -136,9 +141,10 @@ rofl_result_t pktin_dispatcher_init(){
 rofl_result_t pktin_dispatcher_destroy(){
 	
 	keep_on_pktins = false;
+	pthread_join(pktin_thread,NULL);
 	
 	//Wait for thread to stop
-	//XXX
+	//XXX: use rte?
 	
 	//Destroy ring?
 	//XXX: not available??

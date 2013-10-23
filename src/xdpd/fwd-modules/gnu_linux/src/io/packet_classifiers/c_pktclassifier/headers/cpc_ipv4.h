@@ -201,14 +201,4 @@ void clear_MF_bit(void *hdr){
 };
 
 
-
-
-
-
-
-
-
-
-
-
 #endif //_CPC_IPV4_H_

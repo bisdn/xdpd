@@ -285,16 +285,16 @@ void set_icmpv6_type(void *hdr, uint8_t type){
 
 inline static
 uint128__t get_icmpv6_neighbor_taddr(void *hdr){
-	uint128__t *ptr;
+	uint128__t addr;
 	switch (get_icmpv6_type(hdr)) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr->taddr;
+			addr= (uint128__t)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr->taddr;
 			break;
 		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr->taddr;
+			addr= (uint128__t)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr->taddr;
 			break;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr->taddr;
+			addr= (uint128__t)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr->taddr;
 			break;
 		default:
 			//TODO LOG ERROR
@@ -302,9 +302,9 @@ uint128__t get_icmpv6_neighbor_taddr(void *hdr){
 			break;
 	}
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	SWAP_U128(*ptr); //be128toh
+	SWAP_U128(addr); //be128toh
 #endif
-	return *ptr;
+	return addr;
 };
 
 inline static

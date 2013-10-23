@@ -95,4 +95,3 @@ void icmpv4_calc_checksum(void * hdr,uint16_t length){
 };
 
 #endif //_CPC_ICMPV4_H_
-struct stat;

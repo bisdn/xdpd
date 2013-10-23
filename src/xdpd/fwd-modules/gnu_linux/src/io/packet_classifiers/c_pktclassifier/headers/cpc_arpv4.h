@@ -79,38 +79,24 @@ void set_ar_op(void *hdr, uint16_t ar_op){
 };
 
 inline static
-uint8_t* get_dl_dst(void *hdr){
-	uint32_t *p32 = (uint32_t*) ((cpc_arpv4_hdr_t*)hdr)->dl_dst;
-	uint16_t *p16 = (uint16_t*) ((cpc_arpv4_hdr_t*)hdr)->dl_dst[4];
-	
-	return (uint64_t)*p32 + (((uint64_t)*p16)<<32);
+uint64_t get_dl_dst(void *hdr){
+	return mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_dst);
 };
 
 inline static
 void set_dl_dst(void* hdr, uint64_t dl_dst){
-	uint32_t *p32 = (uint32_t*) ((cpc_arpv4_hdr_t*)hdr)->dl_dst;
-	uint16_t *p16 = (uint16_t*) ((cpc_arpv4_hdr_t*)hdr)->dl_dst[4];
-	
-	*p32 = (uint32_t)(dl_dst&0x00000000ffffffff);
-	*p16 = (uint16_t)((dl_dst&0x0000ffff00000000)>>32);
+	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_dst, dl_dst);
 	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
 uint64_t get_dl_src(void* hdr){
-	uint32_t *p32 = (uint32_t*) ((cpc_arpv4_hdr_t*)hdr)->dl_src;
-	uint16_t *p16 = (uint16_t*) ((cpc_arpv4_hdr_t*)hdr)->dl_src[4];
-	
-	return (uint64_t)*p32 + (((uint64_t)*p16)<<32);
+	return mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_src);
 };
 
 inline static
 void set_dl_src(void* hdr, uint8_t *dl_src){
-	uint32_t *p32 = (uint32_t*) ((cpc_arpv4_hdr_t*)hdr)->dl_src;
-	uint16_t *p16 = (uint16_t*) ((cpc_arpv4_hdr_t*)hdr)->dl_src[4];
-	
-	*p32 = (uint32_t)(dl_src&0x00000000ffffffff);
-	*p16 = (uint16_t)((dl_src&0x0000ffff00000000)>>32);
+	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_src, dl_src);
 	//TODO is the mac also swapped to host byte order?
 };
 

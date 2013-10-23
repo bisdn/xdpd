@@ -21,16 +21,17 @@ datapacket_storage::~datapacket_storage()
 storeid
 datapacket_storage::store_packet(datapacket_t* pkt)
 {	
+	store_mapping map;
+	map.pkt = pkt;
+	
+	pthread_mutex_lock(&lock);
+		
 	if (store.size() >= max_size) {
+		pthread_mutex_unlock(&lock);
 		return this->ERROR;
 	}
 
-	store_mapping map;
-	map.pkt = pkt;
 	map.input_timestamp = time(NULL);
-
-
-	pthread_mutex_lock(&lock);
 
 	if(unlikely(next_id+1 == 0xffffffff))
 		map.id = next_id = 1; //Skip error and 0

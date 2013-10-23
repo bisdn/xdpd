@@ -80,33 +80,33 @@ enum icmpv6_type_t {
 	ICMPV6_TYPE_ECHO_REPLY											= 129,
 	ICMPV6_TYPE_MULTICAST_LISTENER_QUERY							= 130,
 	ICMPV6_TYPE_MULTICAST_LISTENER_REPORT							= 131,
-	ICMPV6_TYPE_MULTICAST_LISTENER_DONE								= 132,
+	ICMPV6_TYPE_MULTICAST_LISTENER_DONE							= 132,
 	ICMPV6_TYPE_ROUTER_SOLICATION									= 133,
 	ICMPV6_TYPE_ROUTER_ADVERTISEMENT								= 134,
 	ICMPV6_TYPE_NEIGHBOR_SOLICITATION								= 135,
 	ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT								= 136,
 	ICMPV6_TYPE_REDIRECT_MESSAGE									= 137,
 	ICMPV6_TYPE_ROUTER_RENUMBERING									= 138,
-	ICMPV6_TYPE_ICMP_NODE_INFORMATION_QUERY							= 139,
+	ICMPV6_TYPE_ICMP_NODE_INFORMATION_QUERY						= 139,
 	ICMPV6_TYPE_ICMP_NODE_INFORMATION_RESPONSE						= 140,
 	ICMPV6_TYPE_INVERSE_NEIGHBOR_DISCOVERY_SOLICITATION_MESSAGE 	= 141,
 	ICMPV6_TYPE_INVERSE_NEIGHBOR_DISCOVERY_ADVERTISEMENT_MESSAGE 	= 142,
-	ICMPV6_TYPE_MULTICAST_LISTENER_DISCOVERY_REPORT					= 143,
+	ICMPV6_TYPE_MULTICAST_LISTENER_DISCOVERY_REPORT				= 143,
 	ICMPV6_TYPE_HOME_AGENT_ADDRESS_DISCOVERY_REQUEST_MESSAGE		= 144,
 	ICMPV6_TYPE_HOME_AGENT_ADDRESS_DISCOVERY_REPLY_MESSAGE			= 145,
 	ICMPV6_TYPE_MOBILE_PREFIX_SOLICITATION							= 146,
-	ICMPV6_TYPE_MOBILE_PREFIX_ADVERTISEMENT							= 147,
+	ICMPV6_TYPE_MOBILE_PREFIX_ADVERTISEMENT						= 147,
 };
 
 enum icmpv6_destination_unreachable_code_t {
-	ICMPV6_DEST_UNREACH_CODE_NO_ROUTE_TO_DESTINATION					= 0,
+	ICMPV6_DEST_UNREACH_CODE_NO_ROUTE_TO_DESTINATION										= 0,
 	ICMPV6_DEST_UNREACH_CODE_COMMUNICATION_WITH_DESTINATION_ADMINISTRATIVELY_PROHIBITED	= 1,
-	ICMPV6_DEST_UNREACH_CODE_BEYOND_SCOPE_OF_SOURCE_ADDRESS				= 2,
-	ICMPV6_DEST_UNREACH_CODE_ADDRESS_UNREACHABLE						= 3,
-	ICMPV6_DEST_UNREACH_CODE_PORT_UNREACHABLE							= 4,
-	ICMPV6_DEST_UNREACH_CODE_SOURCE_ADDRESS_FAILED_INGRESS_EGRESS_POLICY= 5,
-	ICMPV6_DEST_UNREACH_CODE_REJECT_ROUTE_TO_DESTINATION				= 6,
-	ICMPV6_DEST_UNREACH_CODE_ERROR_IN_SOURCE_ROUTING_HEADER				= 7,
+	ICMPV6_DEST_UNREACH_CODE_BEYOND_SCOPE_OF_SOURCE_ADDRESS								= 2,
+	ICMPV6_DEST_UNREACH_CODE_ADDRESS_UNREACHABLE											= 3,
+	ICMPV6_DEST_UNREACH_CODE_PORT_UNREACHABLE												= 4,
+	ICMPV6_DEST_UNREACH_CODE_SOURCE_ADDRESS_FAILED_INGRESS_EGRESS_POLICY					= 5,
+	ICMPV6_DEST_UNREACH_CODE_REJECT_ROUTE_TO_DESTINATION									= 6,
+	ICMPV6_DEST_UNREACH_CODE_ERROR_IN_SOURCE_ROUTING_HEADER								= 7,
 };
 
 
@@ -179,7 +179,7 @@ struct cpc_icmpv6_echo_reply_hdr_t {
 struct cpc_icmpv6_router_solicitation_hdr_t {
 	struct cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=133, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
-	struct cpc_icmpv6_option_hdr_t		options[0];
+	struct cpc_icmpv6_option_hdr_t	options[0];
 } __attribute__((packed));
 
 /* ICMPv6 router advertisement */
@@ -190,32 +190,32 @@ struct cpc_icmpv6_router_advertisement_hdr_t {
 	uint16_t 						rtr_lifetime;
 	uint32_t						reachable_timer;
 	uint32_t 						retrans_timer;
-	struct cpc_icmpv6_option_hdr_t		options[0];
+	struct cpc_icmpv6_option_hdr_t	options[0];
 } __attribute__((packed));
 
 /* ICMPv6 neighbor solicitation */
 struct cpc_icmpv6_neighbor_solicitation_hdr_t {
 	struct cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=135, code=0
-	uint32_t 					reserved;				// reserved for later use, for now: mbz
-	uint8_t						taddr[IPV6_ADDR_LEN]; 	// =target address
-	struct cpc_icmpv6_option_hdr_t		options[0];
+	uint32_t 						reserved;				// reserved for later use, for now: mbz
+	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
+	struct cpc_icmpv6_option_hdr_t	options[0];
 } __attribute__((packed));
 
 /* ICMPv6 neighbor advertisement */
 struct cpc_icmpv6_neighbor_advertisement_hdr_t {
-	struct cpc_icmpv6_hdr_t		icmpv6_hdr;				// type=136, code=0
-	uint32_t 					flags;
-	uint8_t						taddr[IPV6_ADDR_LEN]; 	// =target address
-	struct cpc_icmpv6_option_hdr_t		options[0];
+	struct cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=136, code=0
+	uint32_t 						flags;
+	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
+	struct cpc_icmpv6_option_hdr_t	options[0];
 } __attribute__((packed));
 
 /* ICMPv6 redirect message */
 struct cpc_icmpv6_redirect_hdr_t {
-	struct cpc_icmpv6_hdr_t		icmpv6_hdr;				// type=137, code=0
-	uint32_t 					reserved;				// reserved for later use, for now: mbz
-	uint8_t						taddr[IPV6_ADDR_LEN]; 	// =target address
-	uint8_t						daddr[IPV6_ADDR_LEN];	// =destination address
-	struct cpc_icmpv6_option_hdr_t		options[0];
+	struct cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=137, code=0
+	uint32_t 						reserved;				// reserved for later use, for now: mbz
+	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
+	uint8_t							daddr[IPV6_ADDR_LEN];	// =destination address
+	struct cpc_icmpv6_option_hdr_t	options[0];
 } __attribute__((packed));
 
 
@@ -251,10 +251,17 @@ typedef union cpc_icmpv6u{
 
 
 inline static
-void icmpv6_calc_checksum();
+void icmpv6_calc_checksum(void *hdr, uint16_t length){
+	//TODO Implement the checksum 
+};
 
 inline static
-__ icmpv6_get_option(); //->? icmpv6 option...
+uint8_t icmpv6_get_option(void *hdr, uint8_t type){
+	//TODO ... return the option of the specified type
+	return 0;
+};
+
+//NOTE initialize, parse ..?¿
 
 inline static
 uint8_t get_icmpv6_code(void *hdr){
@@ -301,10 +308,8 @@ uint128__t get_icmpv6_neighbor_taddr(void *hdr){
 };
 
 inline static
-void get_icmpv6_neighbor_taddr(void *hdr, uint128__t addr){
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-	SWAP_U128(addr); //htobe128
-#endif
+void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
+	uint128__t *ptr;
 	switch (get_icmpv6_type(hdr)) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
 			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr->taddr;
@@ -320,6 +325,10 @@ void get_icmpv6_neighbor_taddr(void *hdr, uint128__t addr){
 			assert(0);
 			break;
 	}
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	SWAP_U128(taddr); //htobe128
+#endif
+	*ptr = taddr;
 };
 
 //ndp_rtr_flag
@@ -330,12 +339,12 @@ void get_icmpv6_neighbor_taddr(void *hdr, uint128__t addr){
 
 
 inline static
-uint8_t get_opt_type(void *hdr){
+uint8_t get_icmpv6_opt_type(void *hdr){
 	return ((cpc_icmpv6optu_t*)hdr)->optu->type;
 };
 
 inline static
-void set_opt_type(void *hdr, uint8_t type){
+void set_icmpv6_opt_type(void *hdr, uint8_t type){
 	((cpc_icmpv6optu_t*)hdr)->optu->type = type;
 };
 

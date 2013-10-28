@@ -6,7 +6,9 @@
  */
 
 
+#define __STDC_CONSTANT_MACROS 1 // todo enable globally
 #include "of10_translation_utils.h"
+#include <stdint.h>
 #include <inttypes.h>
 
 using namespace xdpd;
@@ -747,10 +749,10 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 	if (config.match&(1UL<<OF1X_MATCH_IP_DSCP))
 		mask |= 1 << OFP10AT_SET_NW_TOS;
 	
-	if (config.match&(1UL<<OF1X_MATCH_TP_SRC))
+	if (config.match&(UINT64_C(1)<<OF1X_MATCH_TP_SRC))
 		mask |= 1 << OFP10AT_SET_TP_SRC;
 	
-	if (config.match&(1UL<<OF1X_MATCH_TP_DST))
+	if (config.match&(UINT64_C(1)<<OF1X_MATCH_TP_DST))
 		mask |= 1 << OFP10AT_SET_TP_DST;
 	
 	if (config.apply_actions&(1UL<<OF12PAT_SET_QUEUE))

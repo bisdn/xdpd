@@ -1,3 +1,4 @@
+#define __STDC_CONSTANT_MACROS 1 // todo enable globally
 #include "of12_translation_utils.h"
 
 #include <stdlib.h>
@@ -8,12 +9,6 @@
 #include <rofl/common/utils/c_logger.h>
 
 using namespace xdpd;
-
-//FIXME: why is this workaround necessary?
-#ifndef UINT64_C
-	#define UINT64_C(c) (c ## ULL)
-#endif
-
 
 /*
 * Port utils

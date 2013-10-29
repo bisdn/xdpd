@@ -22,7 +22,7 @@ qmfagent::qmfagent():qmf_package("de.bisdn.xdpd")
 
 void qmfagent::init(int argc, char** argv)
 {
-	cunixenv env_parser;
+	cunixenv env_parser(argc, argv);
  
 	//Add additional arguments
 	env_parser.add_option(
@@ -34,7 +34,7 @@ void qmfagent::init(int argc, char** argv)
 		std::string("xdpd-0")));
 
 	//Parse
-	env_parser.parse_args(argc, argv);
+	env_parser.parse_args();
 	
 	//Recover
 	broker_url = env_parser.get_arg('q');

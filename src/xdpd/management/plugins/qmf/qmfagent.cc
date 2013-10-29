@@ -29,11 +29,16 @@ void qmfagent::init(int argc, char** argv)
 		coption(true, REQUIRED_ARGUMENT, 'q', "qmfaddr", "qmf broker address",
 		std::string("127.0.0.1")));
 
+	env_parser.add_option(
+		coption(true, REQUIRED_ARGUMENT, 'x', "qmfXdpdID", "qmf xdpd ID",
+		std::string("xdpd-0")));
+
 	//Parse
 	env_parser.parse_args(argc, argv);
 	
 	//Recover
 	broker_url = env_parser.get_arg('q');
+	xdpd_id = env_parser.get_arg('x');
 
 	connection = qpid::messaging::Connection(broker_url, "{reconnect:True}");
 	connection.open();
@@ -49,6 +54,7 @@ void qmfagent::init(int argc, char** argv)
 
 	// create single qxdpd instance
 	qxdpd.data = qmf::Data(sch_xdpd);
+	qxdpd.data.setProperty("xdpdID", xdpd_id);
 	std::stringstream name("xdpd");
 	qxdpd.addr = session.addData(qxdpd.data, name.str());
 
@@ -110,6 +116,7 @@ qmfagent::set_qmf_schema()
 
     // xdpd
     sch_xdpd = qmf::Schema(qmf::SCHEMA_TYPE_DATA, qmf_package, "xdpd");
+	sch_xdpd.addProperty(qmf::SchemaProperty("xdpdID", 	qmf::SCHEMA_DATA_STRING));
 
     qmf::SchemaMethod lsiCreateMethod("lsiCreate", "{desc:'add LSI'}");
     lsiCreateMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));

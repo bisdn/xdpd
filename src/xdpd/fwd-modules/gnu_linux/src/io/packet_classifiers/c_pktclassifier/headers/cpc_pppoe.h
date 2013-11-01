@@ -1,6 +1,8 @@
 #ifndef _CPC_PPPOE_H_
 #define _CPC_PPPOE_H_
 
+#include "../cpc_utils.h"
+
 #define DEFAULT_PPPOE_FRAME_SIZE 1492
 
 /* PPPoE constants and definitions */
@@ -89,22 +91,22 @@ void set_pppoe_code(void *hdr, uint8_t code){
 
 inline static
 uint16_t get_pppoe_sessid(void *hdr){
-	return be16toh(((cpc_pppoe_hdr_t*)hdr)->sessid);
+	return CPC_BE16TOH(((cpc_pppoe_hdr_t*)hdr)->sessid);
 }
 
 inline static
 void set_pppoe_sessid(void *hdr, uint16_t sessid){
-	((cpc_pppoe_hdr_t*)hdr)->sessid = htobe16(sessid);
+	((cpc_pppoe_hdr_t*)hdr)->sessid = CPC_HTOBE16(sessid);
 }
 
 inline static
 uint16_t get_pppoe_length(void *hdr){
-	return be16toh(((cpc_pppoe_hdr_t*)hdr)->length);
+	return CPC_BE16TOH(((cpc_pppoe_hdr_t*)hdr)->length);
 }
 
 inline static
 void set_pppoe_length(void *hdr, uint16_t length){
-	((cpc_pppoe_hdr_t*)hdr)->length = htobe16(length);
+	((cpc_pppoe_hdr_t*)hdr)->length = CPC_HTOBE16(length);
 }
 
 #endif //_CPC_PPPOE_H_

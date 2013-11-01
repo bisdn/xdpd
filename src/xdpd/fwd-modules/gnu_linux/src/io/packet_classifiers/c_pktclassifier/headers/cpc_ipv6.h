@@ -1,8 +1,8 @@
 #ifndef _CPC_IPV4_H_
 #define _CPC_IPV4_H_
 
-#include <rofl/common/endian_conversion.h>
-#include <rofl/datapath/pipeline/common/large_types.h>
+#include "../cpc_utils.h"
+
 
 struct stat;
 struct cpc_ipv6_ext_hdr_t {
@@ -115,12 +115,12 @@ uint32_t get_flow_label(void *hdr){
 
 inline static
 void set_payload_length(void *hdr, uint16_t len){
-	((cpc_ipv6_hdr_t*)hdr)->payloadlen = htobe16(len);
+	((cpc_ipv6_hdr_t*)hdr)->payloadlen = CPC_HTOBE16(len);
 }
 
 inline static
 uint16_t get_payload_length(void *hdr){
-	return be16toh(((cpc_ipv6_hdr_t*)hdr)->payloadlen);
+	return CPC_BE16TOH(((cpc_ipv6_hdr_t*)hdr)->payloadlen);
 };
 
 inline static
@@ -150,9 +150,7 @@ void dec_hop_limit(void *hdr){
 
 inline static
 void set_ipv6_src(void *hdr, uint128__t src){
-#if __BYTE_ORDER == __LITTLE_ENDIAN //htobe128
-	SWAP_U128(src);
-#endif
+	CPC_SWAP_U128(src);//htobe128
 	uint128__t *ptr=(uint128__t*)&(((cpc_ipv6_hdr_t*)hdr)->src);
 	*ptr = src;
 };
@@ -160,17 +158,13 @@ void set_ipv6_src(void *hdr, uint128__t src){
 inline static
 uint128__t get_ipv6_src(void *hdr){
 	uint128__t src=(uint128__t)(((cpc_ipv6_hdr_t*)hdr)->src);
-#if __BYTE_ORDER == __LITTLE_ENDIAN //htobe128
-	SWAP_U128(src);
-#endif
+	CPC_SWAP_U128(src);//htobe128
 	return src;
 };
 
 inline static
 void set_ipv6_dst(void *hdr, uint128__t dst){
-#if __BYTE_ORDER == __LITTLE_ENDIAN //htobe128
-	SWAP_U128(dst);
-#endif
+	CPC_SWAP_U128(dst);//htobe128
 	uint128__t *ptr=(uint128__t*)&(((cpc_ipv6_hdr_t*)hdr)->dst);
 	*ptr = dst;
 };
@@ -178,9 +172,7 @@ void set_ipv6_dst(void *hdr, uint128__t dst){
 inline static
 uint128__t get_ipv6_dst(void *hdr){
 	uint128__t dst=(uint128__t)(((cpc_ipv6_hdr_t*)hdr)->dst);
-#if __BYTE_ORDER == __LITTLE_ENDIAN //htobe128
-	SWAP_U128(dst);
-#endif
+	CPC_SWAP_U128(dst);//htobe128
 	return dst;
 };
 

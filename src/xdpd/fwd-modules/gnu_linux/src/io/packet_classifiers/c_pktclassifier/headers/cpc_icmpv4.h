@@ -1,7 +1,7 @@
 #ifndef _CPC_ICMPV4_H_
 #define _CPC_ICMPV4_H_
 
-#include <rofl/common/endian_conversion.h>
+#include "../cpc_utils.h"
 
 /* ICMPv4 constants and definitions */
 struct cpc_icmpv4_hdr_t {
@@ -81,7 +81,7 @@ void icmpv4_calc_checksum(void * hdr,uint16_t length){
 	// header loop
 	for (int i = 0; i < wnum; i++)
 	{
-		uint32_t tmp = (uint32_t)(be16toh(word16[i]));
+		uint32_t tmp = (uint32_t)(CPC_BE16TOH(word16[i]));
 		sum += tmp;
 		//fprintf(stderr, "word16[%d]=0x%08x sum()=0x%08x\n", i, tmp, sum);
 	}
@@ -90,7 +90,7 @@ void icmpv4_calc_checksum(void * hdr,uint16_t length){
 	uint16_t res16 = (sum & 0x0000ffff) + ((sum & 0xffff0000) >> 16);
 	//fprintf(stderr, " res16(1)=0x%x\n", res16);
 
-	((cpc_icmpv4_hdr_t *)hdr)->checksum = htobe16(~res16);
+	((cpc_icmpv4_hdr_t *)hdr)->checksum = CPC_HTOBE16(~res16);
 	//fprintf(stderr, "~res16(1)=0x%x\n", be16toh(udp_hdr->checksum));
 };
 

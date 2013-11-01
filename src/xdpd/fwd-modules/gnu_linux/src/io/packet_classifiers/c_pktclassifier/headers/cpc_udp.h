@@ -1,7 +1,7 @@
 #ifndef _CPC_UDP_H_
 #define _CPC_UDP_H_
 
-#include <rofl/common/endian_conversion.h>
+#include "../cpc_utils.h"
 
 /* UDP constants and definitions */
 struct cpc_udp_hdr_t {
@@ -77,32 +77,32 @@ void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 
 inline static
 uint16_t get_sport(viod *hdr){
-	return be16toh(((cpc_udp_hdr_t*)hdr)->sport);
+	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->sport);
 }
 
 inline static
 void set_sport(viod *hdr, uint16_t port){
-	((cpc_udp_hdr_t*)hdr)->sport = htobe16(port);
+	((cpc_udp_hdr_t*)hdr)->sport = CPC_HTOBE16(port);
 }
 
 inline static
 uint16_t get_dport(viod *hdr){
-	return be16toh(((cpc_udp_hdr_t*)hdr)->dport);
+	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->dport);
 }
 
 inline static
 void set_dport(viod *hdr, uint16_t port){
-	((cpc_udp_hdr_t*)hdr)->dport = htobe16(port);
+	((cpc_udp_hdr_t*)hdr)->dport = CPC_HTOBE16(port);
 }
 
 inline static
 uint16_t get_length(viod *hdr){
-	return be16toh(((cpc_udp_hdr_t*)hdr)->length);
+	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->length);
 }
 
 inline static
 void set_length(viod *hdr, uint16_t length){
-	((cpc_udp_hdr_t*)hdr)->length = htobe16(length);
+	((cpc_udp_hdr_t*)hdr)->length = CPC_HTOBE16(length);
 }
 
 

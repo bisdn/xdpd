@@ -1,7 +1,7 @@
 #ifndef _CPC_GTPU_H_
 #define _CPC_GTPU_H_
 
-#include <rofl/common/endian_conversion.h>
+#include "../cpc_utils.h"
 #include "../../../../util/likely.h"
 #include "../../../../util/compiler_assert.h"
 
@@ -147,22 +147,22 @@ void set_msg_type(void *hdr, uint8_t msgtype){
 
 inline static
 uint16_t get_length(void *hdr){
-	return be16toh(((cpc_gtphu*)hdr)->cpc_gtpu_short_hdr->len);
+	return CPC_BE16TOH(((cpc_gtphu*)hdr)->cpc_gtpu_short_hdr->len);
 };
 
 inline static
 void set_length(void *hdr, uint16_t length){
-	((cpc_gtphu*)hdr)->cpc_gtpu_short_hdr->len = htobe16(length);
+	((cpc_gtphu*)hdr)->cpc_gtpu_short_hdr->len = CPC_HTOBE16(length);
 };
 
 inline static
 uint32_t get_teid(void *hdr){
-	return betoh32(((cpc_gtphu *)hdr)->cpc_gtpu_short_hdr->teid);
+	return CPC_BE32TOH(((cpc_gtphu *)hdr)->cpc_gtpu_short_hdr->teid);
 };
 
 inline static
 void set_teid(void *hdr, uint32_t teid){
-	((cpc_gtphu *)hdr)->cpc_gtpu_short_hdr->teid = htobe32(teid);
+	((cpc_gtphu *)hdr)->cpc_gtpu_short_hdr->teid = CPC_HTOBE32(teid);
 };
 
 inline static
@@ -171,7 +171,7 @@ uint16_t get_seq_no(void *hdr){
 		assert(0);
 		return 0;
 	}
-	return be16toh(((cpc_gtphu *)hdr)->cpc_gtpu_s_hdr->seqno);
+	return CPC_BE16TOH(((cpc_gtphu *)hdr)->cpc_gtpu_s_hdr->seqno);
 };
 
 inline static
@@ -180,7 +180,7 @@ void set_seq_no(void *hdr, uint16_t seqno){
 		assert(0);
 		return 0;
 	}
-	((cpc_gtphu *)hdr)->cpc_gtpu_s_hdr->seqno = htobe16(seqno);
+	((cpc_gtphu *)hdr)->cpc_gtpu_s_hdr->seqno = CPC_HTOBE16(seqno);
 };
 
 inline static

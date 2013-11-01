@@ -1,6 +1,8 @@
 #ifndef _CPC_PPP_H_
 #define _CPC_PPP_H_
 
+#include "../cpc_utils.h"
+
 // HDLC related definitions
 //
 enum hdlc_code_t {
@@ -135,13 +137,13 @@ struct cpc_ppp_ipcp_opt_hdr_t {
 inline static
 uint16_t get_ppp_prot(void *hdr) const
 {
-	return be16toh(((cpc_ppp_hdr*)hdr)->prot);
+	return CPC_BE16TOH(((cpc_ppp_hdr*)hdr)->prot);
 }
 
 inline static
 void set_ppp_prot(void *hdr, uint16_t prot)
 {
-	((cpc_ppp_hdr*)hdr)->prot = htobe16(prot);
+	((cpc_ppp_hdr*)hdr)->prot = CPC_HTOBE16(prot);
 }
 
 inline static
@@ -181,7 +183,7 @@ uint16_t get_lcp_length(void *hdr)
 {
 	if (0 == ((cpc_ppp_lcp_hdr*)hdr)) throw ePPPLcpNotFound();
 
-	return be16toh(((cpc_ppp_lcp_hdr*)hdr)->length);
+	return CPC_BE16TOH(((cpc_ppp_lcp_hdr*)hdr)->length);
 }
 
 inline static
@@ -189,7 +191,7 @@ void set_lcp_length(void *hdr, uint16_t len)
 {
 	if (0 == ((cpc_ppp_lcp_hdr*)hdr)) throw ePPPLcpNotFound();
 
-	((cpc_ppp_lcp_hdr*)hdr)->length = htobe16(len);
+	((cpc_ppp_lcp_hdr*)hdr)->length = CPC_HTOBE16(len);
 }
 
 inline static
@@ -237,7 +239,7 @@ uint16_t get_ipcp_length(void *hdr)
 {
 	if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
 
-	return be16toh(ppp_ipcp_hdr->length);
+	return CPC_BE16TOH(ppp_ipcp_hdr->length);
 }
 
 inline static
@@ -245,7 +247,7 @@ void set_ipcp_length(uint16_t len) throw (ePPPIpcpNotFound)
 {
 	if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
 
-	ppp_ipcp_hdr->length = htobe16(len);
+	ppp_ipcp_hdr->length = CPC_HTOBE16(len);
 }
 
 inline static

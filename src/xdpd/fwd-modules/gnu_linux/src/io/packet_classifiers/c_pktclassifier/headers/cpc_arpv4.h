@@ -1,7 +1,7 @@
 #ifndef _CPC_ARPV4_H_
 #define _CPC_ARPV4_H_
 
-#include <rofl/common/endian_conversion.h>
+#include "../cpc_utils.h"
 #include "cpc_ethernet.h"
 /* ARPv4 constants and definitions */
 enum arpv4_ether_t {
@@ -30,22 +30,22 @@ struct cpc_arpv4_hdr_t {
 
 inline static
 uint16_t get_ar_hrd(void *hdr){
-	return be16toh(((cpc_arpv4_hdr_t *)hdr)->ar_hrd);
+	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ar_hrd);
 };
 
 inline static
 void set_ar_hdr(void *hdr, uint16_t ar_hdr){
-	((cpc_arpv4_hdr_t*)hdr)->ar_hrd = htobe16(ar_hdr);
+	((cpc_arpv4_hdr_t*)hdr)->ar_hrd = CPC_HTOBE16(ar_hdr);
 };
 
 inline static
 uint16_t get_ar_pro(void *hdr){
-	return be16toh(((cpc_arpv4_hdr_t *)hdr)->ar_pro);
+	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ar_pro);
 };
 
 inline static
 void set_ar_pro(void *hdr, uint16_t ar_pro){
-	((cpc_arpv4_hdr_t*)hdr)->ar_pro = htobe16(ar_pro);
+	((cpc_arpv4_hdr_t*)hdr)->ar_pro = CPC_HTOBE16(ar_pro);
 };
 
 inline static
@@ -70,12 +70,12 @@ void set_ar_pln(void *hdr, uint8_t ar_pln){
 
 inline static
 uint16_t get_ar_op(void *hdr){
-	return be16toh(((cpc_arpv4_hdr_t *)hdr)->ar_op);
+	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ar_op);
 };
 
 inline static
 void set_ar_op(void *hdr, uint16_t ar_op){
-	((cpc_arpv4_hdr_t*)hdr)->ar_op = htobe16(ar_op);
+	((cpc_arpv4_hdr_t*)hdr)->ar_op = CPC_HTOBE16(ar_op);
 };
 
 inline static
@@ -107,16 +107,16 @@ uint32_t get_ip_src(void *hdr){
 
 inline static
 void set_ip_src(void *hdr, uint16_t ip_src){
-	((cpc_arpv4_hdr_t*)hdr)->ip_src = htobe16(ip_src);
+	((cpc_arpv4_hdr_t*)hdr)->ip_src = CPC_HTOBE16(ip_src);
 };
 
 inline static
 uint16_t get_ip_dst(void *hdr){
-	return be16toh(((cpc_arpv4_hdr_t *)hdr)->ip_dst);
+	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ip_dst);
 };
 
 inline static
 void set_ip_dst(void *hdr, uint16_t ip_dst){
-	((cpc_arpv4_hdr_t*)hdr)->ip_dst = htobe16(ip_dst);
+	((cpc_arpv4_hdr_t*)hdr)->ip_dst = CPC_HTOBE16(ip_dst);
 };
 #endif //_CPC_ARPV4_H_

@@ -1,8 +1,8 @@
 #ifndef _CPC_ICMPV6_H_
 #define _CPC_ICMPV6_H_
 
-#include <rofl/common/endian_conversion.h>
 #include <rofl/datapath/pipeline/common/large_types.h>
+#include "../cpc_utils.h"
 #include "cpc_ethernet.h"
 #include "../../../../util/likely.h"
 #include "../../../../util/compiler_assert.h"
@@ -301,9 +301,7 @@ uint128__t get_icmpv6_neighbor_taddr(void *hdr){
 			assert(0);
 			break;
 	}
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-	SWAP_U128(addr); //be128toh
-#endif
+	CPC_SWAP_U128(addr); //be128toh
 	return addr;
 };
 
@@ -325,9 +323,7 @@ void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 			assert(0);
 			break;
 	}
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-	SWAP_U128(taddr); //htobe128
-#endif
+	CPC_SWAP_U128(taddr); //htobe128
 	*ptr = taddr;
 };
 
@@ -413,13 +409,6 @@ uint8_t get_pfx_aac_flag(void *hdr){
 
 inline static
 void 
-
-
-
-
-
-
-
 
 
 #endif //_CPC_ICMPV6_H_

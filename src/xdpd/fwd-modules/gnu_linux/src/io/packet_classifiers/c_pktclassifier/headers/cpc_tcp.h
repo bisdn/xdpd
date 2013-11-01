@@ -1,7 +1,7 @@
 #ifndef _CPC_TCP_H_
 #define _CPC_TCP_H_
 
-#include <rofl/common/endian_conversion.h>
+#include "../cpc_utils.h"
 
 struct cpc_tcp_hdr_t {
 	uint16_t sport;
@@ -107,22 +107,22 @@ void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 
 inline static
 uint16_t get_sport(void *hdr){
-	return be16toh(((cpc_tcp_hdr_t*)hdr)->sport);
+	return CPC_BE16TOH(((cpc_tcp_hdr_t*)hdr)->sport);
 }
 
 inline static
 void set_sport(void *hdr, uint16_t port){
-	((cpc_tcp_hdr_t*)hdr)->sport = htobe16(port);
+	((cpc_tcp_hdr_t*)hdr)->sport = CPC_HTOBE16(port);
 }
 
 inline static
 uint16_t get_dport(void *hdr){
-	return be16toh(((cpc_tcp_hdr_t*)hdr)->dport);
+	return CPC_BE16TOH(((cpc_tcp_hdr_t*)hdr)->dport);
 }
 
 inline static
 void set_dport(void *hdr, uint16_t port){
-	((cpc_tcp_hdr_t*)hdr)->dport = htobe16(port);
+	((cpc_tcp_hdr_t*)hdr)->dport = CPC_HTOBE16(port);
 }
 
 

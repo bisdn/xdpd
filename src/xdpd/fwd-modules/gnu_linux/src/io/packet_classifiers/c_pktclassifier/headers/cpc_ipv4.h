@@ -2,7 +2,7 @@
 #define _CPC_IPV4_H_
 
 #include <stddef.h>
-#include <rofl/common/endian_conversion.h>
+#include "../cpc_utils.h"
 
 /* IPv4 constants and definitions */
 // IPv4 ethernet types
@@ -49,7 +49,7 @@ void ipv4_calc_checksum(void *hdr){
 	size_t datalen = sizeof(struct cpc_ipv4_hdr_t);
 
 	// force header checksum to 0x0000
-	((cpc_ipv4_hdr_t*)hdr)->checksum = 0;//htobe16(0x0000);
+	((cpc_ipv4_hdr_t*)hdr)->checksum = 0;//CPC_HTOBE16(0x0000);
 
 	// pointer on 16bit words
 	uint16_t *word16 = (uint16_t*)hdr;
@@ -60,7 +60,7 @@ void ipv4_calc_checksum(void *hdr){
 
 	for (int i = 0; i < wnum; i++)
 	{
-		uint32_t tmp = (uint32_t)(be16toh(word16[i]));
+		uint32_t tmp = (uint32_t)(CPC_BE16TOH(word16[i]));
 		sum += tmp;
 		//fprintf(stderr, "word16[%d]=0x%08x sum()=0x%08x\n", i, tmp, sum);
 	}
@@ -70,29 +70,29 @@ void ipv4_calc_checksum(void *hdr){
 
 	//fprintf(stderr, " res16(1)=0x%x\n", res16);
 
-	((cpc_ipv4_hdr_t*)hdr)->checksum = htobe16(~res16);
+	((cpc_ipv4_hdr_t*)hdr)->checksum = CPC_HTOBE16(~res16);
 
-	//fprintf(stderr, "~res16(1)=0x%x\n", be16toh(ipv4_hdr->checksum));
+	//fprintf(stderr, "~res16(1)=0x%x\n", CPC_BE16TOH(ipv4_hdr->checksum));
 };
 
 inline static
 void set_ipv4_src(void *hdr, uint32_t src){
-	((cpc_ipv4_hdr_t*)hdr)->src = htobe32(src);
+	((cpc_ipv4_hdr_t*)hdr)->src = CPC_HTOBE32(src);
 };
 
 inline static
 uint32_t get_ipv4_src(void *hdr){
-	return betoh32(((cpc_ipv4_hdr_t*)hdr)->src);
+	return CPC_BETOH32(((cpc_ipv4_hdr_t*)hdr)->src);
 };
 
 inline static
 void set_ipv4_dst(void *hdr, uint32_t dst){
-	((cpc_ipv4_hdr_t*)hdr)->src = htobe32(dst);
+	((cpc_ipv4_hdr_t*)hdr)->src = CPC_HTOBE32(dst);
 };
 
 inline static
 uint32_t get_ipv4_dst(void *hdr){
-	return betoh32(((cpc_ipv4_hdr_t*)hdr)->dst);
+	return CPC_BETOH32(((cpc_ipv4_hdr_t*)hdr)->dst);
 };
 
 inline static
@@ -162,42 +162,42 @@ uint8_t get_ipv4_version(void *hdr){
 
 inline static
 void set_ipv4_length(void *hdr, uint16_t length){
-	((cpc_ipv4_hdr_t*)hdr)->length = htobe16(length);
+	((cpc_ipv4_hdr_t*)hdr)->length = CPC_HTOBE16(length);
 };
 
 inline static
 uint32_t get_ipv4_length(void *hdr){
-	return betoh16(((cpc_ipv4_hdr_t*)hdr)->length);
+	return CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->length);
 };
 
 inline static
 void set_DF_bit(void *hdr){
-	((cpc_ipv4_hdr_t*)hdr)->offset_flags = htobe16( be16toh(((cpc_ipv4_hdr_t*)hdr)->offset_flags) | (bit_dont_fragment << 13) );
+	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) | (bit_dont_fragment << 13) );
 };
 
 inline static
 bool has_DF_bit_set(void *hdr){
-	return (bool)((be16toh(((cpc_ipv4_hdr_t*)hdr)->offset_flags) >> 13)  & bit_dont_fragment);
+	return (bool)((CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) >> 13)  & bit_dont_fragment);
 };
 
 inline static
 void clear_DF_bit(void *hdr){
-	((cpc_ipv4_hdr_t*)hdr)->offset_flags = htobe16( be16toh(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_dont_fragment << 13) );
+	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_dont_fragment << 13) );
 };
 
 inline static
 void set_MF_bit(void *hdr){
-	((cpc_ipv4_hdr_t*)hdr)->offset_flags = htobe16( be16toh(((cpc_ipv4_hdr_t*)hdr)->offset_flags) | (bit_more_fragments << 13) );
+	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) | (bit_more_fragments << 13) );
 };
 
 inline static
 bool has_MF_bit_set(void *hdr){
-	return (bool)((be16toh(((cpc_ipv4_hdr_t*)hdr)->offset_flags) >> 13)  & bit_more_fragments);
+	return (bool)((CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) >> 13)  & bit_more_fragments);
 };
 
 inline static
 void clear_MF_bit(void *hdr){
-	((cpc_ipv4_hdr_t*)hdr)->offset_flags = htobe16( be16toh(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_more_fragments << 13) );
+	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_more_fragments << 13) );
 };
 
 

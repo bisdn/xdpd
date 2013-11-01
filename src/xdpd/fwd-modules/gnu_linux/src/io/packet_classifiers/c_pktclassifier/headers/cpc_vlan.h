@@ -1,7 +1,7 @@
 #ifndef _CPC_VLAN_H_
 #define _CPC_VLAN_H_
 
-#include <rofl/common/endian_conversion.h>
+#include "../cpc_utils.h"
 
 /* Ethernet constants and definitions */
 
@@ -62,12 +62,12 @@ bool get_dl_vlan_cfi(void* hdr){
 
 inline static
 void set_dl_type(void* hdr, uint16_t dl_type){
-	((cpc_vlan_hdr_t*)hdr)->dl_type = htobe16(dl_type);
+	((cpc_vlan_hdr_t*)hdr)->dl_type = CPC_HTOBE16(dl_type);
 }
 
 inline static
 uint16_t get_dl_type(void* hdr){
-	return be16toh(((cpc_vlan_hdr_t*)hdr)->dl_type);
+	return CPC_BE16TOH(((cpc_vlan_hdr_t*)hdr)->dl_type);
 }
 
 

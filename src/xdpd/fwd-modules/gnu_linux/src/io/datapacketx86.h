@@ -13,6 +13,9 @@
 
 #include "packet_classifiers/packetclassifier.h"
 
+//Profiling
+#include "../util/time_measurements.h"
+
 /**
 * @file datapacketx86.h
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
@@ -75,6 +78,9 @@ public:
 
 	//Opaque pointer
 	void* extra;
+
+	//Time profiling
+	TM_PKT_STATE;
 
 public: // methods
 

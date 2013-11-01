@@ -9,6 +9,9 @@
 #include <rofl/common/protocols/fetherframe.h>
 #include <rofl/common/protocols/fvlanframe.h>
 
+//Profiling
+#include "../../../util/time_measurements.h"
+
 using namespace rofl;
 using namespace xdpd::gnu_linux;
 
@@ -83,6 +86,9 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 			ROFL_DEBUG("[mmap:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
 			//Drop packet
 			bufferpool::release_buffer(pkt);
+
+			TM_STAMP_STAGE(pkt, TM_SA6_FAILURE);
+
 			return;
 		}
 
@@ -91,6 +97,8 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 		//TODO: make it happen only if thread is really sleeping...
 		ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
 		(void)ret; // todo use the value
+			
+		TM_STAMP_STAGE(pkt, TM_SA6_SUCCESS);
 	} else {
 		if(len < MIN_PKT_LEN){
 			ROFL_ERR("[mmap:%s] ERROR: attempt to send invalid packet size for packet(%p) scheduled for queue %u. Packet size: %u\n", of_port_state->name, pkt, q_id, len);
@@ -232,6 +240,9 @@ next:
 		pkt_x86->init((uint8_t*)hdr + hdr->tp_mac, hdr->tp_len, of_port_state->attached_sw, get_port_no());
 	}
 
+	//Timestamp S2	
+	TM_STAMP_STAGE(pkt, TM_S2);
+
 	//Return packet to kernel in the RX ring		
 	rx->return_packet(hdr);
 
@@ -312,6 +323,8 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			break;
 		}
 	
+		TM_STAMP_STAGE(pkt, TM_SA7);
+		
 		pkt_x86 = (datapacketx86*) pkt->platform_state;
 
 		if(unlikely(pkt_x86->get_buffer_length() > mps)){
@@ -333,6 +346,8 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 		
 		//Return buffer to the pool
 		bufferpool::release_buffer(pkt);
+
+		TM_STAMP_STAGE(pkt, TM_SA8);
 
 		// todo statistics
 		tx_bytes_local += hdr->tp_len;

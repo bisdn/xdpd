@@ -93,6 +93,9 @@ datapacketx86::init(
 
 	this->output_queue = 0;
 
+	//Timestamp S1	
+	TM_STAMP_STAGE_DPX86(this, TM_S1);
+	
 	//Classify the packet
 	if(classify)
 		headers->classify();

@@ -71,6 +71,7 @@ typedef struct{
 	
 	bool s2_reached;
 	bool s5_reached;
+	bool sb6_reached; //pkt_in
 }time_measurements_t;
 
 /*
@@ -120,67 +121,88 @@ extern time_measurements_t global_measurements;
 				memset(tm->current,0,sizeof(uint64_t)*TM_MAX);
 				tm->s2_reached = false;
 				tm->s5_reached = false;
+				tm->sb6_reached = false;
 				break;
 			case TM_S1:
+				assert(tm->current[TM_S0] != 0.0);
 				tm->accumulated[stage] += now - tm->current[TM_S0];
 				break;
 			case TM_S2:
+				assert(tm->current[TM_S1] != 0.0);
 				if(!tm->s5_reached){ //May be called more than one time
 					tm->accumulated[stage] += now - tm->current[TM_S1];
 					tm->s2_reached = true;
 				}
 				break;
 			case TM_S3_PRE:
+				assert(tm->current[TM_S2] != 0.0);
 				tm->accumulated[stage] += now - tm->current[TM_S2];
 				break;
 			case TM_S3_SUCCESS:
+				assert(tm->current[TM_S3_PRE] != 0.0);
 				tm->accumulated[stage] += now - tm->current[TM_S3_PRE];
 				break;
 			case TM_S3_FAILURE:
+				assert(tm->current[TM_S3_PRE] != 0.0);
 				tm->accumulated[stage] += now - tm->current[TM_S3_PRE];
 				tm->total_S3_dropped_pkts++;
 				tm->total_pkts++;
 				break;
 			case TM_S4:
-				tm->accumulated[stage] += now - tm->current[TM_S3_SUCCESS];
+				assert(tm->current[TM_S3_PRE] != 0.0);
+				tm->accumulated[stage] += now - tm->current[TM_S3_PRE];		//Avoid race condition
 				break;
 			case TM_S5:
+				assert(tm->current[TM_S4] != 0.0);
 				if(!tm->s5_reached){ //May be called more than one time
 					tm->accumulated[stage] += now - tm->current[TM_S4];
 					tm->s5_reached = true;
 				}
 				break;
 			case TM_SA6_PRE:
+				assert(tm->current[TM_S5] != 0.0);
 				tm->accumulated[stage] += now - tm->current[TM_S5];
 				break;
 			case TM_SA6_SUCCESS:
-				tm->accumulated[stage] += now - tm->current[TM_SA6_PRE];
+				if(tm->current[TM_SA6_PRE] != 0.0) //PKT_OUT or flow_mod
+					tm->accumulated[stage] += now - tm->current[TM_SA6_PRE];	//Avoid race condition
 				break;
 			case TM_SA6_FAILURE:
-				tm->accumulated[stage] = now - tm->current[stage-2];
+				assert(tm->current[TM_SA6_PRE] != 0.0);
+				tm->accumulated[stage] = now - tm->current[TM_SA6_PRE];
 				tm->total_SA6_dropped_pkts++;
 				tm->total_pkts++;
 				break;
 			case TM_SB6_PRE:
+				assert(tm->current[TM_S5] != 0.0);
 				tm->accumulated[stage] += now - tm->current[TM_S5];
+				tm->sb6_reached = true;
 				break;
 			case TM_SB6_SUCCESS:
+				assert(tm->current[TM_SB6_PRE] != 0.0);
 				tm->accumulated[stage] += now - tm->current[TM_SB6_PRE];
 				tm->total_pktin_pkts++;	
 				tm->total_pkts++;
 				break;
 			case TM_SB6_FAILURE:
+				assert(tm->current[TM_SB6_PRE] != 0.0);
 				tm->accumulated[stage] = now - tm->current[TM_SB6_PRE];
 				tm->total_SB6_dropped_pkts++;	
 				tm->total_pkts++;
 				break;
 			case TM_SA7:
-				tm->accumulated[stage] += now - tm->current[TM_SA6_SUCCESS];
+				if(tm->s5_reached && !tm->sb6_reached){ //May be called more than one time
+					assert(tm->current[TM_SA6_PRE] != 0.0);
+					tm->accumulated[stage] += now - tm->current[TM_SA6_PRE];	//Avoid race-condition
+				}
 				break;
 			case TM_SA8:
-				tm->accumulated[stage] += now - tm->current[TM_SA7];
-				tm->total_output_pkts++;	
-				tm->total_pkts++;
+				if(tm->s5_reached && !tm->sb6_reached){ //May be called more than one time
+					assert(tm->current[TM_SA7] != 0.0);
+					tm->accumulated[stage] += now - tm->current[TM_SA7];
+					tm->total_output_pkts++;	
+					tm->total_pkts++;
+				}
 				break;
 			case TM_MAX:
 				assert(0);

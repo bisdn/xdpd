@@ -49,13 +49,13 @@ int main(int argc, char** argv){
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
 
 	{ //Make valgrind happy
-		cunixenv env_parser;
+		cunixenv env_parser(argc, argv);
 		
 		/* update defaults */
 		env_parser.update_default_option("logfile", XDPD_LOG_FILE);
 
 		//Parse
-		env_parser.parse_args(argc, argv);
+		env_parser.parse_args();
 
 		if (not env_parser.is_arg_set("daemonize")) {
 			// only do this in non

@@ -282,7 +282,16 @@ void* epoll_ioscheduler::process_io(void* grp){
 					more_packets |= epoll_ioscheduler::process_port_rx(port);
 					more_packets |= epoll_ioscheduler::process_port_tx(port);
 				}
-			}while(more_packets);	
+				
+				//Check for updates in the running ports list
+				//otherwise we will never stop looping hence not attending new ports 
+				if( unlikely(pg->running_hash != current_hash) ){
+					break;
+				}
+
+			//Make sure we check for keep_on_working flag, otherwise we will never
+			//be able to stop the I/O in high load situations 
+			}while(likely(more_packets) && likely(iomanager::keep_on_working(pg)) );
 		}
 
 		//Check for updates in the running ports 

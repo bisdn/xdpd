@@ -78,8 +78,19 @@ afa_result_t fwd_module_init(){
 */
 afa_result_t fwd_module_destroy(){
 
-	//Initialize the iomanager
+	unsigned int i, max_switches;
+	of_switch_t** switch_list;
+
+	//Initialize the iomanager (Stop feeding packets)
 	iomanager::destroy();
+
+	//Stop all logical switch instances (stop processing packets)
+	switch_list = physical_switch_get_logical_switches(&max_switches);
+	for(i=0;i<max_switches;++i){
+		if(switch_list[i] != NULL){
+			fwd_module_destroy_switch_by_dpid(switch_list[i]->dpid);
+		}
+	}
 
 	//Stop the bg manager
 	stop_background_tasks_manager();
@@ -171,14 +182,15 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 		}
 	}
 	
-	//Detach ports from switch. Do not feed more packets to the switch
-	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
-		return AFA_FAILURE;
-	
 	//stop the threads here (it is blocking)
 	if(stop_ls_workers_wrapper(sw)!= ROFL_SUCCESS)
 		ROFL_ERR("<%s:%d> error stopping workers from processing manager\n",__func__,__LINE__);
 	
+	//Detach ports from switch. Do not feed more packets to the switch
+	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
+		return AFA_FAILURE;
+	
+
 	//Remove switch from the switch bank
 	if(physical_switch_remove_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;

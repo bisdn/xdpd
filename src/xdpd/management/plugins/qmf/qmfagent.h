@@ -63,6 +63,7 @@ public:
 private:
 
 	std::string						broker_url;
+	std::string						xdpd_id;
 
 	qpid::messaging::Connection 	connection;
 	qmf::AgentSession 				session;

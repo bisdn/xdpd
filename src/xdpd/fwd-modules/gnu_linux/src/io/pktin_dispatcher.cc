@@ -75,10 +75,14 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 						*((of1x_packet_matches_t*)&pkt->matches)
 				);
 
-		if(rv != AFA_SUCCESS){
+		if( unlikely(rv != AFA_SUCCESS) ){
 			ROFL_DEBUG("PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
 			//Take packet out from the storage
-			pkt = ls_int->storage->get_packet(id);
+			if( unlikely(ls_int->storage->get_packet(id) != pkt) ){
+				ROFL_ERR("Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
+
+				assert(0);
+			}
 
 			//Return to the bufferpool
 			bufferpool::release_buffer(pkt);

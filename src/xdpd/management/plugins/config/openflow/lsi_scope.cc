@@ -219,7 +219,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 		}
 	}	
 
-	if(ports.size() < 2){
+	if(ports.size() < 0){
  		ROFL_ERR("%s: an LSI must have at least two ports attached.\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	

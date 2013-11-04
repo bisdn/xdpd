@@ -27,7 +27,7 @@ static void tm_dump_row(const char* message, uint64_t accumulated_stage_ticks, d
 	if(stage_number_of_packets)
 		stage_ticks = (double)(accumulated_stage_ticks/stage_number_of_packets);
 	
-	ROFL_INFO("%s\t%10.1f\t\t%.02f\t\t%u\n", message, stage_ticks, (stage_ticks/path_ticks)*100, stage_number_of_packets);
+	ROFL_INFO("%s\t%10.1f\t\t%05.02f\t\t%u\n", message, stage_ticks, (stage_ticks/path_ticks)*100, stage_number_of_packets);
 }
 
 void tm_dump_measurements(void){

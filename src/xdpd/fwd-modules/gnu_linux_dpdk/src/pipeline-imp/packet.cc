@@ -1,3 +1,4 @@
+#define __STDC_LIMIT_MACROS
 #include <inttypes.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>

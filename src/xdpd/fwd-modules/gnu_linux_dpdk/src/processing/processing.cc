@@ -164,22 +164,20 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	rte_spinlock_lock(&mutex);
 
-	//Detect cores full
-	index = current_core_index;
+	//Select core
+	for(current_core_index++, index=current_core_index;;){
+		if( processing_cores[current_core_index].available == false || processing_cores[current_core_index].num_of_rx_ports == MAX_PORTS_PER_CORE )
+			break;
 
-	do{
-		current_core_index++;
-		if(current_core_index == max_cores)
-			current_core_index = 0; 
-
-		
-		if(current_core_index == index+1){
+		//Circular increment
+		(current_core_index == max_cores)? 0 : current_core_index++;
+		if(current_core_index == index){
 			//All full 
 			ROFL_ERR("All cores are full. No available port slots\n");
 			assert(0);		
 			return ROFL_FAILURE;
 		}
-	}while( processing_cores[current_core_index].available == false || processing_cores[current_core_index].num_of_rx_ports == MAX_PORTS_PER_CORE);
+	}
 
 	num_of_ports = &processing_cores[current_core_index].num_of_rx_ports;
 

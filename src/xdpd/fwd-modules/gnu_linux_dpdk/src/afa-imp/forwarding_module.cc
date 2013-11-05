@@ -1,3 +1,4 @@
+#define __STDC_LIMIT_MACROS
 #include <stdio.h>
 #include <unistd.h>
 #include <rofl/datapath/afa/fwd_module.h>
@@ -21,6 +22,7 @@
 //DPDK includes
 #include <rte_common.h> 
 #include <rte_eal.h> 
+#include <rte_errno.h> 
 #include <rte_launch.h> 
 #include <rte_mempool.h> 
 #include <rte_mbuf.h> 
@@ -76,7 +78,19 @@ afa_result_t fwd_module_init(){
 			NULL, NULL,
 			rte_pktmbuf_init, NULL,
 			SOCKET0, 0);
-
+#if 10
+	/* init driver(s) */
+	if ((ret = rte_igb_pmd_init()) < 0)
+		rte_exit(EXIT_FAILURE, "Cannot init pmd %s\n", rte_strerror(ret));
+	if ((ret = rte_ixgbe_pmd_init()) < 0)
+		rte_exit(EXIT_FAILURE, "Cannot init pmd %s\n", rte_strerror(ret));
+	if (rte_eal_pci_probe() < 0)
+		rte_exit(EXIT_FAILURE, "Cannot probe PCI\n");
+#else
+	/* init driver(s) */
+	if (rte_pmd_init_all() < 0)
+		rte_exit(EXIT_FAILURE, "Cannot init pmd\n");
+#endif
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
 
@@ -277,6 +291,8 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 	if(!port)
 		return AFA_FAILURE;
 
+	ROFL_INFO("["FWD_MOD_NAME"] Trying to attach port %s. to switch %s (0x%llx)\n", port->name, lsw->name, (long long unsigned int)lsw->dpid);
+	
 	//Update pipeline state
 	if(*of_port_num == 0){
 		//no port specified, we assign the first available
@@ -372,7 +388,8 @@ afa_result_t fwd_module_enable_port(const char* name){
 	ROFL_INFO("["FWD_MOD_NAME"] calling enable_port()\n");
 	
 	//XXX
-	return AFA_FAILURE;
+	//return AFA_FAILURE;
+	return AFA_SUCCESS;
 }
 
 /*

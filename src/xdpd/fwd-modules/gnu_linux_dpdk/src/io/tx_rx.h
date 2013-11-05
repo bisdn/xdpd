@@ -5,6 +5,7 @@
 #ifndef _TX_RX_H_
 #define _TX_RX_H_
 
+#define __STDC_LIMIT_MACROS
 #include "../config.h"
 #include <rofl/common/utils/c_logger.h>
 #include <rte_common.h>

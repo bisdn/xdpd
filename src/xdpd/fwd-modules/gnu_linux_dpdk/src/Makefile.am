@@ -24,5 +24,8 @@ libfwd_module_gnu_linux_dpdk_src_la_LIBADD = \
 		-lrte_pmd_e1000\
 		-lrte_pmd_ixgbe\
 		-lrte_ring\
-		-lrte_timer
+		-lrte_timer\
+		-lrte_pmd_ring\
+		-lrte_eal
+
 library_include_HEADERS=

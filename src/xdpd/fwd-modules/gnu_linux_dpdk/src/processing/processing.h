@@ -7,6 +7,7 @@
 
 #include "../config.h"
 
+#define __STDC_LIMIT_MACROS
 #include <rofl.h>
 #include <rte_common.h> 
 #include <rte_eal.h> 

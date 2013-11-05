@@ -5,6 +5,7 @@
 #ifndef _PORT_MGMT_H_
 #define _PORT_MGMT_H_
 
+#define __STDC_LIMIT_MACROS
 #include <rofl.h>
 #include "../config.h"
 #include <rte_common.h> 

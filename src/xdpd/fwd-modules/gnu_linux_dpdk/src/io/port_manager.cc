@@ -25,10 +25,10 @@ static switch_port_t* configure_port(unsigned int port_id){
 	//the NIC
 	if( strncmp(dev_info.driver_name, "rte_ixgbe", 9) == 0 ){
 		/* 10G */
-		snprintf (port_name, SWITCH_PORT_MAX_LEN_NAME, "10ge-%u",port_id);
+		snprintf (port_name, SWITCH_PORT_MAX_LEN_NAME, "10ge%u",port_id);
 	}else{
 		/* 1G */
-		snprintf (port_name, SWITCH_PORT_MAX_LEN_NAME, "ge-%u",port_id);
+		snprintf (port_name, SWITCH_PORT_MAX_LEN_NAME, "ge%u",port_id);
 	}
 
 	//Initialize pipeline port

@@ -9,6 +9,7 @@
 #include "../io/tx_rx.h"
 
 #include "../io/port_state.h"
+#include "../io/port_manager.h"
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 
@@ -24,6 +25,52 @@ static rte_spinlock_t mutex;
 core_tasks_t processing_cores[RTE_MAX_LCORE];
 unsigned int total_num_of_ports = 0;
 
+
+static void processing_dump_cores_state(void){
+
+#ifdef DEBUG
+	unsigned int i;
+	enum rte_lcore_role_t role;
+	enum rte_lcore_state_t state;
+
+	for(i=0; i < max_cores; ++i){
+		role = rte_eal_lcore_role(i);
+		state = rte_eal_get_lcore_state(i);
+		
+		ROFL_DEBUG("Core %u ROLE:", i);
+		switch(role){
+			case ROLE_RTE:
+				ROFL_DEBUG(" RTE");
+				break;
+			case ROLE_OFF:
+				ROFL_DEBUG(" OFF");
+				break;
+			default:
+				assert(0);
+				ROFL_DEBUG(" Unknown");
+				break;
+		}
+		
+		ROFL_DEBUG(" state:");
+		switch(state){
+			case WAIT:
+				ROFL_DEBUG(" WAIT");
+				break;
+			case RUNNING:
+				ROFL_DEBUG(" RUNNING");
+				break;
+			case FINISHED:
+				ROFL_DEBUG(" FINISHED");
+				break;
+			default:
+				assert(0);
+				ROFL_DEBUG(" UNKNOWN");
+				break;
+		}
+		ROFL_DEBUG("\n");
+	}
+#endif	
+}
 
 /*
 * Initialize data structures for processing to work 
@@ -42,15 +89,19 @@ rofl_result_t processing_init(void){
 	config = rte_eal_get_configuration();
 	max_cores = config->lcore_count;
 	rte_spinlock_init(&mutex);
+		
+	ROFL_DEBUG("Processing init: %u logical cores guessed from rte_eal_get_configuration(). Master is: %u\n", config->lcore_count, config->master_lcore);
 
 	//Define available cores 
-	for(i=0; i < max_cores; ++i){
+	for(i=0; i < RTE_MAX_LCORE; ++i){
 		role = rte_eal_lcore_role(i);
-		if(role == ROLE_RTE)
+		if(role == ROLE_RTE && i != config->master_lcore){
 			processing_cores[i].available = true;
-		
-		ROFL_DEBUG("Marking core %u as available\n",i);
+			ROFL_DEBUG("Marking core %u as available\n",i);
+		}
 	}
+
+	processing_dump_cores_state();	
 
 	return ROFL_SUCCESS;
 }
@@ -84,7 +135,7 @@ int processing_core_process_packets(void* not_used){
 	switch_port_t* port;
 	port_queues_t* port_queues;	
         uint64_t diff_tsc, prev_tsc;
-	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST];
+	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST]={0};
 	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
 
 #if 1
@@ -125,7 +176,7 @@ int processing_core_process_packets(void* not_used){
 					continue;
 
 				//Process TX
-				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; --j ){
+				for( j=(IO_IFACE_NUM_QUEUES-1); j >0 ; --j ){
 					process_port_queue_tx(port, port_id, &port_queues->tx_queues[j], j);
 				}
 				i++;
@@ -166,11 +217,14 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	//Select core
 	for(current_core_index++, index=current_core_index;;){
-		if( processing_cores[current_core_index].available == false || processing_cores[current_core_index].num_of_rx_ports == MAX_PORTS_PER_CORE )
+		if( processing_cores[current_core_index].available == true && processing_cores[current_core_index].num_of_rx_ports != MAX_PORTS_PER_CORE )
 			break;
 
 		//Circular increment
-		(current_core_index == max_cores)? 0 : current_core_index++;
+		if(current_core_index == RTE_MAX_LCORE)
+			current_core_index=0; 
+		else
+			current_core_index++;
 		if(current_core_index == index){
 			//All full 
 			ROFL_ERR("All cores are full. No available port slots\n");
@@ -188,6 +242,11 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		rte_spinlock_unlock(&mutex);
 		return ROFL_FAILURE;
 	}
+
+	//FIXME: check if already scheduled
+	if( port_manager_set_queues(current_core_index, port_state->port_id) != ROFL_SUCCESS)
+		return ROFL_FAILURE;
+
 
 	//Store attachment info (back reference)
 	port_state->core_id = current_core_index; 
@@ -215,9 +274,12 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		}
 		
 		ROFL_DEBUG("Launching core %u due to scheduling action of port %p\n", index, port);
+
 		//Launch
+		ROFL_DEBUG_VERBOSE("Pre-launching core %u due to scheduling action of port %p\n", index, port);
 		if( rte_eal_remote_launch(processing_core_process_packets, NULL, index) < 0)
 			rte_panic("Unable to launch core %u! Status was NOT wait (race-condition?)", index);
+		ROFL_DEBUG_VERBOSE("Post-launching core %u due to scheduling action of port %p\n", index, port);
 	}
 	
 	port_state->scheduled = true;

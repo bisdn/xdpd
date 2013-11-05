@@ -7,14 +7,20 @@
 #include "port_state.h"
 
 #include "../config.h"
+#include <assert.h> 
 #include <rte_common.h> 
 #include <rte_malloc.h> 
+#include <rte_errno.h> 
+
+extern struct rte_mempool *pool_direct;
 
 //Initializes the pipeline structure and launches the port 
 static switch_port_t* configure_port(unsigned int port_id){
 
+	int ret;
 	switch_port_t* port;
 	struct rte_eth_dev_info dev_info;
+	struct rte_eth_conf port_conf;
 	char port_name[SWITCH_PORT_MAX_LEN_NAME];
 	
 	//Get info
@@ -44,15 +50,21 @@ static switch_port_t* configure_port(unsigned int port_id){
 		return NULL;
 	}
 
-	//Start port
-	if(rte_eth_dev_start(port_id) < 0)
-		return NULL; 
-
-	//Set promiscuous mode
-	rte_eth_promiscuous_enable(port_id);	
-
 	//Mark link status as automatic
 	//TODO	
+	
+	//Set rx and tx queues
+	memset(&port_conf, 0, sizeof(port_conf));
+	port_conf.rxmode.max_rx_pkt_len =  IO_MAX_PACKET_SIZE;
+	//port_conf.rxmode.hw_ip_checksum = 1;
+	//port_conf.rx_adv_conf.rss_conf.rss_hf = ETH_RSS_IPV4 | ETH_RSS_IPV6;
+	port_conf.txmode.mq_mode = ETH_MQ_TX_NONE;
+	if ((ret=rte_eth_dev_configure(port_id, 1, IO_IFACE_NUM_QUEUES, &port_conf)) < 0){
+		assert(0);
+		ROFL_ERR("Cannot configure device: %s (%s)\n", port->name, rte_strerror(ret));
+		return NULL;
+	}
+
 
 	//Fill-in dpdk port state
 	ps->scheduled = false;
@@ -62,6 +74,52 @@ static switch_port_t* configure_port(unsigned int port_id){
 	ROFL_INFO("Discovered port %s [%u:%u:%u]\n", port_name, dev_info.pci_dev->addr.domain, dev_info.pci_dev->addr.bus, dev_info.pci_dev->addr.devid );
 
 	return port;
+}
+
+rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id){
+	
+	int ret;
+	struct rte_eth_rxconf rx_conf = {
+		.rx_thresh = {
+			.pthresh = RX_PTHRESH,
+			.hthresh = RX_HTHRESH,
+			.wthresh = RX_WTHRESH,
+		},
+		.rx_free_thresh = 32,
+	};
+	struct rte_eth_txconf tx_conf;
+	tx_conf.tx_thresh.pthresh = TX_PTHRESH;
+	tx_conf.tx_thresh.hthresh = TX_HTHRESH;
+	tx_conf.tx_thresh.wthresh = TX_WTHRESH;
+	tx_conf.tx_free_thresh = 0; /* Use PMD default values */
+	tx_conf.tx_rs_thresh = 0; /* Use PMD default values */
+	
+	//Set RX
+	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_TEST_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, pool_direct)) <0){
+		ROFL_ERR("Cannot setup RX queue: %s\n", rte_strerror(ret));
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	//Set TX
+	if( (ret = rte_eth_tx_queue_setup(port_id, 0, RTE_TEST_TX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &tx_conf))){
+ 
+		ROFL_ERR("Cannot setup RX queue: %s\n", rte_strerror(ret));
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	//Start port
+	if((ret=rte_eth_dev_start(port_id)) < 0){
+		ROFL_ERR("Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
+		assert(0);
+		return ROFL_FAILURE; 
+	}
+
+	//Set promiscuous mode
+	rte_eth_promiscuous_enable(port_id);
+	
+	return ROFL_SUCCESS;
 }
 
 /*

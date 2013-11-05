@@ -33,6 +33,10 @@ rofl_result_t port_manager_discover_system_ports(void);
 */
 rofl_result_t port_manager_shutdown_ports(void);
 
+/**
+* Setup tx and rx queues 
+*/
+rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id);
 
 //C++ extern C
 ROFL_END_DECLS

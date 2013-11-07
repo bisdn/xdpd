@@ -78,6 +78,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 
 rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id){
 	
+	unsigned int i;
 	int ret;
 	struct rte_eth_rxconf rx_conf = {
 		.rx_thresh = {
@@ -95,20 +96,21 @@ rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id
 	tx_conf.tx_rs_thresh = 0; /* Use PMD default values */
 	
 	//Set RX
-	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_TEST_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, pool_direct)) <0){
+	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_TEST_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, pool_direct)) < 0 ){
 		ROFL_ERR("Cannot setup RX queue: %s\n", rte_strerror(ret));
 		assert(0);
 		return ROFL_FAILURE;
 	}
 
 	//Set TX
-	if( (ret = rte_eth_tx_queue_setup(port_id, 0, RTE_TEST_TX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &tx_conf))){
- 
-		ROFL_ERR("Cannot setup RX queue: %s\n", rte_strerror(ret));
-		assert(0);
-		return ROFL_FAILURE;
+	for(i=0;i<IO_IFACE_NUM_QUEUES;++i){
+		if( (ret = rte_eth_tx_queue_setup(port_id, i, RTE_TEST_TX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &tx_conf)) < 0 ){
+	 
+			ROFL_ERR("Cannot setup TX queues: %s\n", rte_strerror(ret));
+			assert(0);
+			return ROFL_FAILURE;
+		}
 	}
-
 	//Start port
 	if((ret=rte_eth_dev_start(port_id)) < 0){
 		ROFL_ERR("Cannot start device %u:  %s\n", port_id, rte_strerror(ret));

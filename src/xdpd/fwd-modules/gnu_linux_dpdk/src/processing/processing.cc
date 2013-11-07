@@ -33,7 +33,9 @@ static void processing_dump_cores_state(void){
 	enum rte_lcore_role_t role;
 	enum rte_lcore_state_t state;
 
-	for(i=0; i < max_cores; ++i){
+	return;
+
+	for(i=0; i < RTE_MAX_LCORE; ++i){
 		role = rte_eal_lcore_role(i);
 		state = rte_eal_get_lcore_state(i);
 		
@@ -221,10 +223,12 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			break;
 
 		//Circular increment
-		if(current_core_index == RTE_MAX_LCORE)
+		if(current_core_index+1 == RTE_MAX_LCORE)
 			current_core_index=0; 
 		else
 			current_core_index++;
+	
+		//We've already checked all positions. No core free. Return
 		if(current_core_index == index){
 			//All full 
 			ROFL_ERR("All cores are full. No available port slots\n");
@@ -232,6 +236,8 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			return ROFL_FAILURE;
 		}
 	}
+
+	ROFL_DEBUG("Selected core %u for scheduling port %p\n", current_core_index, port); 
 
 	num_of_ports = &processing_cores[current_core_index].num_of_rx_ports;
 
@@ -244,8 +250,10 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	}
 
 	//FIXME: check if already scheduled
-	if( port_manager_set_queues(current_core_index, port_state->port_id) != ROFL_SUCCESS)
+	if( port_manager_set_queues(current_core_index, port_state->port_id) != ROFL_SUCCESS){
+		assert(0);
 		return ROFL_FAILURE;
+	}
 
 
 	//Store attachment info (back reference)

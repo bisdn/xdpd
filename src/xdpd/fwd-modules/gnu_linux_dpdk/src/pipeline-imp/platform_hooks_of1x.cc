@@ -84,6 +84,7 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
 void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
+
 	datapacket_t* pkt_replica=NULL;
 	struct rte_mbuf* mbuf=NULL;
 	datapacketx86* pktx86;
@@ -123,7 +124,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	pkt_replica->sw = pkt->sw;
 
 	//Initialize replica buffer (without classification)
-	pktx86->init((uint8_t*)mbuf->buf_addr, mbuf->buf_len, (of_switch_t*)sw, pktx86->in_port, 0, false, false);
+	pktx86_replica->init(rte_pktmbuf_mtod(mbuf, uint8_t*), mbuf->buf_len, (of_switch_t*)sw, pktx86->in_port, 0, false, false);
 
 	//Replicate the packet(copy contents)	
 	memcpy(pktx86_replica->get_buffer(), pktx86->get_buffer(), pktx86->get_buffer_length());
@@ -131,11 +132,14 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	pktx86_replica->icmpv4_recalc_checksum 	= pktx86->icmpv4_recalc_checksum;
 	pktx86_replica->tcp_recalc_checksum 	= pktx86->tcp_recalc_checksum;
 	pktx86_replica->udp_recalc_checksum 	= pktx86->udp_recalc_checksum;
+	((dpdk_pkt_platform_state_t*)pkt_replica->platform_state)->mbuf = mbuf;
 
 	//Classify
 	//TODO: this could be improved by copying the classification state
 	pktx86_replica->headers->classify();	
 
+	ROFL_DEBUG("Trying to enqueue PKT_IN for packet(%p), mbuf %p, switch %p\n", pkt, mbuf, sw);
+	
 	//Store in PKT_IN ring
 	if( unlikely( enqueue_pktin(pkt_replica) != ROFL_SUCCESS ) ){
 		//PKT_IN ring full
@@ -158,6 +162,7 @@ PKT_IN_ERROR:
 		}
 	}
 	return;
+
 }
 
 //Flow removed

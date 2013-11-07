@@ -17,8 +17,18 @@
 #include <rte_ethdev.h>
 #include <rte_ring.h>
 #include <rte_launch.h>
+#include <rofl/datapath/pipeline/physical_switch.h>
+#include <rofl/datapath/pipeline/common/datapacket.h>
+#include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 #include "port_state.h"
+
+#define PORT_MANAGER_MAX_PORTS 128
+
+/**
+ *  Port mappings
+ */
+extern switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS];
 
 //C++ extern C
 ROFL_BEGIN_DECLS

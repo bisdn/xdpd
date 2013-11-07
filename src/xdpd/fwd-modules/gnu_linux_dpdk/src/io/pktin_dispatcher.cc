@@ -46,6 +46,7 @@ static void* process_packet_ins(void* param){
 			sw = (of1x_switch_t*)pkt->sw;
 			dps = (datapacket_storage*)pkt->sw->platform_state;
 
+			ROFL_DEBUG("Processing PKT_IN for packet(%p), mbuf %p, switch %p\n", pkt, mbuf, sw);
 			//Store packet in the storage system. Packet is NOT returned to the bufferpool
 			id = dps->store_packet(pkt);
 

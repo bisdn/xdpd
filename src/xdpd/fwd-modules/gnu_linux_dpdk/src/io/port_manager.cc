@@ -13,6 +13,7 @@
 #include <rte_errno.h> 
 
 extern struct rte_mempool *pool_direct;
+switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 
 //Initializes the pipeline structure and launches the port 
 static switch_port_t* configure_port(unsigned int port_id){
@@ -71,7 +72,10 @@ static switch_port_t* configure_port(unsigned int port_id){
 	ps->port_id = port_id;
 	port->platform_port_state = (platform_port_state_t*)ps;
 
-	ROFL_INFO("Discovered port %s [%u:%u:%u]\n", port_name, dev_info.pci_dev->addr.domain, dev_info.pci_dev->addr.bus, dev_info.pci_dev->addr.devid );
+	ROFL_INFO("Discovered port %s [%u:%u:%u] id %u\n", port_name, dev_info.pci_dev->addr.domain, dev_info.pci_dev->addr.bus, dev_info.pci_dev->addr.devid, port_id);
+
+	//Set the port in the port_mapping
+	port_mapping[port_id] = port;
 
 	return port;
 }

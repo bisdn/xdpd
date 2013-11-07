@@ -87,10 +87,13 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 bufferpool::~bufferpool(){
 	
 	unsigned long long int i;
+	dpdk_pkt_platform_state_t* state;	
 
 	for(i=0;i<pool.size();++i){
 		if(pool[i]){
-			delete (datapacketx86*)pool[i]->platform_state;
+			state = (dpdk_pkt_platform_state_t*)pool[i]->platform_state;
+			delete state->pktx86;
+			free(state);
 			free(pool[i]);
 		}	
 	}

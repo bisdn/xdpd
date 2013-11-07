@@ -20,6 +20,7 @@
 #include "dpdk_datapacket.h"
 
 #include "port_state.h"
+#include "port_manager.h"
 #include "../processing/processing.h"
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
@@ -47,6 +48,8 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 
 	//XXX: statistics
 
+	//ROFL_DEBUG("Read burst from %s (%u pkts)\n", port->name, burst_len);
+
 	//Process them 
 	for(i=0;i<burst_len;++i){
 		mbuf = pkts_burst[i];		
@@ -63,8 +66,14 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 		//XXX: delete from here
 		assert(mbuf->pkt.nb_segs == 1);
 
+		if(unlikely(!port_mapping[mbuf->pkt.in_port])){
+			//Not attached	
+			rte_pktmbuf_free(mbuf);
+			continue;
+		}
+
 		//Init&classify	
-		pkt_x86->init((uint8_t*)mbuf->buf_addr, mbuf->buf_len, sw, mbuf->pkt.in_port, 0, true, false);
+		pkt_x86->init(rte_pktmbuf_mtod(mbuf, uint8_t*), mbuf->buf_len, sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
 
 		//Send to process
 		of_process_packet_pipeline(sw, pkt);

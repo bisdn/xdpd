@@ -144,6 +144,7 @@ qmfagent::set_qmf_schema()
 
     // lsi
     sch_lsi = qmf::Schema(qmf::SCHEMA_TYPE_DATA, qmf_package, "lsi");
+    sch_lsi.addProperty(qmf::SchemaProperty("xdpdID", 	qmf::SCHEMA_DATA_STRING));
     sch_lsi.addProperty(qmf::SchemaProperty("dpid", qmf::SCHEMA_DATA_INT));
 
     qmf::SchemaMethod portAttachMethod("portAttach", "{desc:'attach port'}");
@@ -247,6 +248,7 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 
 		// create QMF LSI object
 		qLSIs[dpid].data = qmf::Data(sch_lsi);
+		qLSIs[dpid].data.setProperty("xdpdID", xdpd_id);
 		qLSIs[dpid].data.setProperty("dpid", dpid);
 		std::stringstream name("lsi-"); name << dpid;
 		qLSIs[dpid].addr = session.addData(qLSIs[dpid].data, name.str());

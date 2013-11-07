@@ -20,3 +20,7 @@ uninstall-hook:
 
 maintainer-clean-local:
 	rm -rf $(top_srcdir)/m4
+
+#AM_CPPFLAGS=-I/home/andreas/local/rofl
+#AM_CFLAGS=-I/home/andreas/local/rofl
+#AM_LDFLAGS=-L/home/andreas/local/lib

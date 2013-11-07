@@ -1196,7 +1196,7 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	pkt_replica->sw = pkt->sw;
 
 	//Initialize replica buffer (without classification)
-	pktx86->init((uint8_t*)mbuf->buf_addr, mbuf->buf_len, (of_switch_t*)pkt->sw, pktx86->in_port, 0, false, false);
+	pktx86_replica->init((uint8_t*)mbuf->buf_addr, mbuf->buf_len, (of_switch_t*)pkt->sw, pktx86->in_port, 0, false, false);
 
 	//Replicate the packet(copy contents)	
 	memcpy(pktx86_replica->get_buffer(), pktx86->get_buffer(), pktx86->get_buffer_length());
@@ -1204,6 +1204,7 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	pktx86_replica->icmpv4_recalc_checksum 	= pktx86->icmpv4_recalc_checksum;
 	pktx86_replica->tcp_recalc_checksum 	= pktx86->tcp_recalc_checksum;
 	pktx86_replica->udp_recalc_checksum 	= pktx86->udp_recalc_checksum;
+	((dpdk_pkt_platform_state_t*)pkt_replica->platform_state)->mbuf = mbuf;
 
 	//Classify
 	//TODO: this could be improved by copying the classification state

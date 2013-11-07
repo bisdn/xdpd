@@ -146,6 +146,13 @@ qmfagent::set_qmf_schema()
     sch_lsi = qmf::Schema(qmf::SCHEMA_TYPE_DATA, qmf_package, "lsi");
     sch_lsi.addProperty(qmf::SchemaProperty("xdpdID", 	qmf::SCHEMA_DATA_STRING));
     sch_lsi.addProperty(qmf::SchemaProperty("dpid", qmf::SCHEMA_DATA_INT));
+    sch_lsi.addProperty(qmf::SchemaProperty("dpname", 	qmf::SCHEMA_DATA_STRING));
+    sch_lsi.addProperty(qmf::SchemaProperty("ofversion",qmf::SCHEMA_DATA_INT));
+    sch_lsi.addProperty(qmf::SchemaProperty("ntables", 	qmf::SCHEMA_DATA_INT));
+    sch_lsi.addProperty(qmf::SchemaProperty("ctlaf",	qmf::SCHEMA_DATA_INT));
+    sch_lsi.addProperty(qmf::SchemaProperty("ctladdr", 	qmf::SCHEMA_DATA_STRING));
+    sch_lsi.addProperty(qmf::SchemaProperty("ctlport", 	qmf::SCHEMA_DATA_INT));
+    sch_lsi.addProperty(qmf::SchemaProperty("reconnect",qmf::SCHEMA_DATA_INT));
 
     qmf::SchemaMethod portAttachMethod("portAttach", "{desc:'attach port'}");
     portAttachMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
@@ -250,7 +257,14 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 		qLSIs[dpid].data = qmf::Data(sch_lsi);
 		qLSIs[dpid].data.setProperty("xdpdID", xdpd_id);
 		qLSIs[dpid].data.setProperty("dpid", dpid);
-		std::stringstream name("lsi-"); name << dpid;
+		qLSIs[dpid].data.setProperty("dpname", dpname);
+		qLSIs[dpid].data.setProperty("ntables", ntables);
+		qLSIs[dpid].data.setProperty("ctlaf", ctlaf);
+		qLSIs[dpid].data.setProperty("ctladdr", ctladdr);
+		qLSIs[dpid].data.setProperty("ctlport", ctlport);
+		qLSIs[dpid].data.setProperty("reconnect", reconnect);
+
+		std::stringstream name("lsi-"); name << xdpd_id << "-" << dpid;
 		qLSIs[dpid].addr = session.addData(qLSIs[dpid].data, name.str());
 
 		session.methodSuccess(event);

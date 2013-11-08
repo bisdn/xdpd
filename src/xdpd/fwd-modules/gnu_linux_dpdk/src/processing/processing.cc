@@ -133,7 +133,8 @@ rofl_result_t processing_destroy(void){
 
 int processing_core_process_packets(void* not_used){
 
-	unsigned int i, j, port_id;
+	unsigned int i, port_id;
+	int j;
 	switch_port_t* port;
 	port_queues_t* port_queues;	
         uint64_t diff_tsc, prev_tsc;
@@ -152,7 +153,7 @@ int processing_core_process_packets(void* not_used){
 	dpdk_pkt_platform_state_t pkt_state;
 
 	//Init values and assign
-	pkt.platform_state = (platform_port_state_t*)&pkt_state;
+	pkt.platform_state = (platform_datapacket_state_t*)&pkt_state;
 	pkt_state.pktx86 = &pkt_x86; 
 	pkt_state.mbuf = NULL;
 
@@ -170,18 +171,25 @@ int processing_core_process_packets(void* not_used){
 		//Drain TX if necessary	
 		if(unlikely(diff_tsc > drain_tsc)){
 
-			for(i=0;i<total_num_of_ports;){
-				port_queues = &tasks->all_ports[i];
+			for(i=0; (i<tasks->num_of_rx_ports) && (i<MAX_PORTS_PER_CORE) ;++i){
+			
+				if(unlikely(!tasks->port_list[i]))
+					continue;
 
+				//FIXME: this should be improved
+				port_id = ((dpdk_port_state_t*)tasks->port_list[i]->platform_port_state)->port_id;
+				port_queues = &tasks->all_ports[port_id];
+				port = tasks->port_list[i];
+			
 				//Skip non-present ports (un-contiguous port_ids?)	
 				if(unlikely(!port_queues->present))
 					continue;
-
+		
+	
 				//Process TX
-				for( j=(IO_IFACE_NUM_QUEUES-1); j >0 ; --j ){
+				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
 					process_port_queue_tx(port, port_id, &port_queues->tx_queues[j], j);
 				}
-				i++;
 			}
 		}
 

@@ -83,12 +83,19 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 inline void process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_table* queue, unsigned int queue_id){
 	unsigned ret;
 
-	if(queue->len == 0)
+	if(queue->len == 0){
+		//static int j=0;
+		//if((j%100000 == 0) && (queue_id == 0))
+		//	ROFL_DEBUG("Auto purge to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
 		return;
+	}
 
+	ROFL_DEBUG("Trying to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
 	//Send burst
 	ret = rte_eth_tx_burst(port_id, queue_id, queue->m_table, queue->len);
 	//XXX port_statistics[port].tx += ret;
+	
+	ROFL_DEBUG("+++++++++++++++++++++++++++ Transmited %u pkts, on port %s(%u)\n", ret, port->name, port_id);
 
 	if (unlikely(ret < queue->len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -127,18 +134,22 @@ inline void tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt
 		return;
 	}
 
+	ROFL_DEBUG("Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+
 	//Enqueue
 	len = pkt_burst->len; 
 	pkt_burst->m_table[len] = mbuf;
 	len++;
 
 	//If burst is full => trigger send
-	if (unlikely(len == IO_IFACE_MAX_PKT_BURST)) {
+	if (unlikely(len == IO_IFACE_MAX_PKT_BURST) || unlikely(!tasks->active)) { //If buffer is full or mgmt core
+		pkt_burst->len = len;
 		process_port_queue_tx(port, port_id, pkt_burst, queue_id);
-		len = 0;
+		return;
 	}
 
 	pkt_burst->len = len;
+
 	return;
 }
 

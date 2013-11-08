@@ -51,7 +51,7 @@ typedef struct core_tasks{
 
 
 //Fwd delcaration of core_tasks array
-extern core_tasks_t processing_cores[];
+extern core_tasks_t processing_cores[RTE_MAX_LCORE];
 
 //Fwd declaration total number of ports (scheduled, so usable by the I/O)
 extern unsigned int total_num_of_ports;

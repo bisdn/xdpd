@@ -44,10 +44,14 @@ static inline bool action_group_of1x_packet_in_contains_output(of1x_action_group
  */
 afa_result_t fwd_module_of1x_set_port_drop_received_config(uint64_t dpid, unsigned int port_num, bool drop_received){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	//XXX
+	switch_port_t* port = physical_switch_get_port_by_num(dpid,port_num);
 
-	return AFA_FAILURE;
+	if(!port)	
+		return AFA_FAILURE;
+		
+	port->drop_received = drop_received;
+	
+	return AFA_SUCCESS;
 }
 
 /**
@@ -61,11 +65,14 @@ afa_result_t fwd_module_of1x_set_port_drop_received_config(uint64_t dpid, unsign
  */
 afa_result_t fwd_module_of1x_set_port_no_flood_config(uint64_t dpid, unsigned int port_num, bool no_flood){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	switch_port_t* port = physical_switch_get_port_by_num(dpid,port_num);
+
+	if(!port)	
+		return AFA_FAILURE;
+		
+	port->no_flood = no_flood;
 	
-	//XXX
-	
-	return AFA_FAILURE;
+	return AFA_SUCCESS;
 }
 
 /**
@@ -79,11 +86,14 @@ afa_result_t fwd_module_of1x_set_port_no_flood_config(uint64_t dpid, unsigned in
  */
 afa_result_t fwd_module_of1x_set_port_forward_config(uint64_t dpid, unsigned int port_num, bool forward){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	switch_port_t* port = physical_switch_get_port_by_num(dpid,port_num);
+
+	if(!port)	
+		return AFA_FAILURE;
+		
+	port->forward_packets = forward;
 	
-	//XXX
-	
-	return AFA_FAILURE;
+	return AFA_SUCCESS;
 }
 /**
  * @name    fwd_module_of1x_set_port_generate_packet_in_config
@@ -96,11 +106,14 @@ afa_result_t fwd_module_of1x_set_port_forward_config(uint64_t dpid, unsigned int
  */
 afa_result_t fwd_module_of1x_set_port_generate_packet_in_config(uint64_t dpid, unsigned int port_num, bool generate_packet_in){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	switch_port_t* port = physical_switch_get_port_by_num(dpid,port_num);
+
+	if(!port)	
+		return AFA_FAILURE;
+		
+	port->of_generate_packet_in = generate_packet_in;
 	
-	//XXX
-	
-	return AFA_FAILURE;
+	return AFA_SUCCESS;
 }
 
 /**
@@ -114,11 +127,14 @@ afa_result_t fwd_module_of1x_set_port_generate_packet_in_config(uint64_t dpid, u
  */
 afa_result_t fwd_module_of1x_set_port_advertise_config(uint64_t dpid, unsigned int port_num, uint32_t advertise){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	switch_port_t* port = physical_switch_get_port_by_num(dpid,port_num);
+
+	if(!port)	
+		return AFA_FAILURE;
+		
+	port->advertised = (port_features_t)advertise;
 	
-	//XXX
-	
-	return AFA_FAILURE;
+	return AFA_SUCCESS;
 }
 
 /**

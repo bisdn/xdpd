@@ -43,6 +43,9 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 	//dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;
 	xdpd::gnu_linux::datapacketx86* pkt_x86 = pkt_state->pktx86;
 
+	if(unlikely(port->drop_received)) //Ignore if port is marked as "drop received"
+		return;
+
 	//Read a burst
 	burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
 

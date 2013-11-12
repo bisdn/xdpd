@@ -30,11 +30,7 @@
 #define IO_BUFFERPOOL_RESERVOIR 2048
 
 //Drain timing
-#if 1
-#define IO_BURST_TX_DRAIN 200000ULL /* around 100us at 2 Ghz */
-#else
 #define IO_BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
-#endif
 
 //Buffer storage(PKT_IN) max buffers
 #define IO_PKT_IN_STORAGE_MAX_BUF 2<<9 //512

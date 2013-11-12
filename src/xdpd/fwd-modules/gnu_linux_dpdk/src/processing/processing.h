@@ -21,7 +21,8 @@
 
 #include "../io/dpdk_datapacket.h"
 
-#define MAX_PORTS_PER_CORE 64
+#define MAX_PORTS_PER_CORE 8
+#define MAX_PORTS 16 //FIXME unify with PORT_MANAGER_MAX_PORTS
 
 //Burst definition(queue)
 struct mbuf_table {
@@ -46,7 +47,7 @@ typedef struct core_tasks{
 	switch_port_t* port_list[MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
 	
 	//This are the TX-queues for ALL ports in the system; index is port_id
-	port_queues_t all_ports[MAX_PORTS_PER_CORE];
+	port_queues_t all_ports[MAX_PORTS];
 }core_tasks_t;
 
 

@@ -141,11 +141,7 @@ int processing_core_process_packets(void* not_used){
 	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST]={0};
 	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
 
-#if 1
-	const uint64_t drain_tsc = IO_BURST_TX_DRAIN; 
-#else
 	const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * IO_BURST_TX_DRAIN_US;
-#endif
 
 	//Parsing and pipeline extra state
 	datapacket_t pkt;
@@ -171,24 +167,18 @@ int processing_core_process_packets(void* not_used){
 		//Drain TX if necessary	
 		if(unlikely(diff_tsc > drain_tsc)){
 
-			for(i=0; (i<tasks->num_of_rx_ports) && (i<MAX_PORTS_PER_CORE) ;++i){
-			
-				if(unlikely(!tasks->port_list[i]))
+			for(i=0; i<MAX_PORTS; ++i){
+				if(likely(!tasks->all_ports[i].present))
+					continue;
+				port_queues = &tasks->all_ports[i];
+				port = port_mapping[i];
+
+				if(unlikely(!port))
 					continue;
 
-				//FIXME: this should be improved
-				port_id = ((dpdk_port_state_t*)tasks->port_list[i]->platform_port_state)->port_id;
-				port_queues = &tasks->all_ports[port_id];
-				port = tasks->port_list[i];
-			
-				//Skip non-present ports (un-contiguous port_ids?)	
-				if(unlikely(!port_queues->present))
-					continue;
-		
-	
 				//Process TX
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
-					process_port_queue_tx(port, port_id, &port_queues->tx_queues[j], j);
+					process_port_queue_tx(port, i, &port_queues->tx_queues[j], j);
 				}
 			}
 		}
@@ -225,6 +215,12 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	rte_spinlock_lock(&mutex);
 
+	if(total_num_of_ports == MAX_PORTS){
+		ROFL_ERR("Already MAX_PORTSAll cores are full. No available port slots\n");
+		rte_spinlock_unlock(&mutex);
+		return ROFL_FAILURE;
+	}
+
 	//Select core
 	for(current_core_index++, index=current_core_index;;){
 		if( processing_cores[current_core_index].available == true && processing_cores[current_core_index].num_of_rx_ports != MAX_PORTS_PER_CORE )
@@ -241,6 +237,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			//All full 
 			ROFL_ERR("All cores are full. No available port slots\n");
 			assert(0);		
+			rte_spinlock_unlock(&mutex);
 			return ROFL_FAILURE;
 		}
 	}

@@ -88,7 +88,8 @@ inline void process_port_queue_tx(switch_port_t* port, unsigned int port_id, str
 
 	if(queue->len == 0){
 		//static int j=0;
-		//if((j%100000 == 0) && (queue_id == 0))
+		//j++;
+		//if((j%1000000 == 0) && (queue_id == 0))
 		//	ROFL_DEBUG("Auto purge to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
 		return;
 	}

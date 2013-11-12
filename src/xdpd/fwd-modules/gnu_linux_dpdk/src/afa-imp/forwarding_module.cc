@@ -8,16 +8,7 @@
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 
-//only for Test
-#include <stdlib.h>
-#include <string.h>
-#include <rofl/datapath/pipeline/openflow/of_switch.h>
-#include <rofl/datapath/pipeline/common/datapacket.h>
 #include "../config.h"
-#include "../io/bufferpool.h"
-#include "../io/port_manager.h"
-#include "../io/pktin_dispatcher.h"
-#include "../processing/processing.h"
 
 //DPDK includes
 #include <rte_common.h> 
@@ -27,6 +18,16 @@
 #include <rte_mempool.h> 
 #include <rte_mbuf.h> 
 #include <rte_ethdev.h> 
+
+//only for Test
+#include <stdlib.h>
+#include <string.h>
+#include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../io/bufferpool.h"
+#include "../io/port_manager.h"
+#include "../io/pktin_dispatcher.h"
+#include "../processing/processing.h"
 
 extern int optind; 
 struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
@@ -78,19 +79,13 @@ afa_result_t fwd_module_init(){
 			NULL, NULL,
 			rte_pktmbuf_init, NULL,
 			SOCKET0, 0);
-#if 10
-	/* init driver(s) */
-	if ((ret = rte_igb_pmd_init()) < 0)
-		rte_exit(EXIT_FAILURE, "Cannot init pmd %s\n", rte_strerror(ret));
-	if ((ret = rte_ixgbe_pmd_init()) < 0)
-		rte_exit(EXIT_FAILURE, "Cannot init pmd %s\n", rte_strerror(ret));
-	if (rte_eal_pci_probe() < 0)
-		rte_exit(EXIT_FAILURE, "Cannot probe PCI\n");
-#else
+	
 	/* init driver(s) */
 	if (rte_pmd_init_all() < 0)
 		rte_exit(EXIT_FAILURE, "Cannot init pmd\n");
-#endif
+	if (rte_eal_pci_probe() < 0)
+		rte_exit(EXIT_FAILURE, "Cannot probe PCI\n");
+
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
 

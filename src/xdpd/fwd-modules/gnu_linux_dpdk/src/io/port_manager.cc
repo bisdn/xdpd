@@ -124,6 +124,9 @@ rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id
 
 	//Set promiscuous mode
 	rte_eth_promiscuous_enable(port_id);
+
+	//Enable multicast
+	rte_eth_allmulticast_enable(port_id);
 	
 	return ROFL_SUCCESS;
 }

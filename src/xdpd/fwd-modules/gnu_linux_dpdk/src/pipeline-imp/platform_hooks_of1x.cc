@@ -3,6 +3,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
+#include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include "../config.h"
@@ -84,61 +85,21 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
 void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
-
-	datapacket_t* pkt_replica=NULL;
-	struct rte_mbuf* mbuf=NULL;
-	datapacketx86* pktx86;
-	datapacketx86* pktx86_replica;
-	
-	ROFL_INFO(" calling %s()\n",__FUNCTION__);
+	datapacket_t* pkt_replica;
 
 	//Protect
 	if(unlikely(!pkt) || unlikely(!sw))
 		return;
 
 	//datapacket_t* pkt_replica;
-	pkt_replica = bufferpool::get_free_buffer(false);
+	pkt_replica = platform_packet_replicate(pkt);
 	
 	if(unlikely(!pkt_replica)){
-		//TODO: add trace
+		ROFL_DEBUG("Replicate packet(PKT_IN); could not clone pkt(%p). Dropping...\n");
 		goto PKT_IN_ERROR;
 	}
 
-	pktx86 = ((dpdk_pkt_platform_state_t*)pkt->platform_state)->pktx86;
-	pktx86_replica = ((dpdk_pkt_platform_state_t*)pkt_replica->platform_state)->pktx86;
-
-	//Retrieve an mbuf, copy contents, and initialize pktx86_replica
-	mbuf = rte_pktmbuf_alloc(pool_direct);
-	
-	if(unlikely(!mbuf)){
-		//TODO: add trace
-		goto PKT_IN_ERROR;
-	}
-
-	//Copy PKT stuff
-	memcpy(&pkt_replica->matches, &pkt->matches, sizeof(pkt->matches));
-	memcpy(&pkt_replica->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
-
-	//mark as replica
-	pkt_replica->is_replica = true;
-	pkt_replica->sw = pkt->sw;
-
-	//Initialize replica buffer (without classification)
-	pktx86_replica->init(rte_pktmbuf_mtod(mbuf, uint8_t*), mbuf->buf_len, (of_switch_t*)sw, pktx86->in_port, 0, false, false);
-
-	//Replicate the packet(copy contents)	
-	memcpy(pktx86_replica->get_buffer(), pktx86->get_buffer(), pktx86->get_buffer_length());
-	pktx86_replica->ipv4_recalc_checksum 	= pktx86->ipv4_recalc_checksum;
-	pktx86_replica->icmpv4_recalc_checksum 	= pktx86->icmpv4_recalc_checksum;
-	pktx86_replica->tcp_recalc_checksum 	= pktx86->tcp_recalc_checksum;
-	pktx86_replica->udp_recalc_checksum 	= pktx86->udp_recalc_checksum;
-	((dpdk_pkt_platform_state_t*)pkt_replica->platform_state)->mbuf = mbuf;
-
-	//Classify
-	//TODO: this could be improved by copying the classification state
-	pktx86_replica->headers->classify();	
-
-	ROFL_DEBUG("Trying to enqueue PKT_IN for packet(%p), mbuf %p, switch %p\n", pkt, mbuf, sw);
+	ROFL_DEBUG("Trying to enqueue PKT_IN for packet(%p), switch %p\n", pkt, sw);
 	
 	//Store in PKT_IN ring
 	if( unlikely( enqueue_pktin(pkt_replica) != ROFL_SUCCESS ) ){
@@ -155,11 +116,11 @@ PKT_IN_ERROR:
 	
 	//Release packet
 	if(pkt_replica){
-		bufferpool::release_buffer(pkt_replica);
-
-		if(mbuf){
-			rte_pktmbuf_free(mbuf);
+		if(((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf){
+			rte_pktmbuf_free(((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf);
 		}
+		
+		bufferpool::release_buffer(pkt_replica);
 	}
 	return;
 

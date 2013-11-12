@@ -30,6 +30,7 @@
 #include <unistd.h>
 
 #include "../config.h"
+#define RTE_MBUF_SCATTER_GATHER
 #include <rte_common.h>
 #include <rte_cycles.h>
 #include <rte_mbuf.h>
@@ -1174,6 +1175,7 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	pkt_replica = bufferpool::get_free_buffer(false);
 	
 	if(unlikely(!pkt_replica)){
+		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). No buffers left in bufferpool\n", pkt);
 		goto PKT_REPLICATE_ERROR;
 	}
 
@@ -1181,9 +1183,10 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	pktx86_replica = ((dpdk_pkt_platform_state_t*)pkt_replica->platform_state)->pktx86;
 
 	//Retrieve an mbuf, copy contents, and initialize pktx86_replica
-	mbuf = rte_pktmbuf_alloc(pool_direct);
+	mbuf = rte_pktmbuf_clone(((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf, pool_direct); 
 	
 	if(unlikely(!mbuf)){
+		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
 		goto PKT_REPLICATE_ERROR;
 	}
 
@@ -1195,20 +1198,16 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	pkt_replica->is_replica = true;
 	pkt_replica->sw = pkt->sw;
 
-	//Initialize replica buffer (without classification)
-	pktx86_replica->init((uint8_t*)mbuf->buf_addr, mbuf->buf_len, (of_switch_t*)pkt->sw, pktx86->in_port, 0, false, false);
+	//Initialize replica buffer and classify  //TODO: classification state could be copied
+	pktx86_replica->init(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_pkt_len(mbuf), (of_switch_t*)pkt->sw, pktx86->in_port, 0, true, false);
 
 	//Replicate the packet(copy contents)	
-	memcpy(pktx86_replica->get_buffer(), pktx86->get_buffer(), pktx86->get_buffer_length());
+	//memcpy(pktx86_replica->get_buffer(), pktx86->get_buffer(), pktx86->get_buffer_length());
 	pktx86_replica->ipv4_recalc_checksum 	= pktx86->ipv4_recalc_checksum;
 	pktx86_replica->icmpv4_recalc_checksum 	= pktx86->icmpv4_recalc_checksum;
 	pktx86_replica->tcp_recalc_checksum 	= pktx86->tcp_recalc_checksum;
 	pktx86_replica->udp_recalc_checksum 	= pktx86->udp_recalc_checksum;
 	((dpdk_pkt_platform_state_t*)pkt_replica->platform_state)->mbuf = mbuf;
-
-	//Classify
-	//TODO: this could be improved by copying the classification state
-	pktx86_replica->headers->classify();	
 
 	return pkt_replica; //DO NOT REMOVE
 

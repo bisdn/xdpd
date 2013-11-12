@@ -73,7 +73,7 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 		}
 
 		//Init&classify	
-		pkt_x86->init(rte_pktmbuf_mtod(mbuf, uint8_t*), mbuf->buf_len, sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
+		pkt_x86->init(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_pkt_len(mbuf), sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
 
 		//Send to process
 		of_process_packet_pipeline(sw, pkt);

@@ -44,13 +44,15 @@ enum pppoe_tag_t {
 	PPPOE_TAG_GENERIC_ERROR = 0x0203,
 };
 
-struct cpc_pppoe_hdr_t {
+struct cpc_pppoe_hdr {
 	uint8_t 	verstype;
 	uint8_t 	code;
 	uint16_t 	sessid;
 	uint16_t 	length;
 	uint8_t 	data[0];
 } __attribute__((packed));
+
+typedef struct cpc_pppoe_hdr cpc_pppoe_hdr_t;
 
 struct cpc_pppoe_tag_hdr_t {
 	uint16_t type;

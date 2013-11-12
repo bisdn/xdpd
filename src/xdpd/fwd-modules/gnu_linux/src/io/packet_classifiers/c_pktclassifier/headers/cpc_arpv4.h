@@ -13,7 +13,7 @@ enum arpv4_opcodes_t {
 	ARPV4_OPCODE_REPLY = 0x02,
 };
 
-struct cpc_arpv4_hdr_t {
+struct cpc_arpv4_hdr {
 	uint16_t ar_hrd;            	// hardware address format
 	uint16_t ar_pro;            	// protocol address format
 	uint8_t ar_hln;             	// hardware address length
@@ -25,6 +25,8 @@ struct cpc_arpv4_hdr_t {
 	uint32_t ip_dst;            	// destination IP address
 } __attribute__((packed));
 /* ARPv4 definitions */
+
+typedef struct cpc_arpv4_hdr cpc_arpv4_hdr_t;
 
 #define DEFAULT_ARPV4_FRAME_SIZE sizeof(struct cpc_arpv4_hdr_t)
 
@@ -50,22 +52,22 @@ void set_ar_pro(void *hdr, uint16_t ar_pro){
 
 inline static
 uint8_t get_ar_hln(void *hdr){
-	return be8toh(((cpc_arpv4_hdr_t *)hdr)->ar_hln);
+	return ((cpc_arpv4_hdr_t *)hdr)->ar_hln;
 };
 
 inline static
 void set_ar_hln(void *hdr, uint8_t ar_hln){
-	((cpc_arpv4_hdr_t*)hdr)->ar_hln = htobe8(ar_hln);
+	((cpc_arpv4_hdr_t*)hdr)->ar_hln = ar_hln;
 };
 
 inline static
 uint8_t get_ar_pln(void *hdr){
-	return be8toh(((cpc_arpv4_hdr_t *)hdr)->ar_pln);
+	return ((cpc_arpv4_hdr_t *)hdr)->ar_pln;
 };
 
 inline static
 void set_ar_pln(void *hdr, uint8_t ar_pln){
-	((cpc_arpv4_hdr_t*)hdr)->ar_pln = htobe8(ar_pln);
+	((cpc_arpv4_hdr_t*)hdr)->ar_pln = ar_pln;
 };
 
 inline static
@@ -79,44 +81,44 @@ void set_ar_op(void *hdr, uint16_t ar_op){
 };
 
 inline static
-uint64_t get_dl_dst(void *hdr){
+uint64_t get_aprv4_dl_dst(void *hdr){
 	return mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_dst);
 };
 
 inline static
-void set_dl_dst(void* hdr, uint64_t dl_dst){
+void set_aprv4_dl_dst(void* hdr, uint64_t dl_dst){
 	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_dst, dl_dst);
 	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
-uint64_t get_dl_src(void* hdr){
+uint64_t get_aprv4_dl_src(void* hdr){
 	return mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_src);
 };
 
 inline static
-void set_dl_src(void* hdr, uint8_t *dl_src){
+void set_aprv4_dl_src(void* hdr, uint64_t dl_src){
 	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_src, dl_src);
 	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
-uint32_t get_ip_src(void *hdr){
+uint32_t get_aprv4_ip_src(void *hdr){
 	return be32toh(((cpc_arpv4_hdr_t *)hdr)->ip_src);
 };
 
 inline static
-void set_ip_src(void *hdr, uint16_t ip_src){
+void set_aprv4_ip_src(void *hdr, uint16_t ip_src){
 	((cpc_arpv4_hdr_t*)hdr)->ip_src = CPC_HTOBE16(ip_src);
 };
 
 inline static
-uint16_t get_ip_dst(void *hdr){
+uint16_t get_aprv4_ip_dst(void *hdr){
 	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ip_dst);
 };
 
 inline static
-void set_ip_dst(void *hdr, uint16_t ip_dst){
+void set_aprv4_ip_dst(void *hdr, uint16_t ip_dst){
 	((cpc_arpv4_hdr_t*)hdr)->ip_dst = CPC_HTOBE16(ip_dst);
 };
 #endif //_CPC_ARPV4_H_

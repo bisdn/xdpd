@@ -4,7 +4,7 @@
 #include "../cpc_utils.h"
 
 /* ICMPv4 constants and definitions */
-struct cpc_icmpv4_hdr_t {
+struct cpc_icmpv4_hdr {
 	uint8_t type;
 	uint8_t code;
 	uint16_t checksum;
@@ -20,8 +20,11 @@ struct cpc_ip_pseudo_hdr_t {
 	uint16_t len;
 } __attribute__((packed));
 
+typedef struct cpc_icmpv4_hdr cpc_icmpv4_hdr_t;
+
 enum tcp_ip_proto_t {
 	ICMPV4_IP_PROTO = 1,
+	TCP_IP_PROTO = 6,
 };
 
 enum icmpv4_type_t {
@@ -59,11 +62,12 @@ void set_icmp_code(void *hdr, uint8_t code){
 
 inline static
 uint16_t get_checksum(void *hdr){
-	return betoh16(((cpc_icmpv4_hdr_t*)hdr)->checksum);
+	return CPC_BE16TOH(((cpc_icmpv4_hdr_t*)hdr)->checksum);
 };
 
 inline static
 void icmpv4_calc_checksum(void * hdr,uint16_t length){
+	int i;
 	//initialize();
 	((cpc_icmpv4_hdr_t *)hdr)->checksum = 0; //htobe16(0x0000);
 
@@ -79,7 +83,7 @@ void icmpv4_calc_checksum(void * hdr,uint16_t length){
 	//int wnum = (sizeof(struct icmpv4_hdr_t) / sizeof(uint16_t));
     int wnum = (length / sizeof(uint16_t));
 	// header loop
-	for (int i = 0; i < wnum; i++)
+	for (i = 0; i < wnum; i++)
 	{
 		uint32_t tmp = (uint32_t)(CPC_BE16TOH(word16[i]));
 		sum += tmp;

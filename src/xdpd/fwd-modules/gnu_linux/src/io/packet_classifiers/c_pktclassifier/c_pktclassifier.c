@@ -1,5 +1,5 @@
 #include "c_pktclassifier.h"
-#include "../packetclassifier.h"
+//#include "../packetclassifier.h"
 
 #include "./headers/cpc_arpv4.h"
 #include "./headers/cpc_ethernet.h"
@@ -14,6 +14,75 @@
 #include "./headers/cpc_tcp.h"
 #include "./headers/cpc_udp.h"
 #include "./headers/cpc_vlan.h"
+
+// Constants
+//Maximum header occurrences per type
+const unsigned int MAX_ETHER_FRAMES = 2;
+const unsigned int MAX_VLAN_FRAMES = 4;
+const unsigned int MAX_MPLS_FRAMES = 16;
+const unsigned int MAX_ARPV4_FRAMES = 1;
+const unsigned int MAX_IPV4_FRAMES = 2;
+const unsigned int MAX_ICMPV4_FRAMES = 2;
+const unsigned int MAX_IPV6_FRAMES = 2;
+const unsigned int MAX_ICMPV6_FRAMES = 2;
+const unsigned int MAX_UDP_FRAMES = 2;
+const unsigned int MAX_TCP_FRAMES = 2;
+const unsigned int MAX_SCTP_FRAMES = 2;
+const unsigned int MAX_PPPOE_FRAMES = 1;
+const unsigned int MAX_PPP_FRAMES = 1;
+const unsigned int MAX_GTP_FRAMES = 1;
+
+//Total maximum header occurrences
+const unsigned int MAX_HEADERS = MAX_ETHER_FRAMES +
+						MAX_VLAN_FRAMES +
+						MAX_MPLS_FRAMES +
+						MAX_ARPV4_FRAMES +
+						MAX_IPV4_FRAMES +
+						MAX_ICMPV4_FRAMES +
+						MAX_IPV6_FRAMES +
+						MAX_ICMPV6_FRAMES +
+						MAX_UDP_FRAMES +
+						MAX_TCP_FRAMES +
+						MAX_SCTP_FRAMES +
+						MAX_PPPOE_FRAMES + 
+						MAX_PPP_FRAMES +
+						MAX_GTP_FRAMES;
+
+
+//Relative positions within the array;
+const unsigned int FIRST_ETHER_FRAME_POS = 0; //Very first frame always
+const unsigned int FIRST_VLAN_FRAME_POS = FIRST_ETHER_FRAME_POS+MAX_ETHER_FRAMES;
+const unsigned int FIRST_MPLS_FRAME_POS = FIRST_VLAN_FRAME_POS+MAX_VLAN_FRAMES;
+const unsigned int FIRST_ARPV4_FRAME_POS = FIRST_MPLS_FRAME_POS+MAX_MPLS_FRAMES;
+const unsigned int FIRST_IPV4_FRAME_POS = FIRST_ARPV4_FRAME_POS+MAX_ARPV4_FRAMES;
+const unsigned int FIRST_ICMPV4_FRAME_POS = FIRST_IPV4_FRAME_POS+MAX_IPV4_FRAMES;
+const unsigned int FIRST_IPV6_FRAME_POS = FIRST_ICMPV4_FRAME_POS+MAX_ICMPV4_FRAMES;
+const unsigned int FIRST_ICMPV6_FRAME_POS = FIRST_IPV6_FRAME_POS+MAX_IPV6_FRAMES;
+const unsigned int FIRST_UDP_FRAME_POS = FIRST_ICMPV6_FRAME_POS+MAX_ICMPV6_FRAMES;
+const unsigned int FIRST_TCP_FRAME_POS = FIRST_UDP_FRAME_POS+MAX_UDP_FRAMES;
+const unsigned int FIRST_SCTP_FRAME_POS = FIRST_TCP_FRAME_POS+MAX_TCP_FRAMES;
+const unsigned int FIRST_PPPOE_FRAME_POS = FIRST_SCTP_FRAME_POS+MAX_SCTP_FRAMES;
+const unsigned int FIRST_PPP_FRAME_POS = FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES;
+const unsigned int FIRST_GTP_FRAME_POS = FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES;
+
+//Just to be on the safe side of life
+//assert( (FIRST_PPP_FRAME_POS + MAX_PPP_FRAMES) == MAX_HEADERS);
+
+typedef struct classify_state{
+	//Real container
+	header_container_t headers[MAX_HEADERS];
+	
+	//Counters
+	unsigned int num_of_headers[HEADER_TYPE_MAX];
+	
+	//Flag to know if it is classified
+	bool is_classified;
+
+	//Inner most (last) ethertype
+	uint16_t eth_type;
+
+}classify_state_t;
+
 
 //NOTE create and destroy?
 

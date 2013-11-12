@@ -27,42 +27,44 @@ void u64_to_mac_ptr(uint8_t *mac, uint64_t val){
 /* Ethernet constants and definitions */
 
 // Ethernet II header
-struct cpc_eth_hdr_t {
+struct cpc_eth_hdr {
 	uint8_t dl_dst[CPC_ETH_ALEN];
 	uint8_t dl_src[CPC_ETH_ALEN];
 	uint16_t dl_type;
 	uint8_t data[0];
-} __attribute__((packed));
+}__attribute__((packed));
+
+typedef struct cpc_eth_hdr cpc_eth_hdr_t;
 
 inline static
-uint8_t* get_dl_dst(void *hdr){
+uint64_t get_eth_dl_dst(void *hdr){
 	return mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_dst);
 };
 
 inline static
-void set_dl_dst(void* hdr, uint64_t dl_dst){
+void set_eth_dl_dst(void* hdr, uint64_t dl_dst){
 	u64_to_mac_ptr( ((cpc_eth_hdr_t*)hdr)->dl_dst, dl_dst);
 	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
-uint64_t get_dl_src(void* hdr){
+uint64_t get_eth_dl_src(void* hdr){
 	return mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_src);
 };
 
 inline static
-void set_dl_src(void* hdr, uint8_t *dl_src){
+void set_eth_dl_src(void* hdr, uint64_t dl_src){
 	u64_to_mac_ptr( ((cpc_eth_hdr_t*)hdr)->dl_src, dl_src);
 	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
-uint16_t get_dl_type(void* hdr){
+uint16_t get_eth_dl_type(void* hdr){
 	return CPC_BE16TOH(((cpc_eth_hdr_t *)hdr)->dl_type);
 };
 
 inline static
-void set_dl_type(void* hdr, uint16_t dl_type){
+void set_eth_dl_type(void* hdr, uint16_t dl_type){
 	((cpc_eth_hdr_t *)hdr)->dl_type = CPC_HTOBE16(dl_type);
 };
 

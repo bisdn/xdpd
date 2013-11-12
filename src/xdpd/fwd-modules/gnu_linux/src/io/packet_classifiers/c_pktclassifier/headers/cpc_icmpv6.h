@@ -30,13 +30,13 @@ struct cpc_icmpv6_option_hdr_t {
 
 /* ICMPv6 link layer address option */
 struct cpc_icmpv6_lla_option_t {
-	struct icmpv6_option_hdr_t		hdr;
+	struct cpc_icmpv6_option_hdr_t		hdr;
 	uint8_t							addr[ETHER_ADDR_LEN]; // len=1 (in 8-octets wide blocks) and we assume Ethernet here
 } __attribute__((packed));
 
 /* ICMPv6 prefix information option */
 struct cpc_icmpv6_prefix_info_t {
-	struct icmpv6_option_hdr_t		hdr;
+	struct cpc_icmpv6_option_hdr_t		hdr;
 	uint8_t							pfxlen;
 	uint8_t							flags;
 	uint32_t						valid_lifetime;
@@ -47,14 +47,14 @@ struct cpc_icmpv6_prefix_info_t {
 
 /* ICMPv6 redirected option header */
 struct cpc_icmpv6_redirected_hdr_t {
-	struct icmpv6_option_hdr_t		hdr;
+	struct cpc_icmpv6_option_hdr_t		hdr;
 	uint8_t							reserved[6];
 	uint8_t							data[0];
 } __attribute__((packed));
 
 /* ICMPv6 MTU option */
 struct cpc_icmpv6_mtu_t {
-	struct icmpv6_option_hdr_t		hdr;
+	struct cpc_icmpv6_option_hdr_t		hdr;
 	uint8_t							reserved[2];
 	uint32_t						mtu;
 } __attribute__((packed));
@@ -288,21 +288,20 @@ uint128__t get_icmpv6_neighbor_taddr(void *hdr){
 	uint128__t addr;
 	switch (get_icmpv6_type(hdr)) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			addr= (uint128__t)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr->taddr;
+			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr->taddr;
 			break;
 		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			addr= (uint128__t)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr->taddr;
+			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr->taddr;
 			break;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			addr= (uint128__t)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr->taddr;
+			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr->taddr;
 			break;
 		default:
 			//TODO LOG ERROR
 			assert(0);
 			break;
 	}
-	CPC_SWAP_U128(addr); //be128toh
-	return addr;
+	return CPC_SWAP_U128(addr); //be128toh
 };
 
 inline static
@@ -323,8 +322,7 @@ void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 			assert(0);
 			break;
 	}
-	CPC_SWAP_U128(taddr); //htobe128
-	*ptr = taddr;
+	*ptr = CPC_SWAP_U128(taddr); //htobe128
 };
 
 //ndp_rtr_flag
@@ -356,7 +354,7 @@ uint64_t get_ll_taddr(void *hdr){
 
 inline static
 void set_ll_taddr(void *hdr, uint64_t taddr){
-	if(unlikely(ICMPV6_OPT_LLADDR_TARGET != ((icmpv6optu*)hdr)->optu->type)){
+	if(unlikely(ICMPV6_OPT_LLADDR_TARGET != ((cpc_icmpv6optu_t*)hdr)->optu->type)){
 		assert(0);
 	}
 	u64_to_mac_ptr(((cpc_icmpv6optu_t*)hdr)->optu_lla->addr,taddr);
@@ -393,7 +391,7 @@ inline static
 void set_pfx_on_link_flag(void *hdr, uint8_t flag){
 	if(unlikely(ICMPV6_OPT_PREFIX_INFO != ((cpc_icmpv6optu_t*)hdr)->optu->type)){
 		assert(0);
-		return 0;
+		return;
 	}
 	((cpc_icmpv6optu_t*)hdr)->optu_pfx->flags = (((cpc_icmpv6optu_t*)hdr)->optu_pfx->flags & 0x7F) | ((flag & 0x01) << 7);
 };
@@ -406,9 +404,5 @@ uint8_t get_pfx_aac_flag(void *hdr){
 	}
 	return ((((cpc_icmpv6optu_t*)hdr)->optu_pfx->flags & 0x40) >> 6);
 };
-
-inline static
-void 
-
 
 #endif //_CPC_ICMPV6_H_

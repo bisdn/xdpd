@@ -15,7 +15,7 @@ enum ipv4_ip_proto_t {
 };
 
 // IPv4 header
-struct cpc_ipv4_hdr_t {
+struct cpc_ipv4_hdr {
 	uint8_t ihlvers;        // IP header length in 32bit words,
 							// TODO: check for options and padding
 	uint8_t tos;
@@ -29,6 +29,8 @@ struct cpc_ipv4_hdr_t {
 	uint32_t dst;
 	uint8_t data[0];
 } __attribute__((packed));
+
+typedef struct cpc_ipv4_hdr cpc_ipv4_hdr_t;
 
 enum ipv4_flag_t {
 	bit_reserved 		= (1 << 0),
@@ -44,9 +46,10 @@ enum ip_proto_t {
 
 inline static
 void ipv4_calc_checksum(void *hdr){
+	int i;
 	//initialize();
 
-	size_t datalen = sizeof(struct cpc_ipv4_hdr_t);
+	size_t datalen = sizeof(cpc_ipv4_hdr_t);
 
 	// force header checksum to 0x0000
 	((cpc_ipv4_hdr_t*)hdr)->checksum = 0;//CPC_HTOBE16(0x0000);
@@ -58,7 +61,7 @@ void ipv4_calc_checksum(void *hdr){
 	// sum
 	uint32_t sum = 0;
 
-	for (int i = 0; i < wnum; i++)
+	for (i = 0; i < wnum; i++)
 	{
 		uint32_t tmp = (uint32_t)(CPC_BE16TOH(word16[i]));
 		sum += tmp;
@@ -82,7 +85,7 @@ void set_ipv4_src(void *hdr, uint32_t src){
 
 inline static
 uint32_t get_ipv4_src(void *hdr){
-	return CPC_BETOH32(((cpc_ipv4_hdr_t*)hdr)->src);
+	return CPC_BE32TOH(((cpc_ipv4_hdr_t*)hdr)->src);
 };
 
 inline static
@@ -92,7 +95,7 @@ void set_ipv4_dst(void *hdr, uint32_t dst){
 
 inline static
 uint32_t get_ipv4_dst(void *hdr){
-	return CPC_BETOH32(((cpc_ipv4_hdr_t*)hdr)->dst);
+	return CPC_BE32TOH(((cpc_ipv4_hdr_t*)hdr)->dst);
 };
 
 inline static
@@ -147,7 +150,7 @@ void set_ipv4_ihl(void *hdr, uint8_t ihl){
 
 inline static
 uint8_t get_ipv4_ihl(void *hdr){
-	
+	return ((((cpc_ipv4_hdr_t*)hdr)->ihlvers & 0x0f));
 };
 
 inline static
@@ -199,6 +202,5 @@ inline static
 void clear_MF_bit(void *hdr){
 	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_more_fragments << 13) );
 };
-
 
 #endif //_CPC_IPV4_H_

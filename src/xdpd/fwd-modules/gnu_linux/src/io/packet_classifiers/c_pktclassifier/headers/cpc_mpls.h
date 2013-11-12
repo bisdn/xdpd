@@ -10,10 +10,12 @@ enum mpls_ether_t {
 };
 
 // MPLS header
-struct cpc_mpls_hdr_t {
+struct cpc_mpls_hdr {
 	uint8_t label[3];
 	uint8_t ttl;
 } __attribute__((packed));
+
+typedef struct cpc_mpls_hdr cpc_mpls_hdr_t;
 
 inline static
 void set_mpls_label(void *hdr, uint32_t label){

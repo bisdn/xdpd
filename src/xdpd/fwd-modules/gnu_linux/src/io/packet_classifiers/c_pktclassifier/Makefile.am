@@ -6,7 +6,7 @@ noinst_LTLIBRARIES = libfwd_module_gnu_linux_io_classifiers_cpktclassifier.la
 
 libfwd_module_gnu_linux_io_classifiers_cpktclassifier_ladir = $(includedir)/fwd-modules/gnu_linux/io/packet_classifiers/c_pktclassifier
 
-libfwd_module_gnu_linux_io_classifiers_cpktclassifier_la_HEADERS = c_pkclassifier.h \
+libfwd_module_gnu_linux_io_classifiers_cpktclassifier_la_HEADERS = c_pktclassifier.h \
 	cpc_utils.h \
 	headers/cpc_arpv4.h \
 	headers/cpc_ethernet.h \

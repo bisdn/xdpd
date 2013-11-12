@@ -3,7 +3,7 @@
 
 #include "../cpc_utils.h"
 
-struct cpc_tcp_hdr_t {
+struct cpc_tcp_hdr {
 	uint16_t sport;
 	uint16_t dport;
 	uint32_t seqno;
@@ -41,6 +41,9 @@ struct cpc_tcp_hdr_t {
 	uint8_t data[0];
 } __attribute__((packed));
 
+typedef struct cpc_tcp_hdr cpc_tcp_hdr_t;
+
+#if 0
 /* for UDP checksum calculation */
 struct cpc_ip_pseudo_hdr_t {
 	uint32_t src;
@@ -49,14 +52,12 @@ struct cpc_ip_pseudo_hdr_t {
 	uint8_t proto;
 	uint16_t len;
 } __attribute__((packed));
-
-enum tcp_ip_proto_t {
-	TCP_IP_PROTO = 6,
-};
+#endif
 
 inline static
 void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_proto, uint16_t length){
 	int wnum;
+	int i;
 	uint32_t sum = 0; //sum
 	uint16_t* word16;
 	
@@ -74,9 +75,9 @@ void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 	word16 = (uint16_t*)(void*)&ip_dst; //NOTE ENDIANNESS??
 	sum += *(word16+1);
 	sum += *(word16);
-	sum += htons(ip_proto);
+	sum += htobe16(ip_proto);
 	
-	sum += htons(length); 
+	sum += htobe16(length); 
 
 	/*
 	* part -II- (TCP header + payload)
@@ -87,7 +88,7 @@ void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 	word16 = (uint16_t*)hdr;
 	wnum = (length / sizeof(uint16_t));
 
-	for (int i = 0; i < wnum; i++){
+	for (i = 0; i < wnum; i++){
 		sum += (uint32_t)word16[i];
 	}
 	

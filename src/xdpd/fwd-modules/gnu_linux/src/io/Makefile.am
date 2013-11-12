@@ -20,7 +20,6 @@ libfwd_module_gnu_linux_io_la_SOURCES = \
 	iface_utils.cc\
 	iface_utils.h\
 	iomanager.cc \
-	iomanager.cc \
 	iomanager.h
 
 libfwd_module_gnu_linux_io_la_LIBADD = \

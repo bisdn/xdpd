@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = c_pktclassifier
+#SUBDIRS = 
 
 noinst_LTLIBRARIES = libfwd_module_gnu_linux_io_classifiers.la
 
@@ -10,10 +10,8 @@ libfwd_module_gnu_linux_io_classifiers_la_HEADERS = packetclassifier.h rofl_pktc
 
 libfwd_module_gnu_linux_io_classifiers_la_SOURCES = \
 	static_pktclassifier.cc \
+	static_pktclassifier.cc \
 	rofl_pktclassifier.cc \
 	rofl_pktclassifier.h \
 	packetclassifier.cc\
 	packetclassifier.h
-
-libfwd_module_gnu_linux_io_classifiers_la_LIBADD = \
-	c_pktclassifier/libfwd_module_gnu_linux_io_classifiers_cpktclassifier.la

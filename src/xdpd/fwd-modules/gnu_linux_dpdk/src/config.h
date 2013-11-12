@@ -72,7 +72,7 @@
 //Nothing yet
 
 //DPDK defines
-#define RTE_CORE_MASK 0x30
+#define RTE_CORE_MASK 0x0000FFFF //16 cores
 #define RTE_MEM_CHANNELS 2
 #define RTE_LOG_LEVEL 1
 #define RTE_MAX_LCORE 64

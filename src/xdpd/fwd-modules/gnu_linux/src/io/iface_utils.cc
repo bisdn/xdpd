@@ -139,8 +139,9 @@ static rofl_result_t fill_port_admin_and_link_state(switch_port_t* port){
 	port->up = (IFF_UP & ifr.ifr_flags) > 0;
 
 	if( (IFF_RUNNING & ifr.ifr_flags) > 0){
+		port->state = (port_state_t)0; // port->state is an enum in this implementation, but it should be a uint32_t, as the state values are flags and might occur in parallel
 	}else{
-		port->state = PORT_STATE_LINK_DOWN; 
+		port->state = PORT_STATE_LINK_DOWN;
 	}
 
 	//Close socket	

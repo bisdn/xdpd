@@ -17,7 +17,12 @@ public:
 	~cgrouptest();
 
 
+	virtual void
+	handle_dpath_open(rofl::cofdpt *dpt) {};
 
+
+	virtual void
+	handle_dpath_close(rofl::cofdpt *dpt) {};
 };
 
 #endif

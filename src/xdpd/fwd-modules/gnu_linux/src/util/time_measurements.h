@@ -204,7 +204,6 @@ extern time_measurements_t global_measurements;
 				//fprintf(stderr, "SB6_FAILURE now: %"PRIu64", diff: %"PRIu64"\n", now, now - tm->current[TM_SB6_PRE]);	
 				break;
 			case TM_SA7:
-				assert(tm->current[TM_SA6_PRE] != 0.0);
 				if(tm->s5_reached && !tm->sb6_reached){ //May be called more than one time
 					assert(tm->current[TM_SA6_PRE] != 0.0);
 					tm->accumulated[stage] += now - tm->current[TM_SA6_PRE];	//Avoid race-condition
@@ -212,7 +211,6 @@ extern time_measurements_t global_measurements;
 				}
 				break;
 			case TM_SA8:
-				assert(tm->current[TM_SA7] != 0.0);
 				if(tm->s5_reached && !tm->sb6_reached){ //May be called more than one time
 					assert(tm->current[TM_SA7] != 0.0);
 					tm->accumulated[stage] += now - tm->current[TM_SA7];

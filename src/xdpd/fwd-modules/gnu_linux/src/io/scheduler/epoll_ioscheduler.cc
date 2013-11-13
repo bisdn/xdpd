@@ -82,9 +82,9 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 				
 					TM_STAMP_STAGE(pkt, TM_S3_FAILURE);
 				}else{
+					TM_STAMP_STAGE(pkt, TM_S3_SUCCESS);
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) scheduled for process -> sw: %s\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 					
-					TM_STAMP_STAGE(pkt, TM_S3_SUCCESS);
 				}
 					
 #ifdef DEBUG

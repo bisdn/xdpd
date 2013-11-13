@@ -823,8 +823,8 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_t* port){
 	uint32_t state = 0;
 	if (not port->up)
 		state |= OFP12PS_LINK_DOWN;
-	if (port->state >0)
-		state |= OFP12PS_BLOCKED;
+	if (port->state > 0)
+		state |= OFP12PS_LINK_DOWN;
 	ofport.set_state(state);
 	// FIXME: end of workaround <====================================
 	//ofport.set_state(port->state);

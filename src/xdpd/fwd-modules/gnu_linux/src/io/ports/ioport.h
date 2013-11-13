@@ -179,9 +179,9 @@ public:
 	inline void set_link_state(bool up){
 
 		if(!up)
-			of_port_state->state = (port_state_t)(of_port_state->state | (1 << PORT_STATE_LINK_DOWN));
+			of_port_state->state = (of_port_state->state | (PORT_STATE_LINK_DOWN));
 		else
-			of_port_state->state = (port_state_t)(of_port_state->state & ~(1 << PORT_STATE_LINK_DOWN)); 
+			of_port_state->state = (of_port_state->state & ~(PORT_STATE_LINK_DOWN)); 
 			
 	}
 	

@@ -139,7 +139,6 @@ static rofl_result_t fill_port_admin_and_link_state(switch_port_t* port){
 	port->up = (IFF_UP & ifr.ifr_flags) > 0;
 
 	if( (IFF_RUNNING & ifr.ifr_flags) > 0){
-		port->state = (port_state_t)0; // port->state is an enum in this implementation, but it should be a uint32_t, as the state values are flags and might occur in parallel
 	}else{
 		port->state = PORT_STATE_LINK_DOWN;
 	}
@@ -151,8 +150,8 @@ static rofl_result_t fill_port_admin_and_link_state(switch_port_t* port){
 
 static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cmd* edata){
 
-	uint64_t port_capabilities=0x0;
-	uint64_t current_speed=0;
+	bitmap32_t port_capabilities=0x0;
+	port_features_t current_speed=PORT_FEATURE_10MB_HD;
 
 	//Get speed	
 	uint32_t speed = ethtool_cmd_speed(edata);
@@ -188,14 +187,14 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 
 	//TODO: properly deduce speeds
 	//Filling only with the deduced speed
-	switch_port_add_capabilities(&port->curr, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port->advertised, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port->supported, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port->peer, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port->curr, port_capabilities);	
+	switch_port_add_capabilities(&port->advertised, port_capabilities);	
+	switch_port_add_capabilities(&port->supported, port_capabilities);	
+	switch_port_add_capabilities(&port->peer, port_capabilities);	
 
 	//Filling speeds
-	switch_port_set_current_speed(port, (port_features_t)current_speed);
-	switch_port_set_current_max_speed(port, (port_features_t)current_speed); //TODO: this is not right
+	switch_port_set_current_speed(port, current_speed);
+	switch_port_set_current_max_speed(port, current_speed); //TODO: this is not right
 }
 
 static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){

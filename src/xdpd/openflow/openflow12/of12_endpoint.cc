@@ -819,7 +819,15 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_t* port){
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
-	ofport.set_state(port->state);
+	// FIXME: this is a work-around for a bug in rofl-pipeline <=====
+	uint32_t state = 0;
+	if (not port->up)
+		state |= OFP12PS_LINK_DOWN;
+	if (port->state >0)
+		state |= OFP12PS_BLOCKED;
+	ofport.set_state(state);
+	// FIXME: end of workaround <====================================
+	//ofport.set_state(port->state);
 	ofport.set_curr(port->curr);
 	ofport.set_advertised(port->advertised);
 	ofport.set_supported(port->supported);

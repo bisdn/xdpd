@@ -1,93 +1,10 @@
 #include "c_pktclassifier.h"
-//#include "../packetclassifier.h"
-
-#include "./headers/cpc_arpv4.h"
-#include "./headers/cpc_ethernet.h"
-#include "./headers/cpc_gtpu.h"
-#include "./headers/cpc_icmpv4.h"
-#include "./headers/cpc_icmpv6.h"
-#include "./headers/cpc_ipv4.h"
-#include "./headers/cpc_ipv6.h"
-#include "./headers/cpc_mpls.h"
-#include "./headers/cpc_ppp.h"
-#include "./headers/cpc_pppoe.h"
-#include "./headers/cpc_tcp.h"
-#include "./headers/cpc_udp.h"
-#include "./headers/cpc_vlan.h"
-
-// Constants
-//Maximum header occurrences per type
-const unsigned int MAX_ETHER_FRAMES = 2;
-const unsigned int MAX_VLAN_FRAMES = 4;
-const unsigned int MAX_MPLS_FRAMES = 16;
-const unsigned int MAX_ARPV4_FRAMES = 1;
-const unsigned int MAX_IPV4_FRAMES = 2;
-const unsigned int MAX_ICMPV4_FRAMES = 2;
-const unsigned int MAX_IPV6_FRAMES = 2;
-const unsigned int MAX_ICMPV6_FRAMES = 2;
-const unsigned int MAX_UDP_FRAMES = 2;
-const unsigned int MAX_TCP_FRAMES = 2;
-const unsigned int MAX_SCTP_FRAMES = 2;
-const unsigned int MAX_PPPOE_FRAMES = 1;
-const unsigned int MAX_PPP_FRAMES = 1;
-const unsigned int MAX_GTP_FRAMES = 1;
-
-//Total maximum header occurrences
-const unsigned int MAX_HEADERS = MAX_ETHER_FRAMES +
-						MAX_VLAN_FRAMES +
-						MAX_MPLS_FRAMES +
-						MAX_ARPV4_FRAMES +
-						MAX_IPV4_FRAMES +
-						MAX_ICMPV4_FRAMES +
-						MAX_IPV6_FRAMES +
-						MAX_ICMPV6_FRAMES +
-						MAX_UDP_FRAMES +
-						MAX_TCP_FRAMES +
-						MAX_SCTP_FRAMES +
-						MAX_PPPOE_FRAMES + 
-						MAX_PPP_FRAMES +
-						MAX_GTP_FRAMES;
-
-
-//Relative positions within the array;
-const unsigned int FIRST_ETHER_FRAME_POS = 0; //Very first frame always
-const unsigned int FIRST_VLAN_FRAME_POS = FIRST_ETHER_FRAME_POS+MAX_ETHER_FRAMES;
-const unsigned int FIRST_MPLS_FRAME_POS = FIRST_VLAN_FRAME_POS+MAX_VLAN_FRAMES;
-const unsigned int FIRST_ARPV4_FRAME_POS = FIRST_MPLS_FRAME_POS+MAX_MPLS_FRAMES;
-const unsigned int FIRST_IPV4_FRAME_POS = FIRST_ARPV4_FRAME_POS+MAX_ARPV4_FRAMES;
-const unsigned int FIRST_ICMPV4_FRAME_POS = FIRST_IPV4_FRAME_POS+MAX_IPV4_FRAMES;
-const unsigned int FIRST_IPV6_FRAME_POS = FIRST_ICMPV4_FRAME_POS+MAX_ICMPV4_FRAMES;
-const unsigned int FIRST_ICMPV6_FRAME_POS = FIRST_IPV6_FRAME_POS+MAX_IPV6_FRAMES;
-const unsigned int FIRST_UDP_FRAME_POS = FIRST_ICMPV6_FRAME_POS+MAX_ICMPV6_FRAMES;
-const unsigned int FIRST_TCP_FRAME_POS = FIRST_UDP_FRAME_POS+MAX_UDP_FRAMES;
-const unsigned int FIRST_SCTP_FRAME_POS = FIRST_TCP_FRAME_POS+MAX_TCP_FRAMES;
-const unsigned int FIRST_PPPOE_FRAME_POS = FIRST_SCTP_FRAME_POS+MAX_SCTP_FRAMES;
-const unsigned int FIRST_PPP_FRAME_POS = FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES;
-const unsigned int FIRST_GTP_FRAME_POS = FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES;
-
-//Just to be on the safe side of life
-//assert( (FIRST_PPP_FRAME_POS + MAX_PPP_FRAMES) == MAX_HEADERS);
-
-typedef struct classify_state{
-	//Real container
-	header_container_t headers[MAX_HEADERS];
-	
-	//Counters
-	unsigned int num_of_headers[HEADER_TYPE_MAX];
-	
-	//Flag to know if it is classified
-	bool is_classified;
-
-	//Inner most (last) ethertype
-	uint16_t eth_type;
-
-}classify_state_t;
-
 
 //NOTE create and destroy?
 
 classify_state_t* create_classifier(){
-	return malloc();
+	//TODO return malloc();
+	return NULL;
 };
 
 void classify_reset(){
@@ -178,7 +95,7 @@ cpc_ipv4_hdr_t* ipv4(classify_state_t* clas_state, int idx){
 		pos = FIRST_IPV4_FRAME_POS + idx;	
 
 	//Return the index
-	if(clas_state.headers[pos].present)
+	if(clas_state->headers[pos].present)
 		return (cpc_ipv4_hdr_t*) clas_state->headers[pos].frame;
 	return NULL;
 }
@@ -305,7 +222,7 @@ cpc_ppp_hdr_t* ppp(classify_state_t* clas_state, int idx){
 	return NULL;
 }
 
-cpc_gtpu_base_hdr_t* gtp(classify_state_t* clas_state, int idx){
+cpc_gtphu_t* gtp(classify_state_t* clas_state, int idx){
 	unsigned int pos;
 
 	if(idx > (int)MAX_GTP_FRAMES)
@@ -318,7 +235,7 @@ cpc_gtpu_base_hdr_t* gtp(classify_state_t* clas_state, int idx){
 
 	//Return the index
 	if(clas_state->headers[pos].present)
-		return (cpc_gtpu_base_hdr_t*) clas_state->headers[pos].frame;
+		return (cpc_gtphu_t*) clas_state->headers[pos].frame;
 	return NULL;
 }
 
@@ -332,15 +249,15 @@ cpc_gtpu_base_hdr_t* gtp(classify_state_t* clas_state, int idx){
 
 
 
-void classify(datapacketx86 *pkt){
-	if(is_classified)
+void classify(classify_state_t* clas_state, uint8_t* pkt, size_t len){
+	if(clas_state->is_classified)
 		classify_reset();
-	parse_ethernet(pkt->get_buffer(),pkt->get_buffer_length());
-	is_classified = true;
+	parse_ethernet(clas_state,pkt,len);
+	clas_state->is_classified = true;
 }
 
 void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_eth_hdr_t)){return;}
+	if (datalen < sizeof(cpc_eth_hdr_t)){return;}
 
 	//Set frame
 	unsigned int num_of_ether = clas_state->num_of_headers[HEADER_TYPE_ETHER];
@@ -350,8 +267,8 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 	clas_state->num_of_headers[HEADER_TYPE_ETHER] = num_of_ether+1;
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_eth_hdr_t);
-	datalen -= sizeof(struct cpc_eth_hdr_t);
+	data += sizeof(cpc_eth_hdr_t);
+	datalen -= sizeof(cpc_eth_hdr_t);
 
 	//Set pointer to header
 	cpc_eth_hdr_t* ether_header = (cpc_eth_hdr_t*) clas_state->headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame;
@@ -402,7 +319,7 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 }
 
 void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_vlan_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_vlan_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_vlan = clas_state->num_of_headers[HEADER_TYPE_VLAN];
@@ -412,8 +329,8 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	clas_state->num_of_headers[HEADER_TYPE_VLAN] = num_of_vlan+1;
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_vlan_hdr_t);
-	datalen -= sizeof(struct cpc_vlan_hdr_t);
+	data += sizeof(cpc_vlan_hdr_t);
+	datalen -= sizeof(cpc_vlan_hdr_t);
 
 	//Set pointer to header
 	cpc_vlan_hdr_t* vlan = (cpc_vlan_hdr_t*) clas_state->headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame;
@@ -459,7 +376,7 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_mpls_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_mpls_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_mpls = clas_state->num_of_headers[HEADER_TYPE_MPLS];
@@ -469,8 +386,8 @@ void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	clas_state->num_of_headers[HEADER_TYPE_MPLS] = num_of_mpls+1;
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_mpls_hdr_t);
-	datalen -= sizeof(struct cpc_mpls_hdr_t);
+	data += sizeof(cpc_mpls_hdr_t);
+	datalen -= sizeof(cpc_mpls_hdr_t);
 
 	//Set pointer to header
 	cpc_mpls_hdr_t* mpls = (cpc_mpls_hdr_t*) clas_state->headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame;
@@ -485,7 +402,7 @@ void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 }
 void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct rofl::fpppoeframe::pppoe_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_pppoe_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_pppoe = clas_state->num_of_headers[HEADER_TYPE_PPPOE];
@@ -494,19 +411,20 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	clas_state->headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].present = true;
 	clas_state->num_of_headers[HEADER_TYPE_PPPOE] = num_of_pppoe+1;
 	
-	cpc_mpls_hdr_t* pppoe = (cpc_mpls_hdr_t*) clas_state->headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame;
+	//cpc_mpls_hdr_t* pppoe = (cpc_mpls_hdr_t*) clas_state->headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame;
 
 	switch (clas_state->eth_type) {
 		case PPPOE_ETHER_DISCOVERY:
 			{
-				datalen -= sizeof(struct cpc_pppoe_hdr_t);
-
-				uint16_t pppoe_len = get_pppoe_length() > datalen ? datalen : get_pppoe_length();
+				datalen -= sizeof(cpc_pppoe_hdr_t);
+#if 0
+//TODO?
+				uint16_t pppoe_len = get_pppoe_length(pppoe) > datalen ? datalen : get_pppoe_length(pppoe);
 
 				/*
 				 * parse any pppoe service tags
 				 */
-				pppoe->unpack(data, sizeof(struct cpc_pppoe_hdr_t) + pppoe_len);
+				pppoe->unpack(data, sizeof(cpc_pppoe_hdr_t) + pppoe_len);
 
 
 				/*
@@ -514,15 +432,16 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 				 */
 				if (datalen > pppoe->tags.length())
 				{
-					//TODO: Continue parsing??	
+					//TODO?: Continue parsing??	
 				}
+#endif
 			}
 			break;
 		case PPPOE_ETHER_SESSION:
 			{
 				//Increment pointers and decrement remaining payload size
-				data += sizeof(struct cpc_pppoe_hdr_t);
-				datalen -= sizeof(struct cpc_pppoe_hdr_t);
+				data += sizeof(cpc_pppoe_hdr_t);
+				datalen -= sizeof(cpc_pppoe_hdr_t);
 
 				parse_ppp(clas_state,data, datalen);
 			}
@@ -537,7 +456,7 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_ppp_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_ppp_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_ppp = clas_state->num_of_headers[HEADER_TYPE_PPP];
@@ -554,22 +473,22 @@ void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 		case PPP_PROT_IPV4:
 			{
 				//Increment pointers and decrement remaining payload size
-				data += sizeof(struct cpc_ppp_hdr_t);
-				datalen -= sizeof(struct cpc_ppp_hdr_t);
+				data += sizeof(cpc_ppp_hdr_t);
+				datalen -= sizeof(cpc_ppp_hdr_t);
 
-				parse_ipv4(data, datalen);
+				parse_ipv4(clas_state, data, datalen);
 			}
 			break;
 		default:
 			{
-				ppp->unpack(data, datalen);
+				//TODO? ppp->unpack(data, datalen);
 			}
 			break;
 	}
 }
 
 void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_arpv4_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_arpv4_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_arpv4 = clas_state->num_of_headers[HEADER_TYPE_ARPV4];
@@ -582,8 +501,8 @@ void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	//rofl::farpv4frame *arpv4 = headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_arpv4_hdr_t);
-	datalen -= sizeof(struct cpc_arpv4_hdr_t);
+	data += sizeof(cpc_arpv4_hdr_t);
+	datalen -= sizeof(cpc_arpv4_hdr_t);
 
 	if (datalen > 0){
 		//TODO: something?
@@ -591,7 +510,7 @@ void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct rofl::fipv4frame::ipv4_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_ipv4_hdr_t)) { return; }
 	
 	//Set frame
 	unsigned int num_of_ipv4 = clas_state->num_of_headers[HEADER_TYPE_IPV4];
@@ -604,8 +523,8 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	cpc_ipv4_hdr_t *ipv4 = (cpc_ipv4_hdr_t*) clas_state->headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_ipv4_hdr_t);
-	datalen -= sizeof(struct cpc_ipv4_hdr_t);
+	data += sizeof(cpc_ipv4_hdr_t);
+	datalen -= sizeof(cpc_ipv4_hdr_t);
 
 	if (has_MF_bit_set(ipv4)){
 		// TODO: fragment handling
@@ -653,7 +572,7 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_icmpv4_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_icmpv4_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_icmpv4 = clas_state->num_of_headers[HEADER_TYPE_ICMPV4];
@@ -666,8 +585,8 @@ void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	//rofl::ficmpv4frame *icmpv4 = (rofl::ficmpv4frame*) headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_icmpv4_hdr_t);
-	datalen -= sizeof(struct cpc_icmpv4_hdr_t);
+	data += sizeof(cpc_icmpv4_hdr_t);
+	datalen -= sizeof(cpc_icmpv4_hdr_t);
 
 
 	if (datalen > 0){
@@ -676,7 +595,7 @@ void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_ipv6_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_ipv6_hdr_t)) { return; }
 	
 	//Set frame
 	unsigned int num_of_ipv6 = clas_state->num_of_headers[HEADER_TYPE_IPV6];
@@ -689,40 +608,40 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	cpc_ipv6_hdr_t *ipv6 = (cpc_ipv6_hdr_t*) clas_state->headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame; 
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_ipv6_hdr_t);
-	datalen -= sizeof(struct cpc_ipv6_hdr_t);
+	data += sizeof(cpc_ipv6_hdr_t);
+	datalen -= sizeof(cpc_ipv6_hdr_t);
 
 	// FIXME: IP header with options
 
 	switch (get_next_header(ipv6)) {
 		case IPV4_IP_PROTO:
 			{
-				parse_ipv4(data, datalen);
+				parse_ipv4(clas_state, data, datalen);
 			}
 			break;
 		case ICMPV4_IP_PROTO:
 			{
-				parse_icmpv4(data, datalen);
+				parse_icmpv4(clas_state, data, datalen);
 			}
 			break;
 		case IPV6_IP_PROTO:
 			{
-				parse_ipv6(data, datalen);
+				parse_ipv6(clas_state, data, datalen);
 			}
 			break;
 		case ICMPV6_IP_PROTO:
 			{
-				parse_icmpv6(data, datalen);
+				parse_icmpv6(clas_state, data, datalen);
 			}
 			break;
 		case UDP_IP_PROTO:
 			{
-				parse_udp(data, datalen);
+				parse_udp(clas_state, data, datalen);
 			}
 			break;
 		case TCP_IP_PROTO:
 			{
-				parse_tcp(data, datalen);
+				parse_tcp(clas_state, data, datalen);
 			}
 			break;
 #if 0
@@ -741,7 +660,7 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_icmpv6_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_icmpv6_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_icmpv6 = clas_state->num_of_headers[HEADER_TYPE_ICMPV6];
@@ -754,8 +673,8 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	//rofl::ficmpv6frame *icmpv6 = (rofl::ficmpv6frame*) headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame; 
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_icmpv6_hdr_t);
-	datalen -= sizeof(struct cpc_icmpv6_hdr_t);
+	data += sizeof(cpc_icmpv6_hdr_t);
+	datalen -= sizeof(cpc_icmpv6_hdr_t);
 
 
 	if (datalen > 0){
@@ -764,7 +683,7 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_tcp_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_tcp_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_tcp = clas_state->num_of_headers[HEADER_TYPE_TCP];
@@ -777,8 +696,8 @@ void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	//rofl::ftcpframe *tcp = (rofl::ftcpframe*) headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame; 
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_tcp_hdr_t);
-	datalen -= sizeof(struct cpc_tcp_hdr_t);
+	data += sizeof(cpc_tcp_hdr_t);
+	datalen -= sizeof(cpc_tcp_hdr_t);
 
 	if (datalen > 0){
 		//TODO: something 
@@ -786,7 +705,7 @@ void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_udp_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_udp_hdr_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_udp = clas_state->num_of_headers[HEADER_TYPE_UDP];
@@ -799,13 +718,13 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	cpc_udp_hdr_t *udp = (cpc_udp_hdr_t*) clas_state->headers[FIRST_UDP_FRAME_POS + num_of_udp].frame;
 	
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_udp_hdr_t);
-	datalen -= sizeof(struct cpc_udp_hdr_t);
+	data += sizeof(cpc_udp_hdr_t);
+	datalen -= sizeof(cpc_udp_hdr_t);
 
 	if (datalen > 0){
-		switch (get_dport(udp)) {
+		switch (get_udp_dport(udp)) {
 		case GTPU_UDP_PORT: {
-			parse_gtp(data, datalen);
+			parse_gtp(clas_state, data, datalen);
 		} break;
 		default: {
 			//TODO: something
@@ -815,12 +734,12 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(struct cpc_gtpu_base_hdr_t)) { return; }
+	if (datalen < sizeof(cpc_gtphu_t)) { return; }
 
 	//Set frame
 	unsigned int num_of_gtp = clas_state->num_of_headers[HEADER_TYPE_GTP];
 	//clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame->reset(data, datalen);
-	clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame = (cpc_gtpu_base_hdr_t*) data;
+	clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame = (cpc_gtphu_t*) data;
 	clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].present = true;
 	clas_state->num_of_headers[HEADER_TYPE_GTP] = num_of_gtp+1;
 
@@ -828,8 +747,8 @@ void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	//rofl::fgtpuframe *gtp = (rofl::fgtpuframe*) headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame;
 
 	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct cpc_gtpu_base_hdr_t);
-	datalen -= sizeof(struct cpc_gtpu_base_hdr_t);
+	data += sizeof(cpc_gtphu_t);
+	datalen -= sizeof(cpc_gtphu_t);
 
 	if (datalen > 0){
 		//TODO: something
@@ -847,5 +766,5 @@ void push_header(){}
 
 void dump(){}
 
-size_t get_pkt_len(rofl::fframe *from, rofl::fframe *to){}
+//TODO size_t get_pkt_len(rofl::fframe *from, rofl::fframe *to){}
 

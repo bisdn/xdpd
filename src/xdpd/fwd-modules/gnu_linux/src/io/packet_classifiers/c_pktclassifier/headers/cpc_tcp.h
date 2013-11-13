@@ -54,6 +54,10 @@ struct cpc_ip_pseudo_hdr_t {
 } __attribute__((packed));
 #endif
 
+enum tcp_ip_proto_t {
+	TCP_IP_PROTO = 6,
+};
+
 inline static
 void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_proto, uint16_t length){
 	int wnum;
@@ -107,22 +111,22 @@ void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 }
 
 inline static
-uint16_t get_sport(void *hdr){
+uint16_t get_tcp_sport(void *hdr){
 	return CPC_BE16TOH(((cpc_tcp_hdr_t*)hdr)->sport);
 }
 
 inline static
-void set_sport(void *hdr, uint16_t port){
+void set_tcp_sport(void *hdr, uint16_t port){
 	((cpc_tcp_hdr_t*)hdr)->sport = CPC_HTOBE16(port);
 }
 
 inline static
-uint16_t get_dport(void *hdr){
+uint16_t get_tcp_dport(void *hdr){
 	return CPC_BE16TOH(((cpc_tcp_hdr_t*)hdr)->dport);
 }
 
 inline static
-void set_dport(void *hdr, uint16_t port){
+void set_tcp_dport(void *hdr, uint16_t port){
 	((cpc_tcp_hdr_t*)hdr)->dport = CPC_HTOBE16(port);
 }
 

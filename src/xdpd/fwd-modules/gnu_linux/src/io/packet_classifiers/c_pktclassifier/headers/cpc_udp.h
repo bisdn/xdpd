@@ -4,7 +4,7 @@
 #include "../cpc_utils.h"
 
 /* UDP constants and definitions */
-struct cpc_udp_hdr_t {
+struct cpc_udp_hdr {
 	uint16_t sport;
 	uint16_t dport;
 	uint16_t length;
@@ -12,6 +12,9 @@ struct cpc_udp_hdr_t {
 	uint8_t data[0];
 } __attribute__((packed));
 
+typedef struct cpc_udp_hdr cpc_udp_hdr_t;
+
+#if 0
 /* for UDP checksum calculation */
 struct cpc_ip_pseudo_hdr_t {
 	uint32_t src;
@@ -20,7 +23,7 @@ struct cpc_ip_pseudo_hdr_t {
 	uint8_t proto;
 	uint16_t len;
 } __attribute__((packed));
-
+#endif
 enum udp_ip_proto_t {
 	UDP_IP_PROTO = 17,
 };
@@ -28,6 +31,7 @@ enum udp_ip_proto_t {
 inline static
 void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_proto, uint16_t length){
 	int wnum;
+	int i;
 	uint32_t sum = 0; //sum
 	uint16_t* word16;
 	
@@ -45,8 +49,8 @@ void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 	word16 = (uint16_t*)(void*)&ip_dst; //NOTE endianess
 	sum += *(word16+1);
 	sum += *(word16);
-	sum += htons(ip_proto);
-	sum += htons(length); 
+	sum += htobe16(ip_proto);
+	sum += htobe16(length); 
 
 	/*
 	* part -II- (TCP header + payload)
@@ -57,7 +61,7 @@ void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 	word16 = (uint16_t*)hdr;
 	wnum = (length / sizeof(uint16_t));
 
-	for (int i = 0; i < wnum; i++){
+	for (i = 0; i < wnum; i++){
 		sum += (uint32_t)word16[i];
 	}
 	
@@ -76,32 +80,32 @@ void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 }
 
 inline static
-uint16_t get_sport(viod *hdr){
+uint16_t get_udp_sport(void *hdr){
 	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->sport);
 }
 
 inline static
-void set_sport(viod *hdr, uint16_t port){
+void set_udp_sport(void *hdr, uint16_t port){
 	((cpc_udp_hdr_t*)hdr)->sport = CPC_HTOBE16(port);
 }
 
 inline static
-uint16_t get_dport(viod *hdr){
+uint16_t get_udp_dport(void *hdr){
 	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->dport);
 }
 
 inline static
-void set_dport(viod *hdr, uint16_t port){
+void set_udp_dport(void *hdr, uint16_t port){
 	((cpc_udp_hdr_t*)hdr)->dport = CPC_HTOBE16(port);
 }
 
 inline static
-uint16_t get_length(viod *hdr){
+uint16_t get_udp_length(void *hdr){
 	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->length);
 }
 
 inline static
-void set_length(viod *hdr, uint16_t length){
+void set_udp_length(void *hdr, uint16_t length){
 	((cpc_udp_hdr_t*)hdr)->length = CPC_HTOBE16(length);
 }
 

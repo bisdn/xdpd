@@ -1,5 +1,5 @@
-#ifndef _CPC_IPV4_H_
-#define _CPC_IPV4_H_
+#ifndef _CPC_IPV6_H_
+#define _CPC_IPV6_H_
 
 #include "../cpc_utils.h"
 
@@ -21,7 +21,7 @@ enum ipv6_ether_t {
 };
 
 // IPv6 header
-struct cpc_ipv6_hdr_t {
+struct cpc_ipv6_hdr {
 	uint8_t bytes[4];      	// version + tc + flow-label
 	uint16_t payloadlen;
 	uint8_t nxthdr;
@@ -31,25 +31,26 @@ struct cpc_ipv6_hdr_t {
 	uint8_t data[0];
 } __attribute__((packed));
 
+typedef struct cpc_ipv6_hdr cpc_ipv6_hdr_t;
+
 enum ipv6_ext_t {
-	IPPROTO_IPV6_HOPOPT 		= 0,
-	IPPROTO_ICMP 				= 1,
-	IPPROTO_TCP 				= 6,
-	IPPROTO_UDP 				= 17,
+	IPV6_IPPROTO_HOPOPT 		= 0,
+	IPV6_IPPROTO_ICMPV4 			= 1,
+	IPV6_IPPROTO_TCP 			= 6,
+	IPV6_IPPROTO_UDP 			= 17,
 	IPV6_IP_PROTO 				= 41,
-	IPPROTO_IPV6_ROUTE			= 43,
-	IPPROTO_IPV6_FRAG			= 44,
-	IPPROTO_IPV6_ICMP			= 58,
-	IPPROTO_IPV6_NONXT			= 59,
-	IPPROTO_IPV6_OPTS			= 60,
-	IPPROTO_IPV6_MIPV6			= 135,
+	IPV6_IPPROTO_ROUTE			= 43,
+	IPV6_IPPROTO_FRAG			= 44,
+	IPV6_IPPROTO_ICMPV6			= 58,
+	IPV6_IPPROTO_NONXT			= 59,
+	IPV6_IPPROTO_OPTS			= 60,
+	IPV6_IPPROTO_MIPV6			= 135,
 };
 /* ipv6 definitions */
 
-struct cpc_ipv6_hdr_t 					*ipv6_hdr;		// pointer to pppoe header
+cpc_ipv6_hdr_t 					*ipv6_hdr;		// pointer to pppoe header
 uint8_t 								*ipv6data;		// payload data
 size_t 					 				 ipv6datalen;	// ppp data length
-std::map<enum ipv6_ext_t, fipv6ext> 	 ipv6exts;		// IPv6 extensions headers
 
 //TODO extension headers
 
@@ -60,12 +61,12 @@ void ipv6_calc_checksum(void *hdr, uint16_t length){
 
 
 inline static
-void set_version(void *hdr, uint8_t version){
+void set_ipv6_version(void *hdr, uint8_t version){
 	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0x0F) + ((version & 0x0F) << 4);
 };
 
 inline static
-uint8_t get_version(void *hdr){
+uint8_t get_ipv6_version(void *hdr){
 	return (uint8_t)((((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0xF0) >> 4);
 };
 
@@ -150,31 +151,27 @@ void dec_hop_limit(void *hdr){
 
 inline static
 void set_ipv6_src(void *hdr, uint128__t src){
-	CPC_SWAP_U128(src);//htobe128
 	uint128__t *ptr=(uint128__t*)&(((cpc_ipv6_hdr_t*)hdr)->src);
-	*ptr = src;
+	*ptr = CPC_SWAP_U128(src);//htobe128
 };
 
 inline static
 uint128__t get_ipv6_src(void *hdr){
-	uint128__t src=(uint128__t)(((cpc_ipv6_hdr_t*)hdr)->src);
-	CPC_SWAP_U128(src);//htobe128
-	return src;
+	uint128__t src=*(uint128__t*)(((cpc_ipv6_hdr_t*)hdr)->src);
+	return CPC_SWAP_U128(src);//htobe128
 };
 
 inline static
 void set_ipv6_dst(void *hdr, uint128__t dst){
-	CPC_SWAP_U128(dst);//htobe128
 	uint128__t *ptr=(uint128__t*)&(((cpc_ipv6_hdr_t*)hdr)->dst);
-	*ptr = dst;
+	*ptr = CPC_SWAP_U128(dst);//htobe128
 };
 
 inline static
 uint128__t get_ipv6_dst(void *hdr){
-	uint128__t dst=(uint128__t)(((cpc_ipv6_hdr_t*)hdr)->dst);
-	CPC_SWAP_U128(dst);//htobe128
-	return dst;
+	uint128__t dst=*(uint128__t*)(((cpc_ipv6_hdr_t*)hdr)->dst);
+	return CPC_SWAP_U128(dst);//htobe128
 };
 
 
-#endif //_CPC_IPV4_H_
+#endif //_CPC_IPV6_H_

@@ -22,9 +22,8 @@ struct cpc_ip_pseudo_hdr_t {
 
 typedef struct cpc_icmpv4_hdr cpc_icmpv4_hdr_t;
 
-enum tcp_ip_proto_t {
+enum icmpv4_ip_proto_t {
 	ICMPV4_IP_PROTO = 1,
-	TCP_IP_PROTO = 6,
 };
 
 enum icmpv4_type_t {

@@ -75,12 +75,12 @@ typedef union cpc_gtphu cpc_gtphu_t;
 //NOTE PDULEN?
 
 inline static
-uint8_t get_version(void *hdr){
+uint8_t get_gtp_version(void *hdr){
 	return (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags & 0xe0) >> 5;
 };
 
 inline static
-void set_version(void *hdr, uint8_t version){
+void set_gtp_version(void *hdr, uint8_t version){
 	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags & 0x1f) | ((version & 0x03) << 5);
 };
 
@@ -147,12 +147,12 @@ void set_msg_type(void *hdr, uint8_t msgtype){
 };
 
 inline static
-uint16_t get_length(void *hdr){
+uint16_t get_gtp_length(void *hdr){
 	return CPC_BE16TOH(((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr->len);
 };
 
 inline static
-void set_length(void *hdr, uint16_t length){
+void set_gtp_length(void *hdr, uint16_t length){
 	((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr->len = CPC_HTOBE16(length);
 };
 

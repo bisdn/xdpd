@@ -83,14 +83,16 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
 		if(output_queues[q_id].non_blocking_write(pkt) != ROFL_SUCCESS){
+			TM_STAMP_STAGE(pkt, TM_SA6_FAILURE);
+			
 			ROFL_DEBUG("[mmap:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
 			//Drop packet
 			bufferpool::release_buffer(pkt);
 
-			TM_STAMP_STAGE(pkt, TM_SA6_FAILURE);
 
 			return;
 		}
+		TM_STAMP_STAGE(pkt, TM_SA6_SUCCESS);
 
 		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
 	
@@ -98,7 +100,6 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 		ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
 		(void)ret; // todo use the value
 			
-		TM_STAMP_STAGE(pkt, TM_SA6_SUCCESS);
 	} else {
 		if(len < MIN_PKT_LEN){
 			ROFL_ERR("[mmap:%s] ERROR: attempt to send invalid packet size for packet(%p) scheduled for queue %u. Packet size: %u\n", of_port_state->name, pkt, q_id, len);
@@ -344,10 +345,11 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			fill_tx_slot(hdr, pkt_x86);
 		}
 		
+		TM_STAMP_STAGE(pkt, TM_SA8);
+		
 		//Return buffer to the pool
 		bufferpool::release_buffer(pkt);
 
-		TM_STAMP_STAGE(pkt, TM_SA8);
 
 		// todo statistics
 		tx_bytes_local += hdr->tp_len;

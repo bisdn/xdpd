@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 #include "../config.h"
-#define RTE_MBUF_SCATTER_GATHER
+#include <rte_config.h>
 #include <rte_common.h>
 #include <rte_cycles.h>
 #include <rte_mbuf.h>

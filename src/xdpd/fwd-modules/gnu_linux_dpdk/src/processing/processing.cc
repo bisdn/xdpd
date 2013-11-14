@@ -1,6 +1,5 @@
 #include "processing.h"
 #include <rofl/common/utils/c_logger.h>
-#include <rte_common.h>
 #include <rte_cycles.h>
 #include <rte_spinlock.h>
 

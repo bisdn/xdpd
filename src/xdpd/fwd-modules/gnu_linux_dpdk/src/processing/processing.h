@@ -9,6 +9,7 @@
 
 #define __STDC_LIMIT_MACROS
 #include <rofl.h>
+#include <rte_config.h> 
 #include <rte_common.h> 
 #include <rte_eal.h> 
 #include <rte_log.h>

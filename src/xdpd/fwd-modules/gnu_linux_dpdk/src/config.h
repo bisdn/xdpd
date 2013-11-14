@@ -80,17 +80,8 @@
 //DPDK defines
 #define RTE_CORE_MASK 0x0000FFFF //16 cores
 #define RTE_MEM_CHANNELS 2
-#define RTE_LOG_LEVEL 1
-#define RTE_MAX_LCORE 64
-#define RTE_PKTMBUF_HEADROOM 128
 #define SOCKET0 0
 #define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
 #define NB_MBUF   8192
-
-//Enable drivers
-#define RTE_LIBRTE_IGB_PMD
-#define RTE_LIBRTE_EM_PMD
-#define RTE_LIBRTE_IXGBE_PMD
-//#define RTE_LIBRTE_VIRTIO_PMD
 
 #endif //XDPD_GNU_LINUX_XDPD_CONFIG_H

@@ -1,5 +1,6 @@
 #include <rofl/datapath/pipeline/platform/atomic_operations.h>
 #include "../config.h"
+#include <rte_config.h>
 #include <rte_common.h>
 #include <rte_atomic.h>
 

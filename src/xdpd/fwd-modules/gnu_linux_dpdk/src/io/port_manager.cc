@@ -1,4 +1,5 @@
 #include "port_manager.h"
+#include <rofl/datapath/afa/cmm.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -128,6 +129,9 @@ rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id
 	//Enable multicast
 	rte_eth_allmulticast_enable(port_id);
 	
+	//Reset stats
+	rte_eth_stats_reset(port_id);
+	
 	return ROFL_SUCCESS;
 }
 
@@ -174,3 +178,80 @@ rofl_result_t port_manager_shutdown_ports(void){
 	return ROFL_SUCCESS;
 }
 
+/*
+* Update link states 
+*/
+void port_manager_update_links(){
+
+	unsigned int i;
+	struct rte_eth_link link;
+	switch_port_t* port;
+	bool last_link_state;
+	
+	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
+		
+		port = port_mapping[i];
+		
+		if(unlikely(port != NULL)){
+			rte_eth_link_get_nowait(i,&link);
+	
+			last_link_state = !((port->state& PORT_STATE_LINK_DOWN) > 0); //up =>1
+
+			//Check if there has been a change
+			if(unlikely(last_link_state != link.link_status)){
+				if(link.link_status)
+					//Up
+					port->state = port->state & ~(PORT_STATE_LINK_DOWN); 
+				else
+					//Down
+					port->state = port->state | PORT_STATE_LINK_DOWN;
+					
+				ROFL_DEBUG("[port-manager] Port %s is %s, and link is %s\n", port->name, ((port->up) ? "up" : "down"), ((link.link_status) ? "detected" : "not detected"));
+				
+				//Notify CMM port change
+				if(cmm_notify_port_status_changed(port) != AFA_SUCCESS){
+					ROFL_ERR("Unable to notify port status change for port %s\n", port->name);
+				}	
+			}
+		}
+	}
+}
+
+/*
+* Update port stats (pipeline)
+*/
+void port_manager_update_stats(){
+	
+	unsigned int i, j;
+	struct rte_eth_stats stats;
+	switch_port_t* port;
+	
+	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
+		port = port_mapping[i];
+		if(unlikely(port != NULL)){
+
+			//Retrieve stats
+			rte_eth_stats_get(i, &stats);
+			
+			//RX	
+			port->stats.rx_packets = stats.ipackets;
+			port->stats.rx_bytes = stats.ibytes;
+			port->stats.rx_errors = stats.ierrors;
+				
+			//FIXME: collisions and other errors
+		
+			//TX
+			port->stats.tx_packets = stats.opackets;
+			port->stats.tx_bytes = stats.obytes;
+			port->stats.tx_errors = stats.oerrors;
+
+			//TX-queues
+			for(j=0;j<IO_IFACE_NUM_QUEUES;j++){
+				port->queues[j].stats.tx_packets = stats.q_opackets[j];
+				port->queues[j].stats.tx_bytes = stats.q_obytes[j];
+				//port->queues[j].stats.overrun = stats.q_;
+			}
+		}
+	}
+
+}

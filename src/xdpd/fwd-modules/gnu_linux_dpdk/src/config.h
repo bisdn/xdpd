@@ -19,6 +19,16 @@
 #define FWD_MOD_NAME "DPDK"
 
 /*
+* BG stuff
+*/
+
+//Frequency(period) of port link status updating in milliseconds
+#define BG_UPDATE_PORT_LINKS_MS 400
+
+//Frequency(period) of port stats updating in milliseconds
+#define BG_UPDATE_PORT_STATS_MS 2000
+
+/*
 * I/O stuff
 */
 //Number of output queues per interface

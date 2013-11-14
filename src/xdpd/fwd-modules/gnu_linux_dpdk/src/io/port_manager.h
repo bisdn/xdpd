@@ -48,6 +48,17 @@ rofl_result_t port_manager_shutdown_ports(void);
 */
 rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id);
 
+/**
+* Update link states 
+*/
+void port_manager_update_links(void);
+
+/**
+* Update port stats (pipeline)
+*/
+void port_manager_update_stats(void);
+
+
 //C++ extern C
 ROFL_END_DECLS
 

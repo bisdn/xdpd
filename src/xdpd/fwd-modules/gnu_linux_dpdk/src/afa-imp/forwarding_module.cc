@@ -24,6 +24,7 @@
 #include <string.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../bg_taskmanager.h"
 #include "../io/bufferpool.h"
 #include "../io/port_manager.h"
 #include "../io/pktin_dispatcher.h"
@@ -108,6 +109,10 @@ afa_result_t fwd_module_init(){
 	if(pktin_dispatcher_init() != ROFL_SUCCESS)
 		return AFA_FAILURE;
 
+	//Initialize Background Tasks Manager
+	if(launch_background_tasks_manager() != ROFL_SUCCESS){
+		return AFA_FAILURE;
+	}
 
 	return AFA_SUCCESS; 
 }
@@ -126,6 +131,9 @@ afa_result_t fwd_module_destroy(){
 
 	//Initialize PKT_IN
 	pktin_dispatcher_destroy();
+
+	//Stop the bg manager
+	stop_background_tasks_manager();
 
 	//Destroy pipeline platform state
 	physical_switch_destroy();

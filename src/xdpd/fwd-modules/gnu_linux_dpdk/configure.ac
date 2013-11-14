@@ -42,5 +42,6 @@ AC_CONFIG_FILES([
 	src/io/packet_classifiers/Makefile
 	src/processing/Makefile
 	src/pipeline-imp/Makefile
+	src/util/Makefile
 ])
 AC_OUTPUT

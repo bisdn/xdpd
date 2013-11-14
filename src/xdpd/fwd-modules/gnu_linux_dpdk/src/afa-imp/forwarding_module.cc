@@ -143,8 +143,8 @@ afa_result_t fwd_module_destroy(){
 	bufferpool::destroy();
 	
 	//Shutdown ports
-	//XXX	
-	
+	port_manager_shutdown_ports();
+
 	return AFA_SUCCESS; 
 }
 

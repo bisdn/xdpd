@@ -231,7 +231,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 						hdr->tp_len - sizeof(struct fetherframe::eth_hdr_t));
                 
 
-		                pkt_x86->headers->classify();
+						classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 
 			} else {
 				// no vlan tag present

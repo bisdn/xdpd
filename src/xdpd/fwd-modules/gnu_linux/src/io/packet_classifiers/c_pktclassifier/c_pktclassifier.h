@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
+#include <rofl/datapath/pipeline/common/datapacket.h>
 
 #include "./headers/cpc_arpv4.h"
 #include "./headers/cpc_ethernet.h"
@@ -129,39 +129,258 @@ typedef struct classify_state{
 
 
 //function declarations
-void classify(classify_state_t* clas_state, uint8_t* pkt, size_t len);
+classify_state_t* init_classifier();
+void destroy_classifier(classify_state_t* clas_state);
+void classify_packet(classify_state_t* clas_state, uint8_t* pkt, size_t len);
+void reset_classifier(classify_state_t* clas_state);
 
-cpc_eth_hdr_t* ether(classify_state_t* clas_state, int idx);
-cpc_vlan_hdr_t* vlan(classify_state_t* clas_state, int idx);
-cpc_mpls_hdr_t* mpls(classify_state_t* clas_state, int idx);
-cpc_arpv4_hdr_t* arpv4(classify_state_t* clas_state, int idx);
-cpc_ipv4_hdr_t* ipv4(classify_state_t* clas_state, int idx);
-cpc_icmpv4_hdr_t* icmpv4(classify_state_t* clas_state, int idx);
-cpc_ipv6_hdr_t* ipv6(classify_state_t* clas_state, int idx);
-cpc_icmpv6_hdr_t* icmpv6(classify_state_t* clas_state, int idx);
-cpc_udp_hdr_t* udp(classify_state_t* clas_state, int idx);
-cpc_tcp_hdr_t* tcp(classify_state_t* clas_state, int idx);
-cpc_pppoe_hdr_t* pppoe(classify_state_t* clas_state, int idx);
-cpc_ppp_hdr_t* ppp(classify_state_t* clas_state, int idx);
-cpc_gtphu_t* gtp(classify_state_t* clas_state, int idx);
+inline static 
+void* ether(classify_state_t* clas_state, int idx){
+	unsigned int pos;
+	if(idx > (int)MAX_ETHER_FRAMES)
+		return NULL;
 
-void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
+	if(idx < 0) //Inner most
+		pos = FIRST_ETHER_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_ETHER] - 1;
+	else
+		pos = FIRST_ETHER_FRAME_POS + idx;	
 
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;	
+	return NULL;
+}
 
+inline static
+void* vlan(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
 
+	if(idx > (int)MAX_VLAN_FRAMES)
+		return NULL;
 
+	if(idx < 0) //Inner most
+		pos = FIRST_VLAN_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_VLAN] - 1;
+	else
+		pos = FIRST_VLAN_FRAME_POS + idx;	
 
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* mpls(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_MPLS_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_MPLS_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_MPLS] - 1;
+	else
+		pos = FIRST_MPLS_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* arpv4(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_ARPV4_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_ARPV4_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_ARPV4] - 1;
+	else
+		pos = FIRST_ARPV4_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* ipv4(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_IPV4_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most const
+		pos = FIRST_IPV4_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_IPV4] - 1;
+	else
+		pos = FIRST_IPV4_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* icmpv4(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_ICMPV4_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_ICMPV4_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_ICMPV4] - 1;
+	else
+		pos = FIRST_ICMPV4_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* ipv6(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_IPV6_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_IPV6_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_IPV6] - 1;
+	else
+		pos = FIRST_IPV6_FRAME_POS + idx;
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* icmpv6(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_ICMPV6_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_ICMPV6_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_ICMPV6] - 1;
+	else
+		pos = FIRST_ICMPV6_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* udp(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_UDP_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_UDP_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_UDP] - 1;
+	else
+		pos = FIRST_UDP_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* tcp(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_TCP_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_TCP_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_TCP] - 1;
+	else
+		pos = FIRST_TCP_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* pppoe(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_PPPOE_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_PPPOE_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_PPPOE] - 1;
+	else
+		pos = FIRST_PPPOE_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* ppp(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_PPP_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_PPP_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_PPP] - 1;
+	else
+		pos = FIRST_PPP_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* gtp(classify_state_t* clas_state, int idx){
+	unsigned int pos;
+
+	if(idx > (int)MAX_GTP_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_GTP_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_GTP] - 1;
+	else
+		pos = FIRST_GTP_FRAME_POS + idx;
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+//push & pop
+void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state);
+void pop_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
+void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
+void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
+
+void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
+void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
+void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
+void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
+
+//void pkt_push();
+//void pkt_pop();
+
+void dump_pkt_classifier(classify_state_t* clas_state);
 
 #endif //_C_PKTCLASSIFIER_H_

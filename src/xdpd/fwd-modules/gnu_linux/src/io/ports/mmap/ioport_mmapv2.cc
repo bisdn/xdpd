@@ -153,7 +153,7 @@ inline void ioport_mmapv2::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86
 	hdr->tp_len - sizeof(struct fetherframe::eth_hdr_t));
 
 	//And classify
-	pkt_x86->headers->classify();
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 }
 	
 // handle read

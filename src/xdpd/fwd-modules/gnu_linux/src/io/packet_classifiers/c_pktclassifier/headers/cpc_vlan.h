@@ -63,12 +63,12 @@ bool get_dl_vlan_cfi(void* hdr){
 }
 
 inline static
-void set_dl_type(void* hdr, uint16_t dl_type){
+void set_dl_vlan_type(void* hdr, uint16_t dl_type){
 	((cpc_vlan_hdr_t*)hdr)->dl_type = CPC_HTOBE16(dl_type);
 }
 
 inline static
-uint16_t get_dl_type(void* hdr){
+uint16_t get_dl_vlan_type(void* hdr){
 	return CPC_BE16TOH(((cpc_vlan_hdr_t*)hdr)->dl_type);
 }
 

@@ -84,9 +84,11 @@ platform_packet_get_eth_dst(datapacket_t * const pkt)
 
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
         
-	if ((NULL == pack) || (NULL == pack->headers->ether(0))) return 0;
+	//if ((NULL == pack) || (NULL == pack->headers->ether(0))) return 0;
+	if ((NULL == pack) || (NULL == ether(pack->headers,0))) return 0;
 
-	return pack->headers->ether(0)->get_dl_dst().get_mac();
+	//return pack->headers->ether(0)->get_dl_dst().get_mac();
+	return get_dl_eth_dst(ether(pack->headers,0));
 }
 
 uint64_t

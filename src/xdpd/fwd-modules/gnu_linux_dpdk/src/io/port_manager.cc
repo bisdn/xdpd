@@ -20,10 +20,12 @@ switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 static switch_port_t* configure_port(unsigned int port_id){
 
 	int ret;
+	unsigned int i;
 	switch_port_t* port;
 	struct rte_eth_dev_info dev_info;
 	struct rte_eth_conf port_conf;
 	char port_name[SWITCH_PORT_MAX_LEN_NAME];
+	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
 	
 	//Get info
 	rte_eth_dev_info_get(port_id, &dev_info);
@@ -52,9 +54,6 @@ static switch_port_t* configure_port(unsigned int port_id){
 		return NULL;
 	}
 
-	//Mark link status as automatic
-	//TODO	
-	
 	//Set rx and tx queues
 	memset(&port_conf, 0, sizeof(port_conf));
 	port_conf.rxmode.max_rx_pkt_len =  IO_MAX_PACKET_SIZE;
@@ -67,6 +66,16 @@ static switch_port_t* configure_port(unsigned int port_id){
 		return NULL;
 	}
 
+	//Add TX queues to the pipeline
+	//Filling one-by-one the queues 
+	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
+		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
+		if(switch_port_add_queue(port, i, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS){
+			assert(0);
+			ROFL_ERR("Cannot configure queues on device (pipeline): %s\n", port->name);
+			return NULL;
+		}
+	}
 
 	//Fill-in dpdk port state
 	ps->scheduled = false;
@@ -100,21 +109,30 @@ rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id
 	tx_conf.tx_free_thresh = 0; /* Use PMD default values */
 	tx_conf.tx_rs_thresh = 0; /* Use PMD default values */
 	
-	//Set RX
+	//Setup RX
 	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_TEST_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, pool_direct)) < 0 ){
 		ROFL_ERR("Cannot setup RX queue: %s\n", rte_strerror(ret));
 		assert(0);
 		return ROFL_FAILURE;
 	}
 
-	//Set TX
+	//Setup TX
 	for(i=0;i<IO_IFACE_NUM_QUEUES;++i){
+		//setup the queue
 		if( (ret = rte_eth_tx_queue_setup(port_id, i, RTE_TEST_TX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &tx_conf)) < 0 ){
-	 
 			ROFL_ERR("Cannot setup TX queues: %s\n", rte_strerror(ret));
 			assert(0);
 			return ROFL_FAILURE;
 		}
+
+#if 0
+		//bind stats IGB not supporting this???
+		if( (ret = rte_eth_dev_set_tx_queue_stats_mapping(port_id, i, i)) < 0 ){
+			ROFL_ERR("Cannot bind TX queue(%u) stats: %s\n", i, rte_strerror(ret));
+			assert(0);
+			return ROFL_FAILURE;
+		}
+#endif
 	}
 	//Start port
 	if((ret=rte_eth_dev_start(port_id)) < 0){

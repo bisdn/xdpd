@@ -54,7 +54,7 @@ of10_translation_utils::of1x_map_flow_entry(
 	// store flow-mod fields in of1x_flow_entry
 	entry->priority 		= msg->get_priority();
 	entry->cookie 			= msg->get_cookie();
-	entry->cookie_mask 		= 0xFFFFFFFFFFFFFFFF;
+	entry->cookie_mask 		= 0xFFFFFFFFFFFFFFFFULL;
 	entry->timer_info.idle_timeout	= msg->get_idle_timeout(); // these timers must be activated some time, when?
 	entry->timer_info.hard_timeout	= msg->get_hard_timeout();
 
@@ -638,12 +638,12 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 	//	match.set_metadata(packet_matches->metadata);
 	if(packet_matches->eth_dst){
 		cmacaddr maddr(packet_matches->eth_dst);
-		cmacaddr mmask(0x0000FFFFFFFFFFFF);
+		cmacaddr mmask(0x0000FFFFFFFFFFFFULL);
 		match.set_eth_dst(maddr, mmask);
 	}
 	if(packet_matches->eth_src){
 		cmacaddr maddr(packet_matches->eth_src);
-		cmacaddr mmask(0x0000FFFFFFFFFFFF);
+		cmacaddr mmask(0x0000FFFFFFFFFFFFULL);
 		match.set_eth_src(maddr, mmask);
 	}
 	if(packet_matches->eth_type)

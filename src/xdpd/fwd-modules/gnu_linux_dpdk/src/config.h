@@ -86,7 +86,6 @@
 #define SOCKET0 0
 #define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
 #define NB_MBUF   8192
-#define RTE_ETHDEV_QUEUE_STAT_CNTRS IO_IFACE_NUM_QUEUES
 
 //Enable drivers
 #define RTE_LIBRTE_IGB_PMD

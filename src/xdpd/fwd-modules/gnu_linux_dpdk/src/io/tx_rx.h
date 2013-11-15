@@ -87,7 +87,7 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 inline void process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_table* queue, unsigned int queue_id){
 	unsigned ret;
 
-	if(queue->len == 0){
+	if(unlikely((port->up == false)) || queue->len == 0){
 		//static int j=0;
 		//j++;
 		//if((j%1000000 == 0) && (queue_id == 0))

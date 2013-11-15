@@ -1016,16 +1016,12 @@ static void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_
 		of1x_dump_packet_matches(&pkt->matches);
 #endif
 
-
 		tx_pkt(port, pack->output_queue, pkt);	
-	
-		//Packet must never be retured to the buffer pool, the port will do that
-		//once sent
 	}else{
-		//Silently drop the packet
-		bufferpool::release_buffer(pkt);
-		//TODO: debug trace here
+		rte_pktmbuf_free(((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf);			
 	}
+
+	//Never release the pkt; it is in stack per core	
 }
 
 /**

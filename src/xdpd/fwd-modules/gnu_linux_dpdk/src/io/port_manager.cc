@@ -42,7 +42,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	}
 
 	//Initialize pipeline port
-	port = switch_port_init(port_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_LIVE);
+	port = switch_port_init(port_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_NONE);
 	if(!port)
 		return NULL; 
 
@@ -141,6 +141,11 @@ rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id
 		return ROFL_FAILURE; 
 	}
 
+	//Set pipeline state to UP
+	if(likely(port_mapping[port_id]!=NULL)){
+		port_mapping[port_id]->up = true;
+	}
+
 	//Set promiscuous mode
 	rte_eth_promiscuous_enable(port_id);
 
@@ -180,6 +185,61 @@ rofl_result_t port_manager_discover_system_ports(void){
 
 	return ROFL_SUCCESS;
 }
+
+/*
+* Enable port 
+*/
+rofl_result_t port_manager_enable(switch_port_t* port){
+
+	unsigned int port_id;
+	int ret;
+	
+	if(unlikely(!port))
+		return ROFL_FAILURE;
+
+	port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
+
+	//Start port in RTE
+	if(!port->up){
+		//Was down; simply start
+		if((ret=rte_eth_dev_start(port_id)) < 0){
+			ROFL_ERR("Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
+			assert(0);
+			return ROFL_FAILURE; 
+		}
+	}
+
+	//Mark the port as being up and return
+	port->up = true;
+		
+	return ROFL_SUCCESS;
+}
+
+/*
+* Disable port 
+*/
+rofl_result_t port_manager_disable(switch_port_t* port){
+
+	unsigned int port_id;
+	
+	if(unlikely(!port))
+		return ROFL_FAILURE;
+
+	port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
+
+	//First mark the port as NOT up, so that cores don't issue
+	//RX/TX calls over the port
+	port->up = false;
+
+	//Stop port in RTE
+	if(port->up){
+		//Was  up; stop it
+		rte_eth_dev_stop(port_id);
+	}
+
+	return ROFL_SUCCESS;
+}
+
 
 /*
 * Shutdown all ports in the system 

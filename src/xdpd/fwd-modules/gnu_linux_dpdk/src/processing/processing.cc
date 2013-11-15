@@ -185,11 +185,12 @@ int processing_core_process_packets(void* not_used){
 		//Process RX
 		for(i=0;i<tasks->num_of_rx_ports;++i){
 			port = tasks->port_list[i];
-			port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
-			if(likely(port != NULL)){ //This CAN happen while deschedulings
+			if(likely(port != NULL) && likely(port->up)){ //This CAN happen while deschedulings
+
+				port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
+
 				//Process RX&pipeline 
 				process_port_rx(port, port_id, pkt_burst, &pkt, &pkt_state);
-
 			}
 		}
 	}
@@ -241,7 +242,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		}
 	}
 
-	ROFL_DEBUG("Selected core %u for scheduling port %p\n", current_core_index, port); 
+	ROFL_DEBUG("Selected core %u for scheduling port %s(%p)\n", current_core_index, port->name, port); 
 
 	num_of_ports = &processing_cores[current_core_index].num_of_rx_ports;
 

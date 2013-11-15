@@ -50,6 +50,16 @@ rofl_result_t port_manager_shutdown_ports(void);
 rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id);
 
 /**
+* Enable port 
+*/
+rofl_result_t port_manager_enable(switch_port_t* port);
+
+/**
+* Disable port 
+*/
+rofl_result_t port_manager_disable(switch_port_t* port);
+
+/**
 * Update link states 
 */
 void port_manager_update_links(void);

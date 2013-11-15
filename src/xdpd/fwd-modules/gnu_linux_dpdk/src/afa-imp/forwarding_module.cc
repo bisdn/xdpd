@@ -389,10 +389,20 @@ afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const
 */
 afa_result_t fwd_module_enable_port(const char* name){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling enable_port()\n");
+	switch_port_t* port;
+
+	//Check if the port does exist
+	port = physical_switch_get_port_by_name(name);
+
+	if(!port || !port->platform_port_state)
+		return AFA_FAILURE;
+
+	//Bring it up
+	port_manager_enable(port);
+
+	if(cmm_notify_port_status_changed(port)!=AFA_SUCCESS)
+		return AFA_FAILURE;
 	
-	//XXX
-	//return AFA_FAILURE;
 	return AFA_SUCCESS;
 }
 
@@ -405,10 +415,20 @@ afa_result_t fwd_module_enable_port(const char* name){
 */
 afa_result_t fwd_module_disable_port(const char* name){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling disable_port()\n");
+	switch_port_t* port;
 	
-	//XXX
-	return AFA_FAILURE;
+	//Check if the port does exist
+	port = physical_switch_get_port_by_name(name);
+	if(!port || !port->platform_port_state)
+		return AFA_FAILURE;
+
+	//Bring it down
+	port_manager_disable(port);
+
+	if(cmm_notify_port_status_changed(port)!=AFA_SUCCESS)
+		return AFA_FAILURE;
+	
+	return AFA_SUCCESS;
 }
 
 /*

@@ -100,7 +100,6 @@ public:
 
 	friend std::ostream&
 	operator<< (std::ostream& os, bufferpool const& bp) {
-		int dots_per_line = 64;
 		os << "<bufferpool: ";
 			os << "pool-size:" << bp.pool_size << " ";
 			os << "next-index:" << bp.next_index << " ";
@@ -111,7 +110,11 @@ public:
 					os << "b";
 				else
 					os << "u";
-				if (((i+1) % dots_per_line) == 0)
+				if (((i+1) % 8) == 0)
+					os << " ";
+				if (((i+1) % 32) == 0)
+					os << "  ";
+				if (((i+1) % 128) == 0)
 					os << std::endl;
 			}
 		os << ">";

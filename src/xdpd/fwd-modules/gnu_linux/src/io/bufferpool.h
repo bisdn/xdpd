@@ -95,6 +95,37 @@ protected:
 
 	//get instance
 	static inline bufferpool* get_instance(void);
+
+public:
+
+	friend std::ostream&
+	operator<< (std::ostream& os, bufferpool const& bp) {
+		int dots_per_line = 64;
+		os << "<bufferpool: ";
+			os << "pool-size:" << bp.pool_size << " ";
+			os << "next-index:" << bp.next_index << " ";
+			for (long long unsigned int i = 0; i < bp.pool_size; i++) {
+				if (bp.pool_status[i] == BUFFERPOOL_SLOT_AVAILABLE)
+					os << ".";
+				else if (bp.pool_status[i] == BUFFERPOOL_SLOT_IN_USE)
+					os << "b";
+				else
+					os << "u";
+				if (((i+1) % dots_per_line) == 0)
+					os << std::endl;
+			}
+		os << ">";
+		return os;
+	};
+
+	static void
+	bufferpool_dump_state() {
+		bufferpool& bp = *(bufferpool::get_instance());
+		std::cout << bp << std::endl;
+		for (long long unsigned int i = 0; i < bp.pool_size; i++) {
+			std::cout << *(bp.pool[i]) << std::endl;
+		}
+	};
 };
 
 /*

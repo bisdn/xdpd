@@ -123,7 +123,7 @@ public:
 		bufferpool& bp = *(bufferpool::get_instance());
 		std::cout << bp << std::endl;
 		for (long long unsigned int i = 0; i < bp.pool_size; i++) {
-			std::cout << *(bp.pool[i]) << std::endl;
+			std::cout << *((datapacketx86*)bp.pool[i]) << std::endl;
 		}
 	};
 };

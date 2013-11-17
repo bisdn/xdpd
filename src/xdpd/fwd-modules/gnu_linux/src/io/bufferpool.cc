@@ -224,3 +224,12 @@ bufferpool::dump_slots() {
 }
 
 
+/*static*/void
+bufferpool::reset() {
+	bufferpool& bp = *(bufferpool::get_instance());
+	for (long long unsigned int i = 0; i < bp.pool_size; i++) {
+		if (bp.pool_status[i] == BUFFERPOOL_SLOT_IN_USE)
+			bufferpool::release_buffer(bp.pool[i]);
+	}
+}
+

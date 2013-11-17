@@ -16,6 +16,7 @@
 #include <pthread.h>
 
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "bufferpool.h"
 
 /**
 * @file datapacket_storage.h
@@ -120,6 +121,7 @@ public:
 
 	void dump_state();
 	void dump_slots();
+	void reset();
 };
 
 }// namespace xdpd::gnu_linux 

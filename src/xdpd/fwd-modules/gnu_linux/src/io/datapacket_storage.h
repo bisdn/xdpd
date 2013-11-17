@@ -10,6 +10,7 @@
 #include <queue>
 #include <cstddef>
 #include <ctime>
+#include <iostream>
 
 #include <stdint.h>
 #include <pthread.h>
@@ -103,6 +104,22 @@ private:
 	// this class is noncopyable
 	datapacket_storage(const datapacket_storage&);
 	datapacket_storage& operator=(const datapacket_storage&);
+
+public:
+
+	friend std::ostream&
+	operator<< (std::ostream& os, datapacket_storage const& ds) {
+		os << "<datapacket_storage: ";
+			os << "max-size:" << (int)ds.max_size << " ";
+			os << "expiration-time-sec:" << (int)ds.expiration_time_sec << " ";
+			os << "store.size():" << (int)ds.store.size() << " ";
+			os << "now:" << time(NULL) << " ";
+		os << ">";
+		return os;
+	};
+
+	void dump_state();
+	void dump_slots();
 };
 
 }// namespace xdpd::gnu_linux 

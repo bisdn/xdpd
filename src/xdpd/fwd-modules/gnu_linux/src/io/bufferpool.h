@@ -121,7 +121,8 @@ public:
 		return os;
 	};
 
-	static void bufferpool_dump_state();
+	static void dump_state();
+	static void dump_slots();
 };
 
 /*

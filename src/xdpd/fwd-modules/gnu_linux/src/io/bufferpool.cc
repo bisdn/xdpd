@@ -209,14 +209,18 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 
 
 /*static*/void
-bufferpool::bufferpool_dump_state() {
+bufferpool::dump_state() {
 	bufferpool& bp = *(bufferpool::get_instance());
-	std::cout << bp << std::endl;
-#if 1
+	std::cerr << bp << std::endl;
+}
+
+
+/*static*/void
+bufferpool::dump_slots() {
+	bufferpool& bp = *(bufferpool::get_instance());
 	for (long long unsigned int i = 0; i < bp.pool_size; i++) {
-		std::cout << *(static_cast<datapacketx86 const*>( bp.pool[i]->platform_state )) << std::endl;
+		std::cerr << *(static_cast<datapacketx86 const*>( bp.pool[i]->platform_state )) << std::endl;
 	}
-#endif
 }
 
 

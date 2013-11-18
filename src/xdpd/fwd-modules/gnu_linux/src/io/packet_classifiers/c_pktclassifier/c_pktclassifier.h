@@ -129,7 +129,7 @@ typedef struct classify_state{
 
 
 //function declarations
-classify_state_t* init_classifier();
+classify_state_t* init_classifier(datapacket_t* pkt);
 void destroy_classifier(classify_state_t* clas_state);
 void classify_packet(classify_state_t* clas_state, uint8_t* pkt, size_t len);
 void reset_classifier(classify_state_t* clas_state);
@@ -382,5 +382,6 @@ void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 //void pkt_pop();
 
 void dump_pkt_classifier(classify_state_t* clas_state);
+size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to);
 
 #endif //_C_PKTCLASSIFIER_H_

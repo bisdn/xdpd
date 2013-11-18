@@ -28,7 +28,7 @@ struct cpc_arpv4_hdr {
 
 typedef struct cpc_arpv4_hdr cpc_arpv4_hdr_t;
 
-#define DEFAULT_ARPV4_FRAME_SIZE sizeof(struct cpc_arpv4_hdr_t)
+//#define DEFAULT_ARPV4_FRAME_SIZE sizeof(struct cpc_arpv4_hdr_t)
 
 inline static
 uint16_t get_ar_hrd(void *hdr){
@@ -81,44 +81,44 @@ void set_ar_op(void *hdr, uint16_t ar_op){
 };
 
 inline static
-uint64_t get_aprv4_dl_dst(void *hdr){
+uint64_t get_dl_arpv4_dst(void *hdr){
 	return mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_dst);
 };
 
 inline static
-void set_aprv4_dl_dst(void* hdr, uint64_t dl_dst){
+void set_dl_arpv4_dst(void* hdr, uint64_t dl_dst){
 	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_dst, dl_dst);
 	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
-uint64_t get_aprv4_dl_src(void* hdr){
+uint64_t get_dl_arpv4_src(void* hdr){
 	return mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_src);
 };
 
 inline static
-void set_aprv4_dl_src(void* hdr, uint64_t dl_src){
+void set_dl_arpv4_src(void* hdr, uint64_t dl_src){
 	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_src, dl_src);
 	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
-uint32_t get_aprv4_ip_src(void *hdr){
+uint32_t get_ip_arpv4_src(void *hdr){
 	return be32toh(((cpc_arpv4_hdr_t *)hdr)->ip_src);
 };
 
 inline static
-void set_aprv4_ip_src(void *hdr, uint16_t ip_src){
+void set_ip_arpv4_src(void *hdr, uint16_t ip_src){
 	((cpc_arpv4_hdr_t*)hdr)->ip_src = CPC_HTOBE16(ip_src);
 };
 
 inline static
-uint16_t get_aprv4_ip_dst(void *hdr){
+uint16_t get_ip_arpv4_dst(void *hdr){
 	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ip_dst);
 };
 
 inline static
-void set_aprv4_ip_dst(void *hdr, uint16_t ip_dst){
+void set_ip_arpv4_dst(void *hdr, uint16_t ip_dst){
 	((cpc_arpv4_hdr_t*)hdr)->ip_dst = CPC_HTOBE16(ip_dst);
 };
 #endif //_CPC_ARPV4_H_

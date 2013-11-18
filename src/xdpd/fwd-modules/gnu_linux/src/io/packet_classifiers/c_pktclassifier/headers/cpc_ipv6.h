@@ -71,34 +71,34 @@ uint8_t get_ipv6_version(void *hdr){
 };
 
 inline static
-void set_traffic_class(void *hdr, uint8_t tc){
+void set_traffic_ipv6_class(void *hdr, uint8_t tc){
 	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0xF0) + ((tc & 0xF0) >> 4);
 	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x0F) + ((tc & 0x0F) << 4);
 }
 
 inline static
-uint8_t get_traffic_class(void *hdr){
+uint8_t get_traffic_ipv6_class(void *hdr){
 	return (uint8_t)(((((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0x0F) << 4) + ((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xF0) >> 4));
 };
 
 inline static
-void set_dscp(void *hdr, uint8_t dscp){
+void set_ipv6_dscp(void *hdr, uint8_t dscp){
 	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0xF0) + ((dscp & 0x3C) >> 2);
 	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x3F) + ((dscp & 0x03) << 6);
 }
 
 inline static
-uint8_t get_dscp(void *hdr){
+uint8_t get_ipv6_dscp(void *hdr){
 	return (uint8_t)(((((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0x0F) << 2) + ((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xC0) >> 6));
 };
 
 inline static
-void set_ecn(void *hdr, uint8_t ecn){
+void set_ipv6_ecn(void *hdr, uint8_t ecn){
 	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xCF) + ((ecn & 0x03) << 4);
 }
 
 inline static
-uint8_t get_ecn(void *hdr){
+uint8_t get_ipv6_ecn(void *hdr){
 	return (uint8_t)((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x30) >> 4);
 };
 

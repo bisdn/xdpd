@@ -10,9 +10,15 @@
 #include <sys/types.h>
 #include <rofl.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <rofl/common/cmemory.h>
+#include <rofl/datapath/pipeline/platform/memory.h>
 
-#include "packet_classifiers/packetclassifier.h"
-#include "packet_classifiers/pktclassifier_interface.h"
+//#define C_PACKET_CLASSIFIER
+#ifdef C_PACKET_CLASSIFIER
+	#include "packet_classifiers/c_pktclassifier/c_pktclassifier.h"
+#else
+	#include "packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
+#endif
 
 /**
 * @file datapacketx86.h
@@ -96,13 +102,7 @@ public: // methods
 	rofl_result_t transfer_to_user_space(void);
 
 	//Header packet classification
-#define C_PACKET_CLASSIFIER
-#ifdef C_PACKET_CLASSIFIER
 	struct classify_state* headers;
-#else
-	friend class packetclassifier;
-	packetclassifier* headers;
-#endif
 
 	//Other	
 	friend std::ostream& operator<<(std::ostream& os, datapacketx86& pack);

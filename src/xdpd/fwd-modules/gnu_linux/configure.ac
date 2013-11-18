@@ -40,6 +40,7 @@ AC_CONFIG_FILES([
 	src/afa-imp/openflow/openflow1x/Makefile
 	src/io/Makefile
 	src/io/packet_classifiers/Makefile
+	src/io/packet_classifiers/cpp_pktclassifier/Makefile
 	src/io/packet_classifiers/c_pktclassifier/Makefile
 	src/io/ports/Makefile
 	src/io/ports/mmap/Makefile

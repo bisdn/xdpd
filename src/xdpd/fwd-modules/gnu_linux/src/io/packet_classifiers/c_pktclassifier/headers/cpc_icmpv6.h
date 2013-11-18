@@ -404,4 +404,13 @@ uint8_t get_pfx_aac_flag(void *hdr){
 	return ((((cpc_icmpv6optu_t*)hdr)->optu_pfx->flags & 0x40) >> 6);
 };
 
+inline static
+void set_pfx_aac_flag(void *hdr, uint8_t flag){
+	if(unlikely(ICMPV6_OPT_PREFIX_INFO != ((cpc_icmpv6optu_t*)hdr)->optu->type)){
+		assert(0);
+		return;
+	}
+	((cpc_icmpv6optu_t*)hdr)->optu_pfx->flags = (((cpc_icmpv6optu_t*)hdr)->optu_pfx->flags & 0xBF) | ((flag & 0x01) << 6);
+};
+
 #endif //_CPC_ICMPV6_H_

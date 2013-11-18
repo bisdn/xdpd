@@ -2,11 +2,11 @@ MAINTAINERCLEANFILES = Makefile.in
 
 #SUBDIRS = headers
 
-noinst_LTLIBRARIES = libfwd_module_gnu_linux_io_classifiers_cpktclassifier.la
+noinst_LTLIBRARIES = libfwd_module_gnu_linux_io_classifiers_c.la
 
-libfwd_module_gnu_linux_io_classifiers_cpktclassifier_ladir = $(includedir)/fwd-modules/gnu_linux/io/packet_classifiers/c_pktclassifier
+libfwd_module_gnu_linux_io_classifiers_c_ladir = $(includedir)/fwd-modules/gnu_linux/io/packet_classifiers/c_pktclassifier
 
-libfwd_module_gnu_linux_io_classifiers_cpktclassifier_la_HEADERS = c_pktclassifier.h \
+libfwd_module_gnu_linux_io_classifiers_c_la_HEADERS = c_pktclassifier.h \
 	cpc_utils.h \
 	headers/cpc_arpv4.h \
 	headers/cpc_ethernet.h \
@@ -22,5 +22,5 @@ libfwd_module_gnu_linux_io_classifiers_cpktclassifier_la_HEADERS = c_pktclassifi
 	headers/cpc_udp.h \
 	headers/cpc_vlan.h
 
-libfwd_module_gnu_linux_io_classifiers_cpktclassifier_la_SOURCES = \
+libfwd_module_gnu_linux_io_classifiers_c_la_SOURCES = \
 	c_pktclassifier.c

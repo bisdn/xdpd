@@ -1,9 +1,9 @@
 #include "datapacketx86.h"
 
 //Include here the classifier you want to use
-#include "packet_classifiers/rofl_pktclassifier.h"
-#include "packet_classifiers/static_pktclassifier.h"
-#include "packet_classifiers/pktclassifier_interface.h"
+#include "packet_classifiers/cpp_pktclassifier/rofl_pktclassifier.h"
+#include "packet_classifiers/cpp_pktclassifier/static_pktclassifier.h"
+#include "packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -12,12 +12,7 @@ using namespace xdpd::gnu_linux;
  */
 
 //Change this if you want to use another classifier
-#ifdef C_PACKET_CLASSIFIER
 typedef struct classify_state pktclassifier;
-#else
-//typedef rofl_pktclassifier pktclassifier;
-typedef static_pktclassifier pktclassifier;
-#endif
 
 //Constructor
 datapacketx86::datapacketx86() :
@@ -36,22 +31,14 @@ datapacketx86::datapacketx86() :
 	extra(NULL),
 	buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY)
 {
-#ifdef C_PACKET_CLASSIFIER
 	headers = init_classifier();
-#else
-	headers = new pktclassifier(this);
-#endif
 }
 
 
 
 datapacketx86::~datapacketx86()
 {
-#ifdef C_PACKET_CLASSIFIER
-	free(headers);
-#else
-	delete headers;
-#endif
+	destroy_classifier(headers);
 }
 
 

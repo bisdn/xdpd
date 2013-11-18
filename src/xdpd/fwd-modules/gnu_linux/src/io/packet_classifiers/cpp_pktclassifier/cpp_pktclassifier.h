@@ -3,8 +3,21 @@
 
 #include <stddef.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "packetclassifier.h"
 
-ROFL_BEGIN_DECLS
+#include "./cpp_headers/cpp_ethernet.h"
+#include "./cpp_headers/cpp_arpv4.h"
+#include "./cpp_headers/cpp_gtpu.h"
+#include "./cpp_headers/cpp_icmpv4.h"
+#include "./cpp_headers/cpp_icmpv6.h"
+#include "./cpp_headers/cpp_ipv4.h"
+#include "./cpp_headers/cpp_ipv6.h"
+#include "./cpp_headers/cpp_mpls.h"
+#include "./cpp_headers/cpp_ppp.h"
+#include "./cpp_headers/cpp_pppoe.h"
+#include "./cpp_headers/cpp_tcp.h"
+#include "./cpp_headers/cpp_udp.h"
+#include "./cpp_headers/cpp_vlan.h"
 
 struct classify_state;
 
@@ -43,8 +56,6 @@ void* push_gtp(datapacket_t* pkt, struct classify_state* clas_state, uint16_t et
 //void pkt_pop();
 
 void dump_pkt_classifier(struct classify_state* clas_state);
-
-ROFL_END_DECLS
-
+size_t get_pkt_len(datapacket_t* pkt, struct classify_state* clas_state, void *from, void *to);
 
 #endif //_C_PKTCLASSIFIER_H_

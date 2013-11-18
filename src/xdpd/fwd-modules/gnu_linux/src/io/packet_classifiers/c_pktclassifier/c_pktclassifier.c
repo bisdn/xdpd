@@ -21,7 +21,7 @@ void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
 
 /// Classify part
 
-classify_state_t* init_classifier(){
+classify_state_t* init_classifier(datapacket_t* pkt){
 	return (classify_state_t*) malloc(sizeof(classify_state_t));
 }
 void destroy_classifier(classify_state_t* clas_state){
@@ -985,5 +985,19 @@ void dump_pkt_classifier(classify_state_t* clas_state){
 	ROFL_DEBUG("Dump packet state(%p) TODO!!\n",clas_state);
 }
 
-//TODO size_t get_pkt_len(rofl::fframe *from, rofl::fframe *to){}
+size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to){
+//TODO
+#if 0
+	unsigned int total_length = get_buffer_length(pkt);
+
+	if(!from)
+		return total_length;
+
+	if(!to)
+		return from->framelen();
+
+	return from->framelen() - to->framelen();
+#endif
+	return 0;
+}
 

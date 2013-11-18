@@ -23,6 +23,7 @@ libfwd_module_gnu_linux_io_la_SOURCES = \
 	iomanager.h
 
 libfwd_module_gnu_linux_io_la_LIBADD = \
-	packet_classifiers/libfwd_module_gnu_linux_io_classifiers.la \
+	packet_classifiers/c_pktclassifier/libfwd_module_gnu_linux_io_classifiers_c.la \
+	packet_classifiers/cpp_pktclassifier/libfwd_module_gnu_linux_io_classifiers_cpp.la \
 	ports/libfwd_module_gnu_linux_io_ports.la \
 	scheduler/libfwd_module_gnu_linux_io_scheduler.la

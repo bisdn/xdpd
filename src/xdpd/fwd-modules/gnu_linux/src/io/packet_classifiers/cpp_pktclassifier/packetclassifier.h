@@ -97,9 +97,6 @@ public:
 	virtual rofl::fmplsframe* push_mpls(datapacket_t* pkt, uint16_t ether_type)=0;
 	virtual rofl::fpppoeframe* push_pppoe(datapacket_t* pkt, uint16_t ether_type)=0;
 	
-	size_t get_buffer_length(datapacket_t* pkt); //platform depending function
-	uint8_t* get_buffer(datapacket_t* pkt); //platform depending function
-	
 	/*
 	* dump
 	*/
@@ -125,6 +122,8 @@ protected:
 	rofl_result_t pkt_push(datapacket_t* pkt, uint8_t* push_point, unsigned int num_of_bytes);
 	rofl_result_t pkt_pop(datapacket_t* pkt, uint8_t* pop_point, unsigned int num_of_bytes);
 	
+	size_t get_buffer_length(datapacket_t* pkt); //platform depending function
+	uint8_t* get_buffer(datapacket_t* pkt); //platform depending function
 	
 };
 

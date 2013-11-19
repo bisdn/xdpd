@@ -1,121 +1,52 @@
 #ifndef _CPP_IPV6_H_
 #define _CPP_IPV6_H_
 
-#include <rofl/common/protocols/fipv6frame.h>
+#include <stdint.h>
+#include <rofl/datapath/pipeline/common/large_types.h>
 
-using namespace rofl;
-using namespace xdpd::gnu_linux;
+void ipv6_calc_checksum(void *hdr, uint16_t length);
 
-inline static
-void ipv6_calc_checksum(void *hdr, uint16_t length){
-	((fipv6frame*)hdr)->ipv6_calc_checksum();
-};
+void set_ipv6_version(void *hdr, uint8_t version);
 
+uint8_t get_ipv6_version(void *hdr);
 
-inline static
-void set_ipv6_version(void *hdr, uint8_t version){
-	((fipv6frame*)hdr)->set_version(version);
-};
+void set_ipv6_traffic_class(void *hdr, uint8_t tc);
 
-inline static
-uint8_t get_ipv6_version(void *hdr){
-	return ((fipv6frame*)hdr)->get_version();
-};
+uint8_t get_ipv6_traffic_class(void *hdr);
 
-inline static
-void set_ipv6_traffic_class(void *hdr, uint8_t tc){
-	((fipv6frame*)hdr)->set_traffic_class(tc);
-}
+void set_ipv6_dscp(void *hdr, uint8_t dscp);
 
-inline static
-uint8_t get_ipv6_traffic_class(void *hdr){
-	return ((fipv6frame*)hdr)->get_traffic_class();
-};
+uint8_t get_ipv6_dscp(void *hdr);
 
-inline static
-void set_ipv6_dscp(void *hdr, uint8_t dscp){
-	((fipv6frame*)hdr)->set_dscp(dscp);
-}
+void set_ipv6_ecn(void *hdr, uint8_t ecn);
 
-inline static
-uint8_t get_ipv6_dscp(void *hdr){
-	return ((fipv6frame*)hdr)->get_dscp();
-};
+uint8_t get_ipv6_ecn(void *hdr);
 
-inline static
-void set_ipv6_ecn(void *hdr, uint8_t ecn){
-	((fipv6frame*)hdr)->set_ecn(ecn);
-}
+void set_flow_label(void *hdr, uint32_t flabel);
 
-inline static
-uint8_t get_ipv6_ecn(void *hdr){
-	return ((fipv6frame*)hdr)->get_ecn();
-};
+uint32_t get_flow_label(void *hdr);
 
-inline static
-void set_flow_label(void *hdr, uint32_t flabel){
-	((fipv6frame*)hdr)->set_flow_label(flabel);
-}
+void set_payload_length(void *hdr, uint16_t len);
 
-inline static
-uint32_t get_flow_label(void *hdr){
-	return ((fipv6frame*)hdr)->get_flow_label();
-};
+uint16_t get_payload_length(void *hdr);
 
-inline static
-void set_payload_length(void *hdr, uint16_t len){
-	((fipv6frame*)hdr)->set_payload_length(len);
-}
+void set_next_header(void *hdr, uint8_t nxthdr);
 
-inline static
-uint16_t get_payload_length(void *hdr){
-	return ((fipv6frame*)hdr)->get_payload_length();
-};
+uint8_t get_next_header(void *hdr);
 
-inline static
-void set_next_header(void *hdr, uint8_t nxthdr){
-	((fipv6frame*)hdr)->set_next_header(nxthdr);
-}
+void set_hop_limit(void *hdr, uint8_t hops);
 
-inline static
-uint8_t get_next_header(void *hdr){
-	return ((fipv6frame*)hdr)->get_next_header();
-};
+uint8_t get_hop_limit(void *hdr);
 
-inline static
-void set_hop_limit(void *hdr, uint8_t hops){
-	((fipv6frame*)hdr)->set_hop_limit(hops);
-}
+void dec_hop_limit(void *hdr);
 
-inline static
-uint8_t get_hop_limit(void *hdr){
-	return ((fipv6frame*)hdr)->get_hop_limit();
-};
+void set_ipv6_src(void *hdr, uint128__t src);
 
-inline static
-void dec_hop_limit(void *hdr){
-	((fipv6frame*)hdr)->dec_hop_limit();
-};
+uint128__t get_ipv6_src(void *hdr);
 
-inline static
-void set_ipv6_src(void *hdr, uint128__t src){
-	((fipv6frame*)hdr)->set_ipv6_src((uint8_t*)&src.val,16);
-};
+void set_ipv6_dst(void *hdr, uint128__t dst);
 
-inline static
-uint128__t get_ipv6_src(void *hdr){
-	return ((fipv6frame*)hdr)->get_ipv6_src().get_ipv6_addr();
-};
-
-inline static
-void set_ipv6_dst(void *hdr, uint128__t dst){
-	((fipv6frame*)hdr)->set_ipv6_dst((uint8_t*)&dst.val,16);
-};
-
-inline static
-uint128__t get_ipv6_dst(void *hdr){
-	return ((fipv6frame*)hdr)->get_ipv6_dst().get_ipv6_addr();
-};
+uint128__t get_ipv6_dst(void *hdr);
 
 
 #endif //_CPP_IPV6_H_

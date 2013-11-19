@@ -1,50 +1,23 @@
 #ifndef _CPP_VLAN_H_
 #define _CPP_VLAN_H_
 
-#include <rofl/common/protocols/fvlanframe.h>
+#include <stdint.h>
 
-using namespace rofl;
-using namespace xdpd::gnu_linux;
+void set_dl_vlan_id(void* hdr, uint16_t vid);
 
-inline static
-void set_dl_vlan_id(void* hdr, uint16_t vid){
-	((fvlanframe*)hdr)->set_dl_vlan_id(vid);
-}
+uint16_t get_dl_vlan_id(void* hdr);
 
-inline static
-uint16_t get_dl_vlan_id(void* hdr){
-	return ((fvlanframe*)hdr)->get_dl_vlan_id();
-}
+void set_dl_vlan_pcp(void* hdr, uint8_t pcp);
 
-inline static
-void set_dl_vlan_pcp(void* hdr, uint8_t pcp){
-	((fvlanframe*)hdr)->set_dl_vlan_pcp(pcp);
-}
+uint16_t get_dl_vlan_pcp(void* hdr);
 
-inline static
-uint16_t get_dl_vlan_pcp(void* hdr){
-	return ((fvlanframe*)hdr)->get_dl_vlan_pcp();
-}
+void set_dl_vlan_cfi(void* hdr, bool cfi);
 
-inline static
-void set_dl_vlan_cfi(void* hdr, bool cfi){
-	((fvlanframe*)hdr)->set_dl_vlan_cfi(cfi);
-}
+bool get_dl_vlan_cfi(void* hdr);
 
-inline static
-bool get_dl_vlan_cfi(void* hdr){
-	return ((fvlanframe*)hdr)->get_dl_vlan_cfi();
-}
+void set_dl_vlan_type(void* hdr, uint16_t dl_type);
 
-inline static
-void set_dl_vlan_type(void* hdr, uint16_t dl_type){
-	((fvlanframe*)hdr)->set_dl_type(dl_type);
-}
-
-inline static
-uint16_t get_dl_vlan_type(void* hdr){
-	return ((fvlanframe*)hdr)->get_dl_type();
-}
+uint16_t get_dl_vlan_type(void* hdr);
 
 
 #endif //_CPP_VLAN_H_

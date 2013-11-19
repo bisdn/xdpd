@@ -336,8 +336,7 @@ platform_packet_get_ipv6_nd_sll(datapacket_t * const pkt)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if((NULL==pkt) || (NULL == icmpv6(pack->headers, 0))) return 0;
 	try{
-		//FIXME
-		return icmpv6(pack->headers, 0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).get_ll_saddr().get_mac();
+		return get_ll_saddr(icmpv6_get_option(icmpv6(pack->headers, 0), ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE));
 	}catch(...){
 		return 0;
 	}
@@ -349,8 +348,7 @@ platform_packet_get_ipv6_nd_tll(datapacket_t * const pkt)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if((NULL==pkt) || (NULL == icmpv6(pack->headers, 0))) return 0;
 	try{
-		//FIXME
-		return icmpv6(pack->headers, 0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).get_ll_taddr().get_mac();
+		return get_ll_taddr(icmpv6_get_option(icmpv6(pack->headers, 0), ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET));
 	}catch(...)	{
 		return 0;
 	}
@@ -797,9 +795,7 @@ platform_packet_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == icmpv6(pack->headers, 0))) return;
-	cmacaddr mac(ipv6_nd_sll);
-	//FIXME 
-	icmpv6(pack->headers, 0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).set_ll_saddr(mac);
+	set_ll_saddr(icmpv6_get_option(icmpv6(pack->headers, 0), ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE), ipv6_nd_sll);
 }
 
 void
@@ -807,9 +803,7 @@ platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == pack) || (NULL == icmpv6(pack->headers, 0))) return;
-	cmacaddr mac(ipv6_nd_tll);
-	//FIXME
-	icmpv6(pack->headers, 0)->get_option(ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).set_ll_taddr(mac);
+	set_ll_taddr(icmpv6_get_option(icmpv6(pack->headers, 0), ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET),ipv6_nd_tll);
 }
 
 void

@@ -1,120 +1,50 @@
 #ifndef _CPP_GTPU_H_
 #define _CPP_GTPU_H_
 
-#include <rofl/common/protocols/fgtpuframe.h>
+#include <stdint.h>
 
-using namespace rofl;
-using namespace xdpd::gnu_linux;
+uint8_t get_gtp_version(void *hdr);
 
+void set_gtp_version(void *hdr, uint8_t version);
 
-inline static
-uint8_t get_gtp_version(void *hdr){
-	return ((fgtpuframe *)hdr)->get_version();
-};
+bool get_pt_flag(void *hdr);
 
-inline static
-void set_gtp_version(void *hdr, uint8_t version){
-	((fgtpuframe *)hdr)->set_version(version);
-};
+void set_pt_flag(void *hdr, bool pt);
 
-inline static
-bool get_pt_flag(void *hdr){
-	return ((fgtpuframe *)hdr)->get_pt_flag(); 
-};
+bool get_e_flag(void *hdr);
 
-inline static
-void set_pt_flag(void *hdr, bool pt){
-	((fgtpuframe *)hdr)->set_pt_flag(pt);
-};
+void set_e_flag(void *hdr, bool e);
 
-inline static
-bool get_e_flag(void *hdr){
-	return ((fgtpuframe *)hdr)->get_e_flag(); 
-};
+bool get_s_flag(void *hdr);
 
-inline static
-void set_e_flag(void *hdr, bool e){
-	((fgtpuframe *)hdr)->set_e_flag(e);
-};
+void set_s_flag(void *hdr, bool s);
 
-inline static
-bool get_s_flag(void *hdr){
-	return ((fgtpuframe *)hdr)->get_s_flag();
-};
+bool get_pn_flag(void *hdr);
 
-inline static
-void set_s_flag(void *hdr, bool s){
-	((fgtpuframe *)hdr)->set_s_flag(s);
-};
+void set_pn_flag(void *hdr, bool pn);
 
-inline static
-bool get_pn_flag(void *hdr){
-	return ((fgtpuframe *)hdr)->get_pn_flag();
-};
+uint8_t get_msg_type(void *hdr);
 
-inline static
-void set_pn_flag(void *hdr, bool pn){
-	((fgtpuframe *)hdr)->set_pn_flag(pn);
-};
+void set_msg_type(void *hdr, uint8_t msgtype);
 
-inline static
-uint8_t get_msg_type(void *hdr){
-	return ((fgtpuframe *)hdr)->get_msg_type();
-};
+uint16_t get_gtp_length(void *hdr);
 
-inline static
-void set_msg_type(void *hdr, uint8_t msgtype){
-	((fgtpuframe *)hdr)->set_msg_type(msgtype);
-};
+void set_gtp_length(void *hdr, uint16_t length);
 
-inline static
-uint16_t get_gtp_length(void *hdr){
-	return ((fgtpuframe *)hdr)->get_length();
-};
+uint32_t get_teid(void *hdr);
 
-inline static
-void set_gtp_length(void *hdr, uint16_t length){
-	((fgtpuframe *)hdr)->set_length(length);
-};
+void set_teid(void *hdr, uint32_t teid);
 
-inline static
-uint32_t get_teid(void *hdr){
-	return ((fgtpuframe *)hdr)->get_teid();
-};
+uint16_t get_seq_no(void *hdr);
 
-inline static
-void set_teid(void *hdr, uint32_t teid){
-	((fgtpuframe *)hdr)->set_teid(teid);
-};
+void set_seq_no(void *hdr, uint16_t seqno);
 
-inline static
-uint16_t get_seq_no(void *hdr){
-	return ((fgtpuframe *)hdr)->get_seq_no();
-};
+uint8_t get_npdu_no(void *hdr);
 
-inline static
-void set_seq_no(void *hdr, uint16_t seqno){
-	((fgtpuframe *)hdr)->set_seq_no(seqno);
-};
+void set_npdu_no(void *hdr, uint8_t npdu);
 
-inline static
-uint8_t get_npdu_no(void *hdr){
-	return ((fgtpuframe *)hdr)->get_npdu_no();
-};
+uint8_t get_ext_type(void *hdr);
 
-inline static
-void set_npdu_no(void *hdr, uint8_t npdu){
-	((fgtpuframe *)hdr)->set_npdu_no(npdu);
-};
-
-inline static
-uint8_t get_ext_type(void *hdr){
-	return ((fgtpuframe *)hdr)->get_ext_type();
-};
-
-inline static
-void set_ext_type(void *hdr, uint8_t exthdr){
-	((fgtpuframe *)hdr)->set_ext_type(exthdr);
-};
+void set_ext_type(void *hdr, uint8_t exthdr);
 
 #endif //_CPP_GTPU_H_

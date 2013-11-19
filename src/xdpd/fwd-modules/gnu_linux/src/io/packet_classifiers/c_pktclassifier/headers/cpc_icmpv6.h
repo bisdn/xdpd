@@ -255,7 +255,7 @@ void icmpv6_calc_checksum(void *hdr, uint16_t length){
 };
 
 inline static
-uint8_t icmpv6_get_option(void *hdr, uint8_t type){
+void *icmpv6_get_option(void *hdr, uint8_t type){
 	//TODO ... return the option of the specified type
 	return 0;
 };

@@ -3,16 +3,21 @@
 #include "rofl_pktclassifier.h"
 #include "static_pktclassifier.h"
 
+
+using xdpd::gnu_linux::static_pktclassifier;
+using xdpd::gnu_linux::rofl_pktclassifier;
+
 //typedef struct classify_state pktclassifier;
 typedef static_pktclassifier pktclassifier;
 
 struct classify_state* init_classifier(){
 	//call constructor
-	return (struct classify_state*) new static_pktclassifier();
+	return (struct classify_state*) new pktclassifier();
 }
 
 void destroy_classifier(struct classify_state* clas_state){
 	//Call destructor
+	delete ((pktclassifier*)clas_state);
 }
 
 void classify_packet(struct classify_state* clas_state, uint8_t* pkt, size_t len){

@@ -3,7 +3,6 @@
 //Include here the classifier you want to use
 #include "packet_classifiers/cpp_pktclassifier/rofl_pktclassifier.h"
 #include "packet_classifiers/cpp_pktclassifier/static_pktclassifier.h"
-#include "packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
 
 using namespace xdpd::gnu_linux;
 

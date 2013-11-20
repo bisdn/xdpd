@@ -1,5 +1,8 @@
 #include "push_pop_operations.h"
 #include "../datapacketx86.h"
+
+// This file is created to let the packet classifiers be independent from the datapacket, which is platform dependent
+
 inline static
 rofl_result_t pkt_push(datapacket_t* pkt, uint8_t* push_point, unsigned int num_of_bytes, unsigned int offset){
 	datapacketx86 *pkt_state = (datapacketx86*)pkt->platform_state;

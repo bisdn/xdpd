@@ -11,12 +11,10 @@ using xdpd::gnu_linux::rofl_pktclassifier;
 typedef static_pktclassifier pktclassifier;
 
 struct classify_state* init_classifier(){
-	//call constructor
 	return (struct classify_state*) new pktclassifier();
 }
 
 void destroy_classifier(struct classify_state* clas_state){
-	//Call destructor
 	delete ((pktclassifier*)clas_state);
 }
 
@@ -29,7 +27,7 @@ void reset_classifier(struct classify_state* clas_state){
 }
 
 
-
+/* Header getters */
 void* ether(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->ether(idx);
 }
@@ -83,7 +81,7 @@ void* gtp(struct classify_state* clas_state, int idx){
 }
 
 
-//push & pop
+/* push & pop */
 void pop_vlan(datapacket_t* pkt, struct classify_state* clas_state){
 	((pktclassifier*)clas_state)->pop_vlan(pkt);
 }

@@ -100,6 +100,7 @@ enum header_type{
 //Just to be on the safe side of life
 //assert( (FIRST_PPP_FRAME_POS + MAX_PPP_FRAMES) == MAX_HEADERS);
 
+ROFL_BEGIN_DECLS
 
 //Header container
 typedef struct header_container{
@@ -387,5 +388,7 @@ void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 
 void dump_pkt_classifier(classify_state_t* clas_state);
 size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to);
+
+ROFL_END_DECLS
 
 #endif //_C_PKTCLASSIFIER_H_

@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _PKTCLASSIFIER_INTERFACE_H_
-#define _PKTCLASSIFIER_INTERFACE_H_
+#ifndef _CPP_PKTCLASSIFIER_H_
+#define _CPP_PKTCLASSIFIER_H_
 
 #include <stddef.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -62,4 +62,4 @@ void* push_gtp(datapacket_t* pkt, struct classify_state* clas_state, uint16_t et
 void dump_pkt_classifier(struct classify_state* clas_state);
 size_t get_pkt_len(datapacket_t* pkt, struct classify_state* clas_state, void *from, void *to);
 
-#endif //_C_PKTCLASSIFIER_H_
+#endif //_CPP_PKTCLASSIFIER_H_

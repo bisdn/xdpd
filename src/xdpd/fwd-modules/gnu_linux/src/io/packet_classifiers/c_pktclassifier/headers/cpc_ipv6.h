@@ -51,11 +51,6 @@ enum ipv6_ext_t {
 	IPV6_IPPROTO_MIPV6			= 135,
 };
 
-/* ipv6 definitions */
-cpc_ipv6_hdr_t 		*ipv6_hdr;		// pointer to pppoe header
-uint8_t 			*ipv6data;		// payload data
-size_t 				ipv6datalen;	// ppp data length
-
 //TODO extension headers
 
 inline static

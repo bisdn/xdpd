@@ -42,12 +42,6 @@ enum ipv4_flag_t {
 	bit_more_fragments	= (1 << 2),
 };
 
-enum ip_proto_t {
-	IPPROTO_ICMP = 1,
-	IPPROTO_TCP = 6,
-	IPPROTO_UDP = 17,
-};
-
 inline static
 void ipv4_calc_checksum(void *hdr){
 	int i;

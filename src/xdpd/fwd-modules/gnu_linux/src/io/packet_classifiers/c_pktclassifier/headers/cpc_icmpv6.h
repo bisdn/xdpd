@@ -15,7 +15,6 @@
 #define IPV6_ADDR_LEN		16
 #define ETHER_ADDR_LEN		6
 
-struct stat;
 enum icmpv6_option_type_t {
 	ICMPV6_OPT_LLADDR_SOURCE 		= 1,
 	ICMPV6_OPT_LLADDR_TARGET 		= 2,
@@ -119,14 +118,13 @@ enum icmpv6_destination_unreachable_code_t {
 	*/
 
 /* ICMPv6 generic header */
-struct cpc_icmpv6_hdr {
+typedef struct cpc_icmpv6_hdr {
 	uint8_t 						type;
 	uint8_t 						code;
 	uint16_t 						checksum;
 	uint8_t 						data[0];
-} __attribute__((packed));
+} __attribute__((packed)) cpc_icmpv6_hdr_t;
 
-typedef struct cpc_icmpv6_hdr cpc_icmpv6_hdr_t;
 
 /**
 	* ICMPv6 error message types
@@ -134,35 +132,35 @@ typedef struct cpc_icmpv6_hdr cpc_icmpv6_hdr_t;
 
 /* ICMPv6 message format for Destination Unreachable */
 struct cpc_icmpv6_dest_unreach_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=133, code=0
-	uint32_t						unused;					// a 32bit value
-	uint8_t							data[0];				// the IP packet
+	cpc_icmpv6_hdr_t		icmpv6_header;		// type=133, code=0
+	uint32_t				unused;			// a 32bit value
+	uint8_t					data[0];		// the IP packet
 } __attribute__((packed));
 
 /* ICMPv6 message format for Packet Too Big */
 struct cpc_icmpv6_pkt_too_big_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=133, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=133, code=0
 	uint32_t						unused;					// a 32bit value
 	uint8_t							data[0];				// the IP packet
 } __attribute__((packed));
 
 /* ICMPv6 message format for Time Exceeded */
 struct cpc_icmpv6_time_exceeded_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=133, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=133, code=0
 	uint32_t						unused;					// a 32bit value
 	uint8_t							data[0];				// the IP packet
 } __attribute__((packed));
 
 /* ICMPv6 message format for Parameter Problem */
 struct cpc_icmpv6_param_problem_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=133, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=133, code=0
 	uint32_t						pointer;				// a 32bit value
 	uint8_t							data[0];				// the IP packet
 } __attribute__((packed));
 
 /* ICMPv6 echo request message format */
 struct cpc_icmpv6_echo_request_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=133, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=133, code=0
 	uint16_t						id;
 	uint16_t 						seqno;
 	uint8_t							data[0];				// arbitrary data
@@ -170,11 +168,12 @@ struct cpc_icmpv6_echo_request_hdr_t {
 
 /* ICMPv6 echo reply message format */
 struct cpc_icmpv6_echo_reply_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=133, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=133, code=0
 	uint16_t						id;
 	uint16_t 						seqno;
 	uint8_t							data[0];				// arbitrary data
 } __attribute__((packed));
+
 
 /**
 	* ICMPv6 NDP message types
@@ -182,14 +181,14 @@ struct cpc_icmpv6_echo_reply_hdr_t {
 
 /* ICMPv6 router solicitation */
 struct cpc_icmpv6_router_solicitation_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=133, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=133, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
 	struct cpc_icmpv6_option_hdr_t	options[0];
 } __attribute__((packed));
 
 /* ICMPv6 router advertisement */
 struct cpc_icmpv6_router_advertisement_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=134, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=134, code=0
 	uint8_t 						cur_hop_limit;
 	uint8_t							flags;
 	uint16_t 						rtr_lifetime;
@@ -200,7 +199,7 @@ struct cpc_icmpv6_router_advertisement_hdr_t {
 
 /* ICMPv6 neighbor solicitation */
 struct cpc_icmpv6_neighbor_solicitation_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=135, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=135, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
 	struct cpc_icmpv6_option_hdr_t	options[0];
@@ -208,7 +207,7 @@ struct cpc_icmpv6_neighbor_solicitation_hdr_t {
 
 /* ICMPv6 neighbor advertisement */
 struct cpc_icmpv6_neighbor_advertisement_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=136, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=136, code=0
 	uint32_t 						flags;
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
 	struct cpc_icmpv6_option_hdr_t	options[0];
@@ -216,13 +215,12 @@ struct cpc_icmpv6_neighbor_advertisement_hdr_t {
 
 /* ICMPv6 redirect message */
 struct cpc_icmpv6_redirect_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_hdr;				// type=137, code=0
+	cpc_icmpv6_hdr_t			icmpv6_header;				// type=137, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
 	uint8_t							daddr[IPV6_ADDR_LEN];	// =destination address
 	struct cpc_icmpv6_option_hdr_t	options[0];
 } __attribute__((packed));
-
 
 /**
 	* ICMPv6 pseudo header
@@ -252,6 +250,7 @@ typedef union cpc_icmpv6u{
 	struct cpc_icmpv6_neighbor_advertisement_hdr_t	*icmpv6u_neighbor_advertisement_hdr;	// ICMPv6 NDP advertisement header
 	struct cpc_icmpv6_redirect_hdr_t				*icmpv6u_redirect_hdr;					// ICMPV6 redirect header
 }cpc_icmpv6u_t;
+
 
 inline static
 void icmpv6_calc_checksum(void *hdr, uint16_t length){

@@ -26,7 +26,7 @@
 struct classify_state;
 
 //function declarations
-struct classify_state* init_classifier();
+struct classify_state* init_classifier(void);
 void destroy_classifier(struct classify_state* clas_state);
 void classify_packet(struct classify_state* clas_state, uint8_t* pkt, size_t len);
 void reset_classifier(struct classify_state* clas_state);

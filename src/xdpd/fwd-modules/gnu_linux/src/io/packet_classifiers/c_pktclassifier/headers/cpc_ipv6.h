@@ -8,7 +8,7 @@
 #include "../cpc_utils.h"
 
 
-struct stat;
+//struct stat;
 struct cpc_ipv6_ext_hdr_t {
 	uint8_t nxthdr;
 	uint8_t len;
@@ -39,7 +39,7 @@ typedef struct cpc_ipv6_hdr cpc_ipv6_hdr_t;
 
 enum ipv6_ext_t {
 	IPV6_IPPROTO_HOPOPT 		= 0,
-	IPV6_IPPROTO_ICMPV4 			= 1,
+	IPV6_IPPROTO_ICMPV4 		= 1,
 	IPV6_IPPROTO_TCP 			= 6,
 	IPV6_IPPROTO_UDP 			= 17,
 	IPV6_IP_PROTO 				= 41,
@@ -50,11 +50,11 @@ enum ipv6_ext_t {
 	IPV6_IPPROTO_OPTS			= 60,
 	IPV6_IPPROTO_MIPV6			= 135,
 };
-/* ipv6 definitions */
 
-cpc_ipv6_hdr_t 					*ipv6_hdr;		// pointer to pppoe header
-uint8_t 								*ipv6data;		// payload data
-size_t 					 				 ipv6datalen;	// ppp data length
+/* ipv6 definitions */
+cpc_ipv6_hdr_t 		*ipv6_hdr;		// pointer to pppoe header
+uint8_t 			*ipv6data;		// payload data
+size_t 				ipv6datalen;	// ppp data length
 
 //TODO extension headers
 

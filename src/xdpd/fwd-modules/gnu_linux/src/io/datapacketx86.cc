@@ -1,8 +1,10 @@
 #include "datapacketx86.h"
 
 //Include here the classifier you want to use
-#include "packet_classifiers/cpp_pktclassifier/rofl_pktclassifier.h"
-#include "packet_classifiers/cpp_pktclassifier/static_pktclassifier.h"
+#ifndef C_PACKET_CLASSIFIER
+	#include "packet_classifiers/cpp_pktclassifier/rofl_pktclassifier.h"
+	#include "packet_classifiers/cpp_pktclassifier/static_pktclassifier.h"
+#endif
 
 using namespace xdpd::gnu_linux;
 

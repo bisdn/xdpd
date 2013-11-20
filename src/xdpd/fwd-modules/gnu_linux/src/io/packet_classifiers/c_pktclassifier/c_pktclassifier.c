@@ -21,7 +21,7 @@ void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
 
 /// Classify part
 
-classify_state_t* init_classifier(datapacket_t* pkt){
+classify_state_t* init_classifier(){
 	return (classify_state_t*) malloc(sizeof(classify_state_t));
 }
 void destroy_classifier(classify_state_t* clas_state){

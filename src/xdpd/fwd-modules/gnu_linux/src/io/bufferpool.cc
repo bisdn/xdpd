@@ -213,30 +213,3 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 	else
 		ROFL_DEBUG("OK\n", new_capacity);
 }
-
-
-/*static*/void
-bufferpool::dump_state() {
-	bufferpool& bp = *(bufferpool::get_instance());
-	std::cerr << bp << std::endl;
-}
-
-
-/*static*/void
-bufferpool::dump_slots() {
-	bufferpool& bp = *(bufferpool::get_instance());
-	for (long long unsigned int i = 0; i < bp.pool_size; i++) {
-		std::cerr << *(static_cast<datapacketx86 const*>( bp.pool[i]->platform_state )) << std::endl;
-	}
-}
-
-
-/*static*/void
-bufferpool::reset() {
-	bufferpool& bp = *(bufferpool::get_instance());
-	for (long long unsigned int i = 0; i < bp.pool_size; i++) {
-		if (bp.pool_status[i] == BUFFERPOOL_SLOT_IN_USE)
-			bufferpool::release_buffer(bp.pool[i]);
-	}
-}
-

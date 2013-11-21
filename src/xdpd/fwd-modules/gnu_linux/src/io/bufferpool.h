@@ -72,7 +72,41 @@ public:
 	
 	static void destroy();
 
-	
+	//Only used in debug	
+	friend std::ostream&
+	operator<< (std::ostream& os, bufferpool const& bp) {
+		os << "<bufferpool: ";
+			os << "pool-size:" << bp.pool_size << " ";
+			os << "next-index:" << bp.next_index << " ";
+			for (long long unsigned int i = 0; i < bp.pool_size; i++) {
+				if (bp.pool_status[i] == BUFFERPOOL_SLOT_AVAILABLE)
+					os << ".";
+				else if (bp.pool_status[i] == BUFFERPOOL_SLOT_IN_USE)
+					os << "b";
+				else
+					os << "u";
+				if (((i+1) % 8) == 0)
+					os << " ";
+				if (((i+1) % 32) == 0)
+					os << "  ";
+				if (((i+1) % 128) == 0)
+					os << std::endl;
+			}
+		os << ">";
+		return os;
+	};
+
+	static void dump_state(void){
+		bufferpool& bp = *(bufferpool::get_instance());
+		std::cerr << bp << std::endl;
+	};
+	static void dump_slots(void){
+		bufferpool& bp = *(bufferpool::get_instance());
+		for (long long unsigned int i = 0; i < bp.pool_size; i++) {
+			std::cerr << *(static_cast<datapacketx86 const*>( bp.pool[i]->platform_state )) << std::endl;
+		}
+	};
+
 protected:
 
 	//Singleton instance
@@ -98,35 +132,6 @@ protected:
 
 	//get instance
 	static inline bufferpool* get_instance(void);
-
-public:
-
-	friend std::ostream&
-	operator<< (std::ostream& os, bufferpool const& bp) {
-		os << "<bufferpool: ";
-			os << "pool-size:" << bp.pool_size << " ";
-			os << "next-index:" << bp.next_index << " ";
-			for (long long unsigned int i = 0; i < bp.pool_size; i++) {
-				if (bp.pool_status[i] == BUFFERPOOL_SLOT_AVAILABLE)
-					os << ".";
-				else if (bp.pool_status[i] == BUFFERPOOL_SLOT_IN_USE)
-					os << "b";
-				else
-					os << "u";
-				if (((i+1) % 8) == 0)
-					os << " ";
-				if (((i+1) % 32) == 0)
-					os << "  ";
-				if (((i+1) % 128) == 0)
-					os << std::endl;
-			}
-		os << ">";
-		return os;
-	};
-
-	static void dump_state();
-	static void dump_slots();
-	static void reset();
 };
 
 /*

@@ -15,6 +15,9 @@
 #include "../util/likely.h"
 #include "datapacketx86.h"
 
+//Profiling
+#include "../util/time_measurements.h"
+
 /**
 * @file bufferpool.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
@@ -180,7 +183,10 @@ datapacket_t* bufferpool::get_free_buffer(bool blocking){
 	
 				//Release
 				pthread_mutex_unlock(&bufferpool::mutex);		
-			
+		
+				//Timestamp S0	
+				TM_STAMP_STAGE(bp->pool[i], TM_S0);
+	
 				//return buffer 
 				return bp->pool[i];
 			}else{

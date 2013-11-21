@@ -12,6 +12,9 @@
 #include "../bufferpool.h"
 #include "../../util/circular_queue.h"
 
+//Profiling
+#include "../../util/time_measurements.h"
+
 /*
 * 
 * Implements a simple WRR scheduling algorithm within port-group 
@@ -69,12 +72,19 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 				* Push packet to the logical switch queue. 
 				* If not successful (congestion), drop it!
 				*/
+				//Timestamp S3_PRE
+				TM_STAMP_STAGE(pkt, TM_S3_PRE);
+	
 				if( sw_queue->non_blocking_write(pkt) != ROFL_SUCCESS ){
 					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 					bufferpool::release_buffer(pkt);
+				
+					TM_STAMP_STAGE(pkt, TM_S3_FAILURE);
 				}else{
+					TM_STAMP_STAGE(pkt, TM_S3_SUCCESS);
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) scheduled for process -> sw: %s\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
+					
 				}
 					
 #ifdef DEBUG

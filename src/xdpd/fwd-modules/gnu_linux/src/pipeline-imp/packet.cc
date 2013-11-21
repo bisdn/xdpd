@@ -32,6 +32,9 @@
 #include "../io/bufferpool.h"
 #include "../io/ports/ioport.h"
 
+//Profiling
+#include "../util/time_measurements.h"
+
 using namespace rofl;
 using namespace xdpd::gnu_linux;
 
@@ -483,6 +486,9 @@ uint32_t
 platform_packet_get_gtp_teid(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	
+	TM_STAMP_STAGE(pkt, TM_S5);
+	
 	if ((NULL == pack) || (NULL == pack->headers->gtp(0))) return 0;
 	return pack->headers->gtp(0)->get_teid();
 }
@@ -1015,6 +1021,8 @@ static void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_
 		of1x_dump_packet_matches(&pkt->matches);
 #endif
 
+		TM_STAMP_STAGE(pkt, TM_SA6_PRE);
+		
 		//Schedule in the port
 		ioport* ioport_inst = (ioport*)port->platform_port_state; 
 		ioport_inst->enqueue_packet(pkt, pack->output_queue);

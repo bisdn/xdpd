@@ -118,17 +118,3 @@ datapacket_storage::dump_slots()
 		std::cerr << std::endl;
 	}
 }
-
-
-void
-datapacket_storage::reset()
-{
-	while (not store.empty()) {
-		store_mapping& map = store.front();
-		datapacket_t *pkt = get_packet(map.id);
-		if (NULL != pkt)
-			bufferpool::release_buffer(pkt);
-	}
-}
-
-

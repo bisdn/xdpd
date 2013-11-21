@@ -16,7 +16,6 @@
 #include <pthread.h>
 
 #include <rofl/datapath/pipeline/common/datapacket.h>
-#include "bufferpool.h"
 
 /**
 * @file datapacket_storage.h
@@ -64,7 +63,7 @@ public:
 	 * @param id
 	 * @return
 	 */
-	datapacket_t *
+	datapacket_t*
 	get_packet(storeid id);
 
 	/**
@@ -84,6 +83,21 @@ public:
 #ifdef DEBUG
 	void change_expiration_time(uint16_t sec);
 #endif
+
+	//Used only for debugging purposes
+	void dump_state();
+	void dump_slots();
+
+	friend std::ostream&
+	operator<< (std::ostream& os, datapacket_storage const& ds) {
+		os << "<datapacket_storage: ";
+			os << "max-size:" << (int)ds.max_size << " ";
+			os << "expiration-time-sec:" << (int)ds.expiration_time_sec << " ";
+			os << "store.size():" << (int)ds.store.size() << " ";
+			os << "now:" << time(NULL) << " ";
+		os << ">";
+		return os;
+	};
 
 	//Define error constant
 	static const storeid ERROR = 0xFFFFFFFF;
@@ -105,23 +119,6 @@ private:
 	// this class is noncopyable
 	datapacket_storage(const datapacket_storage&);
 	datapacket_storage& operator=(const datapacket_storage&);
-
-public:
-
-	friend std::ostream&
-	operator<< (std::ostream& os, datapacket_storage const& ds) {
-		os << "<datapacket_storage: ";
-			os << "max-size:" << (int)ds.max_size << " ";
-			os << "expiration-time-sec:" << (int)ds.expiration_time_sec << " ";
-			os << "store.size():" << (int)ds.store.size() << " ";
-			os << "now:" << time(NULL) << " ";
-		os << ">";
-		return os;
-	};
-
-	void dump_state();
-	void dump_slots();
-	void reset();
 };
 
 }// namespace xdpd::gnu_linux 

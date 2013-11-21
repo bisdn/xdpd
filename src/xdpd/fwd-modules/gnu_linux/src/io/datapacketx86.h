@@ -13,7 +13,6 @@
 #include <rofl/common/cmemory.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 
-#define C_PACKET_CLASSIFIER
 #ifdef C_PACKET_CLASSIFIER
 	#include "packet_classifiers/c_pktclassifier/c_pktclassifier.h"
 #else

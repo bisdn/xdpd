@@ -25,6 +25,8 @@
 
 struct classify_state;
 
+ROFL_BEGIN_DECLS
+
 //function declarations
 struct classify_state* init_classifier(void);
 void destroy_classifier(struct classify_state* clas_state);
@@ -61,5 +63,7 @@ void* push_gtp(datapacket_t* pkt, struct classify_state* clas_state, uint16_t et
 
 void dump_pkt_classifier(struct classify_state* clas_state);
 size_t get_pkt_len(datapacket_t* pkt, struct classify_state* clas_state, void *from, void *to);
+
+ROFL_END_DECLS
 
 #endif //_CPP_PKTCLASSIFIER_H_

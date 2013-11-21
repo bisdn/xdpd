@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <rofl/common/utils/c_logger.h>
+#include <rofl/datapath/pipeline/common/datapacket.h>
 #include <string.h>
 #include <rofl.h>
 #include <inttypes.h>
@@ -80,7 +81,7 @@ typedef struct{
 */
 extern time_measurements_t global_measurements;
 
-#ifdef DEBUG_TIME_PROFILING
+#ifdef ENABLE_TIME_MEASUREMENTS
 
 	//Extern C
 	ROFL_BEGIN_DECLS
@@ -250,6 +251,7 @@ extern time_measurements_t global_measurements;
 	}
 
 	void tm_dump_measurements(void);
+	void tm_dump_pkt(struct datapacket* pkt)  __attribute__((used));
 
 	//Extern C
 	ROFL_END_DECLS
@@ -290,7 +292,7 @@ extern time_measurements_t global_measurements;
 	//Dump measurements stats
 	#define TM_DUMP_MEASUREMENTS() tm_dump_measurements()	
 
-#else //DEBUG_TIME_PROFILING
+#else //ENABLE_TIME_MEASUREMENTS
 
 	//Define empty macros
 	#define TM_PKT_STATE 
@@ -302,5 +304,5 @@ extern time_measurements_t global_measurements;
 	#define TM_DUMP_MEASUREMENTS(...) do{}while(0)
 
 
-#endif //DEBUG_TIME_PROFILING
+#endif //ENABLE_TIME_MEASUREMENTS
 #endif /* TIME_PROFILING_H_ */

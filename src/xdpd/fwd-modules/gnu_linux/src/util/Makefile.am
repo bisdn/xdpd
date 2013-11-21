@@ -13,7 +13,7 @@ libfwd_module_gnu_linux_util_la_HEADERS = \
 libfwd_module_gnu_linux_util_la_SOURCES = \
 	circular_queue.h \
 	time_measurements.h\
-	time_measurements.c\
+	time_measurements.cc\
 	time_utils.h\
 	time_utils.c\
 	safevector.h 

@@ -96,7 +96,7 @@
 
 //Only enable if you want to profile code. This MUST NOT
 //be enabled in "production"
-//#define DEBUG_TIME_PROFILING
+//#define ENABLE_TIME_MEASUREMENTS
 
 
 

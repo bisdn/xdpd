@@ -1,12 +1,13 @@
 #include "time_measurements.h"
+#include "../io/datapacketx86.h"
 
 //Initialize global stats
 time_measurements_t global_measurements = {0};
 
-char* stage_names[TM_MAX] = {"", 				//S0
+const char* stage_names[TM_MAX] = {"Allocation\t",		//S0
 			"RX memcpy\t\t", 			//S1
 			"Header classification\t", 		//S2
-			"",					//S3_PRE	
+			"Pre-enqueue to switch",		//S3_PRE	
 			"Enqueue to switch (SUCCESS)",  	//S3_SUCCESS
 			"Enqueue to switch (FAILURE)",  	//S3_FAILURE
 			"Stayed in sw queue(**)\t",  		//S4
@@ -146,3 +147,47 @@ void tm_dump_measurements(void){
 	ROFL_INFO("Total Dropped trying to enqueue to output port(s): %u (%.2f%%)\n",global_measurements.total_SA6_dropped_pkts, ((float)global_measurements.total_SA6_dropped_pkts/global_measurements.total_pkts*100));
 	ROFL_INFO("Total Dropped trying to enqueue to PKT_IN queue: %u (%.2f%%)\n\n",global_measurements.total_SB6_dropped_pkts, ((float)global_measurements.total_SB6_dropped_pkts/global_measurements.total_pkts*100));
 }
+
+#ifdef ENABLE_TIME_MEASUREMENTS
+//Dumps the path of a packet through the GNU/Linux forwarding module (useful when debugging)
+void tm_dump_pkt(datapacket_t* pkt){
+
+	unsigned int i,j;	
+	time_measurements_t* tm = &((xdpd::gnu_linux::datapacketx86*)pkt->platform_state)->tm_state;
+	
+	ROFL_INFO("Dumping path of pkt (%p)", pkt);
+	if(tm->pkt_out)
+		ROFL_INFO(" [PKT_OUT]");
+	ROFL_INFO(":\n");
+
+	//Do the calculations for stage time
+	for(i=0,j=0;i<TM_MAX;i++){
+			
+		if(!tm->current[i])
+			continue;
+
+		switch(i){
+			case TM_S0:
+			case TM_S1:
+			case TM_S2:
+			case TM_S3_PRE:
+			case TM_S3_SUCCESS:
+			case TM_S3_FAILURE:
+			case TM_S4:
+			case TM_S5:
+			case TM_SA6_PRE:
+			case TM_SA6_SUCCESS:
+			case TM_SA6_FAILURE:
+			case TM_SB6_PRE:
+			case TM_SB6_SUCCESS:
+			case TM_SB6_FAILURE:
+			case TM_SA7:
+			case TM_SA8:
+				ROFL_INFO("[%u] %s(%u)\n", j, stage_names[i], tm->current[i]);	
+				j++;
+				break;
+		}
+	}
+		
+}
+#endif

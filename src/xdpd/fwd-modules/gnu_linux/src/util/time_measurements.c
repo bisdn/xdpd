@@ -17,7 +17,7 @@ char* stage_names[TM_MAX] = {"", 				//S0
 			"Pipeline processing (no-match)",	//SB6_PRE
 			"Enqueue PKT_IN queue (SUCCESS)",	//SB6_SUCCESS
 			"Enqueue PKT_IN queue (FAILURE)",	//SB6_FAILURE
-			"Stayed in output queue(**)",	//SA7
+			"Stayed in output queue(**)",		//SA7
 			"TX memcpy\t\t",			//SA8
 			};
 

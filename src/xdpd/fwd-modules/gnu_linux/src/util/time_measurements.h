@@ -12,6 +12,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include "../config.h"
+#include "likely.h"
 
 /**
 * @file time_profiling.h
@@ -47,7 +48,6 @@ typedef enum{
 	TM_SA7,		//TX dequeue
 	TM_SA8,		//Packet copied #END
 		
-
 	TM_MAX,		//Must be the last one
 }time_stages_t;
 
@@ -72,6 +72,7 @@ typedef struct{
 	bool s2_reached;
 	bool s5_reached;
 	bool sb6_reached; //pkt_in
+	bool pkt_out; 
 }time_measurements_t;
 
 /*
@@ -111,8 +112,12 @@ extern time_measurements_t global_measurements;
 	}
 
 	inline void tm_stamp_stage(time_measurements_t* tm, time_stages_t stage){
-
-		uint64_t now = rdtsc();
+		uint64_t now;
+		if(unlikely(tm->pkt_out)){
+			return;
+		}
+		
+		now = rdtsc();
 
 		switch(stage){
 			case TM_S0:
@@ -120,6 +125,7 @@ extern time_measurements_t global_measurements;
 				tm->s2_reached = false;
 				tm->s5_reached = false;
 				tm->sb6_reached = false;
+				tm->pkt_out = false;
 				//fprintf(stderr, "************\n");
 				break;
 			case TM_S1:
@@ -271,6 +277,12 @@ extern time_measurements_t global_measurements;
 			tm_stamp_stage(&pkt_dpx86->tm_state , stage);\
 		}while(0)
 
+	//Stamp as PKT_OUT (ignore)
+	#define TM_STAMP_PKT_OUT(pkt_p)\
+		do{\
+			((datapacketx86*)pkt_p->platform_state)->tm_state.pkt_out = true;\
+		}while(0)
+
 
 	//PKT accumulation to general counters
 	#define TM_AGGREGATE_PKT(pkt_p) tm_aggregate_pkt(& ( ( (datapacketx86*) pkt_p->platform_state ) ->tm_state ))	
@@ -285,6 +297,7 @@ extern time_measurements_t global_measurements;
 	#define TM_INIT_PKT(...) do{}while(0)
 	#define TM_STAMP_STAGE(...) do{}while(0)
 	#define TM_STAMP_STAGE_DPX86(...) do{}while(0)
+	#define TM_STAMP_PKT_OUT(...) do{}while(0)
 	#define TM_AGGREGATE_PKT(...) do{}while(0)
 	#define TM_DUMP_MEASUREMENTS(...) do{}while(0)
 

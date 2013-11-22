@@ -151,25 +151,29 @@ void dec_hop_limit(void *hdr){
 inline static
 void set_ipv6_src(void *hdr, uint128__t src){
 	uint128__t *ptr=(uint128__t*)&(((cpc_ipv6_hdr_t*)hdr)->src);
-	*ptr = CPC_SWAP_U128(src);//htobe128
+	CPC_SWAP_U128(src);//htobe128
+	*ptr = src;
 };
 
 inline static
 uint128__t get_ipv6_src(void *hdr){
 	uint128__t src=*(uint128__t*)(((cpc_ipv6_hdr_t*)hdr)->src);
-	return CPC_SWAP_U128(src);//htobe128
+	CPC_SWAP_U128(src);//htobe128
+	return src;
 };
 
 inline static
 void set_ipv6_dst(void *hdr, uint128__t dst){
 	uint128__t *ptr=(uint128__t*)&(((cpc_ipv6_hdr_t*)hdr)->dst);
-	*ptr = CPC_SWAP_U128(dst);//htobe128
+	CPC_SWAP_U128(dst);//htobe128
+	*ptr = dst;
 };
 
 inline static
 uint128__t get_ipv6_dst(void *hdr){
 	uint128__t dst=*(uint128__t*)(((cpc_ipv6_hdr_t*)hdr)->dst);
-	return CPC_SWAP_U128(dst);//htobe128
+	CPC_SWAP_U128(dst);//htobe128
+	return dst;
 };
 
 

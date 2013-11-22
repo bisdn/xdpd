@@ -88,7 +88,7 @@ uint32_t get_ipv4_src(void *hdr){
 
 inline static
 void set_ipv4_dst(void *hdr, uint32_t dst){
-	((cpc_ipv4_hdr_t*)hdr)->src = CPC_HTOBE32(dst);
+	((cpc_ipv4_hdr_t*)hdr)->dst = CPC_HTOBE32(dst);
 };
 
 inline static

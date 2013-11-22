@@ -5,6 +5,7 @@
 #ifndef _CPC_ETERNET_H_
 #define _CPC_ETERNET_H_
 
+#include <string.h>
 #include "../cpc_utils.h"
 
 #define DEFAULT_ETHER_FRAME_SIZE 1518
@@ -12,18 +13,24 @@
 
 static inline
 uint64_t mac_addr_to_u64(uint8_t *mac){
-	uint32_t *p32 = (uint32_t*)mac;
-	uint16_t *p16 = (uint16_t*)(&mac[4]);
-	return (uint64_t)*p32 + (((uint64_t)*p16)<<32);
+	//uint32_t *p32 = (uint32_t*)mac;
+	//uint16_t *p16 = (uint16_t*)(&mac[4]);
+	uint64_t *p64 = (uint64_t*)mac;
+	
+	//return (uint64_t)*p32 + (((uint64_t)*p16)<<32);
+	return (*p64 & 0x0000ffffffffffff);
 };
 
 static inline
 void u64_to_mac_ptr(uint8_t *mac, uint64_t val){
-	uint32_t *p32 = (uint32_t*) mac;
-	uint16_t *p16 = (uint16_t*) (&mac[4]);
+	//uint32_t *p32 = (uint32_t*) mac;
+	//uint16_t *p16 = (uint16_t*) (&mac[4]);
+	//uint64_t *p64 = (uint64_t*) mac;
 	
-	*p32 = (uint32_t)(val&0x00000000ffffffff);
-	*p16 = (uint16_t)((val&0x0000ffff00000000)>>32);
+	//*p32 = (uint32_t)(val&0x00000000ffffffff);
+	//*p16 = (uint16_t)((val&0x0000ffff00000000)>>32);
+	//*p64 |= (val&0x0000ffffffffffff);
+	memcpy(mac,&val,6);
 };
 
 /* Ethernet constants and definitions */
@@ -40,24 +47,28 @@ typedef struct cpc_eth_hdr cpc_eth_hdr_t;
 
 inline static
 uint64_t get_dl_eth_dst(void *hdr){
-	return mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_dst);
+	uint64_t ret = mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_dst);
+	CPC_SWAP_MAC(ret);
+	return ret;
 };
 
 inline static
 void set_dl_eth_dst(void* hdr, uint64_t dl_dst){
+	CPC_SWAP_MAC(dl_dst);
 	u64_to_mac_ptr( ((cpc_eth_hdr_t*)hdr)->dl_dst, dl_dst);
-	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
 uint64_t get_dl_eth_src(void* hdr){
-	return mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_src);
+	uint64_t ret = mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_src);
+	CPC_SWAP_MAC(ret);
+	return ret;
 };
 
 inline static
 void set_dl_eth_src(void* hdr, uint64_t dl_src){
+	CPC_SWAP_MAC(dl_src);
 	u64_to_mac_ptr( ((cpc_eth_hdr_t*)hdr)->dl_src, dl_src);
-	//TODO is the mac also swapped to host byte order?
 };
 
 inline static

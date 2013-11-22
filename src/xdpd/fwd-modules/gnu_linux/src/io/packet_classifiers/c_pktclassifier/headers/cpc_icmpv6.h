@@ -303,7 +303,8 @@ uint128__t get_icmpv6_neighbor_taddr(void *hdr){
 			assert(0);
 			break;
 	}
-	return CPC_SWAP_U128(addr); //be128toh
+	CPC_SWAP_U128(addr); //be128toh
+	return addr;
 };
 
 inline static
@@ -324,7 +325,8 @@ void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 			assert(0);
 			break;
 	}
-	*ptr = CPC_SWAP_U128(taddr); //htobe128
+	CPC_SWAP_U128(taddr); //htobe128
+	*ptr = taddr;
 };
 
 //ndp_rtr_flag
@@ -350,8 +352,9 @@ uint64_t get_ll_taddr(void *hdr){
 		assert(0);
 		return 0;
 	}
-	
-	return mac_addr_to_u64(((cpc_icmpv6optu_t*)hdr)->optu_lla->addr);
+	uint64_t ret =mac_addr_to_u64(((cpc_icmpv6optu_t*)hdr)->optu_lla->addr);
+	CPC_SWAP_MAC(ret);
+	return ret;
 };
 
 inline static
@@ -359,6 +362,7 @@ void set_ll_taddr(void *hdr, uint64_t taddr){
 	if(unlikely(ICMPV6_OPT_LLADDR_TARGET != ((cpc_icmpv6optu_t*)hdr)->optu->type)){
 		assert(0);
 	}
+	CPC_SWAP_MAC(taddr);
 	u64_to_mac_ptr(((cpc_icmpv6optu_t*)hdr)->optu_lla->addr,taddr);
 };
 
@@ -368,8 +372,9 @@ uint64_t get_ll_saddr(void *hdr){
 		assert(0);
 		return 0;
 	}
-	
-	return mac_addr_to_u64(((cpc_icmpv6optu_t*)hdr)->optu_lla->addr);
+	uint64_t ret =mac_addr_to_u64(((cpc_icmpv6optu_t*)hdr)->optu_lla->addr);
+	CPC_SWAP_MAC(ret);
+	return ret;
 };
 
 inline static
@@ -377,6 +382,7 @@ void set_ll_saddr(void *hdr, uint64_t saddr){
 	if(unlikely(ICMPV6_OPT_LLADDR_SOURCE != ((cpc_icmpv6optu_t*)hdr)->optu->type)){
 		assert(0);
 	}
+	CPC_SWAP_MAC(saddr);
 	u64_to_mac_ptr(((cpc_icmpv6optu_t*)hdr)->optu_lla->addr,saddr);
 };
 

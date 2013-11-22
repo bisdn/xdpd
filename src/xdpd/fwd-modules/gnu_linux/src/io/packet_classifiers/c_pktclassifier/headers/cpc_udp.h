@@ -46,11 +46,13 @@ void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 	* part -I- (IPv4 pseudo header)
 	*/
 	
-	word16 = (uint16_t*)(void*)&ip_src; //NOTE endianess
+	ip_src = CPC_BE32TOH(ip_src);
+	word16 = (uint16_t*)(void*)&ip_src;
 	sum += *(word16+1);
 	sum += *(word16);
 
-	word16 = (uint16_t*)(void*)&ip_dst; //NOTE endianess
+	ip_dst = CPC_BE32TOH(ip_dst);
+	word16 = (uint16_t*)(void*)&ip_dst;
 	sum += *(word16+1);
 	sum += *(word16);
 	sum += htobe16(ip_proto);

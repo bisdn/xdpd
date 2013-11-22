@@ -8,6 +8,12 @@
 #include <rofl/common/endian_conversion.h>
 #include <rofl/datapath/pipeline/common/large_types.h>
 
+#define SWAP_MAC(x) do{ \
+	x=__bswap_64(x); \
+	x>>=16; \
+}while(0)
+
+#define CPC_IN_HOSTBYTEORDER
 #ifdef CPC_IN_HOSTBYTEORDER
 #  define CPC_HTOBE16(x) htobe16(x)
 #  define CPC_HTOLE16(x) htole16(x)
@@ -25,9 +31,11 @@
 #  define CPC_LE64TOH(x) le64toh(x)
 
 #	if __BYTE_ORDER == __LITTLE_ENDIAN
-#		define CPC_SWAP_U128(x) SWAP_U128(x); //htobe128
+#		define CPC_SWAP_U128(x) SWAP_U128(x)
+#		define CPC_SWAP_MAC(x) SWAP_MAC(x)
 #	else
-#		define CPC_SWAP_U128(x) (x)
+#		define CPC_SWAP_U128(x)
+#		define CPC_SWAP_MAC(x)
 #	endif
 
 #else
@@ -46,8 +54,8 @@
 #  define CPC_BE64TOH(x) (x)
 #  define CPC_LE64TOH(x) (x)
 
-# define CPC_SWAP_U128(x) (x)
+#  define CPC_SWAP_U128(x)
+#  define CPC_SWAP_MAC(x)
 #endif
-
 
 #endif //_CPC_UTILS_

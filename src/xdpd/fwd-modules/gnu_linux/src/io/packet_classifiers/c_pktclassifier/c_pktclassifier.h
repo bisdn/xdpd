@@ -110,11 +110,13 @@ typedef struct header_container{
 	
 	//Header pointer
 	void* frame;
-	enum header_type type; 
-
+	size_t length;
+	
+	//NOTE not used:
+	//enum header_type type;
 	//Pseudo-linked list pointers (short-cuts)
-	struct header_container* prev;
-	struct header_container* next;
+	//struct header_container* prev;
+	//struct header_container* next;
 }header_container_t;
 
 typedef struct classify_state{
@@ -388,6 +390,47 @@ void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 
 void dump_pkt_classifier(classify_state_t* clas_state);
 size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to);
+
+//shifts
+inline static 
+void shift_ether(classify_state_t* clas_state, int idx, ssize_t bytes){
+	//NOTE if bytes id < 0 the header will be shifted left, if it is > 0, right
+	unsigned int pos;
+	if(idx > (int)MAX_ETHER_FRAMES)
+		return;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_ETHER_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_ETHER] - 1;
+	else
+		pos = FIRST_ETHER_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present){
+		clas_state->headers[pos].frame = (uint8_t*)(clas_state->headers[pos].frame) + bytes;
+		clas_state->headers[pos].length += bytes;
+	}
+}
+
+inline static
+void shift_vlan(classify_state_t* clas_state, int idx, ssize_t bytes){
+	//NOTE if bytes id < 0 the header will be shifted left, if it is > 0, right
+	unsigned int pos;	
+
+	if(idx > (int)MAX_VLAN_FRAMES)
+		return;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_VLAN_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_VLAN] - 1;
+	else
+		pos = FIRST_VLAN_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present){
+		clas_state->headers[pos].frame = (uint8_t*)(clas_state->headers[pos].frame) + bytes;
+		clas_state->headers[pos].length += bytes;
+	}
+}
+
 
 ROFL_END_DECLS
 

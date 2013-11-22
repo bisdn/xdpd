@@ -112,8 +112,8 @@ public: // methods
 	/*
 	* Push&pop raw operations. To be used ONLY by classifiers
 	*/
-	rofl_result_t push(unsigned int num_of_bytes, unsigned int offset = 0);
-	rofl_result_t pop(unsigned int num_of_bytes, unsigned int offset = 0);
+	rofl_result_t push(unsigned int offset, unsigned int num_of_bytes);
+	rofl_result_t pop(unsigned int offset, unsigned int num_of_bytes);
 
 	rofl_result_t push(uint8_t* push_point, unsigned int num_of_bytes);
 	rofl_result_t pop(uint8_t* pop_point, unsigned int num_of_bytes);

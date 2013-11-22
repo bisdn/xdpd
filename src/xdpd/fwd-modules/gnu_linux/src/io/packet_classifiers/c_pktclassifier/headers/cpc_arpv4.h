@@ -86,24 +86,28 @@ void set_ar_op(void *hdr, uint16_t ar_op){
 
 inline static
 uint64_t get_dl_arpv4_dst(void *hdr){
-	return mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_dst);
+	uint64_t ret = mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_dst);
+	CPC_SWAP_MAC(ret);
+	return ret;
 };
 
 inline static
 void set_dl_arpv4_dst(void* hdr, uint64_t dl_dst){
+	CPC_SWAP_MAC(dl_dst);
 	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_dst, dl_dst);
-	//TODO is the mac also swapped to host byte order?
 };
 
 inline static
 uint64_t get_dl_arpv4_src(void* hdr){
-	return mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_src);
+	uint64_t ret = mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_src);
+	CPC_SWAP_MAC(ret);
+	return ret;
 };
 
 inline static
 void set_dl_arpv4_src(void* hdr, uint64_t dl_src){
+	CPC_SWAP_MAC(dl_src);
 	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_src, dl_src);
-	//TODO is the mac also swapped to host byte order?
 };
 
 inline static

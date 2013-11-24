@@ -1072,8 +1072,6 @@ of12_endpoint::handle_group_mod(
 	 * 3- call driver function?
 	 */
 
-	WRITELOG(CDATAPATH, DBG, "of12_endpoint::handle_group_mod() => buckets: %s\n", msg->get_buckets().c_str());
-
 #if 0
 	// sanity check: check for invalid actions => FIXME: fake for oftest12, there are numerous
 	// combinations, where an action list may be invalid, especially when heterogeneous tables

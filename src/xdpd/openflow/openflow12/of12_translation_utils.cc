@@ -879,9 +879,10 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					
 				default:
 				{
+					std::stringstream sstr; sstr << raction;
 					ROFL_ERR("of1x_endpoint(%s)::of12_map_flow_entry() "
 							"unknown OXM type in action SET-FIELD found: %s",
-							sw->dpname.c_str(), raction.c_str());
+							sw->dpname.c_str(), sstr.str().c_str());
 				}
 					break;
 				}
@@ -931,9 +932,10 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				break;
 			default:
 			{
+				std::stringstream sstr; sstr << raction;
 				ROFL_ERR("of1x_endpoint(%s)::of12_map_flow_entry() "
 						"unknown OXM class in action SET-FIELD found: %s",
-						sw->dpname.c_str(), raction.c_str());
+						sw->dpname.c_str(), sstr.str().c_str());
 			}
 				break;
 			}

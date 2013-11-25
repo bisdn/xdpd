@@ -237,18 +237,18 @@ struct cpc_icmpv6_pseudo_hdr_t {
 #define DEFAULT_ICMPV6_FRAME_SIZE sizeof(struct icmpv6_hdr_t)
 
 typedef union cpc_icmpv6u{
-	cpc_icmpv6_hdr_t 								*icmpv6u_hdr;							// ICMPv6 message header
-	struct cpc_icmpv6_dest_unreach_hdr_t			*icmpv6u_dst_unreach_hdr;				// ICMPv6 destination unreachable
-	struct cpc_icmpv6_pkt_too_big_hdr_t			*icmpv6u_pkt_too_big_hdr;				// ICMPv6 packet too big
-	struct cpc_icmpv6_time_exceeded_hdr_t			*icmpv6u_time_exceeded_hdr;				// ICMPv6 time exceeded
-	struct cpc_icmpv6_param_problem_hdr_t			*icmpv6u_param_problem_hdr;				// ICMPv6 parameter problem
-	struct cpc_icmpv6_echo_request_hdr_t			*icmpv6u_echo_request_hdr;				// ICMPv6 echo request
-	struct cpc_icmpv6_echo_reply_hdr_t				*icmpv6u_echo_reply_hdr;				// ICMPv6 echo reply
-	struct cpc_icmpv6_router_solicitation_hdr_t	*icmpv6u_rtr_solicitation_hdr;			// ICMPv6 rtr solicitation
-	struct cpc_icmpv6_router_advertisement_hdr_t	*icmpv6u_rtr_advertisement_hdr;		// ICMPv6 rtr advertisement
-	struct cpc_icmpv6_neighbor_solicitation_hdr_t	*icmpv6u_neighbor_solication_hdr;		// ICMPv6 NDP solication header
-	struct cpc_icmpv6_neighbor_advertisement_hdr_t	*icmpv6u_neighbor_advertisement_hdr;	// ICMPv6 NDP advertisement header
-	struct cpc_icmpv6_redirect_hdr_t				*icmpv6u_redirect_hdr;					// ICMPV6 redirect header
+	cpc_icmpv6_hdr_t 								icmpv6u_hdr;							// ICMPv6 message header
+	struct cpc_icmpv6_dest_unreach_hdr_t			icmpv6u_dst_unreach_hdr;				// ICMPv6 destination unreachable
+	struct cpc_icmpv6_pkt_too_big_hdr_t			icmpv6u_pkt_too_big_hdr;				// ICMPv6 packet too big
+	struct cpc_icmpv6_time_exceeded_hdr_t			icmpv6u_time_exceeded_hdr;				// ICMPv6 time exceeded
+	struct cpc_icmpv6_param_problem_hdr_t			icmpv6u_param_problem_hdr;				// ICMPv6 parameter problem
+	struct cpc_icmpv6_echo_request_hdr_t			icmpv6u_echo_request_hdr;				// ICMPv6 echo request
+	struct cpc_icmpv6_echo_reply_hdr_t				icmpv6u_echo_reply_hdr;				// ICMPv6 echo reply
+	struct cpc_icmpv6_router_solicitation_hdr_t	icmpv6u_rtr_solicitation_hdr;			// ICMPv6 rtr solicitation
+	struct cpc_icmpv6_router_advertisement_hdr_t	icmpv6u_rtr_advertisement_hdr;		// ICMPv6 rtr advertisement
+	struct cpc_icmpv6_neighbor_solicitation_hdr_t	icmpv6u_neighbor_solication_hdr;		// ICMPv6 NDP solication header
+	struct cpc_icmpv6_neighbor_advertisement_hdr_t	icmpv6u_neighbor_advertisement_hdr;	// ICMPv6 NDP advertisement header
+	struct cpc_icmpv6_redirect_hdr_t				icmpv6u_redirect_hdr;					// ICMPV6 redirect header
 }cpc_icmpv6u_t;
 
 
@@ -278,7 +278,6 @@ cpc_icmpv6optu_t *icmpv6_get_option(void *hdr){
 			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_redirect_hdr_t*)hdr)->options;
 			break;
 		default:
-			assert(0);
 			return NULL;
 			break;
 	}
@@ -290,40 +289,39 @@ cpc_icmpv6optu_t *icmpv6_get_option(void *hdr){
 
 inline static
 uint8_t get_icmpv6_code(void *hdr){
-	return ((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr->code;
+	return ((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr.code;
 };
 
 inline static
 void set_icmpv6_code(void *hdr, uint8_t code){
-	((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr->code = code;
+	((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr.code = code;
 };
 
 inline static
 uint8_t get_icmpv6_type(void *hdr){
-	return ((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr->type;
+	return ((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr.type;
 };
 
 inline static
 void set_icmpv6_type(void *hdr, uint8_t type){
-	((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr->type = type;
+	((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr.type = type;
 };
 
 inline static
 uint128__t get_icmpv6_neighbor_taddr(void *hdr){
-	uint128__t addr;
+	uint128__t addr = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 	switch (get_icmpv6_type(hdr)) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr->taddr;
+			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
 			break;
 		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr->taddr;
+			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr.taddr;
 			break;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr->taddr;
+			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr.taddr;
 			break;
 		default:
 			//TODO LOG ERROR
-			assert(0);
 			break;
 	}
 	CPC_SWAP_U128(addr); //be128toh
@@ -335,17 +333,17 @@ void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 	uint128__t *ptr;
 	switch (get_icmpv6_type(hdr)) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr->taddr;
+			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
 			break;
 		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr->taddr;
+			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr.taddr;
 			break;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr->taddr;
+			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr.taddr;
 			break;
 		default:
 			//TODO LOG ERROR
-			assert(0);
+			return;
 			break;
 	}
 	CPC_SWAP_U128(taddr); //htobe128
@@ -373,8 +371,7 @@ inline static
 uint64_t get_ll_taddr(void *hdr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(unlikely(ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu->type)){
-		assert(0);
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu->type){
 		return 0;
 	}
 	uint64_t ret =mac_addr_to_u64(icmpv6_opt_hdr->optu_lla->addr);
@@ -386,8 +383,8 @@ inline static
 void set_ll_taddr(void *hdr, uint64_t taddr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(unlikely(ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu->type)){
-		assert(0);
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu->type){
+		return;
 	}
 	CPC_SWAP_MAC(taddr);
 	u64_to_mac_ptr(icmpv6_opt_hdr->optu_lla->addr,taddr);
@@ -397,8 +394,7 @@ inline static
 uint64_t get_ll_saddr(void *hdr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(unlikely(ICMPV6_OPT_LLADDR_SOURCE !=icmpv6_opt_hdr->optu->type)){
-		assert(0);
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_SOURCE !=icmpv6_opt_hdr->optu->type){
 		return 0;
 	}
 	
@@ -411,8 +407,8 @@ inline static
 void set_ll_saddr(void *hdr, uint64_t saddr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(unlikely(ICMPV6_OPT_LLADDR_SOURCE != icmpv6_opt_hdr->optu->type)){
-		assert(0);
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_SOURCE != icmpv6_opt_hdr->optu->type){
+		return;
 	}
 	CPC_SWAP_MAC(saddr);
 	u64_to_mac_ptr(icmpv6_opt_hdr->optu_lla->addr,saddr);
@@ -422,8 +418,7 @@ inline static
 uint8_t get_pfx_on_link_flag(void *hdr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(unlikely(ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type)){
-		assert(0);
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type){
 		return 0;
 	}
 	return ( (icmpv6_opt_hdr->optu_pfx->flags & 0x80) >> 7 );
@@ -433,8 +428,7 @@ inline static
 void set_pfx_on_link_flag(void *hdr, uint8_t flag){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(unlikely(ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type)){
-		assert(0);
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type){
 		return;
 	}
 	icmpv6_opt_hdr->optu_pfx->flags = (icmpv6_opt_hdr->optu_pfx->flags & 0x7F) | ((flag & 0x01) << 7);
@@ -444,8 +438,7 @@ inline static
 uint8_t get_pfx_aac_flag(void *hdr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(unlikely(ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type)){
-		assert(0);
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type){
 		return 0;
 	}
 	return ((icmpv6_opt_hdr->optu_pfx->flags & 0x40) >> 6);
@@ -455,8 +448,7 @@ inline static
 void set_pfx_aac_flag(void *hdr, uint8_t flag){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(unlikely(ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type)){
-		assert(0);
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type){
 		return;
 	}
 	icmpv6_opt_hdr->optu_pfx->flags = (icmpv6_opt_hdr->optu_pfx->flags & 0xBF) | ((flag & 0x01) << 6);

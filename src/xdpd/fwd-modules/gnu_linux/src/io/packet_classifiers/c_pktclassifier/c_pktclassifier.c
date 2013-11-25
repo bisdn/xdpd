@@ -466,7 +466,35 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	//Set reference
 	//rofl::ficmpv6frame *icmpv6 = (rofl::ficmpv6frame*) headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame; 
-
+	
+#if 0
+	//TODO Increment data pointers depending on the type and the options
+	switch(get_icmpv6_type(data)){
+		case ICMPV6_TYPE_DESTINATION_UNREACHABLE:
+			break;
+		case ICMPV6_TYPE_PACKET_TOO_BIG:
+			break;
+		case ICMPV6_TYPE_TIME_EXCEEDED:
+			break;
+		case ICMPV6_TYPE_PARAMETER_PROBLEM:
+			break;
+		case ICMPV6_TYPE_ECHO_REQUEST:
+			break;
+		case ICMPV6_TYPE_ECHO_REPLY:
+			break;
+		case ICMPV6_TYPE_ROUTER_SOLICATION:
+			break;
+		case ICMPV6_TYPE_ROUTER_ADVERTISEMENT:
+			break;
+		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
+			break;
+		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
+			break;
+		case ICMPV6_TYPE_REDIRECT_MESSAGE:
+			break;
+	}
+#endif
+	
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_icmpv6_hdr_t);
 	datalen -= sizeof(cpc_icmpv6_hdr_t);

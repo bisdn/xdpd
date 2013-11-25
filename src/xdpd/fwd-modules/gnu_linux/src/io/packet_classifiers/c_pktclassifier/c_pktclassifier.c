@@ -703,7 +703,7 @@ void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_typ
 	//gtp(0)->get_hdr_length(); // based on flags set to 1 in GTP header
 
 	//Remove bytes from packet
-	pkt_pop(pkt, ipv4(clas_state, 0), pop_length,0);
+	pkt_pop(pkt, ipv4(clas_state, 0), 0, pop_length);
 
 	//Take headers out
 	pop_header(clas_state, HEADER_TYPE_GTP, FIRST_GTP_FRAME_POS, FIRST_GTP_FRAME_POS+MAX_GTP_FRAMES);
@@ -808,7 +808,6 @@ void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 }
 
 void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	
 	void* ether_header;
 	cpc_mpls_hdr_t* mpls_header;
 	//unsigned int current_length;
@@ -817,7 +816,6 @@ void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 		assert(0);	//classify(clas_state);
 		return NULL;
 	}
-
 	//Recover the ether(0)
 	ether_header = ether(clas_state, 0);
 	//current_length = ether_header->framelen(); 
@@ -825,7 +823,7 @@ void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 	/*
 	 * this invalidates ether(0), as it shifts ether(0) to the left
 	 */
-	if (pkt_push(pkt, (void*)(ether_header + sizeof(cpc_eth_hdr_t)), sizeof(cpc_mpls_hdr_t), 0) == ROFL_FAILURE){
+	if (pkt_push(pkt, (void*)(ether_header + sizeof(cpc_eth_hdr_t)),0 , sizeof(cpc_mpls_hdr_t)) == ROFL_FAILURE){
 		// TODO: log error
 		return 0;
 	}
@@ -945,7 +943,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			/*
 			 * this invalidates ether(0), as it shifts ether(0) to the left
 			 */
-			if (pkt_push(pkt, (void*)(ether_header+sizeof(cpc_eth_hdr_t)), bytes_to_insert,0) == ROFL_FAILURE){
+			if (pkt_push(pkt, (void*)(ether_header+sizeof(cpc_eth_hdr_t)),0, bytes_to_insert) == ROFL_FAILURE){
 				// TODO: log error
 				return NULL;
 			}

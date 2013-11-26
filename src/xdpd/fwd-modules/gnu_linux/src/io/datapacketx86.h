@@ -19,6 +19,9 @@
 	#include "packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
 #endif
 
+//Profiling
+#include "../util/time_measurements.h"
+
 /**
 * @file datapacketx86.h
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
@@ -81,6 +84,9 @@ public:
 
 	//Opaque pointer
 	void* extra;
+
+	//Time profiling
+	TM_PKT_STATE;
 
 public: // methods
 
@@ -151,6 +157,23 @@ private:
 	void
 	init_internal_buffer_location_defaults(x86buffering_status_t location, uint8_t* buf, size_t buflen);
 	//Add more stuff here...
+
+public:
+
+	friend std::ostream&
+	operator<<(std::ostream& os, datapacketx86 const& pkt) {
+		os << "<datapacketx86: ";
+			os << "buffer-id:" << (std::hex) << pkt.buffer_id << (std::dec) << " ";
+			os << "internal-buffer-id:" << (std::hex) << pkt.internal_buffer_id << (std::dec) << " ";
+			os << "lsw:" << (int*)(pkt.lsw) << " ";
+			os << "in-port:" << pkt.in_port << " ";
+			os << "in-phy-port:" << pkt.in_phy_port << " ";
+			os << "output-queue:" << pkt.output_queue << " ";
+			os << "pktin-table-id:" << pkt.pktin_table_id << " ";
+			os << "pktin-reason:" << pkt.pktin_reason << " ";
+		os << ">";
+		return os;
+	};
 
 };
 

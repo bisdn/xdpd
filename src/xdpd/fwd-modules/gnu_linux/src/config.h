@@ -90,6 +90,15 @@
 //WARNING: do not over-size it or congestion can be created
 #define PROCESSING_PKT_IN_QUEUE_SLOTS 4
 
+/* 
+* Other
+*/
+
+//Only enable if you want to profile code. This MUST NOT
+//be enabled in "production"
+//#define ENABLE_TIME_MEASUREMENTS
+
+
 
 //---------------------------------------------------------//
 

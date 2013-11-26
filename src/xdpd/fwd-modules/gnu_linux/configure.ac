@@ -24,6 +24,14 @@ CFLAGS="-Werror -Wall -Wl,-export-dynamic $CFLAGS"
 CXXFLAGS="-Werror -Wall -Wl,-export-dynamic $CXXFLAGS"
 AC_DEFINE(__STDC_FORMAT_MACROS)
 
+PKG_CHECK_MODULES([ROFL], [rofl >= 0.3.0], [have_rofl=yes], [have_rofl=no])
+if (test "${have_rofl}" = "yes"); then
+        CPPFLAGS+="$ROFL_CFLAGS"
+        LIBS+="$ROFL_LIBS"
+fi
+
+
+
 #Debug
 m4_include([../../../../config/debug.m4])
 

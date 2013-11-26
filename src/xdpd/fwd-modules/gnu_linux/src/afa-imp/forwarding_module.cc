@@ -103,6 +103,9 @@ afa_result_t fwd_module_destroy(){
 	
 	// destroy bufferpool
 	bufferpool::destroy();
+
+	//Print stats if any
+	TM_DUMP_MEASUREMENTS();
 	
 	ROFL_INFO("GNU/Linux forwarding module destroyed.\n");
 	

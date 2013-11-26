@@ -157,7 +157,8 @@ void set_ipv6_src(void *hdr, uint128__t src){
 
 inline static
 uint128__t get_ipv6_src(void *hdr){
-	uint128__t src=*(uint128__t*)(((cpc_ipv6_hdr_t*)hdr)->src);
+	void* tmp = (void*)(((cpc_ipv6_hdr_t*)hdr)->src);
+	uint128__t src=*(uint128__t*)tmp;
 	CPC_SWAP_U128(src);//htobe128
 	return src;
 };
@@ -171,7 +172,8 @@ void set_ipv6_dst(void *hdr, uint128__t dst){
 
 inline static
 uint128__t get_ipv6_dst(void *hdr){
-	uint128__t dst=*(uint128__t*)(((cpc_ipv6_hdr_t*)hdr)->dst);
+	void * tmp = (((cpc_ipv6_hdr_t*)hdr)->dst);
+	uint128__t dst=*(uint128__t*)tmp;
 	CPC_SWAP_U128(dst);//htobe128
 	return dst;
 };

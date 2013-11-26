@@ -310,15 +310,19 @@ void set_icmpv6_type(void *hdr, uint8_t type){
 inline static
 uint128__t get_icmpv6_neighbor_taddr(void *hdr){
 	uint128__t addr = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+	void* tmp=NULL;
 	switch (get_icmpv6_type(hdr)) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
+			tmp = (void*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
+			addr= *(uint128__t*)tmp;
 			break;
 		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr.taddr;
+			tmp = (void*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr.taddr;
+			addr= *(uint128__t*)tmp;
 			break;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			addr= *(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr.taddr;
+			tmp = ((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr.taddr;
+			addr= *(uint128__t*)tmp;
 			break;
 		default:
 			//TODO LOG ERROR

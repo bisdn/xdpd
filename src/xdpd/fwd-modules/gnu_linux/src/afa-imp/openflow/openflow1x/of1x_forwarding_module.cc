@@ -300,7 +300,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	}
 
 	//Reclassify the packet
-	classify_packet(((datapacketx86*)pkt->platform_state)->headers, ((datapacketx86*)pkt)->get_buffer(), ((datapacketx86*)pkt)->get_buffer_length());
+	classify_packet(((datapacketx86*)pkt->platform_state)->headers, ((datapacketx86*)pkt->platform_state)->get_buffer(), ((datapacketx86*)pkt->platform_state)->get_buffer_length());
 
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	

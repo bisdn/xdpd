@@ -1555,7 +1555,8 @@ void static_pktclassifier::dump(datapacket_t* pkt){
 	
 
 	rofl::fframe content(get_buffer(pkt), get_buffer_length(pkt));
-	ROFL_DEBUG("content: %s\n", content.c_str());
+	std::stringstream sstr; sstr << content;
+	ROFL_DEBUG("content: %s\n", sstr.str().c_str());
 
 }
 

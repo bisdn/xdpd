@@ -8,6 +8,13 @@
 #include <rofl/common/endian_conversion.h>
 #include <rofl/datapath/pipeline/common/large_types.h>
 
+/**
+* @file cpc_utils.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Swap definitions to switch the classifier into Big Endian
+*/
+
 #define SWAP_MAC(x) do{ \
 	x=__bswap_64(x); \
 	x>>=16; \

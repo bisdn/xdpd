@@ -9,9 +9,12 @@
 #include "../../../../util/likely.h"
 #include "../../../../util/compiler_assert.h"
 
-enum gtpu_version_t {
-	GTPU_VERS_1 = 1,
-};
+/**
+* @file cpc_gtpu.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for GTP
+*/
 
 enum gtpu_udp_port_t {
 	GTPU_UDP_PORT = 2152,
@@ -66,15 +69,14 @@ struct cpc_gtpu_base_hdr_t {
 	uint8_t		data[0];	// pointer to start of data
 };//NOTE __attribute__((packed));?
 
-union cpc_gtphu{
+typedef union cpc_gtphu{
 	uint8_t*					cpc_gtpu_hdr;
 	struct cpc_gtpu_e_hdr_t* 		cpc_gtpu_e_hdr;
 	struct cpc_gtpu_pn_hdr_t*		cpc_gtpu_pn_hdr;
 	struct cpc_gtpu_s_hdr_t* 		cpc_gtpu_s_hdr;
 	struct cpc_gtpu_base_hdr_t* 	cpc_gtpu_short_hdr;
-};
+}cpc_gtphu_t;
 
-typedef union cpc_gtphu cpc_gtphu_t;
 
 //NOTE PDULEN?
 

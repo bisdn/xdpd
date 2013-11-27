@@ -7,6 +7,13 @@
 
 #include "../cpc_utils.h"
 
+/**
+* @file cpc_ppp.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for PPP
+*/
+
 // HDLC related definitions
 //
 enum hdlc_code_t {

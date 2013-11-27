@@ -24,6 +24,13 @@
 #include "./headers/cpc_udp.h"
 #include "./headers/cpc_vlan.h"
 
+/**
+* @file cpc_pktclassifier.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Interface for the C classifiers
+*/
+
 //Header type
 enum header_type{
 	HEADER_TYPE_ETHER = 0,	

@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_mpls.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 void set_mpls_label(void *hdr, uint32_t label);
 
 uint32_t get_mpls_label(void *hdr);

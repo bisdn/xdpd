@@ -7,35 +7,25 @@
 
 #include "../cpc_utils.h"
 
+/**
+* @file cpc_ipv6.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for IPv6
+*/
 
-//struct stat;
+//struct extension header
 struct cpc_ipv6_ext_hdr_t {
 	uint8_t nxthdr;
 	uint8_t len;
 	uint8_t data[0];
 } __attribute__((packed));
 
-#define IPV6_ADDR_LEN	16
-#define IPV6_VERSION 	 6
-
 /* ipv6 constants and definitions */
 // ipv6 ethernet types
 enum ipv6_ether_t {
 	IPV6_ETHER = 0x86dd,
 };
-
-// IPv6 header
-struct cpc_ipv6_hdr {
-	uint8_t bytes[4];      	// version + tc + flow-label
-	uint16_t payloadlen;
-	uint8_t nxthdr;
-	uint8_t hoplimit;
-	uint8_t src[IPV6_ADDR_LEN];
-	uint8_t dst[IPV6_ADDR_LEN];
-	uint8_t data[0];
-} __attribute__((packed));
-
-typedef struct cpc_ipv6_hdr cpc_ipv6_hdr_t;
 
 enum ipv6_ext_t {
 	IPV6_IPPROTO_HOPOPT 		= 0,
@@ -50,6 +40,19 @@ enum ipv6_ext_t {
 	IPV6_IPPROTO_OPTS			= 60,
 	IPV6_IPPROTO_MIPV6			= 135,
 };
+
+// IPv6 header
+typedef struct cpc_ipv6_hdr {
+	uint8_t bytes[4];      	// version + tc + flow-label
+	uint16_t payloadlen;
+	uint8_t nxthdr;
+	uint8_t hoplimit;
+	uint8_t src[IPV6_ADDR_LEN];
+	uint8_t dst[IPV6_ADDR_LEN];
+	uint8_t data[0];
+} __attribute__((packed)) cpc_ipv6_hdr_t;
+
+
 
 //TODO extension headers
 

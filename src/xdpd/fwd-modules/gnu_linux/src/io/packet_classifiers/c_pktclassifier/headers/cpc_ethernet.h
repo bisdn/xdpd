@@ -8,6 +8,13 @@
 #include <string.h>
 #include "../cpc_utils.h"
 
+/**
+* @file cpc_ethernet.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for Ethernet
+*/
+
 #define DEFAULT_ETHER_FRAME_SIZE 1518
 #define CPC_ETH_ALEN 6
 

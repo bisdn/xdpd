@@ -7,6 +7,13 @@
 
 #include "../cpc_utils.h"
 
+/**
+* @file cpc_pppoe.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for PPPoE
+*/
+
 #define DEFAULT_PPPOE_FRAME_SIZE 1492
 
 /* PPPoE constants and definitions */

@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_vlan.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 void set_dl_vlan_id(void* hdr, uint16_t vid);
 
 uint16_t get_dl_vlan_id(void* hdr);

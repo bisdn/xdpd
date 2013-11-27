@@ -8,6 +8,13 @@
 #include <stdint.h>
 #include <rofl/datapath/pipeline/common/large_types.h>
 
+/**
+* @file cpp_icmpv6.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 void icmpv6_calc_checksum(void *hdr, uint16_t length);
 
 void *icmpv6_get_option(void *hdr, uint8_t type);

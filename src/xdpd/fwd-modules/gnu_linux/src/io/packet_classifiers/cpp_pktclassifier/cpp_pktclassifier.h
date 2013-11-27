@@ -23,6 +23,13 @@
 #include "./cpp_headers/cpp_udp.h"
 #include "./cpp_headers/cpp_vlan.h"
 
+/**
+* @file cpp_pktclassifier.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Interface for the c++ classifiers
+*/
+
 struct classify_state;
 
 ROFL_BEGIN_DECLS

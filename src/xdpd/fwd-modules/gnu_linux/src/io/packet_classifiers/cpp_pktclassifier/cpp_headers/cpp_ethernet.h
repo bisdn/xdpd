@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_ethernet.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 uint64_t get_dl_eth_dst(void *hdr);
 
 void set_dl_eth_dst(void* hdr, uint64_t dl_dst);

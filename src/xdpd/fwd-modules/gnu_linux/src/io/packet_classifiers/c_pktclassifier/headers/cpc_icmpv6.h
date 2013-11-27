@@ -11,6 +11,12 @@
 #include "../../../../util/likely.h"
 #include "../../../../util/compiler_assert.h"
 
+/**
+* @file cpc_icmpv6.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for ICMPv6
+*/
 
 #define IPV6_ADDR_LEN		16
 #define ETHER_ADDR_LEN		6
@@ -100,18 +106,6 @@ enum icmpv6_type_t {
 	ICMPV6_TYPE_MOBILE_PREFIX_SOLICITATION							= 146,
 	ICMPV6_TYPE_MOBILE_PREFIX_ADVERTISEMENT						= 147,
 };
-
-enum icmpv6_destination_unreachable_code_t {
-	ICMPV6_DEST_UNREACH_CODE_NO_ROUTE_TO_DESTINATION										= 0,
-	ICMPV6_DEST_UNREACH_CODE_COMMUNICATION_WITH_DESTINATION_ADMINISTRATIVELY_PROHIBITED	= 1,
-	ICMPV6_DEST_UNREACH_CODE_BEYOND_SCOPE_OF_SOURCE_ADDRESS								= 2,
-	ICMPV6_DEST_UNREACH_CODE_ADDRESS_UNREACHABLE											= 3,
-	ICMPV6_DEST_UNREACH_CODE_PORT_UNREACHABLE												= 4,
-	ICMPV6_DEST_UNREACH_CODE_SOURCE_ADDRESS_FAILED_INGRESS_EGRESS_POLICY					= 5,
-	ICMPV6_DEST_UNREACH_CODE_REJECT_ROUTE_TO_DESTINATION									= 6,
-	ICMPV6_DEST_UNREACH_CODE_ERROR_IN_SOURCE_ROUTING_HEADER								= 7,
-};
-
 
 /**
 	* ICMPv6 message types
@@ -221,20 +215,6 @@ struct cpc_icmpv6_redirect_hdr_t {
 	uint8_t							daddr[IPV6_ADDR_LEN];	// =destination address
 	struct cpc_icmpv6_option_hdr_t	options[0];
 } __attribute__((packed));
-
-/**
-	* ICMPv6 pseudo header
-	*/
-/* for ICMPv6 checksum calculation */
-struct cpc_icmpv6_pseudo_hdr_t {
-	uint8_t 	src[IPV6_ADDR_LEN];
-	uint8_t 	dst[IPV6_ADDR_LEN];
-	uint32_t 	icmpv6_len;				// payload length (extension headers + ICMPv6 message)
-	uint8_t 	zeros[3];				// = 0
-	uint8_t 	nxthdr;					// = 58 (=ICMPV6_IP_PROTO, see below)
-} __attribute__((packed));
-
-#define DEFAULT_ICMPV6_FRAME_SIZE sizeof(struct icmpv6_hdr_t)
 
 typedef union cpc_icmpv6u{
 	cpc_icmpv6_hdr_t 								icmpv6u_hdr;							// ICMPv6 message header
@@ -354,11 +334,11 @@ void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 	*ptr = taddr;
 };
 
+
 //ndp_rtr_flag
 //ndp_solicited_flag
 //ndp_override_flag
 //neighbor_taddr
-
 
 
 inline static

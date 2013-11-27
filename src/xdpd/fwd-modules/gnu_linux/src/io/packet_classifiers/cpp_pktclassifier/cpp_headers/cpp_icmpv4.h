@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_icmpv4.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 uint8_t get_icmp_type(void *hdr);
 
 void set_icmp_type(void *hdr, uint8_t type);

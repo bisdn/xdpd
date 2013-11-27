@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_ppp.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 uint16_t get_ppp_prot(void *hdr);
 
 void set_ppp_prot(void *hdr, uint16_t prot);

@@ -7,41 +7,24 @@
 
 #include "../cpc_utils.h"
 
+/**
+* @file cpc_icmpv4.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for ICMPv4
+*/
+
 /* ICMPv4 constants and definitions */
-struct cpc_icmpv4_hdr {
+typedef struct cpc_icmpv4_hdr {
 	uint8_t type;
 	uint8_t code;
 	uint16_t checksum;
 	uint8_t data[0];
-} __attribute__((packed));
-
-/* for UDP checksum calculation */
-struct cpc_ip_pseudo_hdr_t {
-	uint32_t src;
-	uint32_t dst;
-	uint8_t reserved;
-	uint8_t proto;
-	uint16_t len;
-} __attribute__((packed));
-
-typedef struct cpc_icmpv4_hdr cpc_icmpv4_hdr_t;
+} __attribute__((packed)) cpc_icmpv4_hdr_t;
 
 enum icmpv4_ip_proto_t {
 	ICMPV4_IP_PROTO = 1,
 };
-
-enum icmpv4_type_t {
-	ICMP_TYPE_DESTINATION_UNREACHABLE = 3,
-	ICMP_TYPE_ECHO_REPLY = 0,
-	ICMP_TYPE_ECHO_REQUEST = 8,
-};
-
-enum icmpv4_code_t {
-	ICMP_CODE_HOST_UNREACHABLE = 1,
-	ICMP_CODE_NO_CODE = 0,
-	ICMP_CODE_DATAGRAM_TOO_BIG = 4,
-};
-
 
 inline static
 uint8_t get_icmp_type(void *hdr){

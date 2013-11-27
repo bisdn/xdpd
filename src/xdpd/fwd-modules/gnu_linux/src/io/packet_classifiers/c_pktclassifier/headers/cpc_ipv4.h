@@ -8,6 +8,13 @@
 #include <stddef.h>
 #include "../cpc_utils.h"
 
+/**
+* @file cpc_ipv4.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for IPv4
+*/
+
 /* IPv4 constants and definitions */
 // IPv4 ethernet types
 enum ipv4_ether_t {
@@ -18,8 +25,14 @@ enum ipv4_ip_proto_t {
 	IPV4_IP_PROTO = 4,
 };
 
+enum ipv4_flag_t {
+	bit_reserved 		= (1 << 0),
+	bit_dont_fragment 	= (1 << 1),
+	bit_more_fragments	= (1 << 2),
+};
+
 // IPv4 header
-struct cpc_ipv4_hdr {
+typedef struct cpc_ipv4_hdr {
 	uint8_t ihlvers;        // IP header length in 32bit words,
 							// TODO: check for options and padding
 	uint8_t tos;
@@ -32,15 +45,7 @@ struct cpc_ipv4_hdr {
 	uint32_t src;
 	uint32_t dst;
 	uint8_t data[0];
-} __attribute__((packed));
-
-typedef struct cpc_ipv4_hdr cpc_ipv4_hdr_t;
-
-enum ipv4_flag_t {
-	bit_reserved 		= (1 << 0),
-	bit_dont_fragment 	= (1 << 1),
-	bit_more_fragments	= (1 << 2),
-};
+} __attribute__((packed)) cpc_ipv4_hdr_t;
 
 inline static
 void ipv4_calc_checksum(void *hdr){

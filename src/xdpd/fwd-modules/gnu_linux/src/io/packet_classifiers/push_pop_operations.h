@@ -8,6 +8,14 @@
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
+/**
+* @file push_pop_operations.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper to make classifier indpendent from the platform datapacket
+*/
+
+
 ROFL_BEGIN_DECLS
 
 rofl_result_t pkt_push(datapacket_t* pkt, uint8_t* push_point, unsigned int offset, unsigned int num_of_bytes);

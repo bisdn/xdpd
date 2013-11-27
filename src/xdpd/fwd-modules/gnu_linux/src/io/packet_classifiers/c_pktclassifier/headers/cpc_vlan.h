@@ -7,8 +7,14 @@
 
 #include "../cpc_utils.h"
 
-/* Ethernet constants and definitions */
+/**
+* @file cpc_vlan.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for VLAN
+*/
 
+/* Ethernet constants and definitions */
 // VLAN ethernet types
 enum vlan_ether_t {
 	VLAN_CTAG_ETHER = 0x8100,
@@ -17,15 +23,13 @@ enum vlan_ether_t {
 };
 
 // VLAN header
-struct cpc_vlan_hdr {
+typedef struct cpc_vlan_hdr {
 	// tag control identifier (TCI)
 	uint8_t byte0;
 	uint8_t byte1;
 	//uint16_t hdr;			// vid + cfi + pcp
 	uint16_t dl_type;  		// ethernet type
-} __attribute__((packed));
-
-typedef struct cpc_vlan_hdr cpc_vlan_hdr_t;
+} __attribute__((packed)) cpc_vlan_hdr_t;
 
 inline static
 void set_dl_vlan_id(void* hdr, uint16_t vid){

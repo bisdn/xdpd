@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_ipv4.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 void ipv4_calc_checksum(void *hdr);
 
 void set_ipv4_src(void *hdr, uint32_t src);

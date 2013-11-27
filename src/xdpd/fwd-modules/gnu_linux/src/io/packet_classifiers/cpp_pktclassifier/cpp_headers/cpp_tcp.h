@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_tcp.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_proto, uint16_t length);
 
 uint16_t get_tcp_sport(void *hdr);

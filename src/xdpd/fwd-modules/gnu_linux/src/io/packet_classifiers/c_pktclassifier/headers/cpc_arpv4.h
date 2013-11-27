@@ -7,17 +7,20 @@
 
 #include "../cpc_utils.h"
 #include "cpc_ethernet.h"
+
+/**
+* @file cpc_arpv4.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for ARPv4
+*/
+
 /* ARPv4 constants and definitions */
 enum arpv4_ether_t {
 	ARPV4_ETHER = 0x0806,
 };
 
-enum arpv4_opcodes_t {
-	ARPV4_OPCODE_REQUEST = 0x01,
-	ARPV4_OPCODE_REPLY = 0x02,
-};
-
-struct cpc_arpv4_hdr {
+typedef struct cpc_arpv4_hdr {
 	uint16_t ar_hrd;            	// hardware address format
 	uint16_t ar_pro;            	// protocol address format
 	uint8_t ar_hln;             	// hardware address length
@@ -27,13 +30,9 @@ struct cpc_arpv4_hdr {
 	uint32_t ip_src;            	// source IP address
 	uint8_t dl_dst[CPC_ETH_ALEN]; 	// destination MAC address
 	uint32_t ip_dst;            	// destination IP address
-} __attribute__((packed));
+} __attribute__((packed)) cpc_arpv4_hdr_t;
+
 /* ARPv4 definitions */
-
-typedef struct cpc_arpv4_hdr cpc_arpv4_hdr_t;
-
-//#define DEFAULT_ARPV4_FRAME_SIZE sizeof(struct cpc_arpv4_hdr_t)
-
 inline static
 uint16_t get_ar_hrd(void *hdr){
 	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ar_hrd);

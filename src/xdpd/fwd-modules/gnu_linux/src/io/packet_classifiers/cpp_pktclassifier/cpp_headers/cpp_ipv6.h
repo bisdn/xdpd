@@ -8,6 +8,13 @@
 #include <stdint.h>
 #include <rofl/datapath/pipeline/common/large_types.h>
 
+/**
+* @file cpp_ipv6.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 void ipv6_calc_checksum(void *hdr, uint16_t length);
 
 void set_ipv6_version(void *hdr, uint8_t version);

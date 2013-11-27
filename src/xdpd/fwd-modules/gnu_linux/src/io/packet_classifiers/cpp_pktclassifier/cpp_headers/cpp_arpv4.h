@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_arpv4.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 uint16_t get_ar_hrd(void *hdr);
 
 void set_ar_hdr(void *hdr, uint16_t ar_hdr);

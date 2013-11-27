@@ -7,27 +7,22 @@
 
 #include "../cpc_utils.h"
 
+/**
+* @file cpc_udp.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for UDP
+*/
+
 /* UDP constants and definitions */
-struct cpc_udp_hdr {
+typedef struct cpc_udp_hdr {
 	uint16_t sport;
 	uint16_t dport;
 	uint16_t length;
 	uint16_t checksum;
 	uint8_t data[0];
-} __attribute__((packed));
+} __attribute__((packed)) cpc_udp_hdr_t;
 
-typedef struct cpc_udp_hdr cpc_udp_hdr_t;
-
-#if 0
-/* for UDP checksum calculation */
-struct cpc_ip_pseudo_hdr_t {
-	uint32_t src;
-	uint32_t dst;
-	uint8_t reserved;
-	uint8_t proto;
-	uint16_t len;
-} __attribute__((packed));
-#endif
 enum udp_ip_proto_t {
 	UDP_IP_PROTO = 17,
 };

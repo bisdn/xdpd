@@ -7,7 +7,14 @@
 
 #include "../cpc_utils.h"
 
-struct cpc_tcp_hdr {
+/**
+* @file cpc_tcp.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Structure definitions and inline getters and setters for TCP
+*/
+
+typedef struct cpc_tcp_hdr {
 	uint16_t sport;
 	uint16_t dport;
 	uint32_t seqno;
@@ -43,20 +50,7 @@ struct cpc_tcp_hdr {
 	uint16_t checksum;
 	uint16_t urgent;
 	uint8_t data[0];
-} __attribute__((packed));
-
-typedef struct cpc_tcp_hdr cpc_tcp_hdr_t;
-
-#if 0
-/* for UDP checksum calculation */
-struct cpc_ip_pseudo_hdr_t {
-	uint32_t src;
-	uint32_t dst;
-	uint8_t reserved;
-	uint8_t proto;
-	uint16_t len;
-} __attribute__((packed));
-#endif
+} __attribute__((packed)) cpc_tcp_hdr_t;
 
 enum tcp_ip_proto_t {
 	TCP_IP_PROTO = 6,

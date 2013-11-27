@@ -7,6 +7,13 @@
 
 #include <stdint.h>
 
+/**
+* @file cpp_pppoe.h
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+*
+* @brief Wrapper for the c++ classifier
+*/
+
 uint8_t get_pppoe_vers(void *hdr);
 
 void set_pppoe_vers(void *hdr, uint8_t version);

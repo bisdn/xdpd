@@ -96,16 +96,8 @@ public:
 		return os;
 	};
 
-	static void dump_state(void){
-		bufferpool& bp = *(bufferpool::get_instance());
-		std::cerr << bp << std::endl;
-	};
-	static void dump_slots(void){
-		bufferpool& bp = *(bufferpool::get_instance());
-		for (long long unsigned int i = 0; i < bp.pool_size; i++) {
-			std::cerr << *(static_cast<datapacketx86 const*>( bp.pool[i]->platform_state )) << std::endl;
-		}
-	};
+	static void dump_state(void);
+	static void dump_slots(void);
 
 protected:
 

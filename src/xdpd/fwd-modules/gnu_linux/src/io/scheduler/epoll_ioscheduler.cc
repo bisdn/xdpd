@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
 
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -37,29 +39,22 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 
 	unsigned int i;
 	datapacket_t* pkt;
-	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_queue;
+	of_switch_t* sw;
 	
-	if(unlikely(!port) || unlikely(!port->of_port_state))
+	if(unlikely(!port) || unlikely(!port->of_port_state) || unlikely(!port->of_port_state->attached_sw))
 		return false;
-	
-	//Retrieve attached queue
-	sw_queue = port->get_sw_processing_queue();
+
+	sw = port->of_port_state->attached_sw;
 	
 	//Perform up_to n_buckets_read
 	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
 	
 	for(i=0; i<READ_BUCKETS_PP; ++i){
 
-		//First check wheather the switch is full
-		//Avoid retrieving packets which the switch may not 
-		//be able to process
-		if( unlikely(sw_queue->is_full()) )
-			return true;	
-	
 		//Attempt to read (non-blocking)
 		pkt = port->read();
 		
-		if(pkt){
+		if(likely(pkt != NULL)){
 
 #ifdef DEBUG
 			if(by_pass_processing){
@@ -69,23 +64,10 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 			}else{
 #endif
 				/*
-				* Push packet to the logical switch queue. 
-				* If not successful (congestion), drop it!
+				* Process packets
 				*/
-				//Timestamp S3_PRE
-				TM_STAMP_STAGE(pkt, TM_S3_PRE);
-	
-				if( sw_queue->non_blocking_write(pkt) != ROFL_SUCCESS ){
-					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
-					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
-					bufferpool::release_buffer(pkt);
-				
-					TM_STAMP_STAGE(pkt, TM_S3_FAILURE);
-				}else{
-					TM_STAMP_STAGE(pkt, TM_S3_SUCCESS);
-					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) scheduled for process -> sw: %s\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
-					
-				}
+				//Process it through the pipeline	
+				of_process_packet_pipeline(sw, pkt);
 					
 #ifdef DEBUG
 			}
@@ -160,8 +142,7 @@ inline void epoll_ioscheduler::release_resources( int epfd, struct epoll_event* 
 		close(epfd);	
 		//Release port_data stuff
 		for(i=0;i<current_num_of_ports;++i){
-			free(ev[(i*2)+READ].data.ptr);
-			free(ev[(i*2)+WRITE].data.ptr);
+			free(ev[i].data.ptr);
 		}
 		free(ev);
 		free(events);
@@ -185,8 +166,8 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevecto
 	release_resources(*epfd, *ev, *events, *current_num_of_ports);
 
 	//Allocate memory
-	*ev = (epoll_event*)malloc( sizeof(struct epoll_event) * pg->running_ports->size()*2 );
-	*events = (epoll_event*)malloc( sizeof(struct epoll_event) * pg->running_ports->size()*2 );
+	*ev = (epoll_event*)malloc( sizeof(struct epoll_event) * pg->running_ports->size());
+	*events = (epoll_event*)malloc( sizeof(struct epoll_event) * pg->running_ports->size());
 
 	if(!*ev || !*events){
 	       //FIXME: what todo...
@@ -216,15 +197,8 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevecto
 		fd = port->get_read_fd();
 		if( fd != -1 ){
 			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Adding RX event to epoll event list ioport: %s, fd: %d\n",port->of_port_state->name, fd);
-			epoll_ioscheduler::add_fd_epoll( &((*ev)[(i*2)+READ]), *epfd, port, fd);
+			epoll_ioscheduler::add_fd_epoll( &((*ev)[i]), *epfd, port, fd);
 		}
-		/* Write */
-		fd = (*pg->running_ports)[i]->get_write_fd();
-		if( fd != -1 ){
-			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Adding TX event to epoll event list ioport: %s, fd: %d\n",port->of_port_state->name, fd);
-			epoll_ioscheduler::add_fd_epoll(&((*ev)[(i*2)+WRITE]), *epfd, port, fd);
-		}
-
 	}
 
 	//Assign current hash
@@ -241,22 +215,23 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevecto
 }
 
 
-void* epoll_ioscheduler::process_io(void* grp){
+void* epoll_ioscheduler::process_io_rx(void* grp){
 
 	unsigned int i;
 	int epfd, res;
 	struct epoll_event *ev=NULL, *events = NULL;
 	unsigned int current_hash=0, current_num_of_ports=0;
 	portgroup_state* pg = (portgroup_state*)grp;
-	//epoll_event_data_t* ev_port_data;
 	ioport* port;
-	bool more_packets;
 	safevector<ioport*> ports;	//Ports of the group currently performing I/O operations
 	
 	//Init epoll fd set
 	epfd = -1;
 	init_or_update_fds(pg, ports, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
 
+	assert(pg->type == PG_RX);
+	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O RX thread on process id: %u(%u) for group \n", syscall(SYS_gettid), pthread_self(), pg->id);
+	
 	ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
 	
 	/*
@@ -281,27 +256,14 @@ void* epoll_ioscheduler::process_io(void* grp){
 			//Timeout
 		}else{	
 			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Got %d events\n", res); 
-		
-			do{
-				more_packets = false;	
-
-				for(i=0; i<current_num_of_ports; ++i){
-					/* Read */
-					port = ports[i];
 	
-					more_packets |= epoll_ioscheduler::process_port_rx(port);
-					more_packets |= epoll_ioscheduler::process_port_tx(port);
-				}
-				
-				//Check for updates in the running ports list
-				//otherwise we will never stop looping hence not attending new ports 
-				if( unlikely(pg->running_hash != current_hash) ){
-					break;
-				}
-
-			//Make sure we check for keep_on_working flag, otherwise we will never
-			//be able to stop the I/O in high load situations 
-			}while(likely(more_packets) && likely(iomanager::keep_on_working(pg)) );
+			//FIXME: go through the marked events and return
+			//XXX
+			for(i=0; i<current_num_of_ports; ++i){
+				/* Read */
+				port = ports[i];
+				epoll_ioscheduler::process_port_rx(port);
+			}
 		}
 
 		//Check for updates in the running ports 
@@ -312,7 +274,95 @@ void* epoll_ioscheduler::process_io(void* grp){
 	//Release resources
 	release_resources(epfd, ev, events, current_num_of_ports);
 
-	ROFL_DEBUG("Finishing execution of I/O thread: #%u\n",pthread_self());
+	ROFL_DEBUG("Finishing execution of the RX I/O thread: #%u\n",pthread_self());
+
+	//Return whatever
+	pthread_exit(NULL);
+}
+
+inline rofl_result_t epoll_ioscheduler::update_tx_port_list(portgroup_state* grp, unsigned int* current_num_of_ports, unsigned int* current_hash, ioport* port_list[]){
+
+	unsigned int i;
+	size_t size;
+
+	//lock running vector, so that we can safely iterate over it
+	grp->running_ports->read_lock();
+	
+	size = grp->running_ports->size();
+
+
+	if(size > EPOLL_IOSCHEDULER_MAX_TX_PORTS_PER_PG){
+		assert(0);
+		//FIXME add trace
+		grp->running_ports->read_unlock();
+		return ROFL_FAILURE;
+	}
+
+	for(i=0;i<size;++i){
+		port_list[i] = (*grp->running_ports)[i];
+	}	
+
+	//Assign current hash and size
+	*current_hash = grp->running_hash;	
+	*current_num_of_ports = size;	
+
+	//Signal as synchronized
+	iomanager::signal_as_synchronized(grp);
+	
+	//unlock running vector
+	grp->running_ports->read_unlock();
+
+	return ROFL_SUCCESS;
+}
+
+void* epoll_ioscheduler::process_io_tx(void* grp){
+
+	unsigned int i, sem_ret;
+	unsigned int current_hash=0, current_num_of_ports=0;
+	portgroup_state* pg = (portgroup_state*)grp;
+	ioport* port_list[EPOLL_IOSCHEDULER_MAX_TX_PORTS_PER_PG];
+	sem_t* sem = &pg->tx_sem;
+	struct timespec abs_timeout;
+	
+	/*
+	* Infinite loop unless group is stopped. e.g. all ports detached
+	*/
+
+	assert(pg->type == PG_TX);
+	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O TX thread on process id: %u(%u) for group \n", syscall(SYS_gettid), pthread_self(), pg->id);
+	
+	if(update_tx_port_list(pg, &current_num_of_ports, &current_hash, port_list) != ROFL_SUCCESS){
+		pthread_exit(NULL);
+	}
+
+	while(iomanager::keep_on_working(pg)){
+
+		//cond_wait(update timeout)
+		clock_gettime(CLOCK_REALTIME, &abs_timeout);
+	 	//abs_timeout.tv_nsec += EPOLL_TIMEOUT_MS*100000000;
+	 	abs_timeout.tv_sec += 1; //EPOLL_TIMEOUT_MS*100000000; //FIXME
+
+		//Now wait
+		sem_ret = sem_timedwait(sem, &abs_timeout);
+	
+		if(sem_ret < 0){
+			//FIXME: trace
+		}
+		
+		//No timeout go over the ports
+		for(i=0; i<current_num_of_ports; ++i){
+			epoll_ioscheduler::process_port_tx(port_list[i]);
+		}
+
+		//Check for updates in the running ports 
+		if( pg->running_hash != current_hash ){
+			if(unlikely(update_tx_port_list(pg, &current_num_of_ports, &current_hash, port_list) != ROFL_SUCCESS)){
+				pthread_exit(NULL);
+			}
+		}
+	}
+
+	ROFL_DEBUG("Finishing execution of the TX I/O thread: #%u\n",pthread_self());
 
 	//Return whatever
 	pthread_exit(NULL);

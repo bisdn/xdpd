@@ -8,6 +8,7 @@
 #include <string>
 #include <assert.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -161,15 +162,16 @@ public:
 	 */
 	virtual rofl_result_t set_advertise_config(uint32_t advertised);
 
+
 	/**
-	 * Sets the port switch queue where processed packets shall be sent.
+	 * Portgroup to which is belonging TX condition 
 	 */
-	void set_sw_processing_queue(circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* queue){
-		sw_processing_queue = queue;
+	inline void set_pg_tx_sem(sem_t* pg_tx_sem){
+		this->pg_tx_sem = pg_tx_sem;
 	};
 
-	inline circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* get_sw_processing_queue(void){
-		return sw_processing_queue;
+	inline sem_t* get_pg_tx_sem(void){
+		return pg_tx_sem;
 	};
 
 
@@ -185,8 +187,8 @@ public:
 			
 	}
 	
-	//Switch processing queue to which the port is attached
-	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_processing_queue;
+	//Portgroup pthread cond
+	sem_t* pg_tx_sem;
 	
 	static const unsigned int MAX_OUTPUT_QUEUES=IO_IFACE_NUM_QUEUES; /*!< Constant max output queues */
 	unsigned int port_group;

@@ -34,10 +34,10 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 	unsigned int i;
 	
 	//Create GNU/Linux FWD_Module additional state (platform state)
-	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));
+	switch_platform_state_t* ls_int = (switch_platform_state_t*)calloc(1, sizeof(switch_platform_state_t));
 
 	//Create input queues
-	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){
+	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
 		ls_int->input_queues[i] = new circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>();
 	}
 
@@ -81,10 +81,10 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 	
 	unsigned int i;
 
-	struct logical_switch_internals* ls_int =  (struct logical_switch_internals*)sw->platform_state;
+	switch_platform_state_t* ls_int =  (switch_platform_state_t*)sw->platform_state;
 	
 	//delete ring buffers and storage (delete switch platform state)
-	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){
+	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
 		delete ls_int->input_queues[i]; 
 	}
 	delete ls_int->pkt_in_queue;
@@ -104,7 +104,7 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
 	datapacketx86* pkt_x86;
-	struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
+	switch_platform_state_t* ls_state = (switch_platform_state_t*)sw->platform_state;
 
 	ROFL_DEBUG("Enqueuing PKT_IN event for packet(%p) in switch: %s\n",pkt,sw->name);
 	

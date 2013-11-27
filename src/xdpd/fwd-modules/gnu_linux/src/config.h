@@ -1,4 +1,4 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subjecamet to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -28,8 +28,8 @@
 * 
 * Where:
 *   Ncores_system - Number of hw threads (hw cores) in the system
-*   Nio - number of threads dedicated to the I/O subsystem
-*   Tlsi - threads per LSI
+*   Nio - number of threads dedicated to the TX in the I/O subsystem
+*   Tlsi - threads per LSI (RX)
 *   Nlsi - number of LSI that . The system will STILL be capable of instantiating more, perhaps with some performance penalty
 *   2 - This is a fixed number of threads, 1 for the bg and one for ctl attendance code (CMM)
 *
@@ -45,8 +45,11 @@
 * I/O subsystem parameters
 */
 
-//Num of maximum threads (hw threads) devoted to the I/O of interfaces (Nio)
-#define IO_TOTAL_THREADS 2 
+//Num of RX and processing threads per LSI (Nlsi) 
+#define IO_RX_THREADS_PER_LSI 2
+
+//Total number of TX threads (Nio)
+#define IO_TX_TOTAL_THREADS 2
 
 //Number of output queues per interface
 #define IO_IFACE_NUM_QUEUES 8
@@ -78,8 +81,10 @@
 * Processing subsystem parameters
 */
 
+#if 0
 //Num of processing threads per Logical Switch Instance (Tlsi)
 #define PROCESSING_THREADS_PER_LSI 2
+#endif
 
 //Per thread input queue to the switch
 //Align to a power of 2
@@ -97,7 +102,6 @@
 //Only enable if you want to profile code. This MUST NOT
 //be enabled in "production"
 //#define ENABLE_TIME_MEASUREMENTS
-
 
 
 //---------------------------------------------------------//

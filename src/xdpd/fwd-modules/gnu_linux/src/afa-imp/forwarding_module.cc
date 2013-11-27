@@ -36,8 +36,6 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
-
-
 using namespace xdpd::gnu_linux;
 
 /*
@@ -129,16 +127,11 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
 	if(unlikely(!sw))
-		return NULL; 
-
-	//Launch switch processing threads
-	if(start_ls_workers_wrapper(sw) != ROFL_SUCCESS){
-		
-		ROFL_ERR("<%s:%d> error initializing workers from processing manager. Destroying switch...\n",__func__,__LINE__);
-		of_destroy_switch(sw);
 		return NULL;
-	}
-	
+
+	//Create RX ports
+	processingmanager::create_rx_pgs(sw);
+
 	//Add switch to the bank	
 	physical_switch_add_logical_switch(sw);
 	
@@ -185,10 +178,9 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 		}
 	}
 	
-	//stop the threads here (it is blocking)
-	if(stop_ls_workers_wrapper(sw)!= ROFL_SUCCESS)
-		ROFL_ERR("<%s:%d> error stopping workers from processing manager\n",__func__,__LINE__);
-	
+	//Create RX ports
+	processingmanager::destroy_rx_pgs(sw);	 
+
 	//Detach ports from switch. Do not feed more packets to the switch
 	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;

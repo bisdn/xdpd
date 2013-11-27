@@ -45,9 +45,7 @@ void ioport_vlink::set_connected_port(ioport_vlink* c_port){
 
 //Read and write methods over port
 void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
-	//Whatever
-	const char c='a';
-	int ret;
+	
 	unsigned int len;
 	
 	datapacketx86* pkt_x86 = (datapacketx86*) pkt->platform_state;
@@ -75,9 +73,9 @@ void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 
 		ROFL_DEBUG_VERBOSE("[vlink:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
 	
-		//TODO: make it happen only if thread is really sleeping...
-		ret = ::write(tx_notify_pipe[WRITE],&c,sizeof(c));
-		(void)ret; // todo use the value
+		
+		//Notify port group
+		sem_post(this->pg_tx_sem);
 	} else {
 		if(len < MIN_PKT_LEN){
 			ROFL_ERR("[vlink:%s] ERROR: attempt to send invalid packet size for packet(%p) scheduled for queue %u. Packet size: %u\n", of_port_state->name, pkt, q_id, len);

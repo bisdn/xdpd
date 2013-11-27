@@ -19,7 +19,7 @@ ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
 
 	//of_port_state
 	of_port_state = of_ps;
-	sw_processing_queue = NULL;
+	pg_tx_sem = NULL;
 	
 	//Maximum packet size
 	mps = 0;

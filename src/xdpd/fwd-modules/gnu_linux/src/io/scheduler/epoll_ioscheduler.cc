@@ -217,7 +217,7 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevecto
 
 void* epoll_ioscheduler::process_io_rx(void* grp){
 
-	unsigned int i;
+	int i;
 	int epfd, res;
 	struct epoll_event *ev=NULL, *events = NULL;
 	unsigned int current_hash=0, current_num_of_ports=0;
@@ -256,12 +256,9 @@ void* epoll_ioscheduler::process_io_rx(void* grp){
 			//Timeout
 		}else{	
 			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Got %d events\n", res); 
-	
-			//FIXME: go through the marked events and return
-			//XXX
-			for(i=0; i<current_num_of_ports; ++i){
+			for(i=0; i<res; ++i){
 				/* Read */
-				port = ports[i];
+				port = ((epoll_event_data_t*)events[i].data.ptr)->port;
 				epoll_ioscheduler::process_port_rx(port);
 			}
 		}
@@ -323,6 +320,7 @@ void* epoll_ioscheduler::process_io_tx(void* grp){
 	ioport* port_list[EPOLL_IOSCHEDULER_MAX_TX_PORTS_PER_PG];
 	sem_t* sem = &pg->tx_sem;
 	struct timespec abs_timeout;
+	bool more_packets = false;
 	
 	/*
 	* Infinite loop unless group is stopped. e.g. all ports detached
@@ -336,22 +334,26 @@ void* epoll_ioscheduler::process_io_tx(void* grp){
 	}
 
 	while(iomanager::keep_on_working(pg)){
+		
+		if(!more_packets){
+			//cond_wait(update timeout)
+			clock_gettime(CLOCK_REALTIME, &abs_timeout);
+			//abs_timeout.tv_nsec += EPOLL_TIMEOUT_MS*100000000;
+			abs_timeout.tv_sec += 1; //EPOLL_TIMEOUT_MS*100000000; //FIXME
 
-		//cond_wait(update timeout)
-		clock_gettime(CLOCK_REALTIME, &abs_timeout);
-	 	//abs_timeout.tv_nsec += EPOLL_TIMEOUT_MS*100000000;
-	 	abs_timeout.tv_sec += 1; //EPOLL_TIMEOUT_MS*100000000; //FIXME
-
-		//Now wait
-		sem_ret = sem_timedwait(sem, &abs_timeout);
+			//Now wait
+			sem_ret = sem_timedwait(sem, &abs_timeout);
 	
-		if(sem_ret < 0){
-			//FIXME: trace
+			if(sem_ret < 0){
+				//FIXME: trace
+			}
 		}
+		
+		more_packets = false;
 		
 		//No timeout go over the ports
 		for(i=0; i<current_num_of_ports; ++i){
-			epoll_ioscheduler::process_port_tx(port_list[i]);
+			more_packets |= epoll_ioscheduler::process_port_tx(port_list[i]);
 		}
 
 		//Check for updates in the running ports 

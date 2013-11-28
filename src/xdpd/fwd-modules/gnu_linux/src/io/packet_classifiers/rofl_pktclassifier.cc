@@ -1164,11 +1164,13 @@ void rofl_pktclassifier::dump(){
 	ROFL_DEBUG("datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
 	rofl::fframe *frame = fhead;
 	while (NULL != frame) {
-		ROFL_DEBUG("%s\n", frame->c_str());
+		std::stringstream sstr; sstr << frame;
+		ROFL_DEBUG("%s\n", sstr.str().c_str());
 		frame = frame->next;
 	}
 	rofl::fframe content(pkt->get_buffer(), pkt->get_buffer_length());
-	ROFL_DEBUG("content: %s\n", content.c_str());
+	std::stringstream sstr; sstr << content;
+	ROFL_DEBUG("content: %s\n", sstr.str().c_str());
 }
 
 

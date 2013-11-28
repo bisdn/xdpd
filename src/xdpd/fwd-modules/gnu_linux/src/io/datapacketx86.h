@@ -10,8 +10,14 @@
 #include <sys/types.h>
 #include <rofl.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <rofl/common/cmemory.h>
+#include <rofl/datapath/pipeline/platform/memory.h>
 
-#include "packet_classifiers/packetclassifier.h"
+#ifdef C_PACKET_CLASSIFIER
+	#include "packet_classifiers/c_pktclassifier/c_pktclassifier.h"
+#else
+	#include "packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
+#endif
 
 //Profiling
 #include "../util/time_measurements.h"
@@ -100,17 +106,24 @@ public: // methods
 	//Transfer buffer to user-space
 	rofl_result_t transfer_to_user_space(void);
 
-	//Header packet classification	
-	friend class packetclassifier;
-	packetclassifier* headers;
-	
+	//Header packet classification
+	struct classify_state* headers;
 
 	//Other	
 	friend std::ostream& operator<<(std::ostream& os, datapacketx86& pack);
 	inline void dump(void) {
-		headers->dump();
+		dump_pkt_classifier(headers); //headers->dump();
 	}
 
+	/*
+	* Push&pop raw operations. To be used ONLY by classifiers
+	*/
+	rofl_result_t push(unsigned int offset, unsigned int num_of_bytes);
+	rofl_result_t pop(unsigned int offset, unsigned int num_of_bytes);
+
+	rofl_result_t push(uint8_t* push_point, unsigned int num_of_bytes);
+	rofl_result_t pop(uint8_t* pop_point, unsigned int num_of_bytes);
+	
 private:
 	//HOST buffer size
 	static const unsigned int PRE_GUARD_BYTES  = 256;
@@ -145,16 +158,6 @@ private:
 	init_internal_buffer_location_defaults(x86buffering_status_t location, uint8_t* buf, size_t buflen);
 	//Add more stuff here...
 
-	
-	/*
-	* Push&pop raw operations. To be used ONLY by classifiers
-	*/
-	rofl_result_t push(unsigned int num_of_bytes, unsigned int offset = 0);
-	rofl_result_t pop(unsigned int num_of_bytes, unsigned int offset = 0);
-
-	rofl_result_t push(uint8_t* push_point, unsigned int num_of_bytes);
-	rofl_result_t pop(uint8_t* pop_point, unsigned int num_of_bytes);
-
 public:
 
 	friend std::ostream&
@@ -171,6 +174,7 @@ public:
 		os << ">";
 		return os;
 	};
+
 };
 
 /*

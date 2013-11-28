@@ -1,8 +1,10 @@
 #include "datapacketx86.h"
 
 //Include here the classifier you want to use
-#include "packet_classifiers/rofl_pktclassifier.h"
-#include "packet_classifiers/static_pktclassifier.h"
+#ifndef C_PACKET_CLASSIFIER
+	#include "packet_classifiers/cpp_pktclassifier/rofl_pktclassifier.h"
+	#include "packet_classifiers/cpp_pktclassifier/static_pktclassifier.h"
+#endif
 
 using namespace xdpd::gnu_linux;
 
@@ -11,8 +13,7 @@ using namespace xdpd::gnu_linux;
  */
 
 //Change this if you want to use another classifier
-//typedef rofl_pktclassifier pktclassifier;
-typedef static_pktclassifier pktclassifier;
+typedef struct classify_state pktclassifier;
 
 //Constructor
 datapacketx86::datapacketx86() :
@@ -29,17 +30,16 @@ datapacketx86::datapacketx86() :
 	pktin_table_id(0),
 	pktin_reason(0),
 	extra(NULL),
-	headers(new pktclassifier(this)),
 	buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY)
 {
-
+	headers = init_classifier();
 }
 
 
 
 datapacketx86::~datapacketx86()
 {
-	delete headers;
+	destroy_classifier(headers);
 }
 
 
@@ -98,7 +98,7 @@ datapacketx86::init(
 	
 	//Classify the packet
 	if(classify)
-		headers->classify();
+		classify_packet(headers, this->get_buffer(), this->get_buffer_length());
 
 	return ROFL_SUCCESS;
 }
@@ -108,7 +108,7 @@ datapacketx86::init(
 void
 datapacketx86::destroy(void)
 {
-	headers->classify_reset();
+	reset_classifier(headers);
 
 	if (X86_DATAPACKET_BUFFERED_IN_USER_SPACE == get_buffering_status()){
 #ifndef NDEBUG
@@ -151,7 +151,7 @@ rofl_result_t datapacketx86::transfer_to_user_space(){
 			
 			//Re-classify 
 			//TODO: use offsets instead of fixed pointers for frames to avoid re-classification here
-			headers->classify();
+			classify_packet(headers, this->get_buffer(), this->get_buffer_length());
 			
 			//Copy done
 		} return ROFL_SUCCESS;

@@ -21,6 +21,7 @@
 #include "io/ports/mmap/ioport_mmap.h"
 #include "io/bufferpool.h"
 
+
 using namespace std;
 using namespace xdpd::gnu_linux;
 
@@ -147,11 +148,11 @@ MMAPPortTest::setUp()
 
 	// create the packet contents
 	pkt_x86->init(NULL, 250, NULL,1);
-	pkt_x86->headers->classify();
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 
-	pkt_x86->headers->ether(0)->set_dl_dst(rofl::cmacaddr("00:11:11:11:11:11"));
-	pkt_x86->headers->ether(0)->set_dl_src(rofl::cmacaddr("00:22:22:22:22:22"));
-	pkt_x86->headers->ether(0)->set_dl_type(0x0800);
+	set_dl_eth_dst(ether(pkt_x86->headers, 0), rofl::cmacaddr("00:11:11:11:11:11").get_mac());
+	set_dl_eth_src(ether(pkt_x86->headers,0), rofl::cmacaddr("00:22:22:22:22:22").get_mac());
+	set_dl_eth_type(ether(pkt_x86->headers,0), 0x0800);
 
 	// Allocate free buffer
 	pkt_vlan = bufferpool::get_free_buffer();
@@ -159,17 +160,17 @@ MMAPPortTest::setUp()
 
 	// create the packet contents
 	pkt_x86->init(NULL, 254, NULL,1);
-	pkt_x86->headers->classify();
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 
-	pkt_x86->headers->ether(0)->set_dl_dst(rofl::cmacaddr("00:11:11:11:11:11"));
-	pkt_x86->headers->ether(0)->set_dl_src(rofl::cmacaddr("00:22:22:22:22:22"));
-	pkt_x86->headers->ether(0)->set_dl_type(ETH_P_8021Q);
-	pkt_x86->headers->classify();
+	set_dl_eth_dst(ether(pkt_x86->headers,0), rofl::cmacaddr("00:11:11:11:11:11").get_mac());
+	set_dl_eth_src(ether(pkt_x86->headers,0), rofl::cmacaddr("00:22:22:22:22:22").get_mac());
+	set_dl_eth_type(ether(pkt_x86->headers,0), ETH_P_8021Q);
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 
-	pkt_x86->headers->vlan(0)->set_dl_vlan_id(16);
-	pkt_x86->headers->vlan(0)->set_dl_vlan_pcp(0x2);
+	set_dl_vlan_id(vlan(pkt_x86->headers,0),16);
+	set_dl_vlan_pcp(vlan(pkt_x86->headers,0),0x2);
 	// pkt_x86->headers->vlan(0)->set_dl_vlan_cfi(true); // todo this fails if it is set (fail in mmap?)
-	pkt_x86->headers->vlan(0)->set_dl_type(ETH_P_IP);
+	set_dl_vlan_type(vlan(pkt_x86->headers,0),ETH_P_IP);
 	// todo could fill in also ip layer data + payload
 	
 	//add queues

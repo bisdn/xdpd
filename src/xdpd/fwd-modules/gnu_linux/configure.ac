@@ -41,6 +41,13 @@ m4_include([../../../../config/verbose.m4])
 # Check for profiling mode
 m4_include([../../../../config/profiling.m4])
 
+# C classifier
+enable_c_classifier=1
+AM_CONDITIONAL(C_CLASSIFIER, test $enable_c_classifier -eq 1)
+if test $enable_c_classifier -eq 1 ; then
+	AC_DEFINE(C_PACKET_CLASSIFIER)
+fi
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
@@ -48,6 +55,8 @@ AC_CONFIG_FILES([
 	src/afa-imp/openflow/openflow1x/Makefile
 	src/io/Makefile
 	src/io/packet_classifiers/Makefile
+	src/io/packet_classifiers/cpp_pktclassifier/Makefile
+	src/io/packet_classifiers/c_pktclassifier/Makefile
 	src/io/ports/Makefile
 	src/io/ports/mmap/Makefile
 	src/io/ports/mockup/Makefile

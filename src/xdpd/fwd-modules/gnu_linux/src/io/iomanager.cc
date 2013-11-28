@@ -326,15 +326,15 @@ void iomanager::stop_portgroup_threads(portgroup_state* pg){
 * Checks whether it exists a portgroup with grp_id. This method is NOT thread-safe 
 */
 portgroup_state* iomanager::get_group(int grp_id){
+	
+	size_t i;
 
-	portgroup_state* pg;
-
-	try{
-		pg = portgroups[grp_id];
-		return pg;
-	}catch(...){
-		return NULL; 
+	for(i=0;i<portgroups.size();++i){
+		if(portgroups[i]->id == (unsigned int)grp_id)
+			return portgroups[i];
 	}
+	
+	return NULL; 
 }
 
 /*

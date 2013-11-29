@@ -75,7 +75,7 @@ rofl_result_t iomanager::add_port(ioport* port){
 	curr_tx_group_sched_pointer = (curr_tx_group_sched_pointer+1) % IO_TX_TOTAL_THREADS; //Only over TX groups
 	pthread_mutex_unlock(&mutex);
 	
-	ROFL_DEBUG("[iomanager] Adding port %s to iomanager, at portgroup %u\n", port->of_port_state->name, grp_id); 
+	ROFL_DEBUG("[iomanager] Adding port %s to iomanager, at portgroup TX %u\n", port->of_port_state->name, grp_id); 
 	 	
 	//TX	
 	port->set_pg_tx_sem(&get_group(grp_id)->tx_sem); //Avoid race condition
@@ -88,6 +88,9 @@ rofl_result_t iomanager::add_port(ioport* port){
 
 	//RX
 	grp_id = processingmanager::get_rx_pg_index_rr(port->of_port_state->attached_sw, port);	
+	
+	ROFL_DEBUG("[iomanager] Adding port %s to iomanager, at portgroup RX %u\n", port->of_port_state->name, grp_id); 
+	
 	if(add_port_to_group(grp_id, port) != ROFL_SUCCESS){
 		ROFL_ERR("[iomanager] Adding port %s to iomanager (RX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
 		assert(0);

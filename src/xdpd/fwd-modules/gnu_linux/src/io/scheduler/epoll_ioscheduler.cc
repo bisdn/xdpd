@@ -230,7 +230,8 @@ void* epoll_ioscheduler::process_io_rx(void* grp){
 	init_or_update_fds(pg, ports, &epfd, &ev, &events, &current_num_of_ports, &current_hash );
 
 	assert(pg->type == PG_RX);
-	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O RX thread on process id: %u(%u) for group \n", syscall(SYS_gettid), pthread_self(), pg->id);
+
+	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O RX thread on process id: %u(%u) for group %u\n", syscall(SYS_gettid), pthread_self(), pg->id);
 	
 	ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
 	
@@ -327,7 +328,7 @@ void* epoll_ioscheduler::process_io_tx(void* grp){
 	*/
 
 	assert(pg->type == PG_TX);
-	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O TX thread on process id: %u(%u) for group \n", syscall(SYS_gettid), pthread_self(), pg->id);
+	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O TX thread on process id: %u(%u) for group %u\n", syscall(SYS_gettid), pthread_self(), pg->id);
 	
 	if(update_tx_port_list(pg, &current_num_of_ports, &current_hash, port_list) != ROFL_SUCCESS){
 		pthread_exit(NULL);

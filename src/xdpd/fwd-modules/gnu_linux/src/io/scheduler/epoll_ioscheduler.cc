@@ -67,7 +67,8 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 				/*
 				* Process packets
 				*/
-				//Process it through the pipeline	
+				//Process it through the pipeline
+				TM_STAMP_STAGE(pkt, TM_S3);
 				of_process_packet_pipeline(sw, pkt);
 					
 #ifdef DEBUG

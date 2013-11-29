@@ -114,7 +114,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	pkt_x86->pktin_reason = reason;
 	
 	//Timestamp SB6_PRE	
-	TM_STAMP_STAGE(pkt, TM_SB6_PRE);
+	TM_STAMP_STAGE(pkt, TM_SB5_PRE);
 		
 	//Enqueue
 	if( ls_state->pkt_in_queue->non_blocking_write(pkt) == ROFL_SUCCESS ){
@@ -122,14 +122,14 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		notify_packet_in();
 			
 		//Timestamp SB6_SUCCESS	
-		TM_STAMP_STAGE(pkt, TM_SB6_SUCCESS);
+		TM_STAMP_STAGE(pkt, TM_SB5_SUCCESS);
 	}else{
 		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
 		//Return to the bufferpool
 		bufferpool::release_buffer(pkt);
 
 		//Timestamp SB6_FAILURE
-		TM_STAMP_STAGE(pkt, TM_SB6_FAILURE);
+		TM_STAMP_STAGE(pkt, TM_SB5_FAILURE);
 	}
 }
 

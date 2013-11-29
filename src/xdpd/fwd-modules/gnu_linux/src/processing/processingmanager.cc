@@ -91,7 +91,8 @@ int processingmanager::get_rx_pg_index_rr(of_switch_t* sw, ioport* port){
 
 	//Do it in mutual exclusion
 	pthread_mutex_lock(&mutex);
-	i = state->curr +1 % IO_RX_THREADS_PER_LSI; //RR
+	i = (state->curr +1) % IO_RX_THREADS_PER_LSI; //RR
+	state->curr = i;
 	pthread_mutex_unlock(&mutex);
 
 	return state->pg_index[i];

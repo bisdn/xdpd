@@ -415,7 +415,7 @@ rofl_result_t iomanager::delete_group(unsigned int grp_id){
 	}
 
 	//Delete it from the portgroups list 
-	portgroups.erase(grp_id);
+	portgroups.erase(pg);
 
 	//Free memory 
 	delete pg->ports;

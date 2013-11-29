@@ -80,6 +80,7 @@ protected:
 
 	static rofl_result_t update_tx_port_list(portgroup_state* grp, unsigned int* current_num_of_ports, unsigned int* current_hash, ioport* port_list[]);
 
+	static void set_kernel_scheduling(void);
 
 	/* Debugging stuff */
 #ifdef DEBUG

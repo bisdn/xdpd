@@ -77,6 +77,15 @@
 //Buffer storage(PKT_IN) expiration time (seconds)
 #define IO_PKT_IN_STORAGE_EXPIRATION_S 180
 
+//Kernel scheduling policy for I/O threads. Possible values SCHED_FIFO, SCHED_RR or SCHED_OTHER
+//Warning: change it only if you know what you are doing 
+#define IO_KERN_SCHED_POL SCHED_RR
+
+//Uncomment this to prevent fwd_module to change priority and scheduling policy for I/O threads
+//Warning: change it only if you know what you are doing 
+//#define IO_KERN_SCHED_POL SCHED_BATCH
+
+
 /*
 * Processing subsystem parameters
 */

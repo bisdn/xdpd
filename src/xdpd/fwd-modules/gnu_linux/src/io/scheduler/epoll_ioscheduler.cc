@@ -1,6 +1,7 @@
 #include "epoll_ioscheduler.h"
 
 #include <assert.h>
+#include <sched.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -214,6 +215,28 @@ inline void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevecto
 	pg->running_ports->read_unlock();
 }
 
+void epoll_ioscheduler::set_kernel_scheduling(){
+
+#ifndef IO_KERN_DONOT_CHANGE_SCHED
+	struct sched_param sched_param;
+	
+	if (sched_getparam(0, &sched_param) < 0) {
+		ROFL_WARN("[epoll_ioscheduler] Unable to get properties for thread on process id %u(%u): %s(%u)\n", syscall(SYS_gettid), pthread_self(), strerror(errno), errno);
+		return;
+	}
+
+	//Set max
+	sched_param.sched_priority = sched_get_priority_max(IO_KERN_SCHED_POL); 
+	
+	if(sched_setscheduler(0, IO_KERN_SCHED_POL, &sched_param) < 0){
+		ROFL_WARN("[epoll_ioscheduler] Unable to set scheduling and/or priority for thread on process id %u(%u): %s(%u)\n", syscall(SYS_gettid), pthread_self(), strerror(errno), errno);
+	}
+		
+	ROFL_DEBUG("[epoll_ioscheduler] Set scheduling policy (%u) and priority for thread on process id %u(%u)\n", IO_KERN_SCHED_POL, syscall(SYS_gettid), pthread_self());
+
+#endif
+
+}
 
 void* epoll_ioscheduler::process_io_rx(void* grp){
 
@@ -234,7 +257,10 @@ void* epoll_ioscheduler::process_io_rx(void* grp){
 	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O RX thread on process id: %u(%u) for group %u\n", syscall(SYS_gettid), pthread_self(), pg->id);
 	
 	ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
-	
+
+	//Set scheduling and priority
+	set_kernel_scheduling();
+
 	/*
 	* Infinite loop unless group is stopped. e.g. all ports detached
 	*/
@@ -326,6 +352,9 @@ void* epoll_ioscheduler::process_io_tx(void* grp){
 	/*
 	* Infinite loop unless group is stopped. e.g. all ports detached
 	*/
+
+	//Set scheduling and priority
+	set_kernel_scheduling();
 
 	assert(pg->type == PG_TX);
 	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O TX thread on process id: %u(%u) for group %u\n", syscall(SYS_gettid), pthread_self(), pg->id);

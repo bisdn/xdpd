@@ -79,6 +79,9 @@ afa_result_t fwd_module_destroy(){
 	unsigned int i, max_switches;
 	of_switch_t** switch_list;
 
+	//Stop the bg manager
+	stop_background_tasks_manager();
+
 	//Initialize the iomanager (Stop feeding packets)
 	iomanager::destroy();
 
@@ -89,9 +92,6 @@ afa_result_t fwd_module_destroy(){
 			fwd_module_destroy_switch_by_dpid(switch_list[i]->dpid);
 		}
 	}
-
-	//Stop the bg manager
-	stop_background_tasks_manager();
 
 	//Destroy interfaces
 	destroy_ports();

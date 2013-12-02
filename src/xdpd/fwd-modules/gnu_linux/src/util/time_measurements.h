@@ -145,6 +145,7 @@ extern time_measurements_t global_measurements;
 				assert(tm->current[TM_S3] != 0.0);
 				tm->accumulated[stage] += now - tm->current[TM_S3];		//Avoid race condition
 				//fprintf(stderr, "S4 now: %"PRIu64", diff: %"PRIu64"\n", now, now - tm->current[TM_S3]);
+				tm->s4_reached = true;
 				break;
 			case TM_SA5_PRE:
 				assert(tm->current[TM_S4] != 0.0);

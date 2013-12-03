@@ -344,12 +344,6 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IN_PORT:
 			match.set_in_port(m->value->value.u32);
 			break;
-		case OF1X_MATCH_IN_PHY_PORT:
-			match.set_in_phy_port(m->value->value.u32);
-			break;
-		case OF1X_MATCH_METADATA:
-			match.set_metadata(m->value->value.u64);
-			break;
 		case OF1X_MATCH_ETH_DST:
 		{
 			cmacaddr maddr(m->value->value.u64);
@@ -632,10 +626,6 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches_t* packet_matches, cofmatch& match){
 	if(packet_matches->port_in)
 		match.set_in_port(packet_matches->port_in);
-	if(packet_matches->phy_port_in)
-		match.set_in_phy_port(packet_matches->phy_port_in);
-	//if(packet_matches->metadata)
-	//	match.set_metadata(packet_matches->metadata);
 	if(packet_matches->eth_dst){
 		cmacaddr maddr(packet_matches->eth_dst);
 		cmacaddr mmask(0x0000FFFFFFFFFFFFULL);

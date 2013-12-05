@@ -40,19 +40,19 @@ void destroy_classifier(struct classify_state* clas_state);
 void classify_packet(struct classify_state* clas_state, uint8_t* pkt, size_t len);
 void reset_classifier(struct classify_state* clas_state);
 
-void* ether(struct classify_state* clas_state, int idx);
-void* vlan(struct classify_state* clas_state, int idx);
-void* mpls(struct classify_state* clas_state, int idx);
-void* arpv4(struct classify_state* clas_state, int idx);
-void* ipv4(struct classify_state* clas_state, int idx);
-void* icmpv4(struct classify_state* clas_state, int idx);
-void* ipv6(struct classify_state* clas_state, int idx);
-void* icmpv6(struct classify_state* clas_state, int idx);
-void* udp(struct classify_state* clas_state, int idx);
-void* tcp(struct classify_state* clas_state, int idx);
-void* pppoe(struct classify_state* clas_state, int idx);
-void* ppp(struct classify_state* clas_state, int idx);
-void* gtp(struct classify_state* clas_state, int idx);
+void* get_ether_hdr(struct classify_state* clas_state, int idx);
+void* get_vlan_hdr(struct classify_state* clas_state, int idx);
+void* get_mpls_hdr(struct classify_state* clas_state, int idx);
+void* get_arpv4_hdr(struct classify_state* clas_state, int idx);
+void* get_ipv4_hdr(struct classify_state* clas_state, int idx);
+void* get_icmpv4_hdr(struct classify_state* clas_state, int idx);
+void* get_ipv6_hdr(struct classify_state* clas_state, int idx);
+void* get_icmpv6_hdr(struct classify_state* clas_state, int idx);
+void* get_udp_hdr(struct classify_state* clas_state, int idx);
+void* get_tcp_hdr(struct classify_state* clas_state, int idx);
+void* get_pppoe_hdr(struct classify_state* clas_state, int idx);
+void* get_ppp_hdr(struct classify_state* clas_state, int idx);
+void* get_gtp_hdr(struct classify_state* clas_state, int idx);
 
 //push & pop
 void pop_vlan(datapacket_t* pkt, struct classify_state* clas_state);

@@ -83,7 +83,7 @@
 
 //Uncomment this to prevent fwd_module to change priority and scheduling policy for I/O threads
 //Warning: change it only if you know what you are doing 
-//#define IO_KERN_SCHED_POL SCHED_BATCH
+//#define IO_KERN_DONOT_CHANGE_SCHED 
 
 
 /*

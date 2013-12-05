@@ -69,11 +69,11 @@ struct cpc_icmpv6_mtu_t {
 } __attribute__((packed));
 
 typedef union icmpv6optu{
-	struct cpc_icmpv6_option_hdr_t		*optu;
-	struct cpc_icmpv6_lla_option_t		*optu_lla;
-	struct cpc_icmpv6_prefix_info_t	*optu_pfx;
-	struct cpc_icmpv6_redirected_hdr_t	*optu_rdr;
-	struct cpc_icmpv6_mtu_t				*optu_mtu;
+	struct cpc_icmpv6_option_hdr_t		optu;
+	struct cpc_icmpv6_lla_option_t		optu_lla;
+	struct cpc_icmpv6_prefix_info_t	optu_pfx;
+	struct cpc_icmpv6_redirected_hdr_t	optu_rdr;
+	struct cpc_icmpv6_mtu_t				optu_mtu;
 } cpc_icmpv6optu_t;
 
 enum icmpv6_ip_proto_t {
@@ -177,7 +177,7 @@ struct cpc_icmpv6_echo_reply_hdr_t {
 struct cpc_icmpv6_router_solicitation_hdr_t {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=133, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
-	struct cpc_icmpv6_option_hdr_t	options[0];
+	cpc_icmpv6optu_t				options[0];
 } __attribute__((packed));
 
 /* ICMPv6 router advertisement */
@@ -188,7 +188,7 @@ struct cpc_icmpv6_router_advertisement_hdr_t {
 	uint16_t 						rtr_lifetime;
 	uint32_t						reachable_timer;
 	uint32_t 						retrans_timer;
-	struct cpc_icmpv6_option_hdr_t	options[0];
+	cpc_icmpv6optu_t				options[0];
 } __attribute__((packed));
 
 /* ICMPv6 neighbor solicitation */
@@ -196,24 +196,24 @@ struct cpc_icmpv6_neighbor_solicitation_hdr_t {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=135, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
-	struct cpc_icmpv6_option_hdr_t	options[0];
+	cpc_icmpv6optu_t				options[0];
 } __attribute__((packed));
 
 /* ICMPv6 neighbor advertisement */
 struct cpc_icmpv6_neighbor_advertisement_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_header;				// type=136, code=0
+	cpc_icmpv6_hdr_t				icmpv6_header;				// type=136, code=0
 	uint32_t 						flags;
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
-	struct cpc_icmpv6_option_hdr_t	options[0];
+	cpc_icmpv6optu_t				options[0];
 } __attribute__((packed));
 
 /* ICMPv6 redirect message */
 struct cpc_icmpv6_redirect_hdr_t {
-	cpc_icmpv6_hdr_t			icmpv6_header;				// type=137, code=0
+	cpc_icmpv6_hdr_t				icmpv6_header;				// type=137, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
 	uint8_t							daddr[IPV6_ADDR_LEN];	// =destination address
-	struct cpc_icmpv6_option_hdr_t	options[0];
+	cpc_icmpv6optu_t				options[0];
 } __attribute__((packed));
 
 typedef union cpc_icmpv6u{
@@ -343,22 +343,22 @@ void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 
 inline static
 uint8_t get_icmpv6_opt_type(void *hdr){
-	return ((cpc_icmpv6optu_t*)hdr)->optu->type;
+	return ((cpc_icmpv6optu_t*)hdr)->optu.type;
 };
 
 inline static
 void set_icmpv6_opt_type(void *hdr, uint8_t type){
-	((cpc_icmpv6optu_t*)hdr)->optu->type = type;
+	((cpc_icmpv6optu_t*)hdr)->optu.type = type;
 };
 
 inline static
 uint64_t get_ll_taddr(void *hdr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu->type){
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu.type){
 		return 0;
 	}
-	uint64_t ret =mac_addr_to_u64(icmpv6_opt_hdr->optu_lla->addr);
+	uint64_t ret =mac_addr_to_u64(icmpv6_opt_hdr->optu_lla.addr);
 	CPC_SWAP_MAC(ret);
 	return ret;
 };
@@ -367,22 +367,22 @@ inline static
 void set_ll_taddr(void *hdr, uint64_t taddr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu->type){
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu.type){
 		return;
 	}
 	CPC_SWAP_MAC(taddr);
-	u64_to_mac_ptr(icmpv6_opt_hdr->optu_lla->addr,taddr);
+	u64_to_mac_ptr(icmpv6_opt_hdr->optu_lla.addr,taddr);
 };
 
 inline static
 uint64_t get_ll_saddr(void *hdr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_SOURCE !=icmpv6_opt_hdr->optu->type){
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_SOURCE !=icmpv6_opt_hdr->optu.type){
 		return 0;
 	}
 	
-	uint64_t ret =mac_addr_to_u64(icmpv6_opt_hdr->optu_lla->addr);
+	uint64_t ret =mac_addr_to_u64(icmpv6_opt_hdr->optu_lla.addr);
 	CPC_SWAP_MAC(ret);
 	return ret;
 };
@@ -391,51 +391,51 @@ inline static
 void set_ll_saddr(void *hdr, uint64_t saddr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_SOURCE != icmpv6_opt_hdr->optu->type){
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_SOURCE != icmpv6_opt_hdr->optu.type){
 		return;
 	}
 	CPC_SWAP_MAC(saddr);
-	u64_to_mac_ptr(icmpv6_opt_hdr->optu_lla->addr,saddr);
+	u64_to_mac_ptr(icmpv6_opt_hdr->optu_lla.addr,saddr);
 };
 
 inline static
 uint8_t get_pfx_on_link_flag(void *hdr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type){
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu.type){
 		return 0;
 	}
-	return ( (icmpv6_opt_hdr->optu_pfx->flags & 0x80) >> 7 );
+	return ( (icmpv6_opt_hdr->optu_pfx.flags & 0x80) >> 7 );
 };
 
 inline static
 void set_pfx_on_link_flag(void *hdr, uint8_t flag){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type){
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu.type){
 		return;
 	}
-	icmpv6_opt_hdr->optu_pfx->flags = (icmpv6_opt_hdr->optu_pfx->flags & 0x7F) | ((flag & 0x01) << 7);
+	icmpv6_opt_hdr->optu_pfx.flags = (icmpv6_opt_hdr->optu_pfx.flags & 0x7F) | ((flag & 0x01) << 7);
 };
 
 inline static
 uint8_t get_pfx_aac_flag(void *hdr){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type){
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu.type){
 		return 0;
 	}
-	return ((icmpv6_opt_hdr->optu_pfx->flags & 0x40) >> 6);
+	return ((icmpv6_opt_hdr->optu_pfx.flags & 0x40) >> 6);
 };
 
 inline static
 void set_pfx_aac_flag(void *hdr, uint8_t flag){
 	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
 	
-	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu->type){
+	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu.type){
 		return;
 	}
-	icmpv6_opt_hdr->optu_pfx->flags = (icmpv6_opt_hdr->optu_pfx->flags & 0xBF) | ((flag & 0x01) << 6);
+	icmpv6_opt_hdr->optu_pfx.flags = (icmpv6_opt_hdr->optu_pfx.flags & 0xBF) | ((flag & 0x01) << 6);
 };
 
 #endif //_CPC_ICMPV6_H_

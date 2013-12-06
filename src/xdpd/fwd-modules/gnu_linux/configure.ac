@@ -42,7 +42,7 @@ m4_include([../../../../config/verbose.m4])
 m4_include([../../../../config/profiling.m4])
 
 # C classifier
-enable_c_classifier=0
+enable_c_classifier=1
 AM_CONDITIONAL(C_CLASSIFIER, test $enable_c_classifier -eq 1)
 if test $enable_c_classifier -eq 1 ; then
 	AC_DEFINE(C_PACKET_CLASSIFIER)

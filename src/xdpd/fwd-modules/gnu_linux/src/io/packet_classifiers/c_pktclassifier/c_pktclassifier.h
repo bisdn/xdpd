@@ -364,7 +364,7 @@ void* get_ppp_hdr(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* get_gtp_hdr(classify_state_t* clas_state, int idx){
+void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;
 
 	if(idx > (int)MAX_GTP_FRAMES)

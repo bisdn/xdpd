@@ -14,48 +14,48 @@
 * @brief Wrapper for the c++ classifier
 */
 
-uint8_t get_gtp_version(void *hdr);
+uint8_t get_gtpu_version(void *hdr);
 
-void set_gtp_version(void *hdr, uint8_t version);
+void set_gtpu_version(void *hdr, uint8_t version);
 
-bool get_pt_flag(void *hdr);
+bool get_gtpu_pt_flag(void *hdr);
 
-void set_pt_flag(void *hdr, bool pt);
+void set_gtpu_pt_flag(void *hdr, bool pt);
 
-bool get_e_flag(void *hdr);
+bool get_gtpu_e_flag(void *hdr);
 
-void set_e_flag(void *hdr, bool e);
+void set_gtpu_e_flag(void *hdr, bool e);
 
-bool get_s_flag(void *hdr);
+bool get_gtpu_s_flag(void *hdr);
 
-void set_s_flag(void *hdr, bool s);
+void set_gtpu_s_flag(void *hdr, bool s);
 
-bool get_pn_flag(void *hdr);
+bool get_gtpu_pn_flag(void *hdr);
 
-void set_pn_flag(void *hdr, bool pn);
+void set_gtpu_pn_flag(void *hdr, bool pn);
 
-uint8_t get_msg_type(void *hdr);
+uint8_t get_gtpu_msg_type(void *hdr);
 
-void set_msg_type(void *hdr, uint8_t msgtype);
+void set_gtpu_msg_type(void *hdr, uint8_t msgtype);
 
-uint16_t get_gtp_length(void *hdr);
+uint16_t get_gtpu_length(void *hdr);
 
-void set_gtp_length(void *hdr, uint16_t length);
+void set_gtpu_length(void *hdr, uint16_t length);
 
-uint32_t get_teid(void *hdr);
+uint32_t get_gtpu_teid(void *hdr);
 
-void set_teid(void *hdr, uint32_t teid);
+void set_gtpu_teid(void *hdr, uint32_t teid);
 
-uint16_t get_seq_no(void *hdr);
+uint16_t get_gtpu_seq_no(void *hdr);
 
-void set_seq_no(void *hdr, uint16_t seqno);
+void set_gtpu_seq_no(void *hdr, uint16_t seqno);
 
-uint8_t get_npdu_no(void *hdr);
+uint8_t get_gtpu_npdu_no(void *hdr);
 
-void set_npdu_no(void *hdr, uint8_t npdu);
+void set_gtpu_npdu_no(void *hdr, uint8_t npdu);
 
-uint8_t get_ext_type(void *hdr);
+uint8_t get_gtpu_ext_type(void *hdr);
 
-void set_ext_type(void *hdr, uint8_t exthdr);
+void set_gtpu_ext_type(void *hdr, uint8_t exthdr);
 
 #endif //_CPP_GTPU_H_

@@ -238,7 +238,7 @@ void icmpv6_calc_checksum(void *hdr, uint16_t length){
 };
 
 inline static
-cpc_icmpv6optu_t *icmpv6_get_option(void *hdr){
+cpc_icmpv6optu_t *get_icmpv6_option(void *hdr){
 
 	//TODO ... return the option of the specified type
 	switch(((cpc_icmpv6_hdr_t*)hdr)->type){
@@ -352,8 +352,8 @@ void set_icmpv6_opt_type(void *hdr, uint8_t type){
 };
 
 inline static
-uint64_t get_ll_taddr(void *hdr){
-	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
+uint64_t get_icmpv6_ll_taddr(void *hdr){
+	cpc_icmpv6optu_t *icmpv6_opt_hdr = get_icmpv6_option(hdr);
 	
 	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu.type){
 		return 0;
@@ -364,8 +364,8 @@ uint64_t get_ll_taddr(void *hdr){
 };
 
 inline static
-void set_ll_taddr(void *hdr, uint64_t taddr){
-	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
+void set_icmpv6_ll_taddr(void *hdr, uint64_t taddr){
+	cpc_icmpv6optu_t *icmpv6_opt_hdr = get_icmpv6_option(hdr);
 	
 	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_TARGET != icmpv6_opt_hdr->optu.type){
 		return;
@@ -375,8 +375,8 @@ void set_ll_taddr(void *hdr, uint64_t taddr){
 };
 
 inline static
-uint64_t get_ll_saddr(void *hdr){
-	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
+uint64_t get_icmpv6_ll_saddr(void *hdr){
+	cpc_icmpv6optu_t *icmpv6_opt_hdr = get_icmpv6_option(hdr);
 	
 	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_SOURCE !=icmpv6_opt_hdr->optu.type){
 		return 0;
@@ -388,8 +388,8 @@ uint64_t get_ll_saddr(void *hdr){
 };
 
 inline static
-void set_ll_saddr(void *hdr, uint64_t saddr){
-	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
+void set_icmpv6_ll_saddr(void *hdr, uint64_t saddr){
+	cpc_icmpv6optu_t *icmpv6_opt_hdr = get_icmpv6_option(hdr);
 	
 	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_LLADDR_SOURCE != icmpv6_opt_hdr->optu.type){
 		return;
@@ -399,8 +399,8 @@ void set_ll_saddr(void *hdr, uint64_t saddr){
 };
 
 inline static
-uint8_t get_pfx_on_link_flag(void *hdr){
-	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
+uint8_t get_icmpv6_pfx_on_link_flag(void *hdr){
+	cpc_icmpv6optu_t *icmpv6_opt_hdr = get_icmpv6_option(hdr);
 	
 	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu.type){
 		return 0;
@@ -409,8 +409,8 @@ uint8_t get_pfx_on_link_flag(void *hdr){
 };
 
 inline static
-void set_pfx_on_link_flag(void *hdr, uint8_t flag){
-	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
+void set_icmpv6_pfx_on_link_flag(void *hdr, uint8_t flag){
+	cpc_icmpv6optu_t *icmpv6_opt_hdr = get_icmpv6_option(hdr);
 	
 	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu.type){
 		return;
@@ -419,8 +419,8 @@ void set_pfx_on_link_flag(void *hdr, uint8_t flag){
 };
 
 inline static
-uint8_t get_pfx_aac_flag(void *hdr){
-	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
+uint8_t get_icmpv6_pfx_aac_flag(void *hdr){
+	cpc_icmpv6optu_t *icmpv6_opt_hdr = get_icmpv6_option(hdr);
 	
 	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu.type){
 		return 0;
@@ -429,8 +429,8 @@ uint8_t get_pfx_aac_flag(void *hdr){
 };
 
 inline static
-void set_pfx_aac_flag(void *hdr, uint8_t flag){
-	cpc_icmpv6optu_t *icmpv6_opt_hdr = icmpv6_get_option(hdr);
+void set_icmpv6_pfx_aac_flag(void *hdr, uint8_t flag){
+	cpc_icmpv6optu_t *icmpv6_opt_hdr = get_icmpv6_option(hdr);
 	
 	if(NULL == icmpv6_opt_hdr || ICMPV6_OPT_PREFIX_INFO != icmpv6_opt_hdr->optu.type){
 		return;

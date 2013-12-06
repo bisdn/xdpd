@@ -76,7 +76,7 @@ void* get_ppp_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->ppp(idx);
 }
 
-void* get_gtp_hdr(struct classify_state* clas_state, int idx){
+void* get_gtpu_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->gtp(idx);
 }
 

@@ -37,39 +37,39 @@ uint8_t get_ipv6_ecn(void *hdr){
 	return ((rofl::fipv6frame*)hdr)->get_ecn();
 };
 
-void set_flow_label(void *hdr, uint32_t flabel){
+void set_ipv6_flow_label(void *hdr, uint32_t flabel){
 	((rofl::fipv6frame*)hdr)->set_flow_label(flabel);
 }
 
-uint32_t get_flow_label(void *hdr){
+uint32_t get_ipv6_flow_label(void *hdr){
 	return ((rofl::fipv6frame*)hdr)->get_flow_label();
 };
 
-void set_payload_length(void *hdr, uint16_t len){
+void set_ipv6_payload_length(void *hdr, uint16_t len){
 	((rofl::fipv6frame*)hdr)->set_payload_length(len);
 }
 
-uint16_t get_payload_length(void *hdr){
+uint16_t get_ipv6_payload_length(void *hdr){
 	return ((rofl::fipv6frame*)hdr)->get_payload_length();
 };
 
-void set_next_header(void *hdr, uint8_t nxthdr){
+void set_ipv6_next_header(void *hdr, uint8_t nxthdr){
 	((rofl::fipv6frame*)hdr)->set_next_header(nxthdr);
 }
 
-uint8_t get_next_header(void *hdr){
+uint8_t get_ipv6_next_header(void *hdr){
 	return ((rofl::fipv6frame*)hdr)->get_next_header();
 };
 
-void set_hop_limit(void *hdr, uint8_t hops){
+void set_ipv6_hop_limit(void *hdr, uint8_t hops){
 	((rofl::fipv6frame*)hdr)->set_hop_limit(hops);
 }
 
-uint8_t get_hop_limit(void *hdr){
+uint8_t get_ipv6_hop_limit(void *hdr){
 	return ((rofl::fipv6frame*)hdr)->get_hop_limit();
 };
 
-void dec_hop_limit(void *hdr){
+void dec_ipv6_hop_limit(void *hdr){
 	((rofl::fipv6frame*)hdr)->dec_hop_limit();
 };
 

@@ -27,27 +27,27 @@ enum icmpv4_ip_proto_t {
 };
 
 inline static
-uint8_t get_icmp_type(void *hdr){
+uint8_t get_icmpv4_type(void *hdr){
 	return ((cpc_icmpv4_hdr_t*)hdr)->type;
 };
 
 inline static
-void set_icmp_type(void *hdr, uint8_t type){
+void set_icmpv4_type(void *hdr, uint8_t type){
 	((cpc_icmpv4_hdr_t*)hdr)->type = type;
 };
 
 inline static
-uint8_t get_icmp_code(void *hdr){
+uint8_t get_icmpv4_code(void *hdr){
 	return ((cpc_icmpv4_hdr_t*)hdr)->code;
 };
 
 inline static
-void set_icmp_code(void *hdr, uint8_t code){
+void set_icmpv4_code(void *hdr, uint8_t code){
 	((cpc_icmpv4_hdr_t*)hdr)->code = code;
 };
 
 inline static
-uint16_t get_checksum(void *hdr){
+uint16_t get_icmpv4_checksum(void *hdr){
 	return CPC_BE16TOH(((cpc_icmpv4_hdr_t*)hdr)->checksum);
 };
 

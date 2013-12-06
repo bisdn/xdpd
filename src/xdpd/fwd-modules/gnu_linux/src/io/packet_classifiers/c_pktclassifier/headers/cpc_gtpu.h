@@ -81,22 +81,22 @@ typedef union cpc_gtphu{
 //NOTE PDULEN?
 
 inline static
-uint8_t get_gtp_version(void *hdr){
+uint8_t get_gtpu_version(void *hdr){
 	return (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags & 0xe0) >> 5;
 };
 
 inline static
-void set_gtp_version(void *hdr, uint8_t version){
+void set_gtpu_version(void *hdr, uint8_t version){
 	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags & 0x1f) | ((version & 0x03) << 5);
 };
 
 inline static
-bool get_pt_flag(void *hdr){
+bool get_gtpu_pt_flag(void *hdr){
 	return ((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags & GTPU_PT_FLAG; 
 };
 
 inline static
-void set_pt_flag(void *hdr, bool pt){
+void set_gtpu_pt_flag(void *hdr, bool pt){
 	if (pt)
 		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags |=  GTPU_PT_FLAG;
 	else
@@ -104,12 +104,12 @@ void set_pt_flag(void *hdr, bool pt){
 };
 
 inline static
-bool get_e_flag(void *hdr){
+bool get_gtpu_e_flag(void *hdr){
 	return ((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags & GTPU_E_FLAG; 
 };
 
 inline static
-void set_e_flag(void *hdr, bool e){
+void set_gtpu_e_flag(void *hdr, bool e){
 	if (e)
 		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags |=  GTPU_E_FLAG;
 	else
@@ -117,12 +117,12 @@ void set_e_flag(void *hdr, bool e){
 };
 
 inline static
-bool get_s_flag(void *hdr){
+bool get_gtpu_s_flag(void *hdr){
 	return ((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags & GTPU_S_FLAG; 
 };
 
 inline static
-void set_s_flag(void *hdr, bool s){
+void set_gtpu_s_flag(void *hdr, bool s){
 	if (s)
 		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags |=  GTPU_S_FLAG;
 	else
@@ -130,12 +130,12 @@ void set_s_flag(void *hdr, bool s){
 };
 
 inline static
-bool get_pn_flag(void *hdr){
+bool get_gtpu_pn_flag(void *hdr){
 	return ((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags & GTPU_PN_FLAG; 
 };
 
 inline static
-void set_pn_flag(void *hdr, bool pn){
+void set_gtpu_pn_flag(void *hdr, bool pn){
 	if (pn)
 		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->flags |=  GTPU_PN_FLAG;
 	else
@@ -143,38 +143,38 @@ void set_pn_flag(void *hdr, bool pn){
 };
 
 inline static
-uint8_t get_msg_type(void *hdr){
+uint8_t get_gtpu_msg_type(void *hdr){
 	return ((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->msgtype;
 };
 
 inline static
-void set_msg_type(void *hdr, uint8_t msgtype){
+void set_gtpu_msg_type(void *hdr, uint8_t msgtype){
 	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->msgtype = msgtype;
 };
 
 inline static
-uint16_t get_gtp_length(void *hdr){
+uint16_t get_gtpu_length(void *hdr){
 	return CPC_BE16TOH(((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr->len);
 };
 
 inline static
-void set_gtp_length(void *hdr, uint16_t length){
+void set_gtpu_length(void *hdr, uint16_t length){
 	((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr->len = CPC_HTOBE16(length);
 };
 
 inline static
-uint32_t get_teid(void *hdr){
+uint32_t get_gtpu_teid(void *hdr){
 	return CPC_BE32TOH(((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->teid);
 };
 
 inline static
-void set_teid(void *hdr, uint32_t teid){
+void set_gtpu_teid(void *hdr, uint32_t teid){
 	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr->teid = CPC_HTOBE32(teid);
 };
 
 inline static
-uint16_t get_seq_no(void *hdr){
-	if(unlikely(get_s_flag(hdr))){
+uint16_t get_gtpu_seq_no(void *hdr){
+	if(unlikely(get_gtpu_s_flag(hdr))){
 		assert(0);
 		return 0;
 	}
@@ -182,8 +182,8 @@ uint16_t get_seq_no(void *hdr){
 };
 
 inline static
-void set_seq_no(void *hdr, uint16_t seqno){
-	if(unlikely(get_s_flag(hdr)==false)){
+void set_gtpu_seq_no(void *hdr, uint16_t seqno){
+	if(unlikely(get_gtpu_s_flag(hdr)==false)){
 		assert(0);
 		return;
 	}
@@ -191,8 +191,8 @@ void set_seq_no(void *hdr, uint16_t seqno){
 };
 
 inline static
-uint8_t get_npdu_no(void *hdr){
-	if(unlikely(get_pn_flag(hdr)==false)){
+uint8_t get_gtpu_npdu_no(void *hdr){
+	if(unlikely(get_gtpu_pn_flag(hdr)==false)){
 		assert(0);
 		return 0;
 	}
@@ -200,8 +200,8 @@ uint8_t get_npdu_no(void *hdr){
 };
 
 inline static
-void set_npdu_no(void *hdr, uint8_t npdu){
-	if(unlikely(get_pn_flag(hdr)==false)){
+void set_gtpu_npdu_no(void *hdr, uint8_t npdu){
+	if(unlikely(get_gtpu_pn_flag(hdr)==false)){
 		assert(0);
 		return;
 	}
@@ -209,8 +209,8 @@ void set_npdu_no(void *hdr, uint8_t npdu){
 };
 
 inline static
-uint8_t get_ext_type(void *hdr){
-	if(unlikely(get_e_flag(hdr)==false)){
+uint8_t get_gtpu_ext_type(void *hdr){
+	if(unlikely(get_gtpu_e_flag(hdr)==false)){
 		assert(0);
 		return 0;
 	}
@@ -218,8 +218,8 @@ uint8_t get_ext_type(void *hdr){
 };
 
 inline static
-void set_ext_type(void *hdr, uint8_t exthdr){
-	if(unlikely(get_e_flag(hdr)==false)){
+void set_gtpu_ext_type(void *hdr, uint8_t exthdr){
+	if(unlikely(get_gtpu_e_flag(hdr)==false)){
 		assert(0);
 		return;
 	}

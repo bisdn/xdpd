@@ -18,33 +18,33 @@ uint16_t get_ppp_prot(void *hdr);
 
 void set_ppp_prot(void *hdr, uint16_t prot);
 
-uint8_t get_lcp_code(void *hdr);
+uint8_t get_ppp_lcp_code(void *hdr);
 
-void set_lcp_code(void *hdr, uint8_t code);
+void set_ppp_lcp_code(void *hdr, uint8_t code);
 
-uint8_t get_lcp_ident(void *hdr);
+uint8_t get_ppp_lcp_ident(void *hdr);
 
-void set_lcp_ident(void *hdr, uint8_t ident);
-
-
-uint16_t get_lcp_length(void *hdr);
+void set_ppp_lcp_ident(void *hdr, uint8_t ident);
 
 
-void set_lcp_length(void *hdr, uint16_t len);
+uint16_t get_ppp_lcp_length(void *hdr);
+
+
+void set_ppp_lcp_length(void *hdr, uint16_t len);
 
 //TODO cpc_ppp_lcp_option_t* get_lcp_option(void *hdr, enum ppp_lcp_option_t option);
 
-uint8_t get_ipcp_code(void *hdr);
+uint8_t get_ppp_ipcp_code(void *hdr);
 
-void set_ipcp_code(void *hdr, uint8_t code);
+void set_ppp_ipcp_code(void *hdr, uint8_t code);
 
-uint8_t get_ipcp_ident(void *hdr);
+uint8_t get_ppp_ipcp_ident(void *hdr);
 
-void set_ipcp_ident(void *hdr, uint8_t ident);
+void set_ppp_ipcp_ident(void *hdr, uint8_t ident);
 
-uint16_t get_ipcp_length(void *hdr);
+uint16_t get_ppp_ipcp_length(void *hdr);
 
-void set_ipcp_length(void *hdr, uint16_t len);
+void set_ppp_ipcp_length(void *hdr, uint16_t len);
 
 #if 0
 TODO

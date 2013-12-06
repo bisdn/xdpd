@@ -5,7 +5,7 @@ void icmpv6_calc_checksum(void *hdr, uint16_t length){
 	((rofl::ficmpv6frame *)hdr)->icmpv6_calc_checksum();
 };
 
-void *icmpv6_get_option(void *hdr, uint8_t type){
+void *get_icmpv6_option(void *hdr, uint8_t type){
 	return (void*) &((rofl::ficmpv6frame *)hdr)->get_option((rofl::ficmpv6opt::icmpv6_option_type_t)type);
 };
 
@@ -48,34 +48,34 @@ void set_icmpv6_opt_type(void *hdr, uint8_t type){
 	((rofl::ficmpv6opt *)hdr)->set_opt_type(type);
 };
 
-uint64_t get_ll_taddr(void *hdr){
+uint64_t get_icmpv6_ll_taddr(void *hdr){
 	return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).get_ll_taddr().get_mac();
 };
 
-void set_ll_taddr(void *hdr, uint64_t taddr){
+void set_icmpv6_ll_taddr(void *hdr, uint64_t taddr){
 	((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).set_ll_taddr(rofl::cmacaddr(taddr));
 };
 
-uint64_t get_ll_saddr(void *hdr){
+uint64_t get_icmpv6_ll_saddr(void *hdr){
 	return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).get_ll_saddr().get_mac();
 };
 
-void set_ll_saddr(void *hdr, uint64_t saddr){
+void set_icmpv6_ll_saddr(void *hdr, uint64_t saddr){
 	((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).set_ll_saddr(rofl::cmacaddr(saddr));
 };
 
-uint8_t get_pfx_on_link_flag(void *hdr){
+uint8_t get_icmpv6_pfx_on_link_flag(void *hdr){
 	return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).get_pfx_on_link_flag();
 };
 
-void set_pfx_on_link_flag(void *hdr, uint8_t flag){
+void set_icmpv6_pfx_on_link_flag(void *hdr, uint8_t flag){
 	((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).set_pfx_on_link_flag(flag);
 };
 
-uint8_t get_pfx_aac_flag(void *hdr){
+uint8_t get_icmpv6_pfx_aac_flag(void *hdr){
 	return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).get_pfx_aac_flag();
 };
 
-void set_pfx_aac_flag(void *hdr, uint8_t flag){
+void set_icmpv6_pfx_aac_flag(void *hdr, uint8_t flag){
 	((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).set_pfx_aac_flag(flag);
 };

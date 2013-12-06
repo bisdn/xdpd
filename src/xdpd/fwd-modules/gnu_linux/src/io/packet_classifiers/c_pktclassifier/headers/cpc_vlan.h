@@ -32,28 +32,28 @@ typedef struct cpc_vlan_hdr {
 } __attribute__((packed)) cpc_vlan_hdr_t;
 
 inline static
-void set_dl_vlan_id(void* hdr, uint16_t vid){
+void set_vlan_id(void* hdr, uint16_t vid){
 	((cpc_vlan_hdr_t*)hdr)->byte1 = vid & 0x00ff;
 	((cpc_vlan_hdr_t*)hdr)->byte0 = (((cpc_vlan_hdr_t*)hdr)->byte0 & 0xf0) + ((vid & 0x0f00) >> 8);
 }
 
 inline static
-uint16_t get_dl_vlan_id(void* hdr){
+uint16_t get_vlan_id(void* hdr){
 	return (((((cpc_vlan_hdr_t*)hdr)->byte0 & 0x0f) << 8) + ((cpc_vlan_hdr_t*)hdr)->byte1);
 }
 
 inline static
-void set_dl_vlan_pcp(void* hdr, uint8_t pcp){
+void set_vlan_pcp(void* hdr, uint8_t pcp){
 	((cpc_vlan_hdr_t*)hdr)->byte0 = ((pcp & 0x07) << 5) + (((cpc_vlan_hdr_t*)hdr)->byte0 & 0x1f);
 }
 
 inline static
-uint16_t get_dl_vlan_pcp(void* hdr){
+uint16_t get_vlan_pcp(void* hdr){
 	return (((cpc_vlan_hdr_t*)hdr)->byte0 & 0xe0) >> 5;
 }
 
 inline static
-void set_dl_vlan_cfi(void* hdr, bool cfi){
+void set_vlan_cfi(void* hdr, bool cfi){
 	((cpc_vlan_hdr_t*)hdr)->byte0 &= 0xef;
 	if (cfi)
 	{
@@ -66,17 +66,17 @@ void set_dl_vlan_cfi(void* hdr, bool cfi){
 }
 
 inline static
-bool get_dl_vlan_cfi(void* hdr){
+bool get_vlan_cfi(void* hdr){
 	return (((cpc_vlan_hdr_t*)hdr)->byte0 & 0x10) >> 4;
 }
 
 inline static
-void set_dl_vlan_type(void* hdr, uint16_t dl_type){
+void set_vlan_type(void* hdr, uint16_t dl_type){
 	((cpc_vlan_hdr_t*)hdr)->dl_type = CPC_HTOBE16(dl_type);
 }
 
 inline static
-uint16_t get_dl_vlan_type(void* hdr){
+uint16_t get_vlan_type(void* hdr){
 	return CPC_BE16TOH(((cpc_vlan_hdr_t*)hdr)->dl_type);
 }
 

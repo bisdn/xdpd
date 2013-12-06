@@ -52,7 +52,7 @@ void* get_udp_hdr(struct classify_state* clas_state, int idx);
 void* get_tcp_hdr(struct classify_state* clas_state, int idx);
 void* get_pppoe_hdr(struct classify_state* clas_state, int idx);
 void* get_ppp_hdr(struct classify_state* clas_state, int idx);
-void* get_gtp_hdr(struct classify_state* clas_state, int idx);
+void* get_gtpu_hdr(struct classify_state* clas_state, int idx);
 
 //push & pop
 void pop_vlan(datapacket_t* pkt, struct classify_state* clas_state);

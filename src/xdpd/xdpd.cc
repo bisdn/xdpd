@@ -32,9 +32,14 @@ void dump_version(){
 #ifdef XDPD_BUILD
 	ROFL_INFO("Build: %s\n",XDPD_BUILD);
 	ROFL_INFO("Compiled in branch: %s\n",XDPD_BRANCH);
-
-	ROFL_INFO("\n%s\n",XDPD_DESCRIBE);
+	ROFL_INFO("%s\n",XDPD_DESCRIBE);
 #endif	
+	ROFL_INFO("\n[Libraries: ROFL]\n");
+	ROFL_INFO("ROFL version: %s\n",ROFL_VERSION);
+	ROFL_INFO("ROFL build: %s\n",ROFL_BUILD_NUM);
+	ROFL_INFO("ROFL compiled in branch: %s\n",ROFL_BUILD_BRANCH);
+	ROFL_INFO("%s\n",ROFL_BUILD_DESCRIBE);
+	
 	exit(EXIT_SUCCESS);
 
 }

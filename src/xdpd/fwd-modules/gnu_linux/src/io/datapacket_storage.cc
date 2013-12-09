@@ -95,3 +95,26 @@ void datapacket_storage::change_expiration_time(uint16_t sec)
 	expiration_time_sec = sec;
 }
 #endif
+
+
+
+void
+datapacket_storage::dump_state()
+{
+	std::cerr << *this << std::endl;
+}
+
+
+void
+datapacket_storage::dump_slots()
+{
+	for (std::list<store_mapping>::const_iterator
+			it = store.begin(); it != store.end(); ++it) {
+		store_mapping const& map = (*it);
+		std::cerr << "  ";
+		std::cerr << "id:" << (int)map.id << " ";
+		std::cerr << "input-timestamp:" << (int)map.input_timestamp << " ";
+		std::cerr << "pkt:" << (int*)map.pkt << " ";
+		std::cerr << std::endl;
+	}
+}

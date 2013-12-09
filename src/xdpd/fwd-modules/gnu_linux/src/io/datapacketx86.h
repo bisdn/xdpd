@@ -10,8 +10,17 @@
 #include <sys/types.h>
 #include <rofl.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <rofl/common/cmemory.h>
+#include <rofl/datapath/pipeline/platform/memory.h>
 
-#include "packet_classifiers/packetclassifier.h"
+#ifdef C_PACKET_CLASSIFIER
+	#include "packet_classifiers/c_pktclassifier/c_pktclassifier.h"
+#else
+	#include "packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
+#endif
+
+//Profiling
+#include "../util/time_measurements.h"
 
 /**
 * @file datapacketx86.h
@@ -76,6 +85,9 @@ public:
 	//Opaque pointer
 	void* extra;
 
+	//Time profiling
+	TM_PKT_STATE;
+
 public: // methods
 
 	//Initialize the already constructed object
@@ -94,17 +106,24 @@ public: // methods
 	//Transfer buffer to user-space
 	rofl_result_t transfer_to_user_space(void);
 
-	//Header packet classification	
-	friend class packetclassifier;
-	packetclassifier* headers;
-	
+	//Header packet classification
+	struct classify_state* headers;
 
 	//Other	
 	friend std::ostream& operator<<(std::ostream& os, datapacketx86& pack);
 	inline void dump(void) {
-		headers->dump();
+		dump_pkt_classifier(headers); //headers->dump();
 	}
 
+	/*
+	* Push&pop raw operations. To be used ONLY by classifiers
+	*/
+	rofl_result_t push(unsigned int offset, unsigned int num_of_bytes);
+	rofl_result_t pop(unsigned int offset, unsigned int num_of_bytes);
+
+	rofl_result_t push(uint8_t* push_point, unsigned int num_of_bytes);
+	rofl_result_t pop(uint8_t* pop_point, unsigned int num_of_bytes);
+	
 private:
 	//HOST buffer size
 	static const unsigned int PRE_GUARD_BYTES  = 256;
@@ -139,15 +158,22 @@ private:
 	init_internal_buffer_location_defaults(x86buffering_status_t location, uint8_t* buf, size_t buflen);
 	//Add more stuff here...
 
-	
-	/*
-	* Push&pop raw operations. To be used ONLY by classifiers
-	*/
-	rofl_result_t push(unsigned int num_of_bytes, unsigned int offset = 0);
-	rofl_result_t pop(unsigned int num_of_bytes, unsigned int offset = 0);
+public:
 
-	rofl_result_t push(uint8_t* push_point, unsigned int num_of_bytes);
-	rofl_result_t pop(uint8_t* pop_point, unsigned int num_of_bytes);
+	friend std::ostream&
+	operator<<(std::ostream& os, datapacketx86 const& pkt) {
+		os << "<datapacketx86: ";
+			os << "buffer-id:" << (std::hex) << pkt.buffer_id << (std::dec) << " ";
+			os << "internal-buffer-id:" << (std::hex) << pkt.internal_buffer_id << (std::dec) << " ";
+			os << "lsw:" << (int*)(pkt.lsw) << " ";
+			os << "in-port:" << pkt.in_port << " ";
+			os << "in-phy-port:" << pkt.in_phy_port << " ";
+			os << "output-queue:" << pkt.output_queue << " ";
+			os << "pktin-table-id:" << pkt.pktin_table_id << " ";
+			os << "pktin-reason:" << pkt.pktin_reason << " ";
+		os << ">";
+		return os;
+	};
 
 };
 

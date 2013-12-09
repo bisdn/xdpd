@@ -38,13 +38,13 @@ class static_pktclassifier: public packetclassifier{
 public:
 
 	//Constructor&destructor
-	static_pktclassifier(datapacketx86* pkt_ref);
+	static_pktclassifier(void);
 	virtual ~static_pktclassifier();
 
 	/*
 	* Main classification methods. 
 	*/
-	virtual void classify(void);
+	virtual void classify(uint8_t* packet, size_t len);
 	virtual void classify_reset(void){
 	
 		for(unsigned int i=0;i<MAX_HEADERS;i++){
@@ -78,31 +78,32 @@ public:
 	/*
 	 * pop operations
 	 */
-	virtual void pop_vlan(void);
-	virtual void pop_mpls(uint16_t ether_type);
-	virtual void pop_pppoe(uint16_t ether_type);
-	virtual void pop_gtp(uint16_t ether_type);
+	virtual void pop_vlan(datapacket_t* pkt);
+	virtual void pop_mpls(datapacket_t* pkt, uint16_t ether_type);
+	virtual void pop_pppoe(datapacket_t* pkt, uint16_t ether_type);
+	virtual void pop_gtp(datapacket_t* pkt, uint16_t ether_type);
 
 	/*
 	 * push operations
 	 */
-	virtual rofl::fvlanframe* 	push_vlan(uint16_t ether_type);
-	virtual rofl::fmplsframe* 	push_mpls(uint16_t ether_type);
-	virtual rofl::fpppoeframe* 	push_pppoe(uint16_t ether_type);
-	virtual rofl::fgtpuframe*	push_gtp(uint16_t ether_type);
+	virtual rofl::fvlanframe* 	push_vlan(datapacket_t* pkt, uint16_t ether_type);
+	virtual rofl::fmplsframe* 	push_mpls(datapacket_t* pkt, uint16_t ether_type);
+	virtual rofl::fpppoeframe* 	push_pppoe(datapacket_t* pkt, uint16_t ether_type);
+	virtual rofl::fgtpuframe*	push_gtp(datapacket_t* pkt, uint16_t ether_type);
 
 	/*
 	* dump
 	*/
-	virtual void dump(void);
+	virtual void dump(datapacket_t* pkt);
 
 	/** returns length of parsed packet (may be shortened during Packet-In)
 	 *
 	 */
 	virtual size_t
 	get_pkt_len(
-			rofl::fframe *from = (rofl::fframe*)0,
-			rofl::fframe   *to = (rofl::fframe*)0);
+			datapacket_t* pkt,
+			void *from = NULL,
+			void   *to = NULL);
 
 
 protected:

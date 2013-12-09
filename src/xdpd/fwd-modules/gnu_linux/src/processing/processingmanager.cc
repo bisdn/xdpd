@@ -8,6 +8,9 @@
 #include "../util/likely.h"
 #include "ls_internal_state.h"
 
+//Profiling
+#include "../util/time_measurements.h"
+
 using namespace xdpd::gnu_linux;
 
 /* Static member initialization */
@@ -135,8 +138,12 @@ void* processingmanager::process_packets_through_pipeline(void* state){
 		//Get a packet to process
 		pkt = sw_input_queue->blocking_read(PROCESSING_THREADS_TIMEOUT_S_READ);
 
+	
 		if(unlikely(pkt == NULL))
 			continue;
+
+		TM_STAMP_STAGE(pkt, TM_S4);
+	
 #ifdef DEBUG
 		if(by_pass_pipeline){
 			//DEBUG; by-pass pipeline, print trace and sleep

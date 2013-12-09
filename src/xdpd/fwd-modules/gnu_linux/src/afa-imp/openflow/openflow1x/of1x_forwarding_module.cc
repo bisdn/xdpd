@@ -10,6 +10,7 @@
 #include "../../../io/datapacketx86.h"
 #include "../../../io/ports/ioport.h"
 #include "../../../processing/ls_internal_state.h"
+#include "../../../util/time_measurements.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -278,6 +279,9 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		if(!pkt){
 			return AFA_FAILURE; /* TODO: add specific error */
 		}
+		
+		//Mark as pkt out (ignore counters, slow path)	
+		TM_STAMP_PKT_OUT(pkt);
 	}else{
 		//Retrieve a free buffer	
 		pkt = bufferpool::get_free_buffer_nonblocking();
@@ -286,14 +290,17 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 			//No available buffers
 			return AFA_FAILURE; /* TODO: add specific error */
 		}	
-	
+
+		//Mark as pkt out (ignore counters, slow path)	
+		TM_STAMP_PKT_OUT(pkt);
+
 		//Initialize the packet and copy
 		((datapacketx86*)pkt->platform_state)->init(buffer, buffer_size, lsw, in_port, 0, true);
 		pkt->sw = lsw;
 	}
 
 	//Reclassify the packet
-	((datapacketx86*)pkt->platform_state)->headers->classify();
+	classify_packet(((datapacketx86*)pkt->platform_state)->headers, ((datapacketx86*)pkt->platform_state)->get_buffer(), ((datapacketx86*)pkt->platform_state)->get_buffer_length());
 
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	

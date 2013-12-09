@@ -54,7 +54,7 @@ of10_translation_utils::of1x_map_flow_entry(
 	// store flow-mod fields in of1x_flow_entry
 	entry->priority 		= msg->get_priority();
 	entry->cookie 			= msg->get_cookie();
-	entry->cookie_mask 		= 0xFFFFFFFFFFFFFFFF;
+	entry->cookie_mask 		= 0xFFFFFFFFFFFFFFFFULL;
 	entry->timer_info.idle_timeout	= msg->get_idle_timeout(); // these timers must be activated some time, when?
 	entry->timer_info.hard_timeout	= msg->get_hard_timeout();
 
@@ -344,12 +344,6 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IN_PORT:
 			match.set_in_port(m->value->value.u32);
 			break;
-		case OF1X_MATCH_IN_PHY_PORT:
-			match.set_in_phy_port(m->value->value.u32);
-			break;
-		case OF1X_MATCH_METADATA:
-			match.set_metadata(m->value->value.u64);
-			break;
 		case OF1X_MATCH_ETH_DST:
 		{
 			cmacaddr maddr(m->value->value.u64);
@@ -369,7 +363,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			break;
 		case OF1X_MATCH_VLAN_VID:
 			has_vlan = true;
-			match.set_vlan_vid(m->value->value.u16&OF1X_VLAN_ID_MASK);
+			match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, m->value->value.u16&OF1X_VLAN_ID_MASK);
 			break;
 		case OF1X_MATCH_VLAN_PCP:
 			match.set_vlan_pcp(m->value->value.u8);
@@ -473,7 +467,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 
 	//In 1.0 if there is no VLAN OFP10_VLAN_NONE has to be set...
 	if(!has_vlan)
-		match.set_vlan_vid(OFP10_VLAN_NONE);
+		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_UNTAGGED, OFP10_VLAN_NONE);
 }
 
 
@@ -632,24 +626,20 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches_t* packet_matches, cofmatch& match){
 	if(packet_matches->port_in)
 		match.set_in_port(packet_matches->port_in);
-	if(packet_matches->phy_port_in)
-		match.set_in_phy_port(packet_matches->phy_port_in);
-	//if(packet_matches->metadata)
-	//	match.set_metadata(packet_matches->metadata);
 	if(packet_matches->eth_dst){
 		cmacaddr maddr(packet_matches->eth_dst);
-		cmacaddr mmask(0x0000FFFFFFFFFFFF);
+		cmacaddr mmask(0x0000FFFFFFFFFFFFULL);
 		match.set_eth_dst(maddr, mmask);
 	}
 	if(packet_matches->eth_src){
 		cmacaddr maddr(packet_matches->eth_src);
-		cmacaddr mmask(0x0000FFFFFFFFFFFF);
+		cmacaddr mmask(0x0000FFFFFFFFFFFFULL);
 		match.set_eth_src(maddr, mmask);
 	}
 	if(packet_matches->eth_type)
 		match.set_eth_type(packet_matches->eth_type);
 	if(packet_matches->vlan_vid)
-		match.set_vlan_vid(packet_matches->vlan_vid);
+		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, packet_matches->vlan_vid);
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)

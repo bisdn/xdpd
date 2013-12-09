@@ -21,7 +21,13 @@ libfwd_module_gnu_linux_dpdk_src_io_la_SOURCES = \
 					tx_rx.cc\
 					tx_rx.cc
 
+if C_CLASSIFIER
+CLASSIFIER_LIB=packet_classifiers/c_pktclassifier/libfwd_module_gnu_linux_dpdk_io_classifiers_c.la
+else
+CLASSIFIER_LIB=packet_classifiers/cpp_pktclassifier/libfwd_module_gnu_linux_dpdk_io_classifiers_cpp.la
+endif
+					
 libfwd_module_gnu_linux_dpdk_src_io_la_LIBADD = \
-					packet_classifiers/libfwd_module_gnu_linux_dpdk_src_io_packet_classifiers.la 
+					$(CLASSIFIER_LIB)
 		
 library_include_HEADERS=

@@ -94,14 +94,12 @@ rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id
 	
 	unsigned int i;
 	int ret;
-	struct rte_eth_rxconf rx_conf = {
-		.rx_thresh = {
-			.pthresh = RX_PTHRESH,
-			.hthresh = RX_HTHRESH,
-			.wthresh = RX_WTHRESH,
-		},
-		.rx_free_thresh = 32,
-	};
+	struct rte_eth_rxconf rx_conf;
+	rx_conf.rx_thresh.pthresh = RX_PTHRESH;
+	rx_conf.rx_thresh.hthresh = RX_HTHRESH;
+	rx_conf.rx_thresh.wthresh = RX_WTHRESH;
+	rx_conf.rx_free_thresh = 32;
+	
 	struct rte_eth_txconf tx_conf;
 	tx_conf.tx_thresh.pthresh = TX_PTHRESH;
 	tx_conf.tx_thresh.hthresh = TX_HTHRESH;

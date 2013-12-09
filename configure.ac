@@ -53,6 +53,9 @@ m4_include([config/plugins.m4])
 #Check hardware support
 m4_include([config/hw.m4])
 
+#Check hardware support
+m4_include([config/versioning.m4])
+
 #Output the files
 AC_CONFIG_FILES([
 	Makefile

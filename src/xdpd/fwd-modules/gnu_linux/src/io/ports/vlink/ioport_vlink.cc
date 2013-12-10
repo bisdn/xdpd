@@ -1,8 +1,11 @@
 #include "ioport_vlink.h"
 #include <iostream>
+#include <sched.h>
 #include <rofl/common/utils/c_logger.h>
 #include "../../bufferpool.h" 
 #include <fcntl.h>
+
+#include "../../../config.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -68,6 +71,12 @@ void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 			ROFL_DEBUG("[vlink:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
 			//Drop packet
 			bufferpool::release_buffer(pkt);
+
+#ifndef IO_KERN_DONOT_CHANGE_SCHED
+			//Force descheduling (prioritize TX)
+			sched_yield();	
+#endif
+
 			return;
 		}
 

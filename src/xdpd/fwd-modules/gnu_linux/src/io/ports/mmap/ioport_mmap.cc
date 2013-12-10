@@ -1,4 +1,5 @@
 #include "ioport_mmap.h"
+#include <sched.h>
 #include "../../bufferpool.h"
 #include "../../datapacketx86.h"
 #include "../../../util/likely.h"
@@ -11,6 +12,7 @@
 
 //Profiling
 #include "../../../util/time_measurements.h"
+#include "../../../config.h"
 
 using namespace rofl;
 using namespace xdpd::gnu_linux;
@@ -70,7 +72,10 @@ void ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 			//Drop packet
 			bufferpool::release_buffer(pkt);
 
-
+#ifndef IO_KERN_DONOT_CHANGE_SCHED
+			//Force descheduling (prioritize TX)
+			sched_yield();	
+#endif
 			return;
 		}
 		TM_STAMP_STAGE(pkt, TM_SA5_SUCCESS);

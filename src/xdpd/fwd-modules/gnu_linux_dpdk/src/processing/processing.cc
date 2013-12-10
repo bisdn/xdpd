@@ -144,12 +144,10 @@ int processing_core_process_packets(void* not_used){
 
 	//Parsing and pipeline extra state
 	datapacket_t pkt;
-	datapacketx86 pkt_x86;
-	dpdk_pkt_platform_state_t pkt_state;
+	datapacket_dpdk_t pkt_state;
 
 	//Init values and assign
 	pkt.platform_state = (platform_datapacket_state_t*)&pkt_state;
-	pkt_state.pktx86 = &pkt_x86; 
 	pkt_state.mbuf = NULL;
 
 	//Set flag to active

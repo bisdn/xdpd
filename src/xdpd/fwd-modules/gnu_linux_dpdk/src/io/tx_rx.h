@@ -17,7 +17,6 @@
 #include <rte_ethdev.h> 
 
 #include "assert.h"
-#include "datapacketx86.h"
 #include "dpdk_datapacket.h"
 
 #include "port_state.h"
@@ -42,7 +41,7 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 	of_switch_t* sw = port->attached_sw;
 	struct rte_mbuf* mbuf;
 	//dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;
-	xdpd::gnu_linux::datapacketx86* pkt_x86 = pkt_state->pktx86;
+	datapacket_dpdk_t* pkt_dpdk = pkt_state;
 
 	if(unlikely(port->drop_received)) //Ignore if port is marked as "drop received"
 		return;
@@ -77,7 +76,7 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 		}
 
 		//Init&classify	
-		pkt_x86->init(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_pkt_len(mbuf), sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
+		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
 
 		//Send to process
 		of_process_packet_pipeline(sw, pkt);

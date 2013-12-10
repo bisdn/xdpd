@@ -11,7 +11,6 @@
 #include "../../../io/bufferpool.h"
 #include "../../../io/dpdk_datapacket.h"
 #include "../../../io/datapacket_storage.h"
-#include "../../../io/datapacketx86.h"
 
 using namespace xdpd::gnu_linux;
 using namespace xdpd::gnu_linux_dpdk;
@@ -273,8 +272,8 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	}
 
 	//Reclassify the packet
-	datapacketx86* pktx86 = ((dpdk_pkt_platform_state_t*)pkt->platform_state)->pktx86;
-	classify_packet(pktx86->headers, pktx86->get_buffer(),pktx86->get_buffer_length());
+	datapacket_dpdk_t* pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
+	classify_packet(pkt_dpdk->headers, get_buffer_dpdk(pkt_dpdk), get_buffer_length_dpdk(pkt_dpdk));
 
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	

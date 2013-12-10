@@ -13,7 +13,6 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/common/utils/c_logger.h>
 #include "../util/likely.h"
-#include "datapacketx86.h"
 #include "dpdk_datapacket.h"
 
 /**
@@ -188,7 +187,7 @@ void bufferpool::release_buffer(datapacket_t* buf){
 
 	bufferpool* bp = get_instance();
 
-	unsigned int id = ((xdpd::gnu_linux_dpdk::dpdk_pkt_platform_state_t*)buf->platform_state)->pktx86->internal_buffer_id;
+	unsigned int id = ((datapacket_dpdk_t*)buf->platform_state)->internal_buffer_id;
 	
 	//Release
 	if( unlikely(bp->pool_status[id] != BUFFERPOOL_SLOT_IN_USE) ){

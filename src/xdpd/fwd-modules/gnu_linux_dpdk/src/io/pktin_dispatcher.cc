@@ -3,7 +3,6 @@
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 
 #include "bufferpool.h"
-#include "datapacketx86.h"
 #include "datapacket_storage.h"
 #include "dpdk_datapacket.h"
 
@@ -23,7 +22,7 @@ extern struct rte_mempool* pool_direct;
 static void* process_packet_ins(void* param){
 
 	datapacket_t* pkt;
-	datapacketx86* pkt_x86;
+	datapacket_dpdk_t* pkt_dpdk;
 	afa_result_t rv;
 	unsigned int pkt_size;
 	storeid id;
@@ -41,8 +40,8 @@ static void* process_packet_ins(void* param){
 				break;
 
 			//Recover platform state
-			pkt_x86 = ((dpdk_pkt_platform_state_t*)pkt->platform_state)->pktx86;
-			mbuf = ((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf;
+			pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
+			mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 			sw = (of1x_switch_t*)pkt->sw;
 			dps = (datapacket_storage*)pkt->sw->platform_state;
 
@@ -62,19 +61,19 @@ static void* process_packet_ins(void* param){
 			}
 
 			//Normalize size
-			pkt_size = pkt_x86->get_buffer_length();
+			pkt_size = get_buffer_length_dpdk(pkt_dpdk);
 			if(pkt_size > sw->pipeline->miss_send_len)
 				pkt_size = sw->pipeline->miss_send_len;
 				
 			//Process packet in
 			rv = cmm_process_of1x_packet_in(sw, 
-							pkt_x86->pktin_table_id, 	
-							pkt_x86->pktin_reason, 	
-							pkt_x86->in_port, 
+							pkt_dpdk->pktin_table_id, 	
+							pkt_dpdk->pktin_reason, 	
+							pkt_dpdk->in_port, 
 							id, 	
-							pkt_x86->get_buffer(), 
+							get_buffer_dpdk(pkt_dpdk), 
 							pkt_size,
-							pkt_x86->get_buffer_length(),
+							get_buffer_length_dpdk(pkt_dpdk),
 							*((of1x_packet_matches_t*)&pkt->matches)
 					);
 

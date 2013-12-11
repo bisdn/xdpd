@@ -28,7 +28,6 @@
 #include "util/time_utils.h"
 
 using namespace xdpd::gnu_linux;
-using namespace xdpd::gnu_linux_dpdk;
 
 //Local static variable for background manager thread
 static pthread_t bg_thread;

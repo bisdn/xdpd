@@ -12,8 +12,9 @@
 #include "../../../io/dpdk_datapacket.h"
 #include "../../../io/datapacket_storage.h"
 
+extern rte_mempool *pool_direct;
+
 using namespace xdpd::gnu_linux;
-using namespace xdpd::gnu_linux_dpdk;
 
 //Port config
 
@@ -267,7 +268,8 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		}	
 	
 		//Initialize the packet and copy
-		((dpdk_pkt_platform_state_t*)pkt->platform_state)->pktx86->init(buffer, buffer_size, lsw, in_port, 0, true);
+		struct rte_mbuf* mbuf = rte_pktmbuf_alloc(pool_direct);
+		init_datapacket_dpdk(((datapacket_dpdk_t*)pkt->platform_state), mbuf, lsw, in_port, 0, true, true);
 		pkt->sw = lsw;
 	}
 

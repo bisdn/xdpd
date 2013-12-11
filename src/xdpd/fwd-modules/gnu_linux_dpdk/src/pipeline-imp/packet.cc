@@ -27,7 +27,6 @@
 #include "../io/dpdk_datapacket.h"
 #include "../io/tx_rx.h"
 
-using namespace rofl;
 using namespace xdpd::gnu_linux;
 using namespace xdpd::gnu_linux_dpdk;
 
@@ -1037,7 +1036,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 	if(output_port == flood_meta_port || output_port == all_meta_port){ //We don't have STP, so it is the same
 		datapacket_t* replica;
 		switch_port_t* port_it;
-		datapacketx86* replica_pack;
+		datapacket_dpdk_t* replica_pack;
 
 		//Get switch
 		sw = pkt->sw;	
@@ -1147,7 +1146,7 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	pkt_replica->sw = pkt->sw;
 
 	//Initialize replica buffer and classify  //TODO: classification state could be copied
-	pkt_dpdk_replica->init(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_pkt_len(mbuf), (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, false);
+	init_datapacket_dpdk(pkt_dpdk_replica, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, false);
 
 	//Replicate the packet(copy contents)	
 	//memcpy(pkt_dpdk_replica->get_buffer(), pkt_dpdk->get_buffer(), pkt_dpdk->get_buffer_length());

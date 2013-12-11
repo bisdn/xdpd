@@ -13,7 +13,6 @@ bool keep_on_pktins;
 static pthread_t pktin_thread;
 
 using namespace xdpd::gnu_linux;
-using namespace xdpd::gnu_linux_dpdk;
 
 //MBUF pool
 extern struct rte_mempool* pool_direct;

@@ -94,7 +94,7 @@ datapacket_dpdk_t* create_datapacket_dpdk(void);
 void destroy_datapacket_dpdk(datapacket_dpdk_t *dpkt);
 
 // Init & reset
-rofl_result_t init_datapacket_dpdk(datapacket_dpdk_t *dpkt, struct rte_mbuf* mbuf, of_switch_t* sw, uint32_t in_port, uint32_t in_phy_port = 0, bool classify=true, bool copy_packet_to_internal_buffer = true);
+rofl_result_t init_datapacket_dpdk(datapacket_dpdk_t *dpkt, struct rte_mbuf* mbuf, of_switch_t* sw, uint32_t in_port, uint32_t in_phy_port, bool classify, bool copy_packet_to_internal_buffer);
 void reset_datapacket_dpdk(datapacket_dpdk_t *dpkt);
 
 //Return the pointer to the buffer
@@ -103,7 +103,7 @@ inline uint8_t* get_buffer_dpdk(datapacket_dpdk_t *dpkt){
 }
 
 inline size_t get_buffer_length_dpdk(datapacket_dpdk_t *dpkt){
-	return rte_pktmbuf_pkt_len(mbuf);
+	return rte_pktmbuf_pkt_len(dpkt->mbuf);
 }
 
 inline dpdk_buffering_status_t get_buffering_status_dpdk(datapacket_dpdk_t *dpkt){
@@ -111,11 +111,11 @@ inline dpdk_buffering_status_t get_buffering_status_dpdk(datapacket_dpdk_t *dpkt
 }
 
 // Push & Pop raw operations. To be used ONLY by classifiers
-rofl_result_t push_dpkt_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes);
-rofl_result_t pop_dpkt_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes);
+rofl_result_t push_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes);
+rofl_result_t pop_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes);
 
-rofl_result_t push_dpkt_point(datapacket_dpdk_t *dpkt, uint8_t* push_point, unsigned int num_of_bytes);
-rofl_result_t pop_dpkt_point(datapacket_dpdk_t *dpkt, uint8_t* pop_point, unsigned int num_of_bytes);
+rofl_result_t push_datapacket_point(datapacket_dpdk_t *dpkt, uint8_t* push_point, unsigned int num_of_bytes);
+rofl_result_t pop_datapacket_point(datapacket_dpdk_t *dpkt, uint8_t* pop_point, unsigned int num_of_bytes);
 
 //NOTE dump() ?
 

@@ -2,7 +2,6 @@
 #include "dpdk_datapacket.h"
 
 using namespace xdpd::gnu_linux;
-using namespace xdpd::gnu_linux_dpdk;
 
 /* Static member initialization */
 bufferpool* bufferpool::instance = NULL;
@@ -17,8 +16,8 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 
 	long long unsigned int i;
 	datapacket_t* dp;
-	datapacketx86* dpx86;
-	dpdk_pkt_platform_state_t* state;	
+	//datapacketx86* dpx86;
+	datapacket_dpdk_t* dp_dpdk;	
 
 	for(i=0;i<pool_items;++i){
 
@@ -33,10 +32,10 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 			//Skip
 			continue;
 		}
-			
-		state = (dpdk_pkt_platform_state_t*)malloc(sizeof(dpdk_pkt_platform_state_t));
 		
-		if(!state){
+		dp_dpdk = create_datapacket_dpdk();
+		
+		if(!dp_dpdk){
 			//Mark as unavailable
 			pool[i] = NULL;
 			pool_status[i] = BUFFERPOOL_SLOT_UNAVAILABLE;
@@ -48,27 +47,13 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 
 		//Memset datapacket
 		memset(dp,0,sizeof(*dp));
-		
-		//Init datapacketx86
-		try {
-			dpx86 = new datapacketx86();
-		}catch(std::bad_alloc ex){
-
-			//Mark as unavailable
-			pool[i] = NULL;
-			pool_status[i] = BUFFERPOOL_SLOT_UNAVAILABLE;
-			
-			free(dp);
-			continue;		
-		}		
 
 		//Assign the buffer_id
-		dpx86->internal_buffer_id = i;			
-		dpx86->buffer_id = 0; //Mark as 0
+		dp_dpdk->internal_buffer_id = i;			
+		dp_dpdk->buffer_id = 0; //Mark as 0
 		
 		//Link them
-		state->pktx86 = dpx86;	
-		dp->platform_state = (platform_datapacket_state_t*)state;
+		dp->platform_state = (platform_datapacket_state_t*)dp_dpdk;
 
 		//Add to the pool	
 		pool[i] = dp;
@@ -87,13 +72,12 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 bufferpool::~bufferpool(){
 	
 	unsigned long long int i;
-	dpdk_pkt_platform_state_t* state;	
+	datapacket_dpdk_t* dp_dpdk;
 
 	for(i=0;i<pool.size();++i){
 		if(pool[i]){
-			state = (dpdk_pkt_platform_state_t*)pool[i]->platform_state;
-			delete state->pktx86;
-			free(state);
+			dp_dpdk = (datapacket_dpdk_t*)pool[i]->platform_state;
+			destroy_datapacket_dpdk(dp_dpdk);
 			free(pool[i]);
 		}	
 	}

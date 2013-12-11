@@ -35,12 +35,12 @@ namespace gnu_linux_dpdk {
 /*
 * Processes RX in a specific port. The function will process up to MAX_BURST_SIZE 
 */
-inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkts_burst, datapacket_t* pkt, dpdk_pkt_platform_state_t* pkt_state){
+inline void
+process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkts_burst, datapacket_t* pkt, datapacket_dpdk_t* pkt_state){
 	
 	unsigned int i, burst_len;
 	of_switch_t* sw = port->attached_sw;
 	struct rte_mbuf* mbuf;
-	//dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;
 	datapacket_dpdk_t* pkt_dpdk = pkt_state;
 
 	if(unlikely(port->drop_received)) //Ignore if port is marked as "drop received"
@@ -83,7 +83,8 @@ inline void process_port_rx(switch_port_t* port, unsigned int port_id, struct rt
 	}	
 }
 
-inline void process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_table* queue, unsigned int queue_id){
+inline void
+process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_table* queue, unsigned int queue_id){
 	unsigned ret;
 
 	if(unlikely((port->up == false)) || queue->len == 0){
@@ -112,14 +113,15 @@ inline void process_port_queue_tx(switch_port_t* port, unsigned int port_id, str
 	queue->len = 0;
 }
 
-inline void tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
+inline void
+tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 
 	struct rte_mbuf* mbuf;
 	struct mbuf_table* pkt_burst;
 	unsigned int port_id, len;
 
 	//Get mbuf pointer
-	mbuf = ((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf;
+	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 	port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 
 	if(unlikely(!mbuf)){

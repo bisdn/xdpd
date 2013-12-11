@@ -22,7 +22,6 @@
 #include "../io/dpdk_datapacket.h"
 
 using namespace xdpd::gnu_linux;
-using namespace xdpd::gnu_linux_dpdk;
 
 //MBUF pool
 extern struct rte_mempool* pool_direct;
@@ -117,8 +116,8 @@ PKT_IN_ERROR:
 	
 	//Release packet
 	if(pkt_replica){
-		if(((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf){
-			rte_pktmbuf_free(((dpdk_pkt_platform_state_t*)pkt->platform_state)->mbuf);
+		if(((datapacket_dpdk_t*)pkt->platform_state)->mbuf){
+			rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 		}
 		
 		bufferpool::release_buffer(pkt_replica);

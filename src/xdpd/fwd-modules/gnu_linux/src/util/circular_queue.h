@@ -11,6 +11,8 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <stdio.h>
 
+#include "likely.h"
+
 /*
  * Implementation of a ring elements
  */
@@ -18,9 +20,7 @@
 namespace xdpd {
 namespace gnu_linux {
 
-//#define RB_ASM_IMP 1 
-#define RB_MULTI_READERS 1 
-#define RB_MULTI_WRITERS 1 
+//#define PTHREAD_IMP 1 
 
 typedef enum{
 		RB_BUFFER_AVAILABLE = 0,
@@ -29,52 +29,36 @@ typedef enum{
 		RB_BUFFER_INVALID = -1,
 }circular_queue_state_t;
 
-template<typename T, long long unsigned int SLOTS>
+template<typename T>
 class circular_queue{
 
 public:
 	//Constructor
-	circular_queue(void);
+	circular_queue(long long unsigned int capacity);
 	~circular_queue(void);
 	
 	//Read
-	T* non_blocking_read(void);
-	T* blocking_read(unsigned int seconds=0);
+	inline T* non_blocking_read(void);
+	inline T* blocking_read(unsigned int msseconds=0);
 
 	//Write
-	rofl_result_t non_blocking_write(T* elem);
-	rofl_result_t blocking_write(T* elem, unsigned int seconds=0);
+	inline rofl_result_t non_blocking_write(T* elem);
+	inline rofl_result_t blocking_write(T* elem, unsigned int msseconds=0);
 
-	//Get elements state
-	inline circular_queue_state_t get_queue_state(void)
-	{
-		update_elements_state();
-		return state;
-	}
-
+	//
 	inline unsigned int size(void)
 	{
-		return (writep >= readp) ? (writep-readp) : SLOTS - (readp-writep);
+		return (writep >= readp) ? (writep-readp) : slots - (readp-writep);
 	}
 
-	bool
-	is_empty(void);
-	
-	bool is_full(void);
+	inline bool is_empty(void);
+	inline bool is_full(void);
 
-	static const long long unsigned int MAX_SLOTS = SLOTS;
-	static const long long unsigned int SLOT_MASK = MAX_SLOTS - 1;
+	long long unsigned int slots;
 
 private:
-	//MAX slots. Should be power of 2	
-	static const float FULL_LIMIT = 0.75*SLOTS;
-	static const float CRITICALLY_FULL_LIMIT = 0.95*SLOTS;
-
 	//Buffer
-	T* elements[SLOTS];
-
-	/*volatile*/
-	//unsigned int elements;
+	T** elements;
 
 	//Buffer state 
 	circular_queue_state_t state;
@@ -92,52 +76,51 @@ private:
 
 	/* Private methods */
 	void update_elements_state();
-	void circ_inc_pointer(T*** pointer);
+	T** circ_inc_pointer(T** pointer);
 
 };
 
 //Utility funcs
-
-template<typename T, long long unsigned int SLOTS>
-inline bool circular_queue<T, SLOTS>::is_full(){
+template<typename T>
+inline bool circular_queue<T>::is_full(){
 	// todo would perform slightly better using "int readpos,writepos"
-	return ((size_t)(writep + 1 - elements) & SLOT_MASK) == (size_t)(readp - elements);
+	return ((size_t)(writep + 1 - elements) & (slots-1)) == (size_t)(readp - elements);
 }
 
-template<typename T, long long unsigned int SLOTS>
-inline bool circular_queue<T, SLOTS>::is_empty(){
+template<typename T>
+inline bool circular_queue<T>::is_empty(){
 	return writep == readp;
 }
 
-template<typename T, long long unsigned int SLOTS>
-inline void circular_queue<T, SLOTS>::circ_inc_pointer(T*** pointer){
-	if ((elements + SLOTS) == (*pointer) + 1) {
-		*pointer = &elements[0];
+template<typename T>
+inline T** circular_queue<T>::circ_inc_pointer(T** pointer){
+	T** return_pointer;
+
+	if ((elements + slots) == (pointer) + 1) {
+		return_pointer = &elements[0];
 	} else {
-		(*pointer)++;
+		return_pointer = pointer+1;
 	}
+	
+	return return_pointer;
 }
 
-template<typename T, long long unsigned int SLOTS>
-inline void circular_queue<T, SLOTS>::update_elements_state(){
-	// todo reverse logic
-	if (size() >= CRITICALLY_FULL_LIMIT) state = RB_BUFFER_CRITICALLY_FULL;
-	else if (size() >= FULL_LIMIT) state = RB_BUFFER_FULL;
-	else state = RB_BUFFER_AVAILABLE;
-}
+template<typename T>
+circular_queue<T>::circular_queue(long long unsigned int capacity){
 
-template<typename T, long long unsigned int SLOTS>
-circular_queue<T, SLOTS>::circular_queue(){
+	if(!capacity)
+		return;
+
+	//Allocate
+	elements = new T*[capacity];
+	slots = capacity;
 
 	//Set 0 structure
-	memset(&elements, 0, sizeof(elements));
+	memset(elements, 0, sizeof(T*)*capacity);
 
 	//Set pointers
 	writep = elements;
 	readp = elements;
-
-	//Setting set
-	state = RB_BUFFER_AVAILABLE;
 
 	//Init conditions
 	pthread_cond_init(&write_cond, NULL);
@@ -148,51 +131,68 @@ circular_queue<T, SLOTS>::circular_queue(){
 	pthread_mutex_init(&mutex_writers, NULL);
 }
 
-template<typename T, long long unsigned int SLOTS>
-circular_queue<T, SLOTS>::~circular_queue(){
+template<typename T>
+circular_queue<T>::~circular_queue(){
 
 	//Destroy
 	pthread_cond_destroy(&write_cond);
 	pthread_cond_destroy(&read_cond);
 	pthread_mutex_destroy(&mutex_readers);
 	pthread_mutex_destroy(&mutex_writers);
+	
+	delete[] elements;
 }
 
 //Read
-template<typename T, long long unsigned int SLOTS>
-T* circular_queue<T, SLOTS>::non_blocking_read(void){
+template<typename T>
+T* circular_queue<T>::non_blocking_read(void){
 
-	T* elem;
 
-#ifdef RB_ASM_IMP
+#ifndef PTHREAD_IMP
+	
+	T** pointer, **read_cpy;
 
-	//TODO: put a pthread_mutex free imp
+	//Increment
+	do{
+		if (unlikely(is_empty())) {
+			return NULL;
+		}
+		
+		//Calulcate readpos+1
+		read_cpy = readp;
+		pointer = circ_inc_pointer(read_cpy); 
 
+		//Try to set it atomically
+	}while(__sync_bool_compare_and_swap(&readp, read_cpy, pointer) != true);
+
+	return *pointer;
 #else	
-#ifdef RB_MULTI_READERS
-	pthread_mutex_lock(&mutex_readers);
-#endif
-	if (is_empty()) {
-#ifdef RB_MULTI_WRITERS
+	T* elem;
+	
+	#ifdef RB_MULTI_READERS
+		pthread_mutex_lock(&mutex_readers);
+	#endif //RB_MULTI_READERS
+		if (is_empty()) {
+	#ifdef RB_MULTI_WRITERS
+			pthread_mutex_unlock(&mutex_readers);
+	#endif //RB_MULTI_WRITERS
+			return NULL;
+		}
+
+		elem = *readp;
+		readp = circ_inc_pointer(readp);
+
+	#ifdef RB_MULTI_READERS
 		pthread_mutex_unlock(&mutex_readers);
-#endif
-		return NULL;
-	}
+	#endif //RB_MULTI_READERS
 
-	elem = *readp;
-	circ_inc_pointer(&readp); // = (readp + 1) % SLOTS;
-
-#ifdef RB_MULTI_READERS
-	pthread_mutex_unlock(&mutex_readers);
-#endif
-
-	pthread_cond_broadcast(&write_cond);
-	return elem;
+		pthread_cond_broadcast(&write_cond);
+		return elem;
 #endif
 }
 
-template<typename T, long long unsigned int SLOTS>
-T* circular_queue<T, SLOTS>::blocking_read(unsigned int seconds){
+template<typename T>
+T* circular_queue<T>::blocking_read(unsigned int seconds){
 
 	T* elem;
 	struct timespec timeout;
@@ -229,41 +229,58 @@ T* circular_queue<T, SLOTS>::blocking_read(unsigned int seconds){
 }
 
 //Write
-template<typename T, long long unsigned int SLOTS>
-rofl_result_t circular_queue<T, SLOTS>::non_blocking_write(T* elem){
+template<typename T>
+rofl_result_t circular_queue<T>::non_blocking_write(T* elem){
 
-#ifdef RB_ASM_IMP
+#ifndef PTHREAD_IMP
 
-	//TODO: put a pthread_mutex free imp
+	T** pointer, **write_cpy;
+
+	//Increment
+	do{
+		if (unlikely(is_full())) {
+			return ROFL_FAILURE;
+		}
+		
+		//Calulcate readpos+1
+		write_cpy = writep;
+		pointer = circ_inc_pointer(write_cpy); 
+
+		//Try to set it atomically
+	}while(__sync_bool_compare_and_swap(&writep, write_cpy, pointer) != true);
+
+	*pointer = elem;
+
+	return ROFL_SUCCESS;
 
 #else
 
-#ifdef RB_MULTI_WRITERS
-	pthread_mutex_lock(&mutex_writers);
-#endif
+	#ifdef RB_MULTI_WRITERS
+		pthread_mutex_lock(&mutex_writers);
+	#endif
 
-	if (is_full()) {
-#ifdef RB_MULTI_WRITERS
+		if (is_full()) {
+	#ifdef RB_MULTI_WRITERS
+			pthread_mutex_unlock(&mutex_writers);
+	#endif
+			return ROFL_FAILURE;
+		}
+
+		*writep = elem;
+		writep = circ_inc_pointer(writep);
+
+	#ifdef RB_MULTI_WRITERS
 		pthread_mutex_unlock(&mutex_writers);
-#endif
-		return ROFL_FAILURE;
-	}
+	#endif
 
-	*writep = elem;
-	circ_inc_pointer(&writep); // = (readp + 1) % SLOTS;
+		pthread_cond_broadcast(&read_cond);
 
-#ifdef RB_MULTI_WRITERS
-	pthread_mutex_unlock(&mutex_writers);
-#endif
-
-	pthread_cond_broadcast(&read_cond);
-
-	return ROFL_SUCCESS;
+		return ROFL_SUCCESS;
 #endif
 }
 
-template<typename T, long long unsigned int SLOTS>
-rofl_result_t circular_queue<T, SLOTS>::blocking_write(T* elem, unsigned int seconds){
+template<typename T>
+rofl_result_t circular_queue<T>::blocking_write(T* elem, unsigned int seconds){
 
 	rofl_result_t result;
 	struct timespec timeout;

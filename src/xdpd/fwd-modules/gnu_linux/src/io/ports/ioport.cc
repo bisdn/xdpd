@@ -12,8 +12,8 @@
 using namespace xdpd::gnu_linux;
 
 //Constructor and destructor
-ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
-{
+ioport::ioport(switch_port_t* of_ps, unsigned int q_num){
+
 	//Output queues
 	num_of_queues = q_num;	
 
@@ -26,6 +26,12 @@ ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
 	
 	//Copy MAC address
 	memcpy(mac, of_ps->hwaddr, ETHER_MAC_LEN); 
+
+	//Initialize input queue
+	input_queue = new circular_queue<datapacket_t>(IO_IFACE_RING_SLOTS);	
+
+	for(int i=0;i<IO_IFACE_NUM_QUEUES;++i)
+		output_queues[i] = new circular_queue<datapacket_t>(IO_IFACE_RING_SLOTS);	
 	
 	//Initalize pthread rwlock		
 	if(pthread_rwlock_init(&rwlock, NULL) < 0){
@@ -35,7 +41,9 @@ ioport::ioport(switch_port_t* of_ps, unsigned int q_num)
 	}
 }
 ioport::~ioport(){
-
+	delete input_queue;
+	for(int i=0;i<IO_IFACE_NUM_QUEUES;++i)
+		delete output_queues[i];
 }
 
 /**

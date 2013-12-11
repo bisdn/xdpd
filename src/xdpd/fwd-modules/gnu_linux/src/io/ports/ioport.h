@@ -63,7 +63,7 @@ public:
 	*/
 	inline unsigned int get_queue_size(unsigned int id){ 
 		if(id < num_of_queues)
-			return output_queues[id].MAX_SLOTS; 
+			return output_queues[id]->slots; 
 		
 		return 0;
 	} 
@@ -101,6 +101,7 @@ public:
 	virtual int get_read_fd(void)=0;
 	virtual int get_write_fd(void)=0;
 
+#if 0
 	//Get buffer status; generally used to create "smart" schedulers. TODO: evaluate if they should be 
 	//non-virtual (inline+virtual does not make a lot of sense here), and evaluate if they are necessary
 	//at all.
@@ -115,6 +116,7 @@ public:
 			return RB_BUFFER_AVAILABLE;
 		} 
 	}; 
+#endif
 
 	/**
 	* @brief Retrieves the number of buffers required by the port to be operating at line-rate; 
@@ -213,7 +215,7 @@ protected:
 	* for QoS purposes (set-queue). output_queues[0] is always the queue with 
 	* least priority (best effort)
 	*/
-	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> output_queues[IO_IFACE_NUM_QUEUES];
+	circular_queue<datapacket_t>* output_queues[IO_IFACE_NUM_QUEUES];
 
 	/**
 	* Input queue (intermediate-buffering). 
@@ -223,7 +225,7 @@ protected:
 	* to the appropiate LS processing queue.
 	*
 	*/
-	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> input_queue;
+	circular_queue<datapacket_t>* input_queue;
 };
 
 }// namespace xdpd::gnu_linux 

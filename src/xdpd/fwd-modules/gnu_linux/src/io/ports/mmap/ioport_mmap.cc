@@ -65,7 +65,7 @@ void ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 		}
 	
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
-		if(output_queues[q_id].non_blocking_write(pkt) != ROFL_SUCCESS){
+		if(output_queues[q_id]->non_blocking_write(pkt) != ROFL_SUCCESS){
 			TM_STAMP_STAGE(pkt, TM_SA5_FAILURE);
 			
 			ROFL_DEBUG("[mmap:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
@@ -80,7 +80,7 @@ void ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 		}
 		TM_STAMP_STAGE(pkt, TM_SA5_SUCCESS);
 
-		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
+		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id]->size());
 	
 		//Notify port group
 		sem_post(this->pg_tx_sem);
@@ -245,7 +245,7 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 	unsigned int cnt = 0;
 	int tx_bytes_local = 0;
 
-	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS>* queue = &output_queues[q_id];
+	circular_queue<datapacket_t>* queue = output_queues[q_id];
 
 	if ( unlikely(tx == NULL) ) {
 		return num_of_buckets;
@@ -275,7 +275,7 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 		pkt = queue->non_blocking_read();
 		
 		if(!pkt){
-			ROFL_ERR("[mmap:%s] A packet has been discarded due to race condition on the output queue. Are you really running the I/O subsystem with a single thread? output_queue %u left, %u buckets left\n",
+			ROFL_ERR("[mmap:%s] A packet has been discarded due to race condition on the output queue. Are you really running the TX group with a single thread? output_queue %u left, %u buckets left\n",
 				of_port_state->name,
 				q_id,
 				num_of_buckets);

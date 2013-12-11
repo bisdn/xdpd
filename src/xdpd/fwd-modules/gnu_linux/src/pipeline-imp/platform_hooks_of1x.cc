@@ -38,10 +38,10 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 
 	//Create input queues
 	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
-		ls_int->input_queues[i] = new circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>();
+		ls_int->input_queues[i] = new circular_queue<datapacket_t>(PROCESSING_INPUT_QUEUE_SLOTS);
 	}
 
-	ls_int->pkt_in_queue = new circular_queue<datapacket_t, PROCESSING_PKT_IN_QUEUE_SLOTS>();
+	ls_int->pkt_in_queue = new circular_queue<datapacket_t>(PROCESSING_PKT_IN_QUEUE_SLOTS);
 	ls_int->storage = new datapacket_storage( IO_PKT_IN_STORAGE_MAX_BUF, IO_PKT_IN_STORAGE_EXPIRATION_S); // todo make this value configurable
 
 	sw->platform_state = (of_switch_platform_state_t*)ls_int;

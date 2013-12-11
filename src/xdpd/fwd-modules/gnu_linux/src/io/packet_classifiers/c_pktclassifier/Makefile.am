@@ -21,8 +21,8 @@ libfwd_module_gnu_linux_io_classifiers_c_la_HEADERS = c_pktclassifier.h \
 	headers/cpc_tcp.h \
 	headers/cpc_udp.h \
 	headers/cpc_vlan.h \
-	../push_pop_operations.h
+	../packet_operations.h
 
 libfwd_module_gnu_linux_io_classifiers_c_la_SOURCES = \
 	c_pktclassifier.c \
-	../push_pop_operations.cc
+	../packet_operations.cc

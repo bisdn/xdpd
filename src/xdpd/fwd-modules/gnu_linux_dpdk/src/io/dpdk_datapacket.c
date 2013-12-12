@@ -47,6 +47,7 @@ init_datapacket_dpdk(
 	dpkt->in_port = in_port;
 	dpkt->in_phy_port = in_phy_port;
 	dpkt->output_queue = 0;
+	dpkt->mbuf = mbuf;
 
 	// Timestamp S1
 	TM_STAMP_STAGE_DPX86(dpkt, TM_S1);

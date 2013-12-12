@@ -10,10 +10,8 @@ include_HEADERS=
 libfwd_module_gnu_linux_dpdk_src_io_la_SOURCES = \
 					bufferpool.h\
 					bufferpool.cc\
-					datapacketx86.h\
-					datapacketx86.cc\
 					dpdk_datapacket.h \
-					dpdk_datapacket.cc \
+					dpdk_datapacket.c \
 					datapacket_storage.h\
 					datapacket_storage.cc\
 					port_manager.h\

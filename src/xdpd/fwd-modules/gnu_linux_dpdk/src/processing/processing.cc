@@ -143,11 +143,11 @@ int processing_core_process_packets(void* not_used){
 
 	//Parsing and pipeline extra state
 	datapacket_t pkt;
-	datapacket_dpdk_t pkt_state;
+	datapacket_dpdk_t* pkt_state = create_datapacket_dpdk();
 
 	//Init values and assign
-	pkt.platform_state = (platform_datapacket_state_t*)&pkt_state;
-	pkt_state.mbuf = NULL;
+	pkt.platform_state = (platform_datapacket_state_t*)pkt_state;
+	pkt_state->mbuf = NULL;
 
 	//Set flag to active
 	tasks->active = true;
@@ -187,12 +187,13 @@ int processing_core_process_packets(void* not_used){
 				port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 
 				//Process RX&pipeline 
-				process_port_rx(port, port_id, pkt_burst, &pkt, &pkt_state);
+				process_port_rx(port, port_id, pkt_burst, &pkt, pkt_state);
 			}
 		}
 	}
 	
 	tasks->active = false;
+	destroy_datapacket_dpdk(pkt_state);
 
 	return (int)ROFL_SUCCESS; 
 }

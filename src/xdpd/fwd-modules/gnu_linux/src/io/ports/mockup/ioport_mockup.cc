@@ -49,7 +49,7 @@ void ioport_mockup::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	const char c='a';
 
 	//Put in the queue
-	output_queues[q_id]->blocking_write(pkt);
+	output_queues[q_id]->non_blocking_write(pkt);
 
 	//TODO: make it happen only if thread is really sleeping...
 	ret = ::write(notify_pipe[WRITE],&c,sizeof(c));

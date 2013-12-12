@@ -9,7 +9,9 @@
 #include <pthread.h>
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <rofl/common/utils/c_logger.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "likely.h"
 
@@ -39,11 +41,11 @@ public:
 	
 	//Read
 	inline T* non_blocking_read(void);
-	inline T* blocking_read(unsigned int msseconds=0);
+	//inline T* blocking_read(unsigned int seconds=0);
 
 	//Write
 	inline rofl_result_t non_blocking_write(T* elem);
-	inline rofl_result_t blocking_write(T* elem, unsigned int msseconds=0);
+	//inline rofl_result_t blocking_write(T* elem, unsigned int seconds=0);
 
 	//
 	inline unsigned int size(void)
@@ -56,6 +58,7 @@ public:
 
 	long long unsigned int slots;
 
+	void dump(void)  __attribute__((used));
 private:
 	//Buffer
 	T** elements;
@@ -64,6 +67,7 @@ private:
 	circular_queue_state_t state;
 
 	T** writep;
+	T** _writep; //used only between writers (assembly 2 stage commit)
 	T** readp;
 
 	//Condition for blocking calls
@@ -119,8 +123,7 @@ circular_queue<T>::circular_queue(long long unsigned int capacity){
 	memset(elements, 0, sizeof(T*)*capacity);
 
 	//Set pointers
-	writep = elements;
-	readp = elements;
+	writep = _writep = readp = elements;
 
 	//Init conditions
 	pthread_cond_init(&write_cond, NULL);
@@ -151,6 +154,7 @@ T* circular_queue<T>::non_blocking_read(void){
 #ifndef PTHREAD_IMP
 	
 	T** pointer, **read_cpy;
+	T* to_return;
 
 	//Increment
 	do{
@@ -158,14 +162,17 @@ T* circular_queue<T>::non_blocking_read(void){
 			return NULL;
 		}
 		
-		//Calulcate readpos+1
+		//Calculate readp+1
 		read_cpy = readp;
+		to_return = *read_cpy;
 		pointer = circ_inc_pointer(read_cpy); 
+
+		assert( pointer < (elements+slots));
 
 		//Try to set it atomically
 	}while(__sync_bool_compare_and_swap(&readp, read_cpy, pointer) != true);
 
-	return *pointer;
+	return to_return;
 #else	
 	T* elem;
 	
@@ -191,6 +198,7 @@ T* circular_queue<T>::non_blocking_read(void){
 #endif
 }
 
+#if 0
 template<typename T>
 T* circular_queue<T>::blocking_read(unsigned int seconds){
 
@@ -227,6 +235,7 @@ T* circular_queue<T>::blocking_read(unsigned int seconds){
 	}
 	return elem;
 }
+#endif
 
 //Write
 template<typename T>
@@ -238,18 +247,22 @@ rofl_result_t circular_queue<T>::non_blocking_write(T* elem){
 
 	//Increment
 	do{
-		if (unlikely(is_full())) {
+		if(unlikely(is_full())) {
 			return ROFL_FAILURE;
 		}
 		
-		//Calulcate readpos+1
-		write_cpy = writep;
+		//Calculate writep+1
+		write_cpy = _writep;
 		pointer = circ_inc_pointer(write_cpy); 
 
-		//Try to set it atomically
-	}while(__sync_bool_compare_and_swap(&writep, write_cpy, pointer) != true);
+	//Try to set writers only index atomically
+	}while(__sync_bool_compare_and_swap(&_writep, write_cpy, pointer) != true);
 
-	*pointer = elem;
+	*write_cpy = elem;
+
+	//Two stage commit, now let readers read it 
+	while(__sync_bool_compare_and_swap(&writep, write_cpy, pointer) != true);
+
 
 	return ROFL_SUCCESS;
 
@@ -278,6 +291,8 @@ rofl_result_t circular_queue<T>::non_blocking_write(T* elem){
 		return ROFL_SUCCESS;
 #endif
 }
+
+#if 0
 
 template<typename T>
 rofl_result_t circular_queue<T>::blocking_write(T* elem, unsigned int seconds){
@@ -312,6 +327,21 @@ rofl_result_t circular_queue<T>::blocking_write(T* elem, unsigned int seconds){
 	}
 
 	return result;
+}
+#endif
+
+template<typename T>
+void circular_queue<T>::dump(void){
+	for(long long unsigned int i=0; i<slots;++i){
+		if(readp == elements+i)
+			ROFL_INFO(">");
+		if(writep == elements+i)
+			ROFL_INFO("=||");
+		ROFL_INFO("[%llu:%p],", i, elements[i]);
+		if(i%10 == 0)
+			ROFL_INFO("\n");
+	}
+	ROFL_INFO("\n");
 }
 
 }// namespace xdpd::gnu_linux 

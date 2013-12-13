@@ -946,11 +946,23 @@ void platform_packet_push_gtp(datapacket_t* pkt)
 void
 platform_packet_drop(datapacket_t* pkt)
 {
+	datapacket_dpdk_t* state = (datapacket_dpdk_t*)(pkt->platform_state);
+	
 	ROFL_DEBUG("Dropping packet(%p)\n",pkt);
 	
-	//Release buffer
-	bufferpool::release_buffer(pkt);
-
+	if ( NULL == state ){
+		ROFL_DEBUG("packet state is NULL\n");
+		return;
+	}
+	
+	rte_pktmbuf_free(state->mbuf);
+	
+	if( state->packet_in_bufferpool ){
+		//Release buffer only if the packet is stored there
+		bufferpool::release_buffer(pkt);
+	}
+	
+	return;
 }
 
 static void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pack, switch_port_t* port){
@@ -965,10 +977,13 @@ static void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pack, swi
 
 		tx_pkt(port, pack->output_queue, pkt);	
 	}else{
-		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);			
+		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 	}
 
-	//Never release the pkt; it is in stack per core	
+	if( ((datapacket_dpdk_t*)pkt->platform_state)->packet_in_bufferpool ){
+		//Release buffer only if the packet is stored there
+		bufferpool::release_buffer(pkt);
+	}
 }
 
 /**
@@ -1146,7 +1161,7 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	pkt_replica->sw = pkt->sw;
 
 	//Initialize replica buffer and classify  //TODO: classification state could be copied
-	init_datapacket_dpdk(pkt_dpdk_replica, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, false);
+	init_datapacket_dpdk(pkt_dpdk_replica, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, true);
 
 	//Replicate the packet(copy contents)	
 	//memcpy(pkt_dpdk_replica->get_buffer(), pkt_dpdk->get_buffer(), pkt_dpdk->get_buffer_length());

@@ -8,7 +8,7 @@ datapacket_dpdk_t* create_datapacket_dpdk(void){
 	dpkt->ipv4_recalc_checksum = false;
 	dpkt->tcp_recalc_checksum = false;
 	dpkt->udp_recalc_checksum = false;
-	dpkt->buffering_status = DPDK_DATAPACKET_BUFFER_IS_EMPTY;
+	dpkt->packet_in_bufferpool = false;
 	return dpkt;
 	
 }
@@ -28,18 +28,13 @@ init_datapacket_dpdk(
 		uint32_t in_port,
 		uint32_t in_phy_port,
 		bool classify, 
-		bool copy_packet_to_internal_buffer){
+		bool packet_is_in_bufferpool){
 	
-	uint8_t *buf = rte_pktmbuf_mtod(mbuf, uint8_t*);
+	if( NULL == rte_pktmbuf_mtod(mbuf, uint8_t*) )
+		return ROFL_FAILURE;
 
-	if( copy_packet_to_internal_buffer) {
-		//NOTE is this needed?
-		assert(0);
-	}else{
-		if(!buf)
-			return ROFL_FAILURE;
-
-		//NOTE NEEDED? init_internal_buffer_location_defaults(X86_DATAPACKET_BUFFERED_IN_NIC, buf, buflen);
+	if( packet_is_in_bufferpool ) {
+		dpkt->packet_in_bufferpool = true;
 	}
 
 	//Fill the structure
@@ -63,6 +58,8 @@ void
 reset_datapacket_dpdk(datapacket_dpdk_t *dpkt){
 	reset_classifier(dpkt->headers);
 
+#if 0
+	//TODO memset datapacket to 0
 	if (DPDK_DATAPACKET_BUFFERED_IN_USER_SPACE == get_buffering_status_dpdk(dpkt)){
 #ifndef NDEBUG
 		// not really necessary, but makes debugging a little bit easier
@@ -70,6 +67,7 @@ reset_datapacket_dpdk(datapacket_dpdk_t *dpkt){
 #endif
 		dpkt->buffering_status = DPDK_DATAPACKET_BUFFER_IS_EMPTY;
 	}
+#endif
 }
 
 

@@ -31,13 +31,6 @@ typedef struct dpdk_pkt_platform_state{
 }dpdk_pkt_platform_state_t;
 #endif
 
-//buffering status
-typedef enum{
-	DPDK_DATAPACKET_BUFFER_IS_EMPTY,
-	DPDK_DATAPACKET_BUFFERED_IN_NIC,
-	DPDK_DATAPACKET_BUFFERED_IN_USER_SPACE
-}dpdk_buffering_status_t;
-
 /**
 * @brief Datapacket abstraction for dpdk (GNU/Linux)
 *
@@ -79,8 +72,9 @@ typedef struct datapacket_dpdk{
 	// Pointer to the buffer
 	struct rte_mbuf* mbuf;
 	
-	//Status of this buffer
-	dpdk_buffering_status_t buffering_status;
+	// True if the packet is stored in the bufferpool
+	// used to know when to free the slot
+	bool packet_in_bufferpool;
 	
 }datapacket_dpdk_t;
 
@@ -94,7 +88,7 @@ datapacket_dpdk_t* create_datapacket_dpdk(void);
 void destroy_datapacket_dpdk(datapacket_dpdk_t *dpkt);
 
 // Init & reset
-rofl_result_t init_datapacket_dpdk(datapacket_dpdk_t *dpkt, struct rte_mbuf* mbuf, of_switch_t* sw, uint32_t in_port, uint32_t in_phy_port, bool classify, bool copy_packet_to_internal_buffer);
+rofl_result_t init_datapacket_dpdk(datapacket_dpdk_t *dpkt, struct rte_mbuf* mbuf, of_switch_t* sw, uint32_t in_port, uint32_t in_phy_port, bool classify, bool packet_is_in_bufferpool);
 void reset_datapacket_dpdk(datapacket_dpdk_t *dpkt);
 
 //Return the pointer to the buffer
@@ -104,10 +98,6 @@ inline uint8_t* get_buffer_dpdk(datapacket_dpdk_t *dpkt){
 
 inline size_t get_buffer_length_dpdk(datapacket_dpdk_t *dpkt){
 	return rte_pktmbuf_pkt_len(dpkt->mbuf);
-}
-
-inline dpdk_buffering_status_t get_buffering_status_dpdk(datapacket_dpdk_t *dpkt){
-	return dpkt->buffering_status;
 }
 
 // Push & Pop raw operations. To be used ONLY by classifiers

@@ -88,7 +88,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	datapacket_t* pkt_replica;
 
 	//Protect
-	if(unlikely(!pkt) || unlikely(!sw))
+	if(unlikely(pkt==NULL) || unlikely(sw==NULL))
 		return;
 
 	//datapacket_t* pkt_replica;
@@ -109,6 +109,8 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		
 	}
 
+	rte_pktmbuf_free(((datapacket_dpdk_t *)pkt->platform_state)->mbuf);
+	
 	return; //DO NOT REMOVE
 
 PKT_IN_ERROR:

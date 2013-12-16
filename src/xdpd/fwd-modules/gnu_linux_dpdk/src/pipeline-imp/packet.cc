@@ -21,6 +21,7 @@
 #include <rte_mempool.h>
 #include <rte_spinlock.h>
 #include <rte_ring.h>
+#include <rte_errno.h>
 
 
 #include "../io/bufferpool.h"
@@ -1149,6 +1150,7 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	
 	if(unlikely(!mbuf)){
 		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
+		ROFL_DEBUG("errno %d - %s\n", rte_errno, rte_strerror(rte_errno));
 		goto PKT_REPLICATE_ERROR;
 	}
 
@@ -1164,12 +1166,10 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 	init_datapacket_dpdk(pkt_dpdk_replica, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, true);
 
 	//Replicate the packet(copy contents)	
-	//memcpy(pkt_dpdk_replica->get_buffer(), pkt_dpdk->get_buffer(), pkt_dpdk->get_buffer_length());
 	pkt_dpdk_replica->ipv4_recalc_checksum 	= pkt_dpdk->ipv4_recalc_checksum;
 	pkt_dpdk_replica->icmpv4_recalc_checksum 	= pkt_dpdk->icmpv4_recalc_checksum;
 	pkt_dpdk_replica->tcp_recalc_checksum 	= pkt_dpdk->tcp_recalc_checksum;
 	pkt_dpdk_replica->udp_recalc_checksum 	= pkt_dpdk->udp_recalc_checksum;
-	((datapacket_dpdk_t*)pkt_replica->platform_state)->mbuf = mbuf;
 
 	return pkt_replica; //DO NOT REMOVE
 

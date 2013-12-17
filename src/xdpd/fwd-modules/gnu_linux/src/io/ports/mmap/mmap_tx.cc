@@ -1,6 +1,7 @@
 #include "mmap_tx.h"
 #include <assert.h> 
 
+using namespace xdpd::gnu_linux;
 
 mmap_tx::mmap_tx(
 		std::string __devname,

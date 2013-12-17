@@ -5,7 +5,7 @@
 #include <rofl/datapath/afa/cmm.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 
 //only for Test
 #include <stdlib.h>
@@ -13,7 +13,6 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
-#define FWD_MOD_NAME "example"
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself
@@ -72,16 +71,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling create switch. Name: %s, number of tables: %d\n",name, num_of_tables);
 	
-	switch(of_version){
-		case OF_VERSION_12: 
-			sw = (of_switch_t*)of12_init_switch(name, dpid, num_of_tables, (enum of12_matching_algorithm_available*) ma_list);
-			break;
-
-		//Add more here..
-			
-		default: 
-			return NULL;
-	}	
+	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
 	//In software switches, you may have to launch threads that
 	//do the pipeline processing of the packets
@@ -202,6 +192,21 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 	ROFL_INFO("["FWD_MOD_NAME"] calling attach_port_to_switch()\n");
 	
 	return AFA_SUCCESS;
+}
+
+/**
+* @name    fwd_module_connect_switches
+* @brief   Attemps to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. 
+* @ingroup management
+*
+* @param dpid_lsi1 Datapath ID of the LSI1
+* @param dpid_lsi2 Datapath ID of the LSI2 
+*/
+afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_t** port1, uint64_t dpid_lsi2, switch_port_t** port2){
+	
+	ROFL_INFO("["FWD_MOD_NAME"] calling connect_switches()\n");
+	
+	return AFA_SUCCESS; 
 }
 
 /*

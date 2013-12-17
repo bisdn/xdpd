@@ -30,14 +30,12 @@
 * @author Marc Sune<marc.sune (at) bisdn.de>
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 *
-* @brief Logical Switch (LS) management API.
-* 
-* The switch manager API is a C++ interface that can be consumed
-* by the add-on management modules for general logical switch management
-* (e.g. create/destroy new logical switches)
+* @brief Logical Switch Instance (LSI) management API file.
 */
 
-namespace rofl {
+using namespace rofl;
+
+namespace xdpd {
 
 class eOfSmBase				: public cerror {};	// base error class for all switch_manager related errors
 class eOfSmGeneralError			: public eOfSmBase {};
@@ -54,10 +52,14 @@ class eOfSmVersionNotSupported		: public eOfSmBase {};
 //Fwd declaration
 class openflow_switch;
 
-/*
- * Switch manager. Manages the switch 
- */
-
+/**
+* @brief Logical Switch (LS) management API.
+* 
+* The switch manager API is a C++ interface that can be consumed
+* by the add-on management modules for general logical switch management
+* (e.g. create/destroy logical switches)
+* @ingroup cmm_mgmt
+*/
 class switch_manager {
 
 protected:
@@ -72,11 +74,6 @@ public:
 	static const caddress binding_addr;
 
 	/**
-	** This section contains the factory-like static calls for managment of the
-	** switch instances. This is the interface exposed to the management entities.
-	**/
-
-	/**
 	 * @brief	static factory method for creating a logical switch (LS) 
 	 *
 	 * This method creates a new Openflow Logical Switch instance with dpid and dpname.
@@ -89,6 +86,7 @@ public:
 					std::string const& dpname,
 					unsigned int num_of_tables,
 					int* ma_list,
+					int reconnect_start_timeout = 2,
 					caddress const& controller_addr = switch_manager::controller_addr,
 					caddress const& binding_addr = switch_manager::binding_addr) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
 
@@ -136,8 +134,17 @@ public:
 	static std::list<std::string> list_matching_algorithms(of_version_t of_version);
 
 
+	/**
+	 * connect to controller
+	 */
+	static void rpc_connect_to_ctl(uint64_t dpid, caddress const& ra);
+
+	/**
+	 * disconnect from from controller
+	 */
+	static void rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra);
 };
 
-}// namespace rofl
+}// namespace xdpd
 
 #endif /* SWITCH_MANAGER_H_ */

@@ -7,13 +7,15 @@
 #include <rofl/common/utils/c_logger.h>
 #include "management/switch_manager.h"
 #include "management/port_manager.h"
-#include "management/adapter/cli/xdpd_cli.h"
+#include "management/plugin_manager.h"
 
 using namespace rofl;
+using namespace xdpd;
 
-#define XDPD_LOG_FILE "xdpd.log"
+extern int optind;
 
 //TODO: Redirect C loggers to the output log
+#define XDPD_LOG_FILE "xdpd.log"
 
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
@@ -21,10 +23,32 @@ void interrupt_handler(int dummy=0) {
 	ciosrv::stop();
 }
 
-/**
- * XDPD Main routine
+//Prints version and build numbers and exits
+void dump_version(){
+	//Print version and exit
+	ROFL_INFO("The eXtensible OpenFlow Datapath daemon (xDPd)\n");	
+	ROFL_INFO("Version: %s\n",XDPD_VERSION);
+
+#ifdef XDPD_BUILD
+	ROFL_INFO("Build: %s\n",XDPD_BUILD);
+	ROFL_INFO("Compiled in branch: %s\n",XDPD_BRANCH);
+	ROFL_INFO("%s\n",XDPD_DESCRIBE);
+#endif	
+	ROFL_INFO("\n[Libraries: ROFL]\n");
+	ROFL_INFO("ROFL version: %s\n",ROFL_VERSION);
+	ROFL_INFO("ROFL build: %s\n",ROFL_BUILD_NUM);
+	ROFL_INFO("ROFL compiled in branch: %s\n",ROFL_BUILD_BRANCH);
+	ROFL_INFO("%s\n",ROFL_BUILD_DESCRIBE);
+	
+	exit(EXIT_SUCCESS);
+
+}
+
+/*
+ * xDPd Main routine
  */
 int main(int argc, char** argv){
+
 
 	//Check for root privileges 
 	if(geteuid() != 0){
@@ -44,32 +68,31 @@ int main(int argc, char** argv){
 	char s_dbg[32];
 	memset(s_dbg, 0, sizeof(s_dbg));
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
-	cunixenv::getInstance().add_option(coption(true,REQUIRED_ARGUMENT,'d',"debug","debug level", std::string(s_dbg)));
 
-	cunixenv::getInstance().add_option(
-			coption(true, REQUIRED_ARGUMENT, 'a', "address", "cli listen address",
-					std::string("127.0.0.1")));
+	{ //Make valgrind happy
+		cunixenv env_parser(argc, argv);
+		
+		/* update defaults */
+		env_parser.update_default_option("logfile", XDPD_LOG_FILE);
+		env_parser.add_option(coption(true, NO_ARGUMENT, 'v', "version", "Retrieve xDPd version and exit", std::string("")));
 
-	cunixenv::getInstance().add_option(
-			coption(true, REQUIRED_ARGUMENT, 'p', "port", "cli listen port",
-					std::string("1234")));
+		//Parse
+		env_parser.parse_args();
 
-	/* update defaults */
-	cunixenv::getInstance().update_default_option("logfile", XDPD_LOG_FILE);
+		if (env_parser.is_arg_set("version")) {
+			dump_version();
+		}
+		
+		if (not env_parser.is_arg_set("daemonize")) {
+			// only do this in non
+			std::string ident(XDPD_LOG_FILE);
 
-	//Parse
-	cunixenv::getInstance().parse_args(argc, argv);
-
-	if (not cunixenv::getInstance().is_arg_set("daemonize")) {
-		// only do this in non
-		std::string ident(XDPD_LOG_FILE);
-
-		csyslog::initlog(csyslog::LOGTYPE_FILE,
-				static_cast<csyslog::DebugLevel>(atoi(cunixenv::getInstance().get_arg("debug").c_str())), // todo needs checking
-				cunixenv::getInstance().get_arg("logfile"),
-				ident.c_str());
+			csyslog::initlog(csyslog::LOGTYPE_FILE,
+					static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
+					env_parser.get_arg("logfile"),
+					ident.c_str());
+		}
 	}
-	
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
 		ROFL_INFO("Init driver failed\n");	
@@ -79,11 +102,9 @@ int main(int argc, char** argv){
 	//Init the ciosrv.
 	ciosrv::init();
 
-	//Parse config file
-	xdpd_cli* cli = new xdpd_cli(
-			caddress(AF_INET, cunixenv::getInstance().get_arg('a').c_str(),
-					atoi(cunixenv::getInstance().get_arg('p').c_str())));
-	cli->read_config_file(cunixenv::getInstance().get_arg("config-file"));
+	//Load plugins
+	optind=0;
+	plugin_manager::init(argc, argv);
 
 	//ciosrv run. Only will stop in Ctrl+C
 	ciosrv::run();
@@ -94,8 +115,8 @@ int main(int argc, char** argv){
 	//Destroy all state
 	switch_manager::destroy_all_switches();
 
-	//Delete cli
-	delete cli;
+	//Let plugin manager destroy all registered plugins
+	plugin_manager::destroy();
 	
 	//ciosrv destroy
 	ciosrv::destroy();

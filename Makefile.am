@@ -11,7 +11,7 @@ MAINTAINERCLEANFILES = $(top_srcdir)/aclocal.m4 \
 	$(top_srcdir)/Makefile.in \
 	$(top_srcdir)/missing
 
-SUBDIRS = src #test 
+SUBDIRS = src doc test
 
 install-exec-hook:
 	@echo "Install"
@@ -20,3 +20,7 @@ uninstall-hook:
 
 maintainer-clean-local:
 	rm -rf $(top_srcdir)/m4
+
+#AM_CPPFLAGS=-I/home/andreas/local/rofl
+#AM_CFLAGS=-I/home/andreas/local/rofl
+#AM_LDFLAGS=-L/home/andreas/local/lib

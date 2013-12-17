@@ -7,6 +7,7 @@
 
 #include <string>
 #include <assert.h>
+#include <pthread.h>
 
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -22,6 +23,17 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+
+#define ETHER_MAC_LEN 6
+
+/**
+* @brief Abstract class representing a network interface (port)
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class ioport{
 
 public:
@@ -126,6 +138,12 @@ public:
 	virtual rofl_result_t set_drop_received_config(bool drop_received);
 
 	/**
+	 * Sets the port flood output behaviour. This MUST change the of_port_state appropiately
+	 * Inherited classes may override this method if they have specific things to do.
+	 */
+	virtual rofl_result_t set_no_flood_config(bool no_flood);
+	
+	/**
 	 * Sets the port output behaviour. This MUST change the of_port_state appropiately
 	 * Inherited classes may override this method if they have specific things to do.
 	 */
@@ -158,17 +176,33 @@ public:
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
 	
+	inline void set_link_state(bool up){
+
+		if(!up)
+			of_port_state->state = (of_port_state->state | (PORT_STATE_LINK_DOWN));
+		else
+			of_port_state->state = (of_port_state->state & ~(PORT_STATE_LINK_DOWN)); 
+			
+	}
+	
 	//Switch processing queue to which the port is attached
 	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_processing_queue;
 	
 	static const unsigned int MAX_OUTPUT_QUEUES=IO_IFACE_NUM_QUEUES; /*!< Constant max output queues */
 	unsigned int port_group;
+	pthread_rwlock_t rwlock; //Serialize management actions
 
 protected:
 	static const unsigned int NUM_OF_REQUIRED_BUFFERS=IO_IFACE_REQUIRED_BUFFERS; /* Required buffers for the port to operate at line rate */
 	
 	//Output QoS queues
 	unsigned int num_of_queues;
+
+	//Max packet size
+	unsigned int mps;
+
+	//MAC address
+	uint8_t mac[ETHER_MAC_LEN];
 
 	/**
 	* @brief Output (TX) queues (num_of_queues) 
@@ -189,5 +223,8 @@ protected:
 	*/
 	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> input_queue;
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* IOPORT_H_ */

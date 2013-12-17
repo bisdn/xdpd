@@ -12,20 +12,7 @@
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/common/cmemory.h>
-#include <rofl/common/protocols/fetherframe.h>
-#include <rofl/common/protocols/fvlanframe.h>
-#include <rofl/common/protocols/fmplsframe.h>
-#include <rofl/common/protocols/farpv4frame.h>
-#include <rofl/common/protocols/fipv4frame.h>
-#include <rofl/common/protocols/ficmpv4frame.h>
-#include <rofl/common/protocols/fudpframe.h>
-#include <rofl/common/protocols/ftcpframe.h>
-#include <rofl/common/protocols/fsctpframe.h>
-#include <rofl/common/protocols/fpppoeframe.h>
-#include <rofl/common/protocols/fpppframe.h>
-#include <rofl/common/protocols/fgtpuframe.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
-//#include <rofl/datapath/pipeline/util/rofl_pipeline_utils.h>
 
 /**
 * @file packetclassifier.h
@@ -39,7 +26,29 @@
 *
 */
 
+
 //fwd declarations (avoid circular dependencies)
+namespace rofl{
+	class fframe;
+	class fetherframe;
+	class fvlanframe;
+	class fmplsframe;
+	class farpv4frame;
+	class fipv4frame;
+	class ficmpv4frame;
+	class fipv6frame;
+	class ficmpv6frame;
+	class fudpframe;
+	class ftcpframe;
+	class fsctpframe;
+	class fpppoeframe;
+	class fpppframe;
+	class fgtpuframe;
+}
+
+namespace xdpd {
+namespace gnu_linux {
+
 class datapacketx86;
 
 class packetclassifier{
@@ -65,6 +74,8 @@ public:
 	virtual rofl::farpv4frame* arpv4(int idx = 0) const=0;
 	virtual rofl::fipv4frame* ipv4(int idx = 0) const=0;
 	virtual rofl::ficmpv4frame* icmpv4(int idx = 0) const=0;
+	virtual rofl::fipv6frame* ipv6(int idx = 0) const=0;
+	virtual rofl::ficmpv6frame* icmpv6(int idx = 0) const=0;
 	virtual rofl::fudpframe* udp(int idx = 0) const=0;
 	virtual rofl::ftcpframe* tcp(int idx = 0) const=0;
 	virtual rofl::fsctpframe* sctp(int idx = 0) const=0;
@@ -116,6 +127,7 @@ protected:
 	
 };
 
-
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* PACKETCLASSIFIER_H_ */

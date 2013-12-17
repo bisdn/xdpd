@@ -1,18 +1,13 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = adapter/cli
+SUBDIRS = $(PLUGIN_DIRS)
+DIST_SUBDIRS = $(PLUGIN_DIRS)
 
-noinst_LTLIBRARIES = libxmgmt.la
-
-libxmgmt_la_SOURCES = \
+noinst_LTLIBRARIES = libxdpd_mgmt.la
+		
+libxdpd_mgmt_la_SOURCES = \
+	plugin_manager.cc \
 	switch_manager.cc \
-	switch_manager.h \
-	port_manager.cc \
-	port_manager.h
+	port_manager.cc
 
-if ENABLE_CONFIG_CLI
-CLILIB = adapter/cli/libxdpd_config_cli.la
-endif
-
-libxmgmt_la_LIBADD = \
-	$(CLILIB)
+libxdpd_mgmt_la_LIBADD = $(PLUGIN_LIBS)

@@ -3,9 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef PROCESSINGMANAGER_H
-#define PROCESSINGMANAGER_H 1
-
-#ifdef __cplusplus
+#define PROCESSINGMANAGER_H 
 
 #include <pthread.h>
 #include <vector>
@@ -21,11 +19,19 @@
 * @file processingmanager.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief Class in charge of processing (Openflow pipeline)
+* @brief In charge of processing (Openflow pipeline)
 * threads; e.g. launching and stopping them.
 * 
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+/**
+* @brief Switch platform state (pipeline of1x_switch_t platform state)
+*
+* @ingroup fm_gnu_linux_processing
+*/
 class ls_processing_threads_state {
 
 public:
@@ -43,8 +49,10 @@ public:
 	bool keep_on_working;	
 };
 
-/*
-* Processing manager. Creates/destroys the processing threads associated with a logical switch instance.
+/**
+* @brief Processing manager. Creates/destroys the processing threads associated with a logical switch instance.
+*
+* @ingroup fm_gnu_linux_processing
 */
 class processingmanager{ 
 
@@ -96,13 +104,14 @@ protected:
 	static void* process_packets_through_pipeline(void* processing_threads_state);
 };
 
-#endif //__cplusplus
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 //Wrappers
-
 ROFL_BEGIN_DECLS
 
-typedef struct processingmanager processingmanager_t;
+typedef struct xdpd::gnu_linux::processingmanager processingmanager_t;
 rofl_result_t start_ls_workers_wrapper(of_switch_t* ls);
 rofl_result_t stop_ls_workers_wrapper(of_switch_t* ls);
 

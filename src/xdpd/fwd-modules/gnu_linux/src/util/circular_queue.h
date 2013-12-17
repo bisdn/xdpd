@@ -15,6 +15,9 @@
  * Implementation of a ring elements
  */
 
+namespace xdpd {
+namespace gnu_linux {
+
 //#define RB_ASM_IMP 1 
 #define RB_MULTI_READERS 1 
 #define RB_MULTI_WRITERS 1 
@@ -56,6 +59,8 @@ public:
 
 	bool
 	is_empty(void);
+	
+	bool is_full(void);
 
 	static const long long unsigned int MAX_SLOTS = SLOTS;
 	static const long long unsigned int SLOT_MASK = MAX_SLOTS - 1;
@@ -86,7 +91,6 @@ private:
 	pthread_mutex_t mutex_writers;
 
 	/* Private methods */
-	bool is_full(void);
 	void update_elements_state();
 	void circ_inc_pointer(T*** pointer);
 
@@ -292,5 +296,8 @@ rofl_result_t circular_queue<T, SLOTS>::blocking_write(T* elem, unsigned int sec
 
 	return result;
 }
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* CIRCULAR_QUEUE_H_ */

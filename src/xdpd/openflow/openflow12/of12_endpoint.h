@@ -9,33 +9,36 @@
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 *
-* @brief of12_endpoint is the implementation of an Openflow v1.2 endpoint
-* using ROFL libraries. 
-*
-* The endpoint may consume underlying hardware APIs
-* exposed via the Abstract Forwarding API (AFA).
-*
-* This class is hardware agnostic.
-* 
+* @brief OF1.2 endpoint implementation
 */
 
 #ifndef OF12_ENDPOINT_H
 #define OF12_ENDPOINT_H 
 
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include "../openflow_switch.h"
 #include "../of_endpoint.h"
 #include "../../management/switch_manager.h"
 
-namespace rofl {
+using namespace rofl;
 
+namespace xdpd {
+
+/**
+* @brief of12_endpoint is an OpenFlow 1.2 OF agent implementation
+* @ingroup cmm_of
+**/
 class of12_endpoint : public of_endpoint {
 	
 
 public:
 
 	//Main constructor
-	of12_endpoint(openflow_switch* sw, caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633), caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmErrorOnCreation);
+	of12_endpoint(
+			openflow_switch* sw,
+			int reconnect_start_timeout,
+			caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633),
+			caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmErrorOnCreation);
 
 	/**
 	 *
@@ -49,7 +52,7 @@ public:
 			uint8_t* pkt_buffer,
 			uint32_t buf_len,
 			uint16_t total_len,
-			of12_packet_matches_t matches);
+			of1x_packet_matches_t matches);
 
 
 	/**
@@ -58,7 +61,7 @@ public:
 	afa_result_t
 	process_flow_removed(
 			uint8_t reason,
-			of12_flow_entry *removed_flow_entry);
+			of1x_flow_entry *removed_flow_entry);
 
 	/*
 	* Port notifications
@@ -75,7 +78,7 @@ public:
 private:
 
 	//Commodity pointer
-	of12_switch_t* of12switch;
+	of1x_switch_t* of12switch;
 
 	/* *
 	 ** This section is in charge of the handling of the OF messages

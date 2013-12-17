@@ -10,6 +10,7 @@
 #include <queue>
 #include <cstddef>
 #include <ctime>
+#include <iostream>
 
 #include <stdint.h>
 #include <pthread.h>
@@ -25,8 +26,16 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 typedef uint32_t storeid;
 
+/**
+* @brief Temporal storage for datapackets (PKT_IN events). 
+*
+* @ingroup fm_gnu_linux_io
+*/
 class datapacket_storage
 {
 public:
@@ -54,7 +63,7 @@ public:
 	 * @param id
 	 * @return
 	 */
-	datapacket_t *
+	datapacket_t*
 	get_packet(storeid id);
 
 	/**
@@ -74,6 +83,21 @@ public:
 #ifdef DEBUG
 	void change_expiration_time(uint16_t sec);
 #endif
+
+	//Used only for debugging purposes
+	void dump_state();
+	void dump_slots();
+
+	friend std::ostream&
+	operator<< (std::ostream& os, datapacket_storage const& ds) {
+		os << "<datapacket_storage: ";
+			os << "max-size:" << (int)ds.max_size << " ";
+			os << "expiration-time-sec:" << (int)ds.expiration_time_sec << " ";
+			os << "store.size():" << (int)ds.store.size() << " ";
+			os << "now:" << time(NULL) << " ";
+		os << ">";
+		return os;
+	};
 
 	//Define error constant
 	static const storeid ERROR = 0xFFFFFFFF;
@@ -96,5 +120,8 @@ private:
 	datapacket_storage(const datapacket_storage&);
 	datapacket_storage& operator=(const datapacket_storage&);
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* DATAPACKET_STORAGE_H_ */

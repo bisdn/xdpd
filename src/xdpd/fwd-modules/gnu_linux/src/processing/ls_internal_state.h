@@ -17,6 +17,9 @@
 * state
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 #define PROCESSING_MAX_LSI_THREADS 16
 
 typedef struct logical_switch_internals {
@@ -29,5 +32,8 @@ typedef struct logical_switch_internals {
 	//Packet storage pointer 
 	datapacket_storage* storage;
 }logical_switch_internals_t;
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* LS_INTERNAL_STATE_H_ */

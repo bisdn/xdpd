@@ -12,7 +12,8 @@
 * Very simple Wrap of vector so that it can be thread-safely managed 
 */
 
-
+namespace xdpd {
+namespace gnu_linux {
 
 template <typename T>
 class safevector{ 
@@ -164,5 +165,9 @@ bool safevector<T>::contains(const T& elem){
 	return false;
 	
 }
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* SAFEVECTOR_H_ */

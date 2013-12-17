@@ -44,8 +44,10 @@ inline int get_packet_in_read_fd(void){ return pktin_not_pipe[PKT_IN_PIPE_READ];
 * Send a single byte to wake thread attending pkt_ins 
 */
 inline void notify_packet_in(void){ 
+	int ret;
 	char c='a';
-	write(pktin_not_pipe[PKT_IN_PIPE_WRITE], &c, 1);
+	ret = write(pktin_not_pipe[PKT_IN_PIPE_WRITE], &c, 1);
+	(void)ret;
 }
 
 /**

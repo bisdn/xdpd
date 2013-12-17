@@ -27,9 +27,18 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
 //fwd decl
 class packet_mmap;
 
+/**
+* @brief GNU/Linux interface access via Memory Mapped
+* region (MMAP). THIS VERSION IS DEPRECATED! 
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class ioport_mmap : public ioport{
 
 
@@ -128,5 +137,8 @@ private:
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* IOPORT_MMAP_H_ */

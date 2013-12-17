@@ -1,15 +1,17 @@
 #include "switch_manager.h"
 
 #include <rofl/datapath/afa/afa.h>
+#include <rofl/common/utils/c_logger.h>
 
 //Add here the headers of the version-dependant Openflow switchs 
 #include "../openflow/openflow_switch.h"
+#include "../openflow/openflow10/openflow10_switch.h"
 #include "../openflow/openflow12/openflow12_switch.h"
 
-using namespace rofl;
+using namespace xdpd;
 
 const caddress switch_manager::controller_addr = caddress(AF_INET, "127.0.0.1", 6633);
-const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 0);
+const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 6632);
 
 //Static initialization
 std::map<uint64_t, openflow_switch*> switch_manager::switchs;
@@ -23,6 +25,7 @@ openflow_switch* switch_manager::create_switch(
 		std::string const& dpname,
 		unsigned int num_of_tables,
 		int* ma_list,
+		int reconnect_start_timeout,
 		caddress const& controller_addr,
 		caddress const& binding_addr) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported){
 
@@ -38,8 +41,12 @@ openflow_switch* switch_manager::create_switch(
 
 	switch(version){
 
+		case OF_VERSION_10:
+			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
+			break;
+
 		case OF_VERSION_12:
-			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, controller_addr, binding_addr);
+			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
 			break;
 	
 		//Add more here...
@@ -51,6 +58,8 @@ openflow_switch* switch_manager::create_switch(
 	
 	//Store in the switch list
 	switch_manager::switchs[dpid] = dp;
+	
+	ROFL_INFO("[switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
 
 	return dp; 
 }
@@ -68,6 +77,8 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	//Get switch instance 
 	openflow_switch* dp = switch_manager::switchs[dpid];
 	switch_manager::switchs.erase(dpid);
+
+	ROFL_INFO("[switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
 
 	//Destroy element
 	delete dp;	
@@ -138,7 +149,9 @@ switch_manager::list_matching_algorithms(of_version_t of_version)
 	int i, count;
 
 	const char * const * names;
-	fwd_module_list_matching_algorithms(of_version, &names, &count);
+	if(fwd_module_list_matching_algorithms(of_version, &names, &count) != AFA_SUCCESS){
+		return matching_algorithms;
+	}
 
 	for (i = 0; i < count; i++) {
 		matching_algorithms.push_back(std::string(names[i]));
@@ -146,3 +159,34 @@ switch_manager::list_matching_algorithms(of_version_t of_version)
 
 	return matching_algorithms;
 }
+
+
+
+void
+switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra)
+{
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		throw eOfSmDoesNotExist();
+	}
+
+	//Get switch instance
+	openflow_switch* dp = switch_manager::switchs[dpid];
+	dp->rpc_connect_to_ctl(ra);
+}
+
+
+
+void
+switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra)
+{
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		throw eOfSmDoesNotExist();
+	}
+
+	//Get switch instance
+	openflow_switch* dp = switch_manager::switchs[dpid];
+	dp->rpc_disconnect_from_ctl(ra);
+}
+
+
+

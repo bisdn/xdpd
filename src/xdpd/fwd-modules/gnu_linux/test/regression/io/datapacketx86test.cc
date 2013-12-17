@@ -31,6 +31,7 @@
 
 using namespace rofl;
 using namespace std;
+using namespace xdpd::gnu_linux;
 
 
 class DataPacketX86Test : public CppUnit::TestFixture {

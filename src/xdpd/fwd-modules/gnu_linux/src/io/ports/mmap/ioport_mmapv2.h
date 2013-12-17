@@ -17,6 +17,12 @@
 #include "mmap_tx.h"
 #include "../../datapacketx86.h"
 
+namespace xdpd {
+namespace gnu_linux {
+
+#define PORT_ETHER_LENGTH 18
+#define PORT_DEFAULT_PKT_SIZE 1518
+
 /**
 * @file ioport_mmapv2.h
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
@@ -27,6 +33,13 @@
 * region (MMAP) using PF_PACKET TX/RX rings 
 */
 
+
+/**
+* @brief GNU/Linux interface access via Memory Mapped
+* region (MMAP) using PF_PACKET TX/RX rings (v2) 
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class ioport_mmapv2 : public ioport{
 
 
@@ -99,13 +112,15 @@ private:
 	int block_size;
 	int n_blocks;
 	int frame_size;
+	int deferred_drain;
 
-	/* todo move to parent? */
-	cmacaddr hwaddr;
-	
 	//Pipe used to
 	int notify_pipe[2];
 	
+	//Used to drain the pipe
+	char draining_buffer[IO_IFACE_RING_SLOTS];
+	
+
 	//Pipe extremes
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;
@@ -114,5 +129,8 @@ private:
 	void fill_tx_slot(struct tpacket2_hdr *hdr, datapacketx86 *packet);
 	void empty_pipe(void);
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 #endif /* IOPORTV2_MMAP_H_ */

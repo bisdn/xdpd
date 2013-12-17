@@ -1,5 +1,6 @@
 #include "bg_taskmanager.h"
 
+#include <assert.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -13,16 +14,22 @@
 #include <sys/epoll.h>
 #include <sys/time.h>
 #include <sys/types.h>
-// Maybe needs to be in hal.h
+#include <string>
+#include <vector>
+#include <algorithm>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/datapath/afa/cmm.h>
-#include "io/datapacket_storage_c_wrapper.h"
-#include "io/bufferpool_c_wrapper.h"
 #include "processing/ls_internal_state.h"
+#include "io/bufferpool.h"
+#include "io/datapacket_storage.h"
 #include "io/pktin_dispatcher.h"
+#include "io/iomanager.h"
+#include "io/iface_utils.h"
 #include "util/time_utils.h"
+
+using namespace xdpd::gnu_linux;
 
 //Local static variable for background manager thread
 static pthread_t bg_thread;
@@ -59,7 +66,7 @@ int prepare_event_socket()
 
 	memset(&addr, 0, sizeof(addr));
 	addr.nl_family = AF_NETLINK;
-	addr.nl_groups = RTNLGRP_LINK;//RTMGRP_IPV4_IFADDR;
+	addr.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
 
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1){
 		ROFL_ERR("couldn't bind, errno(%d): %s\n", errno, strerror(errno));
@@ -67,58 +74,6 @@ int prepare_event_socket()
 	}
 
 	return sock;
-}
-
-/**
- * @name update_port_status
- */
-rofl_result_t update_port_status(char * name){
-	int skfd;
-	struct ethtool_value edata;
-	struct ifreq ifr;
-	switch_port_t *port;
-	bool last_link_status;
-	port = fwd_module_get_port_by_name(name);
-	
-	memset(&edata,0,sizeof(edata));//Make valgrind happy
-	
-	if(port == NULL){
-		ROFL_ERR("Error port with name %s not found\n",name);
-		return ROFL_FAILURE;
-	}
-	
-	if (( skfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ){
-		ROFL_ERR("Socket call error, errno(%d): %s\n", errno, strerror(errno));
-		return ROFL_FAILURE;
-	}
-	
-	edata.cmd = ETHTOOL_GLINK;
-	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name)-1);
-	
-	ifr.ifr_data = (char *) &edata;
-	if (ioctl(skfd, SIOCETHTOOL, &ifr) == -1){
-		ROFL_ERR("ETHTOOL_GLINK failed, errno(%d): %s\n", errno, strerror(errno));
-		return ROFL_FAILURE;
-	}
-
-	ROFL_INFO("[bg] Interface %s link is %s\n", name,(edata.data ? "up" : "down"));
-	
-	last_link_status = port->up;
-
-	if(edata.data)
-		port->up = true;
-	else
-		port->up = false;
-
-	//port->forward_packets;
-	/*more*/
-	
-	//port_status message needs to be created if the port id attached to switch
-	if(port->attached_sw != NULL && last_link_status != port->up){
-		cmm_notify_port_status_changed(port);
-	}
-	
-	return ROFL_SUCCESS;
 }
 
 /*
@@ -178,9 +133,9 @@ static rofl_result_t read_netlink_message(int fd){
 	
 	struct ifinfomsg *ifi;
 	char name[IFNAMSIZ];
-	
+
 	len = read_netlink_socket(fd,(char*)nlh, 0, getpid());
-	if(len == -1)
+	if(len <= 0)
 		return ROFL_FAILURE; 
 
 	for (; NLMSG_OK(nlh, (unsigned int)len); nlh = NLMSG_NEXT(nlh, len)) {
@@ -188,16 +143,17 @@ static rofl_result_t read_netlink_message(int fd){
 	    if (nlh->nlmsg_type == RTM_NEWLINK){
 				ifi = (struct ifinfomsg *) NLMSG_DATA(nlh);
 				
-				if_indextoname(ifi->ifi_index, name);
+				if(!if_indextoname(ifi->ifi_index, name))
+					continue; //Unable to map interface
 				
-				ROFL_DEBUG_VERBOSE("interface changed status\n",name);
+				ROFL_DEBUG_VERBOSE("--------> Interface changed status %s (%u)\n",name, ifi->ifi_index);
 				
 				// HERE change the status to the port structure
 				if(update_port_status(name)!=ROFL_SUCCESS)
 					return ROFL_FAILURE;
 	    }else{
-				ROFL_ERR("Received a different RTM message type\n");
-				return ROFL_FAILURE;
+		//Likely triggered by an addition of a port
+		return update_physical_ports();
 	    }
 	}
 	
@@ -236,7 +192,7 @@ int process_timeouts()
 				
 #ifdef DEBUG
 				if(dummy%20 == 0)
-					of12_full_dump_switch((of12_switch_t*)logical_switches[i]);
+					of1x_full_dump_switch((of1x_switch_t*)logical_switches[i]);
 #endif
 			}
 		}
@@ -250,25 +206,25 @@ int process_timeouts()
 	
 	if(get_time_difference_ms(&now, &last_time_pool_checked)>=LSW_TIMER_BUFFER_POOL_MS){
 		uint32_t buffer_id;
-		datapacket_store_handle dps=NULL;
+		datapacket_storage* dps=NULL;
 		
 		for(i=0; i<max_switches; i++){
 
 			if(logical_switches[i] != NULL){
 
 				//Recover storage pointer
-				dps =(datapacket_store_handle) ( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
+				dps =( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
 				//Loop until the oldest expired packet is taken out
-				while(datapacket_storage_oldest_packet_needs_expiration_wrapper(dps,&buffer_id)){
+				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
 					ROFL_DEBUG_VERBOSE("Trying to erase a datapacket from storage: %u\n", buffer_id);
 
-					if( (pkt = datapacket_storage_get_packet_wrapper(dps,buffer_id) ) == NULL ){
+					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
 						ROFL_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
 						ROFL_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
 						//Return buffer to bufferpool
-						bufferpool_release_buffer_wrapper(pkt);
+						bufferpool::release_buffer(pkt);
 					}
 				}
 			}
@@ -311,7 +267,7 @@ void* x86_background_tasks_routine(void* param)
 
 	//Add netlink	
 	epe_port.data.fd = events_socket;
-	epe_port.events = EPOLLIN | EPOLLET;
+	epe_port.events = EPOLLIN; //| EPOLLET;
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
 		ROFL_ERR("Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
@@ -371,7 +327,7 @@ void* x86_background_tasks_routine(void* param)
 	close(efd);
 	
 	//Printing some information
-	ROFL_INFO("[bg] Finishing thread execution\n"); 
+	ROFL_DEBUG("[bg] Finishing thread execution\n"); 
 
 	//Exit
 	pthread_exit(NULL);	

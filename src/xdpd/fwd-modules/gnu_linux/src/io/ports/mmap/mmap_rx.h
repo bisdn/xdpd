@@ -35,10 +35,16 @@
 *
 */
 
-using namespace rofl;
+namespace xdpd {
+namespace gnu_linux {
 
 class eConstructorMmapRx : public rofl::cerror {};
 
+/**
+* @brief MMAP RX internals (v2)
+*
+* @ingroup fm_gnu_linux_io_ports
+*/
 class mmap_rx{
 
 private:
@@ -52,7 +58,7 @@ private:
 	std::string devname; // device name e.g. "eth0"
 	
 	int sd; // socket descriptor
-	caddress ll_addr; // link layer sockaddr
+	rofl::caddress ll_addr; // link layer sockaddr
 	struct tpacket_req req; // ring buffer
 	//struct iovec *ring; // auxiliary pointers into the mmap'ed area
 
@@ -104,7 +110,7 @@ next:
 			return hdr;
 		}else{
 			//TP_STATUS_COPY or TP_STATUS_CSUMNOTREADY (outgoing) => ignore
-			ROFL_DEBUG("[mmap_rx:%s] Discarting frame with status :%d, size: %d\n", devname.c_str(), hdr->tp_status,hdr->tp_len );
+			ROFL_DEBUG("[mmap_rx:%s] Discarding frame with status :%d, size: %d\n", devname.c_str(), hdr->tp_status,hdr->tp_len );
 
 			//Skip
 			hdr->tp_status = TP_STATUS_KERNEL;
@@ -127,5 +133,9 @@ next:
 		return &req;
 	};
 };
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
+
 
 #endif /* MMAP_RX_H_ */

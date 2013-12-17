@@ -13,6 +13,9 @@
 
 #include "packet_classifiers/packetclassifier.h"
 
+//Profiling
+#include "../util/time_measurements.h"
+
 /**
 * @file datapacketx86.h
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
@@ -24,6 +27,10 @@
 *
 */
 
+namespace xdpd {
+namespace gnu_linux {
+
+
 /* Auxiliary state for x86 datapacket*/
 //buffering status
 typedef enum{
@@ -32,6 +39,13 @@ typedef enum{
 	X86_DATAPACKET_BUFFERED_IN_USER_SPACE
 }x86buffering_status_t;
 
+/**
+* @brief Datapacket abstraction for an x86 (GNU/Linux)
+*
+* @ingroup fm_gnu_linux_io
+*
+* @ingroup fm_gnu_linux_io
+*/
 class datapacketx86{
 
 public:
@@ -61,6 +75,12 @@ public:
 	//Temporary store for pkt_in information
 	uint8_t pktin_table_id;
 	of_packet_in_reason_t pktin_reason;	
+
+	//Opaque pointer
+	void* extra;
+
+	//Time profiling
+	TM_PKT_STATE;
 
 public: // methods
 
@@ -135,6 +155,22 @@ private:
 	rofl_result_t push(uint8_t* push_point, unsigned int num_of_bytes);
 	rofl_result_t pop(uint8_t* pop_point, unsigned int num_of_bytes);
 
+public:
+
+	friend std::ostream&
+	operator<<(std::ostream& os, datapacketx86 const& pkt) {
+		os << "<datapacketx86: ";
+			os << "buffer-id:" << (std::hex) << pkt.buffer_id << (std::dec) << " ";
+			os << "internal-buffer-id:" << (std::hex) << pkt.internal_buffer_id << (std::dec) << " ";
+			os << "lsw:" << (int*)(pkt.lsw) << " ";
+			os << "in-port:" << pkt.in_port << " ";
+			os << "in-phy-port:" << pkt.in_phy_port << " ";
+			os << "output-queue:" << pkt.output_queue << " ";
+			os << "pktin-table-id:" << pkt.pktin_table_id << " ";
+			os << "pktin-reason:" << pkt.pktin_reason << " ";
+		os << ">";
+		return os;
+	};
 };
 
 /*
@@ -174,6 +210,9 @@ datapacketx86::init_internal_buffer_location_defaults(
 			break;
 	}
 }
+
+}// namespace xdpd::gnu_linux 
+}// namespace xdpd
 
 
 

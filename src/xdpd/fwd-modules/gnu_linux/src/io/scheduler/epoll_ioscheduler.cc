@@ -83,14 +83,14 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 	return i==(READ_BUCKETS_PP);
 }
 
-inline bool epoll_ioscheduler::process_port_tx(ioport* port){
+inline int epoll_ioscheduler::process_port_tx(ioport* port){
 	
 	unsigned int q_id;
 	unsigned int n_buckets;
-	bool pkts_remaining = false; 
+	int tx_packets=0;
 
 	if(unlikely(!port) || unlikely(!port->of_port_state))
-		return pkts_remaining;
+		return 0;
 
 	//Process output (up to WRITE_BUCKETS[output_queue_state])
 	for(q_id=0; q_id < IO_IFACE_NUM_QUEUES; ++q_id){
@@ -101,11 +101,10 @@ inline bool epoll_ioscheduler::process_port_tx(ioport* port){
 		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
 		
 		//Perform up to n_buckets write	
-		if(port->write(q_id, n_buckets) == 0)
-			pkts_remaining=true;
+		tx_packets += n_buckets - port->write(q_id, n_buckets);
 	}
 	
-	return pkts_remaining;
+	return tx_packets; 
 }
 
 /*
@@ -348,7 +347,7 @@ void* epoll_ioscheduler::process_io_tx(void* grp){
 	ioport* port_list[EPOLL_IOSCHEDULER_MAX_TX_PORTS_PER_PG];
 	sem_t* sem = &pg->tx_sem;
 	struct timespec abs_timeout;
-	bool more_packets = false;
+	int tx_packets;
 	
 	/*
 	* Infinite loop unless group is stopped. e.g. all ports detached
@@ -365,8 +364,10 @@ void* epoll_ioscheduler::process_io_tx(void* grp){
 	}
 
 	while(iomanager::keep_on_working(pg)){
-		
-		if(!more_packets){
+
+		tx_packets=0;	
+	
+		//if(!more_packets){
 			//cond_wait(update timeout)
 			clock_gettime(CLOCK_REALTIME, &abs_timeout);
 			//abs_timeout.tv_nsec += EPOLL_TIMEOUT_MS*100000000;
@@ -378,18 +379,30 @@ void* epoll_ioscheduler::process_io_tx(void* grp){
 			if(sem_ret < 0){
 				//FIXME: trace
 			}
-		}
-		
-		more_packets = false;
+		//}
 		
 		//No timeout go over the ports
 		for(i=0; i<current_num_of_ports; ++i){
-			more_packets |= epoll_ioscheduler::process_port_tx(port_list[i]);
+			tx_packets += epoll_ioscheduler::process_port_tx(port_list[i]);
+		}
+
+		int sem_value;
+
+	
+		sem_getvalue(sem, &sem_value);
+		ROFL_DEBUG_VERBOSE("Value tx_packets:%d, sem value: %d \n", tx_packets, sem_value);
+
+		//Drain credits for the (already) TX'd packets (tx_packets - 1(inital sem_wait))
+		if(tx_packets){
+			ROFL_DEBUG_VERBOSE("Draining :%u\n", tx_packets-1);
+			for(tx_packets--;tx_packets;tx_packets--)
+				sem_trywait(sem);	
 		}
 
 		//Check for updates in the running ports 
-		if( pg->running_hash != current_hash ){
+		if( unlikely(pg->running_hash != current_hash) ){
 			if(unlikely(update_tx_port_list(pg, &current_num_of_ports, &current_hash, port_list) != ROFL_SUCCESS)){
+				assert(0);
 				pthread_exit(NULL);
 			}
 		}

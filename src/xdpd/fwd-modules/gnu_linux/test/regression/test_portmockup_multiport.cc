@@ -141,7 +141,7 @@ void DriverMultiPortMockupTestCase::test_drop_packets(void )
 	
 
 	//srand(time(NULL)); //random seed
-	circular_queue<datapacket_t, 1024>* rbuffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];
+	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->input_queues[0];
 	
 	//Enqueue packets
 	for(int i=0;i<number_of_packets;i++){

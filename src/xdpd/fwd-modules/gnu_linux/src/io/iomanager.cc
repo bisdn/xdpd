@@ -386,7 +386,22 @@ int iomanager::create_group(pg_type_t type, unsigned int num_of_threads, bool mu
 /* Deletes the portgroup. If there are existing ports, they are stopped and deleted */
 rofl_result_t iomanager::delete_all_groups(){
 
-	while( iomanager::delete_group(0) != ROFL_FAILURE);
+	portgroup_state* pg;
+	
+	do{
+		try{
+			pg = portgroups[0];
+		}catch(...){
+			//No more groups
+			break;
+		}
+
+		if(iomanager::delete_group(pg->id) != ROFL_SUCCESS){
+			assert(0);
+			break;
+		}
+
+	}while(1);
 	return ROFL_SUCCESS;
 }
 

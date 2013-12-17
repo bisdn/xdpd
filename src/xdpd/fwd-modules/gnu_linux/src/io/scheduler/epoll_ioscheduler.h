@@ -71,7 +71,7 @@ protected:
 	/* Methods */
 	//WRR
 	static bool process_port_rx(ioport* port);
-	static bool process_port_tx(ioport* port);
+	static int process_port_tx(ioport* port);
 
 	//EPOLL related	
 	static void release_resources(int epfd, struct epoll_event* ev, struct epoll_event* events, unsigned int current_num_of_ports);

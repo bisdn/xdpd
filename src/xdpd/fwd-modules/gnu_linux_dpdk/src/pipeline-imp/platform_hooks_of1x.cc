@@ -118,11 +118,10 @@ PKT_IN_ERROR:
 	
 	//Release packet
 	if(pkt_replica){
-		if(((datapacket_dpdk_t*)pkt->platform_state)->mbuf){
-			rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
-		}
-		
 		bufferpool::release_buffer(pkt_replica);
+	}
+	if(((datapacket_dpdk_t*)pkt->platform_state)->mbuf){
+		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 	}
 	return;
 

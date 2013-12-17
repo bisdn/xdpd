@@ -19,7 +19,7 @@
 
 typedef struct logical_switch_internals {
 	//Packet storage pointer 
-	datapacket_storage* storage;
+	xdpd::gnu_linux::datapacket_storage* storage;
 }logical_switch_internals_t;
 
 #endif /* LS_INTERNAL_STATE_H_ */

@@ -3,7 +3,7 @@
 #include "flow_entry.h"
 
 
-rofl_result_t netfpga_update_entry_stats(of12_flow_entry_t* entry){
+rofl_result_t netfpga_update_entry_stats(of1x_flow_entry_t* entry){
 	
 	uint32_t* aux;	
 	netfpga_device_t* nfpga= netfpga_get();
@@ -51,3 +51,29 @@ rofl_result_t netfpga_update_entry_stats(of12_flow_entry_t* entry){
 
 	return ROFL_SUCCESS;	
 }
+
+
+
+
+
+
+
+/*
+rofl_result_t netfpga_read_misc_stats(netfpga_device_t* nfpga,uint32_t *	misc_stats[]){
+
+
+	
+	unsigned int 	i;
+
+	for (i=0;i<NETFPGA_NUMBER_OF_MISC_STATS;i++)
+		{
+		netfpga_read_reg(nfpga, NETFPGA_OF_BASE_ADDR+i,&misc_stats[i]);
+		
+		
+		
+		
+		}
+
+	return ROFL_SUCCESS;	
+}
+*/

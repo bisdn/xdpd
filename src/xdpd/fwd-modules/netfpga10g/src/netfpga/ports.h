@@ -12,6 +12,8 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include "../util/compiler_assert.h"
 #include "netfpga.h"
+#include <errno.h>
+#include <pcap.h>
 
 /**
 * @file ports.h
@@ -38,8 +40,12 @@ typedef struct netfpga_port{
 	//File-descriptor
 	//read -> pkt_in, write -> pkt_out
 	int fd;
+	pcap_t* pcap_fd;
+	int test;
 	
 }netfpga_port_t;
+
+
 
 //C++ extern C
 ROFL_BEGIN_DECLS

@@ -1,8 +1,8 @@
 #include <assert.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_async_events_hooks.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/of12_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_table.h>
-#include <rofl/datapath/afa/openflow/openflow12/of12_cmm.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_async_events_hooks.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include "../config.h"
@@ -13,20 +13,23 @@
 #include "../pipeline-imp/ls_internal_state.h"
 
 #define FWD_MOD_NAME "netfpga10g"
+
+using namespace xdpd::gnu_linux;
+
 /*
 * Hooks for configuration of the switch
 */
-rofl_result_t platform_post_init_of12_switch(of12_switch_t* sw){
+rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 
-	//Set OF12 flow table 
+	//Set OF1X flow table 
 	unsigned int i;
-	of12_flow_table_t* table;
+	of1x_flow_table_t* table;
 
 	table = sw->pipeline->tables; 
 	
 	for(i=0;i<sw->pipeline->num_of_tables;++i){
 		//Set appropiate flags
-		table->default_action = OF12_TABLE_MISS_CONTROLLER;
+		table->default_action = OF1X_TABLE_MISS_CONTROLLER;
 	}
 	
 	//Create GNU/Linux FWD_Module additional state (platform state)
@@ -42,7 +45,7 @@ rofl_result_t platform_post_init_of12_switch(of12_switch_t* sw){
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t platform_pre_destroy_of12_switch(of12_switch_t* sw){
+rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
 	struct logical_switch_internals* ls_int =  (struct logical_switch_internals*)sw->platform_state;
@@ -60,7 +63,7 @@ rofl_result_t platform_pre_destroy_of12_switch(of12_switch_t* sw){
 * Packet in
 */
 
-void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
+void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
 
 	datapacketx86* pkt_x86;
@@ -96,15 +99,15 @@ void platform_of12_packet_in(const of12_switch_t* sw, uint8_t table_id, datapack
 }
 
 //Flow removed
-void platform_of12_notify_flow_removed(const of12_switch_t* sw, 	
-						of12_flow_remove_reason_t reason, 
-						of12_flow_entry_t* removed_flow_entry){
+void platform_of1x_notify_flow_removed(const of1x_switch_t* sw, 	
+						of1x_flow_remove_reason_t reason, 
+						of1x_flow_entry_t* removed_flow_entry){
 
-	cmm_process_of12_flow_removed(sw, (uint8_t)reason, removed_flow_entry);
+	cmm_process_of1x_flow_removed(sw, (uint8_t)reason, removed_flow_entry);
 }
 
 
-void plaftorm_of12_add_entry_hook(of12_flow_entry_t* new_entry){
+void plaftorm_of1x_add_entry_hook(of1x_flow_entry_t* new_entry){
 
 	//Lock netfpga
 	netfpga_lock();
@@ -117,7 +120,7 @@ void plaftorm_of12_add_entry_hook(of12_flow_entry_t* new_entry){
 
 }
 
-void platform_of12_modify_entry_hook(of12_flow_entry_t* old_entry, of12_flow_entry_t* mod, int reset_count){
+void platform_of1x_modify_entry_hook(of1x_flow_entry_t* old_entry, of1x_flow_entry_t* mod, int reset_count){
 
 	//Lock netfpga
 	netfpga_lock();
@@ -135,7 +138,7 @@ void platform_of12_modify_entry_hook(of12_flow_entry_t* old_entry, of12_flow_ent
 	
 }
 
-void platform_of12_remove_entry_hook(of12_flow_entry_t* entry){
+void platform_of1x_remove_entry_hook(of1x_flow_entry_t* entry){
 
 	//Lock netfpga
 	netfpga_lock();
@@ -147,7 +150,7 @@ void platform_of12_remove_entry_hook(of12_flow_entry_t* entry){
 	netfpga_unlock();
 }
 
-void platform_of12_update_stats_hook(of12_flow_entry_t* entry){
+void platform_of1x_update_stats_hook(of1x_flow_entry_t* entry){
 
 	//Lock netfpga
 	netfpga_lock();

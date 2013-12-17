@@ -25,6 +25,8 @@
 #include "pipeline-imp/ls_internal_state.h"
 #include "util/time_utils.h"
 
+using namespace xdpd::gnu_linux;
+
 //Local static variable for background manager thread
 static pthread_t bg_thread;
 static bool bg_continue_execution = true;
@@ -79,7 +81,7 @@ int process_timeouts()
 				
 #ifdef DEBUG
 				if(dummy%20 == 0)
-					of12_full_dump_switch((of12_switch_t*)logical_switches[i]);
+					of1x_full_dump_switch((of1x_switch_t*)logical_switches[i]);
 #endif
 			}
 		}
@@ -131,7 +133,7 @@ int process_timeouts()
  */
 void* x86_background_tasks_routine(void* param)
 {
-	int i, efd, /*events_socket,*/ nfds;
+	int i, efd, nfds; /*events_socket,*/ //nfds
 	struct epoll_event event_list[MAX_EPOLL_EVENTS], port_events[NETFPGA_NUM_PORTS];
 	char iface_name[NETFPGA_INTERFACE_NAME_LEN] = ""; //nfX\0
 	switch_port_t* port;
@@ -149,25 +151,46 @@ void* x86_background_tasks_routine(void* param)
 		return NULL;
 	}
 	
+
+
+
+
+	fd_set	handle_set;
+
+	FD_ZERO (&handle_set);
+       
+
+
 	//Add the 4 NetFPGA ports
 	for(i=0; i< NETFPGA_NUM_PORTS; ++i){
 		//Compose name nf0...nf3
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
-			
+
+
+		ROFL_DEBUG("interface name %s ", iface_name );
+	
 		//Recover port from pipeline
 		port = physical_switch_get_port_by_name(iface_name);
-		port_events[i].events = EPOLLIN | EPOLLET;
+		port_events[i].events = EPOLLIN | EPOLLET; //read and edge trigered
 
 		if( !port )
 			exit(EXIT_FAILURE);		
 		
 		//Maintain reference back
 		port_events[i].data.ptr = (void*)port;
-
+				
 		if( epoll_ctl(efd, EPOLL_CTL_ADD, ((netfpga_port_t*)port->platform_port_state)->fd, &port_events[i]) < 0  ){
 			ROFL_ERR("<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
 			exit(EXIT_FAILURE);		
 		}
+		
+		
+
+
+
+		
+
+
 	}
 
 	//FIXME: add the NETLINK stuff
@@ -175,35 +198,45 @@ void* x86_background_tasks_routine(void* param)
 	while(bg_continue_execution){
 		
 		//Throttle
-		nfds = epoll_wait(efd, event_list, MAX_EPOLL_EVENTS, LSW_TIMER_SLOT_MS/*timeout needs TBD somewhere else*/);
+
+		
+		nfds = epoll_wait(efd, event_list, MAX_EPOLL_EVENTS, -1 /*LSW_TIMER_SLOT_MS  temporaly changet to infinite*/ /*timeout needs TBD somewhere else*/);
+		//ROFL_DEBUG(" After epoll_wait \n\n\n\n");
 
 
-		if(nfds==-1){
+		if(nfds==-1){ //ERROR in select
 			ROFL_DEBUG("<%s:%d> Epoll Failed\n",__func__,__LINE__);
 			continue;
 		}
 
-		if(nfds==0){
+		if(nfds==0){ 
 			//TIMEOUT PASSED
+			ROFL_DEBUG("bg_taskmanager epoll gave 0");
 			process_timeouts();
 		}
-
+		
+		//ROFL_DEBUG("bg_taskmanager epoll gave %d \n \n", nfds );
+	
 		for(i=0;i<nfds;i++){
 			
-			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)/*||(event_list[i].events & EPOLLIN)*/){
+		
+			
+			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)){
 				//error on this fd
 				ROFL_ERR("<%s:%d> Error in file descriptor\n",__func__,__LINE__);
 				
 				close(((netfpga_port_t*)event_list[i].data.ptr)->fd); //fd gets removed automatically from efd's
 				continue;
 			}else{
-				//something is going on with the i/o system
+				
+				//ROFL_DEBUG("event_list[i].data.ptr %p \n",event_list[i].data.ptr);
 				netpfga_io_read_from_port(((switch_port_t*)event_list[i].data.ptr));
 			}
 			//check if there is a need of manage timers!
 			process_timeouts();
+		 }
 		}
-	}
+	
 	
 	//Cleanup
 	close(efd);

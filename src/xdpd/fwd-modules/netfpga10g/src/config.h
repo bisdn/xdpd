@@ -27,6 +27,8 @@
 #define IO_PKT_IN_STORAGE_MAX_BUF 512
 //Buffer storage(PKT_IN) expiration time (seconds)
 #define IO_PKT_IN_STORAGE_EXPIRATION_S 180
-
+//added
+#define IO_IFACE_NUM_QUEUES 8
+#define IO_IFACE_REQUIRED_BUFFERS 2048
 
 #endif //XDPD_NETFGPA_10G_CONFIG_H

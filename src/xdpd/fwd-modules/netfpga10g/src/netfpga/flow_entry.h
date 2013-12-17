@@ -8,8 +8,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <rofl.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_pipeline.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_entry.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 
 #include "netfpga.h"
 #include "../util/compiler_assert.h"
@@ -35,6 +35,7 @@ typedef struct netfpga_align_mac_addr{
 }netfpga_align_mac_addr_t;
 
 //Matches
+#pragma pack(1)	
 typedef struct netfpga_flow_entry_matches {
 	uint16_t transp_dst;
 	uint16_t transp_src;
@@ -62,6 +63,7 @@ typedef netfpga_flow_entry_matches_t netfpga_flow_entry_matches_mask_t;
 //Actions
 
 //Enum for the bitfield
+#pragma pack(1)	
 enum netfpga_action_type { //OF1.0 
 	NETFPGA_AT_OUTPUT,           /* Output to switch port. */
 	NETFPGA_AT_SET_VLAN_VID,     /* Set the 802.1q VLAN id. */
@@ -77,7 +79,7 @@ enum netfpga_action_type { //OF1.0
 	NETFPGA_AT_ENQUEUE,          /* Output to queue.  */
 	NETFPGA_AT_VENDOR = 0xffff
 };
-
+#pragma pack(1)	
 typedef struct netfpga_flow_entry_actions {
 	uint16_t forward_bitmask;
 	uint16_t action_flags;
@@ -123,7 +125,7 @@ typedef struct netfpga_flow_entry{
 	netfpga_flow_entry_actions_t* actions;
 
 	//Reference back to the sw pipeline entry
-	of12_flow_entry_t* ref_back;
+	of1x_flow_entry_t* ref_back;
 }netfpga_flow_entry_t;
 
 //Function prototypes
@@ -145,7 +147,7 @@ void netfpga_destroy_flow_entry(netfpga_flow_entry_t* entry);
 /**
 * @brief Generates a HW flow entry based on a ROFL-pipeline flow entry 
 */
-netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(netfpga_device_t* nfpga, of12_flow_entry_t* of12_entry);
+netfpga_flow_entry_t* netfpga_generate_hw_flow_entry(netfpga_device_t* nfpga, of1x_flow_entry_t* of1x_entry);
 
 //C++ extern C
 ROFL_END_DECLS

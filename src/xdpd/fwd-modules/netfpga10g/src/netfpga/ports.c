@@ -8,19 +8,62 @@
 #include <netinet/if_ether.h>
 #include <arpa/inet.h>
 
+
+#include <net/if.h>
+#include<netinet/if_ether.h>
+#include <net/if_arp.h>
+#include <netpacket/packet.h>
+#include <net/ethernet.h>     /* the L2 protocols */
+#include <asm/types.h>
+#include <linux/sockios.h>
+#include <unistd.h>
+#include <errno.h>
+
 #define FWD_MOD_NAME "netfpga10g"
 
 static rofl_result_t netfpga_init_port(switch_port_t* port){
 
-	int flags;
+
+
+
+	struct ifreq interface;
 	netfpga_port_t* nport = (netfpga_port_t*)malloc(sizeof(*nport));
 
-	//Open raw socket in R/W mode 
-	nport->fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL)); //Check 
 	
-	if (nport->fd < 0) {
-		return ROFL_FAILURE;
+	char *useless;
+
+	
+	
+		//fprintf(stderr, "device=  %s  \n",dev);
+	useless = pcap_lookupdev(port->name); //test if device exist// gives char pointer, why not pcap_if_t?
+	if (useless == NULL) {
+		ROFL_ERR( "Couldn't find device: error= %s; no permission to listen on interface or other failure  \n", port->name);
+		return ROFL_FAILURE;	
 	}
+	ROFL_DEBUG("Device :%s  found\n", port->name);
+
+		
+	char errbuf[PCAP_ERRBUF_SIZE];
+
+	
+	nport->pcap_fd = pcap_open_live(port->name, BUFSIZ, 1, 0, errbuf);//wait until the packet arrive, NO TIMEOUT
+	if (nport->pcap_fd == NULL) {
+		 ROFL_ERR( "Couldn't open device %s : %s\n",port->name, errbuf);
+		 return ROFL_FAILURE;
+	}
+
+	nport->fd = pcap_get_selectable_fd(nport->pcap_fd);
+	nport->test=25;	
+	ROFL_DEBUG("pcap_open_live: socket opened \n ");
+	
+
+
+
+	ROFL_DEBUG("Ports.c creating socket over %s inerface\n", port->name);
+	strncpy(interface.ifr_ifrn.ifrn_name, port->name, IFNAMSIZ/*&SWITCH_PORT_MAX_LEN_NAME*/);
+	
+
+	int flags;
 
 	/* Set non-blocking mode. */
 	flags = fcntl(nport->fd, F_GETFL, 0);
@@ -51,11 +94,11 @@ rofl_result_t netfpga_discover_ports(){
 		port = switch_port_init(iface_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_LIVE);
 
 		//Init NetFPGA state (platform specific state)
-		if(netfpga_init_port(port) != ROFL_SUCCESS)
+		if(netfpga_init_port(port) != ROFL_SUCCESS) //checked
 			return ROFL_FAILURE;
 		
 		//Add to available ports
-		if( physical_switch_add_port(port) != ROFL_SUCCESS )
+		if( physical_switch_add_port(port) != ROFL_SUCCESS )// in rofl-core
 			return ROFL_FAILURE;
 		
 	}

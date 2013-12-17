@@ -16,6 +16,8 @@
 #include "../netfpga/ports.h"
 #include "../config.h"
 
+using namespace xdpd::gnu_linux;
+
 //Static pipeline switch instance
 static of_switch_t* sw=NULL;
 
@@ -111,7 +113,7 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	switch(of_version){
 		case OF_VERSION_12: 
-			sw = (of_switch_t*)of12_init_switch(name, dpid, num_of_tables, (enum of12_matching_algorithm_available*) ma_list);
+			sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 			break;
 
 		//Add more here..
@@ -246,6 +248,18 @@ switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
 afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 	//Skip
 	return AFA_SUCCESS;
+}
+
+/**
+* @name    fwd_module_connect_switches
+* @brief   Attemps to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. 
+* @ingroup management
+*
+* @param dpid_lsi1 Datapath ID of the LSI1
+* @param dpid_lsi2 Datapath ID of the LSI2 
+*/
+afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_t** port1, uint64_t dpid_lsi2, switch_port_t** port2){
+	return AFA_FAILURE;
 }
 
 /*

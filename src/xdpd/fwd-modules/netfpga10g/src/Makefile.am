@@ -13,6 +13,7 @@ libfwd_module_netfpga10g_src_la_LIBADD = \
 		io/libfwd_module_netfpga10g_io.la\
 		netfpga/libfwd_module_netfpga10g_netfpga.la\
 		pipeline-imp/libfwd_module_netfpga10g_pipeline_imp.la\
-		util/libfwd_module_netfpga10g_util.la 
+		util/libfwd_module_netfpga10g_util.la \
+		-lpcap
 		
 library_include_HEADERS=

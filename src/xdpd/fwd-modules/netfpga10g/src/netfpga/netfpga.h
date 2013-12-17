@@ -9,8 +9,9 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <rofl.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_pipeline.h>
-#include <rofl/datapath/pipeline/openflow/openflow12/pipeline/of12_flow_entry.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
+//#include "flow_entry.h"
 
 /**
 * @file netfga.h
@@ -26,11 +27,11 @@
 #define NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE	(NETFPGA_OPENFLOW_WILDCARD_FULL_TABLE_SIZE - NETFPGA_RESERVED_FOR_CPU2NETFPGA)
 
 //Ports
-#define NETFPGA_FIRST_PORT	0
-#define NETFPGA_LAST_PORT	3
+#define NETFPGA_FIRST_PORT	1
+#define NETFPGA_LAST_PORT	4
 #define NETFPGA_PORT_BASE	1
 #define NETFPGA_IN_PORT		0xfff8
-#define NETFPGA_FLOOD_PORT	0xfffb
+#define NETFPGA_FLOOD_PORT	0xfffd
 #define NETFPGA_ALL_PORTS	0xfffc
 
 //Polynomials
@@ -109,12 +110,12 @@ rofl_result_t netfpga_set_table_behaviour(void);
 /**
 * @brief Add flow entry to table. Assumes already mutual exclusion over table 
 */
-rofl_result_t netfpga_add_flow_entry(of12_flow_entry_t* entry);
+rofl_result_t netfpga_add_flow_entry(of1x_flow_entry_t* entry);
 
 /**
 * @brief Deletes an specific entry defined by *entry. Assumes already mutual exclusion over table 
 */
-rofl_result_t netfpga_delete_flow_entry(of12_flow_entry_t* entry);
+rofl_result_t netfpga_delete_flow_entry(of1x_flow_entry_t* entry);
 
 
 /**

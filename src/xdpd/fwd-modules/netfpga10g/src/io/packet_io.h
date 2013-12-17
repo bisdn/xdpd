@@ -9,7 +9,19 @@
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <pcap.h>
+
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
+#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
+#include <rofl/datapath/pipeline/physical_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_statistics.h>
+
 #include "../netfpga/ports.h"
+#include "bufferpool.h"
+#include "datapacket_storage.h"
+#include "../pipeline-imp/ls_internal_state.h"
 
 //C++ extern C
 ROFL_BEGIN_DECLS

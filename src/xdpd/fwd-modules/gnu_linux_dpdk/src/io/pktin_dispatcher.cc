@@ -41,7 +41,7 @@ static void* process_packet_ins(void* param){
 
 		//Dequeue
 		if(rte_ring_sc_dequeue(pkt_ins, (void**)&pkt) != 0)
-			break;
+			continue;
 
 		//Recover platform state
 		pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;

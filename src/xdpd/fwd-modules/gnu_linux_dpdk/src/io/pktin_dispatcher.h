@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <semaphore.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
 #include "../config.h"
@@ -29,8 +30,7 @@
 #include <rte_spinlock.h>
 #include <rte_ring.h>
 
-extern pthread_cond_t pktin_cond;
-extern pthread_mutex_t pktin_mutex;
+extern sem_t pktin_sem;
 extern struct rte_ring* pkt_ins;
 extern bool keep_on_pktins;
 
@@ -58,7 +58,7 @@ inline rofl_result_t enqueue_pktin(datapacket_t* pkt){
 		return ROFL_FAILURE;
 	}	
 	
-	pthread_cond_signal(&pktin_cond);
+	sem_post(&pktin_sem);
 	return ROFL_SUCCESS;
 }
 

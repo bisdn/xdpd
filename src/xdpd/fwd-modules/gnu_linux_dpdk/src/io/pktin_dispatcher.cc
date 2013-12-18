@@ -6,8 +6,7 @@
 #include "datapacket_storage.h"
 #include "dpdk_datapacket.h"
 
-pthread_mutex_t pktin_mutex;
-pthread_cond_t pktin_cond;
+sem_t pktin_sem;
 struct rte_ring* pkt_ins;
 bool keep_on_pktins;
 static pthread_t pktin_thread;
@@ -34,70 +33,65 @@ static void* process_packet_ins(void* param){
 
 	while(likely(keep_on_pktins)){
 
-		while(1){
-			if(rte_ring_sc_dequeue(pkt_ins, (void**)&pkt) != 0)
-				break;
+		//Wait for incomming pkts
+		clock_gettime(CLOCK_REALTIME, &timeout);
+    		timeout.tv_sec += 1; 
+		if( sem_timedwait(&pktin_sem, &timeout)  == ETIMEDOUT )
+			continue;	
 
-			//Recover platform state
-			pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
-			mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
-			sw = (of1x_switch_t*)pkt->sw;
-			dps = (datapacket_storage*)pkt->sw->platform_state;
+		//Dequeue
+		if(rte_ring_sc_dequeue(pkt_ins, (void**)&pkt) != 0)
+			break;
 
-			ROFL_DEBUG("Processing PKT_IN for packet(%p), mbuf %p, switch %p\n", pkt, mbuf, sw);
-			//Store packet in the storage system. Packet is NOT returned to the bufferpool
-			id = dps->store_packet(pkt);
+		//Recover platform state
+		pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
+		mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
+		sw = (of1x_switch_t*)pkt->sw;
+		dps = (datapacket_storage*)pkt->sw->platform_state;
 
-			if(id == datapacket_storage::ERROR){
-				ROFL_DEBUG("PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
-	
-				//Return mbuf to the pool
-				rte_pktmbuf_free(mbuf);
+		ROFL_DEBUG("Processing PKT_IN for packet(%p), mbuf %p, switch %p\n", pkt, mbuf, sw);
+		//Store packet in the storage system. Packet is NOT returned to the bufferpool
+		id = dps->store_packet(pkt);
 
-				//Return to the bufferpool
-				bufferpool::release_buffer(pkt);
-				continue;
-			}
+		if(id == datapacket_storage::ERROR){
+			ROFL_DEBUG("PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
 
-			//Normalize size
-			pkt_size = get_buffer_length_dpdk(pkt_dpdk);
-			if(pkt_size > sw->pipeline->miss_send_len)
-				pkt_size = sw->pipeline->miss_send_len;
-				
-			//Process packet in
-			rv = cmm_process_of1x_packet_in(sw, 
-							pkt_dpdk->pktin_table_id, 	
-							pkt_dpdk->pktin_reason, 	
-							pkt_dpdk->in_port, 
-							id, 	
-							get_buffer_dpdk(pkt_dpdk), 
-							pkt_size,
-							get_buffer_length_dpdk(pkt_dpdk),
-							*((of1x_packet_matches_t*)&pkt->matches)
-					);
+			//Return mbuf to the pool
+			rte_pktmbuf_free(mbuf);
 
-			if( unlikely( rv != AFA_SUCCESS ) ){
-				ROFL_DEBUG("PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
-				//Take packet out from the storage
-				pkt = dps->get_packet(id);
-
-				//Return mbuf to the pool
-				rte_pktmbuf_free(mbuf);
-
-				//Return to the bufferpool
-				bufferpool::release_buffer(pkt);
-			}
+			//Return to the bufferpool
+			bufferpool::release_buffer(pkt);
+			continue;
 		}
-	
-				
-		//Since the queue does not provide a blocking "dequeue"
-		//There can be an enqueue here (race condition), but since
-		//anyway we have to do a timedout pthread_cond_wait, we don't care
-		//Note: be careful with HIGH timeouts here
-		
-		pthread_mutex_lock(&pktin_mutex);
-		pthread_cond_timedwait(&pktin_cond, &pktin_mutex, &timeout);
-		pthread_mutex_unlock(&pktin_mutex);
+
+		//Normalize size
+		pkt_size = get_buffer_length_dpdk(pkt_dpdk);
+		if(pkt_size > sw->pipeline->miss_send_len)
+			pkt_size = sw->pipeline->miss_send_len;
+			
+		//Process packet in
+		rv = cmm_process_of1x_packet_in(sw, 
+						pkt_dpdk->pktin_table_id, 	
+						pkt_dpdk->pktin_reason, 	
+						pkt_dpdk->in_port, 
+						id, 	
+						get_buffer_dpdk(pkt_dpdk), 
+						pkt_size,
+						get_buffer_length_dpdk(pkt_dpdk),
+						*((of1x_packet_matches_t*)&pkt->matches)
+				);
+
+		if( unlikely( rv != AFA_SUCCESS ) ){
+			ROFL_DEBUG("PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
+			//Take packet out from the storage
+			pkt = dps->get_packet(id);
+
+			//Return mbuf to the pool
+			rte_pktmbuf_free(mbuf);
+
+			//Return to the bufferpool
+			bufferpool::release_buffer(pkt);
+		}
 	}
 
 	return NULL;
@@ -109,6 +103,7 @@ rofl_result_t pktin_dispatcher_init(){
 
 	keep_on_pktins = true;
 
+#if 0
 	if( pthread_cond_init(&pktin_cond, NULL) < 0 ){
 		ROFL_ERR("Unable to create pthread cond\n");
 		return ROFL_FAILURE;
@@ -116,6 +111,10 @@ rofl_result_t pktin_dispatcher_init(){
 	
 	if( pthread_mutex_init(&pktin_mutex, NULL) < 0 ){
 		ROFL_ERR("Unable to initialize pthread mutex\n");
+		return ROFL_FAILURE;
+	}	
+#endif
+	if(sem_init(&pktin_sem, 0,0) < 0){
 		return ROFL_FAILURE;
 	}	
 
@@ -133,6 +132,7 @@ rofl_result_t pktin_dispatcher_init(){
 		ROFL_ERR("pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
+
 	return ROFL_SUCCESS;
 }
 

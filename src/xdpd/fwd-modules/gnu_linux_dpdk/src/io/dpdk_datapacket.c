@@ -1,7 +1,6 @@
 #include "dpdk_datapacket.h"
 
 datapacket_dpdk_t* create_datapacket_dpdk(void){
-	
 	datapacket_dpdk_t* dpkt = (datapacket_dpdk_t*) malloc(sizeof(datapacket_dpdk_t));
 	dpkt->headers = init_classifier();
 	dpkt->icmpv4_recalc_checksum = false;
@@ -10,73 +9,17 @@ datapacket_dpdk_t* create_datapacket_dpdk(void){
 	dpkt->udp_recalc_checksum = false;
 	dpkt->packet_in_bufferpool = false;
 	return dpkt;
-	
 }
 
 void destroy_datapacket_dpdk(datapacket_dpdk_t* dpkt){
-	
 	destroy_classifier(dpkt->headers);
 	free(dpkt);
-	
 }
-
-rofl_result_t
-init_datapacket_dpdk(
-		datapacket_dpdk_t* dpkt,
-		struct rte_mbuf* mbuf,
-		of_switch_t* sw,
-		uint32_t in_port,
-		uint32_t in_phy_port,
-		bool classify, 
-		bool packet_is_in_bufferpool){
-	
-	if( NULL == rte_pktmbuf_mtod(mbuf, uint8_t*) )
-		return ROFL_FAILURE;
-
-	if( packet_is_in_bufferpool ) {
-		dpkt->packet_in_bufferpool = true;
-	}
-
-	//Fill the structure
-	dpkt->lsw = sw;
-	dpkt->in_port = in_port;
-	dpkt->in_phy_port = in_phy_port;
-	dpkt->output_queue = 0;
-	dpkt->mbuf = mbuf;
-
-	// Timestamp S1
-	TM_STAMP_STAGE_DPX86(dpkt, TM_S1);
-	
-	//Classify the packet
-	if(classify)
-		classify_packet(dpkt->headers, get_buffer_dpdk(dpkt), get_buffer_length_dpdk(dpkt));
-
-	return ROFL_SUCCESS;
-}
-
-void
-reset_datapacket_dpdk(datapacket_dpdk_t *dpkt){
-	reset_classifier(dpkt->headers);
-
-#if 0
-	//TODO memset datapacket to 0
-	if (DPDK_DATAPACKET_BUFFERED_IN_USER_SPACE == get_buffering_status_dpdk(dpkt)){
-#ifndef NDEBUG
-		// not really necessary, but makes debugging a little bit easier
-		memset((uint8_t*)get_buffer_dpdk(dpkt), 0x00, get_buffer_length_dpdk(dpkt));
-#endif
-		dpkt->buffering_status = DPDK_DATAPACKET_BUFFER_IS_EMPTY;
-	}
-#endif
-}
-
-
 
 /*
  * Push&pop operations
  */
-rofl_result_t
-push_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes){
+rofl_result_t push_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes){
 	
 	uint8_t *src_ptr = get_buffer_dpdk(dpkt);
 	uint8_t *dst_ptr = (uint8_t*)rte_pktmbuf_prepend(dpkt->mbuf, num_of_bytes);
@@ -102,8 +45,7 @@ push_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned in
 }
 
 
-rofl_result_t
-pop_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes){
+rofl_result_t pop_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes){
 	
 	uint8_t *src_ptr = get_buffer_dpdk(dpkt);
 	uint8_t *dst_ptr = (uint8_t*)rte_pktmbuf_adj(dpkt->mbuf, num_of_bytes);
@@ -129,8 +71,7 @@ pop_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int
 }
 
 
-rofl_result_t
-push_datapacket_point(datapacket_dpdk_t *dpkt, uint8_t* push_point, unsigned int num_of_bytes){
+rofl_result_t push_datapacket_point(datapacket_dpdk_t *dpkt, uint8_t* push_point, unsigned int num_of_bytes){
 	
 	uint8_t *src_ptr = get_buffer_dpdk(dpkt);
 	
@@ -154,8 +95,7 @@ push_datapacket_point(datapacket_dpdk_t *dpkt, uint8_t* push_point, unsigned int
 
 
 
-rofl_result_t
-pop_datapacket_point(datapacket_dpdk_t *dpkt, uint8_t* pop_point, unsigned int num_of_bytes){
+rofl_result_t pop_datapacket_point(datapacket_dpdk_t *dpkt, uint8_t* pop_point, unsigned int num_of_bytes){
 	
 	uint8_t *src_ptr = get_buffer_dpdk(dpkt);
 	

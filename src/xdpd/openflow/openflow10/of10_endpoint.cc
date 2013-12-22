@@ -21,7 +21,7 @@ of10_endpoint::of10_endpoint(
 		int reconnect_start_timeout,
 		caddress const& controller_addr,
 		caddress const& binding_addr) throw (eOfSmErrorOnCreation) :
-	of_endpoint(1 << OFP10_VERSION) {
+	of_endpoint(1 << rofl::openflow10::OFP_VERSION) {
 
 	//Reference back to the sw
 	this->sw = sw;
@@ -31,7 +31,7 @@ of10_endpoint::of10_endpoint(
 	//FIXME: make controller and binding optional somehow
 	//Active connection
 	//if(controller_addr.port)
-	rpc_connect_to_ctl(OFP10_VERSION, reconnect_start_timeout, controller_addr);
+	rpc_connect_to_ctl(rofl::openflow10::OFP_VERSION, reconnect_start_timeout, controller_addr);
 
 	//Passive connection
 	//if(binding_addr.port)
@@ -82,15 +82,15 @@ of10_endpoint::handle_features_request(
 
 			uint32_t config = 0;
 			if(!_port->up)
-				config |= OFP10PC_PORT_DOWN;
+				config |= rofl::openflow10::OFPPC_PORT_DOWN;
 			if(_port->drop_received)
-				config |= OFP10PC_NO_RECV;
+				config |= rofl::openflow10::OFPPC_NO_RECV;
 			if(_port->no_flood)
-				config |= OFP10PC_NO_FLOOD;
+				config |= rofl::openflow10::OFPPC_NO_FLOOD;
 			if(!_port->forward_packets)
-				config |= OFP10PC_NO_FWD;
+				config |= rofl::openflow10::OFPPC_NO_FWD;
 			if(!_port->of_generate_packet_in)
-				config |= OFP10PC_NO_PACKET_IN;
+				config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
 
 			port.set_config(config);
 			port.set_state(_port->state);
@@ -240,7 +240,7 @@ of10_endpoint::handle_port_stats_request(
 	/*
 	 *  send statistics for all ports
 	 */
-	if (OFPP10_ALL == port_no || OFPP10_NONE == port_no){
+	if (rofl::openflow10::OFPP_ALL == port_no || rofl::openflow10::OFPP_NONE == port_no){
 
 		//we check all the positions in case there are empty slots
 		for (unsigned int n = 1; n < of10switch->max_ports; n++){
@@ -352,10 +352,10 @@ of10_endpoint::handle_flow_stats_request(
 
 	for(elem = fp_msg->flows_head; elem; elem = elem->next){
 
-		cofmatch match(OFP10_VERSION);
+		cofmatch match(rofl::openflow10::OFP_VERSION);
 		of10_translation_utils::of1x_map_reverse_flow_entry_matches(elem->matches, match);
 
-		cofinlist instructions(ctl->get_version());
+		cofinstructions instructions(ctl->get_version());
 		of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions, of10switch->pipeline->miss_send_len);
 
 		if (0 == instructions.size())
@@ -471,7 +471,7 @@ of10_endpoint::handle_queue_stats_request(
 	unsigned int portnum = pack->get_queue_stats().get_port_no();
 	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
 
-	if( ((portnum >= of10switch->max_ports) && (portnum != OFPP10_ALL)) || portnum == 0){
+	if( ((portnum >= of10switch->max_ports) && (portnum != rofl::openflow10::OFPP_ALL)) || portnum == 0){
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
@@ -486,7 +486,7 @@ of10_endpoint::handle_queue_stats_request(
 
 		port = of10switch->logical_ports[n].port;
 
-		if ( port == NULL || ( (OFPP10_ALL != portnum) && (port->of_port_num != portnum) ) )
+		if ( port == NULL || ( (rofl::openflow10::OFPP_ALL != portnum) && (port->of_port_num != portnum) ) )
 			continue;
 
 
@@ -576,8 +576,8 @@ of10_endpoint::handle_packet_out(
 	}
 
 	/* assumption: driver can handle all situations properly:
-	 * - data and datalen both 0 and buffer_id != OFP_NO_BUFFER
-	 * - buffer_id == OFP_NO_BUFFER and data and datalen both != 0
+	 * - data and datalen both 0 and buffer_id != rofl::openflow10::OFP_NO_BUFFER
+	 * - buffer_id == rofl::openflow10::OFP_NO_BUFFER and data and datalen both != 0
 	 * - everything else is an error?
 	 */
 	if (AFA_FAILURE == fwd_module_of1x_process_packet_out(sw->dpid,
@@ -613,7 +613,7 @@ of10_endpoint::process_packet_in(
 {
 	try {
 		//Transform matches
-		cofmatch match(OFP10_VERSION);
+		cofmatch match(rofl::openflow10::OFP_VERSION);
 		of10_translation_utils::of1x_map_reverse_packet_matches(&matches, match);
 
 
@@ -650,13 +650,13 @@ afa_result_t of10_endpoint::notify_port_add(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFP10PC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFP10PC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFP10PC_NO_FWD;
-	if(port->drop_received) config |= OFP10PC_NO_RECV;
+	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
 
-	cofport ofport(OFP10_VERSION);
+	cofport ofport(rofl::openflow10::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
@@ -670,7 +670,7 @@ afa_result_t of10_endpoint::notify_port_add(switch_port_t* port){
 	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
 	//Send message
-	send_port_status_message(NULL, OFPPR_ADD, ofport);
+	send_port_status_message(NULL, rofl::openflow10::OFPPR_ADD, ofport);
 
 	return AFA_SUCCESS;
 }
@@ -680,12 +680,12 @@ afa_result_t of10_endpoint::notify_port_delete(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFP10PC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFP10PC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFP10PC_NO_FWD;
-	if(port->drop_received) config |= OFP10PC_NO_RECV;
+	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
-	cofport ofport(OFP10_VERSION);
+	cofport ofport(rofl::openflow10::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
@@ -699,7 +699,7 @@ afa_result_t of10_endpoint::notify_port_delete(switch_port_t* port){
 	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
 	//Send message
-	send_port_status_message(NULL, OFPPR_DELETE, ofport);
+	send_port_status_message(NULL, rofl::openflow10::OFPPR_DELETE, ofport);
 
 	return AFA_SUCCESS;
 }
@@ -709,13 +709,13 @@ afa_result_t of10_endpoint::notify_port_status_changed(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFP10PC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFP10PC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFP10PC_NO_FWD;
-	if(port->drop_received) config |= OFP10PC_NO_RECV;
+	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
 	//Notify OF controller
-	cofport ofport(OFP10_VERSION);
+	cofport ofport(rofl::openflow10::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
@@ -729,7 +729,7 @@ afa_result_t of10_endpoint::notify_port_status_changed(switch_port_t* port){
 	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
 	//Send message
-	send_port_status_message(NULL, OFPPR_MODIFY, ofport);
+	send_port_status_message(NULL, rofl::openflow10::OFPPR_MODIFY, ofport);
 
 	return AFA_SUCCESS; // ignore this notification
 }
@@ -758,23 +758,23 @@ of10_endpoint::handle_flow_mod(
 		cofmsg_flow_mod *msg)
 {
 	switch (msg->get_command()) {
-		case OFPFC_ADD: {
+		case rofl::openflow10::OFPFC_ADD: {
 				flow_mod_add(ctl, msg);
 			} break;
 
-		case OFPFC_MODIFY: {
+		case rofl::openflow10::OFPFC_MODIFY: {
 				flow_mod_modify(ctl, msg, false);
 			} break;
 
-		case OFPFC_MODIFY_STRICT: {
+		case rofl::openflow10::OFPFC_MODIFY_STRICT: {
 				flow_mod_modify(ctl, msg, true);
 			} break;
 
-		case OFPFC_DELETE: {
+		case rofl::openflow10::OFPFC_DELETE: {
 				flow_mod_delete(ctl, msg, false);
 			} break;
 
-		case OFPFC_DELETE_STRICT: {
+		case rofl::openflow10::OFPFC_DELETE_STRICT: {
 				flow_mod_delete(ctl, msg, true);
 			} break;
 
@@ -796,7 +796,7 @@ of10_endpoint::flow_mod_add(
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
-	if ( (table_id > of10switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
+	if ( (table_id > of10switch->pipeline->num_of_tables) && (table_id != openflow10::OFPTT_ALL) )
 	{
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
@@ -820,8 +820,8 @@ of10_endpoint::flow_mod_add(
 								msg->get_table_id(),
 								entry,
 								msg->get_buffer_id(),
-								msg->get_flags() & OFPFF_CHECK_OVERLAP,
-								msg->get_flags() & OFPFF_RESET_COUNTS))){
+								msg->get_flags() & rofl::openflow10::OFPFF_CHECK_OVERLAP,
+								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/))){
 		// log error
 		ROFL_DEBUG("Error inserting the flowmod\n");
 		of1x_destroy_flow_entry(entry);
@@ -874,7 +874,7 @@ of10_endpoint::flow_mod_modify(
 								entry,
 								pack->get_buffer_id(),
 								strictness,
-								pack->get_flags() & OFPFF_RESET_COUNTS)){
+								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/)){
 		ROFL_DEBUG("Error modiying flowmod\n");
 		of1x_destroy_flow_entry(entry);
 		throw eFlowModBase();
@@ -933,7 +933,7 @@ of10_endpoint::process_flow_removed(
 		uint8_t reason,
 		of1x_flow_entry *entry)
 {
-	cofmatch match(OFP10_VERSION);
+	cofmatch match(rofl::openflow10::OFP_VERSION);
 	uint32_t sec,nsec;
 
 	of10_translation_utils::of1x_map_reverse_flow_entry_matches(entry->matches.head, match);
@@ -979,14 +979,18 @@ of10_endpoint::handle_table_mod(
 	 */
 	of1x_flow_table_miss_config_t config = OF1X_TABLE_MISS_CONTROLLER; //Default
 
-	if (msg->get_config() == OFPTC_TABLE_MISS_CONTINUE){
+	/*
+	 * OpenFlow 1.0 does not define struct ofp_table_mod.
+	 */
+#if 0
+	if (msg->get_config() == rofl::openflow10::OFPTC_TABLE_MISS_CONTINUE){
 		config = OF1X_TABLE_MISS_CONTINUE;
-	}else if (msg->get_config() == OFPTC_TABLE_MISS_CONTROLLER){
+	}else if (msg->get_config() == rofl::openflow10::OFPTC_TABLE_MISS_CONTROLLER){
 		config = OF1X_TABLE_MISS_CONTROLLER;
-	}else if (msg->get_config() == OFPTC_TABLE_MISS_DROP){
+	}else if (msg->get_config() == rofl::openflow10::OFPTC_TABLE_MISS_DROP){
 		config = OF1X_TABLE_MISS_DROP;
 	}
-
+#endif
 	if( AFA_FAILURE == fwd_module_of1x_set_table_config(sw->dpid, msg->get_table_id(), config) ){
 		//TODO: treat exception
 	}
@@ -1011,7 +1015,7 @@ of10_endpoint::handle_port_mod(
 
 	//Check if port_num FLOOD
 	//TODO: Inspect if this is right. Spec does not clearly define if this should be supported or not
-	if( (port_num != OFPP10_ALL) && (port_num > OFPP10_MAX) )
+	if( (port_num != rofl::openflow10::OFPP_ALL) && (port_num > rofl::openflow10::OFPP_MAX) )
 		throw ePortModBadPort();
 
 	// check for existence of port with id port_num
@@ -1029,24 +1033,24 @@ of10_endpoint::handle_port_mod(
 
 
 	//Drop received
-	if( mask &  OFP10PC_NO_RECV )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & OFP10PC_NO_RECV ) )
+	if( mask &  rofl::openflow10::OFPPC_NO_RECV )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & rofl::openflow10::OFPPC_NO_RECV ) )
 			throw ePortModBase();
 	//No forward
-	if( mask &  OFP10PC_NO_FWD )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFP10PC_NO_FWD) ) )
+	if( mask &  rofl::openflow10::OFPPC_NO_FWD )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & rofl::openflow10::OFPPC_NO_FWD) ) )
 			throw ePortModBase();
 
 	//No flood
-	if( mask &  OFP10PC_NO_FLOOD )
+	if( mask &  rofl::openflow10::OFPPC_NO_FLOOD )
 	{
-		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, config & OFP10PC_NO_FLOOD ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, config & rofl::openflow10::OFPPC_NO_FLOOD ) )
 			throw ePortModBase();
 	}
 
 	//No packet in
-	if( mask &  OFP10PC_NO_PACKET_IN )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFP10PC_NO_PACKET_IN) ) )
+	if( mask &  rofl::openflow10::OFPPC_NO_PACKET_IN )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & rofl::openflow10::OFPPC_NO_PACKET_IN) ) )
 			throw ePortModBase();
 
 	//Advertised
@@ -1055,8 +1059,8 @@ of10_endpoint::handle_port_mod(
 			throw ePortModBase();
 
 	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
-	if( mask &  OFP10PC_PORT_DOWN ){
-		if( (config & OFP10PC_PORT_DOWN)  ){
+	if( mask &  rofl::openflow10::OFPPC_PORT_DOWN ){
+		if( (config & rofl::openflow10::OFPPC_PORT_DOWN)  ){
 			//Disable port
 			if( AFA_FAILURE == fwd_module_disable_port_by_num(sw->dpid, port_num) ){
 				throw ePortModBase();
@@ -1126,7 +1130,7 @@ of10_endpoint::handle_queue_get_config_request(
 		if (of10switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
 			continue;
 
-		if ((OFPP10_ALL != portnum) && (port->of_port_num != portnum))
+		if ((rofl::openflow10::OFPP_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 		for(unsigned int i=0; i<port->max_queues; i++){

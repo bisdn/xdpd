@@ -14,7 +14,7 @@ of12_endpoint::of12_endpoint(
 		int reconnect_start_timeout,
 		caddress const& controller_addr,
 		caddress const& binding_addr)  throw (eOfSmErrorOnCreation) :
-		of_endpoint(1 << OFP12_VERSION) {
+		of_endpoint(1 << openflow12::OFP_VERSION) {
 
 	//Reference back to the sw
 	this->sw = sw;
@@ -24,7 +24,7 @@ of12_endpoint::of12_endpoint(
 	//FIXME: make controller and binding optional somehow
 	//Active connection
 	//if(controller_addr.port)
-	rpc_connect_to_ctl(OFP12_VERSION, reconnect_start_timeout, controller_addr);
+	rpc_connect_to_ctl(openflow12::OFP_VERSION, reconnect_start_timeout, controller_addr);
 
 	//Passive connection
 	//if(binding_addr.port)
@@ -75,13 +75,13 @@ of12_endpoint::handle_features_request(
 			
 			uint32_t config = 0;
 			if(!_port->up)	
-				config |= OFP12PC_PORT_DOWN;
+				config |= openflow12::OFPPC_PORT_DOWN;
 			if(_port->drop_received)
-				config |= OFP12PC_NO_RECV;
+				config |= openflow12::OFPPC_NO_RECV;
 			if(!_port->forward_packets)	
-				config |= OFP12PC_NO_FWD;
+				config |= openflow12::OFPPC_NO_FWD;
 			if(!_port->of_generate_packet_in)
-				config |= OFP12PC_NO_PACKET_IN;
+				config |= openflow12::OFPPC_NO_PACKET_IN;
 
 			port.set_config(config);
 			port.set_state(_port->state);
@@ -218,7 +218,7 @@ of12_endpoint::handle_port_stats_request(
 	/*
 	 *  send statistics for all ports
 	 */
-	if (OFPP12_ALL == port_no){
+	if (openflow12::OFPP_ALL == port_no){
 
 		//we check all the positions in case there are empty slots
 		for (unsigned int n = 1; n < of12switch->max_ports; n++){
@@ -335,7 +335,7 @@ of12_endpoint::handle_flow_stats_request(
 		cofmatch match;
 		of12_translation_utils::of12_map_reverse_flow_entry_matches(elem->matches, match);
 
-		cofinlist instructions(ctl->get_version());
+		cofinstructions instructions(ctl->get_version());
 		of12_translation_utils::of12_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
 
@@ -449,7 +449,7 @@ of12_endpoint::handle_queue_stats_request(
 	unsigned int portnum = pack->get_queue_stats().get_port_no();
 	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
 
-	if( ((portnum >= of12switch->max_ports) && (portnum != OFPP12_ALL)) || portnum == 0){
+	if( ((portnum >= of12switch->max_ports) && (portnum != openflow12::OFPP_ALL)) || portnum == 0){
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
@@ -464,7 +464,7 @@ of12_endpoint::handle_queue_stats_request(
 
 		port = of12switch->logical_ports[n].port;
 
-		if ((OFPP12_ALL != portnum) && (port->of_port_num != portnum))
+		if ((openflow12::OFPP_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 
@@ -537,7 +537,7 @@ of12_endpoint::handle_group_stats_request(
 
 	uint32_t group_id = msg->get_group_stats().get_group_id();
 	
-	if(group_id==OFPG12_ALL){
+	if(group_id==openflow12::OFPG_ALL){
 		g_msg_all = fwd_module_of1x_get_group_all_stats(sw->dpid, group_id);
 	}
 	else{
@@ -606,7 +606,7 @@ of12_endpoint::handle_group_desc_stats_request(
 	}
 	
 	for(group_it=group_table.head;group_it;group_it=group_it->next){
-		cofbclist bclist(ctl->get_version());
+		cofbuckets bclist(ctl->get_version());
 		of12_translation_utils::of12_map_reverse_bucket_list(bclist,group_it->bc_list);
 		
 		group_desc_stats.push_back(
@@ -749,13 +749,13 @@ afa_result_t of12_endpoint::notify_port_add(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFP12PC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFP12PC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFP12PC_NO_FWD;
-	if(port->drop_received) config |= OFP12PC_NO_RECV;
+	if(!port->up) config |= openflow12::OFPPC_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= openflow12::OFPPC_NO_PACKET_IN;
+	if(!port->forward_packets) config |= openflow12::OFPPC_NO_FWD;
+	if(port->drop_received) config |= openflow12::OFPPC_NO_RECV;
 			
 	
-	cofport ofport(OFP12_VERSION);
+	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
@@ -769,7 +769,7 @@ afa_result_t of12_endpoint::notify_port_add(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(NULL, OFPPR_ADD, ofport);
+	send_port_status_message(NULL, openflow12::OFPPR_ADD, ofport);
 
 	return AFA_SUCCESS;
 }
@@ -779,12 +779,12 @@ afa_result_t of12_endpoint::notify_port_delete(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFP12PC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFP12PC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFP12PC_NO_FWD;
-	if(port->drop_received) config |= OFP12PC_NO_RECV;
+	if(!port->up) config |= openflow12::OFPPC_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= openflow12::OFPPC_NO_PACKET_IN;
+	if(!port->forward_packets) config |= openflow12::OFPPC_NO_FWD;
+	if(port->drop_received) config |= openflow12::OFPPC_NO_RECV;
 	
-	cofport ofport(OFP12_VERSION);
+	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
@@ -798,7 +798,7 @@ afa_result_t of12_endpoint::notify_port_delete(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(NULL, OFPPR_DELETE, ofport);
+	send_port_status_message(NULL, openflow12::OFPPR_DELETE, ofport);
 
 	return AFA_SUCCESS;
 }
@@ -808,13 +808,13 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_t* port){
 	uint32_t config=0x0;
 
 	//Compose port config
-	if(!port->up) config |= OFP12PC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= OFP12PC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= OFP12PC_NO_FWD;
-	if(port->drop_received) config |= OFP12PC_NO_RECV;
+	if(!port->up) config |= openflow12::OFPPC_PORT_DOWN;
+	if(!port->of_generate_packet_in) config |= openflow12::OFPPC_NO_PACKET_IN;
+	if(!port->forward_packets) config |= openflow12::OFPPC_NO_FWD;
+	if(port->drop_received) config |= openflow12::OFPPC_NO_RECV;
 	
 	//Notify OF controller
-	cofport ofport(OFP12_VERSION);
+	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
 	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
@@ -828,7 +828,7 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_t* port){
 	ofport.set_max_speed(of12_translation_utils::get_port_speed_kb(port->curr_max_speed));
 	
 	//Send message
-	send_port_status_message(NULL, OFPPR_MODIFY, ofport);
+	send_port_status_message(NULL, openflow12::OFPPR_MODIFY, ofport);
 
 	return AFA_SUCCESS; // ignore this notification
 }
@@ -857,23 +857,23 @@ of12_endpoint::handle_flow_mod(
 		cofmsg_flow_mod *msg)
 {
 	switch (msg->get_command()) {
-		case OFPFC_ADD: {
+		case openflow12::OFPFC_ADD: {
 				flow_mod_add(ctl, msg);
 			} break;
 		
-		case OFPFC_MODIFY: {
+		case openflow12::OFPFC_MODIFY: {
 				flow_mod_modify(ctl, msg, false);
 			} break;
 		
-		case OFPFC_MODIFY_STRICT: {
+		case openflow12::OFPFC_MODIFY_STRICT: {
 				flow_mod_modify(ctl, msg, true);
 			} break;
 		
-		case OFPFC_DELETE: {
+		case openflow12::OFPFC_DELETE: {
 				flow_mod_delete(ctl, msg, false);
 			} break;
 		
-		case OFPFC_DELETE_STRICT: {
+		case openflow12::OFPFC_DELETE_STRICT: {
 				flow_mod_delete(ctl, msg, true);
 			} break;
 		
@@ -895,7 +895,7 @@ of12_endpoint::flow_mod_add(
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
-	if ( (table_id > of12switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
+	if ( (table_id > of12switch->pipeline->num_of_tables) && (table_id != openflow12::OFPTT_ALL) )
 	{
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
@@ -919,8 +919,8 @@ of12_endpoint::flow_mod_add(
 								msg->get_table_id(),
 								entry,
 								msg->get_buffer_id(),
-								msg->get_flags() & OFPFF_CHECK_OVERLAP,
-								msg->get_flags() & OFPFF_RESET_COUNTS))){
+								msg->get_flags() & openflow12::OFPFF_CHECK_OVERLAP,
+								msg->get_flags() & openflow12::OFPFF_RESET_COUNTS))){
 		// log error
 		WRITELOG(CDATAPATH, ERROR, "Error inserting the flowmod\n");
 		of1x_destroy_flow_entry(entry);
@@ -973,7 +973,7 @@ of12_endpoint::flow_mod_modify(
 								entry,
 								pack->get_buffer_id(),
 								strictness,
-								pack->get_flags() & OFPFF_RESET_COUNTS)){
+								pack->get_flags() & openflow12::OFPFF_RESET_COUNTS)){
 		WRITELOG(CDATAPATH, ERROR, "Error modiying flowmod\n");
 		of1x_destroy_flow_entry(entry);
 		throw eFlowModBase(); 
@@ -1076,7 +1076,7 @@ of12_endpoint::handle_group_mod(
 	// sanity check: check for invalid actions => FIXME: fake for oftest12, there are numerous
 	// combinations, where an action list may be invalid, especially when heterogeneous tables
 	// in terms of capabilities exist!
-	for (cofbclist::iterator it = msg->get_buckets().begin(); it != msg->get_buckets().end(); ++it) {
+	for (cofbuckets::iterator it = msg->get_buckets().begin(); it != msg->get_buckets().end(); ++it) {
 		cofbucket& bucket = (*it);
 		for (cofaclist::iterator jt = bucket.actions.begin(); jt != bucket.actions.end(); ++jt) {
 			cofaction& action = (*jt);
@@ -1098,17 +1098,17 @@ of12_endpoint::handle_group_mod(
  	of1x_bucket_list_t* bucket_list=of1x_init_bucket_list();
 	
 	switch(msg->get_command()){
-		case OFPGC_ADD:
+		case openflow12::OFPGC_ADD:
 			of12_translation_utils::of12_map_bucket_list(ctl, sw, msg->get_buckets(), bucket_list);
 			ret_val = fwd_module_of1x_group_mod_add(sw->dpid, (of1x_group_type_t)msg->get_group_type(), msg->get_group_id(), bucket_list);
 			break;
 			
-		case OFPGC_MODIFY:
+		case openflow12::OFPGC_MODIFY:
 			of12_translation_utils::of12_map_bucket_list(ctl, sw, msg->get_buckets(), bucket_list);
 			ret_val = fwd_module_of1x_group_mod_modify(sw->dpid, (of1x_group_type_t)msg->get_group_type(), msg->get_group_id(), bucket_list);
 			break;
 		
-		case OFPGC_DELETE:
+		case openflow12::OFPGC_DELETE:
 			ret_val = fwd_module_of1x_group_mod_delete(sw->dpid, msg->get_group_id());
 			break;
 		
@@ -1116,7 +1116,7 @@ of12_endpoint::handle_group_mod(
 			ret_val = ROFL_OF1X_GM_BCOMMAND;
 			break;
 	}
-	if( (ret_val != ROFL_OF1X_GM_OK) || (msg->get_command() == OFPGC_DELETE) )
+	if( (ret_val != ROFL_OF1X_GM_OK) || (msg->get_command() == openflow12::OFPGC_DELETE) )
 		of1x_destroy_bucket_list(bucket_list);
 	
 	//Throw appropiate exception based on the return code
@@ -1194,11 +1194,11 @@ of12_endpoint::handle_table_mod(
 	 */
 	of1x_flow_table_miss_config_t config = OF1X_TABLE_MISS_CONTROLLER; //Default 
 
-	if (msg->get_config() == OFPTC_TABLE_MISS_CONTINUE){
+	if (msg->get_config() == openflow12::OFPTC_TABLE_MISS_CONTINUE){
 		config = OF1X_TABLE_MISS_CONTINUE;
-	}else if (msg->get_config() == OFPTC_TABLE_MISS_CONTROLLER){
+	}else if (msg->get_config() == openflow12::OFPTC_TABLE_MISS_CONTROLLER){
 		config = OF1X_TABLE_MISS_CONTROLLER;
-	}else if (msg->get_config() == OFPTC_TABLE_MISS_DROP){
+	}else if (msg->get_config() == openflow12::OFPTC_TABLE_MISS_DROP){
 		config = OF1X_TABLE_MISS_DROP;
 	}
 
@@ -1225,20 +1225,20 @@ of12_endpoint::handle_port_mod(
 
 	//Check if port_num FLOOD
 	//TODO: Inspect if this is right. Spec does not clearly define if this should be supported or not
-	if( port_num == OFPP12_ALL )
+	if( port_num == openflow12::OFPP_ALL )
 		throw ePortModBadPort(); 
 		
 	//Drop received
-	if( mask &  OFP12PC_NO_RECV )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & OFP12PC_NO_RECV ) )
+	if( mask &  openflow12::OFPPC_NO_RECV )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & openflow12::OFPPC_NO_RECV ) )
 			throw ePortModBase(); 
 	//No forward
-	if( mask &  OFP12PC_NO_FWD )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFP12PC_NO_FWD) ) )
+	if( mask &  openflow12::OFPPC_NO_FWD )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & openflow12::OFPPC_NO_FWD) ) )
 			throw ePortModBase(); 
 	//No packet in
-	if( mask &  OFP12PC_NO_PACKET_IN )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFP12PC_NO_PACKET_IN) ) )
+	if( mask &  openflow12::OFPPC_NO_PACKET_IN )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & openflow12::OFPPC_NO_PACKET_IN) ) )
 			throw ePortModBase(); 
 
 	//Advertised
@@ -1247,8 +1247,8 @@ of12_endpoint::handle_port_mod(
 			throw ePortModBase(); 
 
 	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
-	if( mask &  OFP12PC_PORT_DOWN ){
-		if( (config & OFP12PC_PORT_DOWN)  ){
+	if( mask &  openflow12::OFPPC_PORT_DOWN ){
+		if( (config & openflow12::OFPPC_PORT_DOWN)  ){
 			//Disable port
 			if( AFA_FAILURE == fwd_module_disable_port_by_num(sw->dpid, port_num) ){
 				throw ePortModBase(); 
@@ -1318,7 +1318,7 @@ of12_endpoint::handle_queue_get_config_request(
 		if (of12switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
 			continue;
 
-		if ((OFPP12_ALL != portnum) && (port->of_port_num != portnum))
+		if ((openflow12::OFPP_ALL != portnum) && (port->of_port_num != portnum))
 			continue;
 
 		for(unsigned int i=0; i<port->max_queues; i++){

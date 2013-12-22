@@ -46,7 +46,7 @@ of10_translation_utils::of1x_map_flow_entry(
 		openflow_switch* sw)
 {
 
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(NULL, NULL, msg->get_flags() & OFPFF_SEND_FLOW_REM);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(NULL, NULL, msg->get_flags() & openflow10::OFPFF_SEND_FLOW_REM);
 
 	if(!entry)
 		throw eFlowModUnknown();
@@ -250,11 +250,11 @@ void
 of10_translation_utils::of1x_map_flow_entry_actions(
 		cofctl *ctl,
 		openflow_switch* sw,
-		cofaclist& actions,
+		cofactions& actions,
 		of1x_action_group_t *apply_actions,
 		of1x_write_actions_t *write_actions)
 {
-	for (cofaclist::iterator
+	for (cofactions::iterator
 			jt = actions.begin(); jt != actions.end(); ++jt)
 	{
 		cofaction& raction = (*jt);
@@ -264,53 +264,53 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		memset(&field,0,sizeof(wrap_uint_t));
 
 		switch (raction.get_type()) {
-		case OFP10AT_OUTPUT:
+		case rofl::openflow10::OFPAT_OUTPUT:
 			//Translate special values to of1x
 			field.u64 = get_out_port(be16toh(raction.oac_10output->port));
 			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_VLAN_VID:
+		case rofl::openflow10::OFPAT_SET_VLAN_VID:
 			field.u64 = be16toh(raction.oac_10vlanvid->vlan_vid);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_VLAN_PCP:
+		case rofl::openflow10::OFPAT_SET_VLAN_PCP:
 			field.u64 = be16toh(raction.oac_10vlanpcp->vlan_pcp)>>8;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, NULL, NULL);
 			break;
-		case OFP10AT_STRIP_VLAN:
+		case rofl::openflow10::OFPAT_STRIP_VLAN:
 			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, NULL, NULL); 
 			break;
-		case OFP10AT_SET_DL_SRC: {
+		case rofl::openflow10::OFPAT_SET_DL_SRC: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, NULL, NULL);
 			} break;
-		case OFP10AT_SET_DL_DST: {
+		case rofl::openflow10::OFPAT_SET_DL_DST: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, NULL, NULL);
 			} break;
-		case OFP10AT_SET_NW_SRC:
+		case rofl::openflow10::OFPAT_SET_NW_SRC:
 			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_NW_DST:
+		case rofl::openflow10::OFPAT_SET_NW_DST:
 			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_NW_TOS:
+		case rofl::openflow10::OFPAT_SET_NW_TOS:
 			field.u64 = raction.oac_10nwtos->nw_tos>>2;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_TP_SRC:
+		case rofl::openflow10::OFPAT_SET_TP_SRC:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
 			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_TP_DST:
+		case rofl::openflow10::OFPAT_SET_TP_DST:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
 			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, NULL, NULL);
 			break;
-		case OFP10AT_ENQUEUE:
+		case rofl::openflow10::OFPAT_ENQUEUE:
 			field.u64 = be32toh(raction.oac_10enqueue->queue_id);
 			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, NULL, NULL);
 			if (NULL != apply_actions) of1x_push_packet_action_to_group(apply_actions, action);
@@ -467,7 +467,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 
 	//In 1.0 if there is no VLAN OFP10_VLAN_NONE has to be set...
 	if(!has_vlan)
-		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_UNTAGGED, OFP10_VLAN_NONE);
+		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_UNTAGGED, rofl::openflow10::OFP_VLAN_NONE);
 }
 
 
@@ -478,7 +478,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_instructions(
 		of1x_instruction_group_t* group,
-		cofinlist& instructions,
+		cofinstructions& instructions,
 		uint16_t pipeline_miss_send_len)
 {
 	for (unsigned int i = 0; i < (sizeof(group->instructions) / sizeof(of1x_instruction_t)); i++) {
@@ -713,71 +713,71 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 	of1x_flow_table_config_t config = lsw->pipeline->tables[0].config;
 		
 	if (config.apply_actions&(1UL<<OF12PAT_OUTPUT))
-		mask |= 1 << OFP10AT_OUTPUT;
+		mask |= 1 << rofl::openflow10::OFPAT_OUTPUT;
 	
 	if (config.match&(1UL<<OF1X_MATCH_VLAN_VID))
-		mask |= 1 << OFP10AT_SET_VLAN_VID;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_VLAN_VID;
 	
 	if (config.match&(1UL<<OF1X_MATCH_VLAN_PCP))
-		mask |= 1 << OFP10AT_SET_VLAN_PCP;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_VLAN_PCP;
 	
 	if (config.apply_actions&(1UL<<OF12PAT_POP_VLAN))
-		mask |= 1 << OFP10AT_STRIP_VLAN;
+		mask |= 1 << rofl::openflow10::OFPAT_STRIP_VLAN;
 	
 	if (config.match&(1UL<<OF1X_MATCH_ETH_SRC))
-		mask |= 1 << OFP10AT_SET_DL_SRC;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_DL_SRC;
 	
 	if (config.match&(1UL<<OF1X_MATCH_ETH_DST))
-		mask |= 1 << OFP10AT_SET_DL_DST;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_DL_DST;
 	
 	if (config.match&(1UL<<OF1X_MATCH_IPV4_SRC))
-		mask |= 1 << OFP10AT_SET_NW_SRC;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_SRC;
 	
 	if (config.match&(1UL<<OF1X_MATCH_IPV4_DST))
-		mask |= 1 << OFP10AT_SET_NW_DST;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_DST;
 	
 	if (config.match&(1UL<<OF1X_MATCH_IP_DSCP))
-		mask |= 1 << OFP10AT_SET_NW_TOS;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_TOS;
 	
 	if (config.match&(UINT64_C(1)<<OF1X_MATCH_TP_SRC))
-		mask |= 1 << OFP10AT_SET_TP_SRC;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_TP_SRC;
 	
 	if (config.match&(UINT64_C(1)<<OF1X_MATCH_TP_DST))
-		mask |= 1 << OFP10AT_SET_TP_DST;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_TP_DST;
 	
 	if (config.apply_actions&(1UL<<OF12PAT_SET_QUEUE))
-		mask |= 1 << OFP10AT_ENQUEUE;
+		mask |= 1 << rofl::openflow10::OFPAT_ENQUEUE;
 		
 	return mask;
 }
 
 uint64_t of10_translation_utils::get_out_port(uint16_t port){
 	switch(port){
-		case OFPP10_MAX:
+		case rofl::openflow10::OFPP_MAX:
 			return OF1X_PORT_MAX;
 			break;
-		case OFPP10_IN_PORT:
+		case rofl::openflow10::OFPP_IN_PORT:
 			return OF1X_PORT_IN_PORT;
 			break;
-		case OFPP10_TABLE:
+		case rofl::openflow10::OFPP_TABLE:
 			return OF1X_PORT_TABLE;
 			break;
-		case OFPP10_NORMAL:
+		case rofl::openflow10::OFPP_NORMAL:
 			return OF1X_PORT_NORMAL;
 			break;
-		case OFPP10_FLOOD:
+		case rofl::openflow10::OFPP_FLOOD:
 			return OF1X_PORT_FLOOD;
 			break;
-		case OFPP10_ALL:
+		case rofl::openflow10::OFPP_ALL:
 			return OF1X_PORT_ALL;
 			break;
-		case OFPP10_CONTROLLER:
+		case rofl::openflow10::OFPP_CONTROLLER:
 			return OF1X_PORT_CONTROLLER;
 			break;
-		case OFPP10_LOCAL:
+		case rofl::openflow10::OFPP_LOCAL:
 			return OF1X_PORT_LOCAL;
 			break;
-		case OFPP10_NONE:
+		case rofl::openflow10::OFPP_NONE:
 			return OF1X_PORT_ANY; //NOTE needed for deleting flows
 			break;
 		default:
@@ -789,31 +789,31 @@ uint64_t of10_translation_utils::get_out_port(uint16_t port){
 uint32_t of10_translation_utils::get_out_port_reverse(uint64_t port){
 	switch(port){
 		case OF1X_PORT_MAX:
-			return OFPP10_MAX;
+			return rofl::openflow10::OFPP_MAX;
 			break;
 		case OF1X_PORT_IN_PORT:
-			return OFPP10_IN_PORT;
+			return rofl::openflow10::OFPP_IN_PORT;
 			break;
 		case OF1X_PORT_TABLE:
-			return OFPP10_TABLE;
+			return rofl::openflow10::OFPP_TABLE;
 			break;
 		case OF1X_PORT_NORMAL:
-			return OFPP10_NORMAL;
+			return rofl::openflow10::OFPP_NORMAL;
 			break;
 		case OF1X_PORT_FLOOD:
-			return OFPP10_FLOOD;
+			return rofl::openflow10::OFPP_FLOOD;
 			break;
 		case OF1X_PORT_ALL:
-			return OFPP10_ALL;
+			return rofl::openflow10::OFPP_ALL;
 			break;
 		case OF1X_PORT_CONTROLLER:
-			return OFPP10_CONTROLLER;
+			return rofl::openflow10::OFPP_CONTROLLER;
 			break;
 		case OF1X_PORT_LOCAL:
-			return OFPP10_LOCAL;
+			return rofl::openflow10::OFPP_LOCAL;
 			break;
 		case OF1X_PORT_ANY:
-			return OFPP10_NONE; //NOTE needed for deleting flows
+			return rofl::openflow10::OFPP_NONE; //NOTE needed for deleting flows
 			break;
 		default:
 			return port;

@@ -374,7 +374,9 @@ of10_endpoint::handle_flow_stats_request(
 						elem->packet_count,
 						elem->byte_count,
 						match,
-						instructions[0].actions));
+						instructions[0].get_actions()));
+		// TODO: check this implicit assumption of always using a single instruction?
+		// this should be an instruction of type OFPIT_APPLY_ACTIONS anyway
 	}
 
 

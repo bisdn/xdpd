@@ -486,7 +486,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instructions(
 			continue;
 		cofinst instruction(OFP10_VERSION);;
 		of1x_map_reverse_flow_entry_instruction(&(group->instructions[i]), instruction, pipeline_miss_send_len);
-		instructions.next() = instruction;
+		instructions.add_inst(instruction);
 	}
 }
 

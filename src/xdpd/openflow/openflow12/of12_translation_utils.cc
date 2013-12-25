@@ -63,67 +63,82 @@ of12_translation_utils::of12_map_flow_entry(
 		throw eFlowModUnknown();
 	}
 	
-	// iterate over all instructions and store them in the instruction group contained in entry
-	for (cofinstructions::iterator
-			it = msg->get_instructions().begin(); it != msg->get_instructions().end(); ++it)
-	{
-		switch ((*it).get_type()) {
-		case openflow12::OFPIT_APPLY_ACTIONS: {
-			of1x_action_group_t *apply_actions = of1x_init_action_group(0);
 
-			try{
-				of12_map_flow_entry_actions(ctl, sw, (*it).actions, apply_actions, /*of1x_write_actions_t*/0);
-			}catch(...){
-				of1x_destroy_flow_entry(entry);
-				of1x_destroy_action_group(apply_actions);
-				throw eFlowModUnknown();
-			}
+	/*
+	 * Inst-Apply-Actions
+	 */
+	if (msg->get_instructions().has_inst_apply_actions()) {
+		of1x_action_group_t *apply_actions = of1x_init_action_group(0);
+		try{
+			of12_map_flow_entry_actions(ctl, sw,
+					msg->get_instructions().get_inst_apply_actions().get_actions(),
+					apply_actions, /*of1x_write_actions_t*/0);
 
 			of1x_add_instruction_to_group(
-					&(entry->inst_grp),
-					OF1X_IT_APPLY_ACTIONS,
-					(of1x_action_group_t*)apply_actions,
-					NULL,
-					NULL,
-					/*go_to_table*/0);
-		} break;
-		case openflow12::OFPIT_CLEAR_ACTIONS: {
-			of1x_add_instruction_to_group(
-					&(entry->inst_grp),
-					OF1X_IT_CLEAR_ACTIONS,
-					NULL,
-					NULL,
-					NULL,
-					/*go_to_table*/0);
-		} break;
-		case openflow12::OFPIT_EXPERIMENTER: {
-			of1x_add_instruction_to_group(
+						&(entry->inst_grp),
+						OF1X_IT_APPLY_ACTIONS,
+						(of1x_action_group_t*)apply_actions,
+						NULL,
+						NULL,
+						/*go_to_table*/0);
+		}catch(...){
+			of1x_destroy_flow_entry(entry);
+			of1x_destroy_action_group(apply_actions);
+			throw eFlowModUnknown();
+		}
+	}
+
+	/*
+	 * Inst-Clear-Actions
+	 */
+	if (msg->get_instructions().has_inst_clear_actions()) {
+		of1x_add_instruction_to_group(
+				&(entry->inst_grp),
+				OF1X_IT_CLEAR_ACTIONS,
+				NULL,
+				NULL,
+				NULL,
+				/*go_to_table*/0);
+	}
+
+
+	/*
+	 * Inst-Experimenter
+	 */
+	if (msg->get_instructions().has_inst_experimenter()) {
+		of1x_add_instruction_to_group(
 					&(entry->inst_grp),
 					OF1X_IT_EXPERIMENTER,
 					NULL,
 					NULL,
 					NULL,
 					/*go_to_table*/0);
-		} break;
-		case openflow12::OFPIT_GOTO_TABLE: {
-			of1x_add_instruction_to_group(
-					&(entry->inst_grp),
-					OF1X_IT_GOTO_TABLE,
-					NULL,
-					NULL,
-					NULL,
-					/*go_to_table*/(*it).oin_goto_table->table_id);
-		} break;
-		case openflow12::OFPIT_WRITE_ACTIONS: {
-			of1x_write_actions_t *write_actions = of1x_init_write_actions();
+	}
 
-			try{
-				of12_map_flow_entry_actions(ctl, sw, (*it).actions, /*of1x_action_group_t*/0, write_actions);
-			}catch(...){
-				of1x_destroy_flow_entry(entry);	
-				throw eFlowModUnknown();
-			}
 
+	/*
+	 * Inst-Goto-Table
+	 */
+	if (msg->get_instructions().has_inst_goto_table()) {
+		of1x_add_instruction_to_group(
+				&(entry->inst_grp),
+				OF1X_IT_GOTO_TABLE,
+				NULL,
+				NULL,
+				NULL,
+				/*go_to_table*/msg->get_instructions().get_inst_goto_table().get_table_id());
+	}
+
+
+	/*
+	 * Inst-Write-Actions
+	 */
+	if (msg->get_instructions().has_inst_write_actions()) {
+		of1x_write_actions_t *write_actions = of1x_init_write_actions();
+		try{
+			of12_map_flow_entry_actions(ctl, sw,
+					msg->get_instructions().get_inst_write_actions().get_actions(),
+					/*of1x_action_group_t*/0, write_actions);
 
 			of1x_add_instruction_to_group(
 					&(entry->inst_grp),
@@ -132,21 +147,31 @@ of12_translation_utils::of12_map_flow_entry(
 					(of1x_write_actions_t*)write_actions,
 					NULL,
 					/*go_to_table*/0);
-		} break;
-		case openflow12::OFPIT_WRITE_METADATA: {
-			of1x_write_metadata_t metadata = {(*it).oin_write_metadata->metadata, (*it).oin_write_metadata->metadata_mask};
-			
-			of1x_add_instruction_to_group(
-					&(entry->inst_grp),
-					OF1X_IT_WRITE_METADATA,
-					NULL,
-					NULL,
-					&metadata,
-					/*go_to_table*/0);
-		} break;
+		}catch(...){
+			of1x_destroy_flow_entry(entry);
+			throw eFlowModUnknown();
 		}
-
 	}
+
+
+	/*
+	 * Inst-Write-Metadata
+	 */
+	if (msg->get_instructions().has_inst_write_metadata()) {
+		of1x_write_metadata_t metadata = {
+				msg->get_instructions().get_inst_write_metadata().get_metadata(),
+				msg->get_instructions().get_inst_write_metadata().get_metadata_mask()
+		};
+
+		of1x_add_instruction_to_group(
+				&(entry->inst_grp),
+				OF1X_IT_WRITE_METADATA,
+				NULL,
+				NULL,
+				&metadata,
+				/*go_to_table*/0);
+	}
+
 
 	return entry;
 }
@@ -1219,7 +1244,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_instructions(
 			continue;
 		cofinst instruction(OFP12_VERSION);
 		of12_map_reverse_flow_entry_instruction(&(group->instructions[i]), instruction);
-		instructions.next() = instruction;
+		instructions.add_inst(instruction);
 	}
 }
 

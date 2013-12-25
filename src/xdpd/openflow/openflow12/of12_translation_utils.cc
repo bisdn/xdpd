@@ -644,10 +644,10 @@ of12_translation_utils::of12_map_flow_entry_actions(
 		of1x_action_group_t *apply_actions,
 		of1x_write_actions_t *write_actions)
 {
-	for (cofactions::iterator
+	for (std::list<cofaction*>::iterator
 			jt = actions.begin(); jt != actions.end(); ++jt)
 	{
-		cofaction& raction = (*jt);
+		cofaction& raction = *(*jt);
 
 		of1x_packet_action_t *action = NULL;
 		wrap_uint_t field;
@@ -1216,7 +1216,7 @@ void of12_translation_utils::of12_map_reverse_bucket_list(
 			cofaction action(OFP12_VERSION);
 			of12_map_reverse_flow_entry_action(action_it, action);
 			//push this action into the list
-			ac_list.next() = action;
+			ac_list.append_action(action);
 		}
 		of_buckets.next() = cofbucket(OFP12_VERSION);
 		cofbucket &single_bucket = of_buckets.back();
@@ -1262,7 +1262,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_instruction(
 				continue;
 			cofaction action(OFP12_VERSION);
 			of12_map_reverse_flow_entry_action(of1x_action, action);
-			instruction.actions.next() = action;
+			instruction.get_actions().append_action(action);
 		}
 	} break;
 	case OF1X_IT_CLEAR_ACTIONS: {
@@ -1275,7 +1275,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_instruction(
 				continue;
 			cofaction action(OFP12_VERSION);
 			of12_map_reverse_flow_entry_action(&(inst->write_actions->write_actions[i]), action);
-			instruction.actions.next() = action;
+			instruction.get_actions().append_action(action);
 		}
 	} break;
 	case OF1X_IT_WRITE_METADATA:

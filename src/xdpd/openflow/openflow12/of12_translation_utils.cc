@@ -1192,7 +1192,7 @@ of12_translation_utils::of12_map_bucket_list(
 	
 	for(cofbuckets::iterator jt = of_buckets.begin();jt != of_buckets.end();++jt){
 		//for each bucket we must map its actions
-		cofbucket& bucket_ptr = (*jt);
+		cofbucket& bucket_ptr = *(*jt);
 		of1x_action_group_t* action_group = of1x_init_action_group(NULL);
 		if(action_group == NULL){
 			//TODO Handle Error
@@ -1218,7 +1218,7 @@ void of12_translation_utils::of12_map_reverse_bucket_list(
 			//push this action into the list
 			ac_list.append_action(action);
 		}
-		of_buckets.next() = cofbucket(OFP12_VERSION);
+		of_buckets.append_bucket(cofbucket(OFP12_VERSION));
 		cofbucket &single_bucket = of_buckets.back();
 		// insert action list in the bucket
 		single_bucket.actions=ac_list;

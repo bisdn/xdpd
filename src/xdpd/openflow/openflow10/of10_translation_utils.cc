@@ -363,7 +363,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			break;
 		case OF1X_MATCH_VLAN_VID:
 			has_vlan = true;
-			match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, m->value->value.u16&OF1X_VLAN_ID_MASK);
+			match.set_vlan_vid(m->value->value.u16&OF1X_VLAN_ID_MASK);
 			break;
 		case OF1X_MATCH_VLAN_PCP:
 			match.set_vlan_pcp(m->value->value.u8);
@@ -467,7 +467,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 
 	//In 1.0 if there is no VLAN OFP10_VLAN_NONE has to be set...
 	if(!has_vlan)
-		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_UNTAGGED, rofl::openflow10::OFP_VLAN_NONE);
+		match.set_vlan_untagged();
 }
 
 
@@ -639,7 +639,7 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 	if(packet_matches->eth_type)
 		match.set_eth_type(packet_matches->eth_type);
 	if(packet_matches->vlan_vid)
-		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, packet_matches->vlan_vid);
+		match.set_vlan_vid(packet_matches->vlan_vid);
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)

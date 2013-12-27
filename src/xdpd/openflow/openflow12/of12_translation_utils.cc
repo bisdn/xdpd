@@ -1029,7 +1029,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			match.set_eth_type(m->value->value.u16);
 			break;
 		case OF1X_MATCH_VLAN_VID:
-			match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, m->value->value.u16);
+			match.set_vlan_vid(m->value->value.u16);
 			break;
 		case OF1X_MATCH_VLAN_PCP:
 			match.set_vlan_pcp(m->value->value.u8);
@@ -1358,7 +1358,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_eth_type((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_VID: {
-		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, (uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
+		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_vlan_vid((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_PCP: {
 		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_vlan_pcp((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
@@ -1508,7 +1508,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(of1x_packet_matches
 	if(packet_matches->eth_type)
 		match.set_eth_type(packet_matches->eth_type);
 	if(packet_matches->vlan_vid)
-		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, packet_matches->vlan_vid);
+		match.set_vlan_vid(packet_matches->vlan_vid);
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)

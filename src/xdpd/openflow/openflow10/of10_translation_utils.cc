@@ -41,7 +41,7 @@ uint32_t of10_translation_utils::get_port_speed_kb(port_features_t features){
 */
 of1x_flow_entry_t*
 of10_translation_utils::of1x_map_flow_entry(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_flow_mod *msg,
 		openflow_switch* sw)
 {
@@ -94,7 +94,7 @@ of10_translation_utils::of1x_map_flow_entry(
 */
 void
 of10_translation_utils::of10_map_flow_entry_matches(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmatch const& ofmatch,
 		openflow_switch* sw,
 		of1x_flow_entry *entry)
@@ -248,7 +248,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 //FIXME TODO XXX: cofaction should have appropiate getters and setters instead of having  to access internals of the class!
 void
 of10_translation_utils::of1x_map_flow_entry_actions(
-		cofctl *ctl,
+		crofctl *ctl,
 		openflow_switch* sw,
 		cofactions& actions,
 		of1x_action_group_t *apply_actions,

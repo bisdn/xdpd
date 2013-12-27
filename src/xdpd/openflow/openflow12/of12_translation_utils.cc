@@ -38,7 +38,7 @@ uint32_t of12_translation_utils::get_port_speed_kb(port_features_t features){
 */
 of1x_flow_entry_t*
 of12_translation_utils::of12_map_flow_entry(
-		cofctl *ctl, 
+		crofctl *ctl, 
 		cofmsg_flow_mod *msg,
 		openflow_switch* sw)
 {
@@ -183,7 +183,7 @@ of12_translation_utils::of12_map_flow_entry(
 */
 void
 of12_translation_utils::of12_map_flow_entry_matches(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmatch const& ofmatch,
 		openflow_switch* sw, 
 		of1x_flow_entry *entry)
@@ -638,7 +638,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 */
 void
 of12_translation_utils::of12_map_flow_entry_actions(
-		cofctl *ctl,
+		crofctl *ctl,
 		openflow_switch* sw, 
 		cofactions& actions,
 		of1x_action_group_t *apply_actions,
@@ -1184,7 +1184,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 */
 void
 of12_translation_utils::of12_map_bucket_list(
-		cofctl *ctl,
+		crofctl *ctl,
 		openflow_switch* sw,
 		cofbuckets& of_buckets,
 		of1x_bucket_list_t* bucket_list)

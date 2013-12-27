@@ -39,7 +39,7 @@ of12_endpoint::of12_endpoint(
 
 void
 of12_endpoint::handle_features_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_features_request *msg)
 {
 	logical_switch_port_t* ls_port;	
@@ -114,7 +114,7 @@ of12_endpoint::handle_features_request(
 
 void
 of12_endpoint::handle_get_config_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_get_config_request *msg)
 {
 	uint16_t flags = 0x0;
@@ -134,7 +134,7 @@ of12_endpoint::handle_get_config_request(
 
 void
 of12_endpoint::handle_desc_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_desc_stats_request *msg)
 {
 	std::string mfr_desc("eXtensible Data Path");
@@ -160,7 +160,7 @@ of12_endpoint::handle_desc_stats_request(
 
 void
 of12_endpoint::handle_table_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_table_stats_request *msg)
 {
 	unsigned int num_of_tables = of12switch->pipeline->num_of_tables;
@@ -206,7 +206,7 @@ of12_endpoint::handle_table_stats_request(
 
 void
 of12_endpoint::handle_port_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_port_stats_request *msg)
 {
 
@@ -295,7 +295,7 @@ of12_endpoint::handle_port_stats_request(
 
 void
 of12_endpoint::handle_flow_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_flow_stats_request *msg)
 {
 	of1x_stats_flow_msg_t* fp_msg = NULL;
@@ -375,7 +375,7 @@ of12_endpoint::handle_flow_stats_request(
 
 void
 of12_endpoint::handle_aggregate_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_aggr_stats_request *msg)
 {
 	of1x_stats_flow_aggregate_msg_t* fp_msg;
@@ -441,7 +441,7 @@ of12_endpoint::handle_aggregate_stats_request(
 
 void
 of12_endpoint::handle_queue_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_queue_stats_request *pack)
 {
 
@@ -526,7 +526,7 @@ of12_endpoint::handle_queue_stats_request(
 
 void
 of12_endpoint::handle_group_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_group_stats_request *msg)
 {
 	// we need to get the statistics, build a packet and send it
@@ -590,7 +590,7 @@ of12_endpoint::handle_group_stats_request(
 
 void
 of12_endpoint::handle_group_desc_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_group_desc_stats_request *msg)
 {
 	std::vector<cofgroup_desc_stats_reply> group_desc_stats;
@@ -630,7 +630,7 @@ of12_endpoint::handle_group_desc_stats_request(
 
 void
 of12_endpoint::handle_group_features_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_group_features_stats_request *msg)
 {
 	cofgroup_features_stats_reply group_features_reply(ctl->get_version());
@@ -649,7 +649,7 @@ of12_endpoint::handle_group_features_stats_request(
 
 void
 of12_endpoint::handle_experimenter_stats_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_stats_request *pack)
 {
 
@@ -662,7 +662,7 @@ of12_endpoint::handle_experimenter_stats_request(
 
 void
 of12_endpoint::handle_packet_out(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_packet_out *msg)
 {
 	of1x_action_group_t* action_group = of1x_init_action_group(NULL);
@@ -839,7 +839,7 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_t* port){
 
 void
 of12_endpoint::handle_barrier_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_barrier_request *pack)
 {
 
@@ -853,7 +853,7 @@ of12_endpoint::handle_barrier_request(
 
 void
 of12_endpoint::handle_flow_mod(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_flow_mod *msg)
 {
 	switch (msg->get_command()) {
@@ -887,7 +887,7 @@ of12_endpoint::handle_flow_mod(
 
 void
 of12_endpoint::flow_mod_add(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_flow_mod *msg) //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull)
 {
 	uint8_t table_id = msg->get_table_id();
@@ -937,7 +937,7 @@ of12_endpoint::flow_mod_add(
 
 void
 of12_endpoint::flow_mod_modify(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_flow_mod *pack,
 		bool strict)
 {
@@ -985,7 +985,7 @@ of12_endpoint::flow_mod_modify(
 
 void
 of12_endpoint::flow_mod_delete(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_flow_mod *pack,
 		bool strict) //throw (eOfSmPipelineBadTableId)
 {
@@ -1062,7 +1062,7 @@ of12_endpoint::process_flow_removed(
 
 void
 of12_endpoint::handle_group_mod(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_group_mod *msg)
 {
 	//throw eNotImplemented(std::string("of12_endpoint::handle_group_mod()"));
@@ -1180,7 +1180,7 @@ of12_endpoint::handle_group_mod(
 
 void
 of12_endpoint::handle_table_mod(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_table_mod *msg)
 {
 
@@ -1213,7 +1213,7 @@ of12_endpoint::handle_table_mod(
 
 void
 of12_endpoint::handle_port_mod(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_port_mod *msg)
 {
 	uint32_t config, mask, advertise, port_num;
@@ -1278,7 +1278,7 @@ of12_endpoint::handle_port_mod(
 
 void
 of12_endpoint::handle_set_config(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_set_config *msg)
 {
 
@@ -1294,7 +1294,7 @@ of12_endpoint::handle_set_config(
 
 void
 of12_endpoint::handle_queue_get_config_request(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_queue_get_config_request *pack)
 {
 	switch_port_t* port;
@@ -1352,7 +1352,7 @@ of12_endpoint::handle_queue_get_config_request(
 
 void
 of12_endpoint::handle_experimenter_message(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_features_request *pack)
 {
 	// TODO
@@ -1363,7 +1363,7 @@ of12_endpoint::handle_experimenter_message(
 
 
 void
-of12_endpoint::handle_ctrl_open(cofctl *ctrl)
+of12_endpoint::handle_ctrl_open(crofctl *ctrl)
 {
 	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , ctrl->get_peer_addr().c_str()); //FIXME: add role
 }
@@ -1371,7 +1371,7 @@ of12_endpoint::handle_ctrl_open(cofctl *ctrl)
 
 
 void
-of12_endpoint::handle_ctrl_close(cofctl *ctrl)
+of12_endpoint::handle_ctrl_close(crofctl *ctrl)
 {
 	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() ,ctrl->get_peer_addr().c_str()); //FIXME: add role
 

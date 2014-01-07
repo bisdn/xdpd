@@ -24,7 +24,9 @@ of12_endpoint::of12_endpoint(
 	//FIXME: make controller and binding optional somehow
 	//Active connection
 	//if(controller_addr.port)
-	rpc_connect_to_ctl(openflow12::OFP_VERSION, reconnect_start_timeout, controller_addr);
+	cofhello_elem_versionbitmap versionbitmap;
+	versionbitmap.add_ofp_version(openflow12::OFP_VERSION);
+	rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr);
 
 	//Passive connection
 	//if(binding_addr.port)
@@ -39,8 +41,9 @@ of12_endpoint::of12_endpoint(
 
 void
 of12_endpoint::handle_features_request(
-		crofctl *ctl,
-		cofmsg_features_request *msg)
+		crofctl& ctl,
+		cofmsg_features_request& msg,
+		uint8_t aux_id)
 {
 	logical_switch_port_t* ls_port;	
 	switch_port_t* _port;	
@@ -54,7 +57,7 @@ of12_endpoint::handle_features_request(
 	capabilities 	= of12switch->pipeline->capabilities;
 
 	// array of structures ofp_port
-	cofportlist portlist;
+	rofl::cofports ports;
 
 	//we check all the positions in case there are empty slots
 	for (unsigned int n = 1; n < of12switch->max_ports; n++){
@@ -67,7 +70,7 @@ of12_endpoint::handle_features_request(
 			//Mapping of port state
 			assert(n == _port->of_port_num);
 
-			cofport port(ctl->get_version());
+			cofport port(ctl.get_version());
 
 			port.set_port_no(_port->of_port_num);
 			port.set_hwaddr(cmacaddr(_port->hwaddr, OFP_ETH_ALEN));
@@ -92,30 +95,28 @@ of12_endpoint::handle_features_request(
 			port.set_curr_speed(of12_translation_utils::get_port_speed_kb(_port->curr_speed));
 			port.set_max_speed(of12_translation_utils::get_port_speed_kb(_port->curr_max_speed));
 
-			portlist.next() = port;
+			ports.add_port(_port->of_port_num) = port;
 		}
  	}
 	
-	send_features_reply(
-			ctl,
-			msg->get_xid(),
+	ctl.send_features_reply(
+			msg.get_xid(),
 			sw->dpid,
 			num_of_buffers,	// n_buffers
 			num_of_tables,	// n_tables
 			capabilities,	// capabilities
 			0,
 			0,
-			portlist);
-
-	delete msg;
+			ports);
 }
 
 
 
 void
 of12_endpoint::handle_get_config_request(
-		crofctl *ctl,
-		cofmsg_get_config_request *msg)
+		crofctl& ctl,
+		cofmsg_get_config_request& msg,
+		uint8_t aux_id)
 {
 	uint16_t flags = 0x0;
 	uint16_t miss_send_len = 0;
@@ -125,17 +126,16 @@ of12_endpoint::handle_get_config_request(
 	flags = of12switch->pipeline->capabilities;
 	miss_send_len = of12switch->pipeline->miss_send_len;
 
-	send_get_config_reply(ctl, msg->get_xid(), flags, miss_send_len);
-
-	delete msg;
+	ctl.send_get_config_reply(msg.get_xid(), flags, miss_send_len);
 }
 
 
 
 void
 of12_endpoint::handle_desc_stats_request(
-		crofctl *ctl,
-		cofmsg_desc_stats_request *msg)
+		crofctl& ctl,
+		cofmsg_desc_stats_request& msg,
+		uint8_t aux_id)
 {
 	std::string mfr_desc("eXtensible Data Path");
 	std::string hw_desc("v0.3.0");
@@ -144,24 +144,23 @@ of12_endpoint::handle_desc_stats_request(
 	std::string dp_desc("xDP");
 
 	cofdesc_stats_reply desc_stats(
-			ctl->get_version(),
+			ctl.get_version(),
 			mfr_desc,
 			hw_desc,
 			sw_desc,
 			serial_num,
 			dp_desc);
 
-	send_desc_stats_reply(ctl, msg->get_xid(), desc_stats);
-
-	delete msg;
+	ctl.send_desc_stats_reply(msg.get_xid(), desc_stats);
 }
 
 
 
 void
 of12_endpoint::handle_table_stats_request(
-		crofctl *ctl,
-		cofmsg_table_stats_request *msg)
+		crofctl& ctl,
+		cofmsg_table_stats_request& msg,
+		uint8_t aux_id)
 {
 	unsigned int num_of_tables = of12switch->pipeline->num_of_tables;
 	of1x_flow_table_t* table;
@@ -176,7 +175,7 @@ of12_endpoint::handle_table_stats_request(
  
 		table_stats.push_back(
 				coftable_stats_reply(
-					ctl->get_version(),
+					ctl.get_version(),
 					table->number,
 					std::string(table->name, OFP_MAX_TABLE_NAME_LEN),
 					of12_translation_utils::of12_map_bitmap_matches(&tc->match),
@@ -197,21 +196,20 @@ of12_endpoint::handle_table_stats_request(
 	}
 
 
-	send_table_stats_reply(ctl, msg->get_xid(), table_stats, false);
-
-	delete msg;
+	ctl.send_table_stats_reply(msg.get_xid(), table_stats, false);
 }
 
 
 
 void
 of12_endpoint::handle_port_stats_request(
-		crofctl *ctl,
-		cofmsg_port_stats_request *msg)
+		crofctl& ctl,
+		cofmsg_port_stats_request& msg,
+		uint8_t aux_id)
 {
 
 	switch_port_t* port;
-	uint32_t port_no = msg->get_port_stats().get_portno();
+	uint32_t port_no = msg.get_port_stats().get_portno();
 
 	std::vector<cofport_stats_reply> port_stats;
 
@@ -229,7 +227,7 @@ of12_endpoint::handle_port_stats_request(
 
 				port_stats.push_back(
 						cofport_stats_reply(
-								ctl->get_version(),
+								ctl.get_version(),
 								port->of_port_num,
 								port->stats.rx_packets,
 								port->stats.tx_packets,
@@ -264,7 +262,7 @@ of12_endpoint::handle_port_stats_request(
 				//Mapping of port state
 				port_stats.push_back(
 						cofport_stats_reply(
-								ctl->get_version(),
+								ctl.get_version(),
 								port->of_port_num,
 								port->stats.rx_packets,
 								port->stats.tx_packets,
@@ -286,17 +284,16 @@ of12_endpoint::handle_port_stats_request(
 		// if port_no was not found, body.memlen() is 0
 	}
 
-	send_port_stats_reply(ctl, msg->get_xid(), port_stats, false);
-
-	delete msg;
+	ctl.send_port_stats_reply(msg.get_xid(), port_stats, false);
 }
 
 
 
 void
 of12_endpoint::handle_flow_stats_request(
-		crofctl *ctl,
-		cofmsg_flow_stats_request *msg)
+		crofctl& ctl,
+		cofmsg_flow_stats_request& msg,
+		uint8_t aux_id)
 {
 	of1x_stats_flow_msg_t* fp_msg = NULL;
 	of1x_flow_entry_t* entry = NULL;
@@ -305,7 +302,7 @@ of12_endpoint::handle_flow_stats_request(
 	entry = of1x_init_flow_entry(NULL, NULL, false);
 	
 	try{
-		of12_translation_utils::of12_map_flow_entry_matches(ctl, msg->get_flow_stats().get_match(), sw, entry);
+		of12_translation_utils::of12_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
 	}catch(...){
 		of1x_destroy_flow_entry(entry);	
 		throw eBadRequestBadStat(); 
@@ -313,11 +310,11 @@ of12_endpoint::handle_flow_stats_request(
 
 	//Ask the Forwarding Plane to process stats
 	fp_msg = fwd_module_of1x_get_flow_stats(sw->dpid,
-			msg->get_flow_stats().get_table_id(),
-			msg->get_flow_stats().get_cookie(),
-			msg->get_flow_stats().get_cookie_mask(),
-			msg->get_flow_stats().get_out_port(),
-			msg->get_flow_stats().get_out_group(),
+			msg.get_flow_stats().get_table_id(),
+			msg.get_flow_stats().get_cookie(),
+			msg.get_flow_stats().get_cookie_mask(),
+			msg.get_flow_stats().get_out_port(),
+			msg.get_flow_stats().get_out_group(),
 					&entry->matches);
 	
 	if(!fp_msg){
@@ -335,13 +332,13 @@ of12_endpoint::handle_flow_stats_request(
 		cofmatch match;
 		of12_translation_utils::of12_map_reverse_flow_entry_matches(elem->matches, match);
 
-		cofinstructions instructions(ctl->get_version());
+		cofinstructions instructions(ctl.get_version());
 		of12_translation_utils::of12_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
 
 		flow_stats.push_back(
 				cofflow_stats_reply(
-						ctl->get_version(),
+						ctl.get_version(),
 						elem->table_id,
 						elem->duration_sec,
 						elem->duration_nsec,
@@ -358,7 +355,7 @@ of12_endpoint::handle_flow_stats_request(
 	
 	try{
 		//Send message
-		send_flow_stats_reply(ctl, msg->get_xid(), flow_stats);
+		ctl.send_flow_stats_reply(msg.get_xid(), flow_stats);
 	}catch(...){
 		of1x_destroy_stats_flow_msg(fp_msg);	
 		of1x_destroy_flow_entry(entry);	
@@ -367,15 +364,13 @@ of12_endpoint::handle_flow_stats_request(
 	//Destroy FP stats
 	of1x_destroy_stats_flow_msg(fp_msg);	
 	of1x_destroy_flow_entry(entry);	
-
-	delete msg;
 }
 
 
 
 void
 of12_endpoint::handle_aggregate_stats_request(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_aggr_stats_request *msg)
 {
 	of1x_stats_flow_aggregate_msg_t* fp_msg;
@@ -441,8 +436,8 @@ of12_endpoint::handle_aggregate_stats_request(
 
 void
 of12_endpoint::handle_queue_stats_request(
-		crofctl *ctl,
-		cofmsg_queue_stats_request *pack)
+		crofctl& ctl,
+		cofmsg_queue_stats_request& pack)
 {
 
 	switch_port_t* port = NULL;
@@ -526,7 +521,7 @@ of12_endpoint::handle_queue_stats_request(
 
 void
 of12_endpoint::handle_group_stats_request(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_group_stats_request *msg)
 {
 	// we need to get the statistics, build a packet and send it
@@ -590,7 +585,7 @@ of12_endpoint::handle_group_stats_request(
 
 void
 of12_endpoint::handle_group_desc_stats_request(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_group_desc_stats_request *msg)
 {
 	std::vector<cofgroup_desc_stats_reply> group_desc_stats;
@@ -630,7 +625,7 @@ of12_endpoint::handle_group_desc_stats_request(
 
 void
 of12_endpoint::handle_group_features_stats_request(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_group_features_stats_request *msg)
 {
 	cofgroup_features_stats_reply group_features_reply(ctl->get_version());
@@ -649,8 +644,8 @@ of12_endpoint::handle_group_features_stats_request(
 
 void
 of12_endpoint::handle_experimenter_stats_request(
-		crofctl *ctl,
-		cofmsg_stats_request *pack)
+		crofctl& ctl,
+		cofmsg_stats_request& pack)
 {
 
 	//TODO: when exp are supported 
@@ -662,7 +657,7 @@ of12_endpoint::handle_experimenter_stats_request(
 
 void
 of12_endpoint::handle_packet_out(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_packet_out *msg)
 {
 	of1x_action_group_t* action_group = of1x_init_action_group(NULL);
@@ -839,8 +834,8 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_t* port){
 
 void
 of12_endpoint::handle_barrier_request(
-		crofctl *ctl,
-		cofmsg_barrier_request *pack)
+		crofctl& ctl,
+		cofmsg_barrier_request& pack)
 {
 
 	//Since we are not queuing messages currently
@@ -853,7 +848,7 @@ of12_endpoint::handle_barrier_request(
 
 void
 of12_endpoint::handle_flow_mod(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_flow_mod *msg)
 {
 	switch (msg->get_command()) {
@@ -887,7 +882,7 @@ of12_endpoint::handle_flow_mod(
 
 void
 of12_endpoint::flow_mod_add(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_flow_mod *msg) //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull)
 {
 	uint8_t table_id = msg->get_table_id();
@@ -937,7 +932,7 @@ of12_endpoint::flow_mod_add(
 
 void
 of12_endpoint::flow_mod_modify(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_flow_mod *pack,
 		bool strict)
 {
@@ -985,7 +980,7 @@ of12_endpoint::flow_mod_modify(
 
 void
 of12_endpoint::flow_mod_delete(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_flow_mod *pack,
 		bool strict) //throw (eOfSmPipelineBadTableId)
 {
@@ -1062,7 +1057,7 @@ of12_endpoint::process_flow_removed(
 
 void
 of12_endpoint::handle_group_mod(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_group_mod *msg)
 {
 	//throw eNotImplemented(std::string("of12_endpoint::handle_group_mod()"));
@@ -1180,7 +1175,7 @@ of12_endpoint::handle_group_mod(
 
 void
 of12_endpoint::handle_table_mod(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_table_mod *msg)
 {
 
@@ -1213,7 +1208,7 @@ of12_endpoint::handle_table_mod(
 
 void
 of12_endpoint::handle_port_mod(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_port_mod *msg)
 {
 	uint32_t config, mask, advertise, port_num;
@@ -1278,7 +1273,7 @@ of12_endpoint::handle_port_mod(
 
 void
 of12_endpoint::handle_set_config(
-		crofctl *ctl,
+		crofctl& ctl,
 		cofmsg_set_config *msg)
 {
 
@@ -1294,8 +1289,8 @@ of12_endpoint::handle_set_config(
 
 void
 of12_endpoint::handle_queue_get_config_request(
-		crofctl *ctl,
-		cofmsg_queue_get_config_request *pack)
+		crofctl& ctl,
+		cofmsg_queue_get_config_request& pack)
 {
 	switch_port_t* port;
 	unsigned int portnum = pack->get_port_no(); 
@@ -1352,8 +1347,8 @@ of12_endpoint::handle_queue_get_config_request(
 
 void
 of12_endpoint::handle_experimenter_message(
-		crofctl *ctl,
-		cofmsg_features_request *pack)
+		crofctl& ctl,
+		cofmsg_features_request& pack)
 {
 	// TODO
 

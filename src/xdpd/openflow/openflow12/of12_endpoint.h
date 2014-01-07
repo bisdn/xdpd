@@ -178,7 +178,7 @@ private:
 	 *
 	 */
 	virtual void
-	handle_experimenter_stats_request(crofctl& ctl, cofmsg_stats_request& msg, uint8_t aux_id = 0);
+	handle_experimenter_stats_request(crofctl& ctl, cofmsg_experimenter_stats_request& msg, uint8_t aux_id = 0);
 
 	/** Handle OF packet-out messages. To be overwritten by derived class.
 	 *
@@ -269,7 +269,7 @@ private:
 	 * @param pack VENDOR.message packet received from controller.
 	 */
 	virtual void
-	handle_experimenter_message(crofctl& ctl, cofmsg_features_request& msg, uint8_t aux_id = 0);
+	handle_experimenter_message(crofctl& ctl, cofmsg_experimenter& msg, uint8_t aux_id = 0);
 
 	/** Handle new ctrl
 	 *
@@ -304,8 +304,8 @@ private:
 	 */
 	void
 	flow_mod_add(
-			crofctl *ctl,
-			cofmsg_flow_mod *pack); //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull);
+			crofctl& ctl,
+			cofmsg_flow_mod& pack);
 
 
 
@@ -323,8 +323,8 @@ private:
 	 */
 	void
 	flow_mod_modify(
-			crofctl *ctl,
-			cofmsg_flow_mod *pack,
+			crofctl& ctl,
+			cofmsg_flow_mod& pack,
 			bool strict);
 
 
@@ -342,9 +342,9 @@ private:
 	 */
 	void
 	flow_mod_delete(
-			crofctl *ctl,
-			cofmsg_flow_mod *pack,
-			bool strict); // throw (eOfSmPipelineBadTableId);
+			crofctl& ctl,
+			cofmsg_flow_mod& pack,
+			bool strict);
 
 
 };

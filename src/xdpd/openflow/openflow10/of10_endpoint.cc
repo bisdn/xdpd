@@ -20,24 +20,17 @@ of10_endpoint::of10_endpoint(
 		openflow_switch* sw,
 		int reconnect_start_timeout,
 		caddress const& controller_addr,
-		caddress const& binding_addr) throw (eOfSmErrorOnCreation) :
-	of_endpoint(1 << rofl::openflow10::OFP_VERSION) {
+		caddress const& binding_addr) throw (eOfSmErrorOnCreation) {
+
 
 	//Reference back to the sw
 	this->sw = sw;
 	of10switch = (of1x_switch_t*)sw->get_fwd_module_sw_ref();
 
-
-	//FIXME: make controller and binding optional somehow
-	//Active connection
-	//if(controller_addr.port)
+	crofbase::get_versionbitmap().add_ofp_version(rofl::openflow10::OFP_VERSION);
 	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
 	versionbitmap.add_ofp_version(rofl::openflow10::OFP_VERSION);
-	rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr);
-
-	//Passive connection
-	//if(binding_addr.port)
-	//rpc_listen_for_ctls(binding_addr);
+	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr);
 }
 
 /*

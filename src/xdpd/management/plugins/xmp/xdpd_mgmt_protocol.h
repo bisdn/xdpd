@@ -33,9 +33,10 @@ struct xmp_header_t {
 	uint32_t	xid;
 } __attribute__((packed));
 
-struct xmp_msg_port_enable_t {
+struct xmp_msg_port_configuration_t {
 	struct xmp_header_t		xmp_header;
 	char					portname[PORTNAMESIZE];
+	uint32_t				config;
 } __attribute__((packed));
 
 struct xmp_msg_port_attachment_t {

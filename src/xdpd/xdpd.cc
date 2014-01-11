@@ -8,7 +8,6 @@
 #include "management/switch_manager.h"
 #include "management/port_manager.h"
 #include "management/plugin_manager.h"
-#include "management/xdpd_manager.h"
 
 using namespace rofl;
 using namespace xdpd;
@@ -94,9 +93,6 @@ int main(int argc, char** argv){
 					ident.c_str());
 		}
 	}
-
-	//Initialize xdpd manager
-	xdpd::mgmt::xdpd_manager::get_instance();
 
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){

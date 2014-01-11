@@ -1,5 +1,5 @@
 /*
- * xdpd_manager.h
+ * xmp.h
  *
  *  Created on: 11.01.2014
  *      Author: andreas
@@ -19,13 +19,19 @@ extern "C" {
 #include "rofl/common/csocket.h"
 #include "../../switch_manager.h"
 #include "../../port_manager.h"
+#include "../../plugin_manager.h"
+
+#include "cxmpmsg.h"
+#include "cxmpmsg_port_attachment.h"
+#include "cxmpmsg_port_configuration.h"
 
 namespace xdpd {
 namespace mgmt {
 
-class xdpd_manager :
+class xmp :
 		public ciosrv,
-		public csocket_owner
+		public csocket_owner,
+		public plugin
 {
 	csocket					socket;		// listening socket
 	std::string				udp_addr;	// binding address
@@ -34,36 +40,17 @@ class xdpd_manager :
 #define MGMT_PORT_UDP_ADDR	"127.0.0.1"
 #define MGMT_PORT_UDP_PORT	8444
 
-private:
-
-    static xdpd_manager				*sxdpdmanager;
-
-	/**
-	 *
-	 */
-	xdpd_manager(
-			std::string const& udp_addr = std::string(MGMT_PORT_UDP_ADDR),
-			uint16_t udp_port = MGMT_PORT_UDP_PORT);
-
-	/**
-	 *
-	 */
-	xdpd_manager(
-			xdpd_manager const& mgr);
-
-	/**
-	 *
-	 */
-	virtual
-	~xdpd_manager();
-
 public:
 
-    /**
-     *
-     */
-	static xdpd_manager&
-	get_instance();
+	xmp();
+
+	virtual ~xmp();
+
+	virtual void init(int args, char** argv);
+
+	virtual std::string get_name(void){
+		return std::string("xmp");
+	};
 
 protected:
 
@@ -96,6 +83,23 @@ protected:
 	virtual void
 	handle_closed(csocket *socket, int sd) {};
 
+private:
+
+	void
+	handle_port_attach(
+			protocol::cxmpmsg_port_attachment const& msg);
+
+	void
+	handle_port_detach(
+			protocol::cxmpmsg_port_attachment const& msg);
+
+	void
+	handle_port_enable(
+			protocol::cxmpmsg_port_configuration const& msg);
+
+	void
+	handle_port_disable(
+			protocol::cxmpmsg_port_configuration const& msg);
 };
 
 }; // end of namespace mgmt

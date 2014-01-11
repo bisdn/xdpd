@@ -37,6 +37,8 @@ if (test "${have_rofl}" = "yes"); then
         LIBS+="$ROFL_LIBS"
 fi
 
+# Boost
+m4_include([boost.m4])
 
 #Debug
 m4_include([config/debug.m4])

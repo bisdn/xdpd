@@ -12,6 +12,9 @@
 #ifdef WITH_MGMT_EXAMPLE
 	#include "plugins/example/example.h"
 #endif
+#ifdef WITH_MGMT_REST
+	#include "plugins/rest/rest.h"
+#endif
 //Add more here [+]...
 
 
@@ -35,11 +38,16 @@ void plugin_manager::pre_init(){
 	//Register CONFIG 
 	register_plugin(new config());	
 #endif
-	
+
 
 #ifdef WITH_MGMT_QMF
 	//Register QMF
 	register_plugin(new qmfagent());
+#endif
+
+#ifdef WITH_MGMT_REST
+	//Register example plugin
+	register_plugin(new rest());	
 #endif
 
 #ifdef WITH_MGMT_EXAMPLE

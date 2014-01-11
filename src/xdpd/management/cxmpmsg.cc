@@ -1,0 +1,80 @@
+/*
+ * mgmt_message.cc
+ *
+ *  Created on: 11.01.2014
+ *      Author: andreas
+ */
+
+#include "cxmpmsg.h"
+
+using namespace xdpd::mgmt::protocol;
+
+cxmpmsg::cxmpmsg(
+		uint8_t version, uint8_t type, uint16_t len, uint32_t xid) :
+				cmemory(len)
+{
+	if (len < sizeof(struct xmp_header_t))
+		throw eXmpInval();
+
+	xmp_generic = somem();
+
+	set_version(version);
+	set_type(type);
+	set_length(len);
+	set_xid(xid);
+}
+
+
+
+cxmpmsg::cxmpmsg(
+		uint8_t *buf, size_t buflen) :
+				cmemory(buflen)
+{
+	if (buflen < sizeof(struct xmp_header_t))
+		throw eXmpInval();
+	assign(buf, buflen);
+	xmp_generic = somem();
+}
+
+
+
+cxmpmsg::cxmpmsg(
+		cxmpmsg const& msg)
+{
+	*this = msg;
+}
+
+
+
+cxmpmsg&
+cxmpmsg::operator= (
+		cxmpmsg const& msg)
+{
+	if (this == &msg)
+		return *this;
+
+	cmemory::operator= (msg);
+
+	xmp_generic = somem();
+
+	return *this;
+}
+
+
+
+cxmpmsg::~cxmpmsg()
+{
+
+}
+
+
+
+uint8_t*
+cxmpmsg::resize(
+		size_t len)
+{
+	return (xmp_generic = cmemory::resize(len));
+}
+
+
+

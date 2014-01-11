@@ -34,5 +34,6 @@ ar-lib
 
 src/xdpd/management/pm_timestamp.h
 src/xdpd/management/plugins/pm_timestamp.h
+src/xdpd/fwd-modules/gnu_linux/test-driver
 
 !.gitignore

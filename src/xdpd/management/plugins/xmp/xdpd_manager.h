@@ -17,8 +17,8 @@ extern "C" {
 #endif
 
 #include "rofl/common/csocket.h"
-#include "switch_manager.h"
-#include "port_manager.h"
+#include "../../switch_manager.h"
+#include "../../port_manager.h"
 
 namespace xdpd {
 namespace mgmt {

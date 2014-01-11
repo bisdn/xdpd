@@ -78,3 +78,35 @@ cxmpmsg::resize(
 
 
 
+size_t
+cxmpmsg::length() const
+{
+	return cmemory::memlen();
+}
+
+
+
+void
+cxmpmsg::pack(uint8_t *buf, size_t buflen)
+{
+	if (buflen < length())
+		throw eXmpInval();
+
+	size_t len = (buflen < cmemory::memlen()) ? buflen : cmemory::memlen();
+
+	memcpy(buf, cmemory::somem(), len);
+}
+
+
+
+void
+cxmpmsg::unpack(uint8_t *buf, size_t buflen)
+{
+	if (buflen < sizeof(struct xmp_header_t))
+		throw eXmpInval();
+	assign(buf, buflen);
+	xmp_generic = somem();
+}
+
+
+

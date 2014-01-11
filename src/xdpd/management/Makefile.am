@@ -8,8 +8,6 @@ noinst_LTLIBRARIES = libxdpd_mgmt.la
 libxdpd_mgmt_la_SOURCES = \
 	plugin_manager.cc \
 	switch_manager.cc \
-	port_manager.cc \
-	xdpd_manager.cc \
-	cxmpmsg.cc
+	port_manager.cc
 
 libxdpd_mgmt_la_LIBADD = $(PLUGIN_LIBS)

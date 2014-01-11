@@ -78,6 +78,10 @@ AM_COND_IF(WITH_MGMT_DBUS, [m4_include([config/plugin_dbus.m4])],[])
 AM_CONDITIONAL(WITH_MGMT_PYTHON, test "$with_mgmt_python" = yes)
 AM_COND_IF(WITH_MGMT_PYTHON, [m4_include([config/plugin_python.m4])],[])
 
+#XMP
+AM_CONDITIONAL(WITH_MGMT_XMP, test "$with_mgmt_xmp" = yes)
+AM_COND_IF(WITH_MGMT_XMP, [m4_include([config/plugin_xmp.m4])],[])
+
 #Add more here..
 
 #Example

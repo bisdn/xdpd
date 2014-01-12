@@ -52,6 +52,12 @@ struct xmp_ie_header_t {
 	uint8_t 	data[0];
 } __attribute__((packed));
 
+struct xmp_ie_command_t {
+	uint16_t	type;
+	uint16_t	len;	// including header and payload
+	uint32_t	cmd;
+} __attribute__((packed));
+
 #endif /* MGMT_PROTOCOL_H_ */
 
 

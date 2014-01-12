@@ -1,12 +1,12 @@
 /*
- * cxmpie.h
+ * cxmpie_command.h
  *
  *  Created on: 12.01.2014
  *      Author: andreas
  */
 
-#ifndef CXMPIE_H_
-#define CXMPIE_H_
+#ifndef CXMPIE_COMMAND_H_
+#define CXMPIE_COMMAND_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,58 +16,70 @@ extern "C" {
 }
 #endif
 
-#include "rofl/common/cmemory.h"
+#include "cxmpie.h"
 #include "xdpd_mgmt_protocol.h"
 
 namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class eXmpIeBase 		: public rofl::cerror {};
-class eXmpIeInval		: public eXmpIeBase {};
-
-enum xmpie_type_t {
-	XMPIET_NONE				= 0,
-	XMPIET_COMMAND			= 1,
-	XMPIET_PORTNAME			= 2,
-	XMPIET_CONFIGURATION	= 3,
+// message command types (MCT)
+enum xmpie_command_t {
+	XMPIEMCT_NONE				= 0,
+	XMPIEMCT_PORT_ATTACH		= 1,
+	XMPIEMCT_PORT_DETACH		= 2,
+	XMPIEMCT_PORT_ENABLE		= 3,
+	XMPIEMCT_PORT_DISABLE		= 4,
 };
 
-class cxmpie :
-		public rofl::cmemory
+class cxmpie_command :
+		public cxmpie
 {
 	union {
 		uint8_t						*xmpu_generic;
-		struct xmp_ie_header_t		*xmpu_header;
+		struct xmp_ie_command_t		*xmpu_command;
 	} xmpie_xmpu;
 
 #define xmpie_generic	xmpie_xmpu.xmpu_generic
-#define xmpie_header	xmpie_xmpu.xmpu_header
+#define xmpie_command	xmpie_xmpu.xmpu_command
 
 public:
 
 	/**
 	 *
 	 */
-	cxmpie(
-			uint16_t type, uint16_t len);
+	cxmpie_command(
+			uint32_t command);
 
 	/**
 	 *
 	 */
-	cxmpie(
+	cxmpie_command(
 			uint8_t *buf, size_t buflen);
 
 	/**
 	 *
 	 */
-	cxmpie(
+	cxmpie_command(
+			cxmpie_command const& elem);
+
+	/**
+	 *
+	 */
+	cxmpie_command&
+	operator= (
+			cxmpie_command const& elem);
+
+	/**
+	 *
+	 */
+	cxmpie_command(
 			cxmpie const& elem);
 
 	/**
 	 *
 	 */
-	cxmpie&
+	cxmpie_command&
 	operator= (
 			cxmpie const& elem);
 
@@ -75,7 +87,7 @@ public:
 	 *
 	 */
 	virtual
-	~cxmpie();
+	~cxmpie_command();
 
 public:
 
@@ -111,26 +123,14 @@ public:
 	/**
 	 *
 	 */
-	uint16_t
-	get_type() const { return be16toh(xmpie_header->type); };
+	uint32_t
+	get_command() const { return be32toh(xmpie_command->cmd); };
 
 	/**
 	 *
 	 */
 	void
-	set_type(uint16_t type) { xmpie_header->type = htobe16(type); };
-
-	/**
-	 *
-	 */
-	uint16_t
-	get_length() const { return be16toh(xmpie_header->len); };
-
-	/**
-	 *
-	 */
-	void
-	set_length(uint16_t len) { xmpie_header->len = htobe16(len); };
+	set_command(uint32_t command) { xmpie_command->cmd = htobe32(command); };
 };
 
 }; // end of namespace protocol
@@ -139,4 +139,6 @@ public:
 
 
 
-#endif /* CXMPIE_H_ */
+
+
+#endif /* CXMPIE_COMMAND_H_ */

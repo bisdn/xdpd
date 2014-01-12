@@ -29,8 +29,9 @@ enum xmp_msg_t {
 struct xmp_header_t {
 	uint8_t		version;
 	uint8_t		type;
-	uint16_t	len;	// header + data
+	uint16_t	len;	// including header and payload
 	uint32_t	xid;
+	uint8_t		data[0];
 } __attribute__((packed));
 
 struct xmp_msg_port_configuration_t {
@@ -43,6 +44,12 @@ struct xmp_msg_port_attachment_t {
 	struct xmp_header_t		xmp_header;
 	char					portname[PORTNAMESIZE];
 	uint64_t				dpid;
+} __attribute__((packed));
+
+struct xmp_ie_header_t {
+	uint16_t	type;
+	uint16_t	len;	// including header and payload
+	uint8_t 	data[0];
 } __attribute__((packed));
 
 #endif /* MGMT_PROTOCOL_H_ */

@@ -37,17 +37,17 @@ if (test "${have_rofl}" = "yes"); then
         LIBS+="$ROFL_LIBS"
 fi
 
-# Boost
-m4_include([config/boost.m4])
-
 #Debug
 m4_include([config/debug.m4])
 
-# Application verbosity 
+#Application verbosity 
 m4_include([config/verbose.m4])
 
-# Check for profiling mode
+#Check for profiling mode
 m4_include([config/profiling.m4])
+
+#Boost
+m4_include([config/boost.m4])
 
 #Plugin main m4 macros
 m4_include([config/plugins.m4])

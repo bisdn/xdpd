@@ -354,15 +354,16 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		}	
 	
 		//Attach ports
-		std::vector<std::string>::iterator port;
-		for(port = ports.begin(); port != ports.end(); ++port){
+		std::vector<std::string>::iterator port_it;
+		for(port_it = ports.begin(); port_it != ports.end(); ++port_it){
 			try{
 				//Attach
-				port_manager::attach_port_to_switch(dpid, *port, &port_num);
+				port_manager::attach_port_to_switch(dpid, *port_it, &port_num);
 				//Bring up
-				port_manager::enable_port(*port);
+				xdpd::port port_instance = port_manager::get_port_by_name(*port_it);
+				port_instance.up();
 			}catch(...){	
-				ROFL_ERR("%s: unable to attach port '%s'. Unknown error.\n", setting.getPath().c_str(), (*port).c_str());
+				ROFL_ERR("%s: unable to attach port '%s'. Unknown error.\n", setting.getPath().c_str(), (*port_it).c_str());
 				throw;
 			}
 		}

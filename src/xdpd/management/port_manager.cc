@@ -1,41 +1,30 @@
 #include "port_manager.h"
 #include <rofl/common/utils/c_logger.h>
+#include "switch_manager.h"
 
 using namespace xdpd;
 
 
-void port_manager::check_port_existance(std::string port_name) throw (ePmInvalidPort){
+switch_port_t* port_manager::check_port_existance(std::string& port_name){
 	switch_port_t* port;
 	
 	if( (port = fwd_module_get_port_by_name(port_name.c_str())) == NULL)
 		throw ePmInvalidPort();
-}
-
-//System port admin commands 
-void port_manager::enable_port(std::string port_name) throw (ePmInvalidPort, eOfSmGeneralError){
-
-	//Check
-	check_port_existance(port_name);	
-
-	if(fwd_module_enable_port(port_name.c_str()) != AFA_SUCCESS)
-		throw eOfSmGeneralError();	
-
-	ROFL_INFO("[port_manager] Port %s enabled\n", port_name.c_str());
-}
-
-void port_manager::disable_port(std::string port_name) throw (ePmInvalidPort, eOfSmGeneralError){
-
-	//Check
-	check_port_existance(port_name);
-
-	if(fwd_module_disable_port(port_name.c_str()) != AFA_SUCCESS)
-		throw eOfSmGeneralError();	
 	
-	ROFL_INFO("[port_manager] Port %s disabled\n", port_name.c_str());
+	return port;
+}
+
+//Get the port by name
+port port_manager::get_port_by_name(std::string& port_name){
+
+	//Try to recover. If it does not exist it will throw an ePmInvalidPort exception	
+	port_manager::check_port_existance(port_name);
+	
+	return port(port_name);
 }
 
 //Port attachment/detachment
-void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name, unsigned int *of_port_num) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
+void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name, unsigned int *of_port_num){
 
 	unsigned int i=0;
 
@@ -54,7 +43,7 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name, u
 }
 
 //Port attachment/detachment
-void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1, uint64_t dpid_lsi2, std::string& port_name2) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
+void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1, uint64_t dpid_lsi2, std::string& port_name2){
 
 	switch_port_t *port1 = NULL, *port2 = NULL;
 
@@ -72,20 +61,20 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1,
 	ROFL_INFO("[port_manager] Link created between switch with dpid 0x%llx and 0x%llx, with virtual interface names %s and %s respectively \n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2, port1->name, port2->name);
 }
 
-void port_manager::detach_port_from_switch(uint64_t dpid, std::string port_name) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
+void port_manager::detach_port_from_switch(uint64_t dpid, std::string port_name){
 
 	if (fwd_module_detach_port_from_switch(dpid,port_name.c_str()) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
 	
 }
 
-void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int port_num) throw (eOfSmDoesNotExist, ePmInvalidPort, eOfSmGeneralError){
+void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int port_num){
 
 	if (fwd_module_detach_port_from_switch_at_port_num(dpid,port_num) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
 }
 
-std::list<std::string> port_manager::list_available_port_names() throw (eOfSmGeneralError){
+std::list<std::string> port_manager::list_available_port_names(){
 
 	unsigned int i, max_ports;
 	switch_port_t** ports;

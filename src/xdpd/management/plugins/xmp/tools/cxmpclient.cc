@@ -30,6 +30,21 @@ cxmpclient::~cxmpclient()
 
 
 void
+cxmpclient::handle_timeout(
+		int opaque)
+{
+	switch (opaque) {
+	case TIMER_XMPCLNT_EXIT: {
+		exit(0);
+	} break;
+	default: {
+
+	};
+	}
+}
+
+
+void
 cxmpclient::port_attach(
 		uint64_t dpid, std::string const& portname)
 {
@@ -46,6 +61,8 @@ cxmpclient::port_attach(
 	msg.pack(mem->somem(), mem->memlen());
 
 	socket.send_packet(mem, raddr);
+
+	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
 
 
@@ -66,6 +83,8 @@ cxmpclient::port_detach(
 	msg.pack(mem->somem(), mem->memlen());
 
 	socket.send_packet(mem, raddr);
+
+	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
 
 
@@ -85,6 +104,8 @@ cxmpclient::port_enable(
 	msg.pack(mem->somem(), mem->memlen());
 
 	socket.send_packet(mem, raddr);
+
+	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
 
 
@@ -104,6 +125,8 @@ cxmpclient::port_disable(
 	msg.pack(mem->somem(), mem->memlen());
 
 	socket.send_packet(mem, raddr);
+
+	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
 
 

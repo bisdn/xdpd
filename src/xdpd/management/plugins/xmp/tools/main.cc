@@ -37,7 +37,7 @@ main(int argc, char** argv)
 
 	}
 
-	//xmpclient.run();
+	xmpclient.run();
 
 	return 0;
 }

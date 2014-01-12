@@ -29,8 +29,9 @@ xmp::~xmp()
 void
 xmp::init(int args, char** argv)
 {
-	std::cerr << "[xdpd][manager] initializing ..." << std::endl;
+	std::cerr << "[xdpd][xmp] initializing ..." << std::endl;
 	socket.clisten(caddress(AF_INET, udp_addr.c_str(), udp_port), AF_INET, SOCK_DGRAM, IPPROTO_UDP, 10);
+	register_filedesc_r(socket.getfd());
 }
 
 
@@ -91,6 +92,8 @@ void
 xmp::handle_request(
 		cxmpmsg& msg)
 {
+	std::cerr << "[xdpd][xmp] rcvd message:" << std::endl << msg;
+
 	if (not msg.get_xmpies().has_ie_command()) {
 		std::cerr << "[xdpd][xmp] rcvd xmp request without -COMMAND- IE, dropping message." << std::endl;
 		return;
@@ -137,13 +140,13 @@ xmp::handle_port_attach(
 			return;
 		}
 
-		std::string portname = msg.get_xmpies().get_ie_portname().get_portname();
-		uint64_t dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
+		portname = msg.get_xmpies().get_ie_portname().get_portname();
+		dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
 
 		unsigned int of_port_num;
 		port_manager::attach_port_to_switch(dpid, portname, &of_port_num);
 		std::cerr << "[xdpd][xmp] attached port:" << portname
-				<< " from dpid:" << (unsigned long long)dpid << " "
+				<< " to dpid:" << (unsigned long long)dpid << " "
 				<< " port-no:" << of_port_num << std::endl;
 
 	} catch(eOfSmDoesNotExist& e) {
@@ -180,8 +183,8 @@ xmp::handle_port_detach(
 			return;
 		}
 
-		std::string portname = msg.get_xmpies().get_ie_portname().get_portname();
-		uint64_t dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
+		portname = msg.get_xmpies().get_ie_portname().get_portname();
+		dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
 
 		port_manager::detach_port_from_switch(dpid, portname);
 		std::cerr << "[xdpd][xmp] detached port:" << portname
@@ -215,6 +218,8 @@ xmp::handle_port_enable(
 			return;
 		}
 
+		portname = msg.get_xmpies().get_ie_portname().get_portname();
+
 		port_manager::enable_port(portname);
 		std::cerr << "[xdpd][xmp] enabled port:" << portname << std::endl;
 
@@ -239,6 +244,8 @@ xmp::handle_port_disable(
 			std::cerr << "[xdpd][xmp] rcvd xmp Port-Disable request without -PORTNAME- IE, dropping message." << std::endl;
 			return;
 		}
+
+		portname = msg.get_xmpies().get_ie_portname().get_portname();
 
 		port_manager::disable_port(portname);
 		std::cerr << "[xdpd][xmp] disabled port:" << portname << std::endl;

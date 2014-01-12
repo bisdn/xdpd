@@ -55,7 +55,7 @@ cxmpies::~cxmpies()
 void
 cxmpies::clear()
 {
-	for (cxmpies::iterator it = begin(); it != end(); ++it) {
+	for (cxmpies::iterator it = xmpmap.begin(); it != xmpmap.end(); ++it) {
 		delete it->second;
 	}
 	xmpmap.clear();

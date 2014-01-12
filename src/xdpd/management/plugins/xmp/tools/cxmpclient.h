@@ -33,6 +33,10 @@ class cxmpclient :
 	rofl::caddress		laddr;
 	rofl::caddress		raddr;
 
+	enum cxmpclient_timer_t {
+		TIMER_XMPCLNT_EXIT 		= 1,
+	};
+
 public:
 
 	/**
@@ -75,6 +79,11 @@ public:
 	void
 	port_disable(
 			std::string const& portname);
+
+protected:
+
+	virtual void
+	handle_timeout(int opaque);
 
 protected:
 

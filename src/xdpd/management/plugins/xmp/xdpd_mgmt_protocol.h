@@ -81,6 +81,14 @@ struct xmp_ie_dpid_t {
 	uint64_t	dpid;
 } __attribute__((packed));
 
+#define XMPIE_PORTNAME_SIZE 32
+
+struct xmp_ie_portname_t {
+	uint16_t	type;
+	uint16_t	len;	// including header and payload
+	char		portname[XMPIE_PORTNAME_SIZE];
+} __attribute__((packed));
+
 #endif /* MGMT_PROTOCOL_H_ */
 
 

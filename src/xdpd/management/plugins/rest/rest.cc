@@ -1,3 +1,5 @@
+// Copyright (c) 2014  Barnstormer Softworks, Ltd.
+
 #include <iostream>
 
 #include "rest.h"
@@ -11,7 +13,7 @@
 #include <signal.h>
 
 #include "server/server.hpp"
-#include "server/file_handler.hpp"
+#include "server/rest_handler.hpp"
 
 using namespace xdpd;
 
@@ -21,12 +23,11 @@ void srvthread ()
   
   try
     {
-    http::server::server(io_service, "0.0.0.0", "80", http::server::file_handler("/tmp"))();
+    http::server::server(io_service, "0.0.0.0", "80", http::server::rest_handler())();
     boost::asio::signal_set signals(io_service);
     signals.add(SIGINT);
     signals.add(SIGTERM);
-    signals.async_wait(boost::bind(
-          &boost::asio::io_service::stop, &io_service));
+    signals.async_wait(boost::bind(&boost::asio::io_service::stop, &io_service));
 
     io_service.run();
     }

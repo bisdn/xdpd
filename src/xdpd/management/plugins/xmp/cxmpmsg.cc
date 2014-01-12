@@ -93,6 +93,8 @@ cxmpmsg::pack(uint8_t *buf, size_t buflen)
 	if (buflen < length())
 		throw eXmpInval();
 
+	set_length(length());
+
 	memcpy(buf, cmemory::somem(), sizeof(struct xmp_header_t));
 
 	xmpies.pack(buf + sizeof(struct xmp_header_t), xmpies.length());

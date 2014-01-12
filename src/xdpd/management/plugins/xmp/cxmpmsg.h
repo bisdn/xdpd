@@ -43,7 +43,7 @@ public:
 	 * @param xid
 	 */
 	cxmpmsg(
-			uint8_t version, uint8_t type, uint16_t len, uint32_t xid);
+			uint8_t version, uint8_t type, uint16_t len = sizeof(struct xmp_header_t), uint32_t xid = 0);
 
 
 	/**

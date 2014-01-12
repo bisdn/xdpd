@@ -5,6 +5,8 @@
 
 #include "../../plugin_manager.h"
 
+#include <boost/asio.hpp>
+
 using namespace xdpd;
 
 void rest::init(int args, char** argv){
@@ -19,5 +21,7 @@ void rest::init(int args, char** argv){
     {
     ROFL_INFO("Plugin: %s\n", (*i)->get_name().c_str());
     }
+
+  boost::asio::io_service iosvc;
 };
 

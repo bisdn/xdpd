@@ -1,5 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
+SUBDIRS=server
+
 #Library MUST BE named libxdpd_mgmt_PLUGIN_NAME.la
 noinst_LTLIBRARIES = libxdpd_mgmt_rest.la
 

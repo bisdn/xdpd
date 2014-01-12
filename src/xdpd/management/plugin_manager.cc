@@ -9,6 +9,9 @@
 #ifdef WITH_MGMT_QMF
 	#include "plugins/qmf/qmfagent.h"
 #endif
+#ifdef WITH_MGMT_DBUS
+	#include "plugins/dbus/dbusmod.h"
+#endif
 #ifdef WITH_MGMT_EXAMPLE
 	#include "plugins/example/example.h"
 #endif
@@ -40,6 +43,11 @@ void plugin_manager::pre_init(){
 #ifdef WITH_MGMT_QMF
 	//Register QMF
 	register_plugin(new qmfagent());
+#endif
+
+#ifdef WITH_MGMT_DBUS
+	//Register DBUS
+	register_plugin(new dbus::dbusmod());
 #endif
 
 #ifdef WITH_MGMT_EXAMPLE

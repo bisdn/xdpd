@@ -93,6 +93,7 @@ int main(int argc, char** argv){
 					ident.c_str());
 		}
 	}
+
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
 		ROFL_INFO("Init driver failed\n");	

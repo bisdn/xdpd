@@ -8,7 +8,7 @@
 #ifndef CXMPMSG_H_
 #define CXMPMSG_H_
 
-#include "rofl/common/cerror.h"
+#include "rofl/common/croflexception.h"
 #include "rofl/common/cmemory.h"
 #include "xdpd_mgmt_protocol.h"
 #include "cxmpies.h"
@@ -17,7 +17,7 @@ namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class eXmpBase 		: public rofl::cerror {};
+class eXmpBase 		: public rofl::RoflException {};
 class eXmpInval		: public eXmpBase {};
 
 class cxmpmsg :

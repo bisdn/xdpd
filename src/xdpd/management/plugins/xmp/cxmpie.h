@@ -16,6 +16,7 @@ extern "C" {
 }
 #endif
 
+#include "rofl/common/croflexception.h"
 #include "rofl/common/cmemory.h"
 #include "xdpd_mgmt_protocol.h"
 
@@ -23,7 +24,7 @@ namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class eXmpIeBase 		: public rofl::cerror {};
+class eXmpIeBase 		: public rofl::RoflException {};
 class eXmpIeInval		: public eXmpIeBase {};
 
 class cxmpie :

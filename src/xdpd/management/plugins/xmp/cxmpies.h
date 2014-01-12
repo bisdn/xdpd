@@ -23,13 +23,13 @@ extern "C" {
 #include "cxmpie_portname.h"
 #include "cxmpie_dpid.h"
 #include "xdpd_mgmt_protocol.h"
-#include "rofl/common/cerror.h"
+#include "rofl/common/croflexception.h"
 
 namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class eXmpIEsBase			: public rofl::cerror {};
+class eXmpIEsBase			: public rofl::RoflException {};
 class eXmpIEsInval			: public eXmpIEsBase {};
 class eXmpIEsNotFound		: public eXmpIEsBase {};
 

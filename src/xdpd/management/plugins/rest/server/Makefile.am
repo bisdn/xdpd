@@ -7,6 +7,7 @@ libxdpd_mgmt_rest_server_la_SOURCES = \
   mime_types.cpp  \
   reply.cpp \
   request_parser.cpp \
+  rest_handler.cpp \
   server.cpp
 
 libxdpd_mgmt_rest_server_la_LIBADD = 

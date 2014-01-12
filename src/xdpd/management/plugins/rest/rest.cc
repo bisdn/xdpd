@@ -14,8 +14,22 @@
 
 #include "server/server.hpp"
 #include "server/rest_handler.hpp"
+#include "server/request.hpp"
+#include "server/reply.hpp"
 
 using namespace xdpd;
+
+void list_plugins (request &req, reply &rep)
+  {
+  std::vector<plugin*> plugin_list = plugin_manager::get_plugins();
+
+  std::string buf;
+  for (std::vector<plugin*>::iterator i = plugin_list.begin(); i != plugin_list.end(); ++i)
+    {
+    buf << (*i)->get_name() << std::endl;
+    }
+  rep.content = buf
+  }
 
 void srvthread ()
   {
@@ -23,7 +37,11 @@ void srvthread ()
   
   try
     {
-    http::server::server(io_service, "0.0.0.0", "80", http::server::rest_handler())();
+    http::server::rest_handler  handler;
+
+    handler.register_path("/plugins", boost::bind(list_plugins));
+
+    http::server::server(io_service, "0.0.0.0", "80", &handler)();
     boost::asio::signal_set signals(io_service);
     signals.add(SIGINT);
     signals.add(SIGTERM);
@@ -40,13 +58,6 @@ void srvthread ()
 
 void rest::init(int args, char** argv)
   {
-  std::vector<plugin*> plugin_list = plugin_manager::get_plugins();
-
-  for (std::vector<plugin*>::iterator i = plugin_list.begin(); i != plugin_list.end(); ++i)
-    {
-    ROFL_INFO("Plugin: %s\n", (*i)->get_name().c_str());
-    }
-
   ROFL_INFO("Starting REST server");
   boost::thread t(&srvthread);
 

@@ -22,8 +22,6 @@ extern "C" {
 #include "../../plugin_manager.h"
 
 #include "cxmpmsg.h"
-#include "cxmpmsg_port_attachment.h"
-#include "cxmpmsg_port_configuration.h"
 
 namespace xdpd {
 namespace mgmt {

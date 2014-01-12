@@ -1,12 +1,12 @@
 /*
- * cxmpie_command.h
+ * cxmpie_dpid.h
  *
  *  Created on: 12.01.2014
  *      Author: andreas
  */
 
-#ifndef CXMPIE_COMMAND_H_
-#define CXMPIE_COMMAND_H_
+#ifndef CXMPIE_DPID_H_
+#define CXMPIE_DPID_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,54 +23,54 @@ namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class cxmpie_command :
+class cxmpie_dpid :
 		public cxmpie
 {
 	union {
 		uint8_t						*xmpu_generic;
-		struct xmp_ie_command_t		*xmpu_command;
+		struct xmp_ie_dpid_t		*xmpu_dpid;
 	} xmpie_xmpu;
 
 #define xmpie_generic	xmpie_xmpu.xmpu_generic
-#define xmpie_command	xmpie_xmpu.xmpu_command
+#define xmpie_dpid		xmpie_xmpu.xmpu_dpid
 
 public:
 
 	/**
 	 *
 	 */
-	cxmpie_command(
-			uint32_t command);
+	cxmpie_dpid(
+			uint64_t dpid);
 
 	/**
 	 *
 	 */
-	cxmpie_command(
+	cxmpie_dpid(
 			uint8_t *buf, size_t buflen);
 
 	/**
 	 *
 	 */
-	cxmpie_command(
-			cxmpie_command const& elem);
+	cxmpie_dpid(
+			cxmpie_dpid const& elem);
 
 	/**
 	 *
 	 */
-	cxmpie_command&
+	cxmpie_dpid&
 	operator= (
-			cxmpie_command const& elem);
+			cxmpie_dpid const& elem);
 
 	/**
 	 *
 	 */
-	cxmpie_command(
+	cxmpie_dpid(
 			cxmpie const& elem);
 
 	/**
 	 *
 	 */
-	cxmpie_command&
+	cxmpie_dpid&
 	operator= (
 			cxmpie const& elem);
 
@@ -78,7 +78,7 @@ public:
 	 *
 	 */
 	virtual
-	~cxmpie_command();
+	~cxmpie_dpid();
 
 public:
 
@@ -114,18 +114,18 @@ public:
 	/**
 	 *
 	 */
-	uint32_t
-	get_command() const { return be32toh(xmpie_command->cmd); };
+	uint64_t
+	get_dpid() const { return be64toh(xmpie_dpid->dpid); };
 
 	/**
 	 *
 	 */
 	void
-	set_command(uint32_t command) { xmpie_command->cmd = htobe32(command); };
+	set_dpid(uint64_t dpid) { xmpie_dpid->dpid = htobe64(dpid); };
 };
 
 }; // end of namespace protocol
 }; // end of namespace mgmt
 }; // end of namespace xdpd
 
-#endif /* CXMPIE_COMMAND_H_ */
+#endif /* CXMPIE_DPID_H_ */

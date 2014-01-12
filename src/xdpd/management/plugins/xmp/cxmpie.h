@@ -26,13 +26,6 @@ namespace protocol {
 class eXmpIeBase 		: public rofl::cerror {};
 class eXmpIeInval		: public eXmpIeBase {};
 
-enum xmpie_type_t {
-	XMPIET_NONE				= 0,
-	XMPIET_COMMAND			= 1,
-	XMPIET_PORTNAME			= 2,
-	XMPIET_CONFIGURATION	= 3,
-};
-
 class cxmpie :
 		public rofl::cmemory
 {

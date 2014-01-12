@@ -1,5 +1,7 @@
 // Copyright (c) 2014  Barnstormer Softworks, Ltd.
 
+#include <boost/lexical_cast.hpp>
+
 #include "rest_handler.hpp"
 #include "file_handler.hpp"
 #include "reply.hpp"
@@ -38,6 +40,11 @@ namespace http
         rep = reply::stock_reply(reply::bad_request);
         return;
         }
+      }
+
+    void rest_handler::register_path (std::string path, RestFuncT func)
+      {
+      this->handler_map[path] = func;
       }
 
     } // namespace server

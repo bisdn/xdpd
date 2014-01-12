@@ -3,6 +3,9 @@
 #ifndef HTTP_SERVER_REST_HANDLER_HPP
 #define HTTP_SERVER_REST_HANDLER_HPP
 
+#include <map>
+#include <string>
+
 #include <boost/function.hpp>
 
 namespace http {
@@ -11,7 +14,7 @@ namespace http {
     struct reply;
     struct request;
 
-    typedef boost::function<void (request&, reply&)>  RestFuncT;
+    typedef boost::function<void (const request&, reply&)>  RestFuncT;
 
     class rest_handler
       {

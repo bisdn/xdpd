@@ -17,18 +17,32 @@
 #include "server/request.hpp"
 #include "server/reply.hpp"
 
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
+
 namespace xdpd
   {
   void list_plugins (const http::server::request &req, http::server::reply &rep)
     {
     std::vector<plugin*> plugin_list = plugin_manager::get_plugins();
 
+    rapidjson::Document d;
+    d.SetObject();
+
+    rapidjson::Value a(rapidjson::kArrayType);
+    rapidjson::Document::AllocatorType& allocator = d.GetAllocator();
+
     std::string buf;
     for (std::vector<plugin*>::iterator i = plugin_list.begin(); i != plugin_list.end(); ++i)
       {
-      buf.append((*i)->get_name());
+      a.PushBack((*i)->get_name().c_str(), allocator);
       }
-    rep.content = buf;
+    d.AddMember("plugins", a, allocator);
+    rapidjson::StringBuffer strbuf;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
+    d.Accept(writer);
+    rep.content = strbuf.GetString();
     }
 
   void list_ports (const http::server::request &req, http::server::reply &rep)

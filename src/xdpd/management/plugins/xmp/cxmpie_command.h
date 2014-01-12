@@ -122,6 +122,17 @@ public:
 	 */
 	void
 	set_command(uint32_t command) { xmpie_command->cmd = htobe32(command); };
+
+public:
+
+	friend std::ostream&
+	operator<< (std::ostream& os, cxmpie_command const& elem) {
+		os << dynamic_cast<cxmpie const&>( elem );
+		os << "<cxmpie-command ";
+			os << "command:" << (unsigned int)elem.get_command() << " ";
+		os << ">" << std::endl;
+		return os;
+	};
 };
 
 }; // end of namespace protocol

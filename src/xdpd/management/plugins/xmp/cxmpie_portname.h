@@ -122,6 +122,17 @@ public:
 	 */
 	void
 	set_portname(std::string const& portname);
+
+public:
+
+	friend std::ostream&
+	operator<< (std::ostream& os, cxmpie_portname const& elem) {
+		os << dynamic_cast<cxmpie const&>( elem );
+		os << "<cxmpie-portname ";
+			os << "portname:" << elem.get_portname() << " ";
+		os << ">" << std::endl;
+		return os;
+	};
 };
 
 }; // end of namespace protocol

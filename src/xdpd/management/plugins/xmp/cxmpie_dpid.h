@@ -122,6 +122,17 @@ public:
 	 */
 	void
 	set_dpid(uint64_t dpid) { xmpie_dpid->dpid = htobe64(dpid); };
+
+public:
+
+	friend std::ostream&
+	operator<< (std::ostream& os, cxmpie_dpid const& elem) {
+		os << dynamic_cast<cxmpie const&>( elem );
+		os << "<cxmpie-dpid ";
+			os << "dpid:" << (unsigned long long)elem.get_dpid() << " ";
+		os << ">" << std::endl;
+		return os;
+	};
 };
 
 }; // end of namespace protocol

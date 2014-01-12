@@ -124,6 +124,17 @@ public:
 	 */
 	void
 	set_length(uint16_t len) { xmpie_header->len = htobe16(len); };
+
+public:
+
+	friend std::ostream&
+	operator<< (std::ostream& os, cxmpie const& elem) {
+		os << "<cxmpie ";
+		os << "type:" 	<< elem.get_type() 		<< " ";
+		os << "length:" << elem.get_length() 	<< " ";
+		os << ">" << std::endl;
+		return os;
+	};
 };
 
 }; // end of namespace protocol

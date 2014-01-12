@@ -2,6 +2,10 @@ AM_CONDITIONAL([WITH_MGMT_REST], true)
 AC_DEFINE(WITH_MGMT_REST)
 
 BOOST_REQUIRE([1.54], [HAVE_BOOST=false])
+if (test "$HAVE_BOOST" = "false"); then
+  AC_ERROR("REST management plugin requires Boost")
+fi
+
 BOOST_ASIO
 BOOST_SYSTEM([mt])
 CPPFLAGS+="$BOOST_CPPFLAGS"

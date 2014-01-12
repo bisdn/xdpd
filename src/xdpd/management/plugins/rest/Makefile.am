@@ -8,4 +8,5 @@ noinst_LTLIBRARIES = libxdpd_mgmt_rest.la
 libxdpd_mgmt_rest_la_SOURCES = \
 	rest.cc 
 
-libxdpd_mgmt_rest_la_LIBADD = 
+libxdpd_mgmt_rest_la_LIBADD = \
+  server/libxdpd_mgmt_rest_server.la

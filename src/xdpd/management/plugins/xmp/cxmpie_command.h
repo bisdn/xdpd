@@ -40,7 +40,7 @@ public:
 	 *
 	 */
 	cxmpie_command(
-			uint32_t command);
+			uint32_t command = 0);
 
 	/**
 	 *

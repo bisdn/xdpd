@@ -40,7 +40,7 @@ public:
 	 *
 	 */
 	cxmpie_dpid(
-			uint64_t dpid);
+			uint64_t dpid = 0);
 
 	/**
 	 *

@@ -1,5 +1,5 @@
 /*
- * mgmt_message.h
+ * cxmpmsg.h
  *
  *  Created on: 11.01.2014
  *      Author: andreas
@@ -11,6 +11,7 @@
 #include "rofl/common/cerror.h"
 #include "rofl/common/cmemory.h"
 #include "xdpd_mgmt_protocol.h"
+#include "cxmpies.h"
 
 namespace xdpd {
 namespace mgmt {
@@ -29,6 +30,8 @@ class cxmpmsg :
 
 #define xmp_generic xmp_xmpu.xmpu_generic
 #define xmp_header 	xmp_xmpu.xmpu_header
+
+	cxmpies						xmpies;
 
 public:
 
@@ -151,6 +154,12 @@ public:
 	void
 	set_xid(uint32_t xid) { xmp_header->xid = htobe32(xid); };
 
+	/**
+	 *
+	 */
+	cxmpies&
+	get_xmpies() { return xmpies; };
+
 public:
 
 	friend std::ostream&
@@ -161,6 +170,7 @@ public:
 		os << "length:" 	<< (int)msg.get_length() 	<< " ";
 		os << "xid:0x" 		<< std::hex << (int)msg.get_xid() << std::dec << " ";
 		os << ">" << std::endl;
+		os << "  " << msg.xmpies;
 	return os;
 	};
 };

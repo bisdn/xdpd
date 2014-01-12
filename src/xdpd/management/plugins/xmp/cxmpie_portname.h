@@ -40,7 +40,7 @@ public:
 	 *
 	 */
 	cxmpie_portname(
-			std::string const& portname);
+			std::string const& portname = std::string(""));
 
 	/**
 	 *

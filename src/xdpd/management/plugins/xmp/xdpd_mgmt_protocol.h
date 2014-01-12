@@ -20,10 +20,9 @@ extern "C" {
 #define PORTNAMESIZE 32
 
 enum xmp_msg_t {
-	XMPT_PORT_ATTACH	= 1,
-	XMPT_PORT_DETACH	= 2,
-	XMPT_PORT_ENABLE	= 3,
-	XMPT_PORT_DISABLE	= 4,
+	XMPT_REQUEST		= 1,
+	XMPT_REPLY			= 2,
+	XMPT_NOTIFICATION	= 3,
 };
 
 // message command types (MCT)

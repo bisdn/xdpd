@@ -27,6 +27,7 @@ extern "C" {
 
 namespace xdpd {
 namespace mgmt {
+namespace protocol {
 
 class xmp :
 		public ciosrv,
@@ -86,22 +87,27 @@ protected:
 private:
 
 	void
+	handle_request(
+			cxmpmsg& msg);
+
+	void
 	handle_port_attach(
-			protocol::cxmpmsg_port_attachment const& msg);
+			cxmpmsg& msg);
 
 	void
 	handle_port_detach(
-			protocol::cxmpmsg_port_attachment const& msg);
+			cxmpmsg& msg);
 
 	void
 	handle_port_enable(
-			protocol::cxmpmsg_port_configuration const& msg);
+			cxmpmsg& msg);
 
 	void
 	handle_port_disable(
-			protocol::cxmpmsg_port_configuration const& msg);
+			cxmpmsg& msg);
 };
 
+}; // end of namespace protocol
 }; // end of namespace mgmt
 }; // end of namespace xdpd
 

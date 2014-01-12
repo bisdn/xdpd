@@ -1,5 +1,5 @@
 /*
- * mgmt_message.cc
+ * cxmpmsg.cc
  *
  *  Created on: 11.01.2014
  *      Author: andreas
@@ -54,6 +54,7 @@ cxmpmsg::operator= (
 		return *this;
 
 	cmemory::operator= (msg);
+	xmpies = msg.xmpies;
 
 	xmp_generic = somem();
 
@@ -81,7 +82,7 @@ cxmpmsg::resize(
 size_t
 cxmpmsg::length() const
 {
-	return cmemory::memlen();
+	return (sizeof(struct xmp_header_t) + xmpies.length());
 }
 
 
@@ -92,9 +93,9 @@ cxmpmsg::pack(uint8_t *buf, size_t buflen)
 	if (buflen < length())
 		throw eXmpInval();
 
-	size_t len = (buflen < cmemory::memlen()) ? buflen : cmemory::memlen();
+	memcpy(buf, cmemory::somem(), sizeof(struct xmp_header_t));
 
-	memcpy(buf, cmemory::somem(), len);
+	xmpies.pack(buf + sizeof(struct xmp_header_t), xmpies.length());
 }
 
 
@@ -102,10 +103,14 @@ cxmpmsg::pack(uint8_t *buf, size_t buflen)
 void
 cxmpmsg::unpack(uint8_t *buf, size_t buflen)
 {
+	xmpies.clear();
 	if (buflen < sizeof(struct xmp_header_t))
 		throw eXmpInval();
 	assign(buf, buflen);
 	xmp_generic = somem();
+	if (buflen > sizeof(struct xmp_header_t)) {
+		xmpies.unpack(buf + sizeof(struct xmp_header_t), buflen - sizeof(struct xmp_header_t));
+	}
 }
 
 

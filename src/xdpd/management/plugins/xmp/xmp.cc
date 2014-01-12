@@ -236,7 +236,7 @@ xmp::handle_port_disable(
 
 	try {
 		if (not msg.get_xmpies().has_ie_portname()) {
-			std::cerr << "[xdpd][xmp] rcvd xmp Port-Enable request without -PORTNAME- IE, dropping message." << std::endl;
+			std::cerr << "[xdpd][xmp] rcvd xmp Port-Disable request without -PORTNAME- IE, dropping message." << std::endl;
 			return;
 		}
 

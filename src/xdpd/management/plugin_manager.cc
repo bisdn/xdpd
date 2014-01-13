@@ -9,6 +9,12 @@
 #ifdef WITH_MGMT_QMF
 	#include "plugins/qmf/qmfagent.h"
 #endif
+#ifdef WITH_MGMT_DBUS
+	#include "plugins/dbus/dbusmod.h"
+#endif
+#ifdef WITH_MGMT_XMP
+	#include "plugins/xmp/xmp.h"
+#endif
 #ifdef WITH_MGMT_EXAMPLE
 	#include "plugins/example/example.h"
 #endif
@@ -42,6 +48,16 @@ void plugin_manager::pre_init(){
 	register_plugin(new qmfagent());
 #endif
 
+#ifdef WITH_MGMT_DBUS
+	//Register DBUS
+	register_plugin(new dbus::dbusmod());
+#endif
+
+#ifdef WITH_MGMT_XMP
+	//Register XMP
+	register_plugin(new xdpd::mgmt::protocol::xmp());
+#endif
+
 #ifdef WITH_MGMT_EXAMPLE
 	//Register example plugin
 	register_plugin(new example());	
@@ -53,16 +69,18 @@ void plugin_manager::pre_init(){
 
 rofl_result_t plugin_manager::init(int argc, char** argv){
 
-	ROFL_DEBUG("Initializing Plugin Manager\n");
+	ROFL_DEBUG("[Plugin manager] Initializing Plugin Manager\n");
 
 	//Call register
 	plugin_manager::pre_init();
 
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		ROFL_INFO("Initializing plugin [%s]...\n", (*it)->get_name().c_str());
+		ROFL_INFO("[Plugin manager] Loading plugin [%s]...\n", (*it)->get_name().c_str());
 		(*it)->init(argc,argv);
 		optind=0; //Reset getopt
 	}
+
+	ROFL_INFO("[Plugin manager] All plugins loaded.\n");
 	
 	return ROFL_SUCCESS;
 }

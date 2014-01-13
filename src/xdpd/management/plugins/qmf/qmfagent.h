@@ -20,7 +20,11 @@
 #include <qmf/SchemaMethod.h>
 #include <qmf/Data.h>
 #include <qmf/DataAddr.h>
+#ifdef WITH_QMF2_024
 #include <qmf/EventNotifier.h>
+#else
+#include <qmf/posix/EventNotifier.h>
+#endif
 #include <qpid/types/Variant.h>
 
 #include <rofl/common/ciosrv.h>
@@ -63,6 +67,7 @@ public:
 private:
 
 	std::string						broker_url;
+	std::string						xdpd_id;
 
 	qpid::messaging::Connection 	connection;
 	qmf::AgentSession 				session;

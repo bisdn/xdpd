@@ -31,6 +31,13 @@ AC_CHECK_LIB(rt, clock_gettime,,[AC_MSG_ERROR([rt library not found])])
 #AC_CHECK_LIB(rofl_pipeline, physical_switch_init,,[AC_MSG_ERROR([rofl_pipeline library not found])]) 
 #AC_CHECK_LIB(rofl_pipeline, physical_switch_init,,[AC_MSG_ERROR([rofl_core library not found])]) 
 
+PKG_CHECK_MODULES([ROFL], [rofl >= 0.3.0], [have_rofl=yes], [have_rofl=no])
+if (test "${have_rofl}" = "yes"); then
+        CPPFLAGS+="$ROFL_CFLAGS"
+        LIBS+="$ROFL_LIBS"
+fi
+
+
 #Debug
 m4_include([config/debug.m4])
 
@@ -46,6 +53,9 @@ m4_include([config/plugins.m4])
 #Check hardware support
 m4_include([config/hw.m4])
 
+#Check hardware support
+m4_include([config/versioning.m4])
+
 #Output the files
 AC_CONFIG_FILES([
 	Makefile
@@ -56,6 +66,8 @@ AC_CONFIG_FILES([
 	src/xdpd/openflow/Makefile
 	src/xdpd/openflow/openflow10/Makefile
 	src/xdpd/openflow/openflow12/Makefile
+	test/Makefile
+	test/grouptest/Makefile
 ])
 
 # Doxygen (here to be the last Makefile) 

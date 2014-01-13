@@ -15,6 +15,9 @@
 #include "../util/likely.h"
 #include "datapacketx86.h"
 
+//Profiling
+#include "../util/time_measurements.h"
+
 /**
 * @file bufferpool.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
@@ -69,7 +72,33 @@ public:
 	
 	static void destroy();
 
-	
+	//Only used in debug	
+	friend std::ostream&
+	operator<< (std::ostream& os, bufferpool const& bp) {
+		os << "<bufferpool: ";
+			os << "pool-size:" << bp.pool_size << " ";
+			os << "next-index:" << bp.next_index << " ";
+			for (long long unsigned int i = 0; i < bp.pool_size; i++) {
+				if (bp.pool_status[i] == BUFFERPOOL_SLOT_AVAILABLE)
+					os << ".";
+				else if (bp.pool_status[i] == BUFFERPOOL_SLOT_IN_USE)
+					os << "b";
+				else
+					os << "u";
+				if (((i+1) % 8) == 0)
+					os << " ";
+				if (((i+1) % 32) == 0)
+					os << "  ";
+				if (((i+1) % 128) == 0)
+					os << std::endl;
+			}
+		os << ">";
+		return os;
+	};
+
+	static void dump_state(void);
+	static void dump_slots(void);
+
 protected:
 
 	//Singleton instance
@@ -151,7 +180,10 @@ datapacket_t* bufferpool::get_free_buffer(bool blocking){
 	
 				//Release
 				pthread_mutex_unlock(&bufferpool::mutex);		
-			
+		
+				//Timestamp S0	
+				TM_STAMP_STAGE(bp->pool[i], TM_S0);
+	
 				//return buffer 
 				return bp->pool[i];
 			}else{
@@ -190,7 +222,7 @@ void bufferpool::release_buffer(datapacket_t* buf){
 	unsigned int id = ((datapacketx86*)buf->platform_state)->internal_buffer_id;
 	
 	//Release
-	if(bp->pool_status[id] != BUFFERPOOL_SLOT_IN_USE){
+	if( unlikely(bp->pool_status[id] != BUFFERPOOL_SLOT_IN_USE) ){
 		//Attempting to release an unallocated/unavailable buffer
 		ROFL_ERR("Attempting to release an unallocated/unavailable buffer (pkt:%p). Ignoring..\n",buf);
 		assert(0);

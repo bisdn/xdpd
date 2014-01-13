@@ -40,13 +40,13 @@ void config::parse_config(Config* cfg, cunixenv& env_parser){
 void config::init(int args, char** argv){
 	Config* cfg = new Config;
 	root_scope* root = new root_scope();
-	cunixenv env_parser;
+	cunixenv env_parser(args, argv);
 
 	//Add paramters
 	//Not required
 
 	//Parse
-	env_parser.parse_args(args, argv);
+	env_parser.parse_args();
 
 	//Dry run
 	parse_config(cfg,env_parser);

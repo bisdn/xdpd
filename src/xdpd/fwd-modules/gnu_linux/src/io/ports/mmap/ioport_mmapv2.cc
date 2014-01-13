@@ -9,6 +9,9 @@
 #include <rofl/common/protocols/fetherframe.h>
 #include <rofl/common/protocols/fvlanframe.h>
 
+//Profiling
+#include "../../../util/time_measurements.h"
+
 using namespace rofl;
 using namespace xdpd::gnu_linux;
 
@@ -80,17 +83,23 @@ void ioport_mmapv2::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	
 		//Store on queue and exit. This is NOT copying it to the mmap buffer
 		if(output_queues[q_id].non_blocking_write(pkt) != ROFL_SUCCESS){
+			TM_STAMP_STAGE(pkt, TM_SA6_FAILURE);
+			
 			ROFL_DEBUG("[mmap:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
 			//Drop packet
 			bufferpool::release_buffer(pkt);
+
+
 			return;
 		}
+		TM_STAMP_STAGE(pkt, TM_SA6_SUCCESS);
 
 		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
 	
 		//TODO: make it happen only if thread is really sleeping...
 		ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
 		(void)ret; // todo use the value
+			
 	} else {
 		if(len < MIN_PKT_LEN){
 			ROFL_ERR("[mmap:%s] ERROR: attempt to send invalid packet size for packet(%p) scheduled for queue %u. Packet size: %u\n", of_port_state->name, pkt, q_id, len);
@@ -181,7 +190,7 @@ next:
 	if ( unlikely(hdr->tp_mac + hdr->tp_snaplen > rx->get_tpacket_req()->tp_frame_size) ) {
 		ROFL_DEBUG_VERBOSE("[mmap:%s] sanity check during read mmap failed\n",of_port_state->name);
 		//Increment error statistics
-		switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
+		switch_port_stats_inc_lockless(of_port_state,0,0,0,0,1,0);
 
 		//Return packet to kernel in the RX ring		
 		rx->return_packet(hdr);
@@ -216,7 +225,7 @@ next:
 	//Handle no free buffer
 	if(!pkt) {
 		//Increment error statistics and drop
-		switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
+		switch_port_stats_inc_lockless(of_port_state,0,0,0,0,1,0);
 		rx->return_packet(hdr);
 		return NULL;
 	}
@@ -232,11 +241,14 @@ next:
 		pkt_x86->init((uint8_t*)hdr + hdr->tp_mac, hdr->tp_len, of_port_state->attached_sw, get_port_no());
 	}
 
+	//Timestamp S2	
+	TM_STAMP_STAGE(pkt, TM_S2);
+
 	//Return packet to kernel in the RX ring		
 	rx->return_packet(hdr);
 
 	//Increment statistics&return
-	switch_port_stats_inc(of_port_state, 1, 0, hdr->tp_len, 0, 0, 0);	
+	switch_port_stats_inc_lockless(of_port_state, 1, 0, hdr->tp_len, 0, 0, 0);	
 	
 	return pkt;
 
@@ -312,6 +324,8 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			break;
 		}
 	
+		TM_STAMP_STAGE(pkt, TM_SA7);
+		
 		pkt_x86 = (datapacketx86*) pkt->platform_state;
 
 		if(unlikely(pkt_x86->get_buffer_length() > mps)){
@@ -323,16 +337,19 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 			bufferpool::release_buffer(pkt);
 		
 			//Increment errors
-			switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, 1);	
-			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, 1);
+			switch_port_stats_inc_lockless(of_port_state, 0, 0, 0, 0, 0, 1);	
+			port_queue_stats_inc_lockless(&of_port_state->queues[q_id], 0, 0, 1);
 			deferred_drain++;
 			continue;
 		}else{	
 			fill_tx_slot(hdr, pkt_x86);
 		}
 		
+		TM_STAMP_STAGE(pkt, TM_SA8);
+		
 		//Return buffer to the pool
 		bufferpool::release_buffer(pkt);
+
 
 		// todo statistics
 		tx_bytes_local += hdr->tp_len;
@@ -352,8 +369,8 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 		if(tx->send() != ROFL_SUCCESS){
 			ROFL_ERR("[mmap:%s] ERROR while sending packets. This is due very likely to an invalid ETH_TYPE value. Now the port will be reset in order to continue operation\n", of_port_state->name);
 			assert(0);
-			switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, cnt);	
-			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);	
+			switch_port_stats_inc_lockless(of_port_state, 0, 0, 0, 0, 0, cnt);	
+			port_queue_stats_inc_lockless(&of_port_state->queues[q_id], 0, 0, cnt);	
 			
 			/*
 			* We need to reset the port, meaning destroy and regenerate both TX rings
@@ -377,8 +394,8 @@ unsigned int ioport_mmapv2::write(unsigned int q_id, unsigned int num_of_buckets
 		}
 
 		//Increment statistics
-		switch_port_stats_inc(of_port_state, 0, cnt, 0, tx_bytes_local, 0, 0);	
-		port_queue_stats_inc(&of_port_state->queues[q_id], cnt, tx_bytes_local, 0);	
+		switch_port_stats_inc_lockless(of_port_state, 0, cnt, 0, tx_bytes_local, 0, 0);	
+		port_queue_stats_inc_lockless(&of_port_state->queues[q_id], cnt, tx_bytes_local, 0);	
 	}
 
 	// return not used buckets

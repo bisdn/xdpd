@@ -10,6 +10,7 @@
 #include "../../../io/datapacketx86.h"
 #include "../../../io/ports/ioport.h"
 #include "../../../processing/ls_internal_state.h"
+#include "../../../util/time_measurements.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -278,6 +279,9 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		if(!pkt){
 			return AFA_FAILURE; /* TODO: add specific error */
 		}
+		
+		//Mark as pkt out (ignore counters, slow path)	
+		TM_STAMP_PKT_OUT(pkt);
 	}else{
 		//Retrieve a free buffer	
 		pkt = bufferpool::get_free_buffer_nonblocking();
@@ -286,7 +290,10 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 			//No available buffers
 			return AFA_FAILURE; /* TODO: add specific error */
 		}	
-	
+
+		//Mark as pkt out (ignore counters, slow path)	
+		TM_STAMP_PKT_OUT(pkt);
+
 		//Initialize the packet and copy
 		((datapacketx86*)pkt->platform_state)->init(buffer, buffer_size, lsw, in_port, 0, true);
 		pkt->sw = lsw;
@@ -355,9 +362,9 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 	}
 
 
-	//FIXME: delete this
+#ifdef DEBUG
 	of1x_dump_table(&lsw->pipeline->tables[table_id]);
-	
+#endif
 	
 	return AFA_SUCCESS;
 }
@@ -370,10 +377,11 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
  * @param dpid 		Datapath ID of the switch to install the FLOW_MOD
  * @param table_id 	Table id from which to modify the flowmod
  * @param flow_entry	Flow entry 
+ * @param buffer_id	Buffer ID
  * @param strictness 	Strictness (STRICT NON-STRICT)
  * @param check_counts	Check RESET_COUNTS flag
  */
-afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, of1x_flow_removal_strictness_t strictness, bool reset_counts){
+afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t buffer_id, of1x_flow_removal_strictness_t strictness, bool reset_counts){
 
 	of1x_switch_t* lsw;
 
@@ -391,6 +399,19 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 	if(of1x_modify_flow_entry_table(lsw->pipeline, table_id, flow_entry, strictness, reset_counts) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
+	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
+	
+		datapacket_t* pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
+	
+		if(!pkt){
+			assert(0);
+			return AFA_FAILURE; //TODO: return really failure?
+		}
+
+		of_process_packet_pipeline((of_switch_t*)lsw,pkt);
+	}
+
+
 	return AFA_SUCCESS;
 }
 
@@ -403,12 +424,11 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
  * @param dpid 		Datapath ID of the switch to install the FLOW_MOD
  * @param table_id 	Table id to install the flowmod
  * @param flow_entry	Flow entry to be installed
- * @param buffer_id	Buffer ID
  * @param out_port 	Out port that entry must include
  * @param out_group 	Out group that entry must include	
  * @param strictness 	Strictness (STRICT NON-STRICT)
  */
-afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t buffer_id, uint32_t out_port, uint32_t out_group, of1x_flow_removal_strictness_t strictness){
+afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t out_port, uint32_t out_group, of1x_flow_removal_strictness_t strictness){
 
 	of1x_switch_t* lsw;
 	unsigned int i;

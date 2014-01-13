@@ -188,7 +188,7 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 	}
 }
 
-void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string>& ports){
+void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string>& ports, bool dry_run){
 
 	//TODO: improve conf file to be able to control the OF port number when attaching
 
@@ -219,10 +219,8 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 		}
 	}	
 
-	if(ports.size() < 2){
- 		ROFL_ERR("%s: an LSI must have at least two ports attached.\n", setting.getPath().c_str());
-		throw eConfParseError(); 	
-	
+	if(ports.size() < 2 && dry_run){
+ 		ROFL_WARN("%s: WARNING the LSI has less than two ports attached.\n", setting.getPath().c_str());
 	}
 }
 
@@ -340,7 +338,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	parse_matching_algorithms(setting, version, num_of_tables, ma_list, dry_run);
 
 	//Parse ports	
-	parse_ports(setting,ports);
+	parse_ports(setting, ports, dry_run);
 
 	//Execute
 	if(!dry_run){

@@ -16,20 +16,21 @@ typedef static_pktclassifier pktclassifier;
 
 //Constructor
 datapacketx86::datapacketx86() :
-	 buffer_id(0),
-	 internal_buffer_id(0),
-	 lsw(0),
-	 in_port(0),
-	 in_phy_port(0),
-	 output_queue(0),
-	 ipv4_recalc_checksum(false),
-	 tcp_recalc_checksum(false),
-	 udp_recalc_checksum(false),
-	 icmpv4_recalc_checksum(false),
-	 pktin_table_id(0),
-	 pktin_reason(0),
-	 headers(new pktclassifier(this)),
-	 buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY)
+	buffer_id(0),
+	internal_buffer_id(0),
+	lsw(0),
+	in_port(0),
+	in_phy_port(0),
+	output_queue(0),
+	ipv4_recalc_checksum(false),
+	tcp_recalc_checksum(false),
+	udp_recalc_checksum(false),
+	icmpv4_recalc_checksum(false),
+	pktin_table_id(0),
+	pktin_reason(0),
+	extra(NULL),
+	headers(new pktclassifier(this)),
+	buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY)
 {
 
 }
@@ -92,6 +93,9 @@ datapacketx86::init(
 
 	this->output_queue = 0;
 
+	//Timestamp S1	
+	TM_STAMP_STAGE_DPX86(this, TM_S1);
+	
 	//Classify the packet
 	if(classify)
 		headers->classify();

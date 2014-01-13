@@ -19,6 +19,9 @@
 #include "../processing/ls_internal_state.h"
 #include "../io/pktin_dispatcher.h"
 
+//Time measurements
+#include "../util/time_measurements.h"
+
 using namespace xdpd::gnu_linux;
 
 #define DATAPACKET_STORE_EXPIRATION_TIME 180
@@ -55,20 +58,20 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 		config->write_actions &= ~(1 << OF12PAT_COPY_TTL_OUT);
 		config->write_actions &= ~(1 << OF12PAT_COPY_TTL_IN);
 		
-		config->match &= ~(1UL << OF1X_MATCH_SCTP_SRC);
-		config->wildcards &= ~(1UL << OF1X_MATCH_SCTP_SRC);
-		config->apply_setfields &= ~(1UL << OF1X_MATCH_SCTP_SRC);
-		config->write_setfields &= ~(1UL << OF1X_MATCH_SCTP_SRC);
+		config->match &= ~(1ULL << OF1X_MATCH_SCTP_SRC);
+		config->wildcards &= ~(1ULL << OF1X_MATCH_SCTP_SRC);
+		config->apply_setfields &= ~(1ULL << OF1X_MATCH_SCTP_SRC);
+		config->write_setfields &= ~(1ULL << OF1X_MATCH_SCTP_SRC);
 		
-		config->match &= ~(1UL << OF1X_MATCH_SCTP_DST);
-		config->wildcards &= ~(1UL << OF1X_MATCH_SCTP_DST);
-		config->apply_setfields &= ~(1UL << OF1X_MATCH_SCTP_DST);
-		config->write_setfields &= ~(1UL << OF1X_MATCH_SCTP_DST);
+		config->match &= ~(1ULL << OF1X_MATCH_SCTP_DST);
+		config->wildcards &= ~(1ULL << OF1X_MATCH_SCTP_DST);
+		config->apply_setfields &= ~(1ULL << OF1X_MATCH_SCTP_DST);
+		config->write_setfields &= ~(1ULL << OF1X_MATCH_SCTP_DST);
 		
-		config->match &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
-		config->wildcards &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
-		config->apply_setfields &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
-		config->write_setfields &= ~(1UL << OF1X_MATCH_IPV6_EXTHDR);
+		config->match &= ~(1ULL << OF1X_MATCH_IPV6_EXTHDR);
+		config->wildcards &= ~(1ULL << OF1X_MATCH_IPV6_EXTHDR);
+		config->apply_setfields &= ~(1ULL << OF1X_MATCH_IPV6_EXTHDR);
+		config->write_setfields &= ~(1ULL << OF1X_MATCH_IPV6_EXTHDR);
 	}
 
 	return ROFL_SUCCESS;
@@ -109,15 +112,24 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	pkt_x86 = (datapacketx86*)pkt->platform_state;
 	pkt_x86->pktin_table_id = table_id;
 	pkt_x86->pktin_reason = reason;
+	
+	//Timestamp SB6_PRE	
+	TM_STAMP_STAGE(pkt, TM_SB6_PRE);
 		
 	//Enqueue
 	if( ls_state->pkt_in_queue->non_blocking_write(pkt) == ROFL_SUCCESS ){
 		//Notify
 		notify_packet_in();
+			
+		//Timestamp SB6_SUCCESS	
+		TM_STAMP_STAGE(pkt, TM_SB6_SUCCESS);
 	}else{
 		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
 		//Return to the bufferpool
 		bufferpool::release_buffer(pkt);
+
+		//Timestamp SB6_FAILURE
+		TM_STAMP_STAGE(pkt, TM_SB6_FAILURE);
 	}
 }
 

@@ -6,6 +6,7 @@ SUBDIRS=server
 noinst_LTLIBRARIES = libxdpd_mgmt_rest.la
 
 libxdpd_mgmt_rest_la_SOURCES = \
+  endpoints.cpp \
 	rest.cc 
 
 libxdpd_mgmt_rest_la_LIBADD = \

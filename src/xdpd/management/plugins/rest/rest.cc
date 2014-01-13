@@ -17,9 +17,7 @@
 #include "server/request.hpp"
 #include "server/reply.hpp"
 
-#include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
-#include "rapidjson/writer.h"
+#include "json_spirit/json_spirit_writer_template.h"
 
 namespace xdpd
   {
@@ -27,22 +25,19 @@ namespace xdpd
     {
     std::vector<plugin*> plugin_list = plugin_manager::get_plugins();
 
-    rapidjson::Document d;
-    d.SetObject();
+//    json_spirit::mObject obj;
 
-    rapidjson::Value a(rapidjson::kArrayType);
-    rapidjson::Document::AllocatorType& allocator = d.GetAllocator();
+    std::vector<std::string> plugins;
 
-    std::string buf;
     for (std::vector<plugin*>::iterator i = plugin_list.begin(); i != plugin_list.end(); ++i)
       {
-      a.PushBack((*i)->get_name().c_str(), allocator);
+      plugins.push_back((*i)->get_name());
       }
-    d.AddMember("plugins", a, allocator);
-    rapidjson::StringBuffer strbuf;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
-    d.Accept(writer);
-    rep.content = strbuf.GetString();
+
+//    obj["plugins"] = json_spirit::Value(plugins.begin(), plugins.end());
+    json_spirit::Value pa(plugins.begin(), plugins.end());
+
+    rep.content = json_spirit::write_string(pa);
     }
 
   void list_ports (const http::server::request &req, http::server::reply &rep)

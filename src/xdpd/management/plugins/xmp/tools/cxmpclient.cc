@@ -60,7 +60,7 @@ cxmpclient::port_attach(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send_packet(mem, raddr);
+	socket.send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -82,7 +82,7 @@ cxmpclient::port_detach(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send_packet(mem, raddr);
+	socket.send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -103,7 +103,7 @@ cxmpclient::port_enable(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send_packet(mem, raddr);
+	socket.send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -124,7 +124,7 @@ cxmpclient::port_disable(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send_packet(mem, raddr);
+	socket.send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }

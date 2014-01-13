@@ -130,7 +130,7 @@ public:
 
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpie const& elem) {
-		os << "<cxmpie ";
+		os << rofl::indent(0) << "<cxmpie ";
 		os << "type:" 	<< elem.get_type() 		<< " ";
 		os << "length:" << elem.get_length() 	<< " ";
 		os << ">" << std::endl;

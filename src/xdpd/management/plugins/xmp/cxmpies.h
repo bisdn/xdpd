@@ -189,7 +189,8 @@ public:
 
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpies const& xmpies) {
-		os << "<cxmpies #IEs:" << xmpies.size() << " >" << std::endl;
+		os << rofl::indent(0) << "<cxmpies #IEs:" << xmpies.size() << " >" << std::endl;
+		rofl::indent i(2);
 		for (cxmpies::const_iterator
 				it = xmpies.begin(); it != xmpies.end(); ++it) {
 			switch (it->second->get_type()) {

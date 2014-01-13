@@ -128,7 +128,7 @@ public:
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpie_dpid const& elem) {
 		os << dynamic_cast<cxmpie const&>( elem );
-		os << "<cxmpie-dpid ";
+		os << rofl::indent(2) << "<cxmpie-dpid ";
 			os << "dpid:" << (unsigned long long)elem.get_dpid() << " ";
 		os << ">" << std::endl;
 		return os;

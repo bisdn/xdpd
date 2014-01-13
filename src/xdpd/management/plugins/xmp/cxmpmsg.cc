@@ -28,12 +28,17 @@ cxmpmsg::cxmpmsg(
 
 cxmpmsg::cxmpmsg(
 		uint8_t *buf, size_t buflen) :
-				cmemory(buflen)
+				cmemory((size_t)buflen)
 {
-	if (buflen < sizeof(struct xmp_header_t))
-		throw eXmpInval();
-	assign(buf, buflen);
-	xmp_generic = somem();
+	try {
+		unpack(buf, buflen);
+	} catch (rofl::cerror& e) {
+		std::cerr << "SHIT(1): " << e << std::endl;
+#if 1
+	} catch (std::exception& e) {
+		std::cerr << "SHIT(2): " << e.what() << std::endl;
+#endif
+	}
 }
 
 
@@ -92,6 +97,8 @@ cxmpmsg::pack(uint8_t *buf, size_t buflen)
 {
 	if (buflen < length())
 		throw eXmpInval();
+
+	set_length(length());
 
 	memcpy(buf, cmemory::somem(), sizeof(struct xmp_header_t));
 

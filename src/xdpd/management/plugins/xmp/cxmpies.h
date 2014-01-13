@@ -189,10 +189,26 @@ public:
 
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpies const& xmpies) {
-		os << "<cxmpies #IEs:" << xmpies.size() << " >";
+		os << "<cxmpies #IEs:" << xmpies.size() << " >" << std::endl;
 		for (cxmpies::const_iterator
 				it = xmpies.begin(); it != xmpies.end(); ++it) {
-			os << "  " << *(it->second);
+			switch (it->second->get_type()) {
+			case XMPIET_NONE: {
+				os << "  " << *(it->second);
+			} break;
+			case XMPIET_COMMAND: {
+				os << "  " << dynamic_cast<cxmpie_command const&>( *(it->second) );
+			} break;
+			case XMPIET_PORTNAME: {
+				os << "  " << dynamic_cast<cxmpie_portname const&>( *(it->second) );
+			} break;
+			case XMPIET_DPID: {
+				os << "  " << dynamic_cast<cxmpie_dpid const&>( *(it->second) );
+			} break;
+			default: {
+				os << "  " << *(it->second);
+			};
+			}
 		}
 		return os;
 	};

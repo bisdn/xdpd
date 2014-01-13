@@ -12,6 +12,13 @@
 #include "../ioport.h" 
 #include "../../datapacketx86.h" 
 
+#include <net/netmap.h>
+#include <net/netmap_user.h>
+
+#include <sys/poll.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+
 
 namespace xdpd {
 namespace gnu_linux {
@@ -36,9 +43,9 @@ public:
 	virtual unsigned int write(unsigned int q_id, unsigned int num_of_buckets);
 
 	//Get read&write fds. Return -1 if do not exist
-	inline virtual int get_read_fd(void){return input[READ];};
-	int get_fake_write_fd(void){return input[WRITE];};
-	inline virtual int get_write_fd(void){return notify_pipe[READ];};
+	inline virtual int get_read_fd(void){return npipe[READ].fd;};
+	int get_fake_write_fd(void){return npipe[WRITE].fd;};
+	inline virtual int get_write_fd(void){return npipe[READ].fd;};
 
 	//Get buffer status
 	//virtual circular_queue_state_t get_input_queue_state(void); 
@@ -56,10 +63,12 @@ protected:
 	//Queues
 	static const unsigned int MMAP_DEFAULT_NUM_OF_QUEUES=8; 
 
-	//fds
-	int input[2];
-	int notify_pipe[2];
-	
+	//netmap interface handler
+	struct netmap_if *nifp;
+
+	//pollfds
+	struct pollfd npipe[1];
+
 	//Pipe extremes
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;

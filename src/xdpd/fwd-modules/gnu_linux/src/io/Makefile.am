@@ -2,6 +2,8 @@ MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS = packet_classifiers ports scheduler
 
+AM_CPPFLAGS = -I /home/limon/netmap-release/sys -DNO_PCAP 
+
 noinst_LTLIBRARIES = libfwd_module_gnu_linux_io.la
 
 libfwd_module_gnu_linux_io_ladir = $(includedir)/fwd-modules/gnu_linux/io

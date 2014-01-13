@@ -6,6 +6,8 @@ SUBDIRS = \
 	netmap\
 	vlink	
 
+AM_CPPFLAGS = -I /home/limon/netmap-release/sys -DNO_PCAP 
+
 noinst_LTLIBRARIES = libfwd_module_gnu_linux_io_ports.la
 
 libfwd_module_gnu_linux_io_ports_ladir = $(includedir)/fwd-modules/gnu_linux/io/ports

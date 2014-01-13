@@ -248,7 +248,13 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	//Change this line to use another ioport...
 
 #ifdef IO_USE_NETMAP
-	ioport* io_port = new ioport_netmap(port);
+	ioport* io_port;
+	try {
+		io_port = new ioport_netmap(port);
+	} catch(char const *str) {
+		ROFL_INFO("Problem: %s\n",str);
+		io_port = new ioport_mmapv2(port);
+	}
 #else
 	ioport* io_port = new ioport_mmapv2(port);
 #endif

@@ -43,9 +43,8 @@ public:
 	virtual unsigned int write(unsigned int q_id, unsigned int num_of_buckets);
 
 	//Get read&write fds. Return -1 if do not exist
-	inline virtual int get_read_fd(void){return npipe[READ].fd;};
-	int get_fake_write_fd(void){return npipe[WRITE].fd;};
-	inline virtual int get_write_fd(void){return npipe[READ].fd;};
+	inline virtual int get_read_fd(void){return fd;};
+	inline virtual int get_write_fd(void){return -1;};
 
 	//Get buffer status
 	//virtual circular_queue_state_t get_input_queue_state(void); 
@@ -60,18 +59,43 @@ public:
 	static const size_t SIMULATED_PKT_SIZE=1500;
 
 protected:
+	virtual void empty_pipe();
 	//Queues
 	static const unsigned int MMAP_DEFAULT_NUM_OF_QUEUES=8; 
 
 	//netmap interface handler
 	struct netmap_if *nifp;
-
+	//netmap mmap area
+	struct netmap_d *mem;
+	// size
+	uint64_t memsize;
 	//pollfds
-	struct pollfd npipe[1];
+	int fd;
 
 	//Pipe extremes
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;
+
+	static inline void
+	pkt_copy(const void *_src, void *_dst, int l)
+	{
+		const uint64_t *src = (const uint64_t *)_src;
+		uint64_t *dst = (uint64_t *)_dst;
+		if (unlikely(l >= 1024)) {
+			bcopy(src, dst, l);
+			return;
+		}
+		for (; l>0; l-=64) {
+			*dst++ = *src++;
+			*dst++ = *src++;
+			*dst++ = *src++;
+			*dst++ = *src++;
+			*dst++ = *src++;
+			*dst++ = *src++;
+			*dst++ = *src++;
+			*dst++ = *src++;
+		}
+	}
 	
 };
 

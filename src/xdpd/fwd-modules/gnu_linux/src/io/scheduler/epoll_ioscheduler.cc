@@ -146,7 +146,7 @@ inline void epoll_ioscheduler::add_fd_epoll(struct epoll_event* ev, int epfd, io
 	ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Trying to add event with flags: %u and port_data:%p\n", ev->events, port_data); 
 
 	if( epoll_ctl(epfd, EPOLL_CTL_ADD, fd, ev) < 0){
-		ROFL_ERR("[epoll_ioscheduler] Insertion of the event %p in the epoll failed\n", ev);
+		ROFL_ERR("[epoll_ioscheduler] Insertion of the event %p in the epoll failed. \n Errno: %s\n", ev,strerror(errno));
 		assert(0);
 	}
 }

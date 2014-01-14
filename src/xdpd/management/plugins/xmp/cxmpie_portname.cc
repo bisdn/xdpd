@@ -126,8 +126,7 @@ cxmpie_portname::unpack(
 std::string
 cxmpie_portname::get_portname() const
 {
-	size_t len = (strlen(xmpie_portname->portname) < XMPIE_PORTNAME_SIZE) ? strlen(xmpie_portname->portname) : XMPIE_PORTNAME_SIZE;
-	return std::string(xmpie_portname->portname, len);
+	return std::string(xmpie_portname->portname, strnlen(xmpie_portname->portname, XMPIE_PORTNAME_SIZE));
 }
 
 

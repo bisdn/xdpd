@@ -33,5 +33,6 @@ ar-lib
 /build-*
 
 src/xdpd/management/pm_timestamp.h
+src/xdpd/management/plugins/pm_timestamp.h
 
 !.gitignore

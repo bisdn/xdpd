@@ -7,7 +7,7 @@ AC_DEFINE(WITH_MGMT_PLUGIN_NAME)
 
 #Add files
 AC_CONFIG_FILES([
-	src/xdpd/management/plugins/PLUGIN_NAME/Makefile
+	src/xdpd/management/plugins/plugin_name/Makefile
 ])
 
 

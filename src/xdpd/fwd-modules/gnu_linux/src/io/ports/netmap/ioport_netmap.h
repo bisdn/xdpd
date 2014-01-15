@@ -43,8 +43,8 @@ public:
 	virtual unsigned int write(unsigned int q_id, unsigned int num_of_buckets);
 
 	//Get read&write fds. Return -1 if do not exist
-	inline virtual int get_read_fd(void){return fd;};
-	inline virtual int get_write_fd(void){return -1;};
+	inline virtual int get_read_fd(void){return fd;}; 
+	inline virtual int get_write_fd(void){return notify_pipe[WRITE];};
 
 	//Get buffer status
 	//virtual circular_queue_state_t get_input_queue_state(void); 
@@ -59,7 +59,7 @@ public:
 	static const size_t SIMULATED_PKT_SIZE=1500;
 
 protected:
-	virtual void empty_pipe();
+	virtual void flush_ring();
 	//Queues
 	static const unsigned int MMAP_DEFAULT_NUM_OF_QUEUES=8; 
 
@@ -71,6 +71,8 @@ protected:
 	uint64_t memsize;
 	//pollfds
 	int fd;
+
+	int notify_pipe[2];
 
 	//Pipe extremes
 	static const unsigned int READ=0;

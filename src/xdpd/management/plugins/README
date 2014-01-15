@@ -31,7 +31,7 @@ cp -r example/ my_plugin
 4) Modify the internal code of the plugin. At least rename the file example.h/cc to my_plugin.h/cc 
 and the plugin class defined there. Add additional logic
 
-5) Edit Plugin.ma, and substitute EXAMPLE for MY_PLUGIN and example for my_plugin
+5) Edit Plugin.am, and substitute EXAMPLE for MY_PLUGIN and example for my_plugin
 
 4) Add the following code to plugin_manager_loader.cc
 

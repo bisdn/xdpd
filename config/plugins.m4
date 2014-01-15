@@ -27,7 +27,7 @@ for PLUGIN in $PLUGINS; do
 
 	#Check directory
 	if ! test -d "$DIRECTORY" ; then
-		AC_MSG_ERROR([Plugin [$PLUGIN]: source folder '$DIRECTORY' not found!])
+		AC_MSG_ERROR([Plugin {$PLUGIN} source folder '$DIRECTORY' not found!])
 	fi
 
 	#Add plugin to the list of PLUGIN sources

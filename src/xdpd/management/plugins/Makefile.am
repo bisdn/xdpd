@@ -19,15 +19,15 @@ libxdpd_mgmt_plugins_la_LIBADD =
 #
 
 #Config
-include config/Plugin.ma
+include config/Plugin.am
 
 #QMF
-include qmf/Plugin.ma
+include qmf/Plugin.am
 
 #XMP
-include xmp/Plugin.ma
+include xmp/Plugin.am
 
 #[+] Add yours here...
 
 #Example (leave it always at the very end)
-include example/Plugin.ma
+include example/Plugin.am

@@ -1,7 +1,7 @@
 AC_INIT(xdpd, 0.3, xdpd@bisdn.de, xdpd)
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
-AC_CONFIG_MACRO_DIR([config])
+#AC_CONFIG_MACRO_DIR([config])
 AC_GNU_SOURCE
 
 AC_PROG_INSTALL
@@ -65,6 +65,7 @@ AC_CONFIG_FILES([
 	src/xdpd/Makefile
 	src/xdpd/fwd-modules/Makefile
 	src/xdpd/management/Makefile
+	src/xdpd/management/plugins/Makefile
 	src/xdpd/openflow/Makefile
 	src/xdpd/openflow/openflow10/Makefile
 	src/xdpd/openflow/openflow12/Makefile

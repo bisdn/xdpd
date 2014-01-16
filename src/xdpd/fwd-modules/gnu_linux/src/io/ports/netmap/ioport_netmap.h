@@ -44,7 +44,7 @@ public:
 
 	//Get read&write fds. Return -1 if do not exist
 	inline virtual int get_read_fd(void){return fd;}; 
-	inline virtual int get_write_fd(void){return notify_pipe[WRITE];};
+	inline virtual int get_write_fd(void){return notify_pipe[READ];};
 
 	//Get buffer status
 	//virtual circular_queue_state_t get_input_queue_state(void); 
@@ -60,6 +60,7 @@ public:
 
 protected:
 	virtual void flush_ring();
+	virtual void empty_pipe();
 	//Queues
 	static const unsigned int MMAP_DEFAULT_NUM_OF_QUEUES=8; 
 
@@ -73,6 +74,8 @@ protected:
 	int fd;
 
 	int notify_pipe[2];
+	int deferred_drain;
+	char draining_buffer[IO_IFACE_RING_SLOTS];
 
 	//Pipe extremes
 	static const unsigned int READ=0;

@@ -46,11 +46,20 @@ ioport_netmap::ioport_netmap(switch_port_t* of_ps, unsigned int num_queues):iopo
 	if(pipe(notify_pipe) == -1)
 		ROFL_INFO("Pipe problem\n");
 
+	for(unsigned int i=0;i<2;i++) {
+		int flags = fcntl(notify_pipe[i], F_GETFL, 0);
+		flags |= O_NONBLOCK;
+		fcntl(notify_pipe[i], F_SETFL, flags);
+	}
+	deferred_drain = 0;
+
 	ROFL_INFO("netmap: %s opened with netmap\n", of_port_state->name);
 }
 
 ioport_netmap::~ioport_netmap(){
 	munmap(mem,memsize);
+	close(notify_pipe[READ]);
+	close(notify_pipe[WRITE]);
 	close(fd);
 }
 
@@ -61,9 +70,12 @@ void ioport_netmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	const char c='a';
 
 	//Put in the queue
-	output_queues[q_id].non_blocking_write(pkt);
-	//bufferpool::release_buffer(pkt);
-
+	if(output_queues[q_id].blocking_write(pkt) != ROFL_SUCCESS ) {
+		ROFL_INFO("Queue problem\n");
+		bufferpool::release_buffer(pkt);
+	}
+	
+	ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
 	//TODO: make it happen only if thread is really sleeping...
 	ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
 	(void)ret;
@@ -83,7 +95,24 @@ void ioport_netmap::flush_ring() {
 		ring->cur = NETMAP_RING_NEXT(ring, ring->cur);
 		ring->avail--;
 	}
+	if(ioctl(fd,NIOCTXSYNC|NIOCRXSYNC, NULL) == -1)
+		ROFL_DEBUG_VERBOSE("Netmap sync problem\n");
 	return;
+}
+
+void ioport_netmap::empty_pipe() {
+	int ret;
+	if(deferred_drain == 0)
+		return;
+	
+	ret = ::read(notify_pipe[READ], draining_buffer, deferred_drain);
+
+	if(ret == -1) {
+		ROFL_INFO("pipe is empty");
+	} else if((deferred_drain -ret) < 0)
+		deferred_drain = 0;
+	else
+		deferred_drain -= ret;
 }
 
 datapacket_t* ioport_netmap::read(){
@@ -98,19 +127,23 @@ datapacket_t* ioport_netmap::read(){
 	//x[0].fd = fd;
 	//x[0].events = (POLLIN);
 
-	//Allocate free buffer
-	pkt = bufferpool::get_free_buffer();
-	pkt_x86 = ((datapacketx86*)pkt->platform_state);
-
-
 	struct netmap_ring *ring;
 	//poll(x, 1, 1000);
 
 	ring = NETMAP_RXRING(nifp, 0);
+	//ROFL_INFO("Ring Avail: %"PRIu32"\n", ring->avail);
+	
 	if (ring->avail == 0) {
-		ROFL_INFO("Ring Avail: %"PRIu32"\n", ring->avail);
 		return NULL;
 	}
+
+	//Allocate free buffer
+	pkt = bufferpool::get_free_buffer(false);
+	if(!pkt) {
+		ROFL_INFO("Buffer Problem\n");
+		return NULL;
+	}
+	pkt_x86 = ((datapacketx86*)pkt->platform_state);
 
 	cur = ring->cur;
 	struct netmap_slot *slot = &ring->slot[cur];
@@ -127,6 +160,8 @@ datapacket_t* ioport_netmap::read(){
 
 	ROFL_DEBUG_VERBOSE("Filled buffer with id:%d. Sending to process.\n", pkt_x86->buffer_id);
 
+	if(ioctl(fd,NIOCRXSYNC, NULL) == -1)
+		ROFL_DEBUG_VERBOSE("Netmap sync problem\n");
 	return pkt;
 }
 
@@ -135,9 +170,6 @@ unsigned int ioport_netmap::write(unsigned int q_id, unsigned int num_of_buckets
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
 	unsigned int i,count=num_of_buckets;
-
-	if(q_id > num_of_queues)
-		return num_of_buckets;
 
 	// Do we have enough ring space?
 	struct netmap_ring *ring;
@@ -149,16 +181,19 @@ unsigned int ioport_netmap::write(unsigned int q_id, unsigned int num_of_buckets
 	if ( ring->avail < num_of_buckets)
 		count = ring->avail;
 
+	//ROFL_INFO("ID:%d Queue size %d\n",q_id,output_queues[q_id].size());
+	
 	//ROFL_INFO("Ring Avail: %"PRIu32" %zu\n", ring->avail, count);
 	for(i=0;i<count;i++){
-		//Pick buffer
-		pkt = output_queues[q_id].non_blocking_read();
-
+		
 		// It shouldn't happen but let's make sure.
-		if(pkt == NULL) {
-			ROFL_INFO("Empty pkt? q_id:%d\n",q_id);
+		if(output_queues[q_id].is_empty()) {
+			if(deferred_drain > 0)
+				empty_pipe();
 			return num_of_buckets;
 		}
+		//Pick buffer
+		pkt = output_queues[q_id].non_blocking_read();
 
 		pkt_x86 = (datapacketx86*)pkt->platform_state;
 		(void)pkt_x86;
@@ -185,7 +220,7 @@ unsigned int ioport_netmap::write(unsigned int q_id, unsigned int num_of_buckets
 		bufferpool::release_buffer(pkt);
 	}
 	ring->avail-=i;
-	ROFL_INFO("Sent %d out of %d\n", i,num_of_buckets);
+	//ROFL_INFO("Sent %d out of %d\n", i,num_of_buckets);
 	if(ioctl(fd,NIOCTXSYNC, NULL) == -1)
 		ROFL_DEBUG_VERBOSE("Netmap sync problem\n");
 	return num_of_buckets-i;

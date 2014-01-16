@@ -12,7 +12,9 @@
 #include "../ioport.h" 
 #include "../../datapacketx86.h" 
 
+#ifndef IFNAMSIZ
 #include <net/if.h>
+#endif
 
 #include <net/netmap.h>
 #include <net/netmap_user.h>

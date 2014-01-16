@@ -12,6 +12,8 @@
 #include "../ioport.h" 
 #include "../../datapacketx86.h" 
 
+#include <net/if.h>
+
 #include <net/netmap.h>
 #include <net/netmap_user.h>
 

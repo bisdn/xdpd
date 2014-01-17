@@ -35,8 +35,6 @@ ioport_netmap::ioport_netmap(switch_port_t* of_ps, unsigned int num_queues):iopo
 		close(fd);
 		throw "Unable to register";
 	}
-	//TODO fix
-	num_of_queues=req.nr_tx_rings;
 
 	ROFL_INFO("%s has txr %d txd %d rxr %d rxd %d \n", of_port_state->name,
 			req.nr_tx_rings, req.nr_tx_slots,
@@ -87,7 +85,7 @@ void ioport_netmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	}
 	//Put in the queue
 	if(output_queues[q_id].non_blocking_write(pkt) != ROFL_SUCCESS ) {
-		ROFL_INFO("Queue problem\n");
+		ROFL_DEBUG("Queue problem\n");
 		bufferpool::release_buffer(pkt);
 	}
 
@@ -230,7 +228,7 @@ unsigned int ioport_netmap::write(unsigned int q_id, unsigned int num_of_buckets
 		slot->flags |= NS_BUF_CHANGED;	
 		slot->len = pkt_x86->get_buffer_length();
 
-		ROFL_INFO("Sending %p buf_idx:%d\n", pkt_x86->get_buffer(), slot->buf_idx);
+		ROFL_DEBUG("Sending %p buf_idx:%d\n", pkt_x86->get_buffer(), slot->buf_idx);
 
 		//ROFL_INFO("Sent pkt id:%p of size %d\n", pkt_x86, slot->len);
 		//ROFL_INFO("Sent pkt id:%p of size %d\n", pkt_x86, slot->len);
@@ -300,7 +298,7 @@ rofl_result_t ioport_netmap::enable(){
 		close(sd);
 		return ROFL_FAILURE;
 	}
-	if(IFF_UP & ifr.ifr_flags) {
+	if(IFF_UP | ifr.ifr_flags) {
 		ifr.ifr_flags |= IFF_UP;
 		ifr.ifr_flags |= IFF_PROMISC;
 	}

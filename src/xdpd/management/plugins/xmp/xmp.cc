@@ -31,7 +31,7 @@ xmp::init(int args, char** argv)
 {
 	rofl::logging::error << "[xdpd][xmp] initializing ..." << std::endl;
 	socket.clisten(caddress(AF_INET, udp_addr.c_str(), udp_port), AF_INET, SOCK_DGRAM, IPPROTO_UDP, 10);
-	register_filedesc_r(socket.getfd());
+	//register_filedesc_r(socket.getfd());
 }
 
 

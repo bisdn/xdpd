@@ -60,8 +60,6 @@ public:
 	virtual rofl_result_t
 	enable();
 
-	static const size_t SIMULATED_PKT_SIZE=1500;
-
 protected:
 	virtual void flush_ring();
 	virtual void empty_pipe();
@@ -71,7 +69,7 @@ protected:
 	//netmap interface handler
 	struct netmap_if *nifp;
 	//netmap mmap area
-	struct netmap_d *mem;
+	static struct netmap_d *mem;
 	// size
 	uint64_t memsize;
 	//pollfds
@@ -105,7 +103,6 @@ protected:
 			*dst++ = *src++;
 		}
 	}
-	
 };
 
 }// namespace xdpd::gnu_linux 

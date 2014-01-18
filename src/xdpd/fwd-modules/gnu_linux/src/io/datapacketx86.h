@@ -9,6 +9,7 @@
 #include <inttypes.h>
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <fcntl.h>
 #include <rofl.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/common/cmemory.h>

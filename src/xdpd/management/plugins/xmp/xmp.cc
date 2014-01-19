@@ -30,7 +30,7 @@ void
 xmp::init(int args, char** argv)
 {
 	rofl::logging::error << "[xdpd][xmp] initializing ..." << std::endl;
-	socket.clisten(caddress(AF_INET, udp_addr.c_str(), udp_port), AF_INET, SOCK_DGRAM, IPPROTO_UDP, 10);
+	socket.listen(caddress(AF_INET, udp_addr.c_str(), udp_port), AF_INET, SOCK_DGRAM, IPPROTO_UDP, 10);
 	//register_filedesc_r(socket.getfd());
 }
 
@@ -49,12 +49,11 @@ xmp::handle_timeout(
 
 void
 xmp::handle_read(
-		csocket *socket,
-		int sd)
+		csocket& socket)
 {
 	cmemory mem(128);
 
-	int nbytes = ::read(socket->sd, mem.somem(), mem.memlen());
+	int nbytes = socket.recv(mem.somem(), mem.memlen());
 
 	if (nbytes == 0) {
 		// socket closed

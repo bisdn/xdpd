@@ -14,7 +14,7 @@ cxmpclient::cxmpclient() :
 		laddr(AF_INET, "0.0.0.0", 0),
 		raddr(AF_INET, "127.0.0.1", 8444)
 {
-	socket.cconnect(
+	socket.connect(
 			raddr,
 			laddr,
 			AF_INET,

@@ -94,6 +94,10 @@ inline int epoll_ioscheduler::process_port_tx(ioport* port){
 
 	//Process output (up to WRITE_BUCKETS[output_queue_state])
 	for(q_id=0; q_id < IO_IFACE_NUM_QUEUES; ++q_id){
+
+		//Fas pre-check (avoid virtual function call overhead)
+		if(port->output_queue_has_packets(q_id) == false)
+			continue;
 		
 		//Increment number of buckets
 		n_buckets = WRITE_BUCKETS_PP*WRITE_QOS_QUEUE_FACTOR[q_id];

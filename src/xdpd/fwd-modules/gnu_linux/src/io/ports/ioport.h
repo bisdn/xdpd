@@ -166,6 +166,13 @@ public:
 
 
 	/**
+	* Check if output queue q_id has packets
+	*/
+	inline bool output_queue_has_packets(unsigned int q_id){
+		return output_queues[q_id]->is_empty() == false;
+	}
+
+	/**
 	 * Portgroup to which is belonging TX condition 
 	 */
 	inline void set_pg_tx_sem(sem_t* pg_tx_sem){

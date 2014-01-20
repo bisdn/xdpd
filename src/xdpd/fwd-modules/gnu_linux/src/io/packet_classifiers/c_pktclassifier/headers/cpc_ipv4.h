@@ -177,32 +177,32 @@ uint32_t get_ipv4_length(void *hdr){
 };
 
 inline static
-void set_DF_bit(void *hdr){
+void set_ipv4_DF_bit(void *hdr){
 	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) | (bit_dont_fragment << 13) );
 };
 
 inline static
-bool has_DF_bit_set(void *hdr){
+bool has_ipv4_DF_bit_set(void *hdr){
 	return (bool)((CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) >> 13)  & bit_dont_fragment);
 };
 
 inline static
-void clear_DF_bit(void *hdr){
+void clear_ipv4_DF_bit(void *hdr){
 	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_dont_fragment << 13) );
 };
 
 inline static
-void set_MF_bit(void *hdr){
+void set_ipv4_MF_bit(void *hdr){
 	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) | (bit_more_fragments << 13) );
 };
 
 inline static
-bool has_MF_bit_set(void *hdr){
+bool has_ipv4_MF_bit_set(void *hdr){
 	return (bool)((CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) >> 13)  & bit_more_fragments);
 };
 
 inline static
-void clear_MF_bit(void *hdr){
+void clear_ipv4_MF_bit(void *hdr){
 	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_more_fragments << 13) );
 };
 

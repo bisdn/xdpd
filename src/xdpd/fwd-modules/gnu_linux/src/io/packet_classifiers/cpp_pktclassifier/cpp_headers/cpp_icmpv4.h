@@ -14,15 +14,15 @@
 * @brief Wrapper for the c++ classifier
 */
 
-uint8_t get_icmp_type(void *hdr);
+uint8_t get_icmpv4_type(void *hdr);
 
-void set_icmp_type(void *hdr, uint8_t type);
+void set_icmpv4_type(void *hdr, uint8_t type);
 
-uint8_t get_icmp_code(void *hdr);
+uint8_t get_icmpv4_code(void *hdr);
 
-void set_icmp_code(void *hdr, uint8_t code);
+void set_icmpv4_code(void *hdr, uint8_t code);
 
-uint16_t get_checksum(void *hdr);
+uint16_t get_icmpv4_checksum(void *hdr);
 
 void icmpv4_calc_checksum(void * hdr,uint16_t length);
 

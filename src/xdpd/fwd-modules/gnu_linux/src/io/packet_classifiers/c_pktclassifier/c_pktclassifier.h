@@ -149,7 +149,7 @@ void classify_packet(classify_state_t* clas_state, uint8_t* pkt, size_t len);
 void reset_classifier(classify_state_t* clas_state);
 
 inline static 
-void* ether(classify_state_t* clas_state, int idx){
+void* get_ether_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;
 	if(idx > (int)MAX_ETHER_FRAMES)
 		return NULL;
@@ -166,7 +166,7 @@ void* ether(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* vlan(classify_state_t* clas_state, int idx){
+void* get_vlan_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_VLAN_FRAMES)
@@ -184,7 +184,7 @@ void* vlan(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* mpls(classify_state_t* clas_state, int idx){
+void* get_mpls_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_MPLS_FRAMES)
@@ -202,7 +202,7 @@ void* mpls(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* arpv4(classify_state_t* clas_state, int idx){
+void* get_arpv4_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_ARPV4_FRAMES)
@@ -220,7 +220,7 @@ void* arpv4(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* ipv4(classify_state_t* clas_state, int idx){
+void* get_ipv4_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_IPV4_FRAMES)
@@ -238,7 +238,7 @@ void* ipv4(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* icmpv4(classify_state_t* clas_state, int idx){
+void* get_icmpv4_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_ICMPV4_FRAMES)
@@ -256,7 +256,7 @@ void* icmpv4(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* ipv6(classify_state_t* clas_state, int idx){
+void* get_ipv6_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_IPV6_FRAMES)
@@ -274,7 +274,7 @@ void* ipv6(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* icmpv6(classify_state_t* clas_state, int idx){
+void* get_icmpv6_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_ICMPV6_FRAMES)
@@ -292,7 +292,7 @@ void* icmpv6(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* udp(classify_state_t* clas_state, int idx){
+void* get_udp_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_UDP_FRAMES)
@@ -310,7 +310,7 @@ void* udp(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* tcp(classify_state_t* clas_state, int idx){
+void* get_tcp_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_TCP_FRAMES)
@@ -328,7 +328,7 @@ void* tcp(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* pppoe(classify_state_t* clas_state, int idx){
+void* get_pppoe_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_PPPOE_FRAMES)
@@ -346,7 +346,7 @@ void* pppoe(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* ppp(classify_state_t* clas_state, int idx){
+void* get_ppp_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
 	if(idx > (int)MAX_PPP_FRAMES)
@@ -364,7 +364,7 @@ void* ppp(classify_state_t* clas_state, int idx){
 }
 
 inline static
-void* gtp(classify_state_t* clas_state, int idx){
+void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;
 
 	if(idx > (int)MAX_GTP_FRAMES)

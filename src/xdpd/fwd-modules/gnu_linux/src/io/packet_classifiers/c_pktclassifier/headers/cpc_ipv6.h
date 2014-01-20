@@ -73,13 +73,13 @@ uint8_t get_ipv6_version(void *hdr){
 };
 
 inline static
-void set_traffic_ipv6_class(void *hdr, uint8_t tc){
+void set_ipv6_traffic_class(void *hdr, uint8_t tc){
 	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0xF0) + ((tc & 0xF0) >> 4);
 	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x0F) + ((tc & 0x0F) << 4);
 }
 
 inline static
-uint8_t get_traffic_ipv6_class(void *hdr){
+uint8_t get_ipv6_traffic_class(void *hdr){
 	return (uint8_t)(((((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0x0F) << 4) + ((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xF0) >> 4));
 };
 
@@ -105,49 +105,49 @@ uint8_t get_ipv6_ecn(void *hdr){
 };
 
 inline static
-void set_flow_label(void *hdr, uint32_t flabel){
+void set_ipv6_flow_label(void *hdr, uint32_t flabel){
 	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xF0) + ((flabel & 0x000f0000) >> 16);
 	((cpc_ipv6_hdr_t*)hdr)->bytes[2] = (flabel & 0x0000ff00) >> 8;
 	((cpc_ipv6_hdr_t*)hdr)->bytes[3] = (flabel & 0x000000ff) >> 0;
 }
 
 inline static
-uint32_t get_flow_label(void *hdr){
+uint32_t get_ipv6_flow_label(void *hdr){
 	return (uint32_t)(((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x0F) << 16) + (((cpc_ipv6_hdr_t*)hdr)->bytes[2] << 8) + (((cpc_ipv6_hdr_t*)hdr)->bytes[3] << 0));
 };
 
 inline static
-void set_payload_length(void *hdr, uint16_t len){
+void set_ipv6_payload_length(void *hdr, uint16_t len){
 	((cpc_ipv6_hdr_t*)hdr)->payloadlen = CPC_HTOBE16(len);
 }
 
 inline static
-uint16_t get_payload_length(void *hdr){
+uint16_t get_ipv6_payload_length(void *hdr){
 	return CPC_BE16TOH(((cpc_ipv6_hdr_t*)hdr)->payloadlen);
 };
 
 inline static
-void set_next_header(void *hdr, uint8_t nxthdr){
+void set_ipv6_next_header(void *hdr, uint8_t nxthdr){
 	((cpc_ipv6_hdr_t*)hdr)->nxthdr = nxthdr;
 }
 
 inline static
-uint8_t get_next_header(void *hdr){
+uint8_t get_ipv6_next_header(void *hdr){
 	return ((cpc_ipv6_hdr_t*)hdr)->nxthdr;
 };
 
 inline static
-void set_hop_limit(void *hdr, uint8_t hops){
+void set_ipv6_hop_limit(void *hdr, uint8_t hops){
 	((cpc_ipv6_hdr_t*)hdr)->hoplimit = hops;
 }
 
 inline static
-uint8_t get_hop_limit(void *hdr){
+uint8_t get_ipv6_hop_limit(void *hdr){
 	return ((cpc_ipv6_hdr_t*)hdr)->hoplimit;
 };
 
 inline static
-void dec_hop_limit(void *hdr){
+void dec_ipv6_hop_limit(void *hdr){
 	((cpc_ipv6_hdr_t*)hdr)->hoplimit--;
 };
 

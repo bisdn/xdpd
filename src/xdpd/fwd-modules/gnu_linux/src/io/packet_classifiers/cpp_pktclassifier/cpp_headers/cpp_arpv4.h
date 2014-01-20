@@ -14,40 +14,40 @@
 * @brief Wrapper for the c++ classifier
 */
 
-uint16_t get_ar_hrd(void *hdr);
+uint16_t get_arpv4_htype(void *hdr);
 
-void set_ar_hdr(void *hdr, uint16_t ar_hdr);
+void set_arpv4_htype(void *hdr, uint16_t htype);
 
-uint16_t get_ar_pro(void *hdr);
+uint16_t get_arpv4_ptype(void *hdr);
 
-void set_ar_pro(void *hdr, uint16_t ar_pro);
+void set_arpv4_ptype(void *hdr, uint16_t ptype);
 
-uint8_t get_ar_hln(void *hdr);
+uint8_t get_arpv4_hlen(void *hdr);
 
-void set_ar_hln(void *hdr, uint8_t ar_hln);
+void set_arpv4_hlen(void *hdr, uint8_t hlen);
 
-uint8_t get_ar_pln(void *hdr);
+uint8_t get_arpv4_plen(void *hdr);
 
-void set_ar_pln(void *hdr, uint8_t ar_pln);
+void set_arpv4_plen(void *hdr, uint8_t plen);
 
-uint16_t get_ar_op(void *hdr);
+uint16_t get_arpv4_opcode(void *hdr);
 
-void set_ar_op(void *hdr, uint16_t ar_op);
+void set_arpv4_opcode(void *hdr, uint16_t opcode);
 
-uint64_t get_dl_arpv4_dst(void *hdr);
+uint64_t get_arpv4_dl_dst(void *hdr);
 
-void set_dl_arpv4_dst(void* hdr, uint64_t dl_dst);
+void set_arpv4_dl_dst(void* hdr, uint64_t dl_dst);
 
-uint64_t get_dl_arpv4_src(void* hdr);
+uint64_t get_arpv4_dl_src(void* hdr);
 
-void set_dl_arpv4_src(void* hdr, uint64_t dl_src);
+void set_arpv4_dl_src(void* hdr, uint64_t dl_src);
 
-uint32_t get_ip_arpv4_src(void *hdr);
+uint32_t get_arpv4_ip_src(void *hdr);
 
-void set_ip_arpv4_src(void *hdr, uint16_t ip_src);
+void set_arpv4_ip_src(void *hdr, uint16_t ip_src);
 
-uint16_t get_ip_arpv4_dst(void *hdr);
+uint16_t get_arpv4_ip_dst(void *hdr);
 
-void set_ip_arpv4_dst(void *hdr, uint16_t ip_dst);
+void set_arpv4_ip_dst(void *hdr, uint16_t ip_dst);
 
 #endif //_CPP_ARPV4_H_

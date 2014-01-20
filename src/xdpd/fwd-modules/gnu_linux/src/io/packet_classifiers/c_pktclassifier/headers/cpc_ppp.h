@@ -165,7 +165,7 @@ void set_ppp_prot(void *hdr, uint16_t prot)
 }
 
 inline static
-uint8_t get_lcp_code(void *hdr)
+uint8_t get_ppp_lcp_code(void *hdr)
 {
 	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
 
@@ -173,7 +173,7 @@ uint8_t get_lcp_code(void *hdr)
 }
 
 inline static
-void set_lcp_code(void *hdr, uint8_t code)
+void set_ppp_lcp_code(void *hdr, uint8_t code)
 {
 	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
 
@@ -181,7 +181,7 @@ void set_lcp_code(void *hdr, uint8_t code)
 }
 
 inline static
-uint8_t get_lcp_ident(void *hdr)
+uint8_t get_ppp_lcp_ident(void *hdr)
 {
 	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
 
@@ -189,7 +189,7 @@ uint8_t get_lcp_ident(void *hdr)
 }
 
 inline static
-void set_lcp_ident(void *hdr, uint8_t ident)
+void set_ppp_lcp_ident(void *hdr, uint8_t ident)
 {
 	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
 
@@ -197,7 +197,7 @@ void set_lcp_ident(void *hdr, uint8_t ident)
 }
 
 inline static
-uint16_t get_lcp_length(void *hdr)
+uint16_t get_ppp_lcp_length(void *hdr)
 {
 	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
 
@@ -205,7 +205,7 @@ uint16_t get_lcp_length(void *hdr)
 }
 
 inline static
-void set_lcp_length(void *hdr, uint16_t len)
+void set_ppp_lcp_length(void *hdr, uint16_t len)
 {
 	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
 
@@ -223,7 +223,7 @@ cpc_ppp_lcp_option_t* get_lcp_option(void *hdr, enum ppp_lcp_option_t option)
 }
 #endif
 inline static
-uint8_t get_ipcp_code(void *hdr)
+uint8_t get_ppp_ipcp_code(void *hdr)
 {
 	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
 
@@ -231,7 +231,7 @@ uint8_t get_ipcp_code(void *hdr)
 }
 
 inline static
-void set_ipcp_code(void *hdr, uint8_t code)
+void set_ppp_ipcp_code(void *hdr, uint8_t code)
 {
 	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
 
@@ -239,7 +239,7 @@ void set_ipcp_code(void *hdr, uint8_t code)
 }
 
 inline static
-uint8_t get_ipcp_ident(void *hdr)
+uint8_t get_ppp_ipcp_ident(void *hdr)
 {
 	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
 
@@ -247,7 +247,7 @@ uint8_t get_ipcp_ident(void *hdr)
 }
 
 inline static
-void set_ipcp_ident(void *hdr, uint8_t ident)
+void set_ppp_ipcp_ident(void *hdr, uint8_t ident)
 {
 	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
 
@@ -255,7 +255,7 @@ void set_ipcp_ident(void *hdr, uint8_t ident)
 }
 
 inline static
-uint16_t get_ipcp_length(void *hdr)
+uint16_t get_ppp_ipcp_length(void *hdr)
 {
 	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
 
@@ -263,7 +263,7 @@ uint16_t get_ipcp_length(void *hdr)
 }
 
 inline static
-void set_ipcp_length(void *hdr, uint16_t len){
+void set_ppp_ipcp_length(void *hdr, uint16_t len){
 	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
 
 	((cpc_ppp_lcp_hdr_t*)hdr)->length = CPC_HTOBE16(len);

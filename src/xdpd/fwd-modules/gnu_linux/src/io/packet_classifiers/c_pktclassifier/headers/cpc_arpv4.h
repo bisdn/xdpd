@@ -21,11 +21,11 @@ enum arpv4_ether_t {
 };
 
 typedef struct cpc_arpv4_hdr {
-	uint16_t ar_hrd;            	// hardware address format
-	uint16_t ar_pro;            	// protocol address format
-	uint8_t ar_hln;             	// hardware address length
-	uint8_t ar_pln;             	// protocol address length
-	uint16_t ar_op;             	// ARP opcode
+	uint16_t htype;            	// hardware address format
+	uint16_t ptype;            	// protocol address format
+	uint8_t hlen;             	// hardware address length
+	uint8_t plen;             	// protocol address length
+	uint16_t opcode;             	// ARP opcode
 	uint8_t dl_src[CPC_ETH_ALEN]; 	// source MAC address
 	uint32_t ip_src;            	// source IP address
 	uint8_t dl_dst[CPC_ETH_ALEN]; 	// destination MAC address
@@ -34,98 +34,98 @@ typedef struct cpc_arpv4_hdr {
 
 /* ARPv4 definitions */
 inline static
-uint16_t get_ar_hrd(void *hdr){
-	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ar_hrd);
+uint16_t get_arpv4_htype(void *hdr){
+	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->htype);
 };
 
 inline static
-void set_ar_hdr(void *hdr, uint16_t ar_hdr){
-	((cpc_arpv4_hdr_t*)hdr)->ar_hrd = CPC_HTOBE16(ar_hdr);
+void set_arpv4_htype(void *hdr, uint16_t htype){
+	((cpc_arpv4_hdr_t*)hdr)->htype = CPC_HTOBE16(htype);
 };
 
 inline static
-uint16_t get_ar_pro(void *hdr){
-	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ar_pro);
+uint16_t get_arpv4_ptype(void *hdr){
+	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ptype);
 };
 
 inline static
-void set_ar_pro(void *hdr, uint16_t ar_pro){
-	((cpc_arpv4_hdr_t*)hdr)->ar_pro = CPC_HTOBE16(ar_pro);
+void set_arpv4_ptype(void *hdr, uint16_t ptype){
+	((cpc_arpv4_hdr_t*)hdr)->ptype = CPC_HTOBE16(ptype);
 };
 
 inline static
-uint8_t get_ar_hln(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->ar_hln;
+uint8_t get_arpv4_hlen(void *hdr){
+	return ((cpc_arpv4_hdr_t *)hdr)->hlen;
 };
 
 inline static
-void set_ar_hln(void *hdr, uint8_t ar_hln){
-	((cpc_arpv4_hdr_t*)hdr)->ar_hln = ar_hln;
+void set_arpv4_hlen(void *hdr, uint8_t hlen){
+	((cpc_arpv4_hdr_t*)hdr)->hlen = hlen;
 };
 
 inline static
-uint8_t get_ar_pln(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->ar_pln;
+uint8_t get_arpv4_plen(void *hdr){
+	return ((cpc_arpv4_hdr_t *)hdr)->plen;
 };
 
 inline static
-void set_ar_pln(void *hdr, uint8_t ar_pln){
-	((cpc_arpv4_hdr_t*)hdr)->ar_pln = ar_pln;
+void set_arpv4_plen(void *hdr, uint8_t plen){
+	((cpc_arpv4_hdr_t*)hdr)->plen = plen;
 };
 
 inline static
-uint16_t get_ar_op(void *hdr){
-	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ar_op);
+uint16_t get_arpv4_opcode(void *hdr){
+	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->opcode);
 };
 
 inline static
-void set_ar_op(void *hdr, uint16_t ar_op){
-	((cpc_arpv4_hdr_t*)hdr)->ar_op = CPC_HTOBE16(ar_op);
+void set_arpv4_opcode(void *hdr, uint16_t opcode){
+	((cpc_arpv4_hdr_t*)hdr)->opcode = CPC_HTOBE16(opcode);
 };
 
 inline static
-uint64_t get_dl_arpv4_dst(void *hdr){
+uint64_t get_arpv4_dl_dst(void *hdr){
 	uint64_t ret = mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_dst);
 	CPC_SWAP_MAC(ret);
 	return ret;
 };
 
 inline static
-void set_dl_arpv4_dst(void* hdr, uint64_t dl_dst){
+void set_arpv4_dl_dst(void* hdr, uint64_t dl_dst){
 	CPC_SWAP_MAC(dl_dst);
 	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_dst, dl_dst);
 };
 
 inline static
-uint64_t get_dl_arpv4_src(void* hdr){
+uint64_t get_arpv4_dl_src(void* hdr){
 	uint64_t ret = mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_src);
 	CPC_SWAP_MAC(ret);
 	return ret;
 };
 
 inline static
-void set_dl_arpv4_src(void* hdr, uint64_t dl_src){
+void set_arpv4_dl_src(void* hdr, uint64_t dl_src){
 	CPC_SWAP_MAC(dl_src);
 	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_src, dl_src);
 };
 
 inline static
-uint32_t get_ip_arpv4_src(void *hdr){
+uint32_t get_arpv4_ip_src(void *hdr){
 	return be32toh(((cpc_arpv4_hdr_t *)hdr)->ip_src);
 };
 
 inline static
-void set_ip_arpv4_src(void *hdr, uint16_t ip_src){
+void set_arpv4_ip_src(void *hdr, uint16_t ip_src){
 	((cpc_arpv4_hdr_t*)hdr)->ip_src = CPC_HTOBE16(ip_src);
 };
 
 inline static
-uint16_t get_ip_arpv4_dst(void *hdr){
+uint16_t get_arpv4_ip_dst(void *hdr){
 	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ip_dst);
 };
 
 inline static
-void set_ip_arpv4_dst(void *hdr, uint16_t ip_dst){
+void set_arpv4_ip_dst(void *hdr, uint16_t ip_dst){
 	((cpc_arpv4_hdr_t*)hdr)->ip_dst = CPC_HTOBE16(ip_dst);
 };
 #endif //_CPC_ARPV4_H_

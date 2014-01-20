@@ -23,6 +23,27 @@ void interrupt_handler(int dummy=0) {
 	ciosrv::stop();
 }
 
+//Prints version and build numbers and exits
+void dump_version(){
+	//Print version and exit
+	ROFL_INFO("The eXtensible OpenFlow Datapath daemon (xDPd)\n");	
+	ROFL_INFO("Version: %s\n",XDPD_VERSION);
+
+#ifdef XDPD_BUILD
+	ROFL_INFO("Build: %s\n",XDPD_BUILD);
+	ROFL_INFO("Compiled in branch: %s\n",XDPD_BRANCH);
+	ROFL_INFO("%s\n",XDPD_DESCRIBE);
+#endif	
+	ROFL_INFO("\n[Libraries: ROFL]\n");
+	ROFL_INFO("ROFL version: %s\n",ROFL_VERSION);
+	ROFL_INFO("ROFL build: %s\n",ROFL_BUILD_NUM);
+	ROFL_INFO("ROFL compiled in branch: %s\n",ROFL_BUILD_BRANCH);
+	ROFL_INFO("%s\n",ROFL_BUILD_DESCRIBE);
+	
+	exit(EXIT_SUCCESS);
+
+}
+
 /*
  * xDPd Main routine
  */
@@ -53,10 +74,15 @@ int main(int argc, char** argv){
 		
 		/* update defaults */
 		env_parser.update_default_option("logfile", XDPD_LOG_FILE);
+		env_parser.add_option(coption(true, NO_ARGUMENT, 'v', "version", "Retrieve xDPd version and exit", std::string("")));
 
 		//Parse
 		env_parser.parse_args();
 
+		if (env_parser.is_arg_set("version")) {
+			dump_version();
+		}
+		
 		if (not env_parser.is_arg_set("daemonize")) {
 			// only do this in non
 			std::string ident(XDPD_LOG_FILE);
@@ -67,6 +93,7 @@ int main(int argc, char** argv){
 					ident.c_str());
 		}
 	}
+
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
 		ROFL_INFO("Init driver failed\n");	

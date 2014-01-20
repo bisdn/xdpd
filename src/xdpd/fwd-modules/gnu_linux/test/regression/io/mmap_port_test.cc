@@ -150,9 +150,9 @@ MMAPPortTest::setUp()
 	pkt_x86->init(NULL, 250, NULL,1);
 	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 
-	set_dl_eth_dst(ether(pkt_x86->headers, 0), rofl::cmacaddr("00:11:11:11:11:11").get_mac());
-	set_dl_eth_src(ether(pkt_x86->headers,0), rofl::cmacaddr("00:22:22:22:22:22").get_mac());
-	set_dl_eth_type(ether(pkt_x86->headers,0), 0x0800);
+	set_ether_dl_dst(get_ether_hdr(pkt_x86->headers, 0), rofl::cmacaddr("00:11:11:11:11:11").get_mac());
+	set_ether_dl_src(get_ether_hdr(pkt_x86->headers,0), rofl::cmacaddr("00:22:22:22:22:22").get_mac());
+	set_ether_type(get_ether_hdr(pkt_x86->headers,0), 0x0800);
 
 	// Allocate free buffer
 	pkt_vlan = bufferpool::get_free_buffer();
@@ -162,15 +162,15 @@ MMAPPortTest::setUp()
 	pkt_x86->init(NULL, 254, NULL,1);
 	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 
-	set_dl_eth_dst(ether(pkt_x86->headers,0), rofl::cmacaddr("00:11:11:11:11:11").get_mac());
-	set_dl_eth_src(ether(pkt_x86->headers,0), rofl::cmacaddr("00:22:22:22:22:22").get_mac());
-	set_dl_eth_type(ether(pkt_x86->headers,0), ETH_P_8021Q);
+	set_ether_dl_dst(get_ether_hdr(pkt_x86->headers,0), rofl::cmacaddr("00:11:11:11:11:11").get_mac());
+	set_ether_dl_src(get_ether_hdr(pkt_x86->headers,0), rofl::cmacaddr("00:22:22:22:22:22").get_mac());
+	set_ether_type(get_ether_hdr(pkt_x86->headers,0), ETH_P_8021Q);
 	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 
-	set_dl_vlan_id(vlan(pkt_x86->headers,0),16);
-	set_dl_vlan_pcp(vlan(pkt_x86->headers,0),0x2);
-	// pkt_x86->headers->vlan(0)->set_dl_vlan_cfi(true); // todo this fails if it is set (fail in mmap?)
-	set_dl_vlan_type(vlan(pkt_x86->headers,0),ETH_P_IP);
+	set_vlan_id(get_vlan_hdr(pkt_x86->headers,0),16);
+	set_vlan_pcp(get_vlan_hdr(pkt_x86->headers,0),0x2);
+	// pkt_x86->headers->get_vlan_hdr(0)->set_dl_vlan_cfi(true); // todo this fails if it is set (fail in mmap?)
+	set_vlan_type(get_vlan_hdr(pkt_x86->headers,0),ETH_P_IP);
 	// todo could fill in also ip layer data + payload
 	
 	//add queues

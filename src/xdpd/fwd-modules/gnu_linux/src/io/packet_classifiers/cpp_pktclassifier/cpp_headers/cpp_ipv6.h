@@ -33,23 +33,23 @@ void set_ipv6_ecn(void *hdr, uint8_t ecn);
 
 uint8_t get_ipv6_ecn(void *hdr);
 
-void set_flow_label(void *hdr, uint32_t flabel);
+void set_ipv6_flow_label(void *hdr, uint32_t flabel);
 
-uint32_t get_flow_label(void *hdr);
+uint32_t get_ipv6_flow_label(void *hdr);
 
-void set_payload_length(void *hdr, uint16_t len);
+void set_ipv6_payload_length(void *hdr, uint16_t len);
 
-uint16_t get_payload_length(void *hdr);
+uint16_t get_ipv6_payload_length(void *hdr);
 
-void set_next_header(void *hdr, uint8_t nxthdr);
+void set_ipv6_next_header(void *hdr, uint8_t nxthdr);
 
-uint8_t get_next_header(void *hdr);
+uint8_t get_ipv6_next_header(void *hdr);
 
-void set_hop_limit(void *hdr, uint8_t hops);
+void set_ipv6_hop_limit(void *hdr, uint8_t hops);
 
-uint8_t get_hop_limit(void *hdr);
+uint8_t get_ipv6_hop_limit(void *hdr);
 
-void dec_hop_limit(void *hdr);
+void dec_ipv6_hop_limit(void *hdr);
 
 void set_ipv6_src(void *hdr, uint128__t src);
 

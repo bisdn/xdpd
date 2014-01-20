@@ -54,16 +54,16 @@ void set_ipv4_length(void *hdr, uint16_t length);
 
 uint32_t get_ipv4_length(void *hdr);
 
-void set_DF_bit(void *hdr);
+void set_ipv4_DF_bit(void *hdr);
 
-bool has_DF_bit_set(void *hdr);
+bool has_ipv4_DF_bit_set(void *hdr);
 
-void clear_DF_bit(void *hdr);
+void clear_ipv4_DF_bit(void *hdr);
 
-void set_MF_bit(void *hdr);
+void set_ipv4_MF_bit(void *hdr);
 
-bool has_MF_bit_set(void *hdr);
+bool has_ipv4_MF_bit_set(void *hdr);
 
-void clear_MF_bit(void *hdr);
+void clear_ipv4_MF_bit(void *hdr);
 
 #endif //_CPP_IPV4_H_

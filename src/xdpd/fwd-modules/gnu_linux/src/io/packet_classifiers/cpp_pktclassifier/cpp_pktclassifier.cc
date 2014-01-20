@@ -28,55 +28,55 @@ void reset_classifier(struct classify_state* clas_state){
 
 
 /* Header getters */
-void* ether(struct classify_state* clas_state, int idx){
+void* get_ether_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->ether(idx);
 }
 
-void* vlan(struct classify_state* clas_state, int idx){
+void* get_vlan_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->vlan(idx);
 }
 
-void* mpls(struct classify_state* clas_state, int idx){
+void* get_mpls_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->mpls(idx);
 }
 
-void* arpv4(struct classify_state* clas_state, int idx){
+void* get_arpv4_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->arpv4(idx);
 }
 
-void* ipv4(struct classify_state* clas_state, int idx){
+void* get_ipv4_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->ipv4(idx);
 }
 
-void* icmpv4(struct classify_state* clas_state, int idx){
+void* get_icmpv4_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->icmpv4(idx);
 }
 
-void* ipv6(struct classify_state* clas_state, int idx){
+void* get_ipv6_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->ipv6(idx);
 }
 
-void* icmpv6(struct classify_state* clas_state, int idx){
+void* get_icmpv6_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->icmpv6(idx);
 }
 
-void* udp(struct classify_state* clas_state, int idx){
+void* get_udp_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->udp(idx);
 }
 
-void* tcp(struct classify_state* clas_state, int idx){
+void* get_tcp_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->tcp(idx);
 }
 
-void* pppoe(struct classify_state* clas_state, int idx){
+void* get_pppoe_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->pppoe(idx);
 }
 
-void* ppp(struct classify_state* clas_state, int idx){
+void* get_ppp_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->ppp(idx);
 }
 
-void* gtp(struct classify_state* clas_state, int idx){
+void* get_gtpu_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->gtp(idx);
 }
 

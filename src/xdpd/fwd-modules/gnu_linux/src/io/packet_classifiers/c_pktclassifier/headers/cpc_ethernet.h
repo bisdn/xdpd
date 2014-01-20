@@ -20,24 +20,17 @@
 
 static inline
 uint64_t mac_addr_to_u64(uint8_t *mac){
-	//uint32_t *p32 = (uint32_t*)mac;
-	//uint16_t *p16 = (uint16_t*)(&mac[4]);
-	uint64_t *p64 = (uint64_t*)mac;
 	
-	//return (uint64_t)*p32 + (((uint64_t)*p16)<<32);
+	uint64_t *p64 = (uint64_t*)mac;
 	return (*p64 & 0x0000ffffffffffff);
+	
 };
 
 static inline
 void u64_to_mac_ptr(uint8_t *mac, uint64_t val){
-	//uint32_t *p32 = (uint32_t*) mac;
-	//uint16_t *p16 = (uint16_t*) (&mac[4]);
-	//uint64_t *p64 = (uint64_t*) mac;
 	
-	//*p32 = (uint32_t)(val&0x00000000ffffffff);
-	//*p16 = (uint16_t)((val&0x0000ffff00000000)>>32);
-	//*p64 |= (val&0x0000ffffffffffff);
 	memcpy(mac,&val,6);
+	
 };
 
 /* Ethernet constants and definitions */
@@ -53,38 +46,38 @@ struct cpc_eth_hdr {
 typedef struct cpc_eth_hdr cpc_eth_hdr_t;
 
 inline static
-uint64_t get_dl_eth_dst(void *hdr){
+uint64_t get_ether_dl_dst(void *hdr){
 	uint64_t ret = mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_dst);
 	CPC_SWAP_MAC(ret);
 	return ret;
 };
 
 inline static
-void set_dl_eth_dst(void* hdr, uint64_t dl_dst){
+void set_ether_dl_dst(void* hdr, uint64_t dl_dst){
 	CPC_SWAP_MAC(dl_dst);
 	u64_to_mac_ptr( ((cpc_eth_hdr_t*)hdr)->dl_dst, dl_dst);
 };
 
 inline static
-uint64_t get_dl_eth_src(void* hdr){
+uint64_t get_ether_dl_src(void* hdr){
 	uint64_t ret = mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_src);
 	CPC_SWAP_MAC(ret);
 	return ret;
 };
 
 inline static
-void set_dl_eth_src(void* hdr, uint64_t dl_src){
+void set_ether_dl_src(void* hdr, uint64_t dl_src){
 	CPC_SWAP_MAC(dl_src);
 	u64_to_mac_ptr( ((cpc_eth_hdr_t*)hdr)->dl_src, dl_src);
 };
 
 inline static
-uint16_t get_dl_eth_type(void* hdr){
+uint16_t get_ether_type(void* hdr){
 	return CPC_BE16TOH(((cpc_eth_hdr_t *)hdr)->dl_type);
 };
 
 inline static
-void set_dl_eth_type(void* hdr, uint16_t dl_type){
+void set_ether_type(void* hdr, uint16_t dl_type){
 	((cpc_eth_hdr_t *)hdr)->dl_type = CPC_HTOBE16(dl_type);
 };
 

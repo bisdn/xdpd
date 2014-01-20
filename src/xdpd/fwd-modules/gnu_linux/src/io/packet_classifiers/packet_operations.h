@@ -2,14 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _PUSH_POP_OPERATIONS_X86_
-#define _PUSH_POP_OPERATIONS_X86_
+#ifndef _PACKET_OPERATIONS_X86_
+#define _PACKET_OPERATIONS_X86_
 
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
 /**
-* @file push_pop_operations.h
+* @file packet_operations.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
 *
 * @brief Wrapper to make classifier indpendent from the platform datapacket
@@ -24,4 +24,4 @@ size_t get_buffer_length(datapacket_t* pkt);
 
 ROFL_END_DECLS
 
-#endif //_PUSH_POP_OPERATIONS_X86_
+#endif //_PACKET_OPERATIONS_X86_

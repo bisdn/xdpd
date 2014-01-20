@@ -53,6 +53,9 @@ m4_include([config/plugins.m4])
 #Check hardware support
 m4_include([config/hw.m4])
 
+#Check hardware support
+m4_include([config/versioning.m4])
+
 #Output the files
 AC_CONFIG_FILES([
 	Makefile
@@ -60,6 +63,7 @@ AC_CONFIG_FILES([
 	src/xdpd/Makefile
 	src/xdpd/fwd-modules/Makefile
 	src/xdpd/management/Makefile
+	src/xdpd/management/plugins/Makefile
 	src/xdpd/openflow/Makefile
 	src/xdpd/openflow/openflow10/Makefile
 	src/xdpd/openflow/openflow12/Makefile

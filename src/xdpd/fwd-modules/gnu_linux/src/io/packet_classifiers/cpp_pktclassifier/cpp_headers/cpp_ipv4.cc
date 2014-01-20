@@ -82,26 +82,26 @@ uint32_t get_ipv4_length(void *hdr){
 	return ((rofl::fipv4frame*)hdr)->get_ipv4_length();
 };
 
-void set_DF_bit(void *hdr){
+void set_ipv4_DF_bit(void *hdr){
 	((rofl::fipv4frame*)hdr)->set_DF_bit();
 };
 
-bool has_DF_bit_set(void *hdr){
+bool has_ipv4_DF_bit_set(void *hdr){
 	return ((rofl::fipv4frame*)hdr)->has_DF_bit_set();
 };
 
-void clear_DF_bit(void *hdr){
+void clear_ipv4_DF_bit(void *hdr){
 	((rofl::fipv4frame*)hdr)->clear_DF_bit();
 };
 
-void set_MF_bit(void *hdr){
+void set_ipv4_MF_bit(void *hdr){
 	((rofl::fipv4frame*)hdr)->set_MF_bit();
 };
 
-bool has_MF_bit_set(void *hdr){
+bool has_ipv4_MF_bit_set(void *hdr){
 	return ((rofl::fipv4frame*)hdr)->has_MF_bit_set();
 };
 
-void clear_MF_bit(void *hdr){
+void clear_ipv4_MF_bit(void *hdr){
 	((rofl::fipv4frame*)hdr)->clear_MF_bit();
 };

@@ -357,43 +357,44 @@ void* epoll_ioscheduler::process_io_tx(void* grp){
 	set_kernel_scheduling();
 
 	assert(pg->type == PG_TX);
+	
+	//Nice trace
 	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O TX thread on process id: %u(%u) for group %u\n", syscall(SYS_gettid), pthread_self(), pg->id);
 	
+	//Set initial port list state
 	if(update_tx_port_list(pg, &current_num_of_ports, &current_hash, port_list) != ROFL_SUCCESS){
 		pthread_exit(NULL);
 	}
 
-	while(iomanager::keep_on_working(pg)){
+	//"Infinite" loop
+	while(likely(iomanager::keep_on_working(pg) == true)){
 
 		tx_packets=0;	
 	
-		//if(!more_packets){
-			//cond_wait(update timeout)
-			clock_gettime(CLOCK_REALTIME, &abs_timeout);
-			//abs_timeout.tv_nsec += EPOLL_TIMEOUT_MS*100000000;
-			abs_timeout.tv_sec += 1; //EPOLL_TIMEOUT_MS*100000000; //FIXME
+		clock_gettime(CLOCK_REALTIME_COARSE, &abs_timeout);
+		//abs_timeout.tv_nsec += EPOLL_TIMEOUT_MS*100000000;
+		abs_timeout.tv_sec += 1; //EPOLL_TIMEOUT_MS*100000000; //FIXME
 
-			//Now wait
-			sem_ret = sem_timedwait(sem, &abs_timeout);
-	
-			if(sem_ret < 0){
-				//FIXME: trace
-			}
-		//}
+		//Now wait
+		sem_ret = sem_timedwait(sem, &abs_timeout);
+
+		if(unlikely(sem_ret < 0)){
+			//FIXME: trace
+		}
 		
-		//No timeout go over the ports
+		//No timeout go over all ports
 		for(i=0; i<current_num_of_ports; ++i){
 			tx_packets += epoll_ioscheduler::process_port_tx(port_list[i]);
 		}
 
+#ifdef VERBOSE_DEBUG 
 		int sem_value;
-
-	
 		sem_getvalue(sem, &sem_value);
 		ROFL_DEBUG_VERBOSE("Value tx_packets:%d, sem value: %d \n", tx_packets, sem_value);
+#endif
 
 		//Drain credits for the (already) TX'd packets (tx_packets - 1(inital sem_wait))
-		if(tx_packets){
+		if( likely(tx_packets > 0) ){
 			ROFL_DEBUG_VERBOSE("Draining :%u\n", tx_packets-1);
 			for(tx_packets--;tx_packets;tx_packets--)
 				sem_trywait(sem);	

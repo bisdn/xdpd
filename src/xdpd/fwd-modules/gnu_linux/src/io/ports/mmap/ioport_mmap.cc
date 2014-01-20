@@ -155,7 +155,7 @@ next:
 	if ( unlikely(hdr->tp_mac + hdr->tp_snaplen > rx->get_tpacket_req()->tp_frame_size) ) {
 		ROFL_DEBUG_VERBOSE("[mmap:%s] sanity check during read mmap failed\n",of_port_state->name);
 		//Increment error statistics
-		switch_port_stats_inc_lockless(of_port_state,0,0,0,0,1,0);
+		of_port_state->stats.rx_dropped++;		
 
 		//Return packet to kernel in the RX ring		
 		rx->return_packet(hdr);
@@ -190,7 +190,7 @@ next:
 	//Handle no free buffer
 	if(!pkt) {
 		//Increment error statistics and drop
-		switch_port_stats_inc_lockless(of_port_state,0,0,0,0,1,0);
+		of_port_state->stats.rx_dropped++;		
 		rx->return_packet(hdr);
 		return NULL;
 	}
@@ -213,7 +213,8 @@ next:
 	rx->return_packet(hdr);
 
 	//Increment statistics&return
-	switch_port_stats_inc_lockless(of_port_state, 1, 0, hdr->tp_len, 0, 0, 0);	
+	of_port_state->stats.rx_packets++;
+	of_port_state->stats.rx_bytes += pkt_x86->get_buffer_length();
 	
 	return pkt;
 
@@ -297,8 +298,9 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 			bufferpool::release_buffer(pkt);
 		
 			//Increment errors
-			switch_port_stats_inc_lockless(of_port_state, 0, 0, 0, 0, 0, 1);	
-			port_queue_stats_inc_lockless(&of_port_state->queues[q_id], 0, 0, 1);
+			of_port_state->queues[q_id].stats.overrun++;
+			of_port_state->stats.tx_dropped++;
+			
 			continue;
 		}else{	
 			fill_tx_slot(hdr, pkt_x86);
@@ -316,16 +318,17 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 	}
 	
 	//Increment stats and return
-	if (cnt) {
+	if (likely(cnt > 0)) {
 		ROFL_DEBUG_VERBOSE("[mmap:%s] schedule %u packet(s) to be send\n", __FUNCTION__, cnt);
 
 		// send packets in TX
-		if(tx->send() != ROFL_SUCCESS){
+		if(unlikely(tx->send() != ROFL_SUCCESS)){
 			ROFL_ERR("[mmap:%s] ERROR while sending packets. This is due very likely to an invalid ETH_TYPE value. Now the port will be reset in order to continue operation\n", of_port_state->name);
 			assert(0);
-			switch_port_stats_inc_lockless(of_port_state, 0, 0, 0, 0, 0, cnt);	
-			port_queue_stats_inc_lockless(&of_port_state->queues[q_id], 0, 0, cnt);	
+			of_port_state->stats.tx_errors += cnt;
+			of_port_state->queues[q_id].stats.overrun += cnt;
 			
+
 			/*
 			* We need to reset the port, meaning destroy and regenerate both TX rings
 			* Disabling and enabling the port to accomplish so.
@@ -348,8 +351,11 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 		}
 
 		//Increment statistics
-		switch_port_stats_inc_lockless(of_port_state, 0, cnt, 0, tx_bytes_local, 0, 0);	
-		port_queue_stats_inc_lockless(&of_port_state->queues[q_id], cnt, tx_bytes_local, 0);	
+		of_port_state->stats.tx_packets += cnt;
+		of_port_state->stats.tx_bytes += tx_bytes_local;
+		of_port_state->queues[q_id].stats.tx_packets += cnt;
+		of_port_state->queues[q_id].stats.tx_bytes += tx_bytes_local;
+		
 	}
 
 	// return not used buckets

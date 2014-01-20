@@ -16,12 +16,10 @@ ioport_netmap::ioport_netmap(switch_port_t* of_ps, unsigned int num_queues):iopo
 
 	if (!strcmp(of_port_state->name, "lo"))
 		throw "Don't register for loopback";
-	else if (!strcmp(of_port_state->name, "eth0"))
-		throw "Don't register for eth0";
 
 	//ROFL_INFO("netmap: %s trying to open with netmap\n", of_port_state->name);
 	fd = open("/dev/netmap", O_RDWR);
-	if (unlikely(fd == -1)) {
+	if (fd == -1) {
 		throw "Check kernel module";
 	}
 
@@ -40,17 +38,8 @@ ioport_netmap::ioport_netmap(switch_port_t* of_ps, unsigned int num_queues):iopo
 			req.nr_tx_rings, req.nr_tx_slots,
 			req.nr_rx_rings, req.nr_rx_slots);
 	//ROFL_INFO("mapping %d Kbytes\n", req.nr_memsize>>10);
-	if( mem == NULL) {
-		mem = (struct netmap_d *) mmap(0, req.nr_memsize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-		bzero(mem,sizeof(req.nr_memsize));
-		if ( mem == MAP_FAILED ) {
-			throw "MMAP Failed";
-		}
-	}
-	nifp = NETMAP_IF(mem, req.nr_offset);
-
-	//TODO: test
-	num_of_queues=1;
+	close(fd);
+	
 	ret = pipe(notify_pipe);
 	if( unlikely(ret == -1) )
 		ROFL_INFO("Pipe problem\n");
@@ -66,10 +55,8 @@ ioport_netmap::ioport_netmap(switch_port_t* of_ps, unsigned int num_queues):iopo
 }
 
 ioport_netmap::~ioport_netmap(){
-	munmap(mem,memsize);
 	close(notify_pipe[READ]);
 	close(notify_pipe[WRITE]);
-	close(fd);
 }
 
 //Read and write methods over port
@@ -254,6 +241,10 @@ unsigned int ioport_netmap::write(unsigned int q_id, unsigned int num_of_buckets
 rofl_result_t ioport_netmap::disable(){
 	struct ifreq ifr;
 	int sd;
+
+	munmap(mem,memsize);
+	close(fd);
+	
 	if (( sd = socket(AF_PACKET, SOCK_RAW, 0)) <0 ) {
 		return ROFL_FAILURE;
 	}
@@ -310,6 +301,33 @@ rofl_result_t ioport_netmap::enable(){
 
 	of_port_state->up = true;
 	close(sd);
+	
+	fd = open("/dev/netmap", O_RDWR);
+	if (fd == -1) {
+		throw "Check kernel module";
+	}
+
+	struct nmreq req;
+	bzero(&req,sizeof(nmreq));
+	req.nr_version = NETMAP_API;
+
+	strcpy(req.nr_name, of_port_state->name);
+	int ret;
+	ret = ioctl(fd, NIOCREGIF, &req);
+	if (unlikely(ret == -1)) {
+		close(fd);
+		throw "Unable to register";
+	}
+
+	if( mem == NULL) {
+		mem = (struct netmap_d *) mmap(0, req.nr_memsize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+		//bzero(mem,sizeof(req.nr_memsize));
+		if ( mem == MAP_FAILED ) {
+			throw "MMAP Failed";
+		}
+	}
+	nifp = NETMAP_IF(mem, req.nr_offset);
+
 
 	flush_ring();
 	return ROFL_SUCCESS;

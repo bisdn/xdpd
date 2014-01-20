@@ -172,18 +172,6 @@ public:
 		return output_queues[q_id]->is_empty() == false;
 	}
 
-	/**
-	 * Portgroup to which is belonging TX condition 
-	 */
-	inline void set_pg_tx_sem(sem_t* pg_tx_sem){
-		this->pg_tx_sem = pg_tx_sem;
-	};
-
-	inline sem_t* get_pg_tx_sem(void){
-		return pg_tx_sem;
-	};
-
-
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
 	
@@ -195,9 +183,6 @@ public:
 			of_port_state->state = (of_port_state->state & ~(PORT_STATE_LINK_DOWN)); 
 			
 	}
-	
-	//Portgroup pthread cond
-	sem_t* pg_tx_sem;
 	
 	static const unsigned int MAX_OUTPUT_QUEUES=IO_IFACE_NUM_QUEUES; /*!< Constant max output queues */
 	unsigned int port_group;

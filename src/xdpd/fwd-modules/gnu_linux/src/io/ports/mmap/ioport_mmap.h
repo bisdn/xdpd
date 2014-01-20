@@ -75,7 +75,7 @@ public:
 
 	// Get write fds. Return -1 if do not exist
 	inline virtual int get_write_fd(void){
-		return -1;	
+		return notify_pipe[READ];
 	};
 
 	unsigned int get_port_no() {
@@ -112,9 +112,21 @@ private:
 	int block_size;
 	int n_blocks;
 	int frame_size;
+	int deferred_drain;
+
+	//Pipe used to
+	int notify_pipe[2];
+	
+	//Used to drain the pipe
+	char draining_buffer[IO_IFACE_RING_SLOTS];
+	
+	//Pipe extremes
+	static const unsigned int READ=0;
+	static const unsigned int WRITE=1;
 
 	void fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86 *pkt_x86);
 	void fill_tx_slot(struct tpacket2_hdr *hdr, datapacketx86 *packet);
+	void empty_pipe(void);
 };
 
 }// namespace xdpd::gnu_linux 

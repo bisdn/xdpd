@@ -64,9 +64,6 @@ public:
 	//State synchronization condition (iomanager->RX/TX threads)
 	sem_t sync_sem;
 
-	//TX sempahore (notification RX->TX)
-	sem_t tx_sem; 
-
 	//Port group type (RX or TX)
 	pg_type_t type;
 	

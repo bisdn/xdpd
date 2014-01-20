@@ -77,12 +77,9 @@ rofl_result_t iomanager::add_port(ioport* port){
 	
 	ROFL_DEBUG("[iomanager] Adding port %s to iomanager, at portgroup TX %u\n", port->of_port_state->name, grp_id); 
 	 	
-	//TX	
-	port->set_pg_tx_sem(&get_group(grp_id)->tx_sem); //Avoid race condition
 	if(add_port_to_group(grp_id, port) != ROFL_SUCCESS){
 		ROFL_ERR("[iomanager] Adding port %s to iomanager (TX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
 		assert(0);
-		port->set_pg_tx_sem(NULL);
 		return ROFL_FAILURE;	
 	}
 
@@ -133,9 +130,6 @@ rofl_result_t iomanager::remove_port(ioport* port){
 		return ROFL_FAILURE;
 	}
 
-	//Set the PG pthread_cond to NULL again
-	port->set_pg_tx_sem(NULL);	
-	
 	return ROFL_SUCCESS;
 }
 
@@ -299,9 +293,9 @@ void iomanager::start_portgroup_threads(portgroup_state* pg){
 	void* (*func)(void*);
 
 	if(pg->type == PG_RX)
-		func = ioscheduler_provider::process_io_rx;
+		func = ioscheduler_provider::process_io<true>;
 	else
-		func = ioscheduler_provider::process_io_tx;
+		func = ioscheduler_provider::process_io<false>;
  
 	//Create num_of_threads and invoke scheduler::process_io
 	for(i=0;i<pg->num_of_threads;++i){
@@ -360,7 +354,6 @@ int iomanager::create_group(pg_type_t type, unsigned int num_of_threads, bool mu
 	pg->running_ports = new safevector<ioport*>();
 	pg->type = type;
 	sem_init(&pg->sync_sem,0,0); //Init to 0
-	sem_init(&pg->tx_sem,0,0); //Init to 0
 
 	if(!mutex_locked){
 		pthread_mutex_lock(&mutex);

@@ -30,8 +30,22 @@ ioport_mmap::ioport_mmap(
 			tx(NULL),
 			block_size(block_size),
 			n_blocks(n_blocks),
-			frame_size(frame_size)
+			frame_size(frame_size),
+			deferred_drain(0)
 {
+	int rc;
+	
+	//Open pipe for output signaling on enqueue	
+	rc = pipe(notify_pipe);
+	(void)rc; // todo use the value
+
+	//Set non-blocking read/write in the pipe
+	for(unsigned int i=0;i<2;i++){
+		int flags = fcntl(notify_pipe[i], F_GETFL, 0);	///get current file status flags
+		flags |= O_NONBLOCK;				//turn off blocking flag
+		fcntl(notify_pipe[i], F_SETFL, flags);		//set up non-blocking read
+	}
+
 
 }
 
@@ -42,11 +56,16 @@ ioport_mmap::~ioport_mmap()
 		delete rx;
 	if(tx)
 		delete tx;
+
+	close(notify_pipe[READ]);
+	close(notify_pipe[WRITE]);
 }
 
 //Read and write methods over port
 void ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 
+	const char c='a';
+	int ret;
 	unsigned int len;
 	
 	datapacketx86* pkt_x86 = (datapacketx86*) pkt->platform_state;
@@ -82,8 +101,9 @@ void ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 
 		ROFL_DEBUG_VERBOSE("[mmap:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id]->size());
 	
-		//Notify port group
-		sem_post(this->pg_tx_sem);
+		//WRITE to pipe
+		ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
+		(void)ret; // todo use the value
 	} else {
 		if(len < MIN_PKT_LEN){
 			ROFL_ERR("[mmap:%s] ERROR: attempt to send invalid packet size for packet(%p) scheduled for queue %u. Packet size: %u\n", of_port_state->name, pkt, q_id, len);
@@ -96,6 +116,25 @@ void ioport_mmap::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 		bufferpool::release_buffer(pkt);
 	}
 
+}
+
+inline void ioport_mmap::empty_pipe(){
+	int ret;
+
+	if(unlikely(deferred_drain == 0))
+		return;
+
+	//Just take deferred_drain from the pipe 
+	ret = ::read(notify_pipe[READ], draining_buffer, deferred_drain);
+
+	if(unlikely(ret == -1)){
+		//EAGAIN
+	}else{
+		if(unlikely( (deferred_drain - ret) < 0 ) ){
+			deferred_drain = 0;
+		}else
+			deferred_drain -= ret;
+	}
 }
 
 inline void ioport_mmap::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86 *pkt_x86){
@@ -301,6 +340,7 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 			of_port_state->queues[q_id].stats.overrun++;
 			of_port_state->stats.tx_dropped++;
 			
+			deferred_drain++;
 			continue;
 		}else{	
 			fill_tx_slot(hdr, pkt_x86);
@@ -315,6 +355,7 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 		// todo statistics
 		tx_bytes_local += hdr->tp_len;
 		cnt++;
+		deferred_drain++;
 	}
 	
 	//Increment stats and return
@@ -357,6 +398,9 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 		of_port_state->queues[q_id].stats.tx_bytes += tx_bytes_local;
 		
 	}
+
+	//Empty reading pipe (batch)
+	empty_pipe();
 
 	// return not used buckets
 	return num_of_buckets;

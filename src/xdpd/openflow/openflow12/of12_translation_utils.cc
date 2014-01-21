@@ -944,30 +944,6 @@ of12_translation_utils::of12_map_flow_entry_actions(
 			cofaction_experimenter eaction(raction);
 
 			switch (eaction.get_exp_id()) {
-
-#define TP_EXPERIMENTER_ID 0x12345678
-#define TP_CAPWAP_ACTION1 0x00000001
-#define TP_CAPWAP_ACTION2 0x00000002
-			case TP_EXPERIMENTER_ID: {
-
-				/*
-				 * one can use the exp_type field like so:
-				 */
-				switch (eaction.get_exp_type()) {
-				case TP_CAPWAP_ACTION1: {
-					rofl::cmemory body(eaction.oac_12experimenter->data,
-							be16toh(eaction.oac_oacu.oacu_12experimenter->len) -
-								sizeof(struct openflow12::ofp_action_experimenter_header));
-					// body.somem() points to start of body ..., body.memlen() reveals its length
-				} break;
-				case TP_CAPWAP_ACTION2: {
-					// ...
-				} break;
-				// ...
-				}
-
-			} break;
-
 			case ROFL_EXPERIMENTER_ID: {
 
 				/*

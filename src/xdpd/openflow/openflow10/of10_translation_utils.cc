@@ -369,8 +369,10 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			match.set_vlan_pcp(m->value->value.u8);
 			break;
 		case OF1X_MATCH_ARP_OP:
-			match.set_arp_opcode(m->value->value.u16);
+			//match.set_arp_opcode(m->value->value.u16);
+			match.set_nw_proto(m->value->value.u16);
 			break;
+#if 0
 		case OF1X_MATCH_ARP_SHA:
 		{
 			cmacaddr maddr(m->value->value.u64);
@@ -379,6 +381,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			match.set_eth_src(maddr, mmask);  // TODO: the same for ARP request and ARP reply?
 		}
 			break;
+#endif
 		case OF1X_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
@@ -387,6 +390,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			match.set_nw_src(addr);	// TODO: the same for ARP request and ARP reply?
 		}
 			break;
+#if 0
 		case OF1X_MATCH_ARP_THA:
 		{
 			cmacaddr maddr(m->value->value.u64);
@@ -395,6 +399,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			match.set_eth_dst(maddr, mmask);  // TODO: the same for ARP request and ARP reply?
 		}
 			break;
+#endif
 		case OF1X_MATCH_ARP_TPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
@@ -649,17 +654,24 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)
-		match.set_arp_opcode(packet_matches->arp_opcode);
+		match.set_nw_proto(packet_matches->arp_opcode);
+		//match.set_arp_opcode(packet_matches->arp_opcode);
+#if 0
 	if(packet_matches->arp_sha)
-		match.set_arp_sha(cmacaddr(packet_matches->arp_sha));
+		match.set_eth_src(cmacaddr(packet_matches->arp_sha));
+		//match.set_arp_sha(cmacaddr(packet_matches->arp_sha));
+#endif
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_spa);
 		//match.set_arp_spa(addr);
 		match.set_nw_src(addr);
 	}
+#if 0
 	if(packet_matches->arp_tha)
-		match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
+		match.set_eth_dst(cmacaddr(packet_matches->arp_tha));
+		//match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
+#endif
 	if(packet_matches->arp_tpa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_tpa);

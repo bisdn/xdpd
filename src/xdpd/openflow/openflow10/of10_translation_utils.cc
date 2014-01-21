@@ -375,21 +375,24 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		{
 			cmacaddr maddr(m->value->value.u64);
 			cmacaddr mmask(m->value->mask.u64);
-			match.set_arp_sha(maddr, mmask);
+			//match.set_arp_sha(maddr, mmask);
+			match.set_eth_src(maddr, mmask);  // TODO: the same for ARP request and ARP reply?
 		}
 			break;
 		case OF1X_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(m->value->value.u32);
-			match.set_arp_spa(addr);
+			//match.set_arp_spa(addr);
+			match.set_nw_src(addr);	// TODO: the same for ARP request and ARP reply?
 		}
 			break;
 		case OF1X_MATCH_ARP_THA:
 		{
 			cmacaddr maddr(m->value->value.u64);
 			cmacaddr mmask(m->value->mask.u64);
-			match.set_arp_tha(maddr, mmask);
+			//match.set_arp_tha(maddr, mmask);
+			match.set_eth_dst(maddr, mmask);  // TODO: the same for ARP request and ARP reply?
 		}
 			break;
 		case OF1X_MATCH_ARP_TPA:
@@ -397,6 +400,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			caddress addr(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(m->value->value.u32);
 			match.set_arp_tpa(addr);
+			match.set_nw_dst(addr);	// TODO: the same for ARP request and ARP reply?
 		}
 			break;
 		case OF1X_MATCH_IP_DSCP:
@@ -433,6 +437,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_TP_DST:
 			match.set_tp_dst(m->value->value.u16);
 			break;
+#if 0
 		case OF1X_MATCH_MPLS_LABEL:
 			match.set_mpls_label(m->value->value.u32);
 			break;
@@ -457,6 +462,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_GTP_TEID:
 			match.insert(coxmatch_ofx_gtp_teid(m->value->value.u32));
 			break;
+#endif
 		default:
 			break;
 		}
@@ -649,14 +655,16 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_spa);
-		match.set_arp_spa(addr);
+		//match.set_arp_spa(addr);
+		match.set_nw_src(addr);
 	}
 	if(packet_matches->arp_tha)
 		match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
 	if(packet_matches->arp_tpa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_tpa);
-		match.set_arp_tpa(addr);
+		//match.set_arp_tpa(addr);
+		match.set_nw_dst(addr);
 	}
 	if(packet_matches->ip_dscp)
 		match.set_ip_dscp(packet_matches->ip_dscp);
@@ -667,27 +675,35 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 	if(packet_matches->ipv4_src){
 			caddress addr(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(packet_matches->ipv4_src);
-			match.set_ipv4_src(addr);
-
+			//match.set_ipv4_src(addr);
+			match.set_nw_src(addr);
 	}
 	if(packet_matches->ipv4_dst){
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->ipv4_dst);
-		match.set_ipv4_dst(addr);
+		//match.set_ipv4_dst(addr);
+		match.set_nw_dst(addr);
 	}
 	if(packet_matches->tcp_src)
-		match.set_tcp_src(packet_matches->tcp_src);
+		match.set_tp_src(packet_matches->tcp_src);
+		//match.set_tcp_src(packet_matches->tcp_src);
 	if(packet_matches->tcp_dst)
-		match.set_tcp_dst(packet_matches->tcp_dst);
+		match.set_tp_dst(packet_matches->tcp_dst);
+		//match.set_tcp_dst(packet_matches->tcp_dst);
 	if(packet_matches->udp_src)
-		match.set_udp_src(packet_matches->udp_src);
+		match.set_tp_src(packet_matches->udp_src);
+		//match.set_udp_src(packet_matches->udp_src);
 	if(packet_matches->udp_dst)
-		match.set_udp_dst(packet_matches->udp_dst);
+		match.set_tp_dst(packet_matches->udp_dst);
+		//match.set_udp_dst(packet_matches->udp_dst);
 	if(packet_matches->icmpv4_type)
-		match.set_icmpv4_type(packet_matches->icmpv4_type);
+		match.set_tp_src(packet_matches->icmpv4_type);
+		//match.set_icmpv4_type(packet_matches->icmpv4_type);
 	if(packet_matches->icmpv4_code)
-		match.set_icmpv4_code(packet_matches->icmpv4_code);
+		match.set_tp_dst(packet_matches->icmpv4_code);
+		//match.set_icmpv4_code(packet_matches->icmpv4_code);
 
+#if 0
 	//TODO IPv6
 	if(packet_matches->mpls_label)
 		match.set_mpls_label(packet_matches->mpls_label);
@@ -705,6 +721,7 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 		match.insert(coxmatch_ofx_gtp_msg_type(packet_matches->gtp_msg_type));
 	if(packet_matches->gtp_teid)
 		match.insert(coxmatch_ofx_gtp_teid(packet_matches->gtp_teid));
+#endif
 }
 
 uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){

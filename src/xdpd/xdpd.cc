@@ -131,6 +131,8 @@ int main(int argc, char** argv){
 	
 	csyslog::closelog();
 
+	logging::close();
+
 	exit(EXIT_SUCCESS);
 }
 

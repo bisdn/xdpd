@@ -91,6 +91,8 @@ int main(int argc, char** argv){
 					static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
 					env_parser.get_arg("logfile"),
 					ident.c_str());
+
+			logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
 		}
 	}
 

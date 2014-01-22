@@ -29,6 +29,7 @@ Requirements
 
 - A modern GNU build-system (autoconf, automake, libtool, ...)
 - GNU/Linux and libc development headers (linux-libc-dev and libc6-dev package in Debian/Ubuntu systems)
+- pkg-config
 - libconfig C++ lib (libconfig++-dev in Debian/Ubuntu systems)
 - ROFL libraries installed [1]
 - [optional] if you want to run automatic tests (make check), libcunit and libcppunit are required (in libcunit1-dev and libcppunit-dev packages in Debian-like systems).

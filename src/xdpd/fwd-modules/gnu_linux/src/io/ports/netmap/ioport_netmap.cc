@@ -37,7 +37,9 @@ ioport_netmap::ioport_netmap(switch_port_t* of_ps, unsigned int num_queues):iopo
 	ROFL_INFO("%s has txr %d txd %d rxr %d rxd %d \n", of_port_state->name,
 			req.nr_tx_rings, req.nr_tx_slots,
 			req.nr_rx_rings, req.nr_rx_slots);
-	//ROFL_INFO("mapping %d Kbytes\n", req.nr_memsize>>10);
+
+	num_of_queues=req.nr_tx_rings;
+
 	close(fd);
 	
 	ret = pipe(notify_pipe);
@@ -112,7 +114,7 @@ void ioport_netmap::empty_pipe() {
 	ret = ::read(notify_pipe[READ], draining_buffer, deferred_drain);
 
 	if( unlikely(ret == -1) ) {
-		ROFL_INFO("pipe is empty");
+		ROFL_DEBUG("pipe is empty\n");
 	} else if((deferred_drain - ret) < 0)
 		deferred_drain = 0;
 	else
@@ -150,18 +152,16 @@ datapacket_t* ioport_netmap::read(){
 	buf = NETMAP_BUF(ring, slot->buf_idx);
 
 	pkt_x86->init((uint8_t*)buf, slot->len, of_port_state->attached_sw, of_port_state->of_port_num,0,true,false);
-	//pkt_x86->init(buf, slot->len, of_port_state->attached_sw, of_port_state->of_port_num);
 
 	//ROFL_DEBUG_VERBOSE("Got pkt %d of size %d ==> %p\n", slot->buf_idx, slot->len, pkt_x86->get_buffer());
 
 	ring->cur = NETMAP_RING_NEXT(ring, cur);
 	ring->avail-- ;
-	//ROFL_INFO("We have %zu packets in our ring\n", ring->avail);
 
 	ROFL_DEBUG_VERBOSE("Filled buffer with id:%d. Sending to process.\n", slot->buf_idx);
 
-//	if(ioctl(fd,NIOCRXSYNC, NULL) == -1)
-//		ROFL_DEBUG_VERBOSE("Netmap sync problem\n");
+	if(ioctl(fd,NIOCRXSYNC, NULL) == -1)
+		ROFL_DEBUG_VERBOSE("Netmap sync problem\n");
 	return pkt;
 }
 
@@ -272,6 +272,9 @@ rofl_result_t ioport_netmap::disable(){
 	of_port_state->up = true;
 	close(sd);
 
+	//Close NETMAP
+	close(fd);
+
 	return ROFL_SUCCESS;
 }
 
@@ -304,7 +307,7 @@ rofl_result_t ioport_netmap::enable(){
 	
 	fd = open("/dev/netmap", O_RDWR);
 	if (fd == -1) {
-		throw "Check kernel module";
+		ROFL_INFO("Check kernel module");
 	}
 
 	struct nmreq req;
@@ -316,14 +319,14 @@ rofl_result_t ioport_netmap::enable(){
 	ret = ioctl(fd, NIOCREGIF, &req);
 	if (unlikely(ret == -1)) {
 		close(fd);
-		throw "Unable to register";
+		ROFL_INFO("Unable to register");
 	}
 
 	if( mem == NULL) {
 		mem = (struct netmap_d *) mmap(0, req.nr_memsize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 		//bzero(mem,sizeof(req.nr_memsize));
 		if ( mem == MAP_FAILED ) {
-			throw "MMAP Failed";
+			ROFL_INFO("MMAP Failed");
 		}
 	}
 	nifp = NETMAP_IF(mem, req.nr_offset);

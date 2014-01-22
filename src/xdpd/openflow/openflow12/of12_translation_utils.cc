@@ -946,6 +946,9 @@ of12_translation_utils::of12_map_flow_entry_actions(
 			switch (eaction.get_exp_id()) {
 			case ROFL_EXPERIMENTER_ID: {
 
+				/*
+				 * but one does not have to, PPPoE still uses a different body definition
+				 */
 				// ROFL experimental actions contain experimental action type at position data[0]
 				uint8_t acttype = eaction.oac_12experimenter->data[0];
 

@@ -127,6 +127,8 @@ int main(int argc, char** argv){
 	
 	ROFL_INFO("House cleaned!\nGoodbye\n");
 	
+	csyslog::closelog();
+
 	exit(EXIT_SUCCESS);
 }
 

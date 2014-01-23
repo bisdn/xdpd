@@ -1188,4 +1188,80 @@ PKT_REPLICATE_ERROR:
 	return NULL;
 }
 
+/**
+* Creates a copy (in heap) of the datapacket_t structure without copying any
+* platform specific state (->platform_state). The following behaviour
+* is expected from this hook:
+* 
+* - All data fields and pointers of datapacket_t struct must be memseted to 0, except:
+* - datapacket_t flag is_replica must be set to true
+* - platform_state, if used, must be replicated (copied) otherwise NULL
+*
+*/
+datapacket_t* platform_packet_replicate_only_datapacket(datapacket_t* pkt){
+
+	datapacket_t* pkt_replica=NULL;
+	struct rte_mbuf* mbuf=NULL;
+	datapacket_dpdk_t* pkt_dpdk;
+	datapacket_dpdk_t* pkt_dpdk_replica;
+	
+	//Protect
+	if(unlikely(!pkt))
+		return NULL;
+
+	//datapacket_t* pkt_replica;
+	pkt_replica = bufferpool::get_free_buffer(false);
+	
+	if(unlikely(!pkt_replica)){
+		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). No buffers left in bufferpool\n", pkt);
+		goto PKT_REPLICATE_ERROR;
+	}
+
+	pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
+	pkt_dpdk_replica = (datapacket_dpdk_t*)pkt_replica->platform_state;
+
+	//Retrieve an mbuf, copy contents, and initialize pkt_dpdk_replica
+	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
+	
+	//NOTE here we could do ((datapacket_dpdk_t*)pkt->platform_state)->mbuf = NULL;
+	
+	if(unlikely(!mbuf)){
+		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
+		ROFL_DEBUG("errno %d - %s\n", rte_errno, rte_strerror(rte_errno));
+		goto PKT_REPLICATE_ERROR;
+	}
+
+	//Copy PKT stuff
+	memcpy(&pkt_replica->matches, &pkt->matches, sizeof(pkt->matches));
+	memcpy(&pkt_replica->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
+
+	//mark as replica
+	pkt_replica->is_replica = true;
+	pkt_replica->sw = pkt->sw;
+
+	//Initialize replica buffer and classify  //TODO: classification state could be copied
+	init_datapacket_dpdk(pkt_dpdk_replica, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, true);
+
+	//Replicate the packet(copy contents)	
+	pkt_dpdk_replica->ipv4_recalc_checksum 	= pkt_dpdk->ipv4_recalc_checksum;
+	pkt_dpdk_replica->icmpv4_recalc_checksum 	= pkt_dpdk->icmpv4_recalc_checksum;
+	pkt_dpdk_replica->tcp_recalc_checksum 	= pkt_dpdk->tcp_recalc_checksum;
+	pkt_dpdk_replica->udp_recalc_checksum 	= pkt_dpdk->udp_recalc_checksum;
+
+	return pkt_replica; //DO NOT REMOVE
+
+PKT_REPLICATE_ERROR:
+	assert(0); 
+	
+	//Release packet
+	if(pkt_replica){
+		bufferpool::release_buffer(pkt_replica);
+
+		if(mbuf){
+			rte_pktmbuf_free(mbuf);
+		}
+	}
+
+	return NULL;
+}
 

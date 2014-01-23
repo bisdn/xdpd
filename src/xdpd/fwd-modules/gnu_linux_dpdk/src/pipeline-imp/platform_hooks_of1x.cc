@@ -91,8 +91,8 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	if(unlikely(pkt==NULL) || unlikely(sw==NULL))
 		return;
 
-	//datapacket_t* pkt_replica;
-	pkt_replica = platform_packet_replicate(pkt);
+	//Replicate packet but not mbuf:
+	pkt_replica = platform_packet_replicate_only_datapacket(pkt);
 	
 	if(unlikely(!pkt_replica)){
 		ROFL_DEBUG("Replicate packet(PKT_IN); could not clone pkt(%p). Dropping...\n");
@@ -108,8 +108,6 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		goto PKT_IN_ERROR;
 		
 	}
-
-	rte_pktmbuf_free(((datapacket_dpdk_t *)pkt->platform_state)->mbuf);
 	
 	return; //DO NOT REMOVE
 

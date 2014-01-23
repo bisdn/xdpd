@@ -56,9 +56,6 @@ int main(int argc, char** argv){
 		exit(EXIT_FAILURE);	
 	}
 
-	//Capture control+C
-	signal(SIGINT, interrupt_handler);
-
 #if DEBUG && VERBOSE_DEBUG
 	//Set verbose debug if necessary
 	rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
@@ -94,6 +91,16 @@ int main(int argc, char** argv){
 
 			logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
 		}
+
+		//Daemonize
+		if (env_parser.is_arg_set("daemonize")) {
+			ciosrv::daemonize("/var/run/xdpd.pid", "/var/log/xdpd.log");
+			logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
+			logging::notice << "[xdpd][main] daemonizing successful" << std::endl;
+		}
+
+		//Capture control+C
+		signal(SIGINT, interrupt_handler);
 	}
 
 	//Forwarding module initialization

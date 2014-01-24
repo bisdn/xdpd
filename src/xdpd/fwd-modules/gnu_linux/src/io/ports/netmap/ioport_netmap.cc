@@ -271,6 +271,13 @@ rofl_result_t ioport_netmap::disable(){
 
 	of_port_state->up = true;
 	close(sd);
+	
+	int ret;
+	ret = ioctl(fd, NIOCUNREGIF, NULL);
+	if (unlikely(ret == -1)) {
+		close(fd);
+	}
+
 
 	//Close NETMAP
 	close(fd);

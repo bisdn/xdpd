@@ -322,6 +322,8 @@ rofl_result_t ioport_netmap::enable(){
 	struct nmreq req;
 	bzero(&req,sizeof(nmreq));
 	req.nr_version = NETMAP_API;
+	req.nr_ringid = NETMAP_HW_RING;
+	req.nr_ringid |= NETMAP_NO_TX_POLL;
 
 	strcpy(req.nr_name, of_port_state->name);
 	int ret;

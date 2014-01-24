@@ -269,6 +269,15 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	
 		//Initialize the packet and copy
 		struct rte_mbuf* mbuf = rte_pktmbuf_alloc(pool_direct);
+
+		rte_pktmbuf_prepend(mbuf, buffer_size);
+		if(mbuf==NULL){
+			ROFL_DEBUG_ERROR("Error prependig packet to mbuf\n");
+			return AFA_FAILURE;
+		}
+		memcpy(rte_pktmbuf_mtod(mbuf, uint8_t*), buffer, buffer_size);
+		assert( rte_pktmbuf_pkt_len(mbuf) == buffer_size );
+		
 		init_datapacket_dpdk(((datapacket_dpdk_t*)pkt->platform_state), mbuf, lsw, in_port, 0, true, true);
 		pkt->sw = lsw;
 	}

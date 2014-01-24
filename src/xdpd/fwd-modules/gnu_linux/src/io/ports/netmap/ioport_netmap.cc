@@ -28,10 +28,10 @@ ioport_netmap::ioport_netmap(switch_port_t* of_ps, unsigned int num_queues):iopo
 	req.nr_version = NETMAP_API;
 
 	strcpy(req.nr_name, of_port_state->name);
-	ret = ioctl(fd, NIOCREGIF, &req);
+	ret = ioctl(fd, NIOCGINFO, &req);
 	if (unlikely(ret == -1)) {
 		close(fd);
-		throw "Unable to register";
+		throw "Unable to get information about netmap interface";
 	}
 
 	ROFL_INFO("%s has txr %d txd %d rxr %d rxd %d \n", of_port_state->name,
@@ -53,7 +53,7 @@ ioport_netmap::ioport_netmap(switch_port_t* of_ps, unsigned int num_queues):iopo
 	}
 	deferred_drain = 0;
 
-	ROFL_INFO("netmap: %s opened with netmap\n", of_port_state->name);
+	ROFL_INFO("netmap: %s can use netmap\n", of_port_state->name);
 }
 
 ioport_netmap::~ioport_netmap(){

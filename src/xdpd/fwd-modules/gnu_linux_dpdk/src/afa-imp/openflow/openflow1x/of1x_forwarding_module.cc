@@ -272,7 +272,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 
 		rte_pktmbuf_prepend(mbuf, buffer_size);
 		if(mbuf==NULL){
-			ROFL_DEBUG_ERROR("Error prependig packet to mbuf\n");
+			ROFL_ERR("Error prependig packet to mbuf\n");
 			return AFA_FAILURE;
 		}
 		memcpy(rte_pktmbuf_mtod(mbuf, uint8_t*), buffer, buffer_size);

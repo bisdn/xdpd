@@ -21,6 +21,8 @@
 #include "../io/datapacket_storage.h"
 #include "../io/dpdk_datapacket.h"
 
+datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool copy_mbuf);
+
 using namespace xdpd::gnu_linux;
 
 //MBUF pool
@@ -92,7 +94,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		return;
 
 	//Replicate packet but not mbuf:
-	pkt_replica = platform_packet_replicate_only_datapacket(pkt);
+	pkt_replica = platform_packet_replicate__(pkt, false);
 	
 	if(unlikely(!pkt_replica)){
 		ROFL_DEBUG("Replicate packet(PKT_IN); could not clone pkt(%p). Dropping...\n");

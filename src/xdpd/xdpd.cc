@@ -15,7 +15,9 @@ using namespace xdpd;
 extern int optind;
 
 //TODO: Redirect C loggers to the output log
-#define XDPD_LOG_FILE "xdpd.log"
+#define XDPD_CLOG_FILE "./xdpd.log"
+#define XDPD_LOG_FILE "/var/log/xdpd.log"
+#define XDPD_PID_FILE "/var/run/xdpd.pid"
 
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
@@ -70,7 +72,7 @@ int main(int argc, char** argv){
 		cunixenv env_parser(argc, argv);
 		
 		/* update defaults */
-		env_parser.update_default_option("logfile", XDPD_LOG_FILE);
+		env_parser.update_default_option("logfile", XDPD_CLOG_FILE);
 		env_parser.add_option(coption(true, NO_ARGUMENT, 'v', "version", "Retrieve xDPd version and exit", std::string("")));
 
 		//Parse
@@ -82,7 +84,7 @@ int main(int argc, char** argv){
 		
 		if (not env_parser.is_arg_set("daemonize")) {
 			// only do this in non
-			std::string ident(XDPD_LOG_FILE);
+			std::string ident(XDPD_CLOG_FILE);
 
 			csyslog::initlog(csyslog::LOGTYPE_FILE,
 					static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
@@ -94,7 +96,7 @@ int main(int argc, char** argv){
 
 		//Daemonize
 		if (env_parser.is_arg_set("daemonize")) {
-			ciosrv::daemonize("/var/run/xdpd.pid", "/var/log/xdpd.log");
+			ciosrv::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
 			logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
 			logging::notice << "[xdpd][main] daemonizing successful" << std::endl;
 		}

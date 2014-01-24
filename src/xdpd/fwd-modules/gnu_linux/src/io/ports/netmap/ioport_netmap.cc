@@ -299,21 +299,23 @@ rofl_result_t ioport_netmap::enable(){
 		close(sd);
 		return ROFL_FAILURE;
 	}
-	if(IFF_UP | ifr.ifr_flags) {
+	if(!(IFF_UP & ifr.ifr_flags)) {
 		ifr.ifr_flags |= IFF_UP;
 		ifr.ifr_flags |= IFF_PROMISC;
 	}
-
+	
+	pthread_rwlock_wrlock(&rwlock);
+	
 	if (ioctl(sd, SIOCSIFFLAGS, &ifr) <0) {
 		close(sd);
 		return ROFL_FAILURE;
 	}
 
-	of_port_state->up = true;
+	pthread_rwlock_unlock(&rwlock);	
 	close(sd);
 	
 	fd = open("/dev/netmap", O_RDWR);
-	if (fd == -1) {
+	if (unlikely(fd == -1)) {
 		ROFL_INFO("Check kernel module");
 	}
 
@@ -337,8 +339,9 @@ rofl_result_t ioport_netmap::enable(){
 		}
 	}
 	nifp = NETMAP_IF(mem, req.nr_offset);
-
-
+	
+	of_port_state->up = true;
+	
 	flush_ring();
 	return ROFL_SUCCESS;
 }

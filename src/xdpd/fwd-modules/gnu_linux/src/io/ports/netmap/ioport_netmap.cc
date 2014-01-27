@@ -330,14 +330,15 @@ rofl_result_t ioport_netmap::enable(){
 	ret = ioctl(fd, NIOCREGIF, &req);
 	if (unlikely(ret == -1)) {
 		close(fd);
-		ROFL_INFO("Unable to register");
+		ROFL_INFO("Unable to register\n");
 	}
 
 	if( mem == NULL) {
 		mem = (struct netmap_d *) mmap(0, req.nr_memsize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-		//bzero(mem,sizeof(req.nr_memsize));
+		ROFL_INFO("memsize is %d MB\n", req.nr_memsize>>20);
+		bzero(mem,sizeof(req.nr_memsize));
 		if ( mem == MAP_FAILED ) {
-			ROFL_INFO("MMAP Failed");
+			ROFL_INFO("MMAP Failed\n");
 		}
 	}
 	nifp = NETMAP_IF(mem, req.nr_offset);

@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include <string>
 
 #include "cxmpclient.h"

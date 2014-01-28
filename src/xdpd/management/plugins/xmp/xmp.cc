@@ -38,7 +38,7 @@ xmp::init(int args, char** argv)
 
 void
 xmp::handle_timeout(
-		int opaque)
+		int opaque, void *data)
 {
 	switch (opaque) {
 	default:

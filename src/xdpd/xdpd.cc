@@ -5,6 +5,7 @@
 #include <rofl/platform/unix/cunixenv.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
+#include <rofl/platform/unix/cdaemon.h>
 #include "management/switch_manager.h"
 #include "management/port_manager.h"
 #include "management/plugin_manager.h"
@@ -96,9 +97,9 @@ int main(int argc, char** argv){
 
 		//Daemonize
 		if (env_parser.is_arg_set("daemonize")) {
-			ciosrv::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
-			logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
-			logging::notice << "[xdpd][main] daemonizing successful" << std::endl;
+			rofl::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
+			rofl::logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
+			rofl::logging::notice << "[xdpd][main] daemonizing successful" << std::endl;
 		}
 
 		//Capture control+C
@@ -110,9 +111,6 @@ int main(int argc, char** argv){
 		ROFL_INFO("Init driver failed\n");	
 		exit(-1);
 	}
-
-	//Init the ciosrv.
-	ciosrv::init();
 
 	//Load plugins
 	optind=0;
@@ -130,9 +128,6 @@ int main(int argc, char** argv){
 	//Let plugin manager destroy all registered plugins
 	plugin_manager::destroy();
 	
-	//ciosrv destroy
-	ciosrv::destroy();
-
 	//Call fwd_module to shutdown
 	fwd_module_destroy();
 	

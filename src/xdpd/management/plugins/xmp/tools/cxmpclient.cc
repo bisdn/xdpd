@@ -31,7 +31,7 @@ cxmpclient::~cxmpclient()
 
 void
 cxmpclient::handle_timeout(
-		int opaque)
+		int opaque, void *data)
 {
 	switch (opaque) {
 	case TIMER_XMPCLNT_EXIT: {

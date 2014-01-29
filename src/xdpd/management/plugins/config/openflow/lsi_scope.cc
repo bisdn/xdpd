@@ -27,6 +27,10 @@ using namespace rofl;
 #define LSI_NUM_OF_TABLES "num-of-tables"
 #define LSI_TABLES_MATCHING_ALGORITHM "tables-matching-algorithm"
 #define LSI_PORTS "ports" 
+#ifdef HAVE_OPENSSL
+#define LSI_SSL "ssl"
+#define LSI_SSL_CERTIFICATE_FILE "SSLCertificateFile"
+#endif /*HAVE_OPENSSL*/
 
 lsi_scope::lsi_scope(std::string name, bool mandatory):scope(name, mandatory){
 
@@ -45,6 +49,12 @@ lsi_scope::lsi_scope(std::string name, bool mandatory):scope(name, mandatory){
 	//passive
 	register_parameter(LSI_BIND_ADDRESS_IP);
 	register_parameter(LSI_BIND_ADDRESS_PORT);
+
+#ifdef HAVE_OPENSSL
+	// ssl
+	register_parameter(LSI_SSL);
+	register_parameter(LSI_SSL_CERTIFICATE_FILE);
+#endif /* HAVE_OPENSSL */
 
 	//Number of tables and matching algorithms
 	register_parameter(LSI_NUM_OF_TABLES);
@@ -319,6 +329,20 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		parse_active_connections(setting, master_controller, slave_controller, &reconnect_time);	
 	}
 
+	// SSL details
+	bool enable_ssl = false;
+	std::string cert_and_key_file("");
+#ifdef HAVE_OPENSSL
+	if (setting.exists(LSI_SSL)) {
+		enable_ssl = true;
+
+		if (passive && not setting.lookupValue(LSI_SSL_CERTIFICATE_FILE, cert_and_key_file)) {
+			ROFL_ERR("%s: Unable to convert parameter DPID to a proper uint64_t\n", setting.getPath().c_str());
+			throw eConfParseError();
+		}
+	}
+#endif
+
 	if(setting.exists(LSI_NUM_OF_TABLES)){
 		//Parse num_of_tables
 		num_of_tables = setting[LSI_NUM_OF_TABLES];
@@ -347,7 +371,8 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		unsigned int port_num;
 
 		//Create switch
-		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, reconnect_time, master_controller, bind_address); //FIXME:: add slave and reconnect
+		sw = switch_manager::create_switch(version, dpid, name, num_of_tables,
+				ma_list, reconnect_time, master_controller, bind_address, enable_ssl, cert_and_key_file);  //FIXME:: add slave and reconnect
 
 		if(!sw){
 			ROFL_ERR("%s: Unable to create LSI %s; unknown error.\n", setting.getPath().c_str(), name.c_str());

@@ -168,6 +168,11 @@ inline void ioport_mmapv2::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86
 
 	//And classify
 	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
+
+#ifdef DEBUG
+		ROFL_DEBUG_VERBOSE("%s(): datapacketx86 %p after reclassifying the packet\n", __FUNCTION__, pkt_x86);
+		of1x_dump_packet_matches(&pkt->matches);
+#endif
 }
 	
 // handle read

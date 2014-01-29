@@ -137,6 +137,8 @@ int main(int argc, char** argv){
 
 	logging::close();
 
+	rofl::cioloop::shutdown();
+
 	exit(EXIT_SUCCESS);
 }
 

@@ -690,12 +690,37 @@ of12_endpoint::process_packet_in(
 
 		return AFA_SUCCESS;
 
-	} catch (eRofBaseNotConnected& e) {
-
-		return AFA_FAILURE;
-
 	} catch (...) {
 
+		rofl::logging::error << "[xdpd][of12][packet-in] unable to send Packet-In message, dropping packet from occupied pkt slot" << std::endl;
+
+		of1x_action_group_t* action_group = of1x_init_action_group(NULL);
+
+		try{
+			rofl::cofactions actions(rofl::openflow12::OFP_VERSION);
+			of12_translation_utils::of12_map_flow_entry_actions(NULL, sw, actions, action_group, NULL);
+		}catch(...){
+			of1x_destroy_action_group(action_group);
+			return AFA_FAILURE;
+		}
+
+		/* assumption: driver can handle all situations properly:
+		 * - data and datalen both 0 and buffer_id != OFP_NO_BUFFER
+		 * - buffer_id == OFP_NO_BUFFER and data and datalen both != 0
+		 * - everything else is an error?
+		 */
+		if (AFA_FAILURE == fwd_module_of1x_process_packet_out(sw->dpid,
+								buffer_id,
+								in_port,
+								action_group,
+								pkt_buffer, buf_len)){
+			// log error
+			rofl::logging::crit << "[xdpd][of12][packet-in] unable drop stored packet: this may lead to a deadlock situation!" << std::endl;
+		}
+
+		of1x_destroy_action_group(action_group);
+
+		return AFA_FAILURE;
 	}
 
 	return AFA_FAILURE;

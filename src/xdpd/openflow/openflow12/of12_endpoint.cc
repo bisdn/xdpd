@@ -692,7 +692,7 @@ of12_endpoint::process_packet_in(
 
 	} catch (...) {
 
-
+#if 0
 		if (buffer_id == OF1XP_NO_BUFFER) {
 			rofl::logging::error << "[xdpd][of12][packet-in] unable to send Packet-In message" << std::endl;
 
@@ -726,6 +726,7 @@ of12_endpoint::process_packet_in(
 		}
 
 		of1x_destroy_action_group(action_group);
+#endif
 
 		return AFA_FAILURE;
 	}

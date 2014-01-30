@@ -13,9 +13,10 @@ using namespace xdpd;
 * Dispatching of platform related messages comming from the fwd_module 
 */
 
-afa_result_t cmm_notify_port_add(switch_port_t* port){
+afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 	
 	openflow_switch* sw;
+	afa_result_t result;
 	
 	if (!port || !port->attached_sw){
 		return AFA_FAILURE;
@@ -26,13 +27,16 @@ afa_result_t cmm_notify_port_add(switch_port_t* port){
 	//Notify MGMT framework
 	//TODO:
 
-	return sw->notify_port_add(port);
+	result = sw->notify_port_add(port);
+	
+	return result;
 }
 
 
-afa_result_t cmm_notify_port_delete(switch_port_t* port){
+afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	
 	openflow_switch* sw;
+	afa_result_t result;
 	
 	if (!port || !port->attached_sw){
 		return AFA_FAILURE;
@@ -43,13 +47,16 @@ afa_result_t cmm_notify_port_delete(switch_port_t* port){
 	//Notify MGMT framework
 	//TODO:
 
-	return sw->notify_port_delete(port);
+	result = sw->notify_port_delete(port);
+
+	return result;
 }
 
 
-afa_result_t cmm_notify_port_status_changed(switch_port_t* port){
+afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapshot){
 	
 	openflow_switch* sw;
+	afa_result_t result;
 	
 	if (!port || !port->attached_sw){
 		return AFA_FAILURE;
@@ -60,7 +67,11 @@ afa_result_t cmm_notify_port_status_changed(switch_port_t* port){
 	//Notify MGMT framework
 	//TODO:
 
-	return sw->notify_port_status_changed(port);
+	result = sw->notify_port_status_changed(port); 
+
+	//Destroy the snapshot
+
+	return result;
 }
 
 /*

@@ -29,10 +29,6 @@ namespace xdpd {
 class openflow_switch {
 
 protected:
-
-	//Driver context (this is somehow superfluous)
-	of_switch_t* ofswitch;
-	
 	//Endpoint context
 	of_endpoint* endpoint;
 
@@ -48,12 +44,6 @@ public:
 	 * Destructor
 	 */
 	virtual ~openflow_switch(void){};
-
-	/**
-	* Getter for the switch
-	*/
-	of_switch_t* get_fwd_module_sw_ref(void){return ofswitch;};
-
 
 	/*
 	* Pure virtual methods

@@ -707,10 +707,10 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 		match.insert(coxmatch_ofx_gtp_teid(packet_matches->gtp_teid));
 }
 
-uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
+uint32_t of10_translation_utils::get_supported_actions(of1x_switch_snapshot_t *lsw){
 	uint32_t mask = 0;
 	
-	of1x_flow_table_config_t config = lsw->pipeline->tables[0].config;
+	of1x_flow_table_config_t config = lsw->pipeline.tables[0].config;
 		
 	if (config.apply_actions&(1UL<<OF12PAT_OUTPUT))
 		mask |= 1 << OFP10AT_OUTPUT;

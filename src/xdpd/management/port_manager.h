@@ -79,7 +79,7 @@ public:
 	static std::list<std::string> list_available_port_names();
 
 private:
-	static switch_port_t* check_port_existance(std::string& port_name);
+	static void check_port_existance(std::string& port_name);
 	
 };
 

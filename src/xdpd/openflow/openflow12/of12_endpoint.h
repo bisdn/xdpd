@@ -77,9 +77,6 @@ public:
 
 private:
 
-	//Commodity pointer
-	of1x_switch_t* of12switch;
-
 	/* *
 	 ** This section is in charge of the handling of the OF messages
 	 ** comming from the cofctl(OF endpoints). These are version specific

@@ -5,20 +5,16 @@
 using namespace xdpd;
 
 
-switch_port_t* port_manager::check_port_existance(std::string& port_name){
-	switch_port_t* port;
-	
-	if( (port = fwd_module_get_port_by_name(port_name.c_str())) == NULL)
+void port_manager::check_port_existance(std::string& port_name){
+	if(!fwd_module_port_exists(port_name.c_str()))
 		throw ePmInvalidPort();
-	
-	return port;
 }
 
 //Get the port by name
 port port_manager::get_port_by_name(std::string& port_name){
-
+	
 	//Try to recover. If it does not exist it will throw an ePmInvalidPort exception	
-	port_manager::check_port_existance(port_name);
+	check_port_existance(port_name);
 	
 	return port(port_name);
 }
@@ -76,34 +72,22 @@ void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int po
 
 std::list<std::string> port_manager::list_available_port_names(){
 
-	unsigned int i, max_ports;
-	switch_port_t** ports;
-
+	unsigned int i;
+	switch_port_name_list_t* port_names;
 	std::list<std::string> port_name_list;
 	
 	//Call the forwarding module to list the ports
-	ports = fwd_module_get_physical_ports(&max_ports);
+	port_names = fwd_module_get_all_port_names();
 	
-	if(!ports)
+	if(!port_names)
 		throw eOfSmGeneralError();
 
 	//Run over the ports and get the name
-	for(i=0;i<max_ports;i++){
-		if(ports[i])
-			port_name_list.push_back(std::string(ports[i]->name));
-			
-	}
+	for(i=0;i<port_names->num_of_ports;i++)
+		port_name_list.push_back(std::string(port_names->names[i].name));
 
-	//Call the forwarding module to list the ports
-	ports = fwd_module_get_virtual_ports(&max_ports);
-	
-	//Run over the ports and get the name
-	for(i=0;i<max_ports;i++){
-		if(ports[i])
-			port_name_list.push_back(std::string(ports[i]->name));
-	}
-
-	//TODO: add tunnel.
+	//Destroy the list of ports
+	switch_port_name_list_destroy(port_names);
 	
 	return port_name_list; 
 }

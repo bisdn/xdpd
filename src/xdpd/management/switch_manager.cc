@@ -33,8 +33,7 @@ openflow_switch* switch_manager::create_switch(
 	
 	//TODO: MUTEX!
 
-	if(switch_manager::switchs.find(dpid) != switch_manager::switchs.end()
-		|| fwd_module_get_switch_by_dpid(dpid) ){
+	if(switch_manager::switchs.find(dpid) != switch_manager::switchs.end()){
 		
 		throw eOfSmExists();
 	}

@@ -19,8 +19,8 @@ openflow12_switch::openflow12_switch(uint64_t dpid,
 		: openflow_switch(dpid, dpname, version)
 {
 
-	if ((ofswitch = fwd_module_create_switch((char*)dpname.c_str(),
-					     dpid, OF_VERSION_12, num_of_tables, ma_list)) == NULL){
+	if (fwd_module_create_switch((char*)dpname.c_str(),
+					     dpid, OF_VERSION_12, num_of_tables, ma_list) != AFA_SUCCESS){
 		//WRITELOG(CDATAPATH, ERROR, "of12_endpoint::of12_endpoint() "
 		//		"failed to allocate switch instance in HAL, aborting");
 	
@@ -87,7 +87,7 @@ afa_result_t openflow12_switch::notify_port_status_changed(switch_port_t* port){
 * Connecting and disconnecting from a controller entity
 */
 void openflow12_switch::rpc_connect_to_ctl(caddress const& controller_addr){
-	return endpoint->rpc_connect_to_ctl(ofswitch->of_ver, 0, controller_addr);
+	return endpoint->rpc_connect_to_ctl(OFP12_VERSION, 0, controller_addr);
 }
 
 void openflow12_switch::rpc_disconnect_from_ctl(caddress const& controller_addr){

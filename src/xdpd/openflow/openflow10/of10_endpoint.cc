@@ -25,8 +25,6 @@ of10_endpoint::of10_endpoint(
 
 	//Reference back to the sw
 	this->sw = sw;
-	of10switch = (of1x_switch_t*)sw->get_fwd_module_sw_ref();
-
 
 	//FIXME: make controller and binding optional somehow
 	//Active connection
@@ -50,15 +48,20 @@ of10_endpoint::handle_features_request(
 		cofmsg_features_request *msg)
 {
 	logical_switch_port_t* ls_port;
-	switch_port_t* _port;
+	switch_port_snapshot_t* _port;
 
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of10switch)
+		throw eRofBase();
+		
 	uint32_t num_of_tables 	= 0;
 	uint32_t num_of_buffers = 0;
 	uint32_t capabilities 	= 0;
 
-	num_of_tables 	= of10switch->pipeline->num_of_tables;
-	num_of_buffers 	= of10switch->pipeline->num_of_buffers;
-	capabilities 	= of10switch->pipeline->capabilities;
+	num_of_tables 	= of10switch->pipeline.num_of_tables;
+	num_of_buffers 	= of10switch->pipeline.num_of_buffers;
+	capabilities 	= of10switch->pipeline.capabilities;
 
 	// array of structures ofp_port
 	cofportlist portlist;
@@ -114,6 +117,9 @@ of10_endpoint::handle_features_request(
 			of10_translation_utils::get_supported_actions(of10switch),
 			portlist);
 
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 	delete msg;
 }
 
@@ -124,15 +130,12 @@ of10_endpoint::handle_get_config_request(
 		cofctl *ctl,
 		cofmsg_get_config_request *msg)
 {
-	uint16_t flags = 0x0;
-	uint16_t miss_send_len = 0;
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
 
-	//FIXME: this should not be made like this!!!
-
-	flags = of10switch->pipeline->capabilities;
-	miss_send_len = of10switch->pipeline->miss_send_len;
-
-	send_get_config_reply(ctl, msg->get_xid(), flags, miss_send_len);
+	if(!of10switch)
+		throw eRofBase();
+	
+	send_get_config_reply(ctl, msg->get_xid(), of10switch->pipeline.capabilities, of10switch->pipeline.miss_send_len);
 
 	delete msg;
 }
@@ -170,8 +173,15 @@ of10_endpoint::handle_table_stats_request(
 		cofctl *ctl,
 		cofmsg_table_stats_request *msg)
 {
-	unsigned int num_of_tables = of10switch->pipeline->num_of_tables;
+	unsigned int num_of_tables;
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
 
+	if(!of10switch)
+		throw eRofBase();
+	
+	num_of_tables = of10switch->pipeline.num_of_tables;
+	
+	//Reply to fill in
 	std::vector<coftable_stats_reply> table_stats;
 
 	for (unsigned int n = 0; n < num_of_tables; n++) {
@@ -179,47 +189,50 @@ of10_endpoint::handle_table_stats_request(
 		table_stats.push_back(
 				coftable_stats_reply(
 					ctl->get_version(),
-					of10switch->pipeline->tables[n].number,
-					std::string(of10switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN),
-					(of10switch->pipeline->tables[n].config.match),
-					(of10switch->pipeline->tables[n].config.wildcards),
-					(of10switch->pipeline->tables[n].config.write_actions),
-					(of10switch->pipeline->tables[n].config.apply_actions),
-					(of10switch->pipeline->tables[n].config.write_setfields),
-					(of10switch->pipeline->tables[n].config.apply_setfields),
-					(of10switch->pipeline->tables[n].config.metadata_match),
-					(of10switch->pipeline->tables[n].config.metadata_write),
-					(of10switch->pipeline->tables[n].config.instructions),
-					(of10switch->pipeline->tables[n].config.table_miss_config),
-					(of10switch->pipeline->tables[n].max_entries),
-					(of10switch->pipeline->tables[n].num_of_entries),
-					(of10switch->pipeline->tables[n].stats.lookup_count),
-					(of10switch->pipeline->tables[n].stats.matched_count)
+					of10switch->pipeline.tables[n].number,
+					std::string(of10switch->pipeline.tables[n].name, OFP_MAX_TABLE_NAME_LEN),
+					(of10switch->pipeline.tables[n].config.match),
+					(of10switch->pipeline.tables[n].config.wildcards),
+					(of10switch->pipeline.tables[n].config.write_actions),
+					(of10switch->pipeline.tables[n].config.apply_actions),
+					(of10switch->pipeline.tables[n].config.write_setfields),
+					(of10switch->pipeline.tables[n].config.apply_setfields),
+					(of10switch->pipeline.tables[n].config.metadata_match),
+					(of10switch->pipeline.tables[n].config.metadata_write),
+					(of10switch->pipeline.tables[n].config.instructions),
+					(of10switch->pipeline.tables[n].config.table_miss_config),
+					(of10switch->pipeline.tables[n].max_entries),
+					(of10switch->pipeline.tables[n].num_of_entries),
+					(of10switch->pipeline.tables[n].stats.lookup_count),
+					(of10switch->pipeline.tables[n].stats.matched_count)
 				));
 
 		coftable_stats_reply a(
 							ctl->get_version(),
-							of10switch->pipeline->tables[n].number,
-							std::string(of10switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN),
-							(of10switch->pipeline->tables[n].config.match),
-							(of10switch->pipeline->tables[n].config.wildcards),
-							(of10switch->pipeline->tables[n].config.write_actions),
-							(of10switch->pipeline->tables[n].config.apply_actions),
-							(of10switch->pipeline->tables[n].config.write_setfields),
-							(of10switch->pipeline->tables[n].config.apply_setfields),
-							(of10switch->pipeline->tables[n].config.metadata_match),
-							(of10switch->pipeline->tables[n].config.metadata_write),
-							(of10switch->pipeline->tables[n].config.instructions),
-							(of10switch->pipeline->tables[n].config.table_miss_config),
-							(of10switch->pipeline->tables[n].max_entries),
-							(of10switch->pipeline->tables[n].num_of_entries),
-							(of10switch->pipeline->tables[n].stats.lookup_count),
-							(of10switch->pipeline->tables[n].stats.matched_count)
+							of10switch->pipeline.tables[n].number,
+							std::string(of10switch->pipeline.tables[n].name, OFP_MAX_TABLE_NAME_LEN),
+							(of10switch->pipeline.tables[n].config.match),
+							(of10switch->pipeline.tables[n].config.wildcards),
+							(of10switch->pipeline.tables[n].config.write_actions),
+							(of10switch->pipeline.tables[n].config.apply_actions),
+							(of10switch->pipeline.tables[n].config.write_setfields),
+							(of10switch->pipeline.tables[n].config.apply_setfields),
+							(of10switch->pipeline.tables[n].config.metadata_match),
+							(of10switch->pipeline.tables[n].config.metadata_write),
+							(of10switch->pipeline.tables[n].config.instructions),
+							(of10switch->pipeline.tables[n].config.table_miss_config),
+							(of10switch->pipeline.tables[n].max_entries),
+							(of10switch->pipeline.tables[n].num_of_entries),
+							(of10switch->pipeline.tables[n].stats.lookup_count),
+							(of10switch->pipeline.tables[n].stats.matched_count)
 						);
 	}
 
 
 	send_table_stats_reply(ctl, msg->get_xid(), table_stats, false);
+
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
 	delete msg;
 }
@@ -232,9 +245,14 @@ of10_endpoint::handle_port_stats_request(
 		cofmsg_port_stats_request *msg)
 {
 
-	switch_port_t* port;
+	switch_port_snapshot_t* port;
 	uint32_t port_no = msg->get_port_stats().get_portno();
 
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of10switch)
+		throw eRofBase();
+	
 	std::vector<cofport_stats_reply> port_stats;
 
 	/*
@@ -308,6 +326,9 @@ of10_endpoint::handle_port_stats_request(
 
 	send_port_stats_reply(ctl, msg->get_xid(), port_stats, false);
 
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 	delete msg;
 }
 
@@ -321,6 +342,11 @@ of10_endpoint::handle_flow_stats_request(
 	of1x_stats_flow_msg_t* fp_msg = NULL;
 	of1x_flow_entry_t* entry = NULL;
 
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of10switch)
+		throw eRofBase();
+
 	//Map the match structure from OpenFlow to of1x_packet_matches_t
 	entry = of1x_init_flow_entry(NULL, NULL, false);
 
@@ -328,7 +354,13 @@ of10_endpoint::handle_flow_stats_request(
 		of10_translation_utils::of10_map_flow_entry_matches(ctl, msg->get_flow_stats().get_match(), sw, entry);
 	}catch(...){
 		of1x_destroy_flow_entry(entry);
+	
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+		
 		throw eBadRequestBadStat();
+
+
 	}
 
 	//Ask the Forwarding Plane to process stats
@@ -342,6 +374,10 @@ of10_endpoint::handle_flow_stats_request(
 
 	if(!fp_msg){
 		of1x_destroy_flow_entry(entry);
+
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+	
 		throw eBadRequestBadStat();
 	}
 
@@ -356,7 +392,7 @@ of10_endpoint::handle_flow_stats_request(
 		of10_translation_utils::of1x_map_reverse_flow_entry_matches(elem->matches, match);
 
 		cofinlist instructions(ctl->get_version());
-		of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions, of10switch->pipeline->miss_send_len);
+		of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions, of10switch->pipeline.miss_send_len);
 
 		if (0 == instructions.size())
 			continue;
@@ -384,11 +420,18 @@ of10_endpoint::handle_flow_stats_request(
 	}catch(...){
 		of1x_destroy_stats_flow_msg(fp_msg);
 		of1x_destroy_flow_entry(entry);
+	
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+	
 		throw;
 	}
 	//Destroy FP stats
 	of1x_destroy_stats_flow_msg(fp_msg);
 	of1x_destroy_flow_entry(entry);
+	
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
 	delete msg;
 }
@@ -467,11 +510,19 @@ of10_endpoint::handle_queue_stats_request(
 		cofmsg_queue_stats_request *pack)
 {
 
-	switch_port_t* port = NULL;
+	switch_port_snapshot_t* port = NULL;
 	unsigned int portnum = pack->get_queue_stats().get_port_no();
 	unsigned int queue_id = pack->get_queue_stats().get_queue_id();
 
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of10switch)
+		throw eRofBase();
+
 	if( ((portnum >= of10switch->max_ports) && (portnum != OFPP10_ALL)) || portnum == 0){
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+	
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
@@ -513,8 +564,12 @@ of10_endpoint::handle_queue_stats_request(
 
 			} else {
 
-				if(queue_id >= port->max_queues)
+				if(queue_id >= port->max_queues){
+					//Destroy the snapshot
+					of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 					throw eBadRequestBadPort(); 	//FIXME send a BadQueueId error
+				}
 
 
 				//Check if the queue is really in use
@@ -540,6 +595,9 @@ of10_endpoint::handle_queue_stats_request(
 			pack->get_xid(),
 			stats,
 			false);
+	
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
 	delete pack;
 }
@@ -645,7 +703,7 @@ of10_endpoint::process_packet_in(
 * Port async notifications processing
 */
 
-afa_result_t of10_endpoint::notify_port_add(switch_port_t* port){
+afa_result_t of10_endpoint::notify_port_add(switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -675,7 +733,7 @@ afa_result_t of10_endpoint::notify_port_add(switch_port_t* port){
 	return AFA_SUCCESS;
 }
 
-afa_result_t of10_endpoint::notify_port_delete(switch_port_t* port){
+afa_result_t of10_endpoint::notify_port_delete(switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -704,7 +762,7 @@ afa_result_t of10_endpoint::notify_port_delete(switch_port_t* port){
 	return AFA_SUCCESS;
 }
 
-afa_result_t of10_endpoint::notify_port_status_changed(switch_port_t* port){
+afa_result_t of10_endpoint::notify_port_status_changed(switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -795,12 +853,23 @@ of10_endpoint::flow_mod_add(
 	afa_result_t res;
 	of1x_flow_entry_t *entry=NULL;
 
+
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of10switch)
+		throw eRofBase();
+
+
 	// sanity check: table for table-id must exist
-	if ( (table_id > of10switch->pipeline->num_of_tables) && (table_id != OFPTT_ALL) )
+	if ( (table_id > of10switch->pipeline.num_of_tables) && (table_id != OFPTT_ALL) )
 	{
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), msg->get_table_id());
+	
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 
 		throw eFlowModBadTableId();
 	}
@@ -810,15 +879,23 @@ of10_endpoint::flow_mod_add(
 	}catch(...){
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
+	
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 		throw eFlowModUnknown();
 	}
 
-	if(!entry)
+	if(!entry){
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
+	}
 
 	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
 								msg->get_table_id(),
-								entry,
+								&entry,
 								msg->get_buffer_id(),
 								msg->get_flags() & OFPFF_CHECK_OVERLAP,
 								msg->get_flags() & OFPFF_RESET_COUNTS))){
@@ -826,12 +903,14 @@ of10_endpoint::flow_mod_add(
 		ROFL_DEBUG("Error inserting the flowmod\n");
 		of1x_destroy_flow_entry(entry);
 
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 		if(res == AFA_FM_OVERLAP_FAILURE)
 			throw eFlowModOverlap();
 		else
 			throw eFlowModTableFull();
 	}
-
 }
 
 
@@ -844,12 +923,20 @@ of10_endpoint::flow_mod_modify(
 {
 	of1x_flow_entry_t *entry=NULL;
 
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of10switch)
+		throw eRofBase();
+
+
 	// sanity check: table for table-id must exist
-	if (pack->get_table_id() > of10switch->pipeline->num_of_tables)
+	if (pack->get_table_id() > of10switch->pipeline.num_of_tables)
 	{
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), pack->get_table_id());
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
 		throw eFlowModBadTableId();
 	}
@@ -859,24 +946,35 @@ of10_endpoint::flow_mod_modify(
 	}catch(...){
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
 				"unable to attempt to modify flow-entry", sw->dpname.c_str());
+
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 		throw eFlowModUnknown();
 	}
 
-	if(!entry)
-		throw eFlowModUnknown();//Just for safety, but shall never reach this
+	if(!entry){
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+	}
 
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 
 	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_modify(sw->dpid,
 								pack->get_table_id(),
-								entry,
+								&entry,
 								pack->get_buffer_id(),
 								strictness,
 								pack->get_flags() & OFPFF_RESET_COUNTS)){
 		ROFL_DEBUG("Error modiying flowmod\n");
 		of1x_destroy_flow_entry(entry);
+
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 		throw eFlowModBase();
 	}
 
@@ -1009,13 +1107,21 @@ of10_endpoint::handle_port_mod(
 	advertise 	= msg->get_advertise();
 	port_num 	= (uint16_t)msg->get_port_no();
 
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of10switch)
+		throw eRofBase();
+
 	//Check if port_num FLOOD
 	//TODO: Inspect if this is right. Spec does not clearly define if this should be supported or not
-	if( (port_num != OFPP10_ALL) && (port_num > OFPP10_MAX) )
+	if( (port_num != OFPP10_ALL) && (port_num > OFPP10_MAX) ){
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 		throw ePortModBadPort();
+	}
 
 	// check for existence of port with id port_num
-	switch_port_t* port = (switch_port_t*)0;
+	switch_port_snapshot_t* port = NULL;
 	bool port_found = false;
 	for(unsigned int n = 1; n < of10switch->max_ports; n++){
 		port = of10switch->logical_ports[n].port;
@@ -1024,49 +1130,74 @@ of10_endpoint::handle_port_mod(
 			break;
 		}
 	}
-	if (not port_found)
+	if (not port_found){
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 		throw eBadRequestBadPort();
+	}
 
 
 	//Drop received
 	if( mask &  OFP10PC_NO_RECV )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & OFP10PC_NO_RECV ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & OFP10PC_NO_RECV ) ){
+			//Destroy the snapshot
+			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
+		}
 	//No forward
 	if( mask &  OFP10PC_NO_FWD )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFP10PC_NO_FWD) ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & OFP10PC_NO_FWD) ) ){
+			//Destroy the snapshot
+			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
+		}
 
 	//No flood
 	if( mask &  OFP10PC_NO_FLOOD )
 	{
-		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, config & OFP10PC_NO_FLOOD ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, config & OFP10PC_NO_FLOOD ) ){
+			//Destroy the snapshot
+			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
+		}
 	}
 
 	//No packet in
 	if( mask &  OFP10PC_NO_PACKET_IN )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFP10PC_NO_PACKET_IN) ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & OFP10PC_NO_PACKET_IN) ) ){
+			//Destroy the snapshot
+			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
+		}
 
 	//Advertised
 	if( advertise )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_advertise_config(sw->dpid, port_num, advertise)  )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_advertise_config(sw->dpid, port_num, advertise)  ){
+			//Destroy the snapshot
+			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
+		}
 
 	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
 	if( mask &  OFP10PC_PORT_DOWN ){
 		if( (config & OFP10PC_PORT_DOWN)  ){
 			//Disable port
 			if( AFA_FAILURE == fwd_module_disable_port_by_num(sw->dpid, port_num) ){
+				//Destroy the snapshot
+				of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 				throw ePortModBase();
 			}
 		}else{
 			if( AFA_FAILURE == fwd_module_enable_port_by_num(sw->dpid, port_num) ){
+				//Destroy the snapshot
+				of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 				throw ePortModBase();
 			}
 		}
 	}
+	
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
 
 	delete msg;
@@ -1105,13 +1236,17 @@ of10_endpoint::handle_queue_get_config_request(
 		cofctl *ctl,
 		cofmsg_queue_get_config_request *pack)
 {
-	switch_port_t* port;
+	switch_port_snapshot_t* port;
 	unsigned int portnum = pack->get_port_no();
 
 	//FIXME: send error? => yes, if portnum is unknown, just throw the appropriate exception
 	if (0 /*add check for existence of port*/)
 		throw eBadRequestBadPort();
 
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of10switch)
+		throw eRofBase();
 
 	cofpacket_queue_list pql(ctl->get_version());
 
@@ -1151,7 +1286,10 @@ of10_endpoint::handle_queue_get_config_request(
 			pack->get_xid(),
 			pack->get_port_no(),
 			pql);
-
+	
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+			
 	// do not forget to remove pack from heap
 	delete pack;
 }

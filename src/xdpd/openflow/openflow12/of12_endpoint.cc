@@ -692,6 +692,13 @@ of12_endpoint::process_packet_in(
 
 	} catch (...) {
 
+
+		if (buffer_id == OF1XP_NO_BUFFER) {
+			rofl::logging::error << "[xdpd][of12][packet-in] unable to send Packet-In message" << std::endl;
+
+			return AFA_FAILURE;
+		}
+
 		rofl::logging::error << "[xdpd][of12][packet-in] unable to send Packet-In message, dropping packet from occupied pkt slot" << std::endl;
 
 		of1x_action_group_t* action_group = of1x_init_action_group(NULL);
@@ -713,7 +720,7 @@ of12_endpoint::process_packet_in(
 								buffer_id,
 								in_port,
 								action_group,
-								pkt_buffer, buf_len)){
+								NULL, 0)){
 			// log error
 			rofl::logging::crit << "[xdpd][of12][packet-in] unable drop stored packet: this may lead to a deadlock situation!" << std::endl;
 		}

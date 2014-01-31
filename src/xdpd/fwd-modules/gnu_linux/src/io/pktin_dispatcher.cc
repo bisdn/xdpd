@@ -60,11 +60,11 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 
 		//Normalize size
 		pkt_size = pkt_x86->get_buffer_length();
-		if(pkt_size > sw->pipeline->miss_send_len)
-			pkt_size = sw->pipeline->miss_send_len;
+		if(pkt_size > sw->pipeline.miss_send_len)
+			pkt_size = sw->pipeline.miss_send_len;
 			
 		//Process packet in
-        	rv = cmm_process_of1x_packet_in(sw, 
+        	rv = cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_x86->pktin_table_id, 	
 						pkt_x86->pktin_reason, 	
 						pkt_x86->in_port, 

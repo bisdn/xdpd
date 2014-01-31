@@ -47,11 +47,11 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 	sw->platform_state = (of_switch_platform_state_t*)ls_int;
 
 	//Set number of buffers
-	sw->pipeline->num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
+	sw->pipeline.num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
 	
 	//Set the actions and matches supported by this platform
-	for(i=0; i<sw->pipeline->num_of_tables; i++){
-		of1x_flow_table_config_t *config = &(sw->pipeline->tables[i].config);
+	for(i=0; i<sw->pipeline.num_of_tables; i++){
+		of1x_flow_table_config_t *config = &(sw->pipeline.tables[i].config);
 		//Lets set to zero the unssuported matches and actions.
 		config->apply_actions &= ~(1 << OF12PAT_COPY_TTL_OUT);
 		config->apply_actions &= ~(1 << OF12PAT_COPY_TTL_IN);

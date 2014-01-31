@@ -48,7 +48,8 @@ rofl_result_t update_port_status(char * name){
 		assert(0);
 	}
 
-	port = fwd_module_get_port_by_name(name);
+	port = physical_switch_get_port_by_name(name);
+
 	if(!port)
 		return ROFL_SUCCESS; //Port deleted
 
@@ -562,7 +563,7 @@ rofl_result_t update_physical_ports(){
     	}
 	
 	//Call the forwarding module to list the ports
-	ports = fwd_module_get_physical_ports(&max_ports);
+	ports = physical_switch_get_physical_ports(&max_ports);
 
 	if(!ports){
 		close(sock);

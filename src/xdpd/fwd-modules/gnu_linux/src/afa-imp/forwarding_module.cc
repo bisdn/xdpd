@@ -115,6 +115,33 @@ afa_result_t fwd_module_destroy(){
 /*
 * Switch management functions
 */
+/**
+* @brief   Checks if an LSI with the specified dpid exists 
+* @ingroup logical_switch_management
+*/
+bool fwd_module_switch_exists(uint64_t dpid){
+	return physical_switch_get_logical_switch_by_dpid(dpid) != NULL;
+}
+
+/**
+* @brief   Retrieve the list of LSIs dpids
+* @ingroup logical_switch_management
+* @retval  List of available dpids, which MUST be deleted using dpid_list_destroy().
+*/
+dpid_list_t* fwd_module_get_all_lsi_dpids(void){
+	return physical_switch_get_all_lsi_dpids();  
+}
+
+/**
+ * @name fwd_module_get_switch_snapshot_by_dpid 
+ * @brief Retrieves a snapshot of the current state of a switch port, if the port name is found. The snapshot MUST be deleted using switch_port_destroy_snapshot()
+ * @ingroup logical_switch_management
+ * @retval  Pointer to of_switch_snapshot_t instance or NULL 
+ */
+of_switch_snapshot_t* fwd_module_get_switch_snapshot_by_dpid(uint64_t dpid){
+	return physical_switch_get_logical_switch_snapshot(dpid);
+}
+
 
 /*
 * @name    fwd_module_create_switch 
@@ -122,27 +149,27 @@ afa_result_t fwd_module_destroy(){
 * @ingroup logical_switch_management
 * @retval  Pointer to of_switch_t instance 
 */
-of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
+afa_result_t fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
 	
 	of_switch_t* sw;
 	
 	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
 	if(unlikely(!sw))
-		return NULL; 
+		return AFA_FAILURE; 
 
 	//Launch switch processing threads
 	if(start_ls_workers_wrapper(sw) != ROFL_SUCCESS){
 		
 		ROFL_ERR("<%s:%d> error initializing workers from processing manager. Destroying switch...\n",__func__,__LINE__);
 		of_destroy_switch(sw);
-		return NULL;
+		return AFA_FAILURE;
 	}
 	
 	//Add switch to the bank	
 	physical_switch_add_logical_switch(sw);
 	
-	return sw;
+	return AFA_SUCCESS;
 }
 
 /*
@@ -205,55 +232,33 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 * Port management 
 */
 
-/*
-* @name    fwd_module_list_platform_ports
-* @brief   Retrieve the list of ports of the platform 
-* @ingroup port_management
-* @retval  Pointer to the first port. 
+/**
+* @brief   Checks if a port with the specified name exists 
+* @ingroup port_management 
 */
-switch_port_t* fwd_module_list_platform_ports(){
-	/* TODO FIXME */
-	return NULL;
+bool fwd_module_port_exists(const char *name){
+	return physical_switch_get_port_by_name(name) != NULL; 
 }
 
-/*
+/**
+* @brief   Retrieve the list of names of the available ports of the platform. You may want to 
+* 	   call fwd_module_get_port_snapshot_by_name(name) to get more information of the port 
+* @ingroup port_management
+* @retval  List of available port names, which MUST be deleted using switch_port_name_list_destroy().
+*/
+switch_port_name_list_t* fwd_module_get_all_port_names(void){
+	return physical_switch_get_all_port_names(); 
+}
+
+/**
  * @name fwd_module_get_port_by_name
- * @brief Get a reference to the port by its name 
+ * @brief Retrieves a snapshot of the current state of a switch port, if the port name is found. The snapshot MUST be deleted using switch_port_destroy_snapshot()
  * @ingroup port_management
  */
-switch_port_t* fwd_module_get_port_by_name(const char *name){
-	return physical_switch_get_port_by_name(name);
+switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
+	return physical_switch_get_port_snapshot(name); 
 }
 
-/*
-* @name    fwd_module_get_physical_ports_ports
-* @brief   Retrieve the list of the physical ports of the switch
-* @ingroup port_management
-* @retval  Pointer to the first port. 
-*/
-switch_port_t** fwd_module_get_physical_ports(unsigned int* num_of_ports){
-	return physical_switch_get_physical_ports(num_of_ports);
-}
-
-/*
-* @name    fwd_module_get_virtual_ports
-* @brief   Retrieve the list of virtual ports of the platform
-* @ingroup port_management
-* @retval  Pointer to the first port. 
-*/
-switch_port_t** fwd_module_get_virtual_ports(unsigned int* num_of_ports){
-	return physical_switch_get_virtual_ports(num_of_ports);
-}
-
-/*
-* @name    fwd_module_get_tunnel_ports
-* @brief   Retrieve the list of tunnel ports of the platform
-* @ingroup port_management
-* @retval  Pointer to the first port. 
-*/
-switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
-	return physical_switch_get_tunnel_ports(num_of_ports);
-}
 /*
 * @name    fwd_module_attach_physical_port_to_switch
 * @brief   Attemps to attach a system's port to switch, at of_port_num if defined, otherwise in the first empty OF port number.

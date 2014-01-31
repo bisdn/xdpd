@@ -157,7 +157,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			ROFL_DEBUG_VERBOSE("[mmap:%s] sanity check during read mmap failed\n",of_port_state->name);
 			
 			//Increment error statistics
-			switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
+			//switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
 			hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
 			return cnt;
 		}
@@ -185,7 +185,7 @@ ioport_mmap::read_loop(int fd /* todo do we really need the fd? */,
 			// handle no free buffer
 			if (NULL == pkt) {
 				//Increment error statistics and drop
-				switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
+				//switch_port_stats_inc(of_port_state,0,0,0,0,1,0);
 				hdr->tp_status = TP_STATUS_KERNEL; // return packet to kernel
 				return cnt;
 			}
@@ -262,8 +262,8 @@ next:
 	// ROFL_DEBUG_VERBOSE("cnt=%d\n", cnt);
 
 	//Increment statistics
-	if(cnt)
-		switch_port_stats_inc(of_port_state, cnt, 0, rx_bytes_local, 0, 0, 0);	
+	//if(cnt)
+		//switch_port_stats_inc(of_port_state, cnt, 0, rx_bytes_local, 0, 0, 0);	
 	
 	return cnt;
 
@@ -330,8 +330,8 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 			ROFL_DEBUG_VERBOSE("no free slot in circular_queue\n");
 
 			//Increment error statistics
-			switch_port_stats_inc(of_port_state,0,0,0,0,0,1);
-			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);
+			//switch_port_stats_inc(of_port_state,0,0,0,0,0,1);
+			//port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);
 
 
 			// Release and exit
@@ -358,13 +358,13 @@ ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets)
 		if(tx->send()<0){
 			ROFL_DEBUG("[mmap:%s] packet(%p) put in the MMAP region\n", of_port_state->name ,pkt);
 			assert(0);
-			switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, cnt);	
-			port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);	
+			//switch_port_stats_inc(of_port_state, 0, 0, 0, 0, 0, cnt);	
+			//port_queue_stats_inc(&of_port_state->queues[q_id], 0, 0, cnt);	
 		}
 
 		//Increment statistics
-		switch_port_stats_inc(of_port_state, 0, cnt, 0, tx_bytes_local, 0, 0);	
-		port_queue_stats_inc(&of_port_state->queues[q_id], cnt, tx_bytes_local, 0);	
+		//switch_port_stats_inc(of_port_state, 0, cnt, 0, tx_bytes_local, 0, 0);	
+		//port_queue_stats_inc(&of_port_state->queues[q_id], cnt, tx_bytes_local, 0);	
 	}
 
 	// return not used buckets

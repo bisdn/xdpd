@@ -18,16 +18,16 @@ afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 	openflow_switch* sw;
 	afa_result_t result;
 	
-	if (!port || !port->attached_sw){
+	if(!port_snapshot)
 		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
+	
+	if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL)
 		return AFA_FAILURE;	
 
 	//Notify MGMT framework
 	//TODO:
 
-	result = sw->notify_port_add(port);
+	result = sw->notify_port_add(port_snapshot);
 	
 	return result;
 }
@@ -38,16 +38,15 @@ afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	openflow_switch* sw;
 	afa_result_t result;
 	
-	if (!port || !port->attached_sw){
+	if (!port_snapshot)
 		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
+	if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL)
 		return AFA_FAILURE;	
 
 	//Notify MGMT framework
 	//TODO:
 
-	result = sw->notify_port_delete(port);
+	result = sw->notify_port_delete(port_snapshot);
 
 	return result;
 }
@@ -58,16 +57,15 @@ afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapsho
 	openflow_switch* sw;
 	afa_result_t result;
 	
-	if (!port || !port->attached_sw){
+	if (!port_snapshot)
 		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
+	if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL)
 		return AFA_FAILURE;	
 
 	//Notify MGMT framework
 	//TODO:
 
-	result = sw->notify_port_status_changed(port); 
+	result = sw->notify_port_status_changed(port_snapshot); 
 
 	//Destroy the snapshot
 
@@ -77,7 +75,7 @@ afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapsho
 /*
 * Driver CMM Openflow calls. Demultiplexing to the appropiate openflow_switch instance.
 */ 
-afa_result_t cmm_process_of1x_packet_in(const of1x_switch_t* sw,
+afa_result_t cmm_process_of1x_packet_in(uint64_t dpid,
 					uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
@@ -89,10 +87,7 @@ afa_result_t cmm_process_of1x_packet_in(const of1x_switch_t* sw,
 {
 	openflow_switch* dp=NULL;
 	
-	if (!sw) 
-		return AFA_FAILURE;
-
-	dp = switch_manager::find_by_dpid(sw->dpid);
+	dp = switch_manager::find_by_dpid(dpid);
 
 	if(!dp)
 		return AFA_FAILURE;

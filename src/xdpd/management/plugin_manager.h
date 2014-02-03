@@ -76,8 +76,12 @@ public:
 	*/
 	static rofl_result destroy(void);
 	
-  static std::vector<plugin*> get_plugins (void)
-    { return plugins; }
+	/**
+	* Get the list of plugins 
+	*/
+	static std::vector<plugin*> get_plugins(void){ 
+		return plugins; 
+	}
 
 	/**
 	* Registers a plugin must be called on pre_init()

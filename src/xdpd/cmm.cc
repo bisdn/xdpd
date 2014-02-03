@@ -16,19 +16,30 @@ using namespace xdpd;
 afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 	
 	openflow_switch* sw;
-	afa_result_t result;
+	afa_result_t result=AFA_SUCCESS;
 	
 	if(!port_snapshot)
 		return AFA_FAILURE;
 	
-	if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL)
-		return AFA_FAILURE;	
-
 	//Notify MGMT framework
 	//TODO:
 
-	result = sw->notify_port_add(port_snapshot);
+	//Notify attached sw
+	if(port_snapshot->is_attached_to_sw){
+		if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL ){
 	
+			//Destroy the snapshot
+			switch_port_destroy_snapshot(port_snapshot);
+
+			return AFA_SUCCESS;
+		}
+
+		result = sw->notify_port_add(port_snapshot);
+	}
+	
+	//Destroy the snapshot
+	switch_port_destroy_snapshot(port_snapshot);
+		
 	return result;
 }
 
@@ -36,18 +47,30 @@ afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	
 	openflow_switch* sw;
-	afa_result_t result;
+	afa_result_t result = AFA_SUCCESS;
 	
 	if (!port_snapshot)
 		return AFA_FAILURE;
-	if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL)
-		return AFA_FAILURE;	
 
 	//Notify MGMT framework
 	//TODO:
 
-	result = sw->notify_port_delete(port_snapshot);
+	//Notify attached sw
+	if(port_snapshot->is_attached_to_sw){
+		
+		if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL ){
+			//Destroy the snapshot
+			switch_port_destroy_snapshot(port_snapshot);
 
+			return AFA_SUCCESS;	
+		}
+
+		result = sw->notify_port_delete(port_snapshot);
+	}
+
+	//Destroy the snapshot
+	switch_port_destroy_snapshot(port_snapshot);
+	
 	return result;
 }
 
@@ -55,19 +78,29 @@ afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapshot){
 	
 	openflow_switch* sw;
-	afa_result_t result;
+	afa_result_t result=AFA_SUCCESS;
 	
 	if (!port_snapshot)
 		return AFA_FAILURE;
-	if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL)
-		return AFA_FAILURE;	
 
 	//Notify MGMT framework
 	//TODO:
 
-	result = sw->notify_port_status_changed(port_snapshot); 
+	//Notify attached sw
+	if(port_snapshot->is_attached_to_sw){
+		
+		if( (sw=switch_manager::find_by_dpid(port_snapshot->attached_sw_dpid)) == NULL ){
+			//Destroy the snapshot
+			switch_port_destroy_snapshot(port_snapshot);
+
+			return AFA_SUCCESS;
+		}
+
+		result = sw->notify_port_status_changed(port_snapshot); 
+	}
 
 	//Destroy the snapshot
+	switch_port_destroy_snapshot(port_snapshot);
 
 	return result;
 }

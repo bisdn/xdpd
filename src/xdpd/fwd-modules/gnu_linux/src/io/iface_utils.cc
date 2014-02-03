@@ -41,6 +41,7 @@ rofl_result_t update_port_status(char * name){
 	int sd, rc;
  
 	switch_port_t *port;
+	switch_port_snapshot_t *port_snapshot;
 	
 	//Update all ports
 	if(update_physical_ports() != ROFL_SUCCESS){
@@ -91,9 +92,8 @@ rofl_result_t update_port_status(char * name){
 	}
 	
 	//port_status message needs to be created if the port id attached to switch
-	if(port->attached_sw != NULL){
-		cmm_notify_port_status_changed(port);
-	}
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	cmm_notify_port_status_changed(port_snapshot);
 	
 	return ROFL_SUCCESS;
 }

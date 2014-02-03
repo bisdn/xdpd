@@ -853,24 +853,13 @@ of10_endpoint::flow_mod_add(
 	afa_result_t res;
 	of1x_flow_entry_t *entry=NULL;
 
-
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
-
-	if(!of10switch)
-		throw eRofBase();
-
-
 	// sanity check: table for table-id must exist
-	if ( (table_id > of10switch->pipeline.num_of_tables) && (table_id != OFPTT_ALL) )
+	if ( (table_id > sw->num_of_tables) && (table_id != OFPTT_ALL) )
 	{
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), msg->get_table_id());
 	
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-
-
 		throw eFlowModBadTableId();
 	}
 
@@ -880,18 +869,11 @@ of10_endpoint::flow_mod_add(
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
 	
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-
 		throw eFlowModUnknown();
 	}
 
-	if(!entry){
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-
+	if(!entry)
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
-	}
 
 	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
 								msg->get_table_id(),
@@ -902,9 +884,6 @@ of10_endpoint::flow_mod_add(
 		// log error
 		ROFL_DEBUG("Error inserting the flowmod\n");
 		of1x_destroy_flow_entry(entry);
-
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
 		if(res == AFA_FM_OVERLAP_FAILURE)
 			throw eFlowModOverlap();
@@ -923,21 +902,12 @@ of10_endpoint::flow_mod_modify(
 {
 	of1x_flow_entry_t *entry=NULL;
 
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
-
-	if(!of10switch)
-		throw eRofBase();
-
-
 	// sanity check: table for table-id must exist
-	if (pack->get_table_id() > of10switch->pipeline.num_of_tables)
+	if (pack->get_table_id() > sw->num_of_tables)
 	{
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), pack->get_table_id());
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-
 		throw eFlowModBadTableId();
 	}
 
@@ -946,19 +916,11 @@ of10_endpoint::flow_mod_modify(
 	}catch(...){
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
 				"unable to attempt to modify flow-entry", sw->dpname.c_str());
-
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-
 		throw eFlowModUnknown();
 	}
 
-	if(!entry){
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-
+	if(!entry)
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
-	}
 
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
@@ -971,9 +933,6 @@ of10_endpoint::flow_mod_modify(
 								pack->get_flags() & OFPFF_RESET_COUNTS)){
 		ROFL_DEBUG("Error modiying flowmod\n");
 		of1x_destroy_flow_entry(entry);
-
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
 		throw eFlowModBase();
 	}
@@ -1020,10 +979,6 @@ of10_endpoint::flow_mod_delete(
 	of1x_destroy_flow_entry(entry);
 
 }
-
-
-
-
 
 
 afa_result_t

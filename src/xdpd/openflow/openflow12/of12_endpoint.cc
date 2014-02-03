@@ -99,6 +99,10 @@ of12_endpoint::handle_features_request(
 		}
  	}
 	
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
+
+
 	send_features_reply(
 			ctl,
 			msg->get_xid(),
@@ -109,9 +113,6 @@ of12_endpoint::handle_features_request(
 			0,
 			0,
 			portlist);
-
-	//Destroy the snapshot
-	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 
 	delete msg;
 }
@@ -215,11 +216,10 @@ of12_endpoint::handle_table_stats_request(
 				));
 	}
 
-
-	send_table_stats_reply(ctl, msg->get_xid(), table_stats, false);
-
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
+
+	send_table_stats_reply(ctl, msg->get_xid(), table_stats, false);
 
 	delete msg;
 }
@@ -313,11 +313,11 @@ of12_endpoint::handle_port_stats_request(
 		// if port_no was not found, body.memlen() is 0
 	}
 
-	send_port_stats_reply(ctl, msg->get_xid(), port_stats, false);
-	
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 
+	send_port_stats_reply(ctl, msg->get_xid(), port_stats, false);
+	
 	delete msg;
 }
 
@@ -938,20 +938,12 @@ of12_endpoint::flow_mod_add(
 	afa_result_t res;
 	of1x_flow_entry_t *entry=NULL;
 
-	of1x_switch_snapshot_t* of12switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
-
-	if(!of12switch)
-		throw eRofBase();
-
-
 	// sanity check: table for table-id must exist
-	if ( (table_id > of12switch->pipeline.num_of_tables) && (table_id != OFPTT_ALL) )
+	if ( (table_id > sw->num_of_tables) && (table_id != OFPTT_ALL) )
 	{
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), msg->get_table_id());
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 		throw eFlowModBadTableId();
 	}
 
@@ -960,14 +952,10 @@ of12_endpoint::flow_mod_add(
 	}catch(...){
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 		throw eFlowModUnknown();
 	}
 
 	if(!entry){
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 	}
 
@@ -982,16 +970,11 @@ of12_endpoint::flow_mod_add(
 		of1x_destroy_flow_entry(entry);
 
 		if(res == AFA_FM_OVERLAP_FAILURE){
-			//Destroy the snapshot
-			of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 			throw eFlowModOverlap();
 		}else{
-			//Destroy the snapshot
-			of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 			throw eFlowModTableFull();
 		}
 	}
-
 }
 
 
@@ -1004,20 +987,12 @@ of12_endpoint::flow_mod_modify(
 {
 	of1x_flow_entry_t *entry=NULL;
 
-	of1x_switch_snapshot_t* of12switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
-
-	if(!of12switch)
-		throw eRofBase();
-
-
 	// sanity check: table for table-id must exist
-	if (pack->get_table_id() > of12switch->pipeline.num_of_tables)
+	if (pack->get_table_id() > sw->num_of_tables)
 	{
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_delete() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), pack->get_table_id());
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);	
 		throw eFlowModBadTableId();
 	}
 
@@ -1026,16 +1001,10 @@ of12_endpoint::flow_mod_modify(
 	}catch(...){
 		WRITELOG(CDATAPATH, ERROR, "of12_endpoint(%s)::flow_mod_modify() "
 				"unable to attempt to modify flow-entry", sw->dpname.c_str());			//Destroy the snapshot
-			of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
-	
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);	
 		throw eFlowModUnknown();
 	}
 
 	if(!entry){
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 	}
 
@@ -1052,15 +1021,8 @@ of12_endpoint::flow_mod_modify(
 		WRITELOG(CDATAPATH, ERROR, "Error modiying flowmod\n");
 		of1x_destroy_flow_entry(entry);
 		
-		//Destroy the snapshot
-		of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
-
 		throw eFlowModBase(); 
 	} 
-	
-	//Destroy the snapshot
-	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
-
 }
 
 
@@ -1101,7 +1063,6 @@ of12_endpoint::flow_mod_delete(
 	
 	//Always delete entry
 	of1x_destroy_flow_entry(entry);
-
 }
 
 

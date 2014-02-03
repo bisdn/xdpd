@@ -381,6 +381,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 
 	of_switch_t* lsw;
 	switch_port_t* port;
+	switch_port_snapshot_t* port_snapshot;
 	
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
 	if(!lsw)
@@ -398,6 +399,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	//Remove counter port from the iomanager
 	if(port->type == PORT_TYPE_VIRTUAL){
 		switch_port_t* port_pair = get_vlink_pair(port); 
+		switch_port_snapshot_t* port_pair_snapshot;
 
 		if(!port_pair){
 			ROFL_ERR("Error detaching a virtual link port. Could not find the counter port of %s.\n",port->name);
@@ -419,7 +421,8 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 		}
 
 		//notify port dettached
-		if(cmm_notify_port_delete(port_pair) != AFA_SUCCESS){
+		port_pair_snapshot = physical_switch_get_port_snapshot(port_pair->name);
+		if(cmm_notify_port_delete(port_pair_snapshot) != AFA_SUCCESS){
 			///return AFA_FAILURE; //ignore
 		}	
 		
@@ -440,7 +443,8 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	}
 
 	//notify port dettached
-	if(cmm_notify_port_delete(port) != AFA_SUCCESS){
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	if(cmm_notify_port_delete(port_snapshot) != AFA_SUCCESS){
 		///return AFA_FAILURE; //ignore
 	}
 
@@ -501,6 +505,7 @@ afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const
 afa_result_t fwd_module_enable_port(const char* name){
 
 	switch_port_t* port;
+	switch_port_snapshot_t* port_snapshot;
 
 	//Check if the port does exist
 	port = physical_switch_get_port_by_name(name);
@@ -519,7 +524,8 @@ afa_result_t fwd_module_enable_port(const char* name){
 			return AFA_FAILURE;
 	}
 
-	if(cmm_notify_port_status_changed(port)!=AFA_SUCCESS)
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
 		return AFA_FAILURE;
 	
 	return AFA_SUCCESS;
@@ -535,6 +541,7 @@ afa_result_t fwd_module_enable_port(const char* name){
 afa_result_t fwd_module_disable_port(const char* name){
 
 	switch_port_t* port;
+	switch_port_snapshot_t* port_snapshot;
 	
 	//Check if the port does exist
 	port = physical_switch_get_port_by_name(name);
@@ -552,7 +559,8 @@ afa_result_t fwd_module_disable_port(const char* name){
 			return AFA_FAILURE;
 	}
 
-	if(cmm_notify_port_status_changed(port)!=AFA_SUCCESS)
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
 		return AFA_FAILURE;
 	
 	return AFA_SUCCESS;
@@ -569,6 +577,7 @@ afa_result_t fwd_module_disable_port(const char* name){
 afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num){
 
 	of_switch_t* lsw;
+	switch_port_snapshot_t* port_snapshot;
 	
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
 	if(!lsw)
@@ -582,7 +591,8 @@ afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num)
 	if(iomanager::bring_port_up((ioport*)lsw->logical_ports[port_num].port->platform_port_state) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
-	if(cmm_notify_port_status_changed(lsw->logical_ports[port_num].port)!=AFA_SUCCESS)
+	port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
 		return AFA_FAILURE;
 	
 	return AFA_SUCCESS;
@@ -599,6 +609,7 @@ afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num)
 afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num){
 
 	of_switch_t* lsw;
+	switch_port_snapshot_t* port_snapshot;
 	
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
 	if(!lsw)
@@ -612,7 +623,8 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
 	if(iomanager::bring_port_down((ioport*)lsw->logical_ports[port_num].port->platform_port_state) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
-	if(cmm_notify_port_status_changed(lsw->logical_ports[port_num].port)!=AFA_SUCCESS)
+	port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
 		return AFA_FAILURE;
 	
 	return AFA_SUCCESS;

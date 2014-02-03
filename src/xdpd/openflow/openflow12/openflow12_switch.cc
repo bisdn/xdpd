@@ -16,7 +16,7 @@ openflow12_switch::openflow12_switch(uint64_t dpid,
 				int reconnect_start_timeout,
 				caddress const& controller_addr,
 				caddress const& binding_addr) throw (eOfSmVersionNotSupported)
-		: openflow_switch(dpid, dpname, version)
+		: openflow_switch(dpid, dpname, version, num_of_tables)
 {
 
 	if (fwd_module_create_switch((char*)dpname.c_str(),

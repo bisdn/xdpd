@@ -17,6 +17,7 @@
 #include "../openflow_switch.h"
 #include "../of_endpoint.h"
 #include "../../management/switch_manager.h"
+#include <rofl/common/openflow/cofhelloelemversionbitmap.h>
 
 using namespace rofl;
 
@@ -27,6 +28,8 @@ namespace xdpd {
 * @ingroup cmm_of
 **/
 class of10_endpoint : public of_endpoint {
+
+	uint64_t 		ctlid;	// controller id
 
 public:
 
@@ -95,7 +98,7 @@ private:
 	 * @param pack OF packet received from controlling entity.
 	 */
 	virtual void
-	handle_features_request(cofctl *ctl, cofmsg_features_request *pack);
+	handle_features_request(crofctl& ctl, cofmsg_features_request& pack, uint8_t aux_id = 0);
 
 	/** Handle OF get-config request. To be overwritten by derived class.
 	 *
@@ -106,55 +109,55 @@ private:
 	 * @pack OF GET-CONFIG.request packet received from controller
 	 */
 	virtual void
-	handle_get_config_request(cofctl *ctl, cofmsg_get_config_request *msg);
+	handle_get_config_request(crofctl& ctl, cofmsg_get_config_request& msg, uint8_t aux_id = 0);
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_desc_stats_request(cofctl *ctl, cofmsg_desc_stats_request *msg);
-
-
-	/**
-	 *
-	 */
-	virtual void
-	handle_table_stats_request(cofctl *ctl, cofmsg_table_stats_request *msg);
+	handle_desc_stats_request(crofctl& ctl, cofmsg_desc_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_port_stats_request(cofctl *ctl, cofmsg_port_stats_request *pack);
+	handle_table_stats_request(crofctl& ctl, cofmsg_table_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_flow_stats_request(cofctl *ctl, cofmsg_flow_stats_request *pack);
+	handle_port_stats_request(crofctl& ctl, cofmsg_port_stats_request& pack, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_aggregate_stats_request(cofctl *ctl, cofmsg_aggr_stats_request *pack);
+	handle_flow_stats_request(crofctl& ctl, cofmsg_flow_stats_request& pack, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_queue_stats_request(cofctl *ctl, cofmsg_queue_stats_request *pack);
+	handle_aggregate_stats_request(crofctl& ctl, cofmsg_aggr_stats_request& pack, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_experimenter_stats_request(cofctl *ctl, cofmsg_stats_request *pack);
+	handle_queue_stats_request(crofctl& ctl, cofmsg_queue_stats_request& pack, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_experimenter_stats_request(crofctl& ctl, cofmsg_stats_request& pack, uint8_t aux_id = 0);
 
 	/** Handle OF packet-out messages. To be overwritten by derived class.
 	 *
@@ -164,7 +167,7 @@ private:
 	 * @param pack PACKET-OUT.message packet received from controller.
 	 */
 	virtual void
-	handle_packet_out(cofctl *ctl, cofmsg_packet_out *pack);
+	handle_packet_out(crofctl& ctl, cofmsg_packet_out& pack, uint8_t aux_id = 0);
 
 	/** Handle OF barrier request. To be overwritten by derived class.
 	 *
@@ -174,7 +177,7 @@ private:
 	 * @param pack BARRIER.request packet received from controller.
 	 */
 	virtual void
-	handle_barrier_request(cofctl *ctl, cofmsg_barrier_request *pack);
+	handle_barrier_request(crofctl& ctl, cofmsg_barrier_request& msg, uint8_t aux_id = 0);
 
 	/** Handle OF flow-mod message. To be overwritten by derived class.
 	 *
@@ -184,7 +187,7 @@ private:
 	 * @param pack FLOW-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_flow_mod(cofctl *ctl, cofmsg_flow_mod *pack);
+	handle_flow_mod(crofctl& ctl, cofmsg_flow_mod& msg, uint8_t aux_id = 0);
 
 	/** Handle OF table-mod message. To be overwritten by derived class.
 	 *
@@ -194,7 +197,7 @@ private:
 	 * @param pack TABLE-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_table_mod(cofctl *ctl, cofmsg_table_mod *pack);
+	handle_table_mod(crofctl& ctl, cofmsg_table_mod& pack, uint8_t aux_id = 0);
 
 	/** Handle OF port-mod message. To be overwritten by derived class.
 	 *
@@ -204,7 +207,7 @@ private:
 	 * @param pack PORT-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_port_mod(cofctl *ctl, cofmsg_port_mod *pack);
+	handle_port_mod(crofctl& ctl, cofmsg_port_mod& pack, uint8_t aux_id = 0);
 
 	/** Handle OF set-config message. To be overwritten by derived class.
 	 *
@@ -214,7 +217,7 @@ private:
 	 * @param pack SET-CONFIG.message packet received from controller.
 	 */
 	virtual void
-	handle_set_config(cofctl *ctl, cofmsg_set_config *pack);
+	handle_set_config(crofctl& ctl, cofmsg_set_config& msg, uint8_t aux_id = 0);
 
 	/** Handle OF queue-get-config request. To be overwritten by derived class.
 	 *
@@ -225,7 +228,7 @@ private:
 	 * @param pack QUEUE-GET-CONFIG.reply packet received from datapath
 	 */
 	virtual void
-	handle_queue_get_config_request(cofctl *ctl, cofmsg_queue_get_config_request *pack);
+	handle_queue_get_config_request(crofctl& ctl, cofmsg_queue_get_config_request& msg, uint8_t aux_id = 0);
 
 	/** Handle OF experimenter message. To be overwritten by derived class.
 	 *
@@ -235,7 +238,7 @@ private:
 	 * @param pack VENDOR.message packet received from controller.
 	 */
 	virtual void
-	handle_experimenter_message(cofctl *ctl, cofmsg_features_request *pack);
+	handle_experimenter_message(crofctl& ctl, cofmsg_experimenter& msg, uint8_t aux_id = 0);
 
 	/** Handle new ctrl
 	 *
@@ -244,7 +247,7 @@ private:
 	 * @param ctrl new cofctrl instance
 	 */
 	virtual void
-	handle_ctrl_open(cofctl *ctrl);
+	handle_ctrl_open(crofctl *ctrl);
 
 	/** Handle close event on ctrl
 	 *
@@ -253,7 +256,7 @@ private:
 	 * @param ctrl cofctrl instance to be deleted
 	 */
 	virtual void
-	handle_ctrl_close(cofctl *ctrl);
+	handle_ctrl_close(crofctl *ctrl);
 
 
 	/**
@@ -270,8 +273,8 @@ private:
 	 */
 	void
 	flow_mod_add(
-			cofctl *ctl,
-			cofmsg_flow_mod *pack); //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull);
+			crofctl& ctl,
+			cofmsg_flow_mod& pack); //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull);
 
 
 
@@ -289,8 +292,8 @@ private:
 	 */
 	void
 	flow_mod_modify(
-			cofctl *ctl,
-			cofmsg_flow_mod *pack,
+			crofctl& ctl,
+			cofmsg_flow_mod& pack,
 			bool strict);
 
 
@@ -308,8 +311,8 @@ private:
 	 */
 	void
 	flow_mod_delete(
-			cofctl *ctl,
-			cofmsg_flow_mod *pack,
+			crofctl& ctl,
+			cofmsg_flow_mod& pack,
 			bool strict); // throw (eOfSmPipelineBadTableId);
 
 

@@ -84,6 +84,9 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 				assert(0);
 			}
 
+			//Return to datapacket_storage
+			ls_int->storage->get_packet(id);
+
 			//Return to the bufferpool
 			bufferpool::release_buffer(pkt);
 		}

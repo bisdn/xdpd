@@ -20,7 +20,7 @@ using namespace rofl;
 
 namespace xdpd {
 
-class ePmBase		: public cerror {};	// base error class for all switch_manager related errors
+class ePmBase		: public RoflException {};	// base error class for all switch_manager related errors
 class ePmInvalidPort	: public ePmBase {};
 
 /**

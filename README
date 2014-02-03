@@ -1,4 +1,80 @@
 
-xdpd needs to be configured like this (if libraries are not installed):
+What it is
+==========
 
-CFLAGS="-L$RTE_SDK/build/lib/ -I$RTE_SDK/build/include/" CXXFLAGS="$CFLAGS" ../configure --enable-gnu-linux-dpdk --disable-silent-rules 
+"The OpenFlow eXtensible DataPath daemon (xDPd) is a multi-platform, multi OF version, open-source datapath built focusing on performance and extensibility."
+
+xDPd can also be considered a framework for building OpenFlow datapath elements, as it is designed to be easily extended with the support of new forwarding devices.
+
+Supported platforms
+===================
+
+Shipped with all xDPd instances:
+- GNU/Linux amd64/x86 user-space with mmap or netmap (gnu-linux). open-source
+- GNU/Linux + NetFGPA-10G (netfpga10g). open-source. 
+
+Also available:
+
+- Broadcom Triumph2 (bcm).
+- Octeon network processors (octeon5650). 
+- GNU/Linux + DPDK (gnu-linux-dpdk).
+- Other: refer to the wiki page for more details
+
+You may want to have a look to the particular README pages of each platform by inspecting:
+
+src/xdpd/fwd_modules/{platform_name}/README
+
+Requirements
+============
+
+- A modern GNU build-system (autoconf, automake, libtool, ...)
+- GNU/Linux and libc development headers (linux-libc-dev and libc6-dev package in Debian/Ubuntu systems)
+- pkg-config
+- libconfig C++ lib (libconfig++-dev in Debian/Ubuntu systems)
+- ROFL libraries installed [1]
+- [optional] if you want to run automatic tests (make check), libcunit and libcppunit are required (in libcunit1-dev and libcppunit-dev packages in Debian-like systems).
+- [optional] Doxygen to generate the documentation.
+
+[1] https://www.codebasin.net/redmine/projects/rofl-core/wiki
+
+How to build
+============
+
+Install the dependencies and run:
+
+sh# ./autogen.sh
+sh# cd build
+sh# ../configure
+sh# make
+
+Optionally you can 'make check' for consistency checks.
+
+Optional ../configure parameters
+================================
+
+--enable-[platform-name]: Compiles support for the platform-name (forwarding module). Default is gnu-linux.
+--with-plugins="plugin1...pluginN": Compile with plugin1..pluginN enabled. Default is --with-plugins="config" plugin
+--enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).
+--disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)
+--with-doc: Generate documentation along with compilation. configure will fail if Doxygen is not found.
+
+More information, documentation and support
+===========================================
+
+Please visit: 
+
+https://www.codebasin.net/redmine/projects/xdpd/wiki
+
+Authorship
+==========
+
+(c) Copyright BISDN GmbH 2013
+
+Marc Sune<marc.sune (at) bisdn.de>
+Andreas Koepsel<andreas.koepsel (at) bisdn.de>
+Victor Alvarez<victor.alvarez (at) bisdn.de>
+Tobias Jungel<tobias.jungel (at) bisdn.de>
+
+And others
+
+

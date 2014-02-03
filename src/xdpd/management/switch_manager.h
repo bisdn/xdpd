@@ -21,7 +21,7 @@
 
 #include <rofl/common/crofbase.h>
 #include <rofl/platform/unix/cunixenv.h>
-#include <rofl/common/cerror.h>
+#include <rofl/common/croflexception.h>
 
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
@@ -37,17 +37,17 @@ using namespace rofl;
 
 namespace xdpd {
 
-class eOfSmBase				: public cerror {};	// base error class for all switch_manager related errors
+class eOfSmBase					: public RoflException {};	// base error class for all switch_manager related errors
 class eOfSmGeneralError			: public eOfSmBase {};
 class eOfSmErrorOnCreation		: public eOfSmBase {};
-class eOfSmExists			: public eOfSmBase {};
+class eOfSmExists				: public eOfSmBase {};
 class eOfSmDoesNotExist			: public eOfSmBase {};
-class eOfSmNotFound			: public eOfSmBase {};
-class eOfSmFlowModBadCommand		: public eOfSmBase {};
-class eOfSmPipelineBadTableId		: public eOfSmBase {};
-class eOfSmPipelineTableFull		: public eOfSmBase {};
+class eOfSmNotFound				: public eOfSmBase {};
+class eOfSmFlowModBadCommand	: public eOfSmBase {};
+class eOfSmPipelineBadTableId	: public eOfSmBase {};
+class eOfSmPipelineTableFull	: public eOfSmBase {};
 class eOfSmPortModBadPort		: public eOfSmBase {};
-class eOfSmVersionNotSupported		: public eOfSmBase {};
+class eOfSmVersionNotSupported	: public eOfSmBase {};
 
 //Fwd declaration
 class openflow_switch;

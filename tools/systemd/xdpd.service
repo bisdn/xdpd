@@ -1,0 +1,13 @@
+[Unit]
+Description=eXtensible Data Path daemon (xDPd)
+Requires=network.target
+
+[Service]
+User=root
+Group=root
+Type=forking
+ExecStart=/usr/local/sbin/xdpd -D -c /usr/local/etc/xdpd.conf
+PIDFile=/var/run/xdpd.pid
+
+[Install]
+WantedBy=multi-user.target

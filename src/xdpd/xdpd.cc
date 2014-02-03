@@ -5,6 +5,7 @@
 #include <rofl/platform/unix/cunixenv.h>
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
+#include <rofl/platform/unix/cdaemon.h>
 #include "management/switch_manager.h"
 #include "management/port_manager.h"
 #include "management/plugin_manager.h"
@@ -15,7 +16,9 @@ using namespace xdpd;
 extern int optind;
 
 //TODO: Redirect C loggers to the output log
-#define XDPD_LOG_FILE "xdpd.log"
+#define XDPD_CLOG_FILE "./xdpd.log"
+#define XDPD_LOG_FILE "/var/log/xdpd.log"
+#define XDPD_PID_FILE "/var/run/xdpd.pid"
 
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
@@ -56,9 +59,6 @@ int main(int argc, char** argv){
 		exit(EXIT_FAILURE);	
 	}
 
-	//Capture control+C
-	signal(SIGINT, interrupt_handler);
-
 #if DEBUG && VERBOSE_DEBUG
 	//Set verbose debug if necessary
 	rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
@@ -73,7 +73,7 @@ int main(int argc, char** argv){
 		cunixenv env_parser(argc, argv);
 		
 		/* update defaults */
-		env_parser.update_default_option("logfile", XDPD_LOG_FILE);
+		env_parser.update_default_option("logfile", XDPD_CLOG_FILE);
 		env_parser.add_option(coption(true, NO_ARGUMENT, 'v', "version", "Retrieve xDPd version and exit", std::string("")));
 
 		//Parse
@@ -85,22 +85,32 @@ int main(int argc, char** argv){
 		
 		if (not env_parser.is_arg_set("daemonize")) {
 			// only do this in non
-			std::string ident(XDPD_LOG_FILE);
+			std::string ident(XDPD_CLOG_FILE);
 
 			csyslog::initlog(csyslog::LOGTYPE_FILE,
 					static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
 					env_parser.get_arg("logfile"),
 					ident.c_str());
+
+			logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
 		}
+
+		//Daemonize
+		if (env_parser.is_arg_set("daemonize")) {
+			rofl::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
+			rofl::logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
+			rofl::logging::notice << "[xdpd][main] daemonizing successful" << std::endl;
+		}
+
+		//Capture control+C
+		signal(SIGINT, interrupt_handler);
 	}
+
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
 		ROFL_INFO("Init driver failed\n");	
 		exit(-1);
 	}
-
-	//Init the ciosrv.
-	ciosrv::init();
 
 	//Load plugins
 	optind=0;
@@ -118,14 +128,17 @@ int main(int argc, char** argv){
 	//Let plugin manager destroy all registered plugins
 	plugin_manager::destroy();
 	
-	//ciosrv destroy
-	ciosrv::destroy();
-
 	//Call fwd_module to shutdown
 	fwd_module_destroy();
 	
 	ROFL_INFO("House cleaned!\nGoodbye\n");
 	
+	csyslog::closelog();
+
+	logging::close();
+
+	rofl::cioloop::shutdown();
+
 	exit(EXIT_SUCCESS);
 }
 

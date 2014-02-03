@@ -72,7 +72,7 @@ qmfagent::~qmfagent()
 
 
 void
-qmfagent::handle_timeout(int opaque)
+qmfagent::handle_timeout(int opaque, void *data)
 {
 	switch (opaque) {
 	default: {

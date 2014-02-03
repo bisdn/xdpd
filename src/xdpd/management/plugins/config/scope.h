@@ -4,7 +4,7 @@
 #include <libconfig.h++> 
 #include <map> 
 #include <vector> 
-#include <rofl/common/cerror.h>
+#include <rofl/common/croflexception.h>
 #include <rofl/common/utils/c_logger.h>
 
 /**
@@ -17,14 +17,14 @@
 
 namespace xdpd {
 
-class eConfParamNotFound: public rofl::cerror {};
-class eConfFileNotFound: public rofl::cerror {};
-class eConfParseError: public rofl::cerror {};
+class eConfParamNotFound: public rofl::RoflException {};
+class eConfFileNotFound: public rofl::RoflException {};
+class eConfParseError: public rofl::RoflException {};
 
-class eConfDuplicatedScope: public rofl::cerror {};
-class eConfDuplicatedParameter: public rofl::cerror {};
-class eConfMandatoryParameterNotPresent: public rofl::cerror {};
-class eConfMandatoryScopeNotPresent: public rofl::cerror {};
+class eConfDuplicatedScope: public rofl::RoflException {};
+class eConfDuplicatedParameter: public rofl::RoflException {};
+class eConfMandatoryParameterNotPresent: public rofl::RoflException {};
+class eConfMandatoryScopeNotPresent: public rofl::RoflException {};
 
 class scope {
 	

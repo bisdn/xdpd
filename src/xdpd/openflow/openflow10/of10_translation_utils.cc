@@ -41,12 +41,12 @@ uint32_t of10_translation_utils::get_port_speed_kb(port_features_t features){
 */
 of1x_flow_entry_t*
 of10_translation_utils::of1x_map_flow_entry(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmsg_flow_mod *msg,
 		openflow_switch* sw)
 {
 
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(NULL, NULL, msg->get_flags() & OFPFF_SEND_FLOW_REM);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(NULL, NULL, msg->get_flags() & openflow10::OFPFF_SEND_FLOW_REM);
 
 	if(!entry)
 		throw eFlowModUnknown();
@@ -94,7 +94,7 @@ of10_translation_utils::of1x_map_flow_entry(
 */
 void
 of10_translation_utils::of10_map_flow_entry_matches(
-		cofctl *ctl,
+		crofctl *ctl,
 		cofmatch const& ofmatch,
 		openflow_switch* sw,
 		of1x_flow_entry *entry)
@@ -248,69 +248,69 @@ of10_translation_utils::of10_map_flow_entry_matches(
 //FIXME TODO XXX: cofaction should have appropiate getters and setters instead of having  to access internals of the class!
 void
 of10_translation_utils::of1x_map_flow_entry_actions(
-		cofctl *ctl,
+		crofctl *ctl,
 		openflow_switch* sw,
-		cofaclist& actions,
+		cofactions& actions,
 		of1x_action_group_t *apply_actions,
 		of1x_write_actions_t *write_actions)
 {
-	for (cofaclist::iterator
+	for (std::list<cofaction*>::iterator
 			jt = actions.begin(); jt != actions.end(); ++jt)
 	{
-		cofaction& raction = (*jt);
+		cofaction& raction = *(*jt);
 
 		of1x_packet_action_t *action = NULL;
 		wrap_uint_t field;
 		memset(&field,0,sizeof(wrap_uint_t));
 
 		switch (raction.get_type()) {
-		case OFP10AT_OUTPUT:
+		case rofl::openflow10::OFPAT_OUTPUT:
 			//Translate special values to of1x
 			field.u64 = get_out_port(be16toh(raction.oac_10output->port));
 			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_VLAN_VID:
+		case rofl::openflow10::OFPAT_SET_VLAN_VID:
 			field.u64 = be16toh(raction.oac_10vlanvid->vlan_vid);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_VLAN_PCP:
+		case rofl::openflow10::OFPAT_SET_VLAN_PCP:
 			field.u64 = be16toh(raction.oac_10vlanpcp->vlan_pcp)>>8;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, NULL, NULL);
 			break;
-		case OFP10AT_STRIP_VLAN:
+		case rofl::openflow10::OFPAT_STRIP_VLAN:
 			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, NULL, NULL); 
 			break;
-		case OFP10AT_SET_DL_SRC: {
+		case rofl::openflow10::OFPAT_SET_DL_SRC: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, NULL, NULL);
 			} break;
-		case OFP10AT_SET_DL_DST: {
+		case rofl::openflow10::OFPAT_SET_DL_DST: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, NULL, NULL);
 			} break;
-		case OFP10AT_SET_NW_SRC:
+		case rofl::openflow10::OFPAT_SET_NW_SRC:
 			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_NW_DST:
+		case rofl::openflow10::OFPAT_SET_NW_DST:
 			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_NW_TOS:
+		case rofl::openflow10::OFPAT_SET_NW_TOS:
 			field.u64 = raction.oac_10nwtos->nw_tos>>2;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_TP_SRC:
+		case rofl::openflow10::OFPAT_SET_TP_SRC:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
 			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, NULL, NULL);
 			break;
-		case OFP10AT_SET_TP_DST:
+		case rofl::openflow10::OFPAT_SET_TP_DST:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
 			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, NULL, NULL);
 			break;
-		case OFP10AT_ENQUEUE:
+		case rofl::openflow10::OFPAT_ENQUEUE:
 			field.u64 = be32toh(raction.oac_10enqueue->queue_id);
 			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, NULL, NULL);
 			if (NULL != apply_actions) of1x_push_packet_action_to_group(apply_actions, action);
@@ -363,40 +363,49 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			break;
 		case OF1X_MATCH_VLAN_VID:
 			has_vlan = true;
-			match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, m->value->value.u16&OF1X_VLAN_ID_MASK);
+			match.set_vlan_vid(m->value->value.u16&OF1X_VLAN_ID_MASK);
 			break;
 		case OF1X_MATCH_VLAN_PCP:
 			match.set_vlan_pcp(m->value->value.u8);
 			break;
 		case OF1X_MATCH_ARP_OP:
-			match.set_arp_opcode(m->value->value.u16);
+			//match.set_arp_opcode(m->value->value.u16);
+			match.set_nw_proto(m->value->value.u16);
 			break;
+#if 0
 		case OF1X_MATCH_ARP_SHA:
 		{
 			cmacaddr maddr(m->value->value.u64);
 			cmacaddr mmask(m->value->mask.u64);
-			match.set_arp_sha(maddr, mmask);
+			//match.set_arp_sha(maddr, mmask);
+			match.set_eth_src(maddr, mmask);  // TODO: the same for ARP request and ARP reply?
 		}
 			break;
+#endif
 		case OF1X_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(m->value->value.u32);
-			match.set_arp_spa(addr);
+			//match.set_arp_spa(addr);
+			match.set_nw_src(addr);	// TODO: the same for ARP request and ARP reply?
 		}
 			break;
+#if 0
 		case OF1X_MATCH_ARP_THA:
 		{
 			cmacaddr maddr(m->value->value.u64);
 			cmacaddr mmask(m->value->mask.u64);
-			match.set_arp_tha(maddr, mmask);
+			//match.set_arp_tha(maddr, mmask);
+			match.set_eth_dst(maddr, mmask);  // TODO: the same for ARP request and ARP reply?
 		}
 			break;
+#endif
 		case OF1X_MATCH_ARP_TPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(m->value->value.u32);
 			match.set_arp_tpa(addr);
+			match.set_nw_dst(addr);	// TODO: the same for ARP request and ARP reply?
 		}
 			break;
 		case OF1X_MATCH_IP_DSCP:
@@ -433,6 +442,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_TP_DST:
 			match.set_tp_dst(m->value->value.u16);
 			break;
+#if 0
 		case OF1X_MATCH_MPLS_LABEL:
 			match.set_mpls_label(m->value->value.u32);
 			break;
@@ -457,6 +467,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_GTP_TEID:
 			match.insert(coxmatch_ofx_gtp_teid(m->value->value.u32));
 			break;
+#endif
 		default:
 			break;
 		}
@@ -467,7 +478,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 
 	//In 1.0 if there is no VLAN OFP10_VLAN_NONE has to be set...
 	if(!has_vlan)
-		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_UNTAGGED, OFP10_VLAN_NONE);
+		match.set_vlan_untagged();
 }
 
 
@@ -478,7 +489,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_instructions(
 		of1x_instruction_group_t* group,
-		cofinlist& instructions,
+		cofinstructions& instructions,
 		uint16_t pipeline_miss_send_len)
 {
 	for (unsigned int i = 0; i < (sizeof(group->instructions) / sizeof(of1x_instruction_t)); i++) {
@@ -486,7 +497,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instructions(
 			continue;
 		cofinst instruction(OFP10_VERSION);;
 		of1x_map_reverse_flow_entry_instruction(&(group->instructions[i]), instruction, pipeline_miss_send_len);
-		instructions.next() = instruction;
+		instructions.add_inst(instruction);
 	}
 }
 
@@ -505,7 +516,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 				continue;
 			cofaction action(OFP10_VERSION);
 			of1x_map_reverse_flow_entry_action(of1x_action, action, pipeline_miss_send_len);
-			instruction.actions.next() = action;
+			instruction.get_actions().append_action(action);
 				
 			//Skip next action if action is set-queue (SET-QUEUE-OUTPUT)
 			if(of1x_action->type == OF1X_AT_SET_QUEUE){
@@ -526,7 +537,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 				continue;
 			cofaction action(OFP10_VERSION);
 			of1x_map_reverse_flow_entry_action(&(inst->write_actions->write_actions[i]), action, pipeline_miss_send_len);
-			instruction.actions.next() = action;
+			instruction.get_actions().append_action(action);
 		}
 	} break;
 	case OF1X_IT_WRITE_METADATA:
@@ -639,24 +650,33 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 	if(packet_matches->eth_type)
 		match.set_eth_type(packet_matches->eth_type);
 	if(packet_matches->vlan_vid)
-		match.set_vlan_vid(rofl::coxmatch_ofb_vlan_vid::VLAN_TAG_MODE_NORMAL, packet_matches->vlan_vid);
+		match.set_vlan_vid(packet_matches->vlan_vid);
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)
-		match.set_arp_opcode(packet_matches->arp_opcode);
+		match.set_nw_proto(packet_matches->arp_opcode);
+		//match.set_arp_opcode(packet_matches->arp_opcode);
+#if 0
 	if(packet_matches->arp_sha)
-		match.set_arp_sha(cmacaddr(packet_matches->arp_sha));
+		match.set_eth_src(cmacaddr(packet_matches->arp_sha));
+		//match.set_arp_sha(cmacaddr(packet_matches->arp_sha));
+#endif
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_spa);
-		match.set_arp_spa(addr);
+		//match.set_arp_spa(addr);
+		match.set_nw_src(addr);
 	}
+#if 0
 	if(packet_matches->arp_tha)
-		match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
+		match.set_eth_dst(cmacaddr(packet_matches->arp_tha));
+		//match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
+#endif
 	if(packet_matches->arp_tpa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_tpa);
-		match.set_arp_tpa(addr);
+		//match.set_arp_tpa(addr);
+		match.set_nw_dst(addr);
 	}
 	if(packet_matches->ip_dscp)
 		match.set_ip_dscp(packet_matches->ip_dscp);
@@ -667,27 +687,35 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 	if(packet_matches->ipv4_src){
 			caddress addr(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(packet_matches->ipv4_src);
-			match.set_ipv4_src(addr);
-
+			//match.set_ipv4_src(addr);
+			match.set_nw_src(addr);
 	}
 	if(packet_matches->ipv4_dst){
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->ipv4_dst);
-		match.set_ipv4_dst(addr);
+		//match.set_ipv4_dst(addr);
+		match.set_nw_dst(addr);
 	}
 	if(packet_matches->tcp_src)
-		match.set_tcp_src(packet_matches->tcp_src);
+		match.set_tp_src(packet_matches->tcp_src);
+		//match.set_tcp_src(packet_matches->tcp_src);
 	if(packet_matches->tcp_dst)
-		match.set_tcp_dst(packet_matches->tcp_dst);
+		match.set_tp_dst(packet_matches->tcp_dst);
+		//match.set_tcp_dst(packet_matches->tcp_dst);
 	if(packet_matches->udp_src)
-		match.set_udp_src(packet_matches->udp_src);
+		match.set_tp_src(packet_matches->udp_src);
+		//match.set_udp_src(packet_matches->udp_src);
 	if(packet_matches->udp_dst)
-		match.set_udp_dst(packet_matches->udp_dst);
+		match.set_tp_dst(packet_matches->udp_dst);
+		//match.set_udp_dst(packet_matches->udp_dst);
 	if(packet_matches->icmpv4_type)
-		match.set_icmpv4_type(packet_matches->icmpv4_type);
+		match.set_tp_src(packet_matches->icmpv4_type);
+		//match.set_icmpv4_type(packet_matches->icmpv4_type);
 	if(packet_matches->icmpv4_code)
-		match.set_icmpv4_code(packet_matches->icmpv4_code);
+		match.set_tp_dst(packet_matches->icmpv4_code);
+		//match.set_icmpv4_code(packet_matches->icmpv4_code);
 
+#if 0
 	//TODO IPv6
 	if(packet_matches->mpls_label)
 		match.set_mpls_label(packet_matches->mpls_label);
@@ -705,6 +733,7 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 		match.insert(coxmatch_ofx_gtp_msg_type(packet_matches->gtp_msg_type));
 	if(packet_matches->gtp_teid)
 		match.insert(coxmatch_ofx_gtp_teid(packet_matches->gtp_teid));
+#endif
 }
 
 uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
@@ -713,71 +742,71 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
 	of1x_flow_table_config_t config = lsw->pipeline->tables[0].config;
 		
 	if (config.apply_actions&(1UL<<OF12PAT_OUTPUT))
-		mask |= 1 << OFP10AT_OUTPUT;
+		mask |= 1 << rofl::openflow10::OFPAT_OUTPUT;
 	
 	if (config.match&(1UL<<OF1X_MATCH_VLAN_VID))
-		mask |= 1 << OFP10AT_SET_VLAN_VID;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_VLAN_VID;
 	
 	if (config.match&(1UL<<OF1X_MATCH_VLAN_PCP))
-		mask |= 1 << OFP10AT_SET_VLAN_PCP;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_VLAN_PCP;
 	
 	if (config.apply_actions&(1UL<<OF12PAT_POP_VLAN))
-		mask |= 1 << OFP10AT_STRIP_VLAN;
+		mask |= 1 << rofl::openflow10::OFPAT_STRIP_VLAN;
 	
 	if (config.match&(1UL<<OF1X_MATCH_ETH_SRC))
-		mask |= 1 << OFP10AT_SET_DL_SRC;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_DL_SRC;
 	
 	if (config.match&(1UL<<OF1X_MATCH_ETH_DST))
-		mask |= 1 << OFP10AT_SET_DL_DST;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_DL_DST;
 	
 	if (config.match&(1UL<<OF1X_MATCH_IPV4_SRC))
-		mask |= 1 << OFP10AT_SET_NW_SRC;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_SRC;
 	
 	if (config.match&(1UL<<OF1X_MATCH_IPV4_DST))
-		mask |= 1 << OFP10AT_SET_NW_DST;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_DST;
 	
 	if (config.match&(1UL<<OF1X_MATCH_IP_DSCP))
-		mask |= 1 << OFP10AT_SET_NW_TOS;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_TOS;
 	
 	if (config.match&(UINT64_C(1)<<OF1X_MATCH_TP_SRC))
-		mask |= 1 << OFP10AT_SET_TP_SRC;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_TP_SRC;
 	
 	if (config.match&(UINT64_C(1)<<OF1X_MATCH_TP_DST))
-		mask |= 1 << OFP10AT_SET_TP_DST;
+		mask |= 1 << rofl::openflow10::OFPAT_SET_TP_DST;
 	
 	if (config.apply_actions&(1UL<<OF12PAT_SET_QUEUE))
-		mask |= 1 << OFP10AT_ENQUEUE;
+		mask |= 1 << rofl::openflow10::OFPAT_ENQUEUE;
 		
 	return mask;
 }
 
 uint64_t of10_translation_utils::get_out_port(uint16_t port){
 	switch(port){
-		case OFPP10_MAX:
+		case rofl::openflow10::OFPP_MAX:
 			return OF1X_PORT_MAX;
 			break;
-		case OFPP10_IN_PORT:
+		case rofl::openflow10::OFPP_IN_PORT:
 			return OF1X_PORT_IN_PORT;
 			break;
-		case OFPP10_TABLE:
+		case rofl::openflow10::OFPP_TABLE:
 			return OF1X_PORT_TABLE;
 			break;
-		case OFPP10_NORMAL:
+		case rofl::openflow10::OFPP_NORMAL:
 			return OF1X_PORT_NORMAL;
 			break;
-		case OFPP10_FLOOD:
+		case rofl::openflow10::OFPP_FLOOD:
 			return OF1X_PORT_FLOOD;
 			break;
-		case OFPP10_ALL:
+		case rofl::openflow10::OFPP_ALL:
 			return OF1X_PORT_ALL;
 			break;
-		case OFPP10_CONTROLLER:
+		case rofl::openflow10::OFPP_CONTROLLER:
 			return OF1X_PORT_CONTROLLER;
 			break;
-		case OFPP10_LOCAL:
+		case rofl::openflow10::OFPP_LOCAL:
 			return OF1X_PORT_LOCAL;
 			break;
-		case OFPP10_NONE:
+		case rofl::openflow10::OFPP_NONE:
 			return OF1X_PORT_ANY; //NOTE needed for deleting flows
 			break;
 		default:
@@ -789,31 +818,31 @@ uint64_t of10_translation_utils::get_out_port(uint16_t port){
 uint32_t of10_translation_utils::get_out_port_reverse(uint64_t port){
 	switch(port){
 		case OF1X_PORT_MAX:
-			return OFPP10_MAX;
+			return rofl::openflow10::OFPP_MAX;
 			break;
 		case OF1X_PORT_IN_PORT:
-			return OFPP10_IN_PORT;
+			return rofl::openflow10::OFPP_IN_PORT;
 			break;
 		case OF1X_PORT_TABLE:
-			return OFPP10_TABLE;
+			return rofl::openflow10::OFPP_TABLE;
 			break;
 		case OF1X_PORT_NORMAL:
-			return OFPP10_NORMAL;
+			return rofl::openflow10::OFPP_NORMAL;
 			break;
 		case OF1X_PORT_FLOOD:
-			return OFPP10_FLOOD;
+			return rofl::openflow10::OFPP_FLOOD;
 			break;
 		case OF1X_PORT_ALL:
-			return OFPP10_ALL;
+			return rofl::openflow10::OFPP_ALL;
 			break;
 		case OF1X_PORT_CONTROLLER:
-			return OFPP10_CONTROLLER;
+			return rofl::openflow10::OFPP_CONTROLLER;
 			break;
 		case OF1X_PORT_LOCAL:
-			return OFPP10_LOCAL;
+			return rofl::openflow10::OFPP_LOCAL;
 			break;
 		case OF1X_PORT_ANY:
-			return OFPP10_NONE; //NOTE needed for deleting flows
+			return rofl::openflow10::OFPP_NONE; //NOTE needed for deleting flows
 			break;
 		default:
 			return port;

@@ -1,0 +1,28 @@
+Legend:
+
+[+] New/improved feature 
+[B] Bug fixed
+[K] Known issue
+[O] Other
+
+Change log
+==========
+
+v0.4
+
+[+] added systemd service.unit file for xdpd
+
+v0.3.3
+
+[+] Cleanup and improve of plugin system 
+[+] Added README to xDPd main folder
+[+] Added legend to CHANGE file 
+[B] Fixed bug #122: "Autotools does not detect changes on the plugin code"
+[B] xmp plugin: fixed bug in handling of listening socket in xmp::init()
+[B] Added missing m4 file bug #125 "config/plugin_xmp.m4 missing"
+[O] Deleted unused and unmaintained plugins
+
+v0.3.2
+
+[+] Added xmp management plugin
+ 

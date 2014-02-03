@@ -48,19 +48,19 @@ public:
 	/**
 	* Maps a of1x_flow_entry from an OF1.0 Header
 	*/
-	static of1x_flow_entry_t* of1x_map_flow_entry(cofctl *ctl,  cofmsg_flow_mod *msg, openflow_switch* sw);
+	static of1x_flow_entry_t* of1x_map_flow_entry(crofctl *ctl,  cofmsg_flow_mod *msg, openflow_switch* sw);
 
 	/**
 	* Maps a of1x_match from an OF1.0 Header
 	*/
-	static void of10_map_flow_entry_matches(cofctl *ctl, cofmatch const& match, openflow_switch* sw, of1x_flow_entry* entry);
+	static void of10_map_flow_entry_matches(crofctl *ctl, cofmatch const& match, openflow_switch* sw, of1x_flow_entry* entry);
 
 
 
 	/**
 	* Maps a of1x_action from an OF1.0 Header
 	*/
-	static void of1x_map_flow_entry_actions(cofctl *ctl, openflow_switch* sw, cofaclist& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
+	static void of1x_map_flow_entry_actions(crofctl *ctl, openflow_switch* sw, cofactions& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
 
 
 	/**
@@ -68,7 +68,7 @@ public:
 	*/
 	static void of1x_map_reverse_flow_entry_matches(of1x_match_t* m, cofmatch& match);
 
-	static void of1x_map_reverse_flow_entry_instructions(of1x_instruction_group_t* group, cofinlist& instructions, uint16_t pipeline_miss_send_len);
+	static void of1x_map_reverse_flow_entry_instructions(of1x_instruction_group_t* group, cofinstructions& instructions, uint16_t pipeline_miss_send_len);
 
 	/**
 	*

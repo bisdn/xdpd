@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <libconfig.h++> 
-#include <rofl/common/cerror.h>
+#include <rofl/common/croflexception.h>
 #include "scope.h"
 
 /**

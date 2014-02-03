@@ -631,6 +631,25 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
 }
 
 /**
+ * @brief Retrieve a snapshot of the monitoring state. If rev is 0, or the current monitoring 
+ * has changed (monitoring->rev != rev), a new snapshot of the monitoring state is made. Warning: this 
+ * is expensive.
+ * @ingroup fwd_module_management
+ *
+ * @param rev Last seen revision. Set to 0 to always get a new snapshot 
+ * @return A snapshot of the monitoring state that MUST be destroyed using monitoring_destroy_snapshot() or NULL if there have been no changes (same rev)
+ */ 
+monitoring_snapshot_state_t* fwd_module_get_monitoring_snapshot(uint64_t rev){
+
+	physical_switch_t* psw = get_physical_switch();
+
+	if( rev == 0 || monitoring_has_changed(&psw->monitoring, &rev) ) 
+		return monitoring_get_snapshot(&psw->monitoring);
+
+	return NULL;
+}
+
+/**
  * @brief get a list of available matching algorithms
  * @ingroup fwd_module_management
  *

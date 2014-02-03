@@ -6,6 +6,8 @@
 #define DEVICE_MANAGER_H 
 
 #include <list>
+#include <rofl.h>
+#include <rofl/common/cerror.h>
 #include <rofl/datapath/afa/fwd_module.h>
 
 /**
@@ -39,10 +41,8 @@ public:
 	* device attachment to logical switchs
 	*/
 
- 	/**
-	 * @brief Retrieves the chassis monitoring entity represented by the key
-	 */
-	static device get_chassis_monitoring_entity(std::string& key);
+	//TODO
+	static monitoring_snapshot_state_t* get_monitoring_snapshot(void);
 
 private:
 	

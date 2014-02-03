@@ -84,6 +84,11 @@ public:
 	}
 
 	/**
+	* Get the list of plugins 
+	*/
+	static plugin* get_plugin_by_name(std::string name);
+
+	/**
 	* Registers a plugin must be called on pre_init()
 	*/
 	static void register_plugin(plugin* p);

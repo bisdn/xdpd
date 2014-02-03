@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <algorithm>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include "../../../switch_manager.h"
 #include "../../../port_manager.h"
@@ -360,8 +361,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 				//Attach
 				port_manager::attach_port_to_switch(dpid, *port_it, &port_num);
 				//Bring up
-				xdpd::port port_instance = port_manager::get_port_by_name(*port_it);
-				port_instance.up();
+				port_manager::bring_up(*port_it);
 			}catch(...){	
 				ROFL_ERR("%s: unable to attach port '%s'. Unknown error.\n", setting.getPath().c_str(), (*port_it).c_str());
 				throw;

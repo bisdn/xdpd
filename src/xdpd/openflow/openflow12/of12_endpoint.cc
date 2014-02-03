@@ -1291,15 +1291,15 @@ of12_endpoint::handle_port_mod(
 		if( AFA_FAILURE == fwd_module_of1x_set_port_advertise_config(sw->dpid, port_num, advertise)  )
 			throw ePortModBase(); 
 
-	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
+	//Port admin down //TODO: evaluate if we can directly call fwd_module_bring_port_up_by_num instead
 	if( mask &  OFP12PC_PORT_DOWN ){
 		if( (config & OFP12PC_PORT_DOWN)  ){
 			//Disable port
-			if( AFA_FAILURE == fwd_module_disable_port_by_num(sw->dpid, port_num) ){
+			if( AFA_FAILURE == fwd_module_bring_port_down_by_num(sw->dpid, port_num) ){
 				throw ePortModBase(); 
 			}
 		}else{
-			if( AFA_FAILURE == fwd_module_enable_port_by_num(sw->dpid, port_num) ){
+			if( AFA_FAILURE == fwd_module_bring_port_up_by_num(sw->dpid, port_num) ){
 				throw ePortModBase(); 
 			}
 		}

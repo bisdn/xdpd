@@ -6,6 +6,7 @@
 #define MONITORING_MANAGER_H 
 
 #include <list>
+#include <stdint.h>
 #include <rofl.h>
 #include <rofl/common/cerror.h>
 #include <rofl/datapath/afa/fwd_module.h>

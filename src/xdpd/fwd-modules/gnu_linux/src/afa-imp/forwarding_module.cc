@@ -641,10 +641,10 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
  */ 
 monitoring_snapshot_state_t* fwd_module_get_monitoring_snapshot(uint64_t rev){
 
-	physical_switch_t* psw = get_physical_switch();
+	monitoring_state_t* mon = physical_switch_get_monitoring();
 
-	if( rev == 0 || monitoring_has_changed(&psw->monitoring, &rev) ) 
-		return monitoring_get_snapshot(&psw->monitoring);
+	if( rev == 0 || monitoring_has_changed(mon, &rev) ) 
+		return monitoring_get_snapshot(mon);
 
 	return NULL;
 }

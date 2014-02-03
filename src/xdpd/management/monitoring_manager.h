@@ -29,20 +29,17 @@ class eMonitoringUnknownError	: public eMonitoringBase {};
 /**
 * @brief Monitoring management API.
 *
-* The device manager API is a C++ interface that can be consumed
-* by the add-on management modules for general device(interface) management operations.
+* The monitoring manager API is a C++ interface that can be consumed
+* by the add-on management modules for general monitoring operations.
 * @ingroup cmm_mgmt
 */
 class monitoring_manager {
 
 public:
-	/*
-	* This section contains the API to manage devices. This includes system device management and
-	* device attachment to logical switchs
+	/**
+	* Retrieve a monitoring snapshot of the forwarding module 
 	*/
-
-	//TODO
-	static monitoring_snapshot_state_t* get_monitoring_snapshot(void);
+	static monitoring_snapshot_state_t* get_monitoring_snapshot(uint64_t last_rev);
 
 private:
 	

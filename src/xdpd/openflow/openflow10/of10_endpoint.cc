@@ -50,6 +50,7 @@ of10_endpoint::handle_features_request(
 {
 	logical_switch_port_t* ls_port;
 	switch_port_snapshot_t* _port;
+	uint32_t supported_actions;
 
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
 
@@ -107,9 +108,12 @@ of10_endpoint::handle_features_request(
 		}
  	}
 
+	//Recover supported actions
+	supported_actions = of10_translation_utils::get_supported_actions(of10switch);
+	
 	//Destroy the snapshot
+	//Warning: this MUST be before calling send_ method
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-
 
 	ctl.send_features_reply(
 			msg.get_xid(),
@@ -118,7 +122,7 @@ of10_endpoint::handle_features_request(
 			num_of_tables,	// n_tables
 			capabilities,	// capabilities
 			0, //of13_aux_id
-			of10_translation_utils::get_supported_actions(of10switch),
+			supported_actions,
 			ports);
 
 }
@@ -143,7 +147,6 @@ of10_endpoint::handle_get_config_request(
 
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-
 
 	ctl.send_get_config_reply(msg.get_xid(), flags, miss_send_len);
 }
@@ -391,37 +394,38 @@ of10_endpoint::handle_flow_stats_request(
 
 	std::vector<cofflow_stats_reply> flow_stats;
 
-	for(elem = fp_msg->flows_head; elem; elem = elem->next){
-
-		cofmatch match(rofl::openflow10::OFP_VERSION);
-		of10_translation_utils::of1x_map_reverse_flow_entry_matches(elem->matches, match);
-
-		cofinstructions instructions(ctl.get_version());
-		of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions, of10switch->pipeline.miss_send_len);
-
-		if (0 == instructions.size())
-			continue;
-
-		flow_stats.push_back(
-				cofflow_stats_reply(
-						ctl.get_version(),
-						elem->table_id,
-						elem->duration_sec,
-						elem->duration_nsec,
-						elem->priority,
-						elem->idle_timeout,
-						elem->hard_timeout,
-						elem->cookie,
-						elem->packet_count,
-						elem->byte_count,
-						match,
-						instructions[0].get_actions()));
-		// TODO: check this implicit assumption of always using a single instruction?
-		// this should be an instruction of type OFPIT_APPLY_ACTIONS anyway
-	}
-
-
 	try{
+
+		for(elem = fp_msg->flows_head; elem; elem = elem->next){
+
+			cofmatch match(rofl::openflow10::OFP_VERSION);
+			of10_translation_utils::of1x_map_reverse_flow_entry_matches(elem->matches, match);
+
+			cofinstructions instructions(ctl.get_version());
+			of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions, of10switch->pipeline.miss_send_len);
+
+			if (0 == instructions.size())
+				continue;
+
+			flow_stats.push_back(
+					cofflow_stats_reply(
+							ctl.get_version(),
+							elem->table_id,
+							elem->duration_sec,
+							elem->duration_nsec,
+							elem->priority,
+							elem->idle_timeout,
+							elem->hard_timeout,
+							elem->cookie,
+							elem->packet_count,
+							elem->byte_count,
+							match,
+							instructions[0].get_actions()));
+			// TODO: check this implicit assumption of always using a single instruction?
+			// this should be an instruction of type OFPIT_APPLY_ACTIONS anyway
+		}
+
+
 		//Send message
 		ctl.send_flow_stats_reply(msg.get_xid(), flow_stats);
 	}catch(...){
@@ -592,13 +596,13 @@ of10_endpoint::handle_queue_stats_request(
 	}
 
 
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+
 	ctl.send_queue_stats_reply(
 			pack.get_xid(),
 			stats,
 			false);
-	
-	//Destroy the snapshot
-	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 }
 
 
@@ -1228,16 +1232,15 @@ of10_endpoint::handle_queue_get_config_request(
 			pql.next() = pq;
 		}
 	}
-
+	
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
+	
 	//Send reply
 	ctl.send_queue_get_config_reply(
 			pack.get_xid(),
 			pack.get_port_no(),
 			pql);
-	
-	//Destroy the snapshot
-	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
-			
 }
 
 

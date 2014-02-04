@@ -1188,10 +1188,6 @@ of10_endpoint::handle_queue_get_config_request(
 	switch_port_snapshot_t* port;
 	unsigned int portnum = pack.get_port_no();
 
-	//FIXME: send error? => yes, if portnum is unknown, just throw the appropriate exception
-	if (0 /*add check for existence of port*/)
-		throw eBadRequestBadPort();
-
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)

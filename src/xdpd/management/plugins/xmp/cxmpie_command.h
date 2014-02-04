@@ -128,7 +128,7 @@ public:
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpie_command const& elem) {
 		os << dynamic_cast<cxmpie const&>( elem );
-		os << "<cxmpie-command ";
+		os << rofl::indent(2) << "<cxmpie-command ";
 			os << "command:" << (unsigned int)elem.get_command() << " ";
 		os << ">" << std::endl;
 		return os;

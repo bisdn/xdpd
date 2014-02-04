@@ -49,7 +49,7 @@ class of_endpoint : public crofbase {
 
 public:
 
-	of_endpoint(uint32_t supported_ofp_versions = (1 << OFP12_VERSION)) : crofbase(supported_ofp_versions), sw(NULL) {};
+	of_endpoint(cofhello_elem_versionbitmap const& versionbitmap = cofhello_elem_versionbitmap()) : crofbase(versionbitmap), sw(NULL) {};
 
 	virtual ~of_endpoint() {};
 

@@ -30,15 +30,7 @@ cxmpmsg::cxmpmsg(
 		uint8_t *buf, size_t buflen) :
 				cmemory((size_t)buflen)
 {
-	try {
-		unpack(buf, buflen);
-	} catch (rofl::cerror& e) {
-		std::cerr << "SHIT(1): " << e << std::endl;
-#if 1
-	} catch (std::exception& e) {
-		std::cerr << "SHIT(2): " << e.what() << std::endl;
-#endif
-	}
+	unpack(buf, buflen);
 }
 
 

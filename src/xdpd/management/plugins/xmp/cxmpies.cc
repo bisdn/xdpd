@@ -97,7 +97,7 @@ cxmpies::unpack(
 	while (buflen > sizeof(struct xmp_ie_header_t)) {
 		struct xmp_ie_header_t *hdr = (struct xmp_ie_header_t*)buf;
 		if ((be16toh(hdr->len) > buflen) || (be16toh(hdr->len) < sizeof(struct xmp_ie_header_t))) {
-			std::cerr << "[xdpd][xmp] unpacking IE list, invalid length field in IE" << std::endl;
+			rofl::logging::error << "[xdpd][xmp] unpacking IE list, invalid length field in IE" << std::endl;
 			return;
 		}
 		map_and_insert(cxmpie(buf, be16toh(hdr->len)));

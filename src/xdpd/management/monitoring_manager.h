@@ -8,7 +8,7 @@
 #include <list>
 #include <stdint.h>
 #include <rofl.h>
-#include <rofl/common/cerror.h>
+#include <rofl/common/croflexception.h>
 #include <rofl/datapath/afa/fwd_module.h>
 
 /**
@@ -18,13 +18,11 @@
 * @brief Monitoring API file.
 */
 
-using namespace rofl;
-
 namespace xdpd {
 
 
 //Monitoring manager exceptions
-class eMonitoringBase		: public cerror {};	// base error class for all monitoring_manager related errors
+class eMonitoringBase		: public rofl::RoflException {};	// base error class for all monitoring_manager related errors
 class eMonitoringUnknownError	: public eMonitoringBase {};
 
 /**

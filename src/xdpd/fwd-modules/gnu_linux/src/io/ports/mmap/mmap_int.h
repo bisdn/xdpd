@@ -21,7 +21,7 @@
 
 #include <rofl/platform/unix/csyslog.h>
 #include <rofl/common/cmemory.h>
-#include <rofl/common/cerror.h>
+#include <rofl/common/croflexception.h>
 #include <rofl/common/caddress.h>
 
 #include "../../datapacketx86.h"
@@ -40,7 +40,7 @@ namespace gnu_linux {
 
 using namespace rofl;
 
-class ePktLineBase 		: public cerror {};
+class ePktLineBase 		: public RoflException {};
 class ePktLineFailed 	: public ePktLineBase {};
 
 /**

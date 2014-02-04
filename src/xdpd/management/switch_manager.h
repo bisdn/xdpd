@@ -23,8 +23,9 @@
 #include <rofl.h>
 #include <rofl/datapath/afa/afa.h>
 #include <rofl/datapath/afa/cmm.h>
-#include <rofl/common/cerror.h>
 #include <rofl/common/caddress.h>
+#include <rofl/common/croflexception.h>
+
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 /**
@@ -37,7 +38,7 @@
 
 namespace xdpd {
 
-class eOfSmBase				: public rofl::cerror {};	// base error class for all switch_manager related errors
+class eOfSmBase				: public rofl::RoflException {};	// base error class for all switch_manager related errors
 class eOfSmGeneralError			: public eOfSmBase {};
 class eOfSmErrorOnCreation		: public eOfSmBase {};
 class eOfSmExists			: public eOfSmBase {};

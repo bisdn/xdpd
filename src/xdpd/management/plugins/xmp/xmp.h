@@ -59,7 +59,7 @@ protected:
 
 	virtual void
 	handle_timeout(
-			int opaque);
+			int opaque, void *data = (void*)0);
 
 protected:
 
@@ -68,19 +68,19 @@ protected:
 	 */
 
 	virtual void
-	handle_accepted(csocket *socket, int newsd, caddress const& ra) {};
+	handle_accepted(csocket& socket, int newsd, caddress const& ra) {};
 
 	virtual void
-	handle_connected(csocket *socket, int sd) {};
+	handle_connected(csocket& socket) {};
 
 	virtual void
-	handle_connect_refused(csocket *socket, int sd) {};
+	handle_connect_refused(csocket& socket) {};
 
 	virtual void
-	handle_read(csocket *socket, int sd);
+	handle_read(csocket& socket);
 
 	virtual void
-	handle_closed(csocket *socket, int sd) {};
+	handle_closed(csocket& socket) {};
 
 private:
 

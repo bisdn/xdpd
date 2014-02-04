@@ -55,13 +55,13 @@ class packetclassifier{
 
 public:
 	//Constructor&destructor
-	packetclassifier(datapacketx86* pkt_ref):pkt(pkt_ref){}; 
+	packetclassifier(){}; 
 	virtual ~packetclassifier(){}; 
 
 	/*
 	* Main classification methods. 
 	*/
-	virtual void classify(void)=0;
+	virtual void classify(uint8_t* packet, size_t len)=0;
 	virtual void classify_reset(void)=0;
 
 	/*
@@ -86,44 +86,44 @@ public:
 	/*
 	 * pop operations
 	 */
-	virtual void pop_vlan(void)=0;
-	virtual void pop_mpls(uint16_t ether_type)=0;
-	virtual void pop_pppoe(uint16_t ether_type)=0;
+	virtual void pop_vlan(datapacket_t* pkt)=0;
+	virtual void pop_mpls(datapacket_t* pkt, uint16_t ether_type)=0;
+	virtual void pop_pppoe(datapacket_t* pkt, uint16_t ether_type)=0;
 
 	/*
 	 * push operations
 	 */
-	virtual rofl::fvlanframe* push_vlan(uint16_t ether_type)=0;
-	virtual rofl::fmplsframe* push_mpls(uint16_t ether_type)=0;
-	virtual rofl::fpppoeframe* push_pppoe(uint16_t ether_type)=0;
+	virtual rofl::fvlanframe* push_vlan(datapacket_t* pkt, uint16_t ether_type)=0;
+	virtual rofl::fmplsframe* push_mpls(datapacket_t* pkt, uint16_t ether_type)=0;
+	virtual rofl::fpppoeframe* push_pppoe(datapacket_t* pkt, uint16_t ether_type)=0;
 	
 	/*
 	* dump
 	*/
-	virtual void dump(void)=0;
+	virtual void dump(datapacket_t* pkt)=0;
 
 	/** returns length of packet starting at 'fframe' from up to including fframe 'to'
 	 *
 	 */
 	virtual size_t
 	get_pkt_len(
-			rofl::fframe *from = (rofl::fframe*)0,
-			rofl::fframe   *to = (rofl::fframe*)0) = 0;
+			datapacket_t* pkt,
+			void *from = NULL,
+			void   *to = NULL) = 0;
 
 protected:
-
-	//Datapacket reference
-	datapacketx86* pkt;
 
 	/*
 	* Wrappers for pkt push and pop so that we can use friendship in derived classes
 	*/
-	rofl_result_t pkt_push(unsigned int num_of_bytes, unsigned int offset=0);
-	rofl_result_t pkt_pop(unsigned int num_of_bytes, unsigned int offset=0);
+	rofl_result_t pkt_push(datapacket_t* pkt, unsigned int num_of_bytes, unsigned int offset=0);
+	rofl_result_t pkt_pop(datapacket_t* pkt, unsigned int num_of_bytes, unsigned int offset=0);
 
-	rofl_result_t pkt_push(uint8_t* push_point, unsigned int num_of_bytes);
-	rofl_result_t pkt_pop(uint8_t* pop_point, unsigned int num_of_bytes);
+	rofl_result_t pkt_push(datapacket_t* pkt, uint8_t* push_point, unsigned int num_of_bytes);
+	rofl_result_t pkt_pop(datapacket_t* pkt, uint8_t* pop_point, unsigned int num_of_bytes);
 	
+	size_t get_buffer_length(datapacket_t* pkt); //platform depending function
+	uint8_t* get_buffer(datapacket_t* pkt); //platform depending function
 	
 };
 

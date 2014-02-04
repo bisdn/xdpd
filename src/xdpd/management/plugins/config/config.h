@@ -8,7 +8,7 @@
 #include <iostream>
 #include <libconfig.h++> 
 #include <rofl/platform/unix/cunixenv.h>
-#include <rofl/common/cerror.h>
+#include <rofl/common/croflexception.h>
 #include "../../plugin_manager.h"
 #include "scope.h"
 

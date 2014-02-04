@@ -18,11 +18,11 @@ public:
 
 
 	virtual void
-	handle_dpath_open(rofl::cofdpt *dpt) {};
+	handle_dpath_open(rofl::crofdpt *dpt) {};
 
 
 	virtual void
-	handle_dpath_close(rofl::cofdpt *dpt) {};
+	handle_dpath_close(rofl::crofdpt *dpt) {};
 };
 
 #endif

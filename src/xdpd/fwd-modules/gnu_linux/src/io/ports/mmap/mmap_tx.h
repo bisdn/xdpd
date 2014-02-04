@@ -19,7 +19,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include <rofl/common/cerror.h>
+#include <rofl/common/croflexception.h>
 #include <rofl/common/caddress.h>
 #include <rofl/common/utils/c_logger.h>
 #include "../../../util/likely.h"
@@ -37,7 +37,7 @@
 namespace xdpd {
 namespace gnu_linux {
 
-class eConstructorMmapTx : public rofl::cerror {};
+class eConstructorMmapTx : public rofl::RoflException {};
 
 /**
 * @brief MMAP TX internals (v2)

@@ -83,24 +83,24 @@ public:
 protected:
 
 	virtual void
-	handle_timeout(int opaque);
+	handle_timeout(int opaque, void *data = (void*)0);
 
 protected:
 
 	virtual void
-	handle_accepted(rofl::csocket *socket, int newsd, rofl::caddress const& ra) {};
+	handle_accepted(rofl::csocket& socket, int newsd, rofl::caddress const& ra) {};
 
 	virtual void
-	handle_connected(rofl::csocket *socket, int sd) {};
+	handle_connected(rofl::csocket& socket) {};
 
 	virtual void
-	handle_connect_refused(rofl::csocket *socket, int sd) {};
+	handle_connect_refused(rofl::csocket& socket) {};
 
 	virtual void
-	handle_read(rofl::csocket *socket, int sd) {};
+	handle_read(rofl::csocket& socket) {};
 
 	virtual void
-	handle_closed(rofl::csocket *socket, int sd) {};
+	handle_closed(rofl::csocket& socket) {};
 };
 
 }; // end of namespace protocol

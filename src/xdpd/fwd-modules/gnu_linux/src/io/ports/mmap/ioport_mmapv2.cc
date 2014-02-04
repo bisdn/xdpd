@@ -162,7 +162,7 @@ inline void ioport_mmapv2::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86
 	hdr->tp_len - sizeof(struct fetherframe::eth_hdr_t));
 
 	//And classify
-	pkt_x86->headers->classify();
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
 }
 	
 // handle read
@@ -235,10 +235,22 @@ next:
 	//Fill packet
 	if(hdr->tp_vlan_tci != 0){
 		//There is a VLAN
-		fill_vlan_pkt(hdr, pkt_x86);	
+		fill_vlan_pkt(hdr, pkt_x86);
+
+#ifdef DEBUG
+		ROFL_DEBUG_VERBOSE("%s(): datapacketx86 %p after reclassifying the packet\n", __FUNCTION__, pkt_x86);
+		of1x_dump_packet_matches(&pkt->matches);
+#endif
+
 	}else{
 		// no vlan tag present
 		pkt_x86->init((uint8_t*)hdr + hdr->tp_mac, hdr->tp_len, of_port_state->attached_sw, get_port_no());
+
+#ifdef DEBUG
+		ROFL_DEBUG_VERBOSE("%s(): datapacketx86 %p \n", __FUNCTION__, pkt_x86);
+		of1x_dump_packet_matches(&pkt->matches);
+#endif
+
 	}
 
 	//Timestamp S2	

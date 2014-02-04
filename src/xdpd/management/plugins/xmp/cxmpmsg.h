@@ -8,7 +8,8 @@
 #ifndef CXMPMSG_H_
 #define CXMPMSG_H_
 
-#include "rofl/common/cerror.h"
+#include "rofl/common/croflexception.h"
+#include "rofl/common/logging.h"
 #include "rofl/common/cmemory.h"
 #include "xdpd_mgmt_protocol.h"
 #include "cxmpies.h"
@@ -17,7 +18,7 @@ namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class eXmpBase 		: public rofl::cerror {};
+class eXmpBase 		: public rofl::RoflException {};
 class eXmpInval		: public eXmpBase {};
 
 class cxmpmsg :
@@ -164,13 +165,14 @@ public:
 
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpmsg const& msg) {
-		os << "<cxmpmsg ";
+		os << rofl::indent(0) << "<cxmpmsg ";
 		os << "version:" 	<< (int)msg.get_version() 	<< " ";
 		os << "type:" 		<< (int)msg.get_type() 		<< " ";
 		os << "length:" 	<< (int)msg.get_length() 	<< " ";
 		os << "xid:0x" 		<< std::hex << (int)msg.get_xid() << std::dec << " ";
 		os << ">" << std::endl;
-		os << "  " << msg.xmpies;
+		rofl::indent i(2);
+		os << msg.xmpies;
 	return os;
 	};
 };

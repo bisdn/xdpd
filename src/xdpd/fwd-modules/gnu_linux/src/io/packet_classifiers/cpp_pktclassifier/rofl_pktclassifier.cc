@@ -1,15 +1,15 @@
 #include "rofl_pktclassifier.h"
 #include <rofl/common/utils/c_logger.h>
-#include "../datapacketx86.h"
+#include "../../datapacketx86.h"
 
 using namespace xdpd::gnu_linux;
 
 #define ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES 16
 #define ROFL_PKT_CLASSIFIER_IS_LAST_FRAME(a) do{ if(a>ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES) a = ROFL_PKT_CLASSIFIER_MAX_NUM_OF_FRAMES; }while(0)
 
-void rofl_pktclassifier::classify(void){
+void rofl_pktclassifier::classify(uint8_t* packet, size_t len){
 	classify_reset();
-	parse_ether(pkt->get_buffer(), pkt->get_buffer_length());
+	parse_ether(packet, len);
 	is_classified = true;
 }
 
@@ -730,7 +730,7 @@ rofl_pktclassifier::parse_sctp(
 }
 
 void
-rofl_pktclassifier::pop_vlan(){
+rofl_pktclassifier::pop_vlan(datapacket_t* pkt){
 	// outermost vlan tag, if any, following immediately the initial ethernet header
 	if (!fhead)
 		return;
@@ -740,7 +740,7 @@ rofl_pktclassifier::pop_vlan(){
 
 	uint16_t ether_type = vlan->get_dl_type();
 
-	pkt_pop(/*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fvlanframe::vlan_hdr_t));
+	pkt_pop(pkt, /*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fvlanframe::vlan_hdr_t));
 
 	frame_pop(vlan);
 	delete vlan;
@@ -751,14 +751,14 @@ rofl_pktclassifier::pop_vlan(){
 }
 
 void
-rofl_pktclassifier::pop_mpls(uint16_t ether_type){
+rofl_pktclassifier::pop_mpls(datapacket_t* pkt, uint16_t ether_type){
 	// outermost mpls tag, if any, following immediately the initial ethernet header
 	if (!fhead)
 		return;
 	rofl::fmplsframe* mpls = dynamic_cast<rofl::fmplsframe*>( fhead->next );
 	if (!mpls)
 		return;
-	pkt_pop(/*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fmplsframe::mpls_hdr_t));
+	pkt_pop(pkt, /*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fmplsframe::mpls_hdr_t));
 	frame_pop(mpls);
 
 	ether(0)->shift_right(sizeof(rofl::fmplsframe::mpls_hdr_t));
@@ -767,7 +767,7 @@ rofl_pktclassifier::pop_mpls(uint16_t ether_type){
 }
 
 void
-rofl_pktclassifier::pop_pppoe(uint16_t ether_type){
+rofl_pktclassifier::pop_pppoe(datapacket_t* pkt, uint16_t ether_type){
 	// outermost mpls tag, if any, following immediately the initial ethernet header
 	if (!fhead)
 		return;
@@ -775,7 +775,7 @@ rofl_pktclassifier::pop_pppoe(uint16_t ether_type){
 	switch (ether(0)->get_dl_type()) {
 	case rofl::fpppoeframe::PPPOE_ETHER_DISCOVERY:
 	{
-		pkt_pop(/*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fpppoeframe::pppoe_hdr_t));
+		pkt_pop(pkt, /*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(rofl::fpppoeframe::pppoe_hdr_t));
 		if (this->pppoe(0)) {
 			frame_pop(pppoe(0));
 		}
@@ -784,7 +784,7 @@ rofl_pktclassifier::pop_pppoe(uint16_t ether_type){
 		break;
 	case rofl::fpppoeframe::PPPOE_ETHER_SESSION:
 	{
-		pkt_pop(/*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t),
+		pkt_pop(pkt, /*offset=*/sizeof(struct rofl::fetherframe::eth_hdr_t),
 						sizeof(rofl::fpppoeframe::pppoe_hdr_t) + sizeof(rofl::fpppframe::ppp_hdr_t));
 		if (this->pppoe(0)) {
 			frame_pop(pppoe(0));
@@ -814,7 +814,7 @@ rofl_pktclassifier::pop_pppoe(uint16_t ether_type){
  */
 
 rofl::fvlanframe*
-rofl_pktclassifier::push_vlan(uint16_t ether_type){
+rofl_pktclassifier::push_vlan(datapacket_t* pkt, uint16_t ether_type){
 	if ((NULL == ether(0)) || (NULL == ether(0)->next)){
 		return NULL;
 	}
@@ -824,14 +824,14 @@ rofl_pktclassifier::push_vlan(uint16_t ether_type){
 	}
 #endif
 	if(!is_classified)
-		classify(); // this ensures that ether(0) exists
+		classify(get_buffer(pkt), get_buffer_length(pkt)); // this ensures that ether(0) exists
 
 	uint16_t inner_ether_type = ether(0)->get_dl_type();
 
 	/*
 	 * this invalidates ether(0), as it shifts ether(0) to the left
 	 */
-	if (pkt_push(sizeof(rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fvlanframe::vlan_hdr_t)) == ROFL_FAILURE){
+	if (pkt_push(pkt, sizeof(rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fvlanframe::vlan_hdr_t)) == ROFL_FAILURE){
 		// TODO: log error
 		return 0;
 	}
@@ -868,19 +868,19 @@ rofl_pktclassifier::push_vlan(uint16_t ether_type){
 }
 
 rofl::fmplsframe*
-rofl_pktclassifier::push_mpls(uint16_t ether_type){
+rofl_pktclassifier::push_mpls(datapacket_t* pkt, uint16_t ether_type){
 #if 0
 	if (X86_DATAPACKET_BUFFERED_IN_NIC == buffering_status){
 		transfer_to_user_space();
 	}
 #endif
 	if(!is_classified)
-		classify();
+		classify(get_buffer(pkt), get_buffer_length(pkt));
 
 	/*
 	 * this invalidates ether(0), as it shifts ether(0) to the left
 	 */
-	if (pkt_push(ether(0)->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fmplsframe::mpls_hdr_t)) == ROFL_FAILURE){
+	if (pkt_push(pkt, ether(0)->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), sizeof(struct rofl::fmplsframe::mpls_hdr_t)) == ROFL_FAILURE){
 		// TODO: log error
 		return 0;
 	}
@@ -921,7 +921,7 @@ rofl_pktclassifier::push_mpls(uint16_t ether_type){
 }
 
 rofl::fpppoeframe*
-rofl_pktclassifier::push_pppoe(uint16_t ether_type){
+rofl_pktclassifier::push_pppoe(datapacket_t* pkt, uint16_t ether_type){
 
 #if 0
 	if (X86_DATAPACKET_BUFFERED_IN_NIC == buffering_status){
@@ -929,7 +929,7 @@ rofl_pktclassifier::push_pppoe(uint16_t ether_type){
 	}
 #endif
 	if(!is_classified)
-		classify();
+		classify(get_buffer(pkt), get_buffer_length(pkt));
 	
 	if (pppoe(0)){
 		// TODO: log error => pppoe tag already exists
@@ -948,7 +948,7 @@ rofl_pktclassifier::push_pppoe(uint16_t ether_type){
 		/*
 		 * this invalidates ether(0), as it shifts ether(0) to the left
 		 */
-		if (pkt_push(sizeof(struct rofl::fetherframe::eth_hdr_t), bytes_to_insert) == ROFL_FAILURE){
+		if (pkt_push(pkt, sizeof(struct rofl::fetherframe::eth_hdr_t), bytes_to_insert) == ROFL_FAILURE){
 			// TODO: log error
 			return NULL;
 		}
@@ -977,7 +977,7 @@ rofl_pktclassifier::push_pppoe(uint16_t ether_type){
 		/*
 		 * TODO: check if this is an appropiate fix 
 		 */
-		n_pppoe->set_hdr_length(pkt->get_buffer_length() - sizeof(struct rofl::fetherframe::eth_hdr_t) - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
+		n_pppoe->set_hdr_length(get_buffer_length(pkt) - sizeof(struct rofl::fetherframe::eth_hdr_t) - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
 
 		n_ppp->set_ppp_prot(0x0000);
 	}
@@ -990,7 +990,7 @@ rofl_pktclassifier::push_pppoe(uint16_t ether_type){
 		/*
 		 * this invalidates ether(0), as it shifts ether(0) to the left
 		 */
-		if (pkt_push(ether(0)->payload(), bytes_to_insert) == ROFL_FAILURE){
+		if (pkt_push(pkt, ether(0)->payload(), bytes_to_insert) == ROFL_FAILURE){
 			// TODO: log error
 			return NULL;
 		}
@@ -1160,15 +1160,17 @@ void rofl_pktclassifier::classify_reset(void){
 }
 
 
-void rofl_pktclassifier::dump(){
-	ROFL_DEBUG("datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
+void rofl_pktclassifier::dump(datapacket_t* pkt){
+	ROFL_DEBUG("datapacketx86(%p) soframe: %p framelen: %zu\n", this, get_buffer(pkt), get_buffer_length(pkt));
 	rofl::fframe *frame = fhead;
 	while (NULL != frame) {
-		ROFL_DEBUG("%s\n", frame->c_str());
+		std::stringstream sstr; sstr << frame;
+		ROFL_DEBUG("%s\n", sstr.str().c_str());
 		frame = frame->next;
 	}
-	rofl::fframe content(pkt->get_buffer(), pkt->get_buffer_length());
-	ROFL_DEBUG("content: %s\n", content.c_str());
+	rofl::fframe content(get_buffer(pkt), get_buffer_length(pkt));
+	std::stringstream sstr; sstr << content;
+	ROFL_DEBUG("content: %s\n", sstr.str().c_str());
 }
 
 
@@ -1179,9 +1181,9 @@ std::ostream& operator<<(std::ostream& os, datapacketx86& pack){
 
 
 size_t
-rofl_pktclassifier::get_pkt_len(rofl::fframe *from, rofl::fframe *to)
+rofl_pktclassifier::get_pkt_len(datapacket_t* pkt, void *from, void *to)
 {
-	rofl::fframe *curr = (from != 0) ? from : fhead;
+	rofl::fframe *curr = (rofl::fframe *) ((from != 0) ? from : fhead);
 	//rofl::fframe *last =   (to != 0) ?   to : ftail;
 
 	size_t len = 0;

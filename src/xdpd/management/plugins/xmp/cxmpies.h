@@ -23,13 +23,13 @@ extern "C" {
 #include "cxmpie_portname.h"
 #include "cxmpie_dpid.h"
 #include "xdpd_mgmt_protocol.h"
-#include "rofl/common/cerror.h"
+#include "rofl/common/croflexception.h"
 
 namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class eXmpIEsBase			: public rofl::cerror {};
+class eXmpIEsBase			: public rofl::RoflException {};
 class eXmpIEsInval			: public eXmpIEsBase {};
 class eXmpIEsNotFound		: public eXmpIEsBase {};
 
@@ -189,7 +189,8 @@ public:
 
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpies const& xmpies) {
-		os << "<cxmpies #IEs:" << xmpies.size() << " >" << std::endl;
+		os << rofl::indent(0) << "<cxmpies #IEs:" << xmpies.size() << " >" << std::endl;
+		rofl::indent i(2);
 		for (cxmpies::const_iterator
 				it = xmpies.begin(); it != xmpies.end(); ++it) {
 			switch (it->second->get_type()) {

@@ -14,7 +14,7 @@ cxmpclient::cxmpclient() :
 		laddr(AF_INET, "0.0.0.0", 0),
 		raddr(AF_INET, "127.0.0.1", 8444)
 {
-	socket.cconnect(
+	socket.connect(
 			raddr,
 			laddr,
 			AF_INET,
@@ -31,7 +31,7 @@ cxmpclient::~cxmpclient()
 
 void
 cxmpclient::handle_timeout(
-		int opaque)
+		int opaque, void *data)
 {
 	switch (opaque) {
 	case TIMER_XMPCLNT_EXIT: {
@@ -60,7 +60,7 @@ cxmpclient::port_attach(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send_packet(mem, raddr);
+	socket.send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -82,7 +82,7 @@ cxmpclient::port_detach(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send_packet(mem, raddr);
+	socket.send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -103,7 +103,7 @@ cxmpclient::port_enable(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send_packet(mem, raddr);
+	socket.send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -124,7 +124,7 @@ cxmpclient::port_disable(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send_packet(mem, raddr);
+	socket.send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }

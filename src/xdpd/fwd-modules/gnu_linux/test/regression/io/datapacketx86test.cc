@@ -40,6 +40,7 @@ private:
 	cmemory mLeft; // memory buffer received/sent from/to left site
 	cmemory mRight; // memory buffer received/sent from/to right site
 
+	datapacket_t pkt;
 	datapacketx86 pack; // data packet for manipulation
 
 public:
@@ -255,21 +256,23 @@ void DataPacketX86Test::tearDown()
 
 void DataPacketX86Test::testPushPPPoE()
 {
+	pkt.platform_state = &pack;
+	
 	pack.init(mRight.somem(), mRight.memlen(), NULL, 1, 1, true);
 
-	pack.headers->classify();
-	pack.headers->pop_vlan();
-	pack.headers->ether(0)->set_dl_dst(cmacaddr("00:33:33:33:33:33"));
-	pack.headers->ether(0)->set_dl_src(cmacaddr("00:44:44:44:44:44"));
+	classify_packet(pack.headers, pack.get_buffer(), pack.get_buffer_length());
+	pop_vlan(&pkt,pack.headers);
+	set_ether_dl_dst(get_ether_hdr(pack.headers,0),cmacaddr("00:33:33:33:33:33").get_mac());
+	set_ether_dl_src(get_ether_hdr(pack.headers,0),cmacaddr("00:44:44:44:44:44").get_mac());
 
-	pack.headers->push_pppoe(fpppoeframe::PPPOE_ETHER_SESSION);
+	push_pppoe(&pkt, pack.headers, fpppoeframe::PPPOE_ETHER_SESSION);
 
-	pack.headers->pppoe(0)->set_pppoe_code(0x0000);
-	pack.headers->pppoe(0)->set_pppoe_sessid(0xaaaa);
-	pack.headers->pppoe(0)->set_pppoe_type(fpppoeframe::PPPOE_TYPE);
-	pack.headers->pppoe(0)->set_pppoe_vers(fpppoeframe::PPPOE_VERSION);
-	pack.headers->pppoe(0)->set_hdr_length(pack.headers->ipv4(0)->get_ipv4_length() + sizeof(fpppframe::ppp_hdr_t));
-	pack.headers->ppp(0)->set_ppp_prot(fpppframe::PPP_PROT_IPV4);
+	set_pppoe_code(get_pppoe_hdr(pack.headers,0),0x0000);
+	set_pppoe_sessid(get_pppoe_hdr(pack.headers,0),0xaaaa);
+	set_pppoe_type(get_pppoe_hdr(pack.headers,0),fpppoeframe::PPPOE_TYPE);
+	set_pppoe_vers(get_pppoe_hdr(pack.headers,0),fpppoeframe::PPPOE_VERSION);
+	set_pppoe_length(get_pppoe_hdr(pack.headers,0),get_ipv4_length(get_ipv4_hdr(pack.headers,0)) + sizeof(fpppframe::ppp_hdr_t));
+	set_ppp_prot(get_pppoe_hdr(pack.headers,0),fpppframe::PPP_PROT_IPV4);
 
 	rofl::cmemory mResult(pack.get_buffer(), pack.get_buffer_length());
 
@@ -281,19 +284,21 @@ void DataPacketX86Test::testPushPPPoE()
 
 void DataPacketX86Test::testPopPPPoE()
 {
+	pkt.platform_state = &pack;
+	
 	pack.init(mLeft.somem(), mLeft.memlen(), NULL, 1, 1, true);
 
-	pack.headers->classify();
+	classify_packet(pack.headers, pack.get_buffer(), pack.get_buffer_length());
 
-	pack.headers->pop_pppoe(rofl::fipv4frame::IPV4_ETHER);
+	pop_pppoe(&pkt, pack.headers, rofl::fipv4frame::IPV4_ETHER);
 
-	pack.headers->ether(0)->set_dl_dst(cmacaddr("00:11:11:11:11:11"));
-	pack.headers->ether(0)->set_dl_src(cmacaddr("00:22:22:22:22:22"));
+	set_ether_dl_dst(get_ether_hdr(pack.headers,0),cmacaddr("00:11:11:11:11:11").get_mac());
+	set_ether_dl_src(get_ether_hdr(pack.headers,0),cmacaddr("00:22:22:22:22:22").get_mac());
 
-	pack.headers->push_vlan(rofl::fvlanframe::VLAN_CTAG_ETHER);
-	pack.headers->vlan(0)->set_dl_vlan_cfi(true);
-	pack.headers->vlan(0)->set_dl_vlan_id(0x777);
-	pack.headers->vlan(0)->set_dl_vlan_pcp(0x3);
+	push_vlan(&pkt, pack.headers, rofl::fvlanframe::VLAN_CTAG_ETHER);
+	set_vlan_cfi(get_vlan_hdr(pack.headers,0),true);
+	set_vlan_id(get_vlan_hdr(pack.headers,0),0x777);
+	set_vlan_pcp(get_vlan_hdr(pack.headers,0),0x3);
 
 	rofl::cmemory mResult(pack.get_buffer(), pack.get_buffer_length());
 

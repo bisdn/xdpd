@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include <rofl.h>
 #include <rofl/datapath/afa/fwd_module.h>
-#include <rofl/common/cerror.h>
+#include <rofl/common/croflexception.h>
 
 /**
 * @file port_manager.h
@@ -23,9 +23,7 @@
 
 namespace xdpd {
 
-
-//Port manager exceptions
-class ePmBase		: public rofl::cerror {};	// base error class for all port_manager related errors
+class ePmBase		: public rofl::RoflException {};	// base error class for all switch_manager related errors
 class ePmInvalidPort	: public ePmBase {};
 class ePmUnknownError	: public ePmBase {};
 

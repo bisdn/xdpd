@@ -16,6 +16,7 @@ extern "C" {
 }
 #endif
 
+#include "rofl/common/croflexception.h"
 #include "rofl/common/cmemory.h"
 #include "xdpd_mgmt_protocol.h"
 
@@ -23,7 +24,7 @@ namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class eXmpIeBase 		: public rofl::cerror {};
+class eXmpIeBase 		: public rofl::RoflException {};
 class eXmpIeInval		: public eXmpIeBase {};
 
 class cxmpie :
@@ -129,7 +130,7 @@ public:
 
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpie const& elem) {
-		os << "<cxmpie ";
+		os << rofl::indent(0) << "<cxmpie ";
 		os << "type:" 	<< elem.get_type() 		<< " ";
 		os << "length:" << elem.get_length() 	<< " ";
 		os << ">" << std::endl;

@@ -401,11 +401,8 @@ of10_endpoint::handle_flow_stats_request(
 			cofmatch match(rofl::openflow10::OFP_VERSION);
 			of10_translation_utils::of1x_map_reverse_flow_entry_matches(elem->matches, match);
 
-			cofinstructions instructions(ctl.get_version());
-			of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions, of10switch->pipeline.miss_send_len);
-
-			if (0 == instructions.size())
-				continue;
+			cofactions actions(rofl::openflow10::OFP_VERSION);
+			of10_translation_utils::of1x_map_reverse_flow_entry_actions((of1x_instruction_group_t*)(elem->inst_grp), actions, of10switch->pipeline.miss_send_len);
 
 			flow_stats.push_back(
 					cofflow_stats_reply(
@@ -420,11 +417,10 @@ of10_endpoint::handle_flow_stats_request(
 							elem->packet_count,
 							elem->byte_count,
 							match,
-							instructions[0].get_actions()));
+							actions));
 			// TODO: check this implicit assumption of always using a single instruction?
 			// this should be an instruction of type OFPIT_APPLY_ACTIONS anyway
 		}
-
 
 		//Send message
 		ctl.send_flow_stats_reply(msg.get_xid(), flow_stats);

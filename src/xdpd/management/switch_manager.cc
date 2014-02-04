@@ -146,10 +146,66 @@ switch_manager::list_matching_algorithms(of_version_t of_version)
 }
 
 
+bool switch_manager::exists(uint64_t dpid){
+	
+	bool found=true;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+	
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end())
+		found=false;
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+	
+	return found;
+}
+
+bool switch_manager::exists_by_name(std::string& name){
+	
+	bool found=false;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	for(std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(); it != switchs.end(); ++it){
+		if( it->second->dpname == name)
+			found=true;	
+
+	}
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	return found; 
+}
+
+uint64_t switch_manager::get_switch_dpid(std::string& name){
+
+	uint64_t dpid;
+	bool found=false;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	for(std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(); it != switchs.end(); ++it){
+		if( it->second->dpname == name){
+			found=true;
+			dpid = it->second->dpid;
+		}
+
+	}
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	if(found)
+		return dpid;
+	else
+		throw eOfSmDoesNotExist(); 
+}
+
+
+
 
 void
-switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra)
-{
+switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra){
+
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
@@ -166,8 +222,8 @@ switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra)
 
 
 void
-switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra)
-{
+switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra){
+
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){

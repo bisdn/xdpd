@@ -120,12 +120,13 @@ public:
 	/**
 	 * Return true if switch exists with the name 'name'
 	 */
-	static bool exists_by_name(std::string& name); 
+	static bool exists_by_name(std::string& name);
+		
 	
 	/**
 	 * Return the dpid of the switch 
 	 */
-	static uint64_t get_switch_dpid(std::string& name); 
+	static uint64_t get_switch_dpid(std::string& name);
 
 	/**
 	 * List available matching algorithms

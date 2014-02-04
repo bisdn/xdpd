@@ -1112,9 +1112,9 @@ of10_endpoint::handle_queue_get_config_request(
 
 			cofpacket_queue pq(ctl.get_version());
 			pq.set_queue_id(port->queues[i].id);
-			pq.set_port(port->of_port_num);
+			//pq.set_port(port->of_port_num);
 			pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl.get_version(), port->queues[i].min_rate);
-			pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl.get_version(), port->queues[i].max_rate);
+			//pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl.get_version(), port->queues[i].max_rate);
 			//fprintf(stderr, "min_rate: %d\n", port->queues[i].min_rate);
 			//fprintf(stderr, "max_rate: %d\n", port->queues[i].max_rate);
 

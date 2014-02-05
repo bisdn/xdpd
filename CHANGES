@@ -8,6 +8,11 @@ Legend:
 Change log
 ==========
 
+v0.3.4
+
+
+[O][GNU/Linux] Reducing default buffer expiration timeout (180s->10s)
+
 v0.3.3
 
 [+] Cleanup and improve of plugin system 

@@ -72,7 +72,7 @@
 //Buffer storage(PKT_IN) max buffers per LSI
 #define IO_PKT_IN_STORAGE_MAX_BUF 512
 //Buffer storage(PKT_IN) expiration time (seconds)
-#define IO_PKT_IN_STORAGE_EXPIRATION_S 180
+#define IO_PKT_IN_STORAGE_EXPIRATION_S 10
 
 /*
 * Processing subsystem parameters

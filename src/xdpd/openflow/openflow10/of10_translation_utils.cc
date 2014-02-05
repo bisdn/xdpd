@@ -487,36 +487,25 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 *
 */
 void
-of10_translation_utils::of1x_map_reverse_flow_entry_instructions(
+of10_translation_utils::of1x_map_reverse_flow_entry_actions(
 		of1x_instruction_group_t* group,
-		cofinlist& instructions,
+		cofaclist& actions,
 		uint16_t pipeline_miss_send_len)
 {
 	for (unsigned int i = 0; i < (sizeof(group->instructions) / sizeof(of1x_instruction_t)); i++) {
-		if (OF1X_IT_NO_INSTRUCTION == group->instructions[i].type)
+
+		if (OF1X_IT_APPLY_ACTIONS != group->instructions[i].type)
 			continue;
-		cofinst instruction(OFP10_VERSION);;
-		of1x_map_reverse_flow_entry_instruction(&(group->instructions[i]), instruction, pipeline_miss_send_len);
-		instructions.next() = instruction;
-	}
-}
 
+		if(!group->instructions[i].apply_actions)
+			continue;
 
-void
-of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
-		of1x_instruction_t* inst,
-		cofinst& instruction,
-		uint16_t pipeline_miss_send_len)
-{
-	switch (inst->type) {
-	case OF1X_IT_APPLY_ACTIONS: {
-		instruction = cofinst_apply_actions(OFP10_VERSION);
-		for (of1x_packet_action_t *of1x_action = inst->apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
+		for (of1x_packet_action_t *of1x_action = group->instructions[i].apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
 				continue;
 			cofaction action(OFP10_VERSION);
 			of1x_map_reverse_flow_entry_action(of1x_action, action, pipeline_miss_send_len);
-			instruction.actions.next() = action;
+			actions.next() = action;
 				
 			//Skip next action if action is set-queue (SET-QUEUE-OUTPUT)
 			if(of1x_action->type == OF1X_AT_SET_QUEUE){
@@ -526,30 +515,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_instruction(
 					of1x_action = of1x_action->next; //Skip output
 			}
 		}
-	} break;
-	case OF1X_IT_CLEAR_ACTIONS: {
-		instruction = cofinst_clear_actions(OFP10_VERSION);
-	} break;
-	case OF1X_IT_WRITE_ACTIONS: {
-		instruction = cofinst_write_actions(OFP10_VERSION);
-		for (unsigned int i = 0; i < OF1X_IT_GOTO_TABLE; i++) {
-			if (OF1X_AT_NO_ACTION == inst->write_actions->write_actions[i].type)
-				continue;
-			cofaction action(OFP10_VERSION);
-			of1x_map_reverse_flow_entry_action(&(inst->write_actions->write_actions[i]), action, pipeline_miss_send_len);
-			instruction.actions.next() = action;
-		}
-	} break;
-	case OF1X_IT_WRITE_METADATA:
-	case OF1X_IT_EXPERIMENTER: {
-		// TODO: both are marked TODO in of1x_pipeline
-	} break;
-	case OF1X_IT_GOTO_TABLE: {
-		instruction = cofinst_goto_table(OFP10_VERSION, inst->go_to_table);
-	} break;
-	default: {
-		// do nothing
-	} break;
+
+		break;
 	}
 }
 

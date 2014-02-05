@@ -355,11 +355,8 @@ of10_endpoint::handle_flow_stats_request(
 		cofmatch match(OFP10_VERSION);
 		of10_translation_utils::of1x_map_reverse_flow_entry_matches(elem->matches, match);
 
-		cofinlist instructions(ctl->get_version());
-		of10_translation_utils::of1x_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions, of10switch->pipeline->miss_send_len);
-
-		if (0 == instructions.size())
-			continue;
+		cofaclist actions(OFP10_VERSION);
+		of10_translation_utils::of1x_map_reverse_flow_entry_actions((of1x_instruction_group_t*)(elem->inst_grp), actions, of10switch->pipeline->miss_send_len);
 
 		flow_stats.push_back(
 				cofflow_stats_reply(
@@ -374,7 +371,7 @@ of10_endpoint::handle_flow_stats_request(
 						elem->packet_count,
 						elem->byte_count,
 						match,
-						instructions[0].actions));
+						actions));
 	}
 
 
@@ -1135,9 +1132,9 @@ of10_endpoint::handle_queue_get_config_request(
 
 			cofpacket_queue pq(ctl->get_version());
 			pq.set_queue_id(port->queues[i].id);
-			pq.set_port(port->of_port_num);
+			//pq.set_port(port->of_port_num);
 			pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl->get_version(), port->queues[i].min_rate);
-			pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl->get_version(), port->queues[i].max_rate);
+			//pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl->get_version(), port->queues[i].max_rate);
 			//fprintf(stderr, "min_rate: %d\n", port->queues[i].min_rate);
 			//fprintf(stderr, "max_rate: %d\n", port->queues[i].max_rate);
 

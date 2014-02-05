@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <rofl.h>
+#include "stats.h"
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 //#include "flow_entry.h"

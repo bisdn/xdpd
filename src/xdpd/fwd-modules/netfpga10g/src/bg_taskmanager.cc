@@ -20,10 +20,14 @@
 
 #include "netfpga/netfpga.h"
 #include "netfpga/ports.h"
+#include "netfpga/stats.h"
+#include "netfpga/flow_entry.h"
 #include "io/packet_io.h"
 #include "io/bufferpool.h"
+#include "netfpga/regs.h"
 #include "pipeline-imp/ls_internal_state.h"
 #include "util/time_utils.h"
+
 
 using namespace xdpd::gnu_linux;
 
@@ -54,6 +58,31 @@ rofl_result_t update_port_status(char * name){
  * @brief checks if its time to process timeouts (flow entries and pool of buffers)
  * @param psw physical switch (where all the logical switches are)
  */
+
+void update_misc_stats(){
+	
+	uint32_t misc_stats[NETFPGA_NUMBER_OF_MISC_STATS];
+	netfpga_read_misc_stats(misc_stats);
+	//displacy_misc_stats(misc_stats);
+
+	//conberting netfpga stats to port stats structure
+
+	switch_port_t* port[4];
+	port[0] = physical_switch_get_port_by_name("nf0");
+	port[1] = physical_switch_get_port_by_name("nf1");
+	port[2] = physical_switch_get_port_by_name("nf2");
+	port[3] = physical_switch_get_port_by_name("nf3");
+	
+	for(int i=0;i<NETFPGA_LAST_PORT-1;i++){		
+
+		port[i]->stats.rx_packets=(uint64_t)misc_stats[i+0x09]+(uint64_t)misc_stats[i+0x13]+(uint64_t)misc_stats[i+0x18];/* Number of received packets. */
+		port[i]->stats.tx_packets=(uint64_t)misc_stats[i+0x0e];     /* Number of transmitted packets. */
+		port[i]->stats.rx_dropped=(uint64_t)misc_stats[i];     /* Number of packets dropped by RX. */
+
+	}
+
+}
+
 int process_timeouts()
 {
 	datapacket_t* pkt;
@@ -124,6 +153,9 @@ int process_timeouts()
 		last_time_pool_checked = now;
 	}
 
+	
+
+
 	return ROFL_SUCCESS;
 }
 
@@ -167,7 +199,7 @@ void* x86_background_tasks_routine(void* param)
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
 
 
-		ROFL_DEBUG("interface name %s ", iface_name );
+		//ROFL_DEBUG("interface name %s ", iface_name );
 	
 		//Recover port from pipeline
 		port = physical_switch_get_port_by_name(iface_name);
@@ -196,11 +228,44 @@ void* x86_background_tasks_routine(void* param)
 	//FIXME: add the NETLINK stuff
 	
 	while(bg_continue_execution){
-		
-		//Throttle
+		update_misc_stats();
 
+/////////////////////////////////////////////////////////////TEST update_entry_stats function///////////////////////////////
+/*
+	netfpga_flow_entry_t* hw_entry;
+	hw_entry = netfpga_init_flow_entry();
+	
+
+	for (i = 0; i < 32; ++i) {
+		hw_entry = netfpga_init_flow_entry();
+
+		memset(hw_entry,0x00,sizeof(netfpga_flow_entry_t));	
+
+		hw_entry->hw_pos = i; 	
 		
-		nfds = epoll_wait(efd, event_list, MAX_EPOLL_EVENTS, -1 /*LSW_TIMER_SLOT_MS  temporaly changet to infinite*/ /*timeout needs TBD somewhere else*/);
+		hw_entry->type = NETFPGA_FE_WILDCARDED; 
+		
+		of1x_flow_entry_t* of1x_entry=new of1x_flow_entry_t;
+		memset(of1x_entry,0,sizeof(of1x_flow_entry_t));
+		of1x_entry->platform_state=(of1x_flow_entry_platform_state_t*)hw_entry;
+		ROFL_DEBUG("\n entry number %d", i);
+		netfpga_update_entry_stats(of1x_entry);
+
+		netfpga_destroy_flow_entry(hw_entry);
+		delete  of1x_entry;
+	} 
+
+*/			
+//////////////////////////////////////////////////////////////END OF TEST/////////////////////////////////////////////////////////////			
+
+
+
+
+	
+		//Throttle
+		//update_misc_stats();
+		
+		nfds = epoll_wait(efd, event_list, MAX_EPOLL_EVENTS, LSW_TIMER_SLOT_MS  /*temporaly changet to infinite*/ /*timeout needs TBD somewhere else*/);
 		//ROFL_DEBUG(" After epoll_wait \n\n\n\n");
 
 
@@ -211,7 +276,7 @@ void* x86_background_tasks_routine(void* param)
 
 		if(nfds==0){ 
 			//TIMEOUT PASSED
-			ROFL_DEBUG("bg_taskmanager epoll gave 0");
+			//ROFL_DEBUG("bg_taskmanager epoll gave 0 - TIMEOUT PASSED");
 			process_timeouts();
 		}
 		
@@ -234,6 +299,7 @@ void* x86_background_tasks_routine(void* param)
 			}
 			//check if there is a need of manage timers!
 			process_timeouts();
+			
 		 }
 		}
 	
@@ -269,3 +335,7 @@ rofl_result_t stop_background_tasks_manager()
 	pthread_join(bg_thread,NULL);
 	return ROFL_SUCCESS;
 }
+
+
+
+

@@ -46,7 +46,8 @@ afa_result_t fwd_module_of1x_set_port_drop_received_config(uint64_t dpid, unsign
 	
 	//TODO
 	
-	return AFA_SUCCESS;
+	//return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 
 /**
@@ -62,7 +63,8 @@ afa_result_t fwd_module_of1x_set_port_no_flood_config(uint64_t dpid, unsigned in
 	
 	//TODO
 	
-	return AFA_SUCCESS;
+	//return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 
 /**
@@ -78,7 +80,8 @@ afa_result_t fwd_module_of1x_set_port_forward_config(uint64_t dpid, unsigned int
 
 	//TODO
 	
-	return AFA_SUCCESS;
+	//return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 /**
  * @name    fwd_module_of1x_set_port_generate_packet_in_config
@@ -93,7 +96,8 @@ afa_result_t fwd_module_of1x_set_port_generate_packet_in_config(uint64_t dpid, u
 	
 	//TODO
 	
-	return AFA_SUCCESS;
+//	return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 
 /**
@@ -109,7 +113,8 @@ afa_result_t fwd_module_of1x_set_port_advertise_config(uint64_t dpid, unsigned i
 
 	//TODO
 	
-	return AFA_SUCCESS;
+	//return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 
 /**

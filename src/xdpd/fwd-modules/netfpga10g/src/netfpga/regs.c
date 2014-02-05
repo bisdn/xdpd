@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <errno.h>
 
 rofl_result_t netfpga_read_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32_t *value){
 	
@@ -33,14 +34,17 @@ rofl_result_t netfpga_write_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32
 	
 	uint64_t reg;
 	reg = ((uint64_t)reg_id << 32) + (uint64_t)value;
-
-	if(ioctl(nfpga->fd, NETFPGA_IOCTL_CMD_WRITE_REG,reg) != 0){
+	
+	int result;
+	result=ioctl(nfpga->fd, NETFPGA_IOCTL_CMD_WRITE_REG,reg);
+	//ROFL_DEBUG("\n ioctl result: %x \n" , result);
+	if( result != 0){
 		ROFL_ERR("ioctl failed on writing register fd: %d REG: 0x%x\n", nfpga->fd, reg_id);
 		
 		return ROFL_FAILURE;
 	}
 
-	
+//	ROFL_DEBUG("ERRNO is: ", errno);
 
 	return ROFL_SUCCESS;
 }

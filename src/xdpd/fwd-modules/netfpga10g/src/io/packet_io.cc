@@ -8,7 +8,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 
 	netfpga_port_t* state = (netfpga_port_t*)port->platform_port_state;
 
-	ROFL_ERR("["FWD_MOD_NAME"] packet_io.cc Got a packet from kernel (PKT_IN) in port %s %p!\n", port->name, state);
+	//ROFL_DEBUG("["FWD_MOD_NAME"] packet_io.cc Got a packet from kernel (PKT_IN) in port %s %p!\n", port->name, state);
 	
 
 	//Retrieve an empty buffer
@@ -37,22 +37,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	packet = pcap_next(state->pcap_fd, &header);
 
 
-/////test//////////////////////
 
-	uint8_t* p=(uint8_t*)packet;
-	#pragma pack (1)
-	struct ethernet_header {
-		uint8_t ether_dhost[6]; /* Destination host address */
-		uint8_t ether_shost[6]; /* Source host address */
-		uint16_t ether_type; /* IP? ARP? RARP? etc */
-	};
-	
-	ethernet_header* eth=(ethernet_header*)p;
-
-
-	ROFL_DEBUG("PACKET_IN: dst_mac: %x, source_mac %x, eth_type %x ",eth->ether_dhost,eth->ether_shost, eth->ether_type);
-
-//////////////////test//////finish////////////////////////////////////////
 
 
 

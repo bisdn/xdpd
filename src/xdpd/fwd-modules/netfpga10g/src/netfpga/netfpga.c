@@ -85,13 +85,13 @@ static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 	unsigned int i;
 	uint32_t* aux;
 
-	ROFL_DEBUG("\n\n  %s : % d  NETFPGA ADD FLOW ENTRY HW !!!!!!!!!!!!!  \n ", __FILE__,__LINE__);
+//	ROFL_DEBUG("\n\n  %s : % d  NETFPGA ADD FLOW ENTRY HW !!!!!!!!!!!!!  \n ", __FILE__,__LINE__);
 		
 	
 
 
 //////////////LOGS//////////////////////////////////////////////////////////////////////
-
+/*
 
 	netfpga_align_mac_addr_t dst_mac=(netfpga_align_mac_addr_t)entry->matches->eth_dst;
 	netfpga_align_mac_addr_t src_mac=(netfpga_align_mac_addr_t)entry->matches->eth_src;
@@ -163,7 +163,7 @@ static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 
 
 
-
+*/
 
 //////////////////////////LOGS FINISH////////////////////////////////////////////////////////////////////
 
@@ -174,13 +174,13 @@ static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 
 	//Set Row address
 	if(entry->type == NETFPGA_FE_FIXED ){
-		ROFL_DEBUG("\n  %s : % d  FIXED ENTRY  \n ", __FILE__,__LINE__);
+		//ROFL_DEBUG("\n  %s : % d  FIXED ENTRY  \n ", __FILE__,__LINE__);
 		
 		if(netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_EXACT_BASE + entry->hw_pos) != ROFL_SUCCESS)//NETFPGA_EXACT_BASE			0x0000
 			return ROFL_FAILURE;
 	}else{
 		
-		ROFL_DEBUG("\n  %s : % d  WILD CARD  \n ", __FILE__,__LINE__);
+		//ROFL_DEBUG("\n  %s : % d  WILD CARD  \n ", __FILE__,__LINE__);
 		if(netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_WILDCARD_BASE + entry->hw_pos) != ROFL_SUCCESS)
 			return ROFL_FAILURE;
 	}
@@ -251,6 +251,9 @@ static rofl_result_t netfpga_delete_entry_hw(unsigned int pos){
 //Setup the catch-all DMA entries (packet_in) and packet out entries
 static rofl_result_t netfpga_init_dma_mechanism(){
 
+
+
+
 	unsigned int i;
 	netfpga_flow_entry_t* entry;
 
@@ -288,8 +291,10 @@ static rofl_result_t netfpga_init_dma_mechanism(){
 	netfpga_destroy_flow_entry(entry);	
 	
 
-///test///////injection of fake flowmod/////////////////////////////////////////////////////////////////////////
+///TEST///////injection of fake flowmod//////////////////////////////////////////////////////    TEST   ///////////////////
 /*
+
+ROFL_DEBUG(" \n BEGIN OF FAKE ENTRY \n");
 	entry = netfpga_init_flow_entry();
 	
 
@@ -337,7 +342,7 @@ static rofl_result_t netfpga_init_dma_mechanism(){
 ///////works for wildcard entry
 */
 
-	ROFL_DEBUG(" \n BEGIN OF FAKE ENTRY \n");
+	
 /*
 		uint64_t tmp_mac;
 		
@@ -697,7 +702,7 @@ entry = netfpga_init_flow_entry();
 */
 
 
-////////////////////////test finish//////////////////////////////////////////////////////////////////////////////
+////////////////////////            TEST finish     //////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -748,9 +753,19 @@ rofl_result_t netfpga_init(){
 		return ROFL_FAILURE;
 
 	//FIXME: set registers	
+/*
+	// cleaning statistisc imposible due to read only stats registers in OFSWITCH
+	uint32_t misc_stats[NETFPGA_NUMBER_OF_MISC_STATS];
+	netfpga_read_misc_stats(misc_stats);
+	displacy_misc_stats(misc_stats);
 	
-
-	ROFL_DEBUG("\n   END OF INIT!!!!!!!!!!!!!!!!!!!!!!!! \n");
+	//clean misculenious stats
+	if(netfpga_clean_misc_stats() != ROFL_SUCCESS)
+		return ROFL_FAILURE;
+	netfpga_read_misc_stats(misc_stats);
+	displacy_misc_stats(misc_stats);
+*/
+	ROFL_DEBUG("\n   END OF NETFPGA INITIALIZATION !!!!!!!!!!!!!!!!!!!!!!!! \n");
 	return ROFL_SUCCESS;
 }
 

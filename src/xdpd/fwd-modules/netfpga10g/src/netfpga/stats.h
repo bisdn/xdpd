@@ -20,6 +20,20 @@
 */
 
 //Data structures
+/*
+typedef struct netfpga_misc_stats {
+	union {
+	
+	}
+
+
+}netfpga_misc_stats_t;  
+*/
+
+
+//netfpga_read_misc_stats(netfpga_device_t* nfpga,uint32_t *	misc_stats[]);
+
+
 typedef struct netfpga_flow_entry_stats {
 	uint32_t pkt_counter:25;
 	uint8_t last_seen:7;
@@ -36,6 +50,10 @@ ROFL_BEGIN_DECLS
 * @brief Get the raw statistics for a flow 
 */
 rofl_result_t netfpga_update_entry_stats(of1x_flow_entry_t* entry);
+rofl_result_t netfpga_read_misc_stats(uint32_t misc_stats[]);
+void displacy_misc_stats(uint32_t misc_stats[]);
+rofl_result_t netfpga_clean_misc_stats();
+//void update_misc_stats();
 
 
 //C++ extern C

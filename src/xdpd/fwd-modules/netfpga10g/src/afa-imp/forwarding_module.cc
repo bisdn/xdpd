@@ -341,7 +341,8 @@ afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num)
 	
 	//FIXME: todo
 	
-	return AFA_SUCCESS;
+	//return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 
 /*
@@ -358,7 +359,8 @@ afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num
 	
 	//FIXME: todo
 	
-	return AFA_SUCCESS;
+	//return AFA_SUCCESS;
+	return AFA_FAILURE;
 }
 
 /**

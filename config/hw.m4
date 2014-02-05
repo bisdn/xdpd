@@ -15,6 +15,9 @@ AC_ARG_ENABLE(bcm,
 AC_ARG_ENABLE(octeon,
 	AS_HELP_STRING([--enable-octeon], [compile OCTEON 5650 hardware support [default=no]])
 			, , enable_octeon="no")
+AC_ARG_ENABLE(netfpga10g,
+	AS_HELP_STRING([--enable-netfpga10g], [compile NetFPGA 10G hardware code (HW code not included) [default=no]])
+			, , enable_netfpga10g="no")
 AC_ARG_ENABLE(example,
 	AS_HELP_STRING([--enable-example], [compile the Forwarding Module example code [default=no]])
 			, , enable_example="no")
@@ -27,6 +30,7 @@ if ( test "$enable_gnu_linux_dpdk" = "no" ) &&
    ( test "$enable_gnu_linux" = "no" ) &&
    ( test "$enable_bcm" = "no" ) &&
    ( test "$enable_octeon" = "no" ) &&
+   ( test "$enable_netfpga10g" = "no" ) &&
    ( test "$enable_example" = "no" ); then
    
    enable_gnu_linux="yes"
@@ -57,6 +61,12 @@ if( test "$enable_octeon" = "yes" );then
 	AC_DEFINE(ENABLE_OCTEON5650)
 	PLATFORM=octeon5650
 	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/octeon5650])
+fi
+if( test "$enable_netfpga10g" = "yes" );then
+	msg="$msg NetFPGA-10G"
+	AC_DEFINE(ENABLE_NETFPGA10G)
+	PLATFORM=netfpga10g
+	AC_CONFIG_SUBDIRS([src/xdpd/fwd-modules/netfpga10g])
 fi
 if( test "$enable_example" = "yes" );then
 	msg="$msg Example platform"

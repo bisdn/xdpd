@@ -1,0 +1,4 @@
+MAINTAINERCLEANFILES = Makefile.in
+
+noinst_LTLIBRARIES = libfwd_module_netfpga10g_afa_imp_of1x.la
+libfwd_module_netfpga10g_afa_imp_of1x_la_SOURCES = of1x_forwarding_module.cc

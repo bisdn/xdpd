@@ -264,17 +264,17 @@ void DataPacketX86Test::testPushPPPoE()
 
 	classify_packet(pack->headers, pack->get_buffer(), pack->get_buffer_length(), 1, 1);
 	pop_vlan(&pkt,pack->headers);
-	set_dl_eth_dst(ether(pack->headers,0),cmacaddr("00:33:33:33:33:33").get_mac());
-	set_dl_eth_src(ether(pack->headers,0),cmacaddr("00:44:44:44:44:44").get_mac());
+	set_ether_dl_dst(get_ether_hdr(pack->headers,0),cmacaddr("00:33:33:33:33:33").get_mac());
+	set_ether_dl_src(get_ether_hdr(pack->headers,0),cmacaddr("00:44:44:44:44:44").get_mac());
 
 	push_pppoe(&pkt, pack->headers, fpppoeframe::PPPOE_ETHER_SESSION);
 
-	set_pppoe_code(pppoe(pack->headers,0),0x0000);
-	set_pppoe_sessid(pppoe(pack->headers,0),0xaaaa);
-	set_pppoe_type(pppoe(pack->headers,0),fpppoeframe::PPPOE_TYPE);
-	set_pppoe_vers(pppoe(pack->headers,0),fpppoeframe::PPPOE_VERSION);
-	set_pppoe_length(pppoe(pack->headers,0),get_ipv4_length(ipv4(pack->headers,0)) + sizeof(fpppframe::ppp_hdr_t));
-	set_ppp_prot(pppoe(pack->headers,0),fpppframe::PPP_PROT_IPV4);
+	set_pppoe_code(get_pppoe_hdr(pack->headers,0),0x0000);
+	set_pppoe_sessid(get_pppoe_hdr(pack->headers,0),0xaaaa);
+	set_pppoe_type(get_pppoe_hdr(pack->headers,0),fpppoeframe::PPPOE_TYPE);
+	set_pppoe_vers(get_pppoe_hdr(pack->headers,0),fpppoeframe::PPPOE_VERSION);
+	set_pppoe_length(get_pppoe_hdr(pack->headers,0),get_ipv4_length(get_ipv4_hdr(pack->headers,0)) + sizeof(fpppframe::ppp_hdr_t));
+	set_ppp_prot(get_pppoe_hdr(pack->headers,0),fpppframe::PPP_PROT_IPV4);
 
 	rofl::cmemory mResult(pack->get_buffer(), pack->get_buffer_length());
 
@@ -294,13 +294,13 @@ void DataPacketX86Test::testPopPPPoE()
 
 	pop_pppoe(&pkt, pack->headers, rofl::fipv4frame::IPV4_ETHER);
 
-	set_dl_eth_dst(ether(pack->headers,0),cmacaddr("00:11:11:11:11:11").get_mac());
-	set_dl_eth_src(ether(pack->headers,0),cmacaddr("00:22:22:22:22:22").get_mac());
+	set_ether_dl_dst(get_ether_hdr(pack->headers,0),cmacaddr("00:11:11:11:11:11").get_mac());
+	set_ether_dl_src(get_ether_hdr(pack->headers,0),cmacaddr("00:22:22:22:22:22").get_mac());
 
 	push_vlan(&pkt, pack->headers, rofl::fvlanframe::VLAN_CTAG_ETHER);
-	set_dl_vlan_cfi(vlan(pack->headers,0),true);
-	set_dl_vlan_id(vlan(pack->headers,0),0x777);
-	set_dl_vlan_pcp(vlan(pack->headers,0),0x3);
+	set_vlan_cfi(get_vlan_hdr(pack->headers,0),true);
+	set_vlan_id(get_vlan_hdr(pack->headers,0),0x777);
+	set_vlan_pcp(get_vlan_hdr(pack->headers,0),0x3);
 
 	rofl::cmemory mResult(pack->get_buffer(), pack->get_buffer_length());
 

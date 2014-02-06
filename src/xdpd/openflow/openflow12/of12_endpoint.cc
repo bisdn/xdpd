@@ -290,7 +290,7 @@ of12_endpoint::handle_flow_stats_request(
 	of1x_stats_flow_msg_t* fp_msg = NULL;
 	of1x_flow_entry_t* entry = NULL;
 
-	//Map the match structure from OpenFlow to of1x_packet_matches_t
+	//Map the match structure from OpenFlow to packet_matches_t
 	entry = of1x_init_flow_entry(NULL, NULL, false);
 	
 	try{
@@ -372,7 +372,7 @@ of12_endpoint::handle_aggregate_stats_request(
 //	cmemory body(sizeof(struct ofp_flow_stats));
 //	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
 
-	//Map the match structure from OpenFlow to of1x_packet_matches_t
+	//Map the match structure from OpenFlow to packet_matches_t
 	entry = of1x_init_flow_entry(NULL, NULL, false);
 
 	if(!entry)
@@ -671,12 +671,12 @@ of12_endpoint::process_packet_in(
 		uint8_t* pkt_buffer,
 		uint32_t buf_len,
 		uint16_t total_len,
-		of1x_packet_matches_t matches)
+		packet_matches_t* matches)
 {
 	try {
 		//Transform matches 
 		cofmatch match;
-		of12_translation_utils::of12_map_reverse_packet_matches(&matches, match);
+		of12_translation_utils::of12_map_reverse_packet_matches(matches, match);
 
 		send_packet_in_message(
 				buffer_id,

@@ -10,6 +10,8 @@
 #include <pthread.h> 
 #include <vector> 
 #include <iostream> 
+#include <sys/syscall.h>
+#include <errno.h>
 #include "ioscheduler.h" 
 #include "../iomanager.h"
 #include "../bufferpool.h"

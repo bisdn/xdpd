@@ -60,7 +60,7 @@ afa_result_t openflow10_switch::process_packet_in(uint8_t table_id,
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of1x_packet_matches_t matches){
+					packet_matches_t* matches){
 
 	return ((of10_endpoint*)endpoint)->process_packet_in(table_id,
 					reason,

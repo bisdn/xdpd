@@ -78,7 +78,7 @@ public:
 	/**
 	*
 	*/
-	static void of1x_map_reverse_packet_matches(of1x_packet_matches_t* packet_matches, cofmatch& match);
+	static void of1x_map_reverse_packet_matches(packet_matches_t* packet_matches, cofmatch& match);
 	
 	/**
 	 * Actions supported by switch

@@ -139,13 +139,15 @@ typedef struct classify_state{
 	//Inner most (last) ethertype
 	uint16_t eth_type;
 
+	//Pre-parsed packet matches
+	packet_matches_t* matches; 
 }classify_state_t;
 
 
 //function declarations
-classify_state_t* init_classifier(void);
+classify_state_t* init_classifier(datapacket_t*const pkt);
 void destroy_classifier(classify_state_t* clas_state);
-void classify_packet(classify_state_t* clas_state, uint8_t* pkt, size_t len);
+void classify_packet(classify_state_t* clas_state, uint8_t* pkt, size_t len,  uint32_t port_in, uint32_t phy_port_in);
 void reset_classifier(classify_state_t* clas_state);
 
 inline static 

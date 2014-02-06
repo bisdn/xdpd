@@ -147,8 +147,10 @@ MMAPPortTest::setUp()
 	pkt_x86 = ((datapacketx86*)pkt->platform_state);
 
 	// create the packet contents
-	pkt_x86->init(NULL, 250, NULL,1);
-	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
+	int in_port=1;
+	int phy_port=0;
+	pkt_x86->init(NULL, 250, NULL,in_port,phy_port);
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length(), pkt_x86->in_port, pkt_x86->in_phy_port);
 
 	set_ether_dl_dst(get_ether_hdr(pkt_x86->headers, 0), rofl::cmacaddr("00:11:11:11:11:11").get_mac());
 	set_ether_dl_src(get_ether_hdr(pkt_x86->headers,0), rofl::cmacaddr("00:22:22:22:22:22").get_mac());
@@ -160,7 +162,7 @@ MMAPPortTest::setUp()
 
 	// create the packet contents
 	pkt_x86->init(NULL, 254, NULL,1);
-	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length(), pkt_x86->in_port, pkt_x86->in_phy_port);
 
 	set_ether_dl_dst(get_ether_hdr(pkt_x86->headers,0), rofl::cmacaddr("00:11:11:11:11:11").get_mac());
 	set_ether_dl_src(get_ether_hdr(pkt_x86->headers,0), rofl::cmacaddr("00:22:22:22:22:22").get_mac());

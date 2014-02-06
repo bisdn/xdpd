@@ -600,7 +600,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 * Maps packet actions to cofmatches
 */
 
-void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches_t* packet_matches, cofmatch& match){
+void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* packet_matches, cofmatch& match){
 	if(packet_matches->port_in)
 		match.set_in_port(packet_matches->port_in);
 	if(packet_matches->eth_dst){

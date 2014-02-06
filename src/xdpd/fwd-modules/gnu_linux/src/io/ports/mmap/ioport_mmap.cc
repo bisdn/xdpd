@@ -166,7 +166,7 @@ inline void ioport_mmap::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86 *
 	hdr->tp_len - sizeof(struct fetherframe::eth_hdr_t));
 
 	//And classify
-	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length());
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length(), pkt_x86->in_port, pkt_x86->in_phy_port);
 }
 	
 // handle read
@@ -247,6 +247,7 @@ next:
 
 	//Timestamp S2	
 	TM_STAMP_STAGE(pkt, TM_S2);
+	classify_packet(pkt_x86->headers, pkt_x86->get_buffer(), pkt_x86->get_buffer_length(), pkt_x86->in_port, 0);
 
 	//Return packet to kernel in the RX ring		
 	rx->return_packet(hdr);

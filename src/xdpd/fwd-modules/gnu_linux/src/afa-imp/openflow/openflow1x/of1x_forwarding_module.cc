@@ -5,6 +5,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_statistics.h>
+#include <rofl/datapath/pipeline/platform/timing.h>
 #include "../../../io/bufferpool.h"
 #include "../../../io/datapacket_storage.h"
 #include "../../../io/datapacketx86.h"
@@ -244,6 +245,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 {
 	of_switch_t* lsw;
 	datapacket_t* pkt;
+	datapacketx86* pktx86;
 
 	//Recover port	
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
@@ -299,8 +301,12 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		pkt->sw = lsw;
 	}
 
+	//add timestamp to packet
+	platform_gettimeofday(&pkt->ts);
+	
 	//Reclassify the packet
-	classify_packet(((datapacketx86*)pkt->platform_state)->headers, ((datapacketx86*)pkt->platform_state)->get_buffer(), ((datapacketx86*)pkt->platform_state)->get_buffer_length());
+	pktx86 = (datapacketx86*)pkt->platform_state;
+	classify_packet(pktx86->headers, pktx86->get_buffer(), pktx86->get_buffer_length(), pktx86->in_port, 0);
 
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	
@@ -353,6 +359,9 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 	
 		datapacket_t* pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
 	
+		//Add timestamp to packet
+		platform_gettimeofday(&pkt->ts);
+		
 		if(!pkt){
 			assert(0);
 			return AFA_FAILURE; //TODO: return really failure?
@@ -403,6 +412,9 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 	
 		datapacket_t* pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
 	
+		// add timestamp to packet
+		platform_gettimeofday(&pkt->ts);
+		
 		if(!pkt){
 			assert(0);
 			return AFA_FAILURE; //TODO: return really failure?

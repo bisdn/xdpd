@@ -4,7 +4,6 @@
 #include <rofl/common/utils/c_logger.h>
 #include "../packet_operations.h"
 
-
 void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen);
 void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen);
 void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen);
@@ -17,37 +16,56 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen);
 void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen);
 void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
 void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
-void parse_gtpu(classify_state_t* clas_state, uint8_t *data, size_t datalen);
+void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen);
+
 
 /// Classify part
+classify_state_t* init_classifier(datapacket_t*const  pkt){
 
-classify_state_t* init_classifier(){
 	classify_state_t* classifier = malloc(sizeof(classify_state_t));
 	memset(classifier,0,sizeof(classify_state_t));
+
+	assert(pkt != NULL);
+	classifier->matches = &pkt->matches;
+
 	return classifier;
 }
 void destroy_classifier(classify_state_t* clas_state){
 	free(clas_state);
 }
 
-void classify_packet(classify_state_t* clas_state, uint8_t* pkt, size_t len){
+void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, uint32_t port_in, uint32_t phy_port_in){
 	if(clas_state->is_classified)
 		reset_classifier(clas_state);
-	parse_ethernet(clas_state,pkt,len);
+	parse_ethernet(clas_state, data, len);
 	clas_state->is_classified = true;
+	
+	//Fill in the matches
+	clas_state->matches->pkt_size_bytes = len;
+	clas_state->matches->port_in = port_in;
+	clas_state->matches->phy_port_in = phy_port_in;
 }
 
 void reset_classifier(classify_state_t* clas_state){
+
+	packet_matches_t* matches = clas_state->matches;
 	memset(clas_state,0,sizeof(classify_state_t));
+	clas_state->matches = matches;
+
+	if(likely(matches != NULL))
+		memset(clas_state->matches,0,sizeof(packet_matches_t));
 }
 
 void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_eth_hdr_t)){return;}
+
+	if (unlikely(datalen < sizeof(cpc_eth_hdr_t))){return;}
+
+	//Data pointer	
+	cpc_eth_hdr_t* ether = (cpc_eth_hdr_t *)data;
 
 	//Set frame
 	unsigned int num_of_ether = clas_state->num_of_headers[HEADER_TYPE_ETHER];
-	//clas_state->headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame->reset(data, datalen/*sizeof(struct rofl::fetherframe::eth_hdr_t)*/);
-	clas_state->headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame = (cpc_eth_hdr_t *)data;
+	clas_state->headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame = ether;
 	clas_state->headers[FIRST_ETHER_FRAME_POS + num_of_ether].present = true;
 	clas_state->headers[FIRST_ETHER_FRAME_POS + num_of_ether].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_ETHER] = num_of_ether+1;
@@ -56,10 +74,12 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 	data += sizeof(cpc_eth_hdr_t);
 	datalen -= sizeof(cpc_eth_hdr_t);
 
-	//Set pointer to header
-	cpc_eth_hdr_t* ether_header = (cpc_eth_hdr_t*) clas_state->headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame;
-	
-	clas_state->eth_type = get_ether_type(ether_header);
+	clas_state->eth_type = get_ether_type(ether);
+
+	//Initialize eth packet matches
+	clas_state->matches->eth_type = get_ether_type(ether); //This MUST be here
+	clas_state->matches->eth_src = get_ether_dl_src(ether);
+	clas_state->matches->eth_dst = get_ether_dl_dst(ether);
 
 	switch (clas_state->eth_type) {
 		case VLAN_CTAG_ETHER:
@@ -102,15 +122,20 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 			}
 			break;
 	}
+
+
 }
 
 void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_vlan_hdr_t)) { return; }
+
+	if (unlikely(datalen < sizeof(cpc_vlan_hdr_t))) { return; }
+
+	//Data pointer	
+	cpc_vlan_hdr_t* vlan = (cpc_vlan_hdr_t *)data;
 
 	//Set frame
 	unsigned int num_of_vlan = clas_state->num_of_headers[HEADER_TYPE_VLAN];
-	//clas_state->headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame->reset(data, datalen);
-	clas_state->headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame = (cpc_vlan_hdr_t*)data;
+	clas_state->headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame = vlan;
 	clas_state->headers[FIRST_VLAN_FRAME_POS + num_of_vlan].present = true;
 	clas_state->headers[FIRST_VLAN_FRAME_POS + num_of_vlan].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_VLAN] = num_of_vlan+1;
@@ -119,9 +144,6 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	data += sizeof(cpc_vlan_hdr_t);
 	datalen -= sizeof(cpc_vlan_hdr_t);
 
-	//Set pointer to header
-	cpc_vlan_hdr_t* vlan = (cpc_vlan_hdr_t*) clas_state->headers[FIRST_VLAN_FRAME_POS + num_of_vlan].frame;
-	
 	clas_state->eth_type = get_vlan_type(vlan);
 
 	switch (clas_state->eth_type) {
@@ -160,15 +182,23 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 			}
 			break;
 	}
+
+	//Initialize vlan packet matches
+	clas_state->matches->has_vlan = true;
+	clas_state->matches->eth_type = get_vlan_type(vlan);
+	clas_state->matches->vlan_vid = get_vlan_id(vlan);
+	clas_state->matches->vlan_pcp = get_vlan_pcp(vlan);
 }
 
 void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_mpls_hdr_t)) { return; }
+	
+	if (unlikely(datalen < sizeof(cpc_mpls_hdr_t))) { return; }
 
+	cpc_mpls_hdr_t* mpls = (cpc_mpls_hdr_t*)data;
+	
 	//Set frame
 	unsigned int num_of_mpls = clas_state->num_of_headers[HEADER_TYPE_MPLS];
-	//clas_state->headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame->reset(data, datalen);
-	clas_state->headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame = (cpc_mpls_hdr_t*) data;
+	clas_state->headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame = mpls;
 	clas_state->headers[FIRST_MPLS_FRAME_POS + num_of_mpls].present = true;
 	clas_state->headers[FIRST_MPLS_FRAME_POS + num_of_mpls].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_MPLS] = num_of_mpls+1;
@@ -177,9 +207,6 @@ void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	data += sizeof(cpc_mpls_hdr_t);
 	datalen -= sizeof(cpc_mpls_hdr_t);
 
-	//Set pointer to header
-	cpc_mpls_hdr_t* mpls = (cpc_mpls_hdr_t*) clas_state->headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame;
-	
 	if (! get_mpls_bos(mpls)){
 
 		parse_mpls(clas_state,data, datalen);
@@ -188,20 +215,25 @@ void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 		
 		//TODO: We could be trying to guess if payload is IPv4/v6 and continue parsing...
 	}
+
+	//Initialize mpls packet matches
+	clas_state->matches->mpls_bos = get_mpls_bos(mpls);
+	clas_state->matches->mpls_label = get_mpls_label(mpls); 
+	clas_state->matches->mpls_tc = get_mpls_tc(mpls); 
 }
 void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_pppoe_hdr_t)) { return; }
+
+	if (unlikely(datalen < sizeof(cpc_pppoe_hdr_t))) { return; }
+
+	cpc_pppoe_hdr_t* pppoe = (cpc_pppoe_hdr_t*)data;
 
 	//Set frame
 	unsigned int num_of_pppoe = clas_state->num_of_headers[HEADER_TYPE_PPPOE];
-	//headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame->reset(data, datalen);
-	clas_state->headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame = (cpc_pppoe_hdr_t*)data;
+	clas_state->headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame = pppoe;
 	clas_state->headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].present = true;
 	clas_state->headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_PPPOE] = num_of_pppoe+1;
 	
-	//cpc_mpls_hdr_t* pppoe = (cpc_mpls_hdr_t*) clas_state->headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame;
-
 	switch (clas_state->eth_type) {
 		case PPPOE_ETHER_DISCOVERY:
 			{
@@ -242,21 +274,24 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 			break;
 	}
 
+	//Initialize pppoe packet matches
+	clas_state->matches->pppoe_code = get_pppoe_code(pppoe);
+	clas_state->matches->pppoe_type = get_pppoe_type(pppoe);
+	clas_state->matches->pppoe_sid = get_pppoe_sessid(pppoe);
 }
 
 void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_ppp_hdr_t)) { return; }
+	
+	if (unlikely(datalen < sizeof(cpc_ppp_hdr_t))) { return; }
 
+	cpc_ppp_hdr_t* ppp = (cpc_ppp_hdr_t*)data;
+	
 	//Set frame
 	unsigned int num_of_ppp = clas_state->num_of_headers[HEADER_TYPE_PPP];
-	//clas_state->headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame->reset(data, datalen);
-	clas_state->headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame = (cpc_ppp_hdr_t*) data;
+	clas_state->headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame = ppp; 
 	clas_state->headers[FIRST_PPP_FRAME_POS + num_of_ppp].present = true;
 	clas_state->headers[FIRST_PPP_FRAME_POS + num_of_ppp].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_PPP] = num_of_ppp+1;
-
-	//Set reference
-	cpc_ppp_hdr_t* ppp = (cpc_ppp_hdr_t*) clas_state->headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	switch (get_ppp_prot(ppp)) {
@@ -275,21 +310,23 @@ void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 			}
 			break;
 	}
+
+	//Initialize ppp packet matches
+	clas_state->matches->ppp_proto = get_ppp_prot(ppp);
 }
 
 void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_arpv4_hdr_t)) { return; }
+	
+	if (unlikely(datalen < sizeof(cpc_arpv4_hdr_t))) { return; }
+	
+	cpc_arpv4_hdr_t* arpv4 = (cpc_arpv4_hdr_t*)data;
 
 	//Set frame
 	unsigned int num_of_arpv4 = clas_state->num_of_headers[HEADER_TYPE_ARPV4];
-	//clas_state->headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame->reset(data, datalen);
-	clas_state->headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame = (cpc_arpv4_hdr_t*) data;
+	clas_state->headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame = arpv4;
 	clas_state->headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].present = true;
 	clas_state->headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_ARPV4] = num_of_arpv4+1;
-
-	//Set reference
-	//rofl::farpv4frame *arpv4 = headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_arpv4_hdr_t);
@@ -298,21 +335,27 @@ void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	if (datalen > 0){
 		//TODO: something?
 	}
+
+	//Initialize arpv4 packet matches
+	clas_state->matches->arp_opcode = get_arpv4_opcode(arpv4);
+	clas_state->matches->arp_sha =  get_arpv4_dl_dst(arpv4);
+	clas_state->matches->arp_spa =  get_arpv4_ip_src(arpv4);
+	clas_state->matches->arp_tha =  get_arpv4_dl_dst(arpv4);
+	clas_state->matches->arp_tpa =  get_arpv4_ip_dst(arpv4);
 }
 
 void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_ipv4_hdr_t)) { return; }
+	if (unlikely(datalen < sizeof(cpc_ipv4_hdr_t))) { return; }
 	
+	//Set reference
+	cpc_ipv4_hdr_t *ipv4 = (cpc_ipv4_hdr_t*)data; 
+
 	//Set frame
 	unsigned int num_of_ipv4 = clas_state->num_of_headers[HEADER_TYPE_IPV4];
-	//clas_state->headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame->reset(data, datalen);
-	clas_state->headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame = (cpc_ipv4_hdr_t*) data;
+	clas_state->headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame = ipv4;
 	clas_state->headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].present = true;
 	clas_state->headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_IPV4] = num_of_ipv4+1;
-
-	//Set reference
-	cpc_ipv4_hdr_t *ipv4 = (cpc_ipv4_hdr_t*) clas_state->headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_ipv4_hdr_t);
@@ -361,21 +404,30 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 			}
 			break;
 	}
+
+	//Initialize ipv4 packet matches
+	clas_state->matches->ip_proto = get_ipv4_proto(ipv4);
+	clas_state->matches->ip_dscp = get_ipv4_dscp(ipv4);
+	clas_state->matches->ip_ecn = get_ipv4_ecn(ipv4);
+	clas_state->matches->ipv4_src = get_ipv4_src(ipv4);
+	clas_state->matches->ipv4_dst = get_ipv4_dst(ipv4);
 }
 
 void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_icmpv4_hdr_t)) { return; }
+
+	if (unlikely(datalen < sizeof(cpc_icmpv4_hdr_t))) { return; }
+
+	//Set reference
+	cpc_icmpv4_hdr_t *icmpv4 = (cpc_icmpv4_hdr_t*)data; 
 
 	//Set frame
 	unsigned int num_of_icmpv4 = clas_state->num_of_headers[HEADER_TYPE_ICMPV4];
-	//headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame->reset(data, datalen);
-	clas_state->headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame = (cpc_icmpv4_hdr_t*) data;
+	clas_state->headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame = icmpv4; 
 	clas_state->headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].present = true;
 	clas_state->headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_ICMPV4] = num_of_icmpv4+1;
 
 	//Set reference
-	//rofl::ficmpv4frame *icmpv4 = (rofl::ficmpv4frame*) headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_icmpv4_hdr_t);
@@ -385,21 +437,25 @@ void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	if (datalen > 0){
 		//TODO: something?	
 	}
+
+	//Initialize ipv4 packet matches
+	clas_state->matches->icmpv4_code = get_icmpv4_code(icmpv4);
+	clas_state->matches->icmpv4_type = get_icmpv4_type(icmpv4);
 }
 
 void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_ipv6_hdr_t)) { return; }
 	
+	if(unlikely(datalen < sizeof(cpc_ipv6_hdr_t))) { return; }
+	
+	//Set reference
+	cpc_ipv6_hdr_t *ipv6 = (cpc_ipv6_hdr_t*)data; 
+
 	//Set frame
 	unsigned int num_of_ipv6 = clas_state->num_of_headers[HEADER_TYPE_IPV6];
-	//clas_state->headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame->reset(data, datalen);
-	clas_state->headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame = (cpc_ipv6_hdr_t*) data;
+	clas_state->headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame = ipv6;
 	clas_state->headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].present = true;
 	clas_state->headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_IPV6] = num_of_ipv6+1;
-
-	//Set reference
-	cpc_ipv6_hdr_t *ipv6 = (cpc_ipv6_hdr_t*) clas_state->headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_ipv6_hdr_t);
@@ -451,73 +507,57 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 			}
 			break;
 	}
+
+	//Initialize ipv4 packet matches
+	clas_state->matches->ip_proto = get_ipv6_next_header(ipv6);
+	clas_state->matches->ip_dscp = get_ipv6_dscp(ipv6);
+	clas_state->matches->ip_ecn = get_ipv6_ecn(ipv6);
+	clas_state->matches->ipv6_src = get_ipv6_src(ipv6);
+	clas_state->matches->ipv6_dst = get_ipv6_dst(ipv6);
+	clas_state->matches->ipv6_flabel = get_ipv6_flow_label(ipv6);
 }
 
 void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_icmpv6_hdr_t)) { return; }
 
+	if (unlikely(datalen < sizeof(cpc_icmpv6_hdr_t))) { return; }
+
+	cpc_icmpv6_hdr_t* icmpv6 = (cpc_icmpv6_hdr_t*)data;
+	
 	//Set frame
 	unsigned int num_of_icmpv6 = clas_state->num_of_headers[HEADER_TYPE_ICMPV6];
-	//clas_state->headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame->reset(data, datalen);
-	clas_state->headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame = (cpc_icmpv6_hdr_t*)data;
+	clas_state->headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame = icmpv6;
 	clas_state->headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].present = true;
 	clas_state->headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_ICMPV6] = num_of_icmpv6+1;
 
-	//Set reference
-	//rofl::ficmpv6frame *icmpv6 = (rofl::ficmpv6frame*) headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame; 
-	
-#if 0
-	//TODO Increment data pointers depending on the type and the options
-	switch(get_icmpv6_type(data)){
-		case ICMPV6_TYPE_DESTINATION_UNREACHABLE:
-			break;
-		case ICMPV6_TYPE_PACKET_TOO_BIG:
-			break;
-		case ICMPV6_TYPE_TIME_EXCEEDED:
-			break;
-		case ICMPV6_TYPE_PARAMETER_PROBLEM:
-			break;
-		case ICMPV6_TYPE_ECHO_REQUEST:
-			break;
-		case ICMPV6_TYPE_ECHO_REPLY:
-			break;
-		case ICMPV6_TYPE_ROUTER_SOLICATION:
-			break;
-		case ICMPV6_TYPE_ROUTER_ADVERTISEMENT:
-			break;
-		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			break;
-		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			break;
-		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			break;
-	}
-#endif
-	
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_icmpv6_hdr_t);
 	datalen -= sizeof(cpc_icmpv6_hdr_t);
 
-
 	if (datalen > 0){
 		//TODO: something?	
 	}
+
+	//Initialize icmpv6 packet matches
+	clas_state->matches->icmpv6_code = get_icmpv6_code(icmpv6);
+	clas_state->matches->icmpv6_type = get_icmpv6_type(icmpv6);
+	clas_state->matches->ipv6_nd_target = get_icmpv6_neighbor_taddr(icmpv6);
+	clas_state->matches->ipv6_nd_sll = get_icmpv6_ll_saddr(icmpv6);
+	clas_state->matches->ipv6_nd_tll = get_icmpv6_ll_taddr(icmpv6);
+	//clas_state->matches->ipv6_exthdr = ; 
 }
 
 void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_tcp_hdr_t)) { return; }
+	if (unlikely(datalen < sizeof(cpc_tcp_hdr_t))) { return; }
 
+	cpc_tcp_hdr_t* tcp = (cpc_tcp_hdr_t*)data;
+	
 	//Set frame
 	unsigned int num_of_tcp = clas_state->num_of_headers[HEADER_TYPE_TCP];
-	//clas_state->headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame->reset(data, datalen);
-	clas_state->headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame = (cpc_tcp_hdr_t*) data;
+	clas_state->headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame = tcp;
 	clas_state->headers[FIRST_TCP_FRAME_POS + num_of_tcp].present = true;
 	clas_state->headers[FIRST_TCP_FRAME_POS + num_of_tcp].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_TCP] = num_of_tcp+1;
-
-	//Set reference
-	//rofl::ftcpframe *tcp = (rofl::ftcpframe*) headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_tcp_hdr_t);
@@ -526,21 +566,26 @@ void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	if (datalen > 0){
 		//TODO: something 
 	}
+	
+	//Initialize tcp packet matches
+	clas_state->matches->tcp_src = get_tcp_sport(tcp);
+	clas_state->matches->tcp_dst = get_tcp_dport(tcp);
 }
 
 void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_udp_hdr_t)) { return; }
 
+	if (unlikely(datalen < sizeof(cpc_udp_hdr_t))) { return; }
+
+	cpc_udp_hdr_t *udp = (cpc_udp_hdr_t*)data; 
+	
 	//Set frame
 	unsigned int num_of_udp = clas_state->num_of_headers[HEADER_TYPE_UDP];
-	//clas_state->headers[FIRST_UDP_FRAME_POS + num_of_udp].frame->reset(data, datalen);
-	clas_state->headers[FIRST_UDP_FRAME_POS + num_of_udp].frame = (cpc_udp_hdr_t*) data;
+	clas_state->headers[FIRST_UDP_FRAME_POS + num_of_udp].frame = udp;
 	clas_state->headers[FIRST_UDP_FRAME_POS + num_of_udp].present = true;
 	clas_state->headers[FIRST_UDP_FRAME_POS + num_of_udp].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_UDP] = num_of_udp+1;
 
 	//Set reference
-	cpc_udp_hdr_t *udp = (cpc_udp_hdr_t*) clas_state->headers[FIRST_UDP_FRAME_POS + num_of_udp].frame;
 	
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_udp_hdr_t);
@@ -549,28 +594,31 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	if (datalen > 0){
 		switch (get_udp_dport(udp)) {
 		case GTPU_UDP_PORT: {
-			parse_gtpu(clas_state, data, datalen);
+			parse_gtp(clas_state, data, datalen);
 		} break;
 		default: {
 			//TODO: something
 		} break;
 		}
 	}
+
+	//Initialize udp packet matches
+	clas_state->matches->udp_src = get_udp_sport(udp);
+	clas_state->matches->udp_dst = get_udp_dport(udp);
 }
 
-void parse_gtpu(classify_state_t* clas_state, uint8_t *data, size_t datalen){
-	if (datalen < sizeof(cpc_gtphu_t)) { return; }
+void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
+	if (unlikely(datalen < sizeof(cpc_gtphu_t))) { return; }
+
+	cpc_gtphu_t *gtp = (cpc_gtphu_t*)data; 
+		
 	//Set frame
 	unsigned int num_of_gtp = clas_state->num_of_headers[HEADER_TYPE_GTP];
-	//clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame->reset(data, datalen);
-	clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame = (cpc_gtphu_t*) data;
+	clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame = gtp;
 	clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].present = true;
 	clas_state->headers[FIRST_GTP_FRAME_POS + num_of_gtp].length = datalen;
 	clas_state->num_of_headers[HEADER_TYPE_GTP] = num_of_gtp+1;
-
-	//Set reference
-	//rofl::fgtpuframe *gtp = (rofl::fgtpuframe*) headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame;
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_gtphu_t);
@@ -579,6 +627,10 @@ void parse_gtpu(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	if (datalen > 0){
 		//TODO: something
 	}
+
+	//Initialize udp packet matches
+	clas_state->matches->gtp_msg_type = get_gtpu_msg_type(gtp);
+	clas_state->matches->gtp_teid = get_gtpu_teid(gtp);
 }
 
 

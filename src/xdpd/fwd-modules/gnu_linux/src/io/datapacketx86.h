@@ -6,13 +6,13 @@
 #define DATAPACKETX86_H 
 
 #include <bitset>
+#include <iostream>
 #include <inttypes.h>
 #include <sys/types.h>
 #include <sys/uio.h>
-#include <fcntl.h>
 #include <rofl.h>
+#include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
-#include <rofl/common/cmemory.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 
 #ifdef C_PACKET_CLASSIFIER
@@ -59,7 +59,7 @@ class datapacketx86{
 public:
 	
 	//Constructor&destructor
-	datapacketx86();
+	datapacketx86(datapacket_t*const pkt);
 	~datapacketx86();
 
 	//General data of the packet
@@ -156,8 +156,7 @@ private:
 	 * utility function to set the correct buffer location
 	 * @param location
 	 */
-	void
-	init_internal_buffer_location_defaults(x86buffering_status_t location, uint8_t* buf, size_t buflen);
+	void init_internal_buffer_location_defaults(x86buffering_status_t location, uint8_t* buf, size_t buflen);
 	//Add more stuff here...
 
 public:
@@ -183,10 +182,8 @@ public:
 * Inline functions
 */ 
 
-inline void
-datapacketx86::init_internal_buffer_location_defaults(
-		x86buffering_status_t location, uint8_t* buf, size_t buflen)
-{
+inline void datapacketx86::init_internal_buffer_location_defaults(x86buffering_status_t location, uint8_t* buf, size_t buflen){
+
 	switch (location) {
 
 		case X86_DATAPACKET_BUFFERED_IN_NIC:

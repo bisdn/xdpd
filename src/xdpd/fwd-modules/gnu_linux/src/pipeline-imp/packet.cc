@@ -16,10 +16,6 @@
 #include "../io/bufferpool.h"
 #include "../io/ports/ioport.h"
 
-//Profiling
-#include "../util/time_measurements.h"
-
-using namespace rofl;
 using namespace xdpd::gnu_linux;
 
 /* Cloning of the packet */
@@ -998,7 +994,7 @@ static void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
 #ifdef DEBUG
-		of1x_dump_packet_matches(&pkt->matches);
+		dump_packet_matches(&pkt->matches);
 #endif
 
 		TM_STAMP_STAGE(pkt, TM_SA5_PRE);
@@ -1112,7 +1108,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 		}
 
 #ifdef DEBUG
-		of1x_dump_packet_matches(&pkt->matches);
+		dump_packet_matches(&pkt->matches);
 #endif
 			
 		//discard the original packet always (has been replicated)

@@ -33,7 +33,7 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 			continue;
 		}
 		
-		dp_dpdk = create_datapacket_dpdk();
+		dp_dpdk = create_datapacket_dpdk(dp);
 		
 		if(!dp_dpdk){
 			//Mark as unavailable

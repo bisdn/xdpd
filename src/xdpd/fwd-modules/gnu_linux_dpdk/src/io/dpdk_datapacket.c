@@ -1,8 +1,8 @@
 #include "dpdk_datapacket.h"
 
-datapacket_dpdk_t* create_datapacket_dpdk(void){
+datapacket_dpdk_t* create_datapacket_dpdk(datapacket_t* pkt){
 	datapacket_dpdk_t* dpkt = (datapacket_dpdk_t*) malloc(sizeof(datapacket_dpdk_t));
-	dpkt->headers = init_classifier();
+	dpkt->headers = init_classifier(pkt);
 	dpkt->icmpv4_recalc_checksum = false;
 	dpkt->ipv4_recalc_checksum = false;
 	dpkt->tcp_recalc_checksum = false;

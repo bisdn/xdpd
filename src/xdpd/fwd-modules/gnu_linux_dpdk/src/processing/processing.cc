@@ -143,7 +143,7 @@ int processing_core_process_packets(void* not_used){
 
 	//Parsing and pipeline extra state
 	datapacket_t pkt;
-	datapacket_dpdk_t* pkt_state = create_datapacket_dpdk();
+	datapacket_dpdk_t* pkt_state = create_datapacket_dpdk(&pkt);
 
 	//Init values and assign
 	pkt.platform_state = (platform_datapacket_state_t*)pkt_state;

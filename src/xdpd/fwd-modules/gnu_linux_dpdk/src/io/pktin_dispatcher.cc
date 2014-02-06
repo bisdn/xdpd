@@ -66,11 +66,11 @@ static void* process_packet_ins(void* param){
 
 		//Normalize size
 		pkt_size = get_buffer_length_dpdk(pkt_dpdk);
-		if(pkt_size > sw->pipeline->miss_send_len)
-			pkt_size = sw->pipeline->miss_send_len;
+		if(pkt_size > sw->pipeline.miss_send_len)
+			pkt_size = sw->pipeline.miss_send_len;
 			
 		//Process packet in
-		rv = cmm_process_of1x_packet_in(sw, 
+		rv = cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_dpdk->pktin_table_id, 	
 						pkt_dpdk->pktin_reason, 	
 						pkt_dpdk->in_port, 
@@ -78,7 +78,7 @@ static void* process_packet_ins(void* param){
 						get_buffer_dpdk(pkt_dpdk), 
 						pkt_size,
 						get_buffer_length_dpdk(pkt_dpdk),
-						*((of1x_packet_matches_t*)&pkt->matches)
+						((packet_matches_t*)&pkt->matches)
 				);
 
 		if( unlikely( rv != AFA_SUCCESS ) ){

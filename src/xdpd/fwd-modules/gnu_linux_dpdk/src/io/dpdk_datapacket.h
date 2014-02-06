@@ -72,7 +72,7 @@ ROFL_BEGIN_DECLS
 /// Datapacket dpdk functions
 
 //Constructor&destructor
-datapacket_dpdk_t* create_datapacket_dpdk(void);
+datapacket_dpdk_t* create_datapacket_dpdk(datapacket_t* pkt);
 void destroy_datapacket_dpdk(datapacket_dpdk_t *dpkt);
 
 //Return the pointer to the buffer
@@ -105,7 +105,7 @@ static inline rofl_result_t init_datapacket_dpdk(datapacket_dpdk_t *dpkt, struct
 	
 	//Classify the packet
 	if(classify)
-		classify_packet(dpkt->headers, get_buffer_dpdk(dpkt), get_buffer_length_dpdk(dpkt));
+		classify_packet(dpkt->headers, get_buffer_dpdk(dpkt), get_buffer_length_dpdk(dpkt), in_port, in_phy_port);
 
 	return ROFL_SUCCESS;
 }

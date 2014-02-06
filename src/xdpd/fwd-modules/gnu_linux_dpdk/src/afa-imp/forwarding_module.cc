@@ -151,6 +151,33 @@ afa_result_t fwd_module_destroy(){
 /*
 * Switch management functions
 */
+/**
+* @brief   Checks if an LSI with the specified dpid exists 
+* @ingroup logical_switch_management
+*/
+bool fwd_module_switch_exists(uint64_t dpid){
+	return physical_switch_get_logical_switch_by_dpid(dpid) != NULL;
+}
+
+/**
+* @brief   Retrieve the list of LSIs dpids
+* @ingroup logical_switch_management
+* @retval  List of available dpids, which MUST be deleted using dpid_list_destroy().
+*/
+dpid_list_t* fwd_module_get_all_lsi_dpids(void){
+	return physical_switch_get_all_lsi_dpids();  
+}
+
+/**
+ * @name fwd_module_get_switch_snapshot_by_dpid 
+ * @brief Retrieves a snapshot of the current state of a switch port, if the port name is found. The snapshot MUST be deleted using switch_port_destroy_snapshot()
+ * @ingroup logical_switch_management
+ * @retval  Pointer to of_switch_snapshot_t instance or NULL 
+ */
+of_switch_snapshot_t* fwd_module_get_switch_snapshot_by_dpid(uint64_t dpid){
+	return physical_switch_get_logical_switch_snapshot(dpid);
+}
+
 
 /*
 * @name    fwd_module_create_switch 
@@ -158,7 +185,7 @@ afa_result_t fwd_module_destroy(){
 * @ingroup logical_switch_management
 * @retval  Pointer to of_switch_t instance 
 */
-of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
+afa_result_t fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
 	
 	of_switch_t* sw;
 	
@@ -167,24 +194,14 @@ of_switch_t* fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
 	if(!sw)
-		return NULL; //Error
+		return AFA_FAILURE;
 
 	//If you would fully use ROFL-pipeline you woudl call then
 	physical_switch_add_logical_switch(sw);
 	
-	return sw;
+	return AFA_SUCCESS;
 }
 
-/*
-* @name    fwd_module_get_switch_by_dpid 
-* @brief   Retrieve the switch with the specified dpid  
-* @ingroup logical_switch_management
-* @retval  Pointer to of_switch_t instance or NULL 
-*/
-of_switch_t* fwd_module_get_switch_by_dpid(uint64_t dpid){
-	
-	return physical_switch_get_logical_switch_by_dpid(dpid); 
-}
 
 /*
 * @name    fwd_module_destroy_switch_by_dpid 
@@ -219,57 +236,33 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 * Port management 
 */
 
-/*
-* @name    fwd_module_list_platform_ports
-* @brief   Retrieve the list of ports of the platform 
-* @ingroup port_management
-* @retval  Pointer to the first port. 
+/**
+* @brief   Checks if a port with the specified name exists 
+* @ingroup port_management 
 */
-switch_port_t* fwd_module_list_platform_ports(){
-	
-	//TODO: This is never used
-	
-	return NULL;
+bool fwd_module_port_exists(const char *name){
+	return physical_switch_get_port_by_name(name) != NULL; 
 }
 
-/*
+/**
+* @brief   Retrieve the list of names of the available ports of the platform. You may want to 
+* 	   call fwd_module_get_port_snapshot_by_name(name) to get more information of the port 
+* @ingroup port_management
+* @retval  List of available port names, which MUST be deleted using switch_port_name_list_destroy().
+*/
+switch_port_name_list_t* fwd_module_get_all_port_names(void){
+	return physical_switch_get_all_port_names(); 
+}
+
+/**
  * @name fwd_module_get_port_by_name
- * @brief Get a reference to the port by its name 
+ * @brief Retrieves a snapshot of the current state of a switch port, if the port name is found. The snapshot MUST be deleted using switch_port_destroy_snapshot()
  * @ingroup port_management
  */
-switch_port_t* fwd_module_get_port_by_name(const char *name){
-	return physical_switch_get_port_by_name(name);
+switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
+	return physical_switch_get_port_snapshot(name); 
 }
 
-/*
-* @name    fwd_module_get_physical_ports_ports
-* @brief   Retrieve the list of the physical ports of the switch
-* @ingroup port_management
-* @retval  Pointer to the first port. 
-*/
-switch_port_t** fwd_module_get_physical_ports(unsigned int* num_of_ports){
-	return physical_switch_get_physical_ports(num_of_ports);
-}
-
-/*
-* @name    fwd_module_get_virtual_ports
-* @brief   Retrieve the list of virtual ports of the platform
-* @ingroup port_management
-* @retval  Pointer to the first port. 
-*/
-switch_port_t** fwd_module_get_virtual_ports(unsigned int* num_of_ports){
-	return physical_switch_get_virtual_ports(num_of_ports);
-}
-
-/*
-* @name    fwd_module_get_tunnel_ports
-* @brief   Retrieve the list of tunnel ports of the platform
-* @ingroup port_management
-* @retval  Pointer to the first port. 
-*/
-switch_port_t** fwd_module_get_tunnel_ports(unsigned int* num_of_ports){
-	return physical_switch_get_tunnel_ports(num_of_ports);
-}
 /*
 * @name    fwd_module_attach_physical_port_to_switch
 * @brief   Attemps to attach a system's port to switch, at of_port_num if defined, otherwise in the first empty OF port number.
@@ -334,7 +327,7 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 * @param dpid_lsi1 Datapath ID of the LSI1
 * @param dpid_lsi2 Datapath ID of the LSI2 
 */
-afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_t** port1, uint64_t dpid_lsi2, switch_port_t** port2){
+afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, switch_port_snapshot_t** port2){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling connect_switches()\n");
 	//XXX
@@ -381,15 +374,16 @@ afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const
 */
 
 /*
-* @name    fwd_module_enable_port
+* @name    fwd_module_bring_port_up
 * @brief   Brings up a system port. If the port is attached to an OF logical switch, this also schedules port for I/O and triggers PORTMOD message. 
 * @ingroup port_management
 *
 * @param name Port system name 
 */
-afa_result_t fwd_module_enable_port(const char* name){
+afa_result_t fwd_module_bring_port_up(const char* name){
 
 	switch_port_t* port;
+	switch_port_snapshot_t* port_snapshot;
 
 	//Check if the port does exist
 	port = physical_switch_get_port_by_name(name);
@@ -400,22 +394,25 @@ afa_result_t fwd_module_enable_port(const char* name){
 	//Bring it up
 	port_manager_enable(port);
 
-	if(cmm_notify_port_status_changed(port)!=AFA_SUCCESS)
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
 		return AFA_FAILURE;
 	
 	return AFA_SUCCESS;
 }
 
+
 /*
-* @name    fwd_module_disable_port
+* @name    fwd_module_bring_port_down
 * @brief   Shutdowns (brings down) a system port. If the port is attached to an OF logical switch, this also de-schedules port and triggers PORTMOD message. 
 * @ingroup port_management
 *
 * @param name Port system name 
 */
-afa_result_t fwd_module_disable_port(const char* name){
+afa_result_t fwd_module_bring_port_down(const char* name){
 
 	switch_port_t* port;
+	switch_port_snapshot_t* port_snapshot;
 	
 	//Check if the port does exist
 	port = physical_switch_get_port_by_name(name);
@@ -425,42 +422,76 @@ afa_result_t fwd_module_disable_port(const char* name){
 	//Bring it down
 	port_manager_disable(port);
 
-	if(cmm_notify_port_status_changed(port)!=AFA_SUCCESS)
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
 		return AFA_FAILURE;
 	
 	return AFA_SUCCESS;
 }
 
 /*
-* @name    fwd_module_enable_port_by_num
+* @name    fwd_module_bring_port_up_by_num
 * @brief   Brings up a port from an OF logical switch (and the underlying physical interface). This function also triggers the PORTMOD message 
 * @ingroup port_management
 *
 * @param dpid DatapathID 
 * @param port_num OF port number
 */
-afa_result_t fwd_module_enable_port_by_num(uint64_t dpid, unsigned int port_num){
+afa_result_t fwd_module_bring_port_up_by_num(uint64_t dpid, unsigned int port_num){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling enable_port_by_num()\n");
+	of_switch_t* lsw;
 	
-	//XXX
-	return AFA_FAILURE;
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw)
+		return AFA_FAILURE;
+
+	//Check if the port does exist and is really attached to the dpid
+	if( !lsw->logical_ports[port_num].port || lsw->logical_ports[port_num].attachment_state != LOGICAL_PORT_STATE_ATTACHED || lsw->logical_ports[port_num].port->attached_sw->dpid != dpid)
+		return AFA_FAILURE;
+
+	return fwd_module_bring_port_up(lsw->logical_ports[port_num].port->name);
 }
 
 /*
-* @name    fwd_module_disable_port_by_num
+* @name    fwd_module_bring_port_down_by_num
 * @brief   Brings down a port from an OF logical switch (and the underlying physical interface). This also triggers the PORTMOD message.
 * @ingroup port_management
 *
 * @param dpid DatapathID 
 * @param port_num OF port number
 */
-afa_result_t fwd_module_disable_port_by_num(uint64_t dpid, unsigned int port_num){
+afa_result_t fwd_module_bring_port_down_by_num(uint64_t dpid, unsigned int port_num){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling disable_port_by_num()\n");
+	of_switch_t* lsw;
 	
-	//XXX
-	return AFA_FAILURE;
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw)
+		return AFA_FAILURE;
+
+	//Check if the port does exist and is really attached to the dpid
+	if( !lsw->logical_ports[port_num].port || lsw->logical_ports[port_num].attachment_state != LOGICAL_PORT_STATE_ATTACHED || lsw->logical_ports[port_num].port->attached_sw->dpid != dpid)
+		return AFA_FAILURE;
+
+	return fwd_module_bring_port_down(lsw->logical_ports[port_num].port->name);
+}
+
+/**
+ * @brief Retrieve a snapshot of the monitoring state. If rev is 0, or the current monitoring 
+ * has changed (monitoring->rev != rev), a new snapshot of the monitoring state is made. Warning: this 
+ * is expensive.
+ * @ingroup fwd_module_management
+ *
+ * @param rev Last seen revision. Set to 0 to always get a new snapshot 
+ * @return A snapshot of the monitoring state that MUST be destroyed using monitoring_destroy_snapshot() or NULL if there have been no changes (same rev)
+ */ 
+monitoring_snapshot_state_t* fwd_module_get_monitoring_snapshot(uint64_t rev){
+
+	monitoring_state_t* mon = physical_switch_get_monitoring();
+
+	if( rev == 0 || monitoring_has_changed(mon, &rev) ) 
+		return monitoring_get_snapshot(mon);
+
+	return NULL;
 }
 
 /**

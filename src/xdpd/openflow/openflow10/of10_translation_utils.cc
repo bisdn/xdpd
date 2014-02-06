@@ -497,6 +497,9 @@ of10_translation_utils::of1x_map_reverse_flow_entry_actions(
 		if (OF1X_IT_APPLY_ACTIONS != group->instructions[i].type)
 			continue;
 
+		if(!group->instructions[i].apply_actions)
+			continue;
+
 		for (of1x_packet_action_t *of1x_action = group->instructions[i].apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
 				continue;

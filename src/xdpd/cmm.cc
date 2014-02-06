@@ -55,7 +55,7 @@ afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 
 afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapshot){
 	
-	afa_result_t result;
+	afa_result_t result = AFA_SUCCESS;
 	
 	if (!port_snapshot)
 		return AFA_FAILURE;

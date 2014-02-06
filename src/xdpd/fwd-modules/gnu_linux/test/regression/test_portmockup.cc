@@ -61,7 +61,8 @@ void DriverPortMockupTestCase::setUp(){
 	char switch_name[] = "switch1";
 	of1x_matching_algorithm_available ma_list[] = { of1x_matching_algorithm_loop };
 	/* 0->CONTROLLER, 1->CONTINUE, 2->DROP, 3->MASK */
-	sw = fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list);
+	CPPUNIT_ASSERT(fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list) == AFA_SUCCESS);
+	sw = physical_switch_get_logical_switch_by_dpid(TEST_DPID);
 	CPPUNIT_ASSERT(sw->platform_state); /* internal state */
 
 	//Construct the port group
@@ -164,7 +165,7 @@ void DriverPortMockupTestCase::test_output(){
 	field.u64 = 1;
 	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, NULL,NULL));
 	of1x_add_instruction_to_group(&entry->inst_grp, OF1X_IT_APPLY_ACTIONS, ac_group , NULL, NULL, 0);
-	of1x_add_flow_entry_table( ((of1x_switch_t *)sw)->pipeline, 0, entry, false, false );
+	of1x_add_flow_entry_table( &((of1x_switch_t *)sw)->pipeline, 0, &entry, false, false );
 	
 	//Start port XXX: this should NOT be done this way. Driver
 	iomanager::bring_port_up(mport);
@@ -205,15 +206,15 @@ void DriverPortMockupTestCase::test_flow_expiration(){
 	field.u64 = 1;
 	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, NULL,NULL));
 	of1x_add_instruction_to_group(&entry->inst_grp, OF1X_IT_APPLY_ACTIONS, ac_group , NULL, NULL, 0);
-	of1x_add_flow_entry_table( ((of1x_switch_t *)sw)->pipeline, 0, entry, false, false );
+	of1x_add_flow_entry_table( &((of1x_switch_t *)sw)->pipeline, 0, &entry, false, false );
 	
-	fprintf(stderr,"<%s:%d> table 0 num of entries %d\n",__func__,__LINE__,((of1x_switch_t*)sw)->pipeline->tables[0].num_of_entries);
-	CPPUNIT_ASSERT(((of1x_switch_t*)sw)->pipeline->tables[0].num_of_entries == 1 );
+	fprintf(stderr,"<%s:%d> table 0 num of entries %d\n",__func__,__LINE__,((of1x_switch_t*)sw)->pipeline.tables[0].num_of_entries);
+	CPPUNIT_ASSERT(((of1x_switch_t*)sw)->pipeline.tables[0].num_of_entries == 1 );
 	
 	sleep(sec_exp + 2);
 	
-	CPPUNIT_ASSERT(((of1x_switch_t*)sw)->pipeline->tables[0].num_of_entries == 0 );
-	fprintf(stderr,"<%s:%d> table 0 num of entries %d\n",__func__,__LINE__,((of1x_switch_t*)sw)->pipeline->tables[0].num_of_entries);
+	CPPUNIT_ASSERT(((of1x_switch_t*)sw)->pipeline.tables[0].num_of_entries == 0 );
+	fprintf(stderr,"<%s:%d> table 0 num of entries %d\n",__func__,__LINE__,((of1x_switch_t*)sw)->pipeline.tables[0].num_of_entries);
 	
 }
 

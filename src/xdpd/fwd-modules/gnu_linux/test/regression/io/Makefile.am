@@ -30,7 +30,7 @@ SHARED_SRC=\
 	
 if C_CLASSIFIER
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/c_pktclassifier/c_pktclassifier.c \
-		$(top_srcdir)/src/io/packet_classifiers/push_pop_operations.cc
+		$(top_srcdir)/src/io/packet_classifiers/packet_operations.cc
 else
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.cc \
 		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/packetclassifier.cc \

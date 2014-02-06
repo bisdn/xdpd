@@ -28,6 +28,17 @@ rofl_result_t plugin_manager::init(int argc, char** argv){
 	return ROFL_SUCCESS;
 }
 
+plugin* plugin_manager::get_plugin_by_name(std::string name){
+	
+	//Find plugin by name
+	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
+		if((*it)->get_name() == name)
+			return (*it);
+	}
+	
+	return NULL;
+}
+
 rofl_result_t plugin_manager::destroy(){
 
 	//Destroy all plugins

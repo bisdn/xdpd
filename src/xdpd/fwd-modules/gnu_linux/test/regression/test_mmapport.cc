@@ -60,7 +60,8 @@ void DriverMMAPPortTestCase::setUp(){
 	char switch_name[] = "switch1";
 	of1x_matching_algorithm_available ma_list[] = { of1x_matching_algorithm_loop };
 	/* 0->CONTROLLER, 1->CONTINUE, 2->DROP, 3->MASK */
-	sw = fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list);
+	CPPUNIT_ASSERT(fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list) == AFA_SUCCESS);
+	sw = physical_switch_get_logical_switch_by_dpid(TEST_DPID);
 	CPPUNIT_ASSERT(sw->platform_state); /*ringbuffer*/
 
 
@@ -112,9 +113,9 @@ void DriverMMAPPortTestCase::install_flow_mod(){
 	field.u64 = 1;
 	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, NULL,NULL));
 	of1x_add_instruction_to_group(&entry->inst_grp, OF1X_IT_APPLY_ACTIONS, ac_group , NULL, NULL, 0);
-	of1x_add_flow_entry_table( ((of1x_switch_t *)sw)->pipeline, 0,entry,false,false );
+	of1x_add_flow_entry_table( &((of1x_switch_t *)sw)->pipeline, 0,&entry,false,false );
 	
-	CPPUNIT_ASSERT(((of1x_switch_t*)sw)->pipeline->tables[0].num_of_entries == 1 );
+	CPPUNIT_ASSERT(((of1x_switch_t*)sw)->pipeline.tables[0].num_of_entries == 1 );
 
 }	
 
@@ -124,7 +125,7 @@ void DriverMMAPPortTestCase::bring_up_down_only(){
 	afa_result_t res;
 
 	//Bring up port
-	res = fwd_module_enable_port(port_name);
+	res = fwd_module_bring_port_up(port_name);
 	CPPUNIT_ASSERT(res == AFA_SUCCESS);
 	(void)res;
 
@@ -132,7 +133,7 @@ void DriverMMAPPortTestCase::bring_up_down_only(){
 	sleep(10);
 
 	//Bring down
-	res = fwd_module_disable_port(port_name);
+	res = fwd_module_bring_port_down(port_name);
 	CPPUNIT_ASSERT(res == AFA_SUCCESS);
 
 }

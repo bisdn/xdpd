@@ -40,6 +40,7 @@ rofl_result_t update_port_status(char * name){
 	int sd, rc;
  
 	switch_port_t *port;
+	switch_port_snapshot_t *port_snapshot;
 	
 	//Update all ports
 	if(update_physical_ports() != ROFL_SUCCESS){
@@ -47,7 +48,8 @@ rofl_result_t update_port_status(char * name){
 		assert(0);
 	}
 
-	port = fwd_module_get_port_by_name(name);
+	port = physical_switch_get_port_by_name(name);
+
 	if(!port)
 		return ROFL_SUCCESS; //Port deleted
 
@@ -89,9 +91,8 @@ rofl_result_t update_port_status(char * name){
 	}
 	
 	//port_status message needs to be created if the port id attached to switch
-	if(port->attached_sw != NULL){
-		cmm_notify_port_status_changed(port);
-	}
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	cmm_notify_port_status_changed(port_snapshot);
 	
 	return ROFL_SUCCESS;
 }
@@ -561,7 +562,7 @@ rofl_result_t update_physical_ports(){
     	}
 	
 	//Call the forwarding module to list the ports
-	ports = fwd_module_get_physical_ports(&max_ports);
+	ports = physical_switch_get_physical_ports(&max_ports);
 
 	if(!ports){
 		close(sock);

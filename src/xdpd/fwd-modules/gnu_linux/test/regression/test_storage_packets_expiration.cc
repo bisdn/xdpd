@@ -62,7 +62,8 @@ void DriverStoragePacketsExpirationTestCase::setUp(){
 	char switch_name[] = "switch1";
 	of1x_matching_algorithm_available ma_list[] = { of1x_matching_algorithm_loop };
 	/* 0->CONTROLLER, 1->CONTINUE, 2->DROP, 3->MASK */
-	sw = fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list);
+	CPPUNIT_ASSERT(fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list) == AFA_SUCCESS);
+	sw = physical_switch_get_logical_switch_by_dpid(TEST_DPID);
 	CPPUNIT_ASSERT(sw->platform_state); /* internal state */
 	
 	//change expiration time

@@ -33,9 +33,9 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 	unsigned int i;
 	of1x_flow_table_t* table;
 
-	table = sw->pipeline->tables; 
+	table = sw->pipeline.tables; 
 	
-	for(i=0;i<sw->pipeline->num_of_tables;++i){
+	for(i=0;i<sw->pipeline.num_of_tables;++i){
 		//Set appropiate flags
 		table->default_action = OF1X_TABLE_MISS_CONTROLLER;
 	}
@@ -54,7 +54,7 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 	sw->platform_state = (of_switch_platform_state_t*)ls_int;
 
 	//Set number of buffers
-	sw->pipeline->num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
+	sw->pipeline.num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
 
 	return ROFL_SUCCESS;
 }

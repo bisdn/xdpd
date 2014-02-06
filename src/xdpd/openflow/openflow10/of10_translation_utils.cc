@@ -702,10 +702,10 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 #endif
 }
 
-uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
+uint32_t of10_translation_utils::get_supported_actions(of1x_switch_snapshot_t *lsw){
 	uint32_t mask = 0;
 	
-	of1x_flow_table_config_t config = lsw->pipeline->tables[0].config;
+	of1x_flow_table_config_t config = lsw->pipeline.tables[0].config;
 		
 	if (config.apply_actions&(1UL<<OF12PAT_OUTPUT))
 		mask |= 1 << rofl::openflow10::OFPAT_OUTPUT;

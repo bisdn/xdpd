@@ -27,6 +27,9 @@ include qmf/Plugin.am
 #XMP
 include xmp/Plugin.am
 
+#REST
+include rest/Plugin.am
+
 #[+] Add yours here...
 
 #Example (leave it always at the very end)

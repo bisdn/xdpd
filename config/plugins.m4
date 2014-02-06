@@ -63,6 +63,9 @@ ADD_PLUGIN(qmf)
 #XMP
 ADD_PLUGIN(xmp)
 
+#REST
+ADD_PLUGIN(rest)
+
 #Example
 ADD_PLUGIN(example)
 

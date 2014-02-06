@@ -503,7 +503,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_actions(
 			cofaction action(OFP10_VERSION);
 			of1x_map_reverse_flow_entry_action(of1x_action, action, pipeline_miss_send_len);
 			actions.append_action(action);
-
+			
 			//Skip next action if action is set-queue (SET-QUEUE-OUTPUT)
 			if(of1x_action->type == OF1X_AT_SET_QUEUE){
 				if(of1x_action->next && !of1x_action->next->next)

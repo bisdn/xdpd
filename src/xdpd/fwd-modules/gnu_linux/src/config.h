@@ -75,7 +75,7 @@
 //Buffer storage(PKT_IN) max buffers per LSI
 #define IO_PKT_IN_STORAGE_MAX_BUF 512
 //Buffer storage(PKT_IN) expiration time (seconds)
-#define IO_PKT_IN_STORAGE_EXPIRATION_S 180
+#define IO_PKT_IN_STORAGE_EXPIRATION_S 10
 
 //Kernel scheduling policy for I/O threads. Possible values SCHED_FIFO, SCHED_RR or SCHED_OTHER
 //Warning: change it only if you know what you are doing 

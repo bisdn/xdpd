@@ -395,7 +395,6 @@ of10_endpoint::handle_flow_stats_request(
 	std::vector<cofflow_stats_reply> flow_stats;
 
 	try{
-
 		for(elem = fp_msg->flows_head; elem; elem = elem->next){
 
 			cofmatch match(rofl::openflow10::OFP_VERSION);

@@ -166,18 +166,6 @@ afa_result_t fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 }
 
 /*
-* @name    fwd_module_get_switch_by_dpid 
-* @brief   Retrieve the switch with the specified dpid  
-* @ingroup logical_switch_management
-* @retval  Pointer to of_switch_t instance or NULL 
-*/
-of_switch_t* fwd_module_get_switch_by_dpid(uint64_t dpid){
-	
-	//Call directly the bank
-	return physical_switch_get_logical_switch_by_dpid(dpid); 
-}
-
-/*
 * @name    fwd_module_destroy_switch_by_dpid 
 * @brief   Instructs the driver to destroy the switch with the specified dpid 
 * @ingroup logical_switch_management

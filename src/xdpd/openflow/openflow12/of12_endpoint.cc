@@ -169,7 +169,7 @@ of12_endpoint::handle_table_stats_request(
 				coftable_stats_reply(
 					ctl.get_version(),
 					table->number,
-					std::string(table->name, OFP_MAX_TABLE_NAME_LEN),
+					std::string(table->name, strnlen(table->name, OFP_MAX_TABLE_NAME_LEN)),
 					of12_translation_utils::of12_map_bitmap_matches(&tc->match),
 					of12_translation_utils::of12_map_bitmap_matches(&tc->wildcards),
 					of12_translation_utils::of12_map_bitmap_actions(&tc->write_actions),

@@ -172,7 +172,7 @@ of10_endpoint::handle_table_stats_request(
 				coftable_stats_reply(
 					ctl.get_version(),
 					of10switch->pipeline->tables[n].number,
-					std::string(of10switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN),
+					std::string(of10switch->pipeline->tables[n].name, strnlen(of10switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN)),
 					(of10switch->pipeline->tables[n].config.match),
 					(of10switch->pipeline->tables[n].config.wildcards),
 					(of10switch->pipeline->tables[n].config.write_actions),
@@ -188,26 +188,6 @@ of10_endpoint::handle_table_stats_request(
 					(of10switch->pipeline->tables[n].stats.lookup_count),
 					(of10switch->pipeline->tables[n].stats.matched_count)
 				));
-
-		coftable_stats_reply a(
-							ctl.get_version(),
-							of10switch->pipeline->tables[n].number,
-							std::string(of10switch->pipeline->tables[n].name, OFP_MAX_TABLE_NAME_LEN),
-							(of10switch->pipeline->tables[n].config.match),
-							(of10switch->pipeline->tables[n].config.wildcards),
-							(of10switch->pipeline->tables[n].config.write_actions),
-							(of10switch->pipeline->tables[n].config.apply_actions),
-							(of10switch->pipeline->tables[n].config.write_setfields),
-							(of10switch->pipeline->tables[n].config.apply_setfields),
-							(of10switch->pipeline->tables[n].config.metadata_match),
-							(of10switch->pipeline->tables[n].config.metadata_write),
-							(of10switch->pipeline->tables[n].config.instructions),
-							(of10switch->pipeline->tables[n].config.table_miss_config),
-							(of10switch->pipeline->tables[n].max_entries),
-							(of10switch->pipeline->tables[n].num_of_entries),
-							(of10switch->pipeline->tables[n].stats.lookup_count),
-							(of10switch->pipeline->tables[n].stats.matched_count)
-						);
 	}
 
 

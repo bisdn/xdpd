@@ -1,0 +1,5 @@
+#Always add the library CONDITIONALLY
+
+if WITH_MGMT_REST
+libxdpd_mgmt_plugins_la_LIBADD += rest/libxdpd_mgmt_rest.la
+endif

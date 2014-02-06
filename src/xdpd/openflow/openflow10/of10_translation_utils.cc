@@ -497,13 +497,16 @@ of10_translation_utils::of1x_map_reverse_flow_entry_actions(
 		if (OF1X_IT_APPLY_ACTIONS != group->instructions[i].type)
 			continue;
 
+		if(!group->instructions[i].apply_actions)
+			continue;
+
 		for (of1x_packet_action_t *of1x_action = group->instructions[i].apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
 				continue;
 			cofaction action(OFP10_VERSION);
 			of1x_map_reverse_flow_entry_action(of1x_action, action, pipeline_miss_send_len);
 			actions.append_action(action);
-
+			
 			//Skip next action if action is set-queue (SET-QUEUE-OUTPUT)
 			if(of1x_action->type == OF1X_AT_SET_QUEUE){
 				if(of1x_action->next && !of1x_action->next->next)
@@ -600,7 +603,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 * Maps packet actions to cofmatches
 */
 
-void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches_t* packet_matches, cofmatch& match){
+void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* packet_matches, cofmatch& match){
 	if(packet_matches->port_in)
 		match.set_in_port(packet_matches->port_in);
 	if(packet_matches->eth_dst){
@@ -702,10 +705,10 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(of1x_packet_matches
 #endif
 }
 
-uint32_t of10_translation_utils::get_supported_actions(of1x_switch_t *lsw){
+uint32_t of10_translation_utils::get_supported_actions(of1x_switch_snapshot_t *lsw){
 	uint32_t mask = 0;
 	
-	of1x_flow_table_config_t config = lsw->pipeline->tables[0].config;
+	of1x_flow_table_config_t config = lsw->pipeline.tables[0].config;
 		
 	if (config.apply_actions&(1UL<<OF12PAT_OUTPUT))
 		mask |= 1 << rofl::openflow10::OFPAT_OUTPUT;

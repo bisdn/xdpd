@@ -8,15 +8,9 @@
 #ifndef XDPD_MANAGER_H_
 #define XDPD_MANAGER_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <inttypes.h>
-#ifdef __cplusplus
-}
-#endif
+#include <rofl/common/csocket.h>
 
-#include "rofl/common/csocket.h"
 #include "../../switch_manager.h"
 #include "../../port_manager.h"
 #include "../../plugin_manager.h"
@@ -28,11 +22,11 @@ namespace mgmt {
 namespace protocol {
 
 class xmp :
-		public ciosrv,
-		public csocket_owner,
+		public rofl::ciosrv,
+		public rofl::csocket_owner,
 		public plugin
 {
-	csocket					socket;		// listening socket
+	rofl::csocket				socket;		// listening socket
 	std::string				udp_addr;	// binding address
 	uint16_t				udp_port;	// listening UDP port
 
@@ -68,19 +62,19 @@ protected:
 	 */
 
 	virtual void
-	handle_accepted(csocket& socket, int newsd, caddress const& ra) {};
+	handle_accepted(rofl::csocket& socket, int newsd, rofl::caddress const& ra) {};
 
 	virtual void
-	handle_connected(csocket& socket) {};
+	handle_connected(rofl::csocket& socket) {};
 
 	virtual void
-	handle_connect_refused(csocket& socket) {};
+	handle_connect_refused(rofl::csocket& socket) {};
 
 	virtual void
-	handle_read(csocket& socket);
+	handle_read(rofl::csocket& socket);
 
 	virtual void
-	handle_closed(csocket& socket) {};
+	handle_closed(rofl::csocket& socket) {};
 
 private:
 

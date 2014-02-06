@@ -65,7 +65,7 @@ public:
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of1x_packet_matches_t matches);
+					packet_matches_t* matches);
 
 	virtual afa_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry);
 

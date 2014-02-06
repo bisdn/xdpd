@@ -8,6 +8,7 @@ SHARED_SRC=\
 	$(top_srcdir)/src/pipeline-imp/platform_hooks_of1x.cc \
 	$(top_srcdir)/src/pipeline-imp/pthread_lock.c \
 	$(top_srcdir)/src/pipeline-imp/pthread_atomic_operations.c \
+	$(top_srcdir)/src/pipeline-imp/timing.c \
 	$(top_srcdir)/src/io/pktin_dispatcher.cc \
 	$(top_srcdir)/src/io/iomanager.cc \
 	$(top_srcdir)/src/io/bufferpool.cc \
@@ -16,8 +17,6 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/ports/ioport.cc \
 	$(top_srcdir)/src/io/ports/mockup/ioport_mockup.cc \
 	$(top_srcdir)/src/io/ports/mmap/ioport_mmap.cc \
-	$(top_srcdir)/src/io/ports/mmap/mmap_int.cc \
-	$(top_srcdir)/src/io/ports/mmap/ioport_mmapv2.cc \
 	$(top_srcdir)/src/io/ports/mmap/mmap_rx.cc \
 	$(top_srcdir)/src/io/ports/mmap/mmap_tx.cc \
 	$(top_srcdir)/src/io/ports/vlink/ioport_vlink.cc \
@@ -31,7 +30,7 @@ SHARED_SRC=\
 	
 if C_CLASSIFIER
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/c_pktclassifier/c_pktclassifier.c \
-		$(top_srcdir)/src/io/packet_classifiers/push_pop_operations.cc
+		$(top_srcdir)/src/io/packet_classifiers/packet_operations.cc
 else
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.cc \
 		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/packetclassifier.cc \
@@ -60,13 +59,13 @@ datapacketx86test_SOURCES= $(top_srcdir)/src/io/datapacketx86.cc\
 			
 datapacketx86test_LDADD= -lrofl -lcppunit -lpthread
 
-mmap_port_test_SOURCES = $(SHARED_SRC)\
-			$(CLASSIFIER_SRC) \
-			mmap_port_test.cc
+#mmap_port_test_SOURCES = $(SHARED_SRC)\
+#			$(CLASSIFIER_SRC) \
+#			mmap_port_test.cc
 	
 
 			
-mmap_port_test_LDADD = -lrofl -lcppunit -lpthread -lrofl_pipeline 
+#mmap_port_test_LDADD = -lrofl -lcppunit -lpthread -lrofl_pipeline 
 
 #check_SCRIPTS = mmap_port_test.sh
 
@@ -74,6 +73,6 @@ mmap_port_test_LDADD = -lrofl -lcppunit -lpthread -lrofl_pipeline
 #DEBUG_ONLY_TESTS= portmockuptest 
 #endif
 
-check_PROGRAMS = mmap_port_test datapacketx86test $(DEBUG_ONLY_TESTS)
+check_PROGRAMS = datapacketx86test $(DEBUG_ONLY_TESTS)
 
-TESTS = mmap_port_test.sh datapacketx86test $(DEBUG_ONLY_TESTS) 
+TESTS = datapacketx86test $(DEBUG_ONLY_TESTS) 

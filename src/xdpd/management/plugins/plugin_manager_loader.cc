@@ -30,6 +30,9 @@ using namespace xdpd;
 #ifdef WITH_MGMT_EXAMPLE
 	#include "example/example.h"
 #endif
+#ifdef WITH_MGMT_REST
+	#include "plugins/rest/rest.h"
+#endif
 //Add more here [+]...
 
 //
@@ -51,6 +54,11 @@ void plugin_manager::pre_init(){
 	#ifdef WITH_MGMT_XMP
 		//Register XMP
 		register_plugin(new xdpd::mgmt::protocol::xmp());
+	#endif
+
+	#ifdef WITH_MGMT_REST
+		//Register example plugin
+		register_plugin(new rest());	
 	#endif
 
 	//Generally the example should be the last one...

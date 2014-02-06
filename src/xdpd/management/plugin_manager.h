@@ -18,6 +18,9 @@
 
 namespace xdpd {
 
+//fwd decl
+class plugin_manager;
+
 /**
 * @brief Abstract class of a management plugin. 
 *
@@ -28,6 +31,14 @@ namespace xdpd {
 class plugin {
 	
 public:
+	/**
+	* Returns the plugin name
+	*/
+	virtual std::string get_name(void)=0;
+
+protected:
+	friend class plugin_manager; //Let plugin_manager call plugin's init and destroy 
+	
 	/**
 	* @brief Initializes the plugin
 	*
@@ -49,12 +60,6 @@ public:
 	* @param argv argv's of xdpd.
 	*/
 	virtual void init(int argc, char** argv)=0;
-	
-	/**
-	* Returns the plugin name
-	*/
-	virtual std::string get_name(void)=0;
-
 	virtual ~plugin(){}; 
 };
 
@@ -76,8 +81,19 @@ public:
 	*/
 	static rofl_result destroy(void);
 	
+	/**
+	* Get the list of plugins 
+	*/
+	static std::vector<plugin*> get_plugins(void){ 
+		return plugins; 
+	}
 
-	/*
+	/**
+	* Get the list of plugins 
+	*/
+	static plugin* get_plugin_by_name(std::string name);
+
+	/**
 	* Registers a plugin must be called on pre_init()
 	*/
 	static void register_plugin(plugin* p);

@@ -29,31 +29,22 @@ namespace xdpd {
 class openflow_switch {
 
 protected:
-
-	//Driver context (this is somehow superfluous)
-	of_switch_t* ofswitch;
-	
 	//Endpoint context
 	of_endpoint* endpoint;
 
-	openflow_switch(const uint64_t dpid, const std::string &dpname, const of_version_t version);
+	openflow_switch(const uint64_t dpid, const std::string &dpname, const of_version_t version, unsigned int num_of_tables);
 
 public:
 	//General elements
 	uint64_t dpid;
 	std::string dpname;
 	of_version_t version;
+	unsigned int num_of_tables;
 
 	/**
 	 * Destructor
 	 */
 	virtual ~openflow_switch(void){};
-
-	/**
-	* Getter for the switch
-	*/
-	of_switch_t* get_fwd_module_sw_ref(void){return ofswitch;};
-
 
 	/*
 	* Pure virtual methods
@@ -66,7 +57,7 @@ public:
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of1x_packet_matches_t matches)=0;
+					packet_matches_t* matches)=0;
 	virtual afa_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry)=0;
 
 	/**

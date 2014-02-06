@@ -35,6 +35,17 @@ namespace gnu_linux {
 #define DEFAULT_THREADS_PER_PG 1
 COMPILER_ASSERT( INVALID_default_threads_per_pg , (DEFAULT_THREADS_PER_PG == 1) );
 
+
+/**
+* Port group type
+*
+* @ingroup fm_gnu_linux_io
+*/
+typedef enum pg_type{
+	PG_RX,
+	PG_TX,
+}pg_type_t;
+
 /**
 * @brief Portgroup thread state
 *
@@ -50,8 +61,11 @@ public:
 	unsigned int num_of_threads;
 	pthread_t thread_state[DEFAULT_MAX_THREADS_PER_PG];
 
-	//State synchronization condition
+	//State synchronization condition (iomanager->RX/TX threads)
 	sem_t sync_sem;
+
+	//Port group type (RX or TX)
+	pg_type_t type;
 	
 	// I/O port information
 	safevector<ioport*>* ports; 		//All ports in the group
@@ -71,7 +85,7 @@ class iomanager{
 public:
 	/* Methods */
 	//Group mgmt
-	static rofl_result_t init( unsigned int _num_of_groups = IO_TOTAL_THREADS );
+	static rofl_result_t init( unsigned int _num_of_groups = IO_TX_TOTAL_THREADS );
 	static rofl_result_t destroy( void ){ return delete_all_groups(); };
 
 	/*
@@ -96,9 +110,17 @@ public:
 	*/
 	inline static void signal_as_synchronized(portgroup_state* pg){ sem_post(&pg->sync_sem); };
 
+	/*
+	* Group mgmt
+	*/
+	static int create_group(pg_type_t type, unsigned int num_of_threads=DEFAULT_THREADS_PER_PG, bool mutex_locked=false);
+	static rofl_result_t delete_group(unsigned int grp_id);
+	static rofl_result_t delete_all_groups(void);
+	
+
 	/* Utils */ 
-	static portgroup_state* get_group(int grp_id);	
-	static int get_group_id_by_port(ioport* port);
+	static portgroup_state* get_group(int grp_id);
+	static int get_group_id_by_port(ioport* port, pg_type_t type);
 protected:
 
 	//Constants
@@ -107,7 +129,7 @@ protected:
 
 	//Number of port_groups created
 	static unsigned int num_of_groups;
-	static unsigned int curr_group_sched_pointer;
+	static unsigned int curr_tx_group_sched_pointer;
 
 	//Number of buffers currently required by the ports to operate
 	static unsigned long long int num_of_port_buffers;
@@ -119,13 +141,6 @@ protected:
 	//Handle mutual exclusion over the portgroup state
 	static pthread_mutex_t mutex;
 
-	/*
-	* Group mgmt (internal API)
-	*/
-	static int create_group(unsigned int num_of_threads=DEFAULT_THREADS_PER_PG, bool mutex_locked=false);
-	static rofl_result_t delete_group(unsigned int grp_id);
-	static rofl_result_t delete_all_groups(void);
-	
 	/*
 	* Port mgmt (internal API)
 	*/

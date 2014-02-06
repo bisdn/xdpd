@@ -16,7 +16,7 @@ using namespace xdpd::gnu_linux;
 typedef struct classify_state pktclassifier;
 
 //Constructor
-datapacketx86::datapacketx86() :
+datapacketx86::datapacketx86(datapacket_t*const pkt) :
 	buffer_id(0),
 	internal_buffer_id(0),
 	lsw(0),
@@ -30,15 +30,14 @@ datapacketx86::datapacketx86() :
 	pktin_table_id(0),
 	pktin_reason(0),
 	extra(NULL),
-	buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY)
-{
-	headers = init_classifier();
+	buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY){
+
+	headers = init_classifier(pkt);
 }
 
 
 
-datapacketx86::~datapacketx86()
-{
+datapacketx86::~datapacketx86(){
 	destroy_classifier(headers);
 }
 
@@ -50,15 +49,14 @@ datapacketx86::~datapacketx86()
 
 //Init
 
-rofl_result_t
-datapacketx86::init(
+rofl_result_t datapacketx86::init(
 		uint8_t* buf, size_t buflen,
 		of_switch_t* sw,
 		uint32_t in_port,
 		uint32_t in_phy_port,
 		bool classify, 
-		bool copy_packet_to_internal_buffer)
-{
+		bool copy_packet_to_internal_buffer){
+
 	// do this sanity check here, as someone may request later a transfer to user space,
 	// so make sure we have enough space for doing this later
 	if (buflen > FRAME_SIZE_BYTES){
@@ -98,16 +96,15 @@ datapacketx86::init(
 	
 	//Classify the packet
 	if(classify)
-		classify_packet(headers, this->get_buffer(), this->get_buffer_length());
+		classify_packet(headers, get_buffer(), get_buffer_length(), in_port, 0);
 
 	return ROFL_SUCCESS;
 }
 
 
 
-void
-datapacketx86::destroy(void)
-{
+void datapacketx86::destroy(void){
+
 	reset_classifier(headers);
 
 	if (X86_DATAPACKET_BUFFERED_IN_USER_SPACE == get_buffering_status()){
@@ -151,7 +148,7 @@ rofl_result_t datapacketx86::transfer_to_user_space(){
 			
 			//Re-classify 
 			//TODO: use offsets instead of fixed pointers for frames to avoid re-classification here
-			classify_packet(headers, this->get_buffer(), this->get_buffer_length());
+			classify_packet(headers, get_buffer(), get_buffer_length(), in_port, 0);
 			
 			//Copy done
 		} return ROFL_SUCCESS;
@@ -170,11 +167,8 @@ rofl_result_t datapacketx86::transfer_to_user_space(){
 /*
  * Push&pop operations
  */
-rofl_result_t
-datapacketx86::push(
-		unsigned int offset,
-		unsigned int num_of_bytes)
-{
+rofl_result_t datapacketx86::push(unsigned int offset, unsigned int num_of_bytes){
+
 	//If not already transfer to user space
 	if(X86_DATAPACKET_BUFFERED_IN_NIC == buffering_status){
 		transfer_to_user_space();
@@ -217,11 +211,8 @@ datapacketx86::push(
 
 
 
-rofl_result_t
-datapacketx86::pop(
-		unsigned int offset,
-		unsigned int num_of_bytes)
-{
+rofl_result_t datapacketx86::pop(unsigned int offset, unsigned int num_of_bytes){
+
 	//Check boundaries
 	//FIXME
 
@@ -259,11 +250,8 @@ datapacketx86::pop(
 
 
 //Push&pop operations
-rofl_result_t
-datapacketx86::push(
-		uint8_t* push_point,
-		unsigned int num_of_bytes)
-{
+rofl_result_t datapacketx86::push(uint8_t* push_point, unsigned int num_of_bytes){
+
 	//If not already transfer to user space
 	if(X86_DATAPACKET_BUFFERED_IN_NIC == buffering_status){
 		transfer_to_user_space();
@@ -285,11 +273,8 @@ datapacketx86::push(
 
 
 
-rofl_result_t
-datapacketx86::pop(
-		uint8_t* pop_point,
-		unsigned int num_of_bytes)
-{
+rofl_result_t datapacketx86::pop(uint8_t* pop_point, unsigned int num_of_bytes){
+
 	if (pop_point < buffer.iov_base){
 		return ROFL_FAILURE;
 	}

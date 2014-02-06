@@ -1,8 +1,11 @@
 #include "ioport_vlink.h"
 #include <iostream>
+#include <sched.h>
 #include <rofl/common/utils/c_logger.h>
 #include "../../bufferpool.h" 
 #include <fcntl.h>
+
+#include "../../../config.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -45,7 +48,7 @@ void ioport_vlink::set_connected_port(ioport_vlink* c_port){
 
 //Read and write methods over port
 void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
-	//Whatever
+	
 	const char c='a';
 	int ret;
 	unsigned int len;
@@ -66,16 +69,22 @@ void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 		}
 	
 		//Store on queue and exit. This is NOT copying it to the vlink buffer
-		if(output_queues[q_id].non_blocking_write(pkt) != ROFL_SUCCESS){
+		if(output_queues[q_id]->non_blocking_write(pkt) != ROFL_SUCCESS){
 			ROFL_DEBUG("[vlink:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
 			//Drop packet
 			bufferpool::release_buffer(pkt);
+
+#ifndef IO_KERN_DONOT_CHANGE_SCHED
+			//Force descheduling (prioritize TX)
+			sched_yield();	
+#endif
+
 			return;
 		}
 
-		ROFL_DEBUG_VERBOSE("[vlink:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id].size());
+		ROFL_DEBUG_VERBOSE("[vlink:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id]->size());
 	
-		//TODO: make it happen only if thread is really sleeping...
+		//Write to pipe
 		ret = ::write(tx_notify_pipe[WRITE],&c,sizeof(c));
 		(void)ret; // todo use the value
 	} else {
@@ -105,7 +114,7 @@ inline void ioport_vlink::empty_pipe(int* pipe){
 
 datapacket_t* ioport_vlink::read(){
 
-	datapacket_t* pkt = input_queue.non_blocking_read();
+	datapacket_t* pkt = input_queue->non_blocking_read();
 		
 	//Attempt to read one byte from the pipe
 	if(pkt){
@@ -125,7 +134,7 @@ unsigned int ioport_vlink::write(unsigned int q_id, unsigned int num_of_buckets)
 	//unsigned int cnt = 0;
 	//int tx_bytes_local = 0;
 
-	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS>* queue = &output_queues[q_id];
+	circular_queue<datapacket_t>* queue = output_queues[q_id];
 
 	// read available packets from incoming buffer
 	for ( ; 0 < num_of_buckets; --num_of_buckets ) {
@@ -159,7 +168,7 @@ rofl_result_t ioport_vlink::tx_pkt(datapacket_t* pkt){
 	if (unlikely(of_port_state->up == false))
 		return ROFL_FAILURE;
 
-	if(input_queue.non_blocking_write(pkt) == ROFL_FAILURE){
+	if(input_queue->non_blocking_write(pkt) == ROFL_FAILURE){
 		return ROFL_FAILURE;
 	}
 

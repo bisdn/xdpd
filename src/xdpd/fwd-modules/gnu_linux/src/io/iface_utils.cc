@@ -22,7 +22,6 @@
 
 #include "ports/ioport.h" 
 #include "ports/mmap/ioport_mmap.h" 
-#include "ports/mmap/ioport_mmapv2.h" 
 #include "ports/vlink/ioport_vlink.h" 
 
 using namespace xdpd::gnu_linux;
@@ -41,6 +40,7 @@ rofl_result_t update_port_status(char * name){
 	int sd, rc;
  
 	switch_port_t *port;
+	switch_port_snapshot_t *port_snapshot;
 	
 	//Update all ports
 	if(update_physical_ports() != ROFL_SUCCESS){
@@ -48,7 +48,8 @@ rofl_result_t update_port_status(char * name){
 		assert(0);
 	}
 
-	port = fwd_module_get_port_by_name(name);
+	port = physical_switch_get_port_by_name(name);
+
 	if(!port)
 		return ROFL_SUCCESS; //Port deleted
 
@@ -90,9 +91,8 @@ rofl_result_t update_port_status(char * name){
 	}
 	
 	//port_status message needs to be created if the port id attached to switch
-	if(port->attached_sw != NULL){
-		cmm_notify_port_status_changed(port);
-	}
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	cmm_notify_port_status_changed(port_snapshot);
 	
 	return ROFL_SUCCESS;
 }
@@ -245,8 +245,8 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	//Initialize MMAP-based port
 	//Change this line to use another ioport...
-	ioport* io_port = new ioport_mmapv2(port);
-	//iport* io_port = new ioport_mmap(port);
+	//ioport* io_port = new ioport_mmapv2(port);
+	ioport* io_port = new ioport_mmap(port);
 
 	port->platform_port_state = (platform_port_state_t*)io_port;
 	
@@ -562,7 +562,7 @@ rofl_result_t update_physical_ports(){
     	}
 	
 	//Call the forwarding module to list the ports
-	ports = fwd_module_get_physical_ports(&max_ports);
+	ports = physical_switch_get_physical_ports(&max_ports);
 
 	if(!ports){
 		close(sock);

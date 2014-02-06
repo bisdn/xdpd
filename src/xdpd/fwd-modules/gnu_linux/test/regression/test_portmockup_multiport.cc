@@ -60,7 +60,8 @@ void DriverMultiPortMockupTestCase::setUp(){
 	//Initialize driver	
 	char switch_name[] = "switch1";
 	of1x_matching_algorithm_available ma_list[] = { of1x_matching_algorithm_loop };
-	sw = fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list);
+	CPPUNIT_ASSERT(fwd_module_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list) == AFA_SUCCESS);
+	sw = physical_switch_get_logical_switch_by_dpid(TEST_DPID);
 	CPPUNIT_ASSERT(sw->platform_state); /* internal state */
 
 	//Construct the port1
@@ -141,7 +142,7 @@ void DriverMultiPortMockupTestCase::test_drop_packets(void )
 	
 
 	//srand(time(NULL)); //random seed
-	circular_queue<datapacket_t, 1024>* rbuffer = ((struct logical_switch_internals*) sw->platform_state )->input_queues[0];
+	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->input_queues[0];
 	
 	//Enqueue packets
 	for(int i=0;i<number_of_packets;i++){

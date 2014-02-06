@@ -213,7 +213,7 @@ int process_timeouts()
 			if(logical_switches[i] != NULL){
 
 				//Recover storage pointer
-				dps =( (struct logical_switch_internals*) logical_switches[i]->platform_state)->storage;
+				dps =( (switch_platform_state_t*) logical_switches[i]->platform_state)->storage;
 				//Loop until the oldest expired packet is taken out
 				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 

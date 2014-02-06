@@ -7,7 +7,9 @@
 
 #include "xmp.h"
 
+using namespace rofl; 
 using namespace xdpd::mgmt::protocol;
+
 
 
 xmp::xmp() :
@@ -213,20 +215,20 @@ xmp::handle_port_enable(
 
 	try {
 		if (not msg.get_xmpies().has_ie_portname()) {
-			rofl::logging::error << "[xdpd][xmp] rcvd xmp Port-Enable request without -PORTNAME- IE, dropping message." << std::endl;
+			rofl::logging::error << "[xdpd][xmp] rcvd xmp Port-Bring-Up request without -PORTNAME- IE, dropping message." << std::endl;
 			return;
 		}
 
 		portname = msg.get_xmpies().get_ie_portname().get_portname();
 
-		port_manager::enable_port(portname);
-		rofl::logging::error << "[xdpd][xmp] enabled port:" << portname << std::endl;
+		port_manager::bring_up(portname);
+		rofl::logging::error << "[xdpd][xmp] brought port:" << portname <<" up"<< std::endl;
 
 	} catch(ePmInvalidPort& e) {
-		rofl::logging::error << "[xdpd][xmp] enabling port:" << portname << " failed, port does not exist" << std::endl;
+		rofl::logging::error << "[xdpd][xmp] bringing port:" << portname << " up failed, port does not exist" << std::endl;
 
 	} catch(eOfSmGeneralError& e) {
-		rofl::logging::error << "[xdpd][xmp] enabling port:" << portname << " failed." << std::endl;
+		rofl::logging::error << "[xdpd][xmp] bringing port:" << portname << " up failed." << std::endl;
 
 	}
 }
@@ -240,20 +242,20 @@ xmp::handle_port_disable(
 
 	try {
 		if (not msg.get_xmpies().has_ie_portname()) {
-			rofl::logging::error << "[xdpd][xmp] rcvd xmp Port-Disable request without -PORTNAME- IE, dropping message." << std::endl;
+			rofl::logging::error << "[xdpd][xmp] rcvd xmp Port-Bring-Down request without -PORTNAME- IE, dropping message." << std::endl;
 			return;
 		}
 
 		portname = msg.get_xmpies().get_ie_portname().get_portname();
 
-		port_manager::disable_port(portname);
-		rofl::logging::error << "[xdpd][xmp] disabled port:" << portname << std::endl;
+		port_manager::bring_down(portname);
+		rofl::logging::error << "[xdpd][xmp] brought port:" << portname <<" down"<< std::endl;
 
 	} catch(ePmInvalidPort& e) {
-		rofl::logging::error << "[xdpd][xmp] disabling port:" << portname << " failed, port does not exist" << std::endl;
+		rofl::logging::error << "[xdpd][xmp] bringing port:" << portname << " down failed, port does not exist" << std::endl;
 
 	} catch(eOfSmGeneralError& e) {
-		rofl::logging::error << "[xdpd][xmp] disabling port:" << portname << " failed." << std::endl;
+		rofl::logging::error << "[xdpd][xmp] bringing port:" << portname << " down failed." << std::endl;
 
 	}
 }

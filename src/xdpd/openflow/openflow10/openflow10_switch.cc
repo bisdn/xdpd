@@ -23,11 +23,11 @@ openflow10_switch::openflow10_switch(uint64_t dpid,
 				int reconnect_start_timeout,
 				caddress const& controller_addr,
 				caddress const& binding_addr) throw (eOfSmVersionNotSupported)
-		: openflow_switch(dpid, dpname, version)
+		: openflow_switch(dpid, dpname, version, num_of_tables)
 {
 
-	if ((ofswitch = fwd_module_create_switch((char*)dpname.c_str(),
-					     dpid, OF_VERSION_10, num_of_tables, ma_list)) == NULL){
+	if (fwd_module_create_switch((char*)dpname.c_str(),
+					     dpid, OF_VERSION_10, num_of_tables, ma_list) != AFA_SUCCESS){
 		//WRITELOG(CDATAPATH, ERROR, "of10_endpoint::of10_endpoint() "
 		//		"failed to allocate switch instance in HAL, aborting");
 
@@ -60,7 +60,7 @@ afa_result_t openflow10_switch::process_packet_in(uint8_t table_id,
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of1x_packet_matches_t matches){
+					packet_matches_t* matches){
 
 	return ((of10_endpoint*)endpoint)->process_packet_in(table_id,
 					reason,
@@ -95,7 +95,7 @@ afa_result_t openflow10_switch::notify_port_status_changed(switch_port_t* port){
 */
 void openflow10_switch::rpc_connect_to_ctl(caddress const& controller_addr){
 	cofhello_elem_versionbitmap versionbitmap;
-	versionbitmap.add_ofp_version(ofswitch->of_ver);
+	versionbitmap.add_ofp_version(version);
 	endpoint->rpc_connect_to_ctl(versionbitmap, 0, controller_addr);
 }
 

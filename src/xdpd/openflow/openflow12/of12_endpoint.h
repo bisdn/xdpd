@@ -53,7 +53,7 @@ public:
 			uint8_t* pkt_buffer,
 			uint32_t buf_len,
 			uint16_t total_len,
-			of1x_packet_matches_t matches);
+			packet_matches_t* matches);
 
 
 	/**
@@ -77,9 +77,6 @@ public:
 
 
 private:
-
-	//Commodity pointer
-	of1x_switch_t* of12switch;
 
 	/* *
 	 ** This section is in charge of the handling of the OF messages

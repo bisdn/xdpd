@@ -34,24 +34,24 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 	unsigned int i;
 	
 	//Create GNU/Linux FWD_Module additional state (platform state)
-	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));
+	switch_platform_state_t* ls_int = (switch_platform_state_t*)calloc(1, sizeof(switch_platform_state_t));
 
 	//Create input queues
-	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){
-		ls_int->input_queues[i] = new circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>();
+	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
+		ls_int->input_queues[i] = new circular_queue<datapacket_t>(PROCESSING_INPUT_QUEUE_SLOTS);
 	}
 
-	ls_int->pkt_in_queue = new circular_queue<datapacket_t, PROCESSING_PKT_IN_QUEUE_SLOTS>();
+	ls_int->pkt_in_queue = new circular_queue<datapacket_t>(PROCESSING_PKT_IN_QUEUE_SLOTS);
 	ls_int->storage = new datapacket_storage( IO_PKT_IN_STORAGE_MAX_BUF, IO_PKT_IN_STORAGE_EXPIRATION_S); // todo make this value configurable
 
 	sw->platform_state = (of_switch_platform_state_t*)ls_int;
 
 	//Set number of buffers
-	sw->pipeline->num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
+	sw->pipeline.num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
 	
 	//Set the actions and matches supported by this platform
-	for(i=0; i<sw->pipeline->num_of_tables; i++){
-		of1x_flow_table_config_t *config = &(sw->pipeline->tables[i].config);
+	for(i=0; i<sw->pipeline.num_of_tables; i++){
+		of1x_flow_table_config_t *config = &(sw->pipeline.tables[i].config);
 		//Lets set to zero the unssuported matches and actions.
 		config->apply_actions &= ~(1 << OF12PAT_COPY_TTL_OUT);
 		config->apply_actions &= ~(1 << OF12PAT_COPY_TTL_IN);
@@ -81,10 +81,10 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 	
 	unsigned int i;
 
-	struct logical_switch_internals* ls_int =  (struct logical_switch_internals*)sw->platform_state;
+	switch_platform_state_t* ls_int =  (switch_platform_state_t*)sw->platform_state;
 	
 	//delete ring buffers and storage (delete switch platform state)
-	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){
+	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
 		delete ls_int->input_queues[i]; 
 	}
 	delete ls_int->pkt_in_queue;
@@ -104,7 +104,7 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
 	datapacketx86* pkt_x86;
-	struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
+	switch_platform_state_t* ls_state = (switch_platform_state_t*)sw->platform_state;
 
 	ROFL_DEBUG("Enqueuing PKT_IN event for packet(%p) in switch: %s\n",pkt,sw->name);
 	
@@ -114,7 +114,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	pkt_x86->pktin_reason = reason;
 	
 	//Timestamp SB6_PRE	
-	TM_STAMP_STAGE(pkt, TM_SB6_PRE);
+	TM_STAMP_STAGE(pkt, TM_SB5_PRE);
 		
 	//Enqueue
 	if( ls_state->pkt_in_queue->non_blocking_write(pkt) == ROFL_SUCCESS ){
@@ -122,14 +122,14 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		notify_packet_in();
 			
 		//Timestamp SB6_SUCCESS	
-		TM_STAMP_STAGE(pkt, TM_SB6_SUCCESS);
+		TM_STAMP_STAGE(pkt, TM_SB5_SUCCESS);
 	}else{
 		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
 		//Return to the bufferpool
 		bufferpool::release_buffer(pkt);
 
 		//Timestamp SB6_FAILURE
-		TM_STAMP_STAGE(pkt, TM_SB6_FAILURE);
+		TM_STAMP_STAGE(pkt, TM_SB5_FAILURE);
 	}
 }
 
@@ -138,7 +138,7 @@ void platform_of1x_notify_flow_removed(const of1x_switch_t* sw,
 						of1x_flow_remove_reason_t reason, 
 						of1x_flow_entry_t* removed_flow_entry){
 
-	cmm_process_of1x_flow_removed(sw, (uint8_t)reason, removed_flow_entry);
+	cmm_process_of1x_flow_removed(sw->dpid, (uint8_t)reason, removed_flow_entry);
 
 }
 

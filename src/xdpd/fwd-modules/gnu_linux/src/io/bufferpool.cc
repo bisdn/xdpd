@@ -36,7 +36,7 @@ bufferpool::bufferpool(long long unsigned int pool_items)
 		
 		//Init datapacketx86
 		try {
-			dpx86 = new datapacketx86();
+			dpx86 = new datapacketx86(dp);
 		}catch(std::bad_alloc ex){
 
 			//Mark as unavailable
@@ -177,7 +177,7 @@ void bufferpool::increase_capacity(long long unsigned int new_capacity){
 	
 		//Init datapacketx86
 		try {
-			dpx86 = new datapacketx86();
+			dpx86 = new datapacketx86(dp);
 		}catch(std::bad_alloc ex){
 			//Mark as unavailable
 			bp->pool[i] = NULL;

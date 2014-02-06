@@ -13,60 +13,70 @@ using namespace xdpd;
 * Dispatching of platform related messages comming from the fwd_module 
 */
 
-afa_result_t cmm_notify_port_add(switch_port_t* port){
+afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 	
-	openflow_switch* sw;
+	afa_result_t result=AFA_SUCCESS;
 	
-	if (!port || !port->attached_sw){
+	if(!port_snapshot)
 		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
-		return AFA_FAILURE;	
-
+	
 	//Notify MGMT framework
 	//TODO:
 
-	return sw->notify_port_add(port);
+	//Notify attached sw
+	if(port_snapshot->is_attached_to_sw)
+		result = switch_manager::__notify_port_add(port_snapshot);
+	
+	//Destroy the snapshot
+	switch_port_destroy_snapshot(port_snapshot);
+		
+	return result;
 }
 
-
-afa_result_t cmm_notify_port_delete(switch_port_t* port){
+afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	
-	openflow_switch* sw;
+	afa_result_t result = AFA_SUCCESS;
 	
-	if (!port || !port->attached_sw){
+	if (!port_snapshot)
 		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
-		return AFA_FAILURE;	
 
 	//Notify MGMT framework
 	//TODO:
 
-	return sw->notify_port_delete(port);
+	//Notify attached sw
+	if(port_snapshot->is_attached_to_sw)
+		result = switch_manager::__notify_port_delete(port_snapshot);
+
+	//Destroy the snapshot
+	switch_port_destroy_snapshot(port_snapshot);
+	
+	return result;
 }
 
-
-afa_result_t cmm_notify_port_status_changed(switch_port_t* port){
+afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapshot){
 	
-	openflow_switch* sw;
+	afa_result_t result = AFA_SUCCESS;
 	
-	if (!port || !port->attached_sw){
+	if (!port_snapshot)
 		return AFA_FAILURE;
-	}
-	if( (sw=switch_manager::find_by_dpid(port->attached_sw->dpid)) == NULL)
-		return AFA_FAILURE;	
 
 	//Notify MGMT framework
 	//TODO:
 
-	return sw->notify_port_status_changed(port);
+	//Notify attached sw
+	if(port_snapshot->is_attached_to_sw)
+		result = switch_manager::__notify_port_status_changed(port_snapshot);
+
+	//Destroy the snapshot
+	switch_port_destroy_snapshot(port_snapshot);
+
+	return result;
 }
 
 /*
 * Driver CMM Openflow calls. Demultiplexing to the appropiate openflow_switch instance.
 */ 
-afa_result_t cmm_process_of1x_packet_in(const of1x_switch_t* sw,
+afa_result_t cmm_process_of1x_packet_in(uint64_t dpid,
 					uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
@@ -74,39 +84,10 @@ afa_result_t cmm_process_of1x_packet_in(const of1x_switch_t* sw,
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					of1x_packet_matches_t matches)
-{
-	openflow_switch* dp=NULL;
-	
-	if (!sw) 
-		return AFA_FAILURE;
-
-	dp = switch_manager::find_by_dpid(sw->dpid);
-
-	if(!dp)
-		return AFA_FAILURE;
-
-	return dp->process_packet_in(table_id,
-					reason,
-					in_port,
-					buffer_id,
-					pkt_buffer,
-					buf_len,
-					total_len,
-					matches);
+					packet_matches_t* matches){
+	return switch_manager::__process_of1x_packet_in(dpid, table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);	
 }
 
-afa_result_t cmm_process_of1x_flow_removed(const of1x_switch_t* sw, uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
-
-	openflow_switch* dp=NULL;
-	
-	if (!sw) 
-		return AFA_FAILURE;
-	
-	dp = switch_manager::find_by_dpid(sw->dpid);
-
-	if(!dp)
-		return AFA_FAILURE;
-
-	return dp->process_flow_removed(reason, removed_flow_entry);
+afa_result_t cmm_process_of1x_flow_removed(uint64_t dpid, uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
+	return switch_manager::__process_of1x_flow_removed(dpid, reason, removed_flow_entry);
 }

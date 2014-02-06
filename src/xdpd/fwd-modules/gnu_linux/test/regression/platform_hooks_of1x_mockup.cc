@@ -33,28 +33,28 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 	unsigned int i;
 	of1x_flow_table_t* table;
 
-	table = sw->pipeline->tables; 
+	table = sw->pipeline.tables; 
 	
-	for(i=0;i<sw->pipeline->num_of_tables;++i){
+	for(i=0;i<sw->pipeline.num_of_tables;++i){
 		//Set appropiate flags
 		table->default_action = OF1X_TABLE_MISS_CONTROLLER;
 	}
 	
 	//Create GNU/Linux FWD_Module additional state (platform state)
-	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)calloc(1, sizeof(struct logical_switch_internals));
+	struct switch_platform_state* ls_int = (struct switch_platform_state*)calloc(1, sizeof(struct switch_platform_state));
 
 	//Create input queues
-	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){
-		ls_int->input_queues[i] = new circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>();
+	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
+		ls_int->input_queues[i] = new circular_queue<datapacket_t>(PROCESSING_INPUT_QUEUE_SLOTS);
 	}
 
-	ls_int->pkt_in_queue = new circular_queue<datapacket_t, PROCESSING_PKT_IN_QUEUE_SLOTS>();
+	ls_int->pkt_in_queue = new circular_queue<datapacket_t>(PROCESSING_PKT_IN_QUEUE_SLOTS);
 	ls_int->storage = new datapacket_storage( IO_PKT_IN_STORAGE_MAX_BUF, IO_PKT_IN_STORAGE_EXPIRATION_S); // todo make this value configurable
 
 	sw->platform_state = (of_switch_platform_state_t*)ls_int;
 
 	//Set number of buffers
-	sw->pipeline->num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
+	sw->pipeline.num_of_buffers = IO_PKT_IN_STORAGE_MAX_BUF;
 
 	return ROFL_SUCCESS;
 }
@@ -63,10 +63,10 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 	
 	unsigned int i;
 
-	struct logical_switch_internals* ls_int =  (struct logical_switch_internals*)sw->platform_state;
+	struct switch_platform_state* ls_int =  (struct switch_platform_state*)sw->platform_state;
 	
 	//delete ring buffers and storage (delete switch platform state)
-	for(i=0;i<PROCESSING_THREADS_PER_LSI;i++){
+	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
 		delete ls_int->input_queues[i]; 
 	}
 	delete ls_int->pkt_in_queue;

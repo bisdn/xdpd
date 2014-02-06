@@ -84,26 +84,28 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 			//Complete vlink
 			if(!dry_run){
 				std::string port_name1, port_name2;
-				openflow_switch *sw1, *sw2;			
+				uint64_t dpid1, dpid2;	
 
 				//Recover switches by name
-				sw1 = switch_manager::find_by_name(lsi_name);
-				if(!sw1){
+				try{
+					dpid1 = switch_manager::get_switch_dpid(lsi_name);		
+				}catch(eOfSmDoesNotExist& e){
 					ROFL_ERR("%s: unable to create vlink. Switch '%s' does not exist.\n", setting.getPath().c_str(), lsi_name.c_str());
 					throw eConfParseError(); 	
 					
 				}
 		
 				//Recover switches by name
-				sw2 = switch_manager::find_by_name(value);
-				if(!sw2){
+				try{
+					dpid2 = switch_manager::get_switch_dpid(value);
+				}catch(eOfSmDoesNotExist& e){
 					ROFL_ERR("%s: unable to create vlink. Switch '%s' does not exist.\n", setting.getPath().c_str(), value.c_str());
-					throw eConfParseError(); 	
-					
+					throw e;
 				}		
-			
+
+	
 				//Call port manager API
-				port_manager::connect_switches(sw1->dpid, port_name1, sw2->dpid, port_name2);
+				port_manager::connect_switches(dpid1, port_name1, dpid2, port_name2);
 			}
 			
 			//Add to the list of provisioned

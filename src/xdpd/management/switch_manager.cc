@@ -1,6 +1,7 @@
 #include "switch_manager.h"
 
 #include <rofl/datapath/afa/afa.h>
+#include <rofl/datapath/afa/cmm.h>
 #include <rofl/common/utils/c_logger.h>
 
 //Add here the headers of the version-dependant Openflow switchs 
@@ -8,6 +9,7 @@
 #include "../openflow/openflow10/openflow10_switch.h"
 #include "../openflow/openflow12/openflow12_switch.h"
 
+using namespace rofl;
 using namespace xdpd;
 
 const caddress switch_manager::controller_addr = caddress(AF_INET, "127.0.0.1", 6633);
@@ -15,6 +17,7 @@ const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 6632)
 
 //Static initialization
 std::map<uint64_t, openflow_switch*> switch_manager::switchs;
+pthread_rwlock_t switch_manager::rwlock = PTHREAD_RWLOCK_INITIALIZER; 
 
 /**
 * Static methods of the manager
@@ -31,11 +34,10 @@ openflow_switch* switch_manager::create_switch(
 
 	openflow_switch* dp;
 	
-	//TODO: MUTEX!
+	pthread_rwlock_wrlock(&switch_manager::rwlock);
 
-	if(switch_manager::switchs.find(dpid) != switch_manager::switchs.end()
-		|| fwd_module_get_switch_by_dpid(dpid) ){
-		
+	if(switch_manager::switchs.find(dpid) != switch_manager::switchs.end()){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
 		throw eOfSmExists();
 	}
 
@@ -52,12 +54,15 @@ openflow_switch* switch_manager::create_switch(
 		//Add more here...
 		
 		default:
+			pthread_rwlock_unlock(&switch_manager::rwlock);
 			throw eOfSmVersionNotSupported();
 
 	}	
 	
 	//Store in the switch list
 	switch_manager::switchs[dpid] = dp;
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
 	
 	ROFL_INFO("[switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
 
@@ -67,9 +72,10 @@ openflow_switch* switch_manager::create_switch(
 //static
 void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 
-	//TODO: MUTEX!
-
+	pthread_rwlock_wrlock(&switch_manager::rwlock);
+	
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
 		throw eOfSmDoesNotExist();
 	}
 
@@ -83,6 +89,8 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	//Destroy element
 	delete dp;	
 	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+	
 }
 
 //static
@@ -93,38 +101,15 @@ void switch_manager::destroy_all_switches(){
 	std::map<uint64_t, openflow_switch*> copy = switchs;
 	switchs.clear();
 
+	pthread_rwlock_wrlock(&switch_manager::rwlock);
+	
 	for(std::map<uint64_t, openflow_switch*>::iterator it = copy.begin(); it != copy.end(); ++it) {
-		
-		//first extract it from the		
-		
 		//Delete
 		delete it->second; 
 	}
 	
-}
-/**
- * Find the datapath by dpid 
- */
-openflow_switch* switch_manager::find_by_dpid(uint64_t dpid){
-
-	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
-		return NULL;
-	}
-
-	return switch_manager::switchs[dpid];
-}
-
-/**
- * Find the datapath by name 
- */
-openflow_switch* switch_manager::find_by_name(std::string name){
-
-	for(std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(); it != switchs.end(); ++it) {
-		if( it->second->dpname == name)
-			return it->second;	
-	}
-
-	return NULL;
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+	
 }
 
 /**
@@ -161,32 +146,224 @@ switch_manager::list_matching_algorithms(of_version_t of_version)
 }
 
 
+bool switch_manager::exists(uint64_t dpid){
+	
+	bool found=true;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+	
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end())
+		found=false;
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+	
+	return found;
+}
+
+bool switch_manager::exists_by_name(std::string& name){
+	
+	bool found=false;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	for(std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(); it != switchs.end(); ++it){
+		if( it->second->dpname == name)
+			found=true;	
+
+	}
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	return found; 
+}
+
+uint64_t switch_manager::get_switch_dpid(std::string& name){
+
+	uint64_t dpid;
+	bool found=false;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	for(std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(); it != switchs.end(); ++it){
+		if( it->second->dpname == name){
+			found=true;
+			dpid = it->second->dpid;
+		}
+
+	}
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	if(found)
+		return dpid;
+	else
+		throw eOfSmDoesNotExist(); 
+}
+
+
+
 
 void
-switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra)
-{
+switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra){
+
+	pthread_rwlock_wrlock(&switch_manager::rwlock);
+	
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
 		throw eOfSmDoesNotExist();
 	}
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
 	dp->rpc_connect_to_ctl(ra);
+	pthread_rwlock_unlock(&switch_manager::rwlock);
 }
 
 
 
 void
-switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra)
-{
+switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra){
+
+	pthread_rwlock_wrlock(&switch_manager::rwlock);
+	
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
 		throw eOfSmDoesNotExist();
 	}
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
 	dp->rpc_disconnect_from_ctl(ra);
+	pthread_rwlock_unlock(&switch_manager::rwlock);
 }
 
 
+openflow_switch* switch_manager::__get_switch_by_dpid(uint64_t dpid){
 
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		return NULL;
+	}
+
+	return switch_manager::switchs[dpid];
+}
+
+
+//
+//CMM demux
+//
+
+afa_result_t switch_manager::__notify_port_add(switch_port_snapshot_t* port_snapshot){
+	
+	afa_result_t result;
+	openflow_switch* sw;	
+
+	if(!port_snapshot)
+		return AFA_FAILURE;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	sw = switch_manager::__get_switch_by_dpid(port_snapshot->attached_sw_dpid); 
+
+	if(sw)
+		result = sw->notify_port_add(port_snapshot);
+	else	
+		result = AFA_FAILURE;
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	return result;	
+}	
+
+afa_result_t switch_manager::__notify_port_status_changed(switch_port_snapshot_t* port_snapshot){
+	
+	afa_result_t result;
+	openflow_switch* sw;	
+
+	if(!port_snapshot)
+		return AFA_FAILURE;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	sw = switch_manager::__get_switch_by_dpid(port_snapshot->attached_sw_dpid); 
+
+	if(sw)
+		result = sw->notify_port_status_changed(port_snapshot);
+	else	
+		result = AFA_FAILURE;
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	return result;	
+
+}
+
+afa_result_t switch_manager::__notify_port_delete(switch_port_snapshot_t* port_snapshot){
+	
+	afa_result_t result;
+	openflow_switch* sw;	
+
+	if(!port_snapshot)
+		return AFA_FAILURE;
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	sw = switch_manager::__get_switch_by_dpid(port_snapshot->attached_sw_dpid); 
+
+	if(sw)
+		result = sw->notify_port_delete(port_snapshot);
+	else	
+		result = AFA_FAILURE;
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	return result;	
+}
+
+afa_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
+				uint8_t table_id,
+				uint8_t reason,
+				uint32_t in_port,
+				uint32_t buffer_id,
+				uint8_t* pkt_buffer,
+				uint32_t buf_len,
+				uint16_t total_len,
+				packet_matches_t* matches){
+	afa_result_t result;
+	openflow_switch* sw;	
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	sw = switch_manager::__get_switch_by_dpid(dpid); 
+
+	if(sw)
+		result = sw->process_packet_in(table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);
+	else	
+		result = AFA_FAILURE;
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	return result;	
+
+}
+
+afa_result_t switch_manager::__process_of1x_flow_removed(uint64_t dpid, 
+				uint8_t reason, 	
+				of1x_flow_entry_t* removed_flow_entry){
+
+	afa_result_t result;
+	openflow_switch* sw;	
+
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	sw = switch_manager::__get_switch_by_dpid(dpid); 
+
+	if(sw)
+		result = sw->process_flow_removed(reason, removed_flow_entry);
+	else	
+		result = AFA_FAILURE;
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	return result;	
+
+}

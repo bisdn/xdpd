@@ -12,20 +12,31 @@ extern int optind;
 
 rofl_result_t plugin_manager::init(int argc, char** argv){
 
-	ROFL_DEBUG("[Plugin manager] Initializing Plugin Manager\n");
+	ROFL_DEBUG("[plugin_manager] Initializing Plugin Manager\n");
 
 	//Call register
 	plugin_manager::pre_init();
 
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		ROFL_INFO("[Plugin manager] Loading plugin [%s]...\n", (*it)->get_name().c_str());
+		ROFL_INFO("[plugin_manager] Loading plugin [%s]...\n", (*it)->get_name().c_str());
 		(*it)->init(argc,argv);
 		optind=0; //Reset getopt
 	}
 
-	ROFL_INFO("[Plugin manager] All plugins loaded.\n");
+	ROFL_INFO("[plugin_manager] All plugins loaded.\n");
 	
 	return ROFL_SUCCESS;
+}
+
+plugin* plugin_manager::get_plugin_by_name(std::string name){
+	
+	//Find plugin by name
+	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
+		if((*it)->get_name() == name)
+			return (*it);
+	}
+	
+	return NULL;
 }
 
 rofl_result_t plugin_manager::destroy(){

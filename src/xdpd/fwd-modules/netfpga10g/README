@@ -1,0 +1,47 @@
+The NetFPGA-10G forwarding module 
+
+## Brief:
+
+The content of this folder is the implementation of the NetFPGA-10G Openflow switch (AFA-compliant) forwarding module. The forwarding module is currently based on the HW implementation that can be found under the Beta NetFPGA 10G repository under the folder:
+	
+	NetFPGA-10G-live/contrib-projects/openflow_switch/   
+
+Written by Tatsuya Yabe (et al.?).
+
+Since this implementation is only OF1.0 compliant, the forwarding module is currently exposing itself as a _very_ restricted OF1.2 compliant fwd_module. Limitations are currently:
+
+- Only supports 1.0 matches, wildcards and actions.
+- The pipeline can ONLY contain 1 table
+- Only one logical switch can be created, and never destroyed.
+- Ports are attached on switch creation; subsequent calls to attach/detach are silently ignored. 
+	
+Most of the implementation of this forwarding module was done during the NetFPGA camp 2013 in Poznan, an event co-organized by ALIEN FP7 project.
+	
+The initial port was taking as a reference the (software) implementation made by eastzone:
+
+https://github.com/eastzone/openflow/tree/netfpga-10g		
+
+As well as the HW FPGA code itself.
+
+
+## Comments:
+	
+!!!!!STRONG WARNING!!!!! Current state of the port is *UNFINISHED!*, although is pretty close to become operational (we don't have yet a ). Put in contact with the main author if you want to contribute to stabilize it.
+	
+This forwarding module uses ROFL-pipeline to maintain the cache of the HW entries (exact and wildcarded). 
+
+We expect to see more contributions and improvements on both SW and HW implementations of the openflow_switch implementation, as the NetFPGA 10G community grows. Please do not hesitate to contact us if you wish to contribute.
+
+## Folder structure and some files:
+
+	- afa-imp: Abstract Forwarding API implementation (forwarding module end) 
+	- bg_taskmanager.c: subsystem for background tasks as well as PKT_IN/PKT_OUT DMA transfers from/to the NetFPFGA 
+	- io: I/O code (PKT_IN and PKT_OUT) 
+	- netfpga: NetFPGA flow entry mapping, and register manipulation (stats, behaviour..) via ioctl. 
+	- pipeline-imp: Implementation of the required APIs  
+	- util: Some util code. 
+
+## Authorship:
+	Marc Sune<marc.sune (at) bisdn.de>
+	Tytus Sielach<tytus.sielach@gmail.com>
+

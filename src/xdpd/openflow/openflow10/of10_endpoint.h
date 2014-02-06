@@ -52,7 +52,7 @@ public:
 			uint8_t* pkt_buffer,
 			uint32_t buf_len,
 			uint16_t total_len,
-			of1x_packet_matches_t matches);
+			packet_matches_t* matches);
 
 
 	/**
@@ -77,10 +77,7 @@ public:
 
 private:
 
-	//Commodity pointer
-	of1x_switch_t* of10switch;
-
-	/* *
+	/**
 	 ** This section is in charge of the handling of the OF messages
 	 ** comming from the cofctl(OF endpoints). These are version specific
 	 ** and must be implemented by the derived class (ofXX_dphcl)

@@ -59,6 +59,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 				* Push packet to the logical switch queue. 
 				* If not successful (congestion), drop it!
 				*/
+#if 0
 				if( port->get_sw_processing_queue()->non_blocking_write(pkt) != ROFL_SUCCESS ){
 					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
@@ -66,6 +67,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 				}else{
 					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) scheduled for process -> sw: %s\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 				}
+#endif
 					
 #ifdef DEBUG
 			}

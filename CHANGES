@@ -12,6 +12,12 @@ v0.4
 
 [+] added systemd service.unit file for xdpd
 
+v0.3.4
+
+[+][NetFPGA-10G] Merged into mainstream support for the NetFPGA-10G platform (T.Sielach, M.Sune)
+[B] Backport fixes on commit 25b49d52 and commit 9cdbc06c (devel-0.4); 'no port field and no prop-max-rate field in 1.0', 'invalid instructions reverse-mapping'
+[O][GNU/Linux] Reducing default buffer expiration timeout (180s->10s)
+
 v0.3.3
 
 [+] Cleanup and improve of plugin system 

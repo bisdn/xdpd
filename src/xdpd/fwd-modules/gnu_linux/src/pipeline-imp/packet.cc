@@ -474,7 +474,7 @@ platform_packet_get_gtp_teid(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 
-	TM_STAMP_STAGE(pkt, TM_S5);
+	TM_STAMP_STAGE(pkt, TM_S4);
 
 	if ((NULL == pack) || (NULL == get_gtpu_hdr(pack->headers, 0))) return 0;
 	return get_gtpu_teid(get_gtpu_hdr(pack->headers, 0));
@@ -1001,7 +1001,7 @@ static void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_
 		of1x_dump_packet_matches(&pkt->matches);
 #endif
 
-		TM_STAMP_STAGE(pkt, TM_SA6_PRE);
+		TM_STAMP_STAGE(pkt, TM_SA5_PRE);
 		
 		//Schedule in the port
 		ioport* ioport_inst = (ioport*)port->platform_port_state; 

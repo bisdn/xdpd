@@ -33,7 +33,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 	char null_buf[BUCKETS_PER_LS];
 	
 	//Recover platform state
-	struct logical_switch_internals* ls_int = (struct logical_switch_internals*)sw->platform_state;
+	switch_platform_state_t* ls_int = (switch_platform_state_t*)sw->platform_state;
 
 	//Try to process up to BUCKETS_PER_LS packet-ins
 	for(i=0;i<BUCKETS_PER_LS;++i){

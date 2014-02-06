@@ -259,7 +259,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	if(!action_group_of1x_packet_in_contains_output(action_group)){
 
 		if (OF1XP_NO_BUFFER != buffer_id) {
-			pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
+			pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
 			if (NULL != pkt) {
 				bufferpool::release_buffer(pkt);
 			}
@@ -273,7 +273,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	if( buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
 		//Retrieve the packet
-		pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
+		pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
 
 		//Buffer has expired
 		if(!pkt){
@@ -351,7 +351,7 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 
 	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
-		datapacket_t* pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
+		datapacket_t* pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
 	
 		if(!pkt){
 			assert(0);
@@ -401,7 +401,7 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 	
 	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
-		datapacket_t* pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
+		datapacket_t* pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
 	
 		if(!pkt){
 			assert(0);

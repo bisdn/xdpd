@@ -5,7 +5,7 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//Include circular_queue<datapacket_t,SLOTS>
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> 
@@ -16,8 +16,6 @@
 
 using namespace std;
 using namespace xdpd::gnu_linux;
-
-#define SLOTS 1024
 
 class RingBufferTestCase : public CppUnit::TestCase{
 
@@ -39,7 +37,7 @@ class RingBufferTestCase : public CppUnit::TestCase{
 	static const unsigned int SLEEP_TIME_MS=200;	
 	static const unsigned int MIN_ITERATIONS=5000;	
 	static const unsigned int MAX_ITERATIONS=12000;	
-	circular_queue<datapacket_t,SLOTS> buffer;
+	circular_queue<datapacket_t>* buffer;
 
 	public:
 		void setUp(void);
@@ -61,11 +59,13 @@ CppUnit::Test* suite(){
 /* Setup and tear down */
 void RingBufferTestCase::setUp(){
 
+	buffer = new circular_queue<datapacket_t>(32/*1024*/);
 
 }
 
 void RingBufferTestCase::tearDown(){
 
+	delete buffer;
 
 }
 
@@ -73,18 +73,18 @@ void RingBufferTestCase::tearDown(){
 void RingBufferTestCase::bufferFilling(){
 
 	//Fills buffer and checks that it accepts MAX_SLOTS-1
-	circular_queue<datapacket_t,SLOTS> buf;
+	circular_queue<datapacket_t> buf(1024);
 	int ret;
 
-	fprintf(stderr,"MAx slots: %llu\n",buf.MAX_SLOTS);
+	fprintf(stderr,"MAx slots: %llu\n",buf.slots);
 
-	for(unsigned int i=0;i<buf.MAX_SLOTS;i++){
+	for(unsigned int i=0;i<buf.slots;i++){
 		
 		//std::cerr << i << std::endl;
 
 		ret = buf.non_blocking_write(NULL); //Fill
 		
-		if(i != (buf.MAX_SLOTS-1)){
+		if(i != (buf.slots-1)){
 			CPPUNIT_ASSERT(ROFL_SUCCESS == ret);
 		}else{
 			CPPUNIT_ASSERT(ROFL_FAILURE == ret);
@@ -92,12 +92,12 @@ void RingBufferTestCase::bufferFilling(){
 	}
 	std::cerr<<"Size: "<<buf.size()<<std::endl;
 
-	CPPUNIT_ASSERT(buf.size() == buf.MAX_SLOTS-1);
+	CPPUNIT_ASSERT(buf.size() == buf.slots-1);
 }
 
 void* RingBufferTestCase::blockingRead(void* obj){
 
-	datapacket_t* pkt;
+	datapacket_t* pkt, *prev=NULL;
 	RingBufferTestCase* test = (RingBufferTestCase*)obj;
 
 	cerr << "Reading..." << test->randomIterations << endl;
@@ -105,12 +105,18 @@ void* RingBufferTestCase::blockingRead(void* obj){
 	//Read up to N and quit
 	for(unsigned int i=0;i<test->randomIterations;i++){
 
-		pkt = test->buffer.blocking_read();
-		
+		do{
+			pkt = test->buffer->non_blocking_read();
+		}while(!pkt);
+	
+		if(pkt != ((datapacket_t*)0x1)+i)
+			fprintf(stderr,"Expected %p got %p, previous %p\n", (((datapacket_t*)0x1)+i), pkt, prev);
+
 		//cerr<<"Read ["<<i<<","<<pkt<<"]\n";	
-		CPPUNIT_ASSERT(pkt != NULL);
+		assert(pkt == ((datapacket_t*)0x1)+i);
 		CPPUNIT_ASSERT(pkt == ((datapacket_t*)0x1)+i);
-		
+		prev = pkt;
+
 		//20% prob. sleep
 		if(rand()%100 > 80)
 			usleep(test->SLEEP_TIME_MS);	
@@ -129,11 +135,10 @@ void* RingBufferTestCase::blockingWrite(void* obj){
 	//Write up to N and quit
 	for(unsigned int i=0;i<test->randomIterations;i++){
 
-		//cerr<<"Writing"<<i<<"\n";	
-		ret = test->buffer.blocking_write(((datapacket_t*)0x1)+i);
-		//ret = test->buffer.blocking_write(NULL);
-		
-		CPPUNIT_ASSERT(ret == ROFL_SUCCESS);
+		//cerr<<"Writing"<<i<<"\n";
+		do{	
+			ret = test->buffer->non_blocking_write(((datapacket_t*)0x1)+i);
+		}while(ret != ROFL_SUCCESS);
 		
 		//20% prob. sleep
 		if(rand()%100 > 80)
@@ -163,8 +168,7 @@ void RingBufferTestCase::concurrentAccess(){
 	pthread_join(writer,NULL);	
 
 	//asserts
-	CPPUNIT_ASSERT(buffer.size() == 0);
-	CPPUNIT_ASSERT(buffer.get_queue_state() == RB_BUFFER_AVAILABLE);
+	CPPUNIT_ASSERT(buffer->size() == 0);
 }
 
 

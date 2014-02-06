@@ -49,7 +49,7 @@ void ioport_mockup::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	const char c='a';
 
 	//Put in the queue
-	output_queues[q_id].blocking_write(pkt);
+	output_queues[q_id]->non_blocking_write(pkt);
 
 	//TODO: make it happen only if thread is really sleeping...
 	ret = ::write(notify_pipe[WRITE],&c,sizeof(c));
@@ -64,7 +64,7 @@ datapacket_t* ioport_mockup::read(){
 
 
 	//First attempt drain local buffers from previous reads that failed to push 
-	pkt = input_queue.non_blocking_read();	
+	pkt = input_queue->non_blocking_read();	
 	if(pkt)
 		return pkt;		
 
@@ -104,7 +104,7 @@ unsigned int ioport_mockup::write(unsigned int q_id, unsigned int num_of_buckets
 	//Go and do stuff
 	for(i=0;i<num_of_buckets;i++){	
 		//Pick buffer	
-		pkt = output_queues[q_id].non_blocking_read();
+		pkt = output_queues[q_id]->non_blocking_read();
 		
 		if(!pkt)
 			break;

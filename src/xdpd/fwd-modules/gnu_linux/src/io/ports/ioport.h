@@ -8,6 +8,7 @@
 #include <string>
 #include <assert.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -62,7 +63,7 @@ public:
 	*/
 	inline unsigned int get_queue_size(unsigned int id){ 
 		if(id < num_of_queues)
-			return output_queues[id].MAX_SLOTS; 
+			return output_queues[id]->slots; 
 		
 		return 0;
 	} 
@@ -100,6 +101,7 @@ public:
 	virtual int get_read_fd(void)=0;
 	virtual int get_write_fd(void)=0;
 
+#if 0
 	//Get buffer status; generally used to create "smart" schedulers. TODO: evaluate if they should be 
 	//non-virtual (inline+virtual does not make a lot of sense here), and evaluate if they are necessary
 	//at all.
@@ -114,6 +116,7 @@ public:
 			return RB_BUFFER_AVAILABLE;
 		} 
 	}; 
+#endif
 
 	/**
 	* @brief Retrieves the number of buffers required by the port to be operating at line-rate; 
@@ -161,17 +164,13 @@ public:
 	 */
 	virtual rofl_result_t set_advertise_config(uint32_t advertised);
 
+
 	/**
-	 * Sets the port switch queue where processed packets shall be sent.
-	 */
-	void set_sw_processing_queue(circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* queue){
-		sw_processing_queue = queue;
-	};
-
-	inline circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* get_sw_processing_queue(void){
-		return sw_processing_queue;
-	};
-
+	* Check if output queue q_id has packets
+	*/
+	inline bool output_queue_has_packets(unsigned int q_id){
+		return output_queues[q_id]->is_empty() == false;
+	}
 
 	//Port state (rofl-pipeline port state reference)
 	switch_port_t* of_port_state;
@@ -184,9 +183,6 @@ public:
 			of_port_state->state = (of_port_state->state & ~(PORT_STATE_LINK_DOWN)); 
 			
 	}
-	
-	//Switch processing queue to which the port is attached
-	circular_queue<datapacket_t, PROCESSING_INPUT_QUEUE_SLOTS>* sw_processing_queue;
 	
 	static const unsigned int MAX_OUTPUT_QUEUES=IO_IFACE_NUM_QUEUES; /*!< Constant max output queues */
 	unsigned int port_group;
@@ -211,7 +207,7 @@ protected:
 	* for QoS purposes (set-queue). output_queues[0] is always the queue with 
 	* least priority (best effort)
 	*/
-	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> output_queues[IO_IFACE_NUM_QUEUES];
+	circular_queue<datapacket_t>* output_queues[IO_IFACE_NUM_QUEUES];
 
 	/**
 	* Input queue (intermediate-buffering). 
@@ -221,7 +217,7 @@ protected:
 	* to the appropiate LS processing queue.
 	*
 	*/
-	circular_queue<datapacket_t, IO_IFACE_RING_SLOTS> input_queue;
+	circular_queue<datapacket_t>* input_queue;
 };
 
 }// namespace xdpd::gnu_linux 

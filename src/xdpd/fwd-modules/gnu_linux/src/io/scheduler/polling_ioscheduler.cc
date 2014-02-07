@@ -7,7 +7,6 @@
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
-#include <rofl/datapath/pipeline/platform/cutil.h>
 #include "../iomanager.h"
 #include "../bufferpool.h"
 #include "../../util/circular_queue.h"

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <rofl/common/utils/c_logger.h>
-#include <rofl/datapath/pipeline/platform/cutil.h>
 #include "iomanager.h"
 #include "bufferpool.h"
 #include "../processing/processingmanager.h"

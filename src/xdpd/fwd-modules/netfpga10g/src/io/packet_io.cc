@@ -10,7 +10,6 @@ void netpfga_io_read_from_port(switch_port_t* port){
 
 	//ROFL_DEBUG("["FWD_MOD_NAME"] packet_io.cc Got a packet from kernel (PKT_IN) in port %s %p!\n", port->name, state);
 	
-
 	//Retrieve an empty buffer
 	datapacket_t* pkt=bufferpool::get_free_buffer(false);
 
@@ -19,15 +18,10 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	datapacketx86* pack=(datapacketx86*)pkt->platform_state;
 	
 	
-	
 	//ROFL_DEBUG(" packet_io.cc pack->get_FRAME_SIZE_BYTES() %p \n",pack->get_FRAME_SIZE_BYTES());
 	
 	//uint8_t* x[pack->get_FRAME_SIZE_BYTES()];
 	//uint8_t* buff=(uint8_t*)x;
-
-	
-	
-
 	
 
 	struct pcap_pkthdr header;	/* The header that pcap gives us */
@@ -35,11 +29,6 @@ void netpfga_io_read_from_port(switch_port_t* port){
 
 	/* Grab a packet */
 	packet = pcap_next(state->pcap_fd, &header);
-
-
-
-
-
 
 	if (header.len < 0) 
 		ROFL_DEBUG(" packet_io.cc Reading to a socket unsuccessful: %d",errno);
@@ -62,26 +51,17 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	datapacket_storage* storage;
 	storage=((logical_switch_internals*)lsw->platform_state)->storage;
 
-
-
 	storeid storage_id=storage->store_packet(pkt);
 	//ROFL_DEBUG(" PACKET_IN storage ID %d for datapacket pkt %d dpid %d  \n", storage_id, pkt,sw->dpid);
 
-
-
-
-
-	__of1x_init_packet_matches(pkt);// tranform packet->matches into of1x matches
-	
-	of1x_packet_matches_t* matches = &pkt->matches.of1x;
-	
+	packet_matches_t* matches = &pkt->matches;
 	
 	//ROFL_DEBUG(" of1x_switch_t* %d , port->attached_sw %d ", sw, port->attached_sw);
 	ROFL_DEBUG("\n in port: %x ", pack->in_port);
 	
 
 	afa_result r=cmm_process_of1x_packet_in(
-		sw,
+		sw->dpid,
 		pack->pktin_table_id,
 		pack->pktin_reason,
 		pack->in_port,
@@ -89,7 +69,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 		pack->get_buffer(),
 		header.len,
 		pack->get_buffer_length(), 
-		*matches );
+		matches );
 
 
 	if ( AFA_FAILURE == r  ) ROFL_DEBUG(" packet_io.cc cmm packet_in unsuccessful");

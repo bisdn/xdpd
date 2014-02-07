@@ -7,6 +7,7 @@ libfwd_module_netfpga10g_pipeline_imp_la_SOURCES = \
 					packet.cc\
 					platform_hooks_of1x.cc\
 					pthread_atomic_operations.c\
+					timing.c\
 					pthread_lock.c
 
 libfwd_module_netfpga10g_pipeline_imp_la_LIBADD = 

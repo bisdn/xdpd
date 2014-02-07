@@ -141,8 +141,8 @@ afa_result_t fwd_module_of1x_set_pipeline_config(uint64_t dpid, unsigned int fla
 	}	
 
 	//Simply store the new config
-	((of1x_switch_t*)lsw)->pipeline->capabilities = flags;
-	((of1x_switch_t*)lsw)->pipeline->miss_send_len = miss_send_len;
+	((of1x_switch_t*)lsw)->pipeline.capabilities = flags;
+	((of1x_switch_t*)lsw)->pipeline.miss_send_len = miss_send_len;
 
 	return AFA_SUCCESS;
 }
@@ -165,7 +165,7 @@ afa_result_t fwd_module_of1x_set_table_config(uint64_t dpid, unsigned int table_
 	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
 	//Check switch and port
-	if( !lsw || ( (table_id != OF1X_FLOW_TABLE_ALL) && (table_id >= lsw->pipeline->num_of_tables) ) ) {
+	if( !lsw || ( (table_id != OF1X_FLOW_TABLE_ALL) && (table_id >= lsw->pipeline.num_of_tables) ) ) {
 		//TODO: log this... should never happen
 		assert(0);
 		return AFA_FAILURE;
@@ -173,11 +173,11 @@ afa_result_t fwd_module_of1x_set_table_config(uint64_t dpid, unsigned int table_
 
 	//Simply store the new config
 	if( table_id == OF1X_FLOW_TABLE_ALL ){
-		for( i=0; i < lsw->pipeline->num_of_tables; i++){
-			lsw->pipeline->tables[i].default_action = config;
+		for( i=0; i < lsw->pipeline.num_of_tables; i++){
+			lsw->pipeline.tables[i].default_action = config;
 		}
 	}else{
-		lsw->pipeline->tables[table_id].default_action = config;
+		lsw->pipeline.tables[table_id].default_action = config;
 	}
 
 	return AFA_SUCCESS;
@@ -199,6 +199,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 {
 	of_switch_t* lsw;
 	datapacket_t* pkt;
+	datapacketx86* pktx86;
 
 	//Recover port	
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
@@ -255,7 +256,9 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	}
 
 	//Reclassify the packet
-	((datapacketx86*)pkt->platform_state)->headers->classify();
+	pktx86 = (datapacketx86*)pkt->platform_state;
+	classify_packet(pktx86->headers, pktx86->get_buffer(), pktx86->get_buffer_length(), pktx86->in_port, 0);
+
 
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	
@@ -279,7 +282,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
  * @param check_counts	Check RESET_COUNTS flag
  */
 
-afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t buffer_id, bool check_overlap, bool reset_counts){
+afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t** flow_entry, uint32_t buffer_id, bool check_overlap, bool reset_counts){
 
 	of1x_switch_t* lsw;
 	rofl_of1x_fm_result_t result;
@@ -292,11 +295,11 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 		return AFA_FAILURE;
 	}
 
-	if(table_id >= lsw->pipeline->num_of_tables)
+	if(table_id >= lsw->pipeline.num_of_tables)
 		return AFA_FAILURE;
 
 	//TODO: enhance error codes. Contain invalid matches (pipeline enhancement) 
-	if( (result = of1x_add_flow_entry_table(lsw->pipeline, table_id, flow_entry, check_overlap, reset_counts)) != ROFL_OF1X_FM_SUCCESS){
+	if( (result = of1x_add_flow_entry_table(&lsw->pipeline, table_id, flow_entry, check_overlap, reset_counts)) != ROFL_OF1X_FM_SUCCESS){
 
 		if(result == ROFL_OF1X_FM_OVERLAP)
 			return AFA_FM_OVERLAP_FAILURE;
@@ -318,7 +321,7 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 
 
 #ifdef DEBUG
-	of1x_dump_table(&lsw->pipeline->tables[table_id]);
+	of1x_dump_table(&lsw->pipeline.tables[table_id]);
 #endif
 	
 	return AFA_SUCCESS;
@@ -336,7 +339,7 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
  * @param strictness 	Strictness (STRICT NON-STRICT)
  * @param check_counts	Check RESET_COUNTS flag
  */
-afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t buffer_id, of1x_flow_removal_strictness_t strictness, bool reset_counts){
+afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t** flow_entry, uint32_t buffer_id, of1x_flow_removal_strictness_t strictness, bool reset_counts){
 
 	of1x_switch_t* lsw;
 
@@ -348,10 +351,10 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 		return AFA_FAILURE;
 	}
 
-	if(table_id >= lsw->pipeline->num_of_tables)
+	if(table_id >= lsw->pipeline.num_of_tables)
 		return AFA_FAILURE;
 
-	if(of1x_modify_flow_entry_table(lsw->pipeline, table_id, flow_entry, strictness, reset_counts) != ROFL_SUCCESS)
+	if(of1x_modify_flow_entry_table(&lsw->pipeline, table_id, flow_entry, strictness, reset_counts) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
 	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
@@ -396,19 +399,19 @@ afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
 		return AFA_FAILURE;
 	}
 
-	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+	if(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
 		return AFA_FAILURE;
 
 
 	if(table_id == OF1X_FLOW_TABLE_ALL){
 		//Single table
-		for(i = 0; i<lsw->pipeline->num_of_tables; i++){
-			if(of1x_remove_flow_entry_table(lsw->pipeline, i, flow_entry, strictness, out_port, out_group) != ROFL_SUCCESS)
+		for(i = 0; i<lsw->pipeline.num_of_tables; i++){
+			if(of1x_remove_flow_entry_table(&lsw->pipeline, i, flow_entry, strictness, out_port, out_group) != ROFL_SUCCESS)
 			return AFA_FAILURE;
 		}	
 	}else{
 		//Single table
-		if(of1x_remove_flow_entry_table(lsw->pipeline, table_id, flow_entry, strictness, out_port, out_group) != ROFL_SUCCESS)
+		if(of1x_remove_flow_entry_table(&lsw->pipeline, table_id, flow_entry, strictness, out_port, out_group) != ROFL_SUCCESS)
 			return AFA_FAILURE;
 	}
 	return AFA_SUCCESS;
@@ -443,10 +446,10 @@ of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
 		return NULL;
 	}
 
-	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+	if(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
 		return NULL; 
 
-	return of1x_get_flow_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
+	return of1x_get_flow_stats(&lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
 }
 
  
@@ -475,10 +478,10 @@ of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64
 		return NULL;
 	}
 
-	if(table_id >= lsw->pipeline->num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+	if(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
 		return NULL; 
 
-	return of1x_get_flow_aggregate_stats(lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
+	return of1x_get_flow_aggregate_stats(&lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
 } 
 /**
  * @name    fwd_module_of1x_group_mod_add
@@ -487,7 +490,7 @@ of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64
  *
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
-rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t *buckets){
+rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t **buckets){
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
@@ -496,7 +499,7 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_ty
 		return ROFL_OF1X_GM_UNKGRP;
 	}
 
-	return of1x_group_add(lsw->pipeline->groups, type, id, buckets);
+	return of1x_group_add(lsw->pipeline.groups, type, id, buckets);
 }
 
 /**
@@ -506,7 +509,7 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_ty
  *
  * @param dpid 		Datapath ID of the switch to modify the GROUP
  */
-rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t *buckets){
+rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t **buckets){
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 		
@@ -515,7 +518,7 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group
 		return ROFL_OF1X_GM_UNKGRP;
 	}
 
-	return of1x_group_modify(lsw->pipeline->groups, type, id, buckets);
+	return of1x_group_modify(lsw->pipeline.groups, type, id, buckets);
 }
 
 /**
@@ -534,7 +537,7 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_delete(uint64_t dpid, uint32_t i
 		return ROFL_OF1X_GM_UNKGRP;
 	}
 
-	return of1x_group_delete(lsw->pipeline, lsw->pipeline->groups, id);
+	return of1x_group_delete(&lsw->pipeline, lsw->pipeline.groups, id);
 }
 
 /**
@@ -553,7 +556,7 @@ afa_result_t fwd_module_of1x_fetch_group_table(uint64_t dpid, of1x_group_table_t
 		return AFA_FAILURE;
 	}
 
-	if(of1x_fetch_group_table(lsw->pipeline,group_table)!=ROFL_SUCCESS)
+	if(of1x_fetch_group_table(&lsw->pipeline,group_table)!=ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
 	return AFA_SUCCESS;
@@ -575,7 +578,7 @@ of1x_stats_group_msg_t * fwd_module_of1x_get_group_stats(uint64_t dpid, uint32_t
 		return NULL;
 	}
 
-	return of1x_get_group_stats(lsw->pipeline,id);
+	return of1x_get_group_stats(&lsw->pipeline,id);
 }
 
 /**
@@ -594,5 +597,5 @@ of1x_stats_group_msg_t * fwd_module_of1x_get_group_all_stats(uint64_t dpid, uint
 		return NULL;
 	}
 
-	return of1x_get_group_all_stats(lsw->pipeline,id);
+	return of1x_get_group_all_stats(&lsw->pipeline,id);
 }

@@ -63,7 +63,6 @@ AC_CONFIG_FILES([
 	test/Makefile
 	test/regression/Makefile
 	test/regression/io/Makefile
-	test/regression/processing/Makefile
 	test/unit/Makefile
 	test/unit/util/Makefile
 	test/unit/io/Makefile

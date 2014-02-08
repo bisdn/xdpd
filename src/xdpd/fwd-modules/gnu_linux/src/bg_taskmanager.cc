@@ -284,7 +284,7 @@ void* x86_background_tasks_routine(void* param)
 		ROFL_ERR("Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
 		return NULL;
 	}
-	
+
 	while(bg_continue_execution){
 		
 		//Throttle

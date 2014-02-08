@@ -1125,7 +1125,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IPV6_DST:{
 			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
 			/*TODO deal with endianess??*/
-			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val), sizeof(addr));
+			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val), sizeof(uint128__t));
 			match.set_ipv6_dst(addr);
 			}break;
 		case OF1X_MATCH_IPV6_FLABEL:
@@ -1140,7 +1140,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IPV6_ND_TARGET:{
 			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
 			/*TODO deal with endianess??*/
-			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val),sizeof(addr));
+			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val),sizeof(uint128__t));
 			match.set_ipv6_nd_target(addr);
 			}break;
 		case OF1X_MATCH_IPV6_ND_SLL:

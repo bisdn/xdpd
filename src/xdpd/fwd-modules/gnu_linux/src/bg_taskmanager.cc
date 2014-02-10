@@ -54,13 +54,13 @@ int prepare_event_socket()
 	struct sockaddr_nl addr;
 
 	if ((sock = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE)) == -1){
-		ROFL_ERR("Couldn't open NETLINK_ROUTE socket, errno(%d): %s\n", errno, strerror(errno));
+		ROFL_ERR(FWD_MOD_NAME" [bg] Couldn't open NETLINK_ROUTE socket, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
 	if(fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0){
 		// handle error
-		ROFL_ERR("Error fcntl, errno(%d): %s\n", errno, strerror(errno));
+		ROFL_ERR(FWD_MOD_NAME" [bg] Error fcntl, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
@@ -69,7 +69,7 @@ int prepare_event_socket()
 	addr.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
 
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1){
-		ROFL_ERR("couldn't bind, errno(%d): %s\n", errno, strerror(errno));
+		ROFL_ERR(FWD_MOD_NAME" [bg] couldn't bind, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
@@ -146,7 +146,7 @@ static rofl_result_t read_netlink_message(int fd){
 				if(!if_indextoname(ifi->ifi_index, name))
 					continue; //Unable to map interface
 				
-				ROFL_DEBUG_VERBOSE("--------> Interface changed status %s (%u)\n",name, ifi->ifi_index);
+				ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" [bg] Interface changed status %s (%u)\n",name, ifi->ifi_index);
 				
 				// HERE change the status to the port structure
 				if(update_port_status(name)!=ROFL_SUCCESS)
@@ -199,7 +199,7 @@ int process_timeouts()
 			
 #ifdef DEBUG
 		dummy++;
-		//ROFL_DEBUG_VERBOSE("Checking flow entries expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
+		//ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" Checking flow entries expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
 #endif
 		last_time_entries_checked = now;
 	}
@@ -217,12 +217,12 @@ int process_timeouts()
 				//Loop until the oldest expired packet is taken out
 				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
-					ROFL_DEBUG_VERBOSE("Trying to erase a datapacket from storage: %u\n", buffer_id);
+					ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" [bg] Trying to erase a datapacket from storage: %u\n", buffer_id);
 
 					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
-						ROFL_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
+						ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" [bg] Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
-						ROFL_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
+						ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" [bg] Datapacket expired correctly %u\n", buffer_id);
 						//Return buffer to bufferpool
 						bufferpool::release_buffer(pkt);
 					}
@@ -231,7 +231,7 @@ int process_timeouts()
 		}
 		
 #ifdef DEBUG
-		//ROFL_ERR("Checking pool buffers expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
+		//ROFL_ERR(FWD_MOD_NAME" Checking pool buffers expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
 #endif
 		last_time_pool_checked = now;
 	}
@@ -261,7 +261,7 @@ void* x86_background_tasks_routine(void* param)
 	efd = epoll_create1(0);
 
 	if(efd == -1){
-		ROFL_ERR("Error in epoll_create1, errno(%d): %s\n", errno, strerror(errno) );
+		ROFL_ERR(FWD_MOD_NAME" [bg] Error in epoll_create1, errno(%d): %s\n", errno, strerror(errno) );
 		return NULL;
 	}
 
@@ -270,7 +270,7 @@ void* x86_background_tasks_routine(void* param)
 	epe_port.events = EPOLLIN; //| EPOLLET;
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
-		ROFL_ERR("Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
+		ROFL_ERR(FWD_MOD_NAME" [bg] Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
 		return NULL;
 	}
 
@@ -281,7 +281,7 @@ void* x86_background_tasks_routine(void* param)
 	epe_port.events = EPOLLIN | EPOLLET;
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD, epe_port.data.fd, &epe_port)==-1){
-		ROFL_ERR("Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
+		ROFL_ERR(FWD_MOD_NAME" [bg] Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
 		return NULL;
 	}
 
@@ -292,7 +292,7 @@ void* x86_background_tasks_routine(void* param)
 
 
 		if(nfds==-1){
-			//ROFL_DEBUG("Epoll Failed\n");
+			//ROFL_DEBUG(FWD_MOD_NAME" Epoll Failed\n");
 			continue;
 		}
 
@@ -301,7 +301,7 @@ void* x86_background_tasks_routine(void* param)
 
 			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)/*||(event_list[i].events & EPOLLIN)*/){
 				//error on this fd
-				//ROFL_ERR("Error in file descriptor\n");
+				//ROFL_ERR(FWD_MOD_NAME" Error in file descriptor\n");
 				close(event_list[i].data.fd); //fd gets removed automatically from efd's
 				continue;
 			}else{
@@ -327,7 +327,7 @@ void* x86_background_tasks_routine(void* param)
 	close(efd);
 	
 	//Printing some information
-	ROFL_DEBUG("[bg] Finishing thread execution\n"); 
+	ROFL_DEBUG(FWD_MOD_NAME" [bg] Finishing thread execution\n"); 
 
 	//Exit
 	pthread_exit(NULL);	
@@ -342,7 +342,7 @@ rofl_result_t launch_background_tasks_manager()
 	bg_continue_execution = true;
 
 	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0){
-		ROFL_ERR("pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
+		ROFL_ERR(FWD_MOD_NAME" [bg] pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
 	return ROFL_SUCCESS;

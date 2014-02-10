@@ -1,11 +1,9 @@
 #include "cpp_pktclassifier.h"
 
-#include "rofl_pktclassifier.h"
 #include "static_pktclassifier.h"
 
 
 using xdpd::gnu_linux::static_pktclassifier;
-using xdpd::gnu_linux::rofl_pktclassifier;
 
 //typedef struct classify_state pktclassifier;
 typedef static_pktclassifier pktclassifier;

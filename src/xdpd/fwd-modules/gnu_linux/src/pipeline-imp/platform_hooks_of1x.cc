@@ -106,7 +106,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	datapacketx86* pkt_x86;
 	switch_platform_state_t* ls_state = (switch_platform_state_t*)sw->platform_state;
 
-	ROFL_DEBUG("Enqueuing PKT_IN event for packet(%p) in switch: %s\n",pkt,sw->name);
+	ROFL_DEBUG(FWD_MOD_NAME" Enqueuing PKT_IN event for packet(%p) in switch: %s\n",pkt,sw->name);
 	
 	//Recover platform state and fill it so that state can be recovered afterwards
 	pkt_x86 = (datapacketx86*)pkt->platform_state;
@@ -124,7 +124,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		//Timestamp SB6_SUCCESS	
 		TM_STAMP_STAGE(pkt, TM_SB5_SUCCESS);
 	}else{
-		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
+		ROFL_DEBUG(FWD_MOD_NAME" PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
 		//Return to the bufferpool
 		bufferpool::release_buffer(pkt);
 

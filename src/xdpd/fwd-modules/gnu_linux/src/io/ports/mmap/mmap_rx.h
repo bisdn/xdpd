@@ -103,7 +103,7 @@ next:
 		if( likely( ( hdr->tp_status&(TP_STATUS_COPY|TP_STATUS_CSUMNOTREADY) ) == 0 ) ){
 #ifdef DEBUG
 			//if( ( hdr->tp_status&(TP_STATUS_LOSING) ) > 0){
-			//	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" [mmap_rx:%s] Congestion in RX of the port\n", devname.c_str());
+			//	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[mmap_rx:%s] Congestion in RX of the port\n", devname.c_str());
 			//}
 		
 #endif
@@ -111,7 +111,7 @@ next:
 			return hdr;
 		}else{
 			//TP_STATUS_COPY or TP_STATUS_CSUMNOTREADY (outgoing) => ignore
-			ROFL_DEBUG(FWD_MOD_NAME" [mmap_rx:%s] Discarding frame with status :%d, size: %d\n", devname.c_str(), hdr->tp_status,hdr->tp_len );
+			ROFL_DEBUG(FWD_MOD_NAME"[mmap_rx:%s] Discarding frame with status :%d, size: %d\n", devname.c_str(), hdr->tp_status,hdr->tp_len );
 
 			//Skip
 			hdr->tp_status = TP_STATUS_KERNEL;

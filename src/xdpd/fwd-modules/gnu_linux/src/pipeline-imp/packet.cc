@@ -980,7 +980,7 @@ void platform_packet_push_gtp(datapacket_t* pkt)
 void
 platform_packet_drop(datapacket_t* pkt)
 {
-	ROFL_DEBUG(FWD_MOD_NAME" [pkt] Dropping packet(%p)\n",pkt);
+	ROFL_DEBUG(FWD_MOD_NAME"[pkt] Dropping packet(%p)\n",pkt);
 	
 	//Release buffer
 	bufferpool::release_buffer(pkt);
@@ -992,7 +992,7 @@ static void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_
 	//Output packet to the appropiate queue and port_num
 	if(likely(port && port->platform_port_state) && port->up && port->forward_packets){
 		
-		ROFL_DEBUG(FWD_MOD_NAME" [pkt] [%s] OUTPUT packet(%p)\n", port->name, pkt);
+		ROFL_DEBUG(FWD_MOD_NAME"[pkt][%s] OUTPUT packet(%p)\n", port->name, pkt);
 #ifdef DEBUG
 		dump_packet_matches(&pkt->matches);
 #endif
@@ -1101,7 +1101,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 			replica = platform_packet_replicate(pkt); 	
 			replica_pack = (datapacketx86*) (replica->platform_state);
 
-			ROFL_DEBUG(FWD_MOD_NAME" [pkt] [%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
+			ROFL_DEBUG(FWD_MOD_NAME"[pkt][%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
 			
 			//send the replica
 			output_single_packet(replica, replica_pack, port_it);

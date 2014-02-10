@@ -17,8 +17,6 @@ typedef struct classify_state pktclassifier;
 
 //Constructor
 datapacketx86::datapacketx86(datapacket_t*const pkt) :
-	buffer_id(0),
-	internal_buffer_id(0),
 	lsw(0),
 	in_port(0),
 	in_phy_port(0),

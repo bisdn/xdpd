@@ -491,7 +491,7 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 
 	//Pre-allocate buffers for operating at line-rate
 	num_of_port_buffers += port->get_required_buffers();
-	bufferpool::increase_capacity(num_of_port_buffers);
+	//bufferpool::increase_capacity(num_of_port_buffers);
 	
 	//Add to port
 	pg->ports->push_back(port);	

@@ -53,7 +53,7 @@ afa_result_t fwd_module_init(){
 	
 
 	//create bufferpool
-	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
+	bufferpool::init();
 
 	if(discover_physical_ports() != ROFL_SUCCESS)
 		return AFA_FAILURE;

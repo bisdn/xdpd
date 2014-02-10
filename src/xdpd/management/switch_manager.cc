@@ -8,6 +8,7 @@
 #include "../openflow/openflow_switch.h"
 #include "../openflow/openflow10/openflow10_switch.h"
 #include "../openflow/openflow12/openflow12_switch.h"
+#include "../openflow/openflow13/openflow13_switch.h"
 
 using namespace rofl;
 using namespace xdpd;
@@ -49,6 +50,10 @@ openflow_switch* switch_manager::create_switch(
 
 		case OF_VERSION_12:
 			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
+			break;
+	
+		case OF_VERSION_13:
+			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
 			break;
 	
 		//Add more here...

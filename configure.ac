@@ -69,6 +69,7 @@ AC_CONFIG_FILES([
 	src/xdpd/openflow/Makefile
 	src/xdpd/openflow/openflow10/Makefile
 	src/xdpd/openflow/openflow12/Makefile
+	src/xdpd/openflow/openflow13/Makefile
 	test/Makefile
 	test/grouptest/Makefile
 ])

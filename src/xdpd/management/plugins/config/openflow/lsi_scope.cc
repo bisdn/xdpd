@@ -79,10 +79,7 @@ void lsi_scope::parse_version(libconfig::Setting& setting, of_version_t* version
 	}else if(of_ver == 1.2){
 		*version = OF_VERSION_12;
 	}else if(of_ver == 1.3){
-		//*version = OF_VERSION_13;
-		ROFL_ERR("%s: version 1.3 version not yet supported\n", setting.getPath().c_str());
-		throw eConfParseError(); 
-
+		*version = OF_VERSION_13;
 	}else{
 		ROFL_ERR("%s: invalid OpenFlow version. Valid version numbers are 1.0, 1.2 and 1.3. Found: %f\n", setting.getPath().c_str(), of_ver);
 		throw eConfParseError(); 	

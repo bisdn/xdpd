@@ -338,7 +338,7 @@ void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	//Initialize arpv4 packet matches
 	clas_state->matches->arp_opcode = get_arpv4_opcode(arpv4);
-	clas_state->matches->arp_sha =  get_arpv4_dl_dst(arpv4);
+	clas_state->matches->arp_sha =  get_arpv4_dl_src(arpv4);
 	clas_state->matches->arp_spa =  get_arpv4_ip_src(arpv4);
 	clas_state->matches->arp_tha =  get_arpv4_dl_dst(arpv4);
 	clas_state->matches->arp_tpa =  get_arpv4_ip_dst(arpv4);

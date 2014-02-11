@@ -1142,7 +1142,10 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 
 	//Get a free buffer
-	datapacket_t* copy = bufferpool::get_free_buffer(); //FIXME: this is sync!
+	datapacket_t* copy = bufferpool::get_free_buffer_nonblocking();
+	
+	if(!copy)
+		return NULL;
 	
 	//Make sure everything is memseted to 0
 	memcpy(&copy->matches, &pkt->matches, sizeof(pkt->matches));

@@ -127,7 +127,7 @@ bufferpool* bufferpool::get_instance(void){
 //Public interface of the pool
 
 /*
-* Retreives an available buffer. This method is BLOCKING
+* Retreives an available buffer.
 */
 datapacket_t* bufferpool::get_free_buffer_nonblocking(){
 

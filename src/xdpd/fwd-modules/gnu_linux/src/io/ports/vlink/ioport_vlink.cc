@@ -122,6 +122,8 @@ datapacket_t* ioport_vlink::read(){
 		empty_pipe(rx_notify_pipe);
 		//FIXME statistics
 		pkt_x86->in_port = of_port_state->of_port_num;
+		pkt->matches.port_in = of_port_state->of_port_num;
+		pkt->matches.phy_port_in = of_port_state->of_port_num;
 	}
 
 	return pkt;

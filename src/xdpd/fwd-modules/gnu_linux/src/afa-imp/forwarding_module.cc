@@ -45,7 +45,7 @@ using namespace xdpd::gnu_linux;
 */
 afa_result_t fwd_module_init(){
 
-	ROFL_INFO("Initializing GNU/Linux forwarding module...\n");
+	ROFL_INFO(FWD_MOD_NAME" Initializing forwarding module...\n");
 	
 	//Init the ROFL-PIPELINE phyisical switch
 	if(physical_switch_init() != ROFL_SUCCESS)
@@ -53,7 +53,7 @@ afa_result_t fwd_module_init(){
 	
 
 	//create bufferpool
-	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
+	bufferpool::init();
 
 	if(discover_physical_ports() != ROFL_SUCCESS)
 		return AFA_FAILURE;
@@ -105,7 +105,7 @@ afa_result_t fwd_module_destroy(){
 	//Print stats if any
 	TM_DUMP_MEASUREMENTS();
 	
-	ROFL_INFO("GNU/Linux forwarding module destroyed.\n");
+	ROFL_INFO(FWD_MOD_NAME" forwarding module destroyed.\n");
 	
 	return AFA_SUCCESS; 
 }
@@ -186,7 +186,7 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
 			//Take it out from the group
 			if( iomanager::remove_port((ioport*)sw->logical_ports[i].port->platform_port_state) != ROFL_SUCCESS ){
-				ROFL_ERR("WARNING! Error removing port %s from the iomanager for the switch: %s. This can leave the port unusable in the future.\n", sw->logical_ports[i].port->name, sw->name);
+				ROFL_ERR(FWD_MOD_NAME" WARNING! Error removing port %s from the iomanager for the switch: %s. This can leave the port unusable in the future.\n", sw->logical_ports[i].port->name, sw->name);
 				assert(0);
 			}
 
@@ -336,7 +336,7 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 
 	//Enable interfaces (start packet transmission)
 	if(fwd_module_bring_port_up(vport1->of_port_state->name) != AFA_SUCCESS || fwd_module_bring_port_up(vport2->of_port_state->name) != AFA_SUCCESS){
-		ROFL_ERR("ERROR: unable to bring up vlink ports.\n");
+		ROFL_ERR(FWD_MOD_NAME" ERROR: unable to bring up vlink ports.\n");
 		assert(0);
 		return AFA_FAILURE;
 	}
@@ -382,20 +382,20 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 		switch_port_snapshot_t* port_pair_snapshot;
 
 		if(!port_pair){
-			ROFL_ERR("Error detaching a virtual link port. Could not find the counter port of %s.\n",port->name);
+			ROFL_ERR(FWD_MOD_NAME" Error detaching a virtual link port. Could not find the counter port of %s.\n",port->name);
 			assert(0);
 			return AFA_FAILURE;
 		}
 	
 		if(!port_pair->attached_sw || physical_switch_detach_port_from_logical_switch(port_pair,port_pair->attached_sw) != ROFL_SUCCESS){
-			ROFL_ERR("Error detaching port-pair %s from the sw.\n",port_pair->name);
+			ROFL_ERR(FWD_MOD_NAME" Error detaching port-pair %s from the sw.\n",port_pair->name);
 			assert(0);
 			return AFA_FAILURE;
 		}
 
 		//Remove it from the iomanager
 		if(iomanager::remove_port((ioport*)port_pair->platform_port_state) != ROFL_SUCCESS){
-			ROFL_ERR("Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
+			ROFL_ERR(FWD_MOD_NAME" Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
 			assert(0);
 			return AFA_FAILURE;
 		}
@@ -408,7 +408,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 		
 		//Remove from the pipeline and delete
 		if(physical_switch_remove_port(port_pair->name) != ROFL_SUCCESS){
-			ROFL_ERR("Error removing port from the physical_switch. The port may become unusable...\n");
+			ROFL_ERR(FWD_MOD_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
 			assert(0);
 			return AFA_FAILURE;
 			
@@ -418,7 +418,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	
 	//Remove it from the iomanager(
 	if(iomanager::remove_port((ioport*)port->platform_port_state) != ROFL_SUCCESS){
-		ROFL_ERR("Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
+		ROFL_ERR(FWD_MOD_NAME" Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
 		assert(0);
 	}
 
@@ -432,7 +432,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	if(port->type == PORT_TYPE_VIRTUAL){
 		//Remove from the pipeline and delete
 		if(physical_switch_remove_port(port->name) != ROFL_SUCCESS){
-			ROFL_ERR("Error removing port from the physical_switch. The port may become unusable...\n");
+			ROFL_ERR(FWD_MOD_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
 			assert(0);
 			return AFA_FAILURE;
 			

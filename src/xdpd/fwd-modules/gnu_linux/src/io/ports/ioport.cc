@@ -35,7 +35,7 @@ ioport::ioport(switch_port_t* of_ps, unsigned int q_num){
 	//Initalize pthread rwlock		
 	if(pthread_rwlock_init(&rwlock, NULL) < 0){
 		//Can never happen...
-		ROFL_ERR("Unable to initialize ioport's rwlock\n");
+		ROFL_ERR(FWD_MOD_NAME" Unable to initialize ioport's rwlock\n");
 		assert(0);
 	}
 }

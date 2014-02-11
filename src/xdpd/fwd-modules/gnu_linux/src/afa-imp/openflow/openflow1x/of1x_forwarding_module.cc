@@ -308,7 +308,7 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	pktx86 = (datapacketx86*)pkt->platform_state;
 	classify_packet(pktx86->headers, pktx86->get_buffer(), pktx86->get_buffer_length(), pktx86->in_port, 0);
 
-	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
+	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" Getting packet out [%p]\n",pkt);	
 	
 	//Instruct pipeline to process actions. This may reinject the packet	
 	of1x_process_packet_out_pipeline((of1x_switch_t*)lsw, pkt, action_group);

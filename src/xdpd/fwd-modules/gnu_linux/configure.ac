@@ -30,8 +30,6 @@ if (test "${have_rofl}" = "yes"); then
         LIBS+="$ROFL_LIBS"
 fi
 
-
-
 #Debug
 m4_include([../../../../config/debug.m4])
 
@@ -41,12 +39,8 @@ m4_include([../../../../config/verbose.m4])
 # Check for profiling mode
 m4_include([../../../../config/profiling.m4])
 
-# C classifier
-enable_c_classifier=1
-AM_CONDITIONAL(C_CLASSIFIER, test $enable_c_classifier -eq 1)
-if test $enable_c_classifier -eq 1 ; then
-	AC_DEFINE(C_PACKET_CLASSIFIER)
-fi
+# pkt classifier 
+m4_include([config/pktclassifier.m4])
 
 AC_CONFIG_FILES([
 	Makefile
@@ -69,7 +63,6 @@ AC_CONFIG_FILES([
 	test/Makefile
 	test/regression/Makefile
 	test/regression/io/Makefile
-	test/regression/processing/Makefile
 	test/unit/Makefile
 	test/unit/util/Makefile
 	test/unit/io/Makefile

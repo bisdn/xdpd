@@ -9,7 +9,6 @@ libfwd_module_gnu_linux_io_classifiers_cpp_ladir = $(includedir)/fwd-modules/gnu
 libfwd_module_gnu_linux_io_classifiers_cpp_la_HEADERS = \
 	cpp_pktclassifier.h \
 	packetclassifier.h \
-	rofl_pktclassifier.h \
 	cpp_headers/cpp_arpv4.h \
 	cpp_headers/cpp_ethernet.h \
 	cpp_headers/cpp_gtpu.h \
@@ -42,7 +41,5 @@ libfwd_module_gnu_linux_io_classifiers_cpp_la_SOURCES = \
 	cpp_pktclassifier.h \
 	static_pktclassifier.cc \
 	static_pktclassifier.h \
-	rofl_pktclassifier.cc \
-	rofl_pktclassifier.h \
 	packetclassifier.cc \
 	packetclassifier.h

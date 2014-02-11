@@ -39,12 +39,17 @@ m4_include([../../../../config/verbose.m4])
 # Check for profiling mode
 m4_include([../../../../config/profiling.m4])
 
+# pkt classifier 
+m4_include([config/pktclassifier.m4])
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	src/afa-imp/Makefile
 	src/io/Makefile
 	src/io/packet_classifiers/Makefile
+	src/io/packet_classifiers/cpp_pktclassifier/Makefile
+	src/io/packet_classifiers/c_pktclassifier/Makefile
 	src/netfpga/Makefile
 	src/afa-imp/openflow/openflow1x/Makefile
 	src/pipeline-imp/Makefile

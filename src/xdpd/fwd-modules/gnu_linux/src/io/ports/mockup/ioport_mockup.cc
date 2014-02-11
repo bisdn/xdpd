@@ -69,7 +69,10 @@ datapacket_t* ioport_mockup::read(){
 		return pkt;		
 
 	//Allocate free buffer	
-	pkt = bufferpool::get_free_buffer();
+	pkt = bufferpool::get_free_buffer_nonblocking();
+	if(!pkt)
+		return NULL;
+
 	pkt_x86 = ((datapacketx86*)pkt->platform_state);
 
 	//Init in user space
@@ -81,8 +84,6 @@ datapacket_t* ioport_mockup::read(){
 		return NULL;
 	}
 
-	ROFL_DEBUG_VERBOSE("Filled buffer with id:%d. Sending to process.\n", pkt_x86->buffer_id);
-	
 	return pkt;	
 }
 
@@ -112,7 +113,7 @@ unsigned int ioport_mockup::write(unsigned int q_id, unsigned int num_of_buckets
 		//Just "put it into the wire" -> print it 
 		pkt_x86 = (datapacketx86*)pkt->platform_state;
 		
-		ROFL_DEBUG_VERBOSE("Getting buffer with id:%d. Putting it into the wire\n", pkt_x86->buffer_id);
+		ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" Getting buffer with id:%d. Putting it into the wire\n", pkt->id);
 		
 		//Free buffer
 		bufferpool::release_buffer(pkt);

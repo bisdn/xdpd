@@ -7,6 +7,7 @@ libfwd_module_example_pipeline_imp_la_SOURCES = \
 					packet.c\
 					platform_hooks_of1x.cc\
 					pthread_atomic_operations.c\
-					pthread_lock.c
+					pthread_lock.c\
+					timing.c
 
 libfwd_module_example_pipeline_imp_la_LIBADD = 

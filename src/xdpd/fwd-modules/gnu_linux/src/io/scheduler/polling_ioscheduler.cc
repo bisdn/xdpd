@@ -39,7 +39,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 		return;
 
 	//Perform up_to n_buckets_read
-	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
+	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
 	
 	for(i=0; i< READ_BUCKETS_PP; ++i){
 		
@@ -61,10 +61,10 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 #if 0
 				if( port->get_sw_processing_queue()->non_blocking_write(pkt) != ROFL_SUCCESS ){
 					//XXX: check whether resources in the ioport (e.g. ioport_mmap) can be released only by that (maybe virtual function called by ioport)
-					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
+					ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[%s] Packet(%p) DROPPED, buffer from sw:%s is FULL\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 					bufferpool::release_buffer(pkt);
 				}else{
-					ROFL_DEBUG_VERBOSE("[%s] Packet(%p) scheduled for process -> sw: %s\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
+					ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[%s] Packet(%p) scheduled for process -> sw: %s\n", port->of_port_state->name, pkt, port->of_port_state->attached_sw->name);
 				}
 #endif
 					
@@ -72,7 +72,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 			}
 #endif
 		}else{
-			ROFL_DEBUG_VERBOSE("[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, READ_BUCKETS_PP);
+			ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, READ_BUCKETS_PP);
 			break;
 		}
 	}
@@ -83,7 +83,7 @@ inline void polling_ioscheduler::process_port_io(ioport* port){
 		//Increment number of buckets
 		n_buckets = WRITE_BUCKETS_PP*WRITE_QOS_QUEUE_FACTOR[q_id];
 
-		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
+		ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
 		
 		//Perform up to n_buckets write	
 		port->write(q_id,n_buckets);
@@ -139,7 +139,7 @@ void* polling_ioscheduler::process_io(void* grp){
 	//Update 
 	update_running_ports(pg, &running_ports, &num_of_ports, &current_hash);	
 
-	ROFL_DEBUG_VERBOSE("[polling_ioscheduler] Initialization of polling completed in thread:%d\n",pthread_self());
+	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[polling_ioscheduler] Initialization of polling completed in thread:%d\n",pthread_self());
 	
 	/*
 	* Infinite loop unless group is stopped. e.g. all ports detached
@@ -156,7 +156,7 @@ void* polling_ioscheduler::process_io(void* grp){
 			update_running_ports(pg, &running_ports, &num_of_ports, &current_hash);	
 	}
 
-	ROFL_DEBUG("Finishing execution of I/O thread: #%u\n",pthread_self());
+	ROFL_DEBUG(FWD_MOD_NAME"[polling_ioscheduler] Finishing execution of I/O thread: #%u\n",pthread_self());
 
 	//Return whatever
 	pthread_exit(NULL);

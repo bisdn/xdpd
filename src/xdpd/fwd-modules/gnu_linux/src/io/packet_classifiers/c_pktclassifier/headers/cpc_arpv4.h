@@ -111,21 +111,21 @@ void set_arpv4_dl_src(void* hdr, uint64_t dl_src){
 
 inline static
 uint32_t get_arpv4_ip_src(void *hdr){
-	return be32toh(((cpc_arpv4_hdr_t *)hdr)->ip_src);
+	return CPC_BE32TOH(((cpc_arpv4_hdr_t *)hdr)->ip_src);
 };
 
 inline static
 void set_arpv4_ip_src(void *hdr, uint16_t ip_src){
-	((cpc_arpv4_hdr_t*)hdr)->ip_src = CPC_HTOBE16(ip_src);
+	((cpc_arpv4_hdr_t*)hdr)->ip_src = CPC_HTOBE32(ip_src);
 };
 
 inline static
-uint16_t get_arpv4_ip_dst(void *hdr){
-	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ip_dst);
+uint32_t get_arpv4_ip_dst(void *hdr){
+	return CPC_BE32TOH(((cpc_arpv4_hdr_t *)hdr)->ip_dst);
 };
 
 inline static
 void set_arpv4_ip_dst(void *hdr, uint16_t ip_dst){
-	((cpc_arpv4_hdr_t*)hdr)->ip_dst = CPC_HTOBE16(ip_dst);
+	((cpc_arpv4_hdr_t*)hdr)->ip_dst = CPC_HTOBE32(ip_dst);
 };
 #endif //_CPC_ARPV4_H_

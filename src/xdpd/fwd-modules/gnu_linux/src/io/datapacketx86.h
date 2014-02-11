@@ -62,10 +62,6 @@ public:
 	datapacketx86(datapacket_t*const pkt);
 	~datapacketx86();
 
-	//General data of the packet
-	uint64_t buffer_id;		//Unique "non-reusable" buffer id
-	uint64_t internal_buffer_id;	//IO subsystem buffer ID
-
 	//Incomming packet information
 	of_switch_t* lsw;
 	uint32_t in_port;
@@ -164,8 +160,8 @@ public:
 	friend std::ostream&
 	operator<<(std::ostream& os, datapacketx86 const& pkt) {
 		os << "<datapacketx86: ";
-			os << "buffer-id:" << (std::hex) << pkt.buffer_id << (std::dec) << " ";
-			os << "internal-buffer-id:" << (std::hex) << pkt.internal_buffer_id << (std::dec) << " ";
+//			os << "buffer-id:" << (std::hex) << pkt.buffer_id << (std::dec) << " ";
+//			os << "internal-buffer-id:" << (std::hex) << pkt.internal_buffer_id << (std::dec) << " ";
 			os << "lsw:" << (int*)(pkt.lsw) << " ";
 			os << "in-port:" << pkt.in_port << " ";
 			os << "in-phy-port:" << pkt.in_phy_port << " ";

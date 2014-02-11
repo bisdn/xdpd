@@ -38,7 +38,7 @@ rofl_result_t iomanager::init( unsigned int _num_of_tx_groups ){
 		goto INIT_ERROR;
 	}
 		
-	ROFL_DEBUG("[iomanager] Initializing iomanager with %u TX portgroups (%u total threads)\n", _num_of_tx_groups, _num_of_tx_groups*DEFAULT_THREADS_PER_PORTGROUP);
+	ROFL_DEBUG(FWD_MOD_NAME"[iomanager] Initializing iomanager with %u TX portgroups (%u total threads)\n", _num_of_tx_groups, _num_of_tx_groups*DEFAULT_THREADS_PER_PORTGROUP);
 	
 	//Check if it has been already inited before
 	if(num_of_groups != 0){
@@ -74,10 +74,10 @@ rofl_result_t iomanager::add_port(ioport* port){
 	curr_tx_group_sched_pointer = (curr_tx_group_sched_pointer+1) % IO_TX_TOTAL_THREADS; //Only over TX groups
 	pthread_mutex_unlock(&mutex);
 	
-	ROFL_DEBUG("[iomanager] Adding port %s to iomanager, at portgroup TX %u\n", port->of_port_state->name, grp_id); 
+	ROFL_DEBUG(FWD_MOD_NAME"[iomanager] Adding port %s to iomanager, at portgroup TX %u\n", port->of_port_state->name, grp_id); 
 	 	
 	if(add_port_to_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR("[iomanager] Adding port %s to iomanager (TX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
+		ROFL_ERR(FWD_MOD_NAME"[iomanager] Adding port %s to iomanager (TX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		return ROFL_FAILURE;	
 	}
@@ -85,10 +85,10 @@ rofl_result_t iomanager::add_port(ioport* port){
 	//RX
 	grp_id = processingmanager::get_rx_pg_index_rr(port->of_port_state->attached_sw, port);	
 	
-	ROFL_DEBUG("[iomanager] Adding port %s to iomanager, at portgroup RX %u\n", port->of_port_state->name, grp_id); 
+	ROFL_DEBUG(FWD_MOD_NAME"[iomanager] Adding port %s to iomanager, at portgroup RX %u\n", port->of_port_state->name, grp_id); 
 	
 	if(add_port_to_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR("[iomanager] Adding port %s to iomanager (RX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
+		ROFL_ERR(FWD_MOD_NAME"[iomanager] Adding port %s to iomanager (RX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		//FIXME remove TX
 		return ROFL_FAILURE;	
@@ -101,7 +101,7 @@ rofl_result_t iomanager::remove_port(ioport* port){
 	
 	int grp_id;
 
-	ROFL_DEBUG("[iomanager] Removing port %s from iomanager\n", port->of_port_state->name); 
+	ROFL_DEBUG(FWD_MOD_NAME"[iomanager] Removing port %s from iomanager\n", port->of_port_state->name); 
 	
 	grp_id = get_group_id_by_port(port, PG_RX);
 	
@@ -111,7 +111,7 @@ rofl_result_t iomanager::remove_port(ioport* port){
 	}
 
 	if(remove_port_from_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR("[iomanager] Removal of port %s from iomanager (RX), at portgroup %u FAILED!\n", port->of_port_state->name, grp_id); 
+		ROFL_ERR(FWD_MOD_NAME"[iomanager] Removal of port %s from iomanager (RX), at portgroup %u FAILED!\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -124,7 +124,7 @@ rofl_result_t iomanager::remove_port(ioport* port){
 	}
 
 	if(remove_port_from_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR("[iomanager] Removal of port %s from iomanager (TX), at portgroup %u FAILED!\n", port->of_port_state->name, grp_id); 
+		ROFL_ERR(FWD_MOD_NAME"[iomanager] Removal of port %s from iomanager (TX), at portgroup %u FAILED!\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -188,7 +188,7 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 		}	
 	}catch(...){
 		//Do nothing; should never jump here
-		ROFL_ERR("[iomanager] Exception thrown while trying to bring %s port down\n", port->of_port_state->name);
+		ROFL_ERR(FWD_MOD_NAME"[iomanager] Exception thrown while trying to bring %s port down\n", port->of_port_state->name);
 		assert(0);
 		
 	}
@@ -265,7 +265,7 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 		}	
 	}catch(...){
 		//Do nothing; should never jump here
-		ROFL_ERR("[iomanager] Exception thrown while trying to bring %s port up\n", port->of_port_state->name);
+		ROFL_ERR(FWD_MOD_NAME"[iomanager] Exception thrown while trying to bring %s port up\n", port->of_port_state->name);
 		assert(0);
 	}
 	
@@ -300,7 +300,7 @@ void iomanager::start_portgroup_threads(portgroup_state* pg){
 	for(i=0;i<pg->num_of_threads;++i){
 		if(pthread_create(&pg->thread_state[i], NULL, func, (void *)pg) < 0){
 			//TODO: print a trace or something
-			ROFL_WARN("WARNING: pthread_create failed for port-group %d\n", pg->id);
+			ROFL_WARN(FWD_MOD_NAME" WARNING: pthread_create failed for port-group %d\n", pg->id);
 		}
 	}
 }
@@ -369,7 +369,7 @@ int iomanager::create_group(pg_type_t type, unsigned int num_of_threads, bool mu
 	}
 
 	
-	ROFL_DEBUG("[iomanager] Created %s portgroup with %u thread(s) and id: %u\n", (type==PG_TX)? "TX": "RX", num_of_threads, pg->id); 
+	ROFL_DEBUG(FWD_MOD_NAME"[iomanager] Created %s portgroup with %u thread(s) and id: %u\n", (type==PG_TX)? "TX": "RX", num_of_threads, pg->id); 
 
 	//Return group_id
 	return pg->id;	
@@ -491,7 +491,7 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 
 	//Pre-allocate buffers for operating at line-rate
 	num_of_port_buffers += port->get_required_buffers();
-	bufferpool::increase_capacity(num_of_port_buffers);
+	//bufferpool::increase_capacity(num_of_port_buffers);
 	
 	//Add to port
 	pg->ports->push_back(port);	

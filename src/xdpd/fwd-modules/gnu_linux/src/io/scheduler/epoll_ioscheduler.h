@@ -119,7 +119,7 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 	sw = port->of_port_state->attached_sw;
 	
 	//Perform up_to n_buckets_read
-	ROFL_DEBUG_VERBOSE("Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
+	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
 	
 	for(i=0; i<READ_BUCKETS_PP; ++i){
 
@@ -146,7 +146,7 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 			}
 #endif
 		}else{
-			ROFL_DEBUG_VERBOSE("[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, READ_BUCKETS_PP);
+			ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, READ_BUCKETS_PP);
 			break;
 		}
 	}
@@ -173,7 +173,7 @@ inline int epoll_ioscheduler::process_port_tx(ioport* port){
 		//Increment number of buckets
 		n_buckets = WRITE_BUCKETS_PP*WRITE_QOS_QUEUE_FACTOR[q_id];
 
-		ROFL_DEBUG_VERBOSE("[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
+		ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
 		
 		//Perform up to n_buckets write	
 		tx_packets += n_buckets - port->write(q_id, n_buckets);
@@ -199,8 +199,8 @@ void* epoll_ioscheduler::process_io(void* grp){
 
 	assert(pg->type == ((is_rx)? PG_RX:PG_TX));
 
-	ROFL_DEBUG("[epoll_ioscheduler] Launching I/O RX thread on process id: %u(%u) for group %u\n", is_rx? "RX":"TX", syscall(SYS_gettid), pthread_self(), pg->id);
-	ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
+	ROFL_DEBUG(FWD_MOD_NAME"[epoll_ioscheduler] Launching I/O RX thread on process id: %u(%u) for group %u\n", is_rx? "RX":"TX", syscall(SYS_gettid), pthread_self(), pg->id);
+	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
 
 	//Set scheduling and priority
 	set_kernel_scheduling();
@@ -216,7 +216,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 		if(unlikely(res == -1)){
 #ifdef DEBUG
 			if (errno != EINTR){
-				ROFL_DEBUG("[epoll_ioscheduler] epoll returned -1 (%s) Continuing...\n",strerror(errno));
+				ROFL_DEBUG(FWD_MOD_NAME"[epoll_ioscheduler] epoll returned -1 (%s) Continuing...\n",strerror(errno));
 				assert(0);
 			}
 #endif
@@ -226,7 +226,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 		if(unlikely(res == 0)){
 			//Timeout
 		}else{	
-			ROFL_DEBUG_VERBOSE("[epoll_ioscheduler] Got %d events\n", res); 
+			ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[epoll_ioscheduler] Got %d events\n", res); 
 			for(i=0; i<res; ++i){
 				
 				port = ((epoll_event_data_t*)events[i].data.ptr)->port;
@@ -246,7 +246,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 	//Release resources
 	release_resources(epfd, ev, events, current_num_of_ports);
 
-	ROFL_DEBUG("Finishing execution of the %s I/O thread: #%u\n", is_rx? "RX":"TX", pthread_self());
+	ROFL_DEBUG(FWD_MOD_NAME"[epoll_ioscheduler] Finishing execution of the %s I/O thread: #%u\n", is_rx? "RX":"TX", pthread_self());
 
 	//Return whatever
 	pthread_exit(NULL);

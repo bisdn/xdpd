@@ -3,6 +3,7 @@
 #include <string.h>
 #include <rofl/common/utils/c_logger.h>
 #include "../packet_operations.h"
+#include "../../../config.h"
 
 void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen);
 void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen);
@@ -338,7 +339,7 @@ void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	//Initialize arpv4 packet matches
 	clas_state->matches->arp_opcode = get_arpv4_opcode(arpv4);
-	clas_state->matches->arp_sha =  get_arpv4_dl_dst(arpv4);
+	clas_state->matches->arp_sha =  get_arpv4_dl_src(arpv4);
 	clas_state->matches->arp_spa =  get_arpv4_ip_src(arpv4);
 	clas_state->matches->arp_tha =  get_arpv4_dl_dst(arpv4);
 	clas_state->matches->arp_tpa =  get_arpv4_ip_dst(arpv4);
@@ -1070,8 +1071,8 @@ void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 }
 
 void dump_pkt_classifier(classify_state_t* clas_state){
-	//TODO ROFL_DEBUG("datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
-	ROFL_DEBUG("Dump packet state(%p) TODO!!\n",clas_state);
+	//TODO ROFL_DEBUG(FWD_MOD_NAME" [c_pktclassifier] datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
+	ROFL_DEBUG(FWD_MOD_NAME" [c_pktclassifier] Dump packet state(%p) TODO!!\n",clas_state);
 }
 
 size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to){

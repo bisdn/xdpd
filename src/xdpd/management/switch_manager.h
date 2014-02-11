@@ -173,6 +173,7 @@ private:
 	/* Static members */
 	//Switch container
 	static std::map<uint64_t, openflow_switch*> switchs; 
+	static uint64_t dpid_under_destruction;
 
 	//Shall never be used except for the cmm
 	static openflow_switch* __get_switch_by_dpid(uint64_t dpid);	

@@ -1,4 +1,5 @@
 #include "packet_io.h"
+#include "datapacketx86.h"
 
 #define FWD_MOD_NAME "netfpga10g"
 
@@ -11,7 +12,10 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	//ROFL_DEBUG("["FWD_MOD_NAME"] packet_io.cc Got a packet from kernel (PKT_IN) in port %s %p!\n", port->name, state);
 	
 	//Retrieve an empty buffer
-	datapacket_t* pkt=bufferpool::get_free_buffer(false);
+	datapacket_t* pkt=bufferpool::get_free_buffer_nonblocking();
+	
+	if(!pkt)
+		return;
 
 	//ROFL_DEBUG(" packet_io.cc pkt->platform_state %p \n",pkt->platform_state);
 

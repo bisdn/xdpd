@@ -62,7 +62,7 @@ void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 
 		//Safe check for q_id
 		if( unlikely(q_id >= get_num_of_queues()) ){
-			ROFL_DEBUG("[vlink:%s] Packet(%p) trying to be enqueued in an invalid q_id: %u\n",  of_port_state->name, pkt, q_id);
+			ROFL_DEBUG(FWD_MOD_NAME"[vlink:%s] Packet(%p) trying to be enqueued in an invalid q_id: %u\n",  of_port_state->name, pkt, q_id);
 			q_id = 0;
 			bufferpool::release_buffer(pkt);
 			assert(0);
@@ -70,7 +70,7 @@ void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	
 		//Store on queue and exit. This is NOT copying it to the vlink buffer
 		if(output_queues[q_id]->non_blocking_write(pkt) != ROFL_SUCCESS){
-			ROFL_DEBUG("[vlink:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
+			ROFL_DEBUG(FWD_MOD_NAME"[vlink:%s] Packet(%p) dropped. Congestion in output queue: %d\n",  of_port_state->name, pkt, q_id);
 			//Drop packet
 			bufferpool::release_buffer(pkt);
 
@@ -82,17 +82,17 @@ void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 			return;
 		}
 
-		ROFL_DEBUG_VERBOSE("[vlink:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id]->size());
+		ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[vlink:%s] Packet(%p) enqueued, buffer size: %d\n",  of_port_state->name, pkt, output_queues[q_id]->size());
 	
 		//Write to pipe
 		ret = ::write(tx_notify_pipe[WRITE],&c,sizeof(c));
 		(void)ret; // todo use the value
 	} else {
 		if(len < MIN_PKT_LEN){
-			ROFL_ERR("[vlink:%s] ERROR: attempt to send invalid packet size for packet(%p) scheduled for queue %u. Packet size: %u\n", of_port_state->name, pkt, q_id, len);
+			ROFL_ERR(FWD_MOD_NAME"[vlink:%s] ERROR: attempt to send invalid packet size for packet(%p) scheduled for queue %u. Packet size: %u\n", of_port_state->name, pkt, q_id, len);
 			assert(0);
 		}else{
-			ROFL_DEBUG_VERBOSE("[vlink:%s] dropped packet(%p) scheduled for queue %u\n", of_port_state->name, pkt, q_id);
+			ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[vlink:%s] dropped packet(%p) scheduled for queue %u\n", of_port_state->name, pkt, q_id);
 		}
 
 		//Drop packet

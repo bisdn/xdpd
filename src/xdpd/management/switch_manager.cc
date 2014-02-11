@@ -17,6 +17,7 @@ const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 6632)
 
 //Static initialization
 std::map<uint64_t, openflow_switch*> switch_manager::switchs;
+uint64_t switch_manager::dpid_under_destruction = 0x0;
 pthread_rwlock_t switch_manager::rwlock = PTHREAD_RWLOCK_INITIALIZER; 
 
 /**
@@ -86,8 +87,13 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 
 	ROFL_INFO("[switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
 
+	//Set the dpid under destruction
+	dpid_under_destruction = dp->dpid;
+
 	//Destroy element
 	delete dp;	
+	
+	dpid_under_destruction = 0x0;
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 	
@@ -96,17 +102,19 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 //static
 void switch_manager::destroy_all_switches(){
 
-	//TODO: MUTEX!. This is not thread safe
-	//Copy and clear existing (make sure no one can recover them)
-	std::map<uint64_t, openflow_switch*> copy = switchs;
-	switchs.clear();
-
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
-	for(std::map<uint64_t, openflow_switch*>::iterator it = copy.begin(); it != copy.end(); ++it) {
-		//Delete
+	for(std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(); it != switchs.end(); ++it) {
+		//Set the dpid under destruction
+		dpid_under_destruction = it->second->dpid;
+
+		//Delete	
 		delete it->second; 
+		
+		dpid_under_destruction = 0x0;
 	}
+	
+	switchs.clear();
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 	
@@ -352,6 +360,9 @@ afa_result_t switch_manager::__process_of1x_flow_removed(uint64_t dpid,
 
 	afa_result_t result;
 	openflow_switch* sw;	
+
+	if(dpid == dpid_under_destruction)
+		return AFA_SUCCESS;
 
 	pthread_rwlock_rdlock(&switch_manager::rwlock);
 

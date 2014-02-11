@@ -145,7 +145,7 @@ datapacket_t* bufferpool::get_free_buffer_nonblocking(){
 				__sync_fetch_and_add(&bp->used, 1);
 #endif
 				//Set current index 
-				bp->curr_index = i;
+				bp->curr_index = i+1;
 
 				return bp->pool[i];
 			}

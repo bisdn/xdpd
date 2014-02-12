@@ -295,6 +295,8 @@ void iomanager::start_portgroup_threads(portgroup_state* pg){
 		func = ioscheduler_provider::process_io<true>;
 	else
 		func = ioscheduler_provider::process_io<false>;
+
+	pg->keep_on = true;
  
 	//Create num_of_threads and invoke scheduler::process_io
 	for(i=0;i<pg->num_of_threads;++i){
@@ -312,6 +314,8 @@ void iomanager::stop_portgroup_threads(portgroup_state* pg){
 
 	unsigned int i;
 
+	pg->keep_on = false;
+	
 	//Join all threads
 	for(i=0;i<pg->num_of_threads;++i){
 		pthread_join(pg->thread_state[i],NULL);
@@ -454,8 +458,8 @@ int iomanager::get_group_id_by_port(ioport* port, pg_type_t type){
 		safevector<ioport*>* ports = portgroups[i]->ports;
 			
 		for(j=0;j<ports->size();j++){
-			if( (*ports)[j] == port)	
-				return i;
+			if( (*ports)[j] == port)
+				return portgroups[i]->id;
 		}
 	}
 	

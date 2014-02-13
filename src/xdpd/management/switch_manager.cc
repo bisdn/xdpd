@@ -339,6 +339,9 @@ afa_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 	afa_result_t result;
 	openflow_switch* sw;	
 
+	if(dpid == dpid_under_destruction)
+		return AFA_SUCCESS;
+
 	pthread_rwlock_rdlock(&switch_manager::rwlock);
 
 	sw = switch_manager::__get_switch_by_dpid(dpid); 

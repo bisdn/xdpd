@@ -262,6 +262,7 @@ void port_manager_update_links(){
 	unsigned int i;
 	struct rte_eth_link link;
 	switch_port_t* port;
+	switch_port_snapshot_t* port_snapshot;
 	bool last_link_state;
 	
 	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
@@ -285,7 +286,8 @@ void port_manager_update_links(){
 				ROFL_DEBUG("[port-manager] Port %s is %s, and link is %s\n", port->name, ((port->up) ? "up" : "down"), ((link.link_status) ? "detected" : "not detected"));
 				
 				//Notify CMM port change
-				if(cmm_notify_port_status_changed(port) != AFA_SUCCESS){
+				port_snapshot = physical_switch_get_port_snapshot(port->name); 
+				if(cmm_notify_port_status_changed(port_snapshot) != AFA_SUCCESS){
 					ROFL_ERR("Unable to notify port status change for port %s\n", port->name);
 				}	
 			}

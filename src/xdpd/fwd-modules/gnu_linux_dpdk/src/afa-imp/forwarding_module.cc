@@ -275,6 +275,7 @@ switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
 afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 
 	switch_port_t* port;
+	switch_port_snapshot_t* port_snapshot;
 	of_switch_t* lsw;
 
 	//Check switch existance
@@ -312,7 +313,8 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 	}		
 
 	//notify port attached
-	if(cmm_notify_port_add(port)!=AFA_SUCCESS){
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	if(cmm_notify_port_add(port_snapshot)!=AFA_SUCCESS){
 		//return AFA_FAILURE; //Ignore
 	}
 	

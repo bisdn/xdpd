@@ -6,7 +6,7 @@ libfwd_module_netfpga10g_pipeline_imp_la_SOURCES = \
 					memory.c\
 					packet.cc\
 					platform_hooks_of1x.cc\
-					pthread_atomic_operations.c\
+					atomic_operations.c\
 					timing.c\
 					pthread_lock.c
 

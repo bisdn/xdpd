@@ -21,7 +21,9 @@
 #include "../io/datapacket_storage.h"
 #include "../io/dpdk_datapacket.h"
 
+//fwd decl
 datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool copy_mbuf);
+datapacket_t* platform_packet_detach__(datapacket_t* origin);
 
 using namespace xdpd::gnu_linux;
 
@@ -87,16 +89,23 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
 void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
 {
-	datapacket_t* pkt_replica;
+	datapacket_t* detached_pkt;
+	datapacket_dpdk_t *dpkt;
 
 	//Protect
 	if(unlikely(pkt==NULL) || unlikely(sw==NULL))
 		return;
 
-	//Replicate packet but not mbuf:
-	pkt_replica = platform_packet_replicate__(pkt, false);
+	dpkt = (datapacket_dpdk_t*)pkt->platform_state;
+
+	if(!dpkt->packet_in_bufferpool)
+		detached_pkt = platform_packet_detach__(pkt);
+	else
+		detached_pkt = pkt;
+
+
 	
-	if(unlikely(!pkt_replica)){
+	if(unlikely(!detached_pkt)){
 		ROFL_DEBUG("Replicate packet(PKT_IN); could not clone pkt(%p). Dropping...\n");
 		goto PKT_IN_ERROR;
 	}
@@ -104,7 +113,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	ROFL_DEBUG("Trying to enqueue PKT_IN for packet(%p), switch %p\n", pkt, sw);
 	
 	//Store in PKT_IN ring
-	if( unlikely( enqueue_pktin(pkt_replica) != ROFL_SUCCESS ) ){
+	if( unlikely( enqueue_pktin(detached_pkt) != ROFL_SUCCESS ) ){
 		//PKT_IN ring full
 		//TODO: add trace
 		goto PKT_IN_ERROR;
@@ -117,12 +126,14 @@ PKT_IN_ERROR:
 	//assert(0); //Sometimes useful while debugging. In general should be disabled
 	
 	//Release packet
-	if(pkt_replica){
-		bufferpool::release_buffer(pkt_replica);
-	}
 	if(((datapacket_dpdk_t*)pkt->platform_state)->mbuf){
 		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 	}
+
+	if(detached_pkt){
+		bufferpool::release_buffer(detached_pkt);
+	}
+
 	return;
 
 }

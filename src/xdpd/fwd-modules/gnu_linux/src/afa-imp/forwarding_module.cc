@@ -500,7 +500,7 @@ afa_result_t fwd_module_bring_port_up(const char* name){
 			return AFA_FAILURE;
 	}else{
 		//The port is not attached. Only bring it up (ifconfig up)
-		if(enable_port(port->platform_port_state)!=ROFL_SUCCESS)
+		if( ( (ioport*)port->platform_port_state)->up() != ROFL_SUCCESS )
 			return AFA_FAILURE;
 	}
 
@@ -535,7 +535,7 @@ afa_result_t fwd_module_bring_port_down(const char* name){
 			return AFA_FAILURE;
 	}else{
 		//The port is not attached. Only bring it down (ifconfig down)
-		if(disable_port(port->platform_port_state)==ROFL_FAILURE)
+		if( ( (ioport*)port->platform_port_state)->down() != ROFL_SUCCESS )
 			return AFA_FAILURE;
 	}
 

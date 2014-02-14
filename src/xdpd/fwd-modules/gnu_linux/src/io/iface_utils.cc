@@ -511,31 +511,6 @@ rofl_result_t destroy_ports(){
 * Port attachement/detachment 
 */
 
-/*
-* Enable port (direct call to ioport)
-*/
-rofl_result_t enable_port(platform_port_state_t* ioport_instance){
-
-	ioport* port = (ioport*)ioport_instance; 
-
-	if(port->enable() == ROFL_FAILURE)
-		return ROFL_FAILURE;
-
-	return ROFL_SUCCESS;
-}
-
-/*
-* Disable port (direct call to ioport)
-*/
-rofl_result_t disable_port(platform_port_state_t* ioport_instance){
-
-	class ioport* port = (ioport*)ioport_instance; 
-
-	if(port->disable() == ROFL_FAILURE)
-		return ROFL_FAILURE;
-
-	return ROFL_SUCCESS;
-}
 
 /*
  * Discover new platform ports (usually triggered by bg task manager)

@@ -181,7 +181,7 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 	
 				if( brought_rx_down && brought_tx_down ){
 					//Call ioport hook for down
-					port->disable();
+					port->down();
 					return ROFL_SUCCESS;
 				}
 			}
@@ -260,7 +260,7 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 	
 				if( brought_rx_up && brought_tx_up ){
 					//Call ioport hook for up
-					port->enable();		
+					port->up();		
 					return ROFL_SUCCESS;
 				}
 			}	

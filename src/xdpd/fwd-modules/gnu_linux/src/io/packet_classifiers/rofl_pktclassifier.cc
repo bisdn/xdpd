@@ -148,9 +148,14 @@ rofl_pktclassifier::parse_ether(
 
 	frame_append(ether);
 	t_frames[ROFL_PKT_CLASSIFIER_ETHER].push_back(ether);
-
-	p_ptr += sizeof(struct rofl::fetherframe::eth_hdr_t);
-	p_len -= sizeof(struct rofl::fetherframe::eth_hdr_t);
+	
+	if( ether->is_llc_frame() ){
+		p_ptr += sizeof(struct rofl::fetherframe::eth_llc_hdr_t);
+		p_len -= sizeof(struct rofl::fetherframe::eth_llc_hdr_t);
+	}else{
+		p_ptr += sizeof(struct rofl::fetherframe::eth_hdr_t);
+		p_len -= sizeof(struct rofl::fetherframe::eth_hdr_t);
+	}
 
 	eth_type = ether->get_dl_type();
 

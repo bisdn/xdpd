@@ -955,8 +955,9 @@ platform_packet_drop(datapacket_t* pkt)
 		ROFL_DEBUG("packet state is NULL\n");
 		return;
 	}
-	
-	rte_pktmbuf_free(state->mbuf);
+
+	if(state->mbuf)	
+		rte_pktmbuf_free(state->mbuf);
 	
 	if( state->packet_in_bufferpool ){
 		//Release buffer only if the packet is stored there

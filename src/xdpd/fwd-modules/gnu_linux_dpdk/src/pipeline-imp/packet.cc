@@ -967,6 +967,137 @@ platform_packet_drop(datapacket_t* pkt)
 	return;
 }
 
+static inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t* pkt_copy, struct rte_mbuf* mbuf){
+
+	datapacket_dpdk_t* pkt_dpdk;
+	datapacket_dpdk_t* pkt_dpdk_copy;
+
+	//Get the pointers
+	pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
+	pkt_dpdk_copy = (datapacket_dpdk_t*)pkt_copy->platform_state;
+	
+	
+	//Copy PKT stuff
+	memcpy(&pkt_copy->matches, &pkt->matches, sizeof(pkt->matches));
+	memcpy(&pkt_copy->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
+
+	//mark as replica
+	pkt_copy->is_replica = true;
+	pkt_copy->sw = pkt->sw;
+
+	//Initialize replica buffer and classify  //TODO: classification state could be copied
+	init_datapacket_dpdk(pkt_dpdk_copy, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, true);
+
+	//Replicate the packet(copy contents)	
+	pkt_dpdk_copy->ipv4_recalc_checksum 		= pkt_dpdk->ipv4_recalc_checksum;
+	pkt_dpdk_copy->icmpv4_recalc_checksum 		= pkt_dpdk->icmpv4_recalc_checksum;
+	pkt_dpdk_copy->tcp_recalc_checksum 		= pkt_dpdk->tcp_recalc_checksum;
+	pkt_dpdk_copy->udp_recalc_checksum 		= pkt_dpdk->udp_recalc_checksum;
+
+}
+
+/**
+* Creates a copy (in heap) of the datapacket_t structure.
+* the platform specific state (->platform_state) is copied 
+*  depending on the flag copy_mbuf
+*/
+datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool hard_clone){
+
+	datapacket_t* pkt_replica;
+	struct rte_mbuf* mbuf, *mbuf_origin;
+	
+	//Protect
+	if(unlikely(!pkt))
+		return NULL;
+
+	//datapacket_t* pkt_replica;
+	pkt_replica = bufferpool::get_free_buffer(false);
+	
+	if(unlikely(!pkt_replica)){
+		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). No buffers left in bufferpool\n", pkt);
+		goto PKT_REPLICATE_ERROR;
+	}
+
+	mbuf_origin = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;	
+
+	if( hard_clone ){
+		mbuf = rte_pktmbuf_alloc(pool_direct);
+		
+		if(unlikely(!mbuf)){
+			ROFL_DEBUG("Replicate packet; could not clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
+			ROFL_DEBUG("errno %d - %s\n", rte_errno, rte_strerror(rte_errno));
+			goto PKT_REPLICATE_ERROR;
+		}
+		rte_pktmbuf_append(mbuf, rte_pktmbuf_pkt_len(mbuf_origin));
+		rte_memcpy(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_mtod(mbuf_origin, uint8_t*),  rte_pktmbuf_pkt_len(mbuf_origin));
+		assert( rte_pktmbuf_pkt_len(mbuf) == rte_pktmbuf_pkt_len(mbuf_origin) );
+
+	} else {
+		//only moving the pointer
+		//mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
+		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_direct); //soft-clone 
+		//NOTE here we could do ((datapacket_dpdk_t*)pkt->platform_state)->mbuf = NULL;
+		
+	}
+
+	//Copy datapacket_t and datapacket_dpdk_t state
+	platform_packet_copy_contents(pkt, pkt_replica, mbuf);
+
+	return pkt_replica; //DO NOT REMOVE
+
+PKT_REPLICATE_ERROR:
+	assert(0); 
+	
+	//Release packet
+	if(pkt_replica){
+		bufferpool::release_buffer(pkt_replica);
+
+		if(mbuf){
+			rte_pktmbuf_free(mbuf);
+		}
+	}
+
+	return NULL;
+}
+
+
+/*
+* Detaches mbuf from stack allocated pkt and copies the content
+*/
+datapacket_t* platform_packet_detach__(datapacket_t* pkt){
+
+	struct rte_mbuf* mbuf_origin;
+	datapacket_t* pkt_detached = bufferpool::get_free_buffer(false);
+
+	if(unlikely( pkt_detached == NULL))
+		return NULL;
+	
+	mbuf_origin = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;	
+
+	//Copy the contents
+	platform_packet_copy_contents(pkt, pkt_detached, mbuf_origin);
+
+	//Really detach the mbuf from the original instance
+	((datapacket_dpdk_t*)pkt->platform_state)->mbuf = NULL;
+	
+	return pkt_detached;
+}
+
+/**
+* Creates a copy (in heap) of the datapacket_t structure including any
+* platform specific state (->platform_state). The following behaviour
+* is expected from this hook:
+* 
+* - All data fields and pointers of datapacket_t struct must be memseted to 0, except:
+* - datapacket_t flag is_replica must be set to true
+* - platform_state, if used, must be replicated (copied) otherwise NULL
+*
+*/
+datapacket_t* platform_packet_replicate(datapacket_t* pkt){
+	return platform_packet_replicate__(pkt, true);
+}
+
+
 static void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pack, switch_port_t* port){
 
 	//Output packet to the appropiate queue and port_num
@@ -1073,7 +1204,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 				continue;
 
 			//replicate packet
-			replica = platform_packet_replicate(pkt); 	
+			replica = platform_packet_replicate__(pkt, false); 	
 			replica_pack = (datapacket_dpdk_t*)pkt->platform_state;
 
 			ROFL_DEBUG("[%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
@@ -1113,142 +1244,5 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 		output_single_packet(pkt, pack, output_port);
 	}
 
-}
-
-
-static inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t* pkt_copy, struct rte_mbuf* mbuf){
-
-	datapacket_dpdk_t* pkt_dpdk;
-	datapacket_dpdk_t* pkt_dpdk_copy;
-
-	//Get the pointers
-	pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
-	pkt_dpdk_copy = (datapacket_dpdk_t*)pkt_copy->platform_state;
-	
-	
-	//Copy PKT stuff
-	memcpy(&pkt_copy->matches, &pkt->matches, sizeof(pkt->matches));
-	memcpy(&pkt_copy->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
-
-	//mark as replica
-	pkt_copy->is_replica = true;
-	pkt_copy->sw = pkt->sw;
-
-	//Initialize replica buffer and classify  //TODO: classification state could be copied
-	init_datapacket_dpdk(pkt_dpdk_copy, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, true);
-
-	//Replicate the packet(copy contents)	
-	pkt_dpdk_copy->ipv4_recalc_checksum 		= pkt_dpdk->ipv4_recalc_checksum;
-	pkt_dpdk_copy->icmpv4_recalc_checksum 		= pkt_dpdk->icmpv4_recalc_checksum;
-	pkt_dpdk_copy->tcp_recalc_checksum 		= pkt_dpdk->tcp_recalc_checksum;
-	pkt_dpdk_copy->udp_recalc_checksum 		= pkt_dpdk->udp_recalc_checksum;
-
-}
-
-/**
-* Creates a copy (in heap) of the datapacket_t structure.
-* the platform specific state (->platform_state) is copied 
-*  depending on the flag copy_mbuf
-*/
-datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool hard_clone){
-
-	datapacket_t* pkt_replica;
-	struct rte_mbuf* mbuf, *mbuf_origin;
-	
-	//Protect
-	if(unlikely(!pkt))
-		return NULL;
-
-	//datapacket_t* pkt_replica;
-	pkt_replica = bufferpool::get_free_buffer(false);
-	
-	if(unlikely(!pkt_replica)){
-		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). No buffers left in bufferpool\n", pkt);
-		goto PKT_REPLICATE_ERROR;
-	}
-
-	mbuf_origin = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;	
-
-	if( hard_clone ){
-#if 0
-		//Retrieve an mbuf, copy contents, and initialize pkt_dpdk_replica
-		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_direct); 
-#else
-		mbuf = rte_pktmbuf_alloc(pool_direct);
-#endif		
-		if(unlikely(!mbuf)){
-			ROFL_DEBUG("Replicate packet; could not clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
-			ROFL_DEBUG("errno %d - %s\n", rte_errno, rte_strerror(rte_errno));
-			goto PKT_REPLICATE_ERROR;
-		}
-#if 0
-#else
-		rte_pktmbuf_append(mbuf, rte_pktmbuf_pkt_len(mbuf_origin));
-		rte_memcpy(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_mtod(mbuf_origin, uint8_t*),  rte_pktmbuf_pkt_len(mbuf_origin));
-		assert( rte_pktmbuf_pkt_len(mbuf) == rte_pktmbuf_pkt_len(mbuf_origin) );
-#endif
-
-	} else {
-		//only moving the pointer
-		mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
-		//NOTE here we could do ((datapacket_dpdk_t*)pkt->platform_state)->mbuf = NULL;
-		
-	}
-
-	//Copy datapacket_t and datapacket_dpdk_t state
-	platform_packet_copy_contents(pkt, pkt_replica, mbuf);
-
-	return pkt_replica; //DO NOT REMOVE
-
-PKT_REPLICATE_ERROR:
-	assert(0); 
-	
-	//Release packet
-	if(pkt_replica){
-		bufferpool::release_buffer(pkt_replica);
-
-		if(mbuf){
-			rte_pktmbuf_free(mbuf);
-		}
-	}
-
-	return NULL;
-}
-
-
-/*
-* Detaches mbuf from stack allocated pkt and copies the content
-*/
-datapacket_t* platform_packet_detach__(datapacket_t* pkt){
-
-	struct rte_mbuf* mbuf_origin;
-	datapacket_t* pkt_detached = bufferpool::get_free_buffer(false);
-
-	if(unlikely( pkt_detached == NULL))
-		return NULL;
-	
-	mbuf_origin = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;	
-
-	//Copy the contents
-	platform_packet_copy_contents(pkt, pkt_detached, mbuf_origin);
-
-	//Really detach the mbuf from the original instance
-	((datapacket_dpdk_t*)pkt->platform_state)->mbuf = NULL;
-	
-	return pkt_detached;
-}
-
-/**
-* Creates a copy (in heap) of the datapacket_t structure including any
-* platform specific state (->platform_state). The following behaviour
-* is expected from this hook:
-* 
-* - All data fields and pointers of datapacket_t struct must be memseted to 0, except:
-* - datapacket_t flag is_replica must be set to true
-* - platform_state, if used, must be replicated (copied) otherwise NULL
-*
-*/
-datapacket_t* platform_packet_replicate(datapacket_t* pkt){
-	return platform_packet_replicate__(pkt, true);
 }
 

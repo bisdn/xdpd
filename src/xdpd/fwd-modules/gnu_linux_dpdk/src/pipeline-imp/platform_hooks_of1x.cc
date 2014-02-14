@@ -103,8 +103,6 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	else
 		detached_pkt = pkt;
 
-
-	
 	if(unlikely(!detached_pkt)){
 		ROFL_DEBUG("Replicate packet(PKT_IN); could not clone pkt(%p). Dropping...\n");
 		goto PKT_IN_ERROR;

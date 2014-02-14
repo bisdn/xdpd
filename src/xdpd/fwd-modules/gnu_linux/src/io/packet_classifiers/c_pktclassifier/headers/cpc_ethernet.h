@@ -45,6 +45,20 @@ struct cpc_eth_hdr {
 
 typedef struct cpc_eth_hdr cpc_eth_hdr_t;
 
+struct cpc_eth_llc_hdr {
+	uint8_t dl_dst[CPC_ETH_ALEN];
+	uint8_t dl_src[CPC_ETH_ALEN];
+	uint16_t dl_len;
+	uint8_t dl_dsap;
+	uint8_t dl_ssap;
+	uint8_t dl_control;
+	uint8_t dl_vendor_code[3];
+	uint16_t dl_type;
+	uint8_t data[0];
+}__attribute__((packed));
+
+typedef struct cpc_eth_llc_hdr cpc_eth_llc_hdr_t;
+
 inline static
 uint64_t get_ether_dl_dst(void *hdr){
 	uint64_t ret = mac_addr_to_u64(((cpc_eth_hdr_t*)hdr)->dl_dst);
@@ -72,13 +86,26 @@ void set_ether_dl_src(void* hdr, uint64_t dl_src){
 };
 
 inline static
+bool is_llc_frame(void* hdr){
+	return ( CPC_BE16TOH(((cpc_eth_hdr_t*)hdr)->dl_type) < 0x600 );
+}
+
+inline static
 uint16_t get_ether_type(void* hdr){
-	return CPC_BE16TOH(((cpc_eth_hdr_t *)hdr)->dl_type);
+	if ( is_llc_frame(hdr) ){
+		return CPC_BE16TOH(((cpc_eth_llc_hdr_t *)hdr)->dl_type);
+	}else{
+		return CPC_BE16TOH(((cpc_eth_hdr_t *)hdr)->dl_type);
+	}
 };
 
 inline static
 void set_ether_type(void* hdr, uint16_t dl_type){
-	((cpc_eth_hdr_t *)hdr)->dl_type = CPC_HTOBE16(dl_type);
+	if ( is_llc_frame(hdr) ){
+		((cpc_eth_llc_hdr_t *)hdr)->dl_type = CPC_HTOBE16(dl_type);
+	}else{
+		((cpc_eth_hdr_t *)hdr)->dl_type = CPC_HTOBE16(dl_type);
+	}
 };
 
 #endif //_CPC_ETERNET_H_

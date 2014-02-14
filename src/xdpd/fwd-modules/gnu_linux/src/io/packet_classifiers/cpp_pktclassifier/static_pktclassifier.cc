@@ -381,12 +381,17 @@ void static_pktclassifier::parse_ether(uint8_t *data, size_t datalen){
 	headers[FIRST_ETHER_FRAME_POS + num_of_ether].present = true;
 	num_of_headers[HEADER_TYPE_ETHER] = num_of_ether+1;
 
-	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct rofl::fetherframe::eth_hdr_t);
-	datalen -= sizeof(struct rofl::fetherframe::eth_hdr_t);
-
 	//Set pointer to header
 	rofl::fetherframe* ether_header = (rofl::fetherframe*) headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame;
+	
+	//Increment pointers and decrement remaining payload size
+	if( ether_header->is_llc_frame() ){
+		data += sizeof(struct rofl::fetherframe::eth_llc_hdr_t);
+		datalen -= sizeof(struct rofl::fetherframe::eth_llc_hdr_t);
+	}else{
+		data += sizeof(struct rofl::fetherframe::eth_hdr_t);
+		datalen -= sizeof(struct rofl::fetherframe::eth_hdr_t);
+	}
 	
 	eth_type = ether_header->get_dl_type();
 

@@ -62,7 +62,8 @@ void epoll_ioscheduler::release_resources( int epfd, struct epoll_event* ev, str
 		close(epfd);	
 		//Release port_data stuff
 		for(i=0;i<current_num_of_ports;++i){
-			free(ev[i].data.ptr);
+			if(ev[i].data.ptr)
+				free(ev[i].data.ptr);
 		}
 		free(ev);
 		free(events);
@@ -122,7 +123,8 @@ void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevector<iopor
 		if( fd != -1 ){
 			ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[epoll_ioscheduler] Adding %s event to epoll event list ioport: %s, fd: %d\n", (rx)? "RX":"TX", port->of_port_state->name, fd);
 			epoll_ioscheduler::add_fd_epoll( &((*ev)[i]), *epfd, port, fd);
-		}
+		}else
+			(*ev)[i].data.ptr = NULL;
 	}
 
 	//Assign current hash

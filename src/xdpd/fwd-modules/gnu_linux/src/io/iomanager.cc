@@ -159,6 +159,9 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 				//Refresh hash
 				pg->running_hash++;
 			
+				if(brought_rx_down == false && brought_tx_down == false)
+					port->down();
+	
 				//If there are no more ports, stop threads 
 				if(pg->running_ports->size() == 0){
 					stop_portgroup_threads(pg);
@@ -179,11 +182,8 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 				else
 					brought_tx_down = true;
 	
-				if( brought_rx_down && brought_tx_down ){
-					//Call ioport hook for down
-					port->down();
+				if( brought_rx_down && brought_tx_down )
 					return ROFL_SUCCESS;
-				}
 			}
 			
 		}	
@@ -225,12 +225,15 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 					pthread_mutex_unlock(&mutex);
 					return ROFL_FAILURE;
 				}
-					
+			
+				//Bring up port
+				//Note: this MUST be done *before* port is actually added to the group
+				//Otherwise structures may not be created
+				if(brought_rx_up == false && brought_tx_up == false)
+					port->up();		
 			
 				//Check if portgroup I/O threads are running
 				if( pg->running_ports->size() == 0 ){
-					
-					
 					pg->running_ports->push_back(port);
 					start_portgroup_threads(pg);
 	
@@ -258,12 +261,9 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 				else
 					brought_tx_up = true;
 	
-				if( brought_rx_up && brought_tx_up ){
-					//Call ioport hook for up
-					port->up();		
+				if( brought_rx_up && brought_tx_up )
 					return ROFL_SUCCESS;
-				}
-			}	
+			}
 		}	
 	}catch(...){
 		//Do nothing; should never jump here

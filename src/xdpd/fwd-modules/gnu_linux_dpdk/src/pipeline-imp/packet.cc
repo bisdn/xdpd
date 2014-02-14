@@ -1115,17 +1115,45 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 
 }
 
+
+static inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t* pkt_copy, struct rte_mbuf* mbuf){
+
+	datapacket_dpdk_t* pkt_dpdk;
+	datapacket_dpdk_t* pkt_dpdk_copy;
+
+	//Get the pointers
+	pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
+	pkt_dpdk_copy = (datapacket_dpdk_t*)pkt_copy->platform_state;
+	
+	
+	//Copy PKT stuff
+	memcpy(&pkt_copy->matches, &pkt->matches, sizeof(pkt->matches));
+	memcpy(&pkt_copy->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
+
+	//mark as replica
+	pkt_copy->is_replica = true;
+	pkt_copy->sw = pkt->sw;
+
+	//Initialize replica buffer and classify  //TODO: classification state could be copied
+	init_datapacket_dpdk(pkt_dpdk_copy, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, true);
+
+	//Replicate the packet(copy contents)	
+	pkt_dpdk_copy->ipv4_recalc_checksum 		= pkt_dpdk->ipv4_recalc_checksum;
+	pkt_dpdk_copy->icmpv4_recalc_checksum 		= pkt_dpdk->icmpv4_recalc_checksum;
+	pkt_dpdk_copy->tcp_recalc_checksum 		= pkt_dpdk->tcp_recalc_checksum;
+	pkt_dpdk_copy->udp_recalc_checksum 		= pkt_dpdk->udp_recalc_checksum;
+
+}
+
 /**
 * Creates a copy (in heap) of the datapacket_t structure.
 * the platform specific state (->platform_state) is copied 
 *  depending on the flag copy_mbuf
 */
-datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool copy_mbuf){
+datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool hard_clone){
 
-	datapacket_t* pkt_replica=NULL;
-	struct rte_mbuf* mbuf=NULL;
-	datapacket_dpdk_t* pkt_dpdk;
-	datapacket_dpdk_t* pkt_dpdk_replica;
+	datapacket_t* pkt_replica;
+	struct rte_mbuf* mbuf, *mbuf_origin;
 	
 	//Protect
 	if(unlikely(!pkt))
@@ -1139,18 +1167,27 @@ datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool copy_mbuf){
 		goto PKT_REPLICATE_ERROR;
 	}
 
-	pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
-	pkt_dpdk_replica = (datapacket_dpdk_t*)pkt_replica->platform_state;
+	mbuf_origin = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;	
 
-	if( copy_mbuf==true ){
+	if( hard_clone ){
+#if 0
 		//Retrieve an mbuf, copy contents, and initialize pkt_dpdk_replica
-		mbuf = rte_pktmbuf_clone(((datapacket_dpdk_t*)pkt->platform_state)->mbuf, pool_direct); 
-		
+		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_direct); 
+#else
+		mbuf = rte_pktmbuf_alloc(pool_direct);
+#endif		
 		if(unlikely(!mbuf)){
 			ROFL_DEBUG("Replicate packet; could not clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
 			ROFL_DEBUG("errno %d - %s\n", rte_errno, rte_strerror(rte_errno));
 			goto PKT_REPLICATE_ERROR;
 		}
+#if 0
+#else
+		rte_pktmbuf_append(mbuf, rte_pktmbuf_pkt_len(mbuf_origin));
+		rte_memcpy(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_mtod(mbuf_origin, uint8_t*),  rte_pktmbuf_pkt_len(mbuf_origin));
+		assert( rte_pktmbuf_pkt_len(mbuf) == rte_pktmbuf_pkt_len(mbuf_origin) );
+#endif
+
 	} else {
 		//only moving the pointer
 		mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
@@ -1158,22 +1195,8 @@ datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool copy_mbuf){
 		
 	}
 
-	//Copy PKT stuff
-	memcpy(&pkt_replica->matches, &pkt->matches, sizeof(pkt->matches));
-	memcpy(&pkt_replica->write_actions, &pkt->write_actions ,sizeof(pkt->write_actions));
-
-	//mark as replica
-	pkt_replica->is_replica = true;
-	pkt_replica->sw = pkt->sw;
-
-	//Initialize replica buffer and classify  //TODO: classification state could be copied
-	init_datapacket_dpdk(pkt_dpdk_replica, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, true);
-
-	//Replicate the packet(copy contents)	
-	pkt_dpdk_replica->ipv4_recalc_checksum 	= pkt_dpdk->ipv4_recalc_checksum;
-	pkt_dpdk_replica->icmpv4_recalc_checksum 	= pkt_dpdk->icmpv4_recalc_checksum;
-	pkt_dpdk_replica->tcp_recalc_checksum 	= pkt_dpdk->tcp_recalc_checksum;
-	pkt_dpdk_replica->udp_recalc_checksum 	= pkt_dpdk->udp_recalc_checksum;
+	//Copy datapacket_t and datapacket_dpdk_t state
+	platform_packet_copy_contents(pkt, pkt_replica, mbuf);
 
 	return pkt_replica; //DO NOT REMOVE
 
@@ -1190,6 +1213,29 @@ PKT_REPLICATE_ERROR:
 	}
 
 	return NULL;
+}
+
+
+/*
+* Detaches mbuf from stack allocated pkt and copies the content
+*/
+datapacket_t* platform_packet_detach__(datapacket_t* pkt){
+
+	struct rte_mbuf* mbuf_origin;
+	datapacket_t* pkt_detached = bufferpool::get_free_buffer(false);
+
+	if(unlikely( pkt_detached == NULL))
+		return NULL;
+	
+	mbuf_origin = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;	
+
+	//Copy the contents
+	platform_packet_copy_contents(pkt, pkt_detached, mbuf_origin);
+
+	//Really detach the mbuf from the original instance
+	((datapacket_dpdk_t*)pkt->platform_state)->mbuf = NULL;
+	
+	return pkt_detached;
 }
 
 /**

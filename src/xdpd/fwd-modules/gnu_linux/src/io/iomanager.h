@@ -122,6 +122,7 @@ public:
 	
 
 	/* Utils */ 
+	static void dump_state(bool mutex_locked);
 	static portgroup_state* get_group(int grp_id);
 	static int get_group_id_by_port(ioport* port, pg_type_t type);
 protected:

@@ -8,6 +8,11 @@ Legend:
 Change log
 ==========
 
+
+v0.3.5 
+
+[+] [GNU/Linux] Adding support for LLC frame parsing (ETH_TYPE)
+
 v0.3.4
 
 [+][NetFPGA-10G] Merged into mainstream support for the NetFPGA-10G platform (T.Sielach, M.Sune)

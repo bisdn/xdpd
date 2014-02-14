@@ -169,9 +169,7 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 					}
 				}
 
-				//Call ioport hook for down
-				port->disable();
-	
+
 				if(!mutex_locked){
 					pthread_mutex_unlock(&mutex);
 				}
@@ -181,8 +179,11 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 				else
 					brought_tx_down = true;
 	
-				if( brought_rx_down && brought_tx_down )
+				if( brought_rx_down && brought_tx_down ){
+					//Call ioport hook for down
+					port->disable();
 					return ROFL_SUCCESS;
+				}
 			}
 			
 		}	
@@ -225,9 +226,7 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 					return ROFL_FAILURE;
 				}
 					
-				//Call ioport hook for down
-				port->enable();		
-				
+			
 				//Check if portgroup I/O threads are running
 				if( pg->running_ports->size() == 0 ){
 					
@@ -259,8 +258,11 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 				else
 					brought_tx_up = true;
 	
-				if( brought_rx_up && brought_tx_up )
+				if( brought_rx_up && brought_tx_up ){
+					//Call ioport hook for up
+					port->enable();		
 					return ROFL_SUCCESS;
+				}
 			}	
 		}	
 	}catch(...){

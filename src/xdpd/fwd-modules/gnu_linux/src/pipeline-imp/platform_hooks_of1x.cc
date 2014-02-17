@@ -1,11 +1,5 @@
-/*
- * platform_hooks_of1x.cc
- *
- *  Created on: Feb 7, 2013
- *      Author: tobi
- */
-
 #include <assert.h>
+#include <unistd.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_async_events_hooks.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
@@ -82,8 +76,13 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 	unsigned int i;
 
 	switch_platform_state_t* ls_int =  (switch_platform_state_t*)sw->platform_state;
+
+	//Let the pending pkt_ins to be drained
+	while(ls_int->pkt_in_queue->size() != 0){
+		usleep(50);	//Give some time
+	}
 	
-	//delete ring buffers and storage (delete switch platform state)
+	//Delete ring buffers and storage (delete switch platform state)
 	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
 		delete ls_int->input_queues[i]; 
 	}

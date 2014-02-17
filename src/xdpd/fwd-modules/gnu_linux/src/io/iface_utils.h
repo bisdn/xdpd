@@ -62,17 +62,6 @@ rofl_result_t destroy_ports(void);
  */
 rofl_result_t destroy_port(switch_port_t* port);
 
-//Port enable/disable
-/*
-* Enable port (direct call to ioport instance)
-*/
-rofl_result_t enable_port(platform_port_state_t* ioport_instance);
-
-/*
-* Disable port (direct call to ioport instance)
-*/
-rofl_result_t disable_port(platform_port_state_t* ioport_instance);
-
 //C++ extern C
 ROFL_END_DECLS
 

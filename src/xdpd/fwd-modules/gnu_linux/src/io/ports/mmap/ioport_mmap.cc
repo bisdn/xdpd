@@ -409,16 +409,16 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 
 /*
 *
-* Enable and disable port routines
+* Enable and down port routines
 *
 */
-rofl_result_t ioport_mmap::enable() {
+rofl_result_t ioport_mmap::up() {
 	
 	struct ifreq ifr;
 	int sd, rc;
         struct ethtool_value eval;
 
-	ROFL_DEBUG(FWD_MOD_NAME"[mmap:%s] Trying to enable port\n",of_port_state->name);
+	ROFL_DEBUG(FWD_MOD_NAME"[mmap:%s] Trying to bring up\n",of_port_state->name);
 	
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
 		return ROFL_FAILURE;
@@ -573,12 +573,12 @@ rofl_result_t ioport_mmap::enable() {
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t ioport_mmap::disable() {
+rofl_result_t ioport_mmap::down() {
 	
 	struct ifreq ifr;
 	int sd, rc;
 
-	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[mmap:%s] Trying to disable port\n",of_port_state->name);
+	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[mmap:%s] Trying to bring down\n",of_port_state->name);
 
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0) {
 		return ROFL_FAILURE;

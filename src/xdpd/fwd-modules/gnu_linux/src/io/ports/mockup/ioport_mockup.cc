@@ -123,10 +123,10 @@ unsigned int ioport_mockup::write(unsigned int q_id, unsigned int num_of_buckets
 
 }
 
-rofl_result_t ioport_mockup::disable(){
+rofl_result_t ioport_mockup::down(){
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t ioport_mockup::enable(){
+rofl_result_t ioport_mockup::up(){
 	return ROFL_SUCCESS;
 }

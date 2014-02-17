@@ -144,8 +144,11 @@ datapacket_t* bufferpool::get_free_buffer_nonblocking(){
 #ifdef DEBUG
 				__sync_fetch_and_add(&bp->used, 1);
 #endif
-				//Set current index 
-				bp->curr_index = i+1;
+				//Set current index and increment circularly
+				if( (i+1) != bp->capacity )
+					bp->curr_index = i+1;
+				else
+					bp->curr_index = 0;
 
 				return bp->pool[i];
 			}

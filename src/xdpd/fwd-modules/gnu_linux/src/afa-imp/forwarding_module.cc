@@ -79,9 +79,6 @@ afa_result_t fwd_module_destroy(){
 	unsigned int i, max_switches;
 	of_switch_t** switch_list;
 
-	//Stop the bg manager
-	stop_background_tasks_manager();
-
 	//Initialize the iomanager (Stop feeding packets)
 	iomanager::destroy();
 
@@ -92,6 +89,9 @@ afa_result_t fwd_module_destroy(){
 			fwd_module_destroy_switch_by_dpid(switch_list[i]->dpid);
 		}
 	}
+
+	//Stop the bg manager
+	stop_background_tasks_manager();
 
 	//Destroy interfaces
 	destroy_ports();
@@ -373,6 +373,12 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	if( !port || port->attached_sw->dpid != dpid)
 		return AFA_FAILURE;
 
+	//Snapshoting the port *before* it is detached
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	
+	if(!port_snapshot)
+		return AFA_FAILURE;
+	
 	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
@@ -423,7 +429,6 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	}
 
 	//notify port dettached
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
 	if(cmm_notify_port_delete(port_snapshot) != AFA_SUCCESS){
 		///return AFA_FAILURE; //ignore
 	}
@@ -500,7 +505,7 @@ afa_result_t fwd_module_bring_port_up(const char* name){
 			return AFA_FAILURE;
 	}else{
 		//The port is not attached. Only bring it up (ifconfig up)
-		if(enable_port(port->platform_port_state)!=ROFL_SUCCESS)
+		if( ( (ioport*)port->platform_port_state)->up() != ROFL_SUCCESS )
 			return AFA_FAILURE;
 	}
 
@@ -535,7 +540,7 @@ afa_result_t fwd_module_bring_port_down(const char* name){
 			return AFA_FAILURE;
 	}else{
 		//The port is not attached. Only bring it down (ifconfig down)
-		if(disable_port(port->platform_port_state)==ROFL_FAILURE)
+		if( ( (ioport*)port->platform_port_state)->down() != ROFL_SUCCESS )
 			return AFA_FAILURE;
 	}
 

@@ -278,7 +278,7 @@ void* x86_background_tasks_routine(void* param)
 	init_packetin_pipe();
 
 	epe_port.data.fd = get_packet_in_read_fd();
-	epe_port.events = EPOLLIN | EPOLLET;
+	epe_port.events = EPOLLIN; //| EPOLLET
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD, epe_port.data.fd, &epe_port)==-1){
 		ROFL_ERR(FWD_MOD_NAME" [bg] Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
@@ -315,7 +315,16 @@ void* x86_background_tasks_routine(void* param)
 				}
 			}
 		}
-		
+	
+		//If it is a timeout event drain packet_ins. 
+		//This draining is necessary since PKT_IN pipe
+		//is non-blocking (in order to not block processing threads)
+		//so if a PKT_IN was enqueued but write() to the pipe failed
+		//Those packets would never be drained otherwise 
+		if(nfds == 0)
+			process_packet_ins();	
+			
+	
 		//check timers expiration 
 		process_timeouts();
 	}

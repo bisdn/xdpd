@@ -32,7 +32,7 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/iface_utils.cc \
 	$(top_srcdir)/src/pipeline-imp/memory.c \
 	$(top_srcdir)/src/pipeline-imp/pthread_lock.c \
-	$(top_srcdir)/src/pipeline-imp/pthread_atomic_operations.c \
+	$(top_srcdir)/src/pipeline-imp/atomic_operations.c \
 	$(top_srcdir)/src/pipeline-imp/timing.c \
 	$(top_srcdir)/src/io/pktin_dispatcher.cc \
 	$(top_srcdir)/src/io/iomanager.cc \

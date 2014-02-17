@@ -265,7 +265,7 @@ afa_result_t switch_manager::__notify_port_add(switch_port_snapshot_t* port_snap
 	afa_result_t result;
 	openflow_switch* sw;	
 
-	if(!port_snapshot)
+	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
 		return AFA_FAILURE;
 
 	pthread_rwlock_rdlock(&switch_manager::rwlock);
@@ -287,7 +287,7 @@ afa_result_t switch_manager::__notify_port_status_changed(switch_port_snapshot_t
 	afa_result_t result;
 	openflow_switch* sw;	
 
-	if(!port_snapshot)
+	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
 		return AFA_FAILURE;
 
 	pthread_rwlock_rdlock(&switch_manager::rwlock);
@@ -310,7 +310,7 @@ afa_result_t switch_manager::__notify_port_delete(switch_port_snapshot_t* port_s
 	afa_result_t result;
 	openflow_switch* sw;	
 
-	if(!port_snapshot)
+	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
 		return AFA_FAILURE;
 
 	pthread_rwlock_rdlock(&switch_manager::rwlock);
@@ -338,6 +338,9 @@ afa_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 				packet_matches_t* matches){
 	afa_result_t result;
 	openflow_switch* sw;	
+
+	if(dpid == dpid_under_destruction)
+		return AFA_SUCCESS;
 
 	pthread_rwlock_rdlock(&switch_manager::rwlock);
 

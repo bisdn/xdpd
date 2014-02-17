@@ -161,9 +161,6 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 				//Refresh hash
 				pg->running_hash++;
 			
-				if(brought_rx_down == false && brought_tx_down == false)
-					port->down();
-	
 				//If there are no more ports, stop threads 
 				if(pg->running_ports->size() == 0){
 					stop_portgroup_threads(pg);
@@ -181,9 +178,13 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 					brought_tx_down = true;
 	
 				if( brought_rx_down && brought_tx_down ){
+					
+					//Now that no more packets are feeded, bring it really down	
+					port->down();
+					
 					if(!mutex_locked)
 						pthread_mutex_unlock(&mutex);
-				
+					
 					dump_state(mutex_locked);
 				
 					return ROFL_SUCCESS;

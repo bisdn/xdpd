@@ -10,7 +10,7 @@
 
 
 #include <net/if.h>
-#include<netinet/if_ether.h>
+#include <netinet/if_ether.h>
 #include <net/if_arp.h>
 #include <netpacket/packet.h>
 #include <net/ethernet.h>     /* the L2 protocols */
@@ -20,6 +20,24 @@
 #include <errno.h>
 
 #define FWD_MOD_NAME "netfpga10g"
+
+
+rofl_result_t netfpga_destroy_port(switch_port_t* port){
+
+	netfpga_port_t* nport =(netfpga_port_t*)port->platform_port_state ;
+
+	pcap_close(nport->pcap_fd);
+
+	if(nport){
+		free(nport);
+		return ROFL_SUCCESS;
+		}
+	else	{
+		ROFL_DEBUG("netfpga_destroy_port() called without initialized netfpga port");
+		return ROFL_FAILURE;
+	
+		}	
+}
 
 static rofl_result_t netfpga_init_port(switch_port_t* port){
 

@@ -772,6 +772,21 @@ rofl_result_t netfpga_init(){
 //Destroys state of the netfpga, and restores it to the original state (state before init) 
 rofl_result_t netfpga_destroy(){
 
+	switch_port_t* port[4];
+	port[0] = physical_switch_get_port_by_name("nf0");
+	port[1] = physical_switch_get_port_by_name("nf1");
+	port[2] = physical_switch_get_port_by_name("nf2");
+	port[3] = physical_switch_get_port_by_name("nf3");
+	
+	if(ROFL_FAILURE==netfpga_destroy_port(port[0])) ROFL_DEBUG("netfpga_destroy_port() failled");
+	if(ROFL_FAILURE==netfpga_destroy_port(port[1])) ROFL_DEBUG("netfpga_destroy_port() failled");
+	if(ROFL_FAILURE==netfpga_destroy_port(port[2])) ROFL_DEBUG("netfpga_destroy_port() failled");
+	if(ROFL_FAILURE==netfpga_destroy_port(port[3])) ROFL_DEBUG("netfpga_destroy_port() failled");
+
+	//for(int i=0;i<NETFPGA_LAST_PORT-1;i++){		
+	//	if(ROFL_FAILURE==netfpga_destroy_port(port[i])) ROFL_DEBUG("netfpga_destroy_port() failled");
+	//}
+
 	if(!nfpga){
 		ROFL_DEBUG("netfpga_destroy() called without netfpga being initialized!\n");
 		assert(0);
@@ -811,7 +826,7 @@ rofl_result_t netfpga_set_table_behaviour(void){
 
 //Add flow entry to table 
 rofl_result_t netfpga_add_flow_entry(of1x_flow_entry_t* entry){
-	ROFL_DEBUG("%s : %d GOT FLOW ENTRY! \n", __FILE__,__LINE__);
+	//ROFL_DEBUG("%s : %d GOT FLOW ENTRY! \n", __FILE__,__LINE__);
 	//Map entry to a hw entry
 
 	//ROFL_DEBUG("",entry->matchs->    ,            ,             );
@@ -859,14 +874,17 @@ rofl_result_t netfpga_delete_flow_entry(of1x_flow_entry_t* entry){
 	if( netfpga_delete_entry_hw(hw_entry->hw_pos) != ROFL_SUCCESS )
 		return ROFL_FAILURE;
 	
-	//Destroy
-	netfpga_destroy_flow_entry(hw_entry);
+	
 
 	//Decrement counters
 	if( hw_entry->type == NETFPGA_FE_WILDCARDED )
 		nfpga->num_of_wildcarded_entries--;	
 	else
 		nfpga->num_of_exact_entries--;	
+
+
+	//Destroy
+	netfpga_destroy_flow_entry(hw_entry);
 
 	//Unset platform state
 	entry->platform_state = NULL;	

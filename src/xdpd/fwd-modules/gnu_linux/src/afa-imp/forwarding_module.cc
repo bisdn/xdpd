@@ -28,6 +28,7 @@
 #include "../bg_taskmanager.h"
 
 #include "../io/iface_utils.h"
+#include "../io/pktin_dispatcher.h"
 #include "../processing/ls_internal_state.h"
 
 //only for Test
@@ -195,6 +196,9 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 	
 	//Create RX ports
 	processingmanager::destroy_rx_pgs(sw);	 
+
+	//Drain existing packet ins
+	drain_packet_ins(sw);
 
 	//Detach ports from switch. Do not feed more packets to the switch
 	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)

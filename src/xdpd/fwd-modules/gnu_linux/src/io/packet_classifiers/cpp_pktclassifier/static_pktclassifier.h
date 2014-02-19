@@ -6,6 +6,7 @@
 #define STATIC_PKTCLASSIFIER_H 
 
 #include <assert.h> 
+#include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/common/protocols/fetherframe.h>
 #include <rofl/common/protocols/fvlanframe.h>
 #include <rofl/common/protocols/fmplsframe.h>
@@ -38,13 +39,13 @@ class static_pktclassifier: public packetclassifier{
 public:
 
 	//Constructor&destructor
-	static_pktclassifier(void);
+	static_pktclassifier(datapacket_t* pkt);
 	virtual ~static_pktclassifier();
 
 	/*
 	* Main classification methods. 
 	*/
-	virtual void classify(uint8_t* packet, size_t len);
+	virtual void classify(uint8_t* packet, size_t len, uint32_t port_in, uint32_t phy_port_in);
 	virtual void classify_reset(void){
 	
 		for(unsigned int i=0;i<MAX_HEADERS;i++){
@@ -53,7 +54,10 @@ public:
 		}
 
 		memset(num_of_headers,0,sizeof(num_of_headers));
-		is_classified=false; 
+		is_classified=false;
+		
+		//Clean up packet_matches
+		memset(matches, 0, sizeof(packet_matches_t)); 
 	};
 
 	
@@ -110,6 +114,9 @@ protected:
 
 	//Flag to know if it is classified
 	bool is_classified;
+
+	//Pointer to pkt->matches
+	packet_matches_t* matches;
 
 	//Inner most (last) ethertype
 	uint16_t eth_type;

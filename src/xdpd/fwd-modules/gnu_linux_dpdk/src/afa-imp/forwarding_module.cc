@@ -210,7 +210,7 @@ afa_result_t fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 */
 afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 
-	//unsigned int i;
+	unsigned int i;
 	
 	//Try to retrieve the switch
 	of_switch_t* sw = physical_switch_get_logical_switch_by_dpid(dpid);
@@ -218,13 +218,24 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 	if(!sw)
 		return AFA_FAILURE;
 
-	//Desechedule all ports
-	//XXX
+	//Desechedule all ports. Do not feed more packets to the switch
+	for(i=0;i<sw->max_ports;i++){
+
+		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port)
 	
-	//Detach ports from switch. Do not feed more packets to the switch
+			processing_deschedule_port(sw->logical_ports[i].port);
+	}	
+
+
+	//Make sure all buffered PKT_INs are dropped
+	wait_pktin_draining(sw);
+
+	//Detach ports from switch. 
 	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;
+
 	
+
 	//Remove switch from the switch bank
 	if(physical_switch_remove_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;

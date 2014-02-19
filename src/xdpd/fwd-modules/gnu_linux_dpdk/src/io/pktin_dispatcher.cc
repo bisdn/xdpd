@@ -9,7 +9,10 @@
 sem_t pktin_sem;
 struct rte_ring* pkt_ins;
 bool keep_on_pktins;
+bool destroying_sw;
 static pthread_t pktin_thread;
+static unsigned int processed_pkt_ins;
+static pthread_mutex_t pktin_mutex=PTHREAD_MUTEX_INITIALIZER;
 
 using namespace xdpd::gnu_linux;
 
@@ -42,6 +45,19 @@ static void* process_packet_ins(void* param){
 		//Dequeue
 		if(rte_ring_sc_dequeue(pkt_ins, (void**)&pkt) != 0)
 			continue;
+
+		//Increment counter (Note: MUST be here)
+		processed_pkt_ins++;		
+
+		if(unlikely(destroying_sw == true)){
+			//Let mgmt thread capture sem_value and processed_pkt_ins 
+			//atomically
+			//We have to make sure
+			pthread_mutex_unlock(&pktin_mutex);
+	
+			//Wait until it isgnals us it has retrieved values 
+			pthread_mutex_lock(&pktin_mutex);
+		}
 
 		//Recover platform state
 		pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
@@ -97,6 +113,44 @@ static void* process_packet_ins(void* param){
 	return NULL;
 }
 
+void wait_pktin_draining(of_switch_t* sw){
+
+	//
+	// Here we have to make sure that we are not returning
+	// until all the PKT_INs belonging to the LSI have been
+	// processed (dropped by the CMM)
+	//
+	// Note that *no more packets* will enqueued in the global
+	// PKT_IN queue, since ports shall be descheduled.
+	//
+	// Strategy is just to make sure all current pending PKT_INs
+	// are processed and return
+	//
+
+	//Check current credits and current counter
+	int curr_pending_credits;
+	unsigned int curr_processed_pktins;
+	bool overflow;
+	
+	//Signal PKT_IN thread that we need to read its status atomically
+	destroying_sw = true;
+	pthread_mutex_lock(&pktin_mutex);
+
+	//Read it
+	while(sem_getvalue(&pktin_sem, &curr_pending_credits) != 0);
+	curr_processed_pktins = processed_pkt_ins;
+
+	//Prevent other iterations to block
+	destroying_sw = false;
+
+	//Release PKT_IN thread
+	pthread_mutex_unlock(&pktin_mutex);
+	
+	//Wait for packets to be drained
+	overflow = (curr_processed_pktins+curr_pending_credits) < curr_processed_pktins;  
+	curr_processed_pktins += curr_pending_credits;
+	while( (overflow && (curr_processed_pktins&0x8000) ) || (curr_processed_pktins < processed_pkt_ins) ){ usleep(250);};	
+}
 
 // Launch pkt in thread
 rofl_result_t pktin_dispatcher_init(){
@@ -125,6 +179,10 @@ rofl_result_t pktin_dispatcher_init(){
 		ROFL_ERR("Unable to create PKT_INs ring queue\n");
 		return ROFL_FAILURE;
 	}
+
+	//Reset global PKT_IN counter (used on wait for draining)
+	processed_pkt_ins = 0;
+	destroying_sw = false;	
 
 	//Launch thread
 	//XXX: use rte?

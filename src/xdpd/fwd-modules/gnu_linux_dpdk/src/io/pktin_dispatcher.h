@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <semaphore.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 #include "../config.h"
 #include <rte_config.h>
@@ -48,6 +49,12 @@ rofl_result_t pktin_dispatcher_init(void);
 rofl_result_t pktin_dispatcher_destroy(void);
 
 
+/**
+* Waits until all PKT_INs for the switch are drained
+* Note that *before* this function is called, NO more PKT_INs
+* shall be enqueued for that LSI.
+*/
+void wait_pktin_draining(of_switch_t* sw);
 
 /**
 * Enqueue packet in the packet_ins queue

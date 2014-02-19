@@ -18,7 +18,8 @@
 
 using namespace xdpd::gnu_linux;
 
-#define BUCKETS_PER_LS 10
+#define BUCKETS_PER_LS 16
+#define DUMMY_BUF_SIZE 128
 #define ITERATIONS_PER_ROUND 2
 
 int pktin_not_pipe[2];
@@ -26,13 +27,13 @@ int pktin_not_pipe[2];
 //Processes the pkt_ins up to BUCKETS_PER_LS 
 static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 
-	int ret;
 	unsigned int i, pkt_size;
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
 	afa_result_t rv;
-	storeid id;	
-	char null_buf[BUCKETS_PER_LS];
+	storeid id;
+	static char null_buf[DUMMY_BUF_SIZE];
+	static unsigned int pending_to_read=0;
 	
 	//Recover platform state
 	switch_platform_state_t* ls_int = (switch_platform_state_t*)sw->platform_state;
@@ -95,9 +96,16 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 		
 	}
 
-	//Empty pipe (n tokens)
-	ret = read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf,i);
-	(void)ret;
+	//Empty pipe
+	pending_to_read += i;
+
+	if( pending_to_read > 0 ){
+		if(pending_to_read > DUMMY_BUF_SIZE){
+			pending_to_read -= read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf, DUMMY_BUF_SIZE);
+		}else{
+			pending_to_read -= read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf, pending_to_read);
+		}
+	}
 }
 
 //Initialize pkt in notification pipe

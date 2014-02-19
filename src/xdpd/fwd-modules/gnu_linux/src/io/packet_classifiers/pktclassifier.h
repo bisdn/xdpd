@@ -9,7 +9,7 @@ ROFL_BEGIN_DECLS
 
 struct classify_state* init_classifier(datapacket_t*const pkt);
 void destroy_classifier(struct classify_state* clas_state);
-void classify_packet(struct classify_state* clas_state, uint8_t* pkt, size_t len,  uint32_t port_in, uint32_t phy_port_in);
+void classify_packet(struct classify_state* clas_state, uint8_t* pkt, size_t len, uint32_t port_in, uint32_t phy_port_in);
 void reset_classifier(struct classify_state* clas_state);
 
 //push & pop

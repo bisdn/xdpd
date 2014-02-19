@@ -514,7 +514,7 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 			break;
 	}
 
-	//Initialize ipv4 packet matches
+	//Initialize ipv6 packet matches
 	clas_state->matches->ip_proto = get_ipv6_next_header(ipv6);
 	clas_state->matches->ip_dscp = get_ipv6_dscp(ipv6);
 	clas_state->matches->ip_ecn = get_ipv6_ecn(ipv6);

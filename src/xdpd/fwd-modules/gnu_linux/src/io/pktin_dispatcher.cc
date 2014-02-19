@@ -145,3 +145,26 @@ void process_packet_ins(){
 		}
 	}
 }
+
+
+void drain_packet_ins(of_switch_t* sw){
+	
+	datapacket_t* pkt;
+	switch_platform_state_t* ls_int;
+ 
+	if(!sw)
+		assert(0);
+		
+	//Recover platform state
+	ls_int = (switch_platform_state_t*)sw->platform_state;
+
+	//Let the pending pkt_ins to be drained
+	while(ls_int->pkt_in_queue->size() != 0){
+
+		pkt = ls_int->pkt_in_queue->non_blocking_read();
+	
+		//Return to the bufferpool
+		if(pkt)
+			bufferpool::release_buffer(pkt);
+	}
+}

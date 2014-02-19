@@ -46,6 +46,9 @@ m4_include([config/verbose.m4])
 #Check for profiling mode
 m4_include([config/profiling.m4])
 
+# Checking OpenSSL
+m4_include([config/openssl.m4])
+
 #Boost
 m4_include([config/boost.m4])
 

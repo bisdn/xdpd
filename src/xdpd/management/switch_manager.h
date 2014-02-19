@@ -84,7 +84,9 @@ public:
 					int* ma_list,
 					int reconnect_start_timeout = 2,
 					rofl::caddress const& controller_addr = switch_manager::controller_addr,
-					rofl::caddress const& binding_addr = switch_manager::binding_addr) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
+					rofl::caddress const& binding_addr = switch_manager::binding_addr,
+					bool enable_ssl = false,
+					const std::string &cert_and_key_file = std::string("")) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
 
 
 	/**

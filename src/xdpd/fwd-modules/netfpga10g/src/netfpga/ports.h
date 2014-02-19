@@ -54,6 +54,7 @@ ROFL_BEGIN_DECLS
 * @brief Discover NetFPGA physical ports 
 */
 rofl_result_t netfpga_discover_ports(void);
+rofl_result_t netfpga_destroy_port(switch_port_t* port);
 
 /**
 * @brief Attach all physical ports to switch 

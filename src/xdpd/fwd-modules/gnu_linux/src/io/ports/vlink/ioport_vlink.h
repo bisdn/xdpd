@@ -52,10 +52,10 @@ public:
 	inline virtual int get_write_fd(void){return tx_notify_pipe[READ];};
 
 	virtual rofl_result_t 
-	disable();
+	down();
 
 	virtual rofl_result_t
-	enable();
+	up();
 
 	/**
 	* Emulate transmission of the packet

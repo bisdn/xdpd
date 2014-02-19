@@ -90,12 +90,12 @@ public:
 	/**
 	 * Sets the port administratively up. This MUST change the of_port_state appropiately
 	 */
-	virtual rofl_result_t enable(void);
+	virtual rofl_result_t up(void);
 
 	/**
 	 * Sets the port administratively down. This MUST change the of_port_state appropiately
 	 */
-	virtual rofl_result_t disable(void);
+	virtual rofl_result_t down(void);
 
 protected:
 

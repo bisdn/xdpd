@@ -21,9 +21,14 @@
 #include "../of_endpoint.h"
 #include "../../management/switch_manager.h"
 
+namespace rofl {
+	class ssl_context;
+}  // namespace rofl
+
 using namespace rofl;
 
 namespace xdpd {
+
 
 /**
 * @brief of12_endpoint is an OpenFlow 1.2 OF agent implementation
@@ -39,7 +44,8 @@ public:
 			openflow_switch* sw,
 			int reconnect_start_timeout,
 			caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633),
-			caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmErrorOnCreation);
+			caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0),
+			ssl_context *ctx = NULL) throw (eOfSmErrorOnCreation);
 
 	/**
 	 *

@@ -9,6 +9,7 @@
  */
 
 #include "qmfagent.h"
+#include <rofl/platform/unix/cunixenv.h>
 
 using namespace xdpd;
 using namespace rofl;
@@ -323,7 +324,7 @@ qmfagent::methodPortAttach(qmf::AgentEvent& event)
 
 		uint32_t portno = 0;
 		port_manager::attach_port_to_switch(dpid, devname, &portno);
-		port_manager::enable_port(devname);
+		port_manager::bring_up(devname);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);
@@ -357,7 +358,7 @@ qmfagent::methodPortDetach(qmf::AgentEvent& event)
 		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
 		std::string devname		= event.getArguments()["devname"].asString();
 
-		xdpd::port_manager::disable_port(devname);
+		xdpd::port_manager::bring_down(devname);
 		xdpd::port_manager::detach_port_from_switch(dpid, devname);
 
 		// TODO: destroy QMF port object (if this is deemed useful one day ...)

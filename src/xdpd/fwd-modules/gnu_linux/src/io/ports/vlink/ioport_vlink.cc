@@ -181,12 +181,12 @@ rofl_result_t ioport_vlink::tx_pkt(datapacket_t* pkt){
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t ioport_vlink::disable(){
+rofl_result_t ioport_vlink::down(){
 	of_port_state->up = false;
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t ioport_vlink::enable(){
+rofl_result_t ioport_vlink::up(){
 	of_port_state->up = true;
 	return ROFL_SUCCESS;
 }

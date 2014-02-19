@@ -84,6 +84,8 @@ netfpga_flow_entry_t* netfpga_init_flow_entry(){
 	memset(entry->matches, 0, sizeof(*(entry->matches)));
 	memset(entry->masks, 0, sizeof(*(entry->masks)));
 	memset(entry->actions, 0, sizeof(*(entry->actions)));
+
+//	ROFL_DEBUG("size of entry: %d",sizeof(entry));
 	
 	return entry;
 }

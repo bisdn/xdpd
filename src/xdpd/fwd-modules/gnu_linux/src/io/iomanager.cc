@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <sstream>
 #include <rofl/common/utils/c_logger.h>
 #include "iomanager.h"
 #include "bufferpool.h"
@@ -140,9 +141,10 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 	unsigned int i,j;
 	bool brought_rx_down = false, brought_tx_down = false;
 
-	if(!mutex_locked){
+	dump_state(mutex_locked);
+
+	if(!mutex_locked)
 		pthread_mutex_lock(&mutex);
-	}
 	
 	try{
 		//Go through the groups and find the portgroup
@@ -169,20 +171,24 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 					}
 				}
 
-				//Call ioport hook for down
-				port->disable();
-	
-				if(!mutex_locked){
-					pthread_mutex_unlock(&mutex);
-				}
 				//Change flags
 				if(pg->type == PG_RX)
 					brought_rx_down = true;
 				else
 					brought_tx_down = true;
 	
-				if( brought_rx_down && brought_tx_down )
+				if( brought_rx_down && brought_tx_down ){
+					
+					//Now that no more packets are feeded, bring it really down	
+					port->down();
+					
+					if(!mutex_locked)
+						pthread_mutex_unlock(&mutex);
+					
+					dump_state(mutex_locked);
+				
 					return ROFL_SUCCESS;
+				}
 			}
 			
 		}	
@@ -193,9 +199,8 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 		
 	}
 	
-	if(!mutex_locked){
+	if(!mutex_locked)
 		pthread_mutex_unlock(&mutex);
-	}
 		
 	return ROFL_FAILURE;
 }
@@ -206,6 +211,8 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 
 	unsigned int i,j;
 	bool brought_rx_up = false, brought_tx_up = false;
+	
+	dump_state(false);
 
 	//Go through the groups and find the portgroup	
 	pthread_mutex_lock(&mutex);
@@ -224,22 +231,21 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 					pthread_mutex_unlock(&mutex);
 					return ROFL_FAILURE;
 				}
-					
-				//Call ioport hook for down
-				port->enable();		
-				
+			
+				//Bring up port
+				//Note: this MUST be done *before* port is actually added to the group
+				//Otherwise structures may not be created
+				if(brought_rx_up == false && brought_tx_up == false)
+					port->up();		
+			
 				//Check if portgroup I/O threads are running
 				if( pg->running_ports->size() == 0 ){
-					
-					
 					pg->running_ports->push_back(port);
 					start_portgroup_threads(pg);
 	
 					//Wait for all I/O threads to be synchronized with the new state (make sure internal state can be modified). Note that no one else can change PG state meanwhile
 					for(j=0;j<pg->num_of_threads;++j)
 						sem_wait(&pg->sync_sem);
-					
-					pthread_mutex_unlock(&mutex);
 				}else{
 					pg->running_ports->push_back(port);
 					
@@ -249,8 +255,6 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 					//Wait for all I/O threads to be synchronized with the new state (make sure internal state can be modified). Note that no one else can change PG state meanwhile
 					for(j=0;j<pg->num_of_threads;++j)
 						sem_wait(&pg->sync_sem);
-			
-					pthread_mutex_unlock(&mutex);
 				}
 				
 				//Change flags
@@ -259,9 +263,12 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 				else
 					brought_tx_up = true;
 	
-				if( brought_rx_up && brought_tx_up )
+				if( brought_rx_up && brought_tx_up ){
+					pthread_mutex_unlock(&mutex);
+					dump_state(false);
 					return ROFL_SUCCESS;
-			}	
+				}
+			}
 		}	
 	}catch(...){
 		//Do nothing; should never jump here
@@ -295,6 +302,8 @@ void iomanager::start_portgroup_threads(portgroup_state* pg){
 		func = ioscheduler_provider::process_io<true>;
 	else
 		func = ioscheduler_provider::process_io<false>;
+
+	pg->keep_on = true;
  
 	//Create num_of_threads and invoke scheduler::process_io
 	for(i=0;i<pg->num_of_threads;++i){
@@ -312,6 +321,8 @@ void iomanager::stop_portgroup_threads(portgroup_state* pg){
 
 	unsigned int i;
 
+	pg->keep_on = false;
+	
 	//Join all threads
 	for(i=0;i<pg->num_of_threads;++i){
 		pthread_join(pg->thread_state[i],NULL);
@@ -454,8 +465,8 @@ int iomanager::get_group_id_by_port(ioport* port, pg_type_t type){
 		safevector<ioport*>* ports = portgroups[i]->ports;
 			
 		for(j=0;j<ports->size();j++){
-			if( (*ports)[j] == port)	
-				return i;
+			if( (*ports)[j] == port)
+				return portgroups[i]->id;
 		}
 	}
 	
@@ -478,6 +489,7 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 	pg = get_group(grp_id); 
 	if(!pg){
 		pthread_mutex_unlock(&mutex);
+		assert(0);
 		return ROFL_FAILURE;
 	}
 
@@ -485,6 +497,7 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 	for(i=0;i<portgroups.size();++i){
 		if(portgroups[i]->ports->contains(port) && get_group(i)->type == pg->type){
 			pthread_mutex_unlock(&mutex);
+			assert(0);
 			return ROFL_FAILURE;
 		}
 	}
@@ -519,6 +532,7 @@ rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* por
 		if(!mutex_locked){
 			pthread_mutex_unlock(&mutex);
 		}
+		assert(0);
 		return ROFL_FAILURE;
 	}
 
@@ -527,6 +541,7 @@ rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* por
 		if(!mutex_locked){
 			pthread_mutex_unlock(&mutex);
 		}
+		assert(0);
 		return ROFL_FAILURE;
 	}
 	
@@ -547,3 +562,40 @@ rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* por
 }
 
 
+
+void iomanager::dump_state(bool mutex_locked){
+
+#ifdef DEBUG_VERBOSE	
+	unsigned int i;
+	std::stringstream s("");	
+	
+	if(!mutex_locked)
+		pthread_mutex_lock(&mutex);
+
+	//Go through the groups and find the portgroup
+	for(i=0;i<portgroups.size();++i){
+	
+		portgroup_state* pg = portgroups[i];
+
+		s<<"\t\t\t["<<pg->id<<"("<<i<<"):";
+		if (pg->type == PG_RX)
+			s << "rx { ";
+		else
+			s << "tx { ";
+
+		for(unsigned int j=0;j<pg->ports->size();++j){
+			ioport* port = (*pg->ports)[j];
+			s << port->of_port_state->name;
+			if(pg->running_ports->contains(port))
+				s << "(up) ";
+			else
+				s << "(down) ";	
+		}
+		s << "}]\n";
+	}
+	ROFL_DEBUG(FWD_MOD_NAME"[iomanager] status:\n%s", s.str().c_str());
+	
+	if(!mutex_locked)
+		pthread_mutex_unlock(&mutex);
+#endif
+}

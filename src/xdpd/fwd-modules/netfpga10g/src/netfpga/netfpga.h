@@ -10,8 +10,10 @@
 #include <pthread.h>
 #include <rofl.h>
 #include "stats.h"
+#include "ports.h"
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
+#include <rofl/datapath/pipeline/physical_switch.h>
 //#include "flow_entry.h"
 
 /**
@@ -76,6 +78,8 @@ netfpga_device_t* netfpga_get(void);
 * @brief   Initializes the netfpga shared state, including appropiate state of registers and bootstrap.
 */
 rofl_result_t netfpga_init(void);
+
+rofl_result_t netfpga_destroy(void);
 
 /**
 * @brief Destroys state of the netfpga, and restores it to the original state (state before init) 

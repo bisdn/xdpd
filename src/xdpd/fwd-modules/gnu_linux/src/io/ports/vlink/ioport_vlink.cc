@@ -122,6 +122,8 @@ datapacket_t* ioport_vlink::read(){
 		empty_pipe(rx_notify_pipe);
 		//FIXME statistics
 		pkt_x86->in_port = of_port_state->of_port_num;
+		pkt->matches.port_in = of_port_state->of_port_num;
+		pkt->matches.phy_port_in = of_port_state->of_port_num;
 	}
 
 	return pkt;
@@ -179,12 +181,12 @@ rofl_result_t ioport_vlink::tx_pkt(datapacket_t* pkt){
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t ioport_vlink::disable(){
+rofl_result_t ioport_vlink::down(){
 	of_port_state->up = false;
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t ioport_vlink::enable(){
+rofl_result_t ioport_vlink::up(){
 	of_port_state->up = true;
 	return ROFL_SUCCESS;
 }

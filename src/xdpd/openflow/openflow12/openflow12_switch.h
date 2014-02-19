@@ -20,6 +20,10 @@
 * @brief OF1.2 switch implementation 
 */
 
+namespace rofl {
+	class ssl_context;
+}  // namespace rofl
+
 using namespace rofl;
 
 namespace xdpd{
@@ -44,7 +48,8 @@ public:
 				int* ma_list,
 				int reconnect_start_timeout,
 				caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633),
-				caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmVersionNotSupported);
+				caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0),
+				ssl_context *ctx = NULL) throw (eOfSmVersionNotSupported);
 
 
 	/**

@@ -5,10 +5,13 @@
 using namespace xdpd::gnu_linux;
 
 //Constructor&destructor
-static_pktclassifier::static_pktclassifier() :
+static_pktclassifier::static_pktclassifier(datapacket_t* pkt) :
 	packetclassifier()
 {
 	unsigned int i;
+
+	//Set packet_matches pointer to pre-fill
+	matches = &pkt->matches;
 
 	classify_reset();	
 	
@@ -102,9 +105,16 @@ static_pktclassifier::~static_pktclassifier(){
 
 
 
-void static_pktclassifier::classify(uint8_t* packet, size_t len){
+void static_pktclassifier::classify(uint8_t* packet, size_t len, uint32_t port_in, uint32_t phy_port_in){
+
 	if(is_classified)
 		classify_reset();
+
+	//Set port matches
+	matches->port_in = port_in;
+	matches->phy_port_in = phy_port_in;
+
+	//Classify starting in the ethernet frame
 	parse_ether(packet, len);
 	is_classified = true;
 }
@@ -381,14 +391,24 @@ void static_pktclassifier::parse_ether(uint8_t *data, size_t datalen){
 	headers[FIRST_ETHER_FRAME_POS + num_of_ether].present = true;
 	num_of_headers[HEADER_TYPE_ETHER] = num_of_ether+1;
 
-	//Increment pointers and decrement remaining payload size
-	data += sizeof(struct rofl::fetherframe::eth_hdr_t);
-	datalen -= sizeof(struct rofl::fetherframe::eth_hdr_t);
-
 	//Set pointer to header
 	rofl::fetherframe* ether_header = (rofl::fetherframe*) headers[FIRST_ETHER_FRAME_POS + num_of_ether].frame;
 	
+	//Increment pointers and decrement remaining payload size
+	if( ether_header->is_llc_frame() ){
+		data += sizeof(struct rofl::fetherframe::eth_llc_hdr_t);
+		datalen -= sizeof(struct rofl::fetherframe::eth_llc_hdr_t);
+	}else{
+		data += sizeof(struct rofl::fetherframe::eth_hdr_t);
+		datalen -= sizeof(struct rofl::fetherframe::eth_hdr_t);
+	}
+	
 	eth_type = ether_header->get_dl_type();
+
+	//Initialize eth packet matches
+	matches->eth_type = get_ether_type((void*)ether_header); //This MUST be here
+	matches->eth_src = get_ether_dl_src((void*)ether_header);
+	matches->eth_dst = get_ether_dl_dst((void*)ether_header);
 
 	switch (eth_type) {
 		case rofl::fvlanframe::VLAN_CTAG_ETHER:
@@ -452,6 +472,9 @@ void static_pktclassifier::parse_vlan( uint8_t *data, size_t datalen){
 	
 	eth_type = vlan->get_dl_type();
 
+	//Initialize packet matches
+	matches->eth_type = eth_type;
+
 	switch (eth_type) {
 		case rofl::fvlanframe::VLAN_CTAG_ETHER:
 		case rofl::fvlanframe::VLAN_STAG_ETHER:
@@ -488,6 +511,13 @@ void static_pktclassifier::parse_vlan( uint8_t *data, size_t datalen){
 			}
 			break;
 	}
+
+	//Initialize vlan packet matches
+	matches->has_vlan = true;
+	matches->eth_type = get_vlan_type(vlan);
+	matches->vlan_vid = get_vlan_id(vlan);
+	matches->vlan_pcp = get_vlan_pcp(vlan);
+
 }
 
 void static_pktclassifier::parse_mpls(uint8_t *data, size_t datalen){
@@ -505,9 +535,9 @@ void static_pktclassifier::parse_mpls(uint8_t *data, size_t datalen){
 	datalen -= sizeof(struct rofl::fmplsframe::mpls_hdr_t);
 
 	//Set pointer to header
-	rofl::fmplsframe* mpls = (rofl::fmplsframe*) headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame;
+	rofl::fmplsframe* mpls_header = (rofl::fmplsframe*) headers[FIRST_MPLS_FRAME_POS + num_of_mpls].frame;
 	
-	if (not mpls->get_mpls_bos()){
+	if (not mpls_header->get_mpls_bos()){
 
 		parse_mpls(data, datalen);
 
@@ -515,6 +545,11 @@ void static_pktclassifier::parse_mpls(uint8_t *data, size_t datalen){
 		
 		//TODO: We could be trying to guess if payload is IPv4/v6 and continue parsing...
 	}
+
+	//Initialize mpls packet matches
+	matches->mpls_bos = get_mpls_bos((void*)mpls_header);
+	matches->mpls_label = get_mpls_label((void*)mpls_header); 
+	matches->mpls_tc = get_mpls_tc((void*)mpls_header); 
 }
 
 
@@ -529,25 +564,25 @@ void static_pktclassifier::parse_pppoe(uint8_t *data, size_t datalen){
 	headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].present = true;
 	num_of_headers[HEADER_TYPE_PPPOE] = num_of_pppoe+1;
 	
-	rofl::fpppoeframe* pppoe = (rofl::fpppoeframe*) headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame;
+	rofl::fpppoeframe* pppoe_header = (rofl::fpppoeframe*) headers[FIRST_PPPOE_FRAME_POS + num_of_pppoe].frame;
 
 	switch (eth_type) {
 		case rofl::fpppoeframe::PPPOE_ETHER_DISCOVERY:
 			{
 				datalen -= sizeof(struct rofl::fpppoeframe::pppoe_hdr_t);
 
-				uint16_t pppoe_len = pppoe->get_hdr_length() > datalen ? datalen : pppoe->get_hdr_length();
+				uint16_t pppoe_len = pppoe_header->get_hdr_length() > datalen ? datalen : pppoe_header->get_hdr_length();
 
 				/*
 				 * parse any pppoe service tags
 				 */
-				pppoe->unpack(data, sizeof(struct rofl::fpppoeframe::pppoe_hdr_t) + pppoe_len);
+				pppoe_header->unpack(data, sizeof(struct rofl::fpppoeframe::pppoe_hdr_t) + pppoe_len);
 
 
 				/*
 				 * any remaining bytes after the pppoe tags => padding?
 				 */
-				if (datalen > pppoe->tags.length())
+				if (datalen > pppoe_header->tags.length())
 				{
 					//TODO: Continue parsing??	
 				}
@@ -569,6 +604,10 @@ void static_pktclassifier::parse_pppoe(uint8_t *data, size_t datalen){
 			break;
 	}
 
+	//Initialize pppoe packet matches
+	matches->pppoe_code = get_pppoe_code((void*)pppoe_header);
+	matches->pppoe_type = get_pppoe_type((void*)pppoe_header);
+	matches->pppoe_sid = get_pppoe_sessid((void*)pppoe_header);
 
 }
 
@@ -585,10 +624,10 @@ void static_pktclassifier::parse_ppp(uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_PPP] = num_of_ppp+1;
 
 	//Set reference
-	rofl::fpppframe* ppp = (rofl::fpppframe*) headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame; 
+	rofl::fpppframe* ppp_header = (rofl::fpppframe*) headers[FIRST_PPP_FRAME_POS + num_of_ppp].frame; 
 
 	//Increment pointers and decrement remaining payload size
-	switch (ppp->get_ppp_prot()) {
+	switch (ppp_header->get_ppp_prot()) {
 		case rofl::fpppframe::PPP_PROT_IPV4:
 			{
 				//Increment pointers and decrement remaining payload size
@@ -600,10 +639,13 @@ void static_pktclassifier::parse_ppp(uint8_t *data, size_t datalen){
 			break;
 		default:
 			{
-				ppp->unpack(data, datalen);
+				ppp_header->unpack(data, datalen);
 			}
 			break;
 	}
+
+	//Initialize ppp packet matches
+	matches->ppp_proto = get_ppp_prot((void*)ppp_header);
 }
 
 
@@ -619,7 +661,7 @@ void static_pktclassifier::parse_arpv4(uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_ARPV4] = num_of_arpv4+1;
 
 	//Set reference
-	//rofl::farpv4frame *arpv4 = headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame; 
+	rofl::farpv4frame *arpv4_header = (rofl::farpv4frame*)headers[FIRST_ARPV4_FRAME_POS + num_of_arpv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::farpv4frame::arpv4_hdr_t);
@@ -628,6 +670,14 @@ void static_pktclassifier::parse_arpv4(uint8_t *data, size_t datalen){
 	if (datalen > 0){
 		//TODO: something?
 	}
+
+	//Initialize arpv4 packet matches
+	matches->arp_opcode = get_arpv4_opcode((void*)arpv4_header);
+	matches->arp_sha =  get_arpv4_dl_src((void*)arpv4_header);
+	matches->arp_spa =  get_arpv4_ip_src((void*)arpv4_header);
+	matches->arp_tha =  get_arpv4_dl_dst((void*)arpv4_header);
+	matches->arp_tpa =  get_arpv4_ip_dst((void*)arpv4_header);
+
 }
 
 
@@ -643,13 +693,13 @@ void static_pktclassifier::parse_ipv4(uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_IPV4] = num_of_ipv4+1;
 
 	//Set reference
-	rofl::fipv4frame *ipv4 = (rofl::fipv4frame*) headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame; 
+	rofl::fipv4frame *ipv4_header = (rofl::fipv4frame*) headers[FIRST_IPV4_FRAME_POS + num_of_ipv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::fipv4frame::ipv4_hdr_t);
 	datalen -= sizeof(struct rofl::fipv4frame::ipv4_hdr_t);
 
-	if (ipv4->has_MF_bit_set()){
+	if (ipv4_header->has_MF_bit_set()){
 		// TODO: fragment handling
 
 		return;
@@ -658,7 +708,7 @@ void static_pktclassifier::parse_ipv4(uint8_t *data, size_t datalen){
 	// FIXME: IP header with options
 
 
-	switch (ipv4->get_ipv4_proto()) {
+	switch (ipv4_header->get_ipv4_proto()) {
 		case rofl::fipv4frame::IPV4_IP_PROTO:
 			{
 				parse_ipv4(data, datalen);
@@ -690,6 +740,13 @@ void static_pktclassifier::parse_ipv4(uint8_t *data, size_t datalen){
 			}
 			break;
 	}
+
+	//Initialize ipv4 packet matches
+	matches->ip_proto = get_ipv4_proto((void*)ipv4_header);
+	matches->ip_dscp = get_ipv4_dscp((void*)ipv4_header);
+	matches->ip_ecn = get_ipv4_ecn((void*)ipv4_header);
+	matches->ipv4_src = get_ipv4_src((void*)ipv4_header);
+	matches->ipv4_dst = get_ipv4_dst((void*)ipv4_header);
 }
 
 
@@ -705,7 +762,7 @@ void static_pktclassifier::parse_icmpv4( uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_ICMPV4] = num_of_icmpv4+1;
 
 	//Set reference
-	//rofl::ficmpv4frame *icmpv4 = (rofl::ficmpv4frame*) headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame; 
+	rofl::ficmpv4frame *icmpv4_header = (rofl::ficmpv4frame*) headers[FIRST_ICMPV4_FRAME_POS + num_of_icmpv4].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::ficmpv4frame::icmpv4_hdr_t);
@@ -715,6 +772,10 @@ void static_pktclassifier::parse_icmpv4( uint8_t *data, size_t datalen){
 	if (datalen > 0){
 		//TODO: something?	
 	}
+
+	//Initialize icmpv4 packet matches
+	matches->icmpv4_code = get_icmpv4_code((void*)icmpv4_header);
+	matches->icmpv4_type = get_icmpv4_type((void*)icmpv4_header);
 }
 
 //IPv6 & ICMPv6
@@ -729,7 +790,7 @@ void static_pktclassifier::parse_ipv6(uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_IPV6] = num_of_ipv6+1;
 
 	//Set reference
-	rofl::fipv6frame *ipv6 = (rofl::fipv6frame*) headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame; 
+	rofl::fipv6frame *ipv6_header = (rofl::fipv6frame*) headers[FIRST_IPV6_FRAME_POS + num_of_ipv6].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::fipv6frame::ipv6_hdr_t);
@@ -737,7 +798,7 @@ void static_pktclassifier::parse_ipv6(uint8_t *data, size_t datalen){
 
 	// FIXME: IP header with options
 
-	switch (ipv6->get_next_header()) {
+	switch (ipv6_header->get_next_header()) {
 		case rofl::fipv4frame::IPV4_IP_PROTO:
 			{
 				parse_ipv4(data, datalen);
@@ -779,6 +840,14 @@ void static_pktclassifier::parse_ipv6(uint8_t *data, size_t datalen){
 			}
 			break;
 	}
+
+	//Initialize ipv6 packet matches
+	matches->ip_proto = get_ipv6_next_header((void*)ipv6_header);
+	matches->ip_dscp = get_ipv6_dscp((void*)ipv6_header);
+	matches->ip_ecn = get_ipv6_ecn((void*)ipv6_header);
+	matches->ipv6_src = get_ipv6_src((void*)ipv6_header);
+	matches->ipv6_dst = get_ipv6_dst((void*)ipv6_header);
+	matches->ipv6_flabel = get_ipv6_flow_label((void*)ipv6_header);
 }
 
 
@@ -794,7 +863,7 @@ void static_pktclassifier::parse_icmpv6( uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_ICMPV6] = num_of_icmpv6+1;
 
 	//Set reference
-	//rofl::ficmpv6frame *icmpv6 = (rofl::ficmpv6frame*) headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame; 
+	rofl::ficmpv6frame *icmpv6_header = (rofl::ficmpv6frame*) headers[FIRST_ICMPV6_FRAME_POS + num_of_icmpv6].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::ficmpv6frame::icmpv6_hdr_t);
@@ -804,6 +873,14 @@ void static_pktclassifier::parse_icmpv6( uint8_t *data, size_t datalen){
 	if (datalen > 0){
 		//TODO: something?	
 	}
+
+	//Initialize icmpv6 packet matches
+	matches->icmpv6_code = get_icmpv6_code((void*)icmpv6_header);
+	matches->icmpv6_type = get_icmpv6_type((void*)icmpv6_header);
+	matches->ipv6_nd_target = get_icmpv6_neighbor_taddr((void*)icmpv6_header);
+	matches->ipv6_nd_sll = get_icmpv6_ll_saddr((void*)icmpv6_header);
+	matches->ipv6_nd_tll = get_icmpv6_ll_taddr((void*)icmpv6_header);
+	//matches->ipv6_exthdr = ; 
 }
 
 void static_pktclassifier::parse_udp(uint8_t *data, size_t datalen){
@@ -817,14 +894,14 @@ void static_pktclassifier::parse_udp(uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_UDP] = num_of_udp+1;
 
 	//Set reference
-	rofl::fudpframe *udp = (rofl::fudpframe*) headers[FIRST_UDP_FRAME_POS + num_of_udp].frame;
+	rofl::fudpframe *udp_header = (rofl::fudpframe*) headers[FIRST_UDP_FRAME_POS + num_of_udp].frame;
 	
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::fudpframe::udp_hdr_t);
 	datalen -= sizeof(struct rofl::fudpframe::udp_hdr_t);
 
 	if (datalen > 0){
-		switch (udp->get_dport()) {
+		switch (udp_header->get_dport()) {
 		case rofl::fgtpuframe::GTPU_UDP_PORT: {
 			parse_gtp(data, datalen);
 		} break;
@@ -833,6 +910,10 @@ void static_pktclassifier::parse_udp(uint8_t *data, size_t datalen){
 		} break;
 		}
 	}
+
+	//Initialize udp packet matches
+	matches->udp_src = get_udp_sport((void*)udp_header);
+	matches->udp_dst = get_udp_dport((void*)udp_header);
 }
 
 
@@ -848,7 +929,7 @@ void static_pktclassifier::parse_tcp(uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_TCP] = num_of_tcp+1;
 
 	//Set reference
-	//rofl::ftcpframe *tcp = (rofl::ftcpframe*) headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame; 
+	rofl::ftcpframe *tcp_header = (rofl::ftcpframe*) headers[FIRST_TCP_FRAME_POS + num_of_tcp].frame; 
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::ftcpframe::tcp_hdr_t);
@@ -858,6 +939,9 @@ void static_pktclassifier::parse_tcp(uint8_t *data, size_t datalen){
 		//TODO: something 
 	}
 
+	//Initialize tcp packet matches
+	matches->tcp_src = get_tcp_sport((void*)tcp_header);
+	matches->tcp_dst = get_tcp_dport((void*)tcp_header);
 }
 
 
@@ -883,6 +967,7 @@ void static_pktclassifier::parse_sctp( uint8_t *data, size_t datalen){
 		//TODO: something 
 	}
 
+	//TODO: missing
 }
 
 
@@ -897,7 +982,7 @@ void static_pktclassifier::parse_gtp( uint8_t *data, size_t datalen){
 	num_of_headers[HEADER_TYPE_GTP] = num_of_gtp+1;
 
 	//Set reference
-	//rofl::fgtpuframe *gtp = (rofl::fgtpuframe*) headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame;
+	rofl::fgtpuframe *gtp_header = (rofl::fgtpuframe*) headers[FIRST_GTP_FRAME_POS + num_of_gtp].frame;
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(struct rofl::fgtpuframe::gtpu_base_hdr_t);
@@ -907,6 +992,9 @@ void static_pktclassifier::parse_gtp( uint8_t *data, size_t datalen){
 		//TODO: something
 	}
 
+	//Initialize udp packet matches
+	matches->gtp_msg_type = get_gtpu_msg_type((void*)gtp_header);
+	matches->gtp_teid = get_gtpu_teid((void*)gtp_header);
 }
 
 
@@ -1146,7 +1234,7 @@ rofl::fvlanframe* static_pktclassifier::push_vlan(datapacket_t* pkt, uint16_t et
 	current_length = ether_header->framelen(); 
 	
 	if(!is_classified)
-		classify(get_buffer(pkt), get_buffer_length(pkt)); // this ensures that ether(0) exists
+		classify(get_buffer(pkt), get_buffer_length(pkt), matches->port_in, matches->phy_port_in); // this ensures that ether(0) exists
 
 	uint16_t inner_ether_type = ether_header->get_dl_type();
 
@@ -1203,7 +1291,7 @@ rofl::fmplsframe* static_pktclassifier::push_mpls(datapacket_t* pkt, uint16_t et
 	}
 	
 	if(!is_classified)
-		classify(get_buffer(pkt), get_buffer_length(pkt));
+		classify(get_buffer(pkt), get_buffer_length(pkt), matches->port_in, matches->phy_port_in); // this ensures that ether(0) exists
 
 	//Recover the ether(0)
 	ether_header = ether(0);
@@ -1266,7 +1354,7 @@ rofl::fpppoeframe* static_pktclassifier::push_pppoe(datapacket_t* pkt, uint16_t 
 	}
 	
 	if(!is_classified)
-		classify(get_buffer(pkt), get_buffer_length(pkt));
+		classify(get_buffer(pkt), get_buffer_length(pkt), matches->port_in, matches->phy_port_in); // this ensures that ether(0) exists
 	
 	if (pppoe(0)){
 		// TODO: log error => pppoe tag already exists

@@ -21,7 +21,8 @@ of10_endpoint::of10_endpoint(
 		openflow_switch* sw,
 		int reconnect_start_timeout,
 		caddress const& controller_addr,
-		caddress const& binding_addr) throw (eOfSmErrorOnCreation) {
+		caddress const& binding_addr,
+		ssl_context *ctx) throw (eOfSmErrorOnCreation) {
 
 
 	//Reference back to the sw
@@ -33,7 +34,7 @@ of10_endpoint::of10_endpoint(
 	versionbitmap.add_ofp_version(rofl::openflow10::OFP_VERSION);
 	
 	//Connect to the main controller
-	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr);
+	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr, PF_INET, SOCK_STREAM, IPPROTO_TCP, ctx);
 }
 
 /*

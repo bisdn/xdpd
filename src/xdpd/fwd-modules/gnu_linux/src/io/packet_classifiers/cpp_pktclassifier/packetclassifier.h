@@ -61,7 +61,7 @@ public:
 	/*
 	* Main classification methods. 
 	*/
-	virtual void classify(uint8_t* packet, size_t len)=0;
+	virtual void classify(uint8_t* packet, size_t len, uint32_t port_in, uint32_t phy_port_in)=0;
 	virtual void classify_reset(void)=0;
 
 	/*

@@ -57,6 +57,9 @@ public:
 	//Group id
 	unsigned int id;	
 
+	//Keep on flag
+	bool keep_on;
+
 	//Threading information
 	unsigned int num_of_threads;
 	pthread_t thread_state[DEFAULT_MAX_THREADS_PER_PG];
@@ -103,7 +106,7 @@ public:
 	/*
 	* Checkpoint for I/O threads to keep on working. Called by schedulers
 	*/ 
-	inline static bool keep_on_working(portgroup_state* pg){ return portgroups[pg->id]->running_ports->size() > 0;};
+	inline static bool keep_on_working(portgroup_state* pg){ return pg->keep_on;};
 
 	/*
 	* Signal that PG state has been syncrhonized within a particular I/O thread 
@@ -119,6 +122,7 @@ public:
 	
 
 	/* Utils */ 
+	static void dump_state(bool mutex_locked);
 	static portgroup_state* get_group(int grp_id);
 	static int get_group_id_by_port(ioport* port, pg_type_t type);
 protected:

@@ -49,33 +49,57 @@ void set_icmpv6_opt_type(void *hdr, uint8_t type){
 };
 
 uint64_t get_icmpv6_ll_taddr(void *hdr){
-	return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).get_ll_taddr().get_mac();
+	try{
+		return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).get_ll_taddr().get_mac();
+	}catch(...){}
+	
+	return 0x0UL;
 };
 
 void set_icmpv6_ll_taddr(void *hdr, uint64_t taddr){
-	((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).set_ll_taddr(rofl::cmacaddr(taddr));
+	try{
+		((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_TARGET).set_ll_taddr(rofl::cmacaddr(taddr));
+	}catch(...){}
 };
 
 uint64_t get_icmpv6_ll_saddr(void *hdr){
-	return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).get_ll_saddr().get_mac();
+	try{
+		return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).get_ll_saddr().get_mac();
+	}catch(...){}
+
+	return 0x0UL;
 };
 
 void set_icmpv6_ll_saddr(void *hdr, uint64_t saddr){
-	((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).set_ll_saddr(rofl::cmacaddr(saddr));
+	try{
+		((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_LLADDR_SOURCE).set_ll_saddr(rofl::cmacaddr(saddr));
+	}catch(...){}
 };
 
 uint8_t get_icmpv6_pfx_on_link_flag(void *hdr){
-	return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).get_pfx_on_link_flag();
+	try{
+		return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).get_pfx_on_link_flag();
+	}catch(...){}
+
+	return 0x0;
 };
 
 void set_icmpv6_pfx_on_link_flag(void *hdr, uint8_t flag){
-	((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).set_pfx_on_link_flag(flag);
+	try{
+		((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).set_pfx_on_link_flag(flag);
+	}catch(...){}
 };
 
 uint8_t get_icmpv6_pfx_aac_flag(void *hdr){
-	return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).get_pfx_aac_flag();
+	try{
+		return ((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).get_pfx_aac_flag();
+	}catch(...){}
+	
+	return 0x0;
 };
 
 void set_icmpv6_pfx_aac_flag(void *hdr, uint8_t flag){
-	((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).set_pfx_aac_flag(flag);
+	try{
+		((rofl::ficmpv6frame *)hdr)->get_option(rofl::ficmpv6opt::ICMPV6_OPT_PREFIX_INFO).set_pfx_aac_flag(flag);
+	}catch(...){}
 };

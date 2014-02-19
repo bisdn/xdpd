@@ -45,10 +45,10 @@ public:
 	//virtual circular_queue_state_t get_output_queue_state(unsigned int q_id=0);
 
 	virtual rofl_result_t 
-	disable();
+	down();
 
 	virtual rofl_result_t
-	enable();
+	up();
 
 	static const size_t SIMULATED_PKT_SIZE=1500;
 

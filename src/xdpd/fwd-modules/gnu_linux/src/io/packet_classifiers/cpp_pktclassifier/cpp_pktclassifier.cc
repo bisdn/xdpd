@@ -8,16 +8,16 @@ using xdpd::gnu_linux::static_pktclassifier;
 //typedef struct classify_state pktclassifier;
 typedef static_pktclassifier pktclassifier;
 
-struct classify_state* init_classifier(){
-	return (struct classify_state*) new pktclassifier();
+struct classify_state* init_classifier(datapacket_t*const pkt){
+	return (struct classify_state*) new pktclassifier(pkt);
 }
 
 void destroy_classifier(struct classify_state* clas_state){
 	delete ((pktclassifier*)clas_state);
 }
 
-void classify_packet(struct classify_state* clas_state, uint8_t* pkt, size_t len){
-	((pktclassifier*)clas_state)->classify(pkt, len);
+void classify_packet(struct classify_state* clas_state, uint8_t* pkt, size_t len,  uint32_t port_in, uint32_t phy_port_in){
+	((pktclassifier*)clas_state)->classify(pkt, len, port_in, phy_port_in);
 }
 
 void reset_classifier(struct classify_state* clas_state){

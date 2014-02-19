@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../pktclassifier.h"
 #include "packetclassifier.h"
 
 #include "./cpp_headers/cpp_ethernet.h"
@@ -35,11 +36,6 @@ struct classify_state;
 ROFL_BEGIN_DECLS
 
 //function declarations
-struct classify_state* init_classifier(void);
-void destroy_classifier(struct classify_state* clas_state);
-void classify_packet(struct classify_state* clas_state, uint8_t* pkt, size_t len);
-void reset_classifier(struct classify_state* clas_state);
-
 void* get_ether_hdr(struct classify_state* clas_state, int idx);
 void* get_vlan_hdr(struct classify_state* clas_state, int idx);
 void* get_mpls_hdr(struct classify_state* clas_state, int idx);
@@ -53,23 +49,6 @@ void* get_tcp_hdr(struct classify_state* clas_state, int idx);
 void* get_pppoe_hdr(struct classify_state* clas_state, int idx);
 void* get_ppp_hdr(struct classify_state* clas_state, int idx);
 void* get_gtpu_hdr(struct classify_state* clas_state, int idx);
-
-//push & pop
-void pop_vlan(datapacket_t* pkt, struct classify_state* clas_state);
-void pop_mpls(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
-void pop_pppoe(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
-void pop_gtp(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
-
-void* push_vlan(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
-void* push_mpls(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
-void* push_pppoe(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
-void* push_gtp(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
-
-//void pkt_push();
-//void pkt_pop();
-
-void dump_pkt_classifier(struct classify_state* clas_state);
-size_t get_pkt_len(datapacket_t* pkt, struct classify_state* clas_state, void *from, void *to);
 
 ROFL_END_DECLS
 

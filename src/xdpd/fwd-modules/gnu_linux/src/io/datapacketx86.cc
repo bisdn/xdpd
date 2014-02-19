@@ -2,7 +2,6 @@
 
 //Include here the classifier you want to use
 #ifndef C_PACKET_CLASSIFIER
-	#include "packet_classifiers/cpp_pktclassifier/rofl_pktclassifier.h"
 	#include "packet_classifiers/cpp_pktclassifier/static_pktclassifier.h"
 #endif
 

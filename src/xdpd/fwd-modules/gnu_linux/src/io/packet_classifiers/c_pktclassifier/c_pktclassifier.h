@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../pktclassifier.h"
 
 #include "./headers/cpc_arpv4.h"
 #include "./headers/cpc_ethernet.h"
@@ -144,12 +145,7 @@ typedef struct classify_state{
 }classify_state_t;
 
 
-//function declarations
-classify_state_t* init_classifier(datapacket_t*const pkt);
-void destroy_classifier(classify_state_t* clas_state);
-void classify_packet(classify_state_t* clas_state, uint8_t* pkt, size_t len,  uint32_t port_in, uint32_t phy_port_in);
-void reset_classifier(classify_state_t* clas_state);
-
+//inline function implementations
 inline static 
 void* get_ether_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;
@@ -382,23 +378,6 @@ void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
 		return clas_state->headers[pos].frame;
 	return NULL;
 }
-
-//push & pop
-void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state);
-void pop_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-
-void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-
-//void pkt_push();
-//void pkt_pop();
-
-void dump_pkt_classifier(classify_state_t* clas_state);
-size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to);
 
 //shifts
 inline static 

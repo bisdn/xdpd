@@ -236,6 +236,9 @@ next:
 			
 	pkt_x86 = (datapacketx86*) pkt->platform_state;
 
+	pkt->ts.tv_sec = hdr->tp_sec;
+	pkt->ts.tv_usec = hdr->tp_nsec/1000;
+
 	//Fill packet
 	if(hdr->tp_vlan_tci != 0){
 		//There is a VLAN

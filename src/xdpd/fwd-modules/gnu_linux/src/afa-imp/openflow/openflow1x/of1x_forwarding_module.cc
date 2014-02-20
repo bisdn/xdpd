@@ -300,9 +300,6 @@ afa_result_t fwd_module_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		((datapacketx86*)pkt->platform_state)->init(buffer, buffer_size, lsw, in_port, 0, true);
 		pkt->sw = lsw;
 	}
-
-	//add timestamp to packet
-	platform_gettimeofday(&pkt->ts);
 	
 	//Reclassify the packet
 	pktx86 = (datapacketx86*)pkt->platform_state;
@@ -358,9 +355,6 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
 		datapacket_t* pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
-	
-		//Add timestamp to packet
-		platform_gettimeofday(&pkt->ts);
 		
 		if(!pkt){
 			assert(0);
@@ -411,9 +405,6 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
 		datapacket_t* pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
-	
-		// add timestamp to packet
-		platform_gettimeofday(&pkt->ts);
 		
 		if(!pkt){
 			assert(0);

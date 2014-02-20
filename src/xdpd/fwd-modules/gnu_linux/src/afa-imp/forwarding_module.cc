@@ -374,7 +374,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 	port = physical_switch_get_port_by_name(name);
 
 	//Check if the port does exist and is really attached to the dpid
-	if( !port || port->attached_sw->dpid != dpid)
+	if( !port || !port->attached_sw || port->attached_sw->dpid != dpid)
 		return AFA_FAILURE;
 
 	//Snapshoting the port *before* it is detached

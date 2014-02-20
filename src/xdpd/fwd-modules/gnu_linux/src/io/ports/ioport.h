@@ -68,7 +68,6 @@ public:
 		return 0;
 	} 
 
-
 	/**
 	* Enque packet for transmission(this must be a non blocking call). 
 	* Function cannot assume that q_id is a valid id, so it MUST do the appropiate
@@ -189,6 +188,12 @@ public:
 	pthread_rwlock_t rwlock; //Serialize management actions
 
 protected:
+
+	/**
+	* Wipes output and input queues
+	*/
+	virtual void drain_queues(void);
+
 	static const unsigned int NUM_OF_REQUIRED_BUFFERS=IO_IFACE_REQUIRED_BUFFERS; /* Required buffers for the port to operate at line rate */
 	
 	//Output QoS queues

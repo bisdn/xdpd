@@ -27,6 +27,7 @@ int pktin_not_pipe[2];
 //Processes the pkt_ins up to BUCKETS_PER_LS 
 static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 
+	int ret;
 	unsigned int i, pkt_size;
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
@@ -100,11 +101,15 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 	pending_to_read += i;
 
 	if( pending_to_read > 0 ){
+
 		if(pending_to_read > DUMMY_BUF_SIZE){
-			pending_to_read -= read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf, DUMMY_BUF_SIZE);
+			ret = read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf, DUMMY_BUF_SIZE);
 		}else{
-			pending_to_read -= read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf, pending_to_read);
+			ret = read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf, pending_to_read);
 		}
+
+		if(ret > 0)
+			pending_to_read -= ret; 
 	}
 }
 

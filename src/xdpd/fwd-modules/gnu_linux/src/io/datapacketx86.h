@@ -15,11 +15,7 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 
-#ifdef C_PACKET_CLASSIFIER
-	#include "packet_classifiers/c_pktclassifier/c_pktclassifier.h"
-#else
-	#include "packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
-#endif
+#include "packet_classifiers/pktclassifier.h"
 
 //Profiling
 #include "../util/time_measurements.h"

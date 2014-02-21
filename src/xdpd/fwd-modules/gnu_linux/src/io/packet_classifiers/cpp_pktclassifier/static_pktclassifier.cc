@@ -1,6 +1,7 @@
 #include "static_pktclassifier.h"
 #include <rofl/common/utils/c_logger.h>
 #include "../../datapacketx86.h"
+#include "cpp_pktclassifier.h"
 
 using namespace xdpd::gnu_linux;
 

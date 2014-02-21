@@ -30,22 +30,22 @@ enum icmpv6_option_type_t {
 };
 
 /* ICMPv6 generic option header */
-struct cpc_icmpv6_option_hdr_t {
+typedef struct cpc_icmpv6_option_hdr {
 	uint8_t 							type;
 	uint8_t								len;
 	uint8_t 							data[0];
-} __attribute__((packed));
+} __attribute__((packed)) cpc_icmpv6_option_hdr_t;
 
 
 /* ICMPv6 link layer address option */
-struct cpc_icmpv6_lla_option_t {
-	struct cpc_icmpv6_option_hdr_t		hdr;
+struct cpc_icmpv6_lla_option {
+	cpc_icmpv6_option_hdr_t				hdr;
 	uint8_t								addr[ETHER_ADDR_LEN]; // len=1 (in 8-octets wide blocks) and we assume Ethernet here
 } __attribute__((packed));
 
 /* ICMPv6 prefix information option */
-struct cpc_icmpv6_prefix_info_t {
-	struct cpc_icmpv6_option_hdr_t		hdr;
+struct cpc_icmpv6_prefix_info {
+	cpc_icmpv6_option_hdr_t				hdr;
 	uint8_t								pfxlen;
 	uint8_t								flags;
 	uint32_t							valid_lifetime;
@@ -55,25 +55,25 @@ struct cpc_icmpv6_prefix_info_t {
 } __attribute__((packed));
 
 /* ICMPv6 redirected option header */
-struct cpc_icmpv6_redirected_hdr_t {
-	struct cpc_icmpv6_option_hdr_t		hdr;
+struct cpc_icmpv6_redirected_hdr {
+	cpc_icmpv6_option_hdr_t		hdr;
 	uint8_t								reserved[6];
 	uint8_t								data[0];
 } __attribute__((packed));
 
 /* ICMPv6 MTU option */
-struct cpc_icmpv6_mtu_t {
-	struct cpc_icmpv6_option_hdr_t		hdr;
+struct cpc_icmpv6_mtu {
+	cpc_icmpv6_option_hdr_t		hdr;
 	uint8_t								reserved[2];
 	uint32_t							mtu;
 } __attribute__((packed));
 
 typedef union icmpv6optu{
-	struct cpc_icmpv6_option_hdr_t		optu;
-	struct cpc_icmpv6_lla_option_t		optu_lla;
-	struct cpc_icmpv6_prefix_info_t	optu_pfx;
-	struct cpc_icmpv6_redirected_hdr_t	optu_rdr;
-	struct cpc_icmpv6_mtu_t				optu_mtu;
+	cpc_icmpv6_option_hdr_t		optu;
+	struct cpc_icmpv6_lla_option		optu_lla;
+	struct cpc_icmpv6_prefix_info	optu_pfx;
+	struct cpc_icmpv6_redirected_hdr	optu_rdr;
+	struct cpc_icmpv6_mtu				optu_mtu;
 } cpc_icmpv6optu_t;
 
 enum icmpv6_ip_proto_t {
@@ -125,35 +125,35 @@ typedef struct cpc_icmpv6_hdr {
 	*/
 
 /* ICMPv6 message format for Destination Unreachable */
-struct cpc_icmpv6_dest_unreach_hdr_t {
+struct cpc_icmpv6_dest_unreach_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=133, code=0
 	uint32_t						unused;					// a 32bit value
 	uint8_t							data[0];				// the IP packet
 } __attribute__((packed));
 
 /* ICMPv6 message format for Packet Too Big */
-struct cpc_icmpv6_pkt_too_big_hdr_t {
+struct cpc_icmpv6_pkt_too_big_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=133, code=0
 	uint32_t						unused;					// a 32bit value
 	uint8_t							data[0];				// the IP packet
 } __attribute__((packed));
 
 /* ICMPv6 message format for Time Exceeded */
-struct cpc_icmpv6_time_exceeded_hdr_t {
+struct cpc_icmpv6_time_exceeded_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=133, code=0
 	uint32_t						unused;					// a 32bit value
 	uint8_t							data[0];				// the IP packet
 } __attribute__((packed));
 
 /* ICMPv6 message format for Parameter Problem */
-struct cpc_icmpv6_param_problem_hdr_t {
+struct cpc_icmpv6_param_problem_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=133, code=0
 	uint32_t						pointer;				// a 32bit value
 	uint8_t							data[0];				// the IP packet
 } __attribute__((packed));
 
 /* ICMPv6 echo request message format */
-struct cpc_icmpv6_echo_request_hdr_t {
+struct cpc_icmpv6_echo_request_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=133, code=0
 	uint16_t						id;
 	uint16_t 						seqno;
@@ -161,7 +161,7 @@ struct cpc_icmpv6_echo_request_hdr_t {
 } __attribute__((packed));
 
 /* ICMPv6 echo reply message format */
-struct cpc_icmpv6_echo_reply_hdr_t {
+struct cpc_icmpv6_echo_reply_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=133, code=0
 	uint16_t						id;
 	uint16_t 						seqno;
@@ -174,14 +174,14 @@ struct cpc_icmpv6_echo_reply_hdr_t {
 	*/
 
 /* ICMPv6 router solicitation */
-struct cpc_icmpv6_router_solicitation_hdr_t {
+struct cpc_icmpv6_router_solicitation_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=133, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
 	cpc_icmpv6optu_t				options[0];
 } __attribute__((packed));
 
 /* ICMPv6 router advertisement */
-struct cpc_icmpv6_router_advertisement_hdr_t {
+struct cpc_icmpv6_router_advertisement_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=134, code=0
 	uint8_t 						cur_hop_limit;
 	uint8_t							flags;
@@ -192,7 +192,7 @@ struct cpc_icmpv6_router_advertisement_hdr_t {
 } __attribute__((packed));
 
 /* ICMPv6 neighbor solicitation */
-struct cpc_icmpv6_neighbor_solicitation_hdr_t {
+struct cpc_icmpv6_neighbor_solicitation_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;			// type=135, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
@@ -200,7 +200,7 @@ struct cpc_icmpv6_neighbor_solicitation_hdr_t {
 } __attribute__((packed));
 
 /* ICMPv6 neighbor advertisement */
-struct cpc_icmpv6_neighbor_advertisement_hdr_t {
+struct cpc_icmpv6_neighbor_advertisement_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;				// type=136, code=0
 	uint32_t 						flags;
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
@@ -208,7 +208,7 @@ struct cpc_icmpv6_neighbor_advertisement_hdr_t {
 } __attribute__((packed));
 
 /* ICMPv6 redirect message */
-struct cpc_icmpv6_redirect_hdr_t {
+struct cpc_icmpv6_redirect_hdr {
 	cpc_icmpv6_hdr_t				icmpv6_header;				// type=137, code=0
 	uint32_t 						reserved;				// reserved for later use, for now: mbz
 	uint8_t							taddr[IPV6_ADDR_LEN]; 	// =target address
@@ -218,17 +218,17 @@ struct cpc_icmpv6_redirect_hdr_t {
 
 typedef union cpc_icmpv6u{
 	cpc_icmpv6_hdr_t 								icmpv6u_hdr;							// ICMPv6 message header
-	struct cpc_icmpv6_dest_unreach_hdr_t			icmpv6u_dst_unreach_hdr;				// ICMPv6 destination unreachable
-	struct cpc_icmpv6_pkt_too_big_hdr_t			icmpv6u_pkt_too_big_hdr;				// ICMPv6 packet too big
-	struct cpc_icmpv6_time_exceeded_hdr_t			icmpv6u_time_exceeded_hdr;				// ICMPv6 time exceeded
-	struct cpc_icmpv6_param_problem_hdr_t			icmpv6u_param_problem_hdr;				// ICMPv6 parameter problem
-	struct cpc_icmpv6_echo_request_hdr_t			icmpv6u_echo_request_hdr;				// ICMPv6 echo request
-	struct cpc_icmpv6_echo_reply_hdr_t				icmpv6u_echo_reply_hdr;				// ICMPv6 echo reply
-	struct cpc_icmpv6_router_solicitation_hdr_t	icmpv6u_rtr_solicitation_hdr;			// ICMPv6 rtr solicitation
-	struct cpc_icmpv6_router_advertisement_hdr_t	icmpv6u_rtr_advertisement_hdr;		// ICMPv6 rtr advertisement
-	struct cpc_icmpv6_neighbor_solicitation_hdr_t	icmpv6u_neighbor_solication_hdr;		// ICMPv6 NDP solication header
-	struct cpc_icmpv6_neighbor_advertisement_hdr_t	icmpv6u_neighbor_advertisement_hdr;	// ICMPv6 NDP advertisement header
-	struct cpc_icmpv6_redirect_hdr_t				icmpv6u_redirect_hdr;					// ICMPV6 redirect header
+	struct cpc_icmpv6_dest_unreach_hdr				icmpv6u_dst_unreach_hdr;				// ICMPv6 destination unreachable
+	struct cpc_icmpv6_pkt_too_big_hdr				icmpv6u_pkt_too_big_hdr;				// ICMPv6 packet too big
+	struct cpc_icmpv6_time_exceeded_hdr				icmpv6u_time_exceeded_hdr;				// ICMPv6 time exceeded
+	struct cpc_icmpv6_param_problem_hdr				icmpv6u_param_problem_hdr;				// ICMPv6 parameter problem
+	struct cpc_icmpv6_echo_request_hdr				icmpv6u_echo_request_hdr;				// ICMPv6 echo request
+	struct cpc_icmpv6_echo_reply_hdr				icmpv6u_echo_reply_hdr;				// ICMPv6 echo reply
+	struct cpc_icmpv6_router_solicitation_hdr		icmpv6u_rtr_solicitation_hdr;			// ICMPv6 rtr solicitation
+	struct cpc_icmpv6_router_advertisement_hdr		icmpv6u_rtr_advertisement_hdr;		// ICMPv6 rtr advertisement
+	struct cpc_icmpv6_neighbor_solicitation_hdr	icmpv6u_neighbor_solication_hdr;		// ICMPv6 NDP solication header
+	struct cpc_icmpv6_neighbor_advertisement_hdr	icmpv6u_neighbor_advertisement_hdr;	// ICMPv6 NDP advertisement header
+	struct cpc_icmpv6_redirect_hdr					icmpv6u_redirect_hdr;					// ICMPV6 redirect header
 }cpc_icmpv6u_t;
 
 
@@ -243,19 +243,19 @@ cpc_icmpv6optu_t *get_icmpv6_option(void *hdr){
 	//TODO ... return the option of the specified type
 	switch(((cpc_icmpv6_hdr_t*)hdr)->type){
 		case ICMPV6_TYPE_ROUTER_SOLICATION:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_router_solicitation_hdr_t*)hdr)->options;
+			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_router_solicitation_hdr*)hdr)->options;
 			break;
 		case ICMPV6_TYPE_ROUTER_ADVERTISEMENT:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_router_advertisement_hdr_t*)hdr)->options;
+			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_router_advertisement_hdr*)hdr)->options;
 			break;
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_neighbor_solicitation_hdr_t*)hdr)->options;
+			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_neighbor_solicitation_hdr*)hdr)->options;
 			break;
 		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_neighbor_advertisement_hdr_t*)hdr)->options;
+			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_neighbor_advertisement_hdr*)hdr)->options;
 			break;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_redirect_hdr_t*)hdr)->options;
+			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_redirect_hdr*)hdr)->options;
 			break;
 		default:
 			return NULL;

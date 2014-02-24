@@ -137,57 +137,57 @@ void set_icmpv6_opt_type(void *hdr, uint8_t type){
 };
 
 inline static
-uint64_t get_icmpv6_ll_taddr(struct cpc_icmpv6_lla_option *hdr){
+uint64_t get_icmpv6_ll_taddr(void *hdr){
 	// we asume that the header exists
-	uint64_t ret =mac_addr_to_u64(hdr->addr);
+	uint64_t ret =mac_addr_to_u64(((cpc_icmpv6_lla_option_t *)hdr)->addr);
 	CPC_SWAP_MAC(ret);
 	return ret;
 };
 
 inline static
-void set_icmpv6_ll_taddr(struct cpc_icmpv6_lla_option *hdr, uint64_t taddr){
+void set_icmpv6_ll_taddr(void *hdr, uint64_t taddr){
 	// we asume that the header exists
 	CPC_SWAP_MAC(taddr);
-	u64_to_mac_ptr(hdr->addr,taddr);
+	u64_to_mac_ptr((((cpc_icmpv6_lla_option_t *)hdr)->addr),taddr);
 };
 
 inline static
-uint64_t get_icmpv6_ll_saddr(struct cpc_icmpv6_lla_option *hdr){
+uint64_t get_icmpv6_ll_saddr(void *hdr){
 	// we asume that the header exists
-	uint64_t ret =mac_addr_to_u64(hdr->addr);
+	uint64_t ret =mac_addr_to_u64(((cpc_icmpv6_lla_option_t *)hdr)->addr);
 	CPC_SWAP_MAC(ret);
 	return ret;
 };
 
 inline static
-void set_icmpv6_ll_saddr(struct cpc_icmpv6_lla_option *hdr, uint64_t saddr){
+void set_icmpv6_ll_saddr(void *hdr, uint64_t saddr){
 	// we asume that the header exists
 	CPC_SWAP_MAC(saddr);
-	u64_to_mac_ptr(hdr->addr,saddr);
+	u64_to_mac_ptr(((cpc_icmpv6_lla_option_t *)hdr)->addr,saddr);
 };
 
 inline static
-uint8_t get_icmpv6_pfx_on_link_flag(struct cpc_icmpv6_prefix_info *hdr){
+uint8_t get_icmpv6_pfx_on_link_flag(void *hdr){
 	// we asume that the header exists
-	return ( (hdr->flags & 0x80) >> 7 );
+	return ( (((cpc_icmpv6_prefix_info_t *)hdr)->flags & 0x80) >> 7 );
 };
 
 inline static
-void set_icmpv6_pfx_on_link_flag(struct cpc_icmpv6_prefix_info *hdr, uint8_t flag){
+void set_icmpv6_pfx_on_link_flag(void *hdr, uint8_t flag){
 	// we asume that the header exists
-	hdr->flags = (hdr->flags & 0x7F) | ((flag & 0x01) << 7);
+	((cpc_icmpv6_prefix_info_t *)hdr)->flags = (((cpc_icmpv6_prefix_info_t *)hdr)->flags & 0x7F) | ((flag & 0x01) << 7);
 };
 
 inline static
-uint8_t get_icmpv6_pfx_aac_flag(struct cpc_icmpv6_prefix_info *hdr){
+uint8_t get_icmpv6_pfx_aac_flag(void *hdr){
 	// we asume that the header exists
-	return ((hdr->flags & 0x40) >> 6);
+	return ((((cpc_icmpv6_prefix_info_t *)hdr)->flags & 0x40) >> 6);
 };
 
 inline static
-void set_icmpv6_pfx_aac_flag(struct cpc_icmpv6_prefix_info *hdr, uint8_t flag){
+void set_icmpv6_pfx_aac_flag(void *hdr, uint8_t flag){
 	// we asume that the header exists
-	hdr->flags = (hdr->flags & 0xBF) | ((flag & 0x01) << 6);
+	((cpc_icmpv6_prefix_info_t *)hdr)->flags = (((cpc_icmpv6_prefix_info_t *)hdr)->flags & 0xBF) | ((flag & 0x01) << 6);
 };
 
 

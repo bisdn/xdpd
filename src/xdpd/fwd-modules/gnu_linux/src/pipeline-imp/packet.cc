@@ -325,9 +325,9 @@ uint64_t
 platform_packet_get_ipv6_nd_sll(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	cpc_icmpv6_lla_option_t* lla_opt_hdr;
+	void* lla_opt_hdr;
 	if( (NULL == pack) ||
-		(NULL == (lla_opt_hdr=(cpc_icmpv6_lla_option_t*) get_icmpv6_opt_lladr_source_hdr(pack->headers, 0)))
+		(NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_source_hdr(pack->headers, 0)))
 		)	return 0;
 	
 	return get_icmpv6_ll_saddr(lla_opt_hdr);
@@ -337,9 +337,9 @@ uint64_t
 platform_packet_get_ipv6_nd_tll(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	cpc_icmpv6_lla_option_t* lla_opt_hdr;
+	void* lla_opt_hdr;
 	if( (NULL == pack) ||
-		(NULL == (lla_opt_hdr=(cpc_icmpv6_lla_option_t *) get_icmpv6_opt_lladr_target_hdr(pack->headers, 0)))
+		(NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_target_hdr(pack->headers, 0)))
 		)	return 0;
 	
 	return get_icmpv6_ll_taddr(lla_opt_hdr);
@@ -788,9 +788,9 @@ void
 platform_packet_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	cpc_icmpv6_lla_option_t *lla_opt_hdr;
+	void *lla_opt_hdr;
 	if ( (NULL == pack) || 
-		NULL == (lla_opt_hdr=(cpc_icmpv6_lla_option_t*)get_icmpv6_opt_lladr_source_hdr(pack->headers, 0))
+		NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_source_hdr(pack->headers, 0))
 		) return;
 	set_icmpv6_ll_saddr(lla_opt_hdr, ipv6_nd_sll);
 }
@@ -799,9 +799,9 @@ void
 platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	cpc_icmpv6_lla_option_t *lla_opt_hdr;
+	void *lla_opt_hdr;
 	if ( (NULL == pack) || 
-		(NULL == (lla_opt_hdr=(cpc_icmpv6_lla_option_t*)get_icmpv6_opt_lladr_target_hdr(pack->headers, 0)))
+		(NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_target_hdr(pack->headers, 0)))
 		) return;
 	set_icmpv6_ll_taddr(lla_opt_hdr,ipv6_nd_tll);
 }

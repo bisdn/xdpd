@@ -357,7 +357,6 @@ unsigned int ioport_mmap::write(unsigned int q_id, unsigned int num_of_buckets){
 		bufferpool::release_buffer(pkt);
 
 
-		// todo statistics
 		tx_bytes_local += hdr->tp_len;
 		cnt++;
 		deferred_drain++;

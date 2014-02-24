@@ -129,16 +129,21 @@ inline void ioport_vlink::empty_pipe(int* pipe, int* deferred_drain){
 datapacket_t* ioport_vlink::read(){
 
 	datapacket_t* pkt = input_queue->non_blocking_read();
+	datapacketx86* pkt_x86;
 		
 	//Attempt to read one byte from the pipe
 	if(pkt){
-		datapacketx86* pkt_x86 = (datapacketx86*) pkt->platform_state;
+		pkt_x86 = (datapacketx86*) pkt->platform_state;
 		deferred_drain_rx++;
 		empty_pipe(rx_notify_pipe, &deferred_drain_rx);
 		//FIXME statistics
 		pkt_x86->in_port = of_port_state->of_port_num;
 		pkt->matches.port_in = of_port_state->of_port_num;
 		pkt->matches.phy_port_in = of_port_state->of_port_num;
+
+		//Increment statistics&return
+		of_port_state->stats.rx_packets++;
+		of_port_state->stats.rx_bytes += pkt_x86->get_buffer_length();
 	}
 
 	return pkt;
@@ -148,8 +153,8 @@ datapacket_t* ioport_vlink::read(){
 unsigned int ioport_vlink::write(unsigned int q_id, unsigned int num_of_buckets){
 
 	datapacket_t* pkt;
-	//unsigned int cnt = 0;
-	//int tx_bytes_local = 0;
+	unsigned int cnt = 0;
+	int tx_bytes_local = 0;
 
 	circular_queue<datapacket_t>* queue = output_queues[q_id];
 
@@ -166,15 +171,29 @@ unsigned int ioport_vlink::write(unsigned int q_id, unsigned int num_of_buckets)
 		
 		//Store in the input queue in the 
 		if(connected_port->tx_pkt(pkt) != ROFL_SUCCESS){
+		
+			//Increment errors
+			of_port_state->queues[q_id].stats.overrun++;
+			of_port_state->stats.tx_dropped++;
+	
 			//Congestion in the input queue of the vlink, drop
 			bufferpool::release_buffer(pkt);
+			continue;
 		}
-
+		
+		tx_bytes_local += ((datapacketx86*)pkt->platform_state)->get_buffer_length();
+		cnt++;
 	}
 		
-	empty_pipe(tx_notify_pipe, &deferred_drain_tx);
 
-	//FIXME statistics
+	//Increment statistics
+	of_port_state->stats.tx_packets += cnt;
+	of_port_state->stats.tx_bytes += tx_bytes_local;
+	of_port_state->queues[q_id].stats.tx_packets += cnt;
+	of_port_state->queues[q_id].stats.tx_bytes += tx_bytes_local;
+
+	//Empty reading pipe (batch)
+	empty_pipe(tx_notify_pipe, &deferred_drain_tx);
 	
 	return num_of_buckets;
 }

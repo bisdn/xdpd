@@ -109,7 +109,7 @@
 //Per thread input queue to the switch
 //Align to a power of 2
 //WARNING: do not over-size it or congestion can be created
-#define PROCESSING_PKT_IN_QUEUE_SLOTS 4
+#define PROCESSING_PKT_IN_QUEUE_SLOTS 64
 
 /* 
 * Other

@@ -172,70 +172,29 @@ T* circular_queue<T>::non_blocking_read(void){
 		//Try to set it atomically
 	}while(__sync_bool_compare_and_swap(&readp, read_cpy, pointer) != true);
 
+	//fprintf(stderr, "Read in position: %p\n", readp);
+
 	return to_return;
 #else	
 	T* elem;
 	
-	#ifdef RB_MULTI_READERS
-		pthread_mutex_lock(&mutex_readers);
-	#endif //RB_MULTI_READERS
-		if (is_empty()) {
-	#ifdef RB_MULTI_WRITERS
-			pthread_mutex_unlock(&mutex_readers);
-	#endif //RB_MULTI_WRITERS
-			return NULL;
-		}
-
-		elem = *readp;
-		readp = circ_inc_pointer(readp);
-
-	#ifdef RB_MULTI_READERS
-		pthread_mutex_unlock(&mutex_readers);
-	#endif //RB_MULTI_READERS
-
-		pthread_cond_broadcast(&write_cond);
-		return elem;
-#endif
-}
-
-#if 0
-template<typename T>
-T* circular_queue<T>::blocking_read(unsigned int seconds){
-
-	T* elem;
-	struct timespec timeout;
-
-	//Try it straight away
-	elem = non_blocking_read();
+	pthread_mutex_lock(&mutex_readers);
 	
-	while(!elem) {
-
-		//Acquire lock for pthread_cond_wait
-		pthread_mutex_lock(&mutex_readers);
-
-		//Sleep until signal or timeout (in case defined)
-		if(seconds){
-			timeout.tv_sec = time(NULL) + seconds;
-			timeout.tv_nsec = 0;
-			pthread_cond_timedwait(&read_cond, &mutex_readers,&timeout);
-		}else	
-			pthread_cond_wait(&read_cond, &mutex_readers);
-
-		//Release it
+	if (is_empty()) {
 		pthread_mutex_unlock(&mutex_readers);
-
-
-		//Retry
-		elem = non_blocking_read();
-		
-		if(seconds)
-			//if timeout, then only once needs to be tried and exit
-			break;
-	
+		return NULL;
 	}
+
+	elem = *readp;
+	//*readp = NULL;
+	readp = circ_inc_pointer(readp);
+
+	pthread_mutex_unlock(&mutex_readers);
+	
 	return elem;
-}
 #endif
+}
+
 
 //Write
 template<typename T>
@@ -258,77 +217,35 @@ rofl_result_t circular_queue<T>::non_blocking_write(T* elem){
 	//Try to set writers only index atomically
 	}while(__sync_bool_compare_and_swap(&_writep, write_cpy, pointer) != true);
 
+	usleep(50);
+
 	*write_cpy = elem;
 
 	//Two stage commit, now let readers read it 
 	while(__sync_bool_compare_and_swap(&writep, write_cpy, pointer) != true);
 
+	//fprintf(stderr, "Wrote in position: %p\n", writep);
 
 	return ROFL_SUCCESS;
 
 #else
 
-	#ifdef RB_MULTI_WRITERS
-		pthread_mutex_lock(&mutex_writers);
-	#endif
+	pthread_mutex_lock(&mutex_writers);
 
-		if (is_full()) {
-	#ifdef RB_MULTI_WRITERS
-			pthread_mutex_unlock(&mutex_writers);
-	#endif
-			return ROFL_FAILURE;
-		}
-
-		*writep = elem;
-		writep = circ_inc_pointer(writep);
-
-	#ifdef RB_MULTI_WRITERS
+	if (is_full()) {
 		pthread_mutex_unlock(&mutex_writers);
-	#endif
-
-		pthread_cond_broadcast(&read_cond);
-
-		return ROFL_SUCCESS;
-#endif
-}
-
-#if 0
-
-template<typename T>
-rofl_result_t circular_queue<T>::blocking_write(T* elem, unsigned int seconds){
-
-	rofl_result_t result;
-	struct timespec timeout;
-
-	//Try it straight away
-	result = non_blocking_write(elem);
-
-	while(result == ROFL_FAILURE) {
-	
-		//Acquire lock for pthread_cond_wait
-		pthread_mutex_lock(&mutex_writers);
-
-		//Sleep until signal or timeout (in case defined)
-		if(seconds){
-			timeout.tv_sec = time(NULL) + seconds;
-			pthread_cond_timedwait(&write_cond, &mutex_writers, &timeout);
-		}else
-	 		pthread_cond_wait(&write_cond, &mutex_writers);
-
-		//Release it
-		pthread_mutex_unlock(&mutex_writers);
-
-		//Retry
-		result = non_blocking_write(elem);
-		
-		if(seconds)
-			//if timeout, then only once needs to be tried and exit
-			break;
+		return ROFL_FAILURE;
 	}
 
-	return result;
-}
+	*writep = elem;
+	writep = circ_inc_pointer(writep);
+
+	pthread_mutex_unlock(&mutex_writers);
+
+	return ROFL_SUCCESS;
 #endif
+}
+
 
 template<typename T>
 void circular_queue<T>::dump(void){

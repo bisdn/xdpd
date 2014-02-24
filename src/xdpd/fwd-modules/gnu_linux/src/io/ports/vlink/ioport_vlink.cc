@@ -10,7 +10,9 @@
 using namespace xdpd::gnu_linux;
 
 //Constructor and destructor
-ioport_vlink::ioport_vlink(switch_port_t* of_ps, unsigned int num_queues) : ioport(of_ps,num_queues){
+ioport_vlink::ioport_vlink(switch_port_t* of_ps, unsigned int num_queues) : ioport(of_ps,num_queues), 
+	deferred_drain_rx(0),
+	deferred_drain_tx(0){
 	
 	int flags,i;
 
@@ -49,7 +51,7 @@ void ioport_vlink::set_connected_port(ioport_vlink* c_port){
 //Read and write methods over port
 void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 	
-	const char c='a';
+	static const char c='a';
 	int ret;
 	unsigned int len;
 	
@@ -102,28 +104,46 @@ void ioport_vlink::enqueue_packet(datapacket_t* pkt, unsigned int q_id){
 
 }
 
-inline void ioport_vlink::empty_pipe(int* pipe){
-	//Whatever
-	char c;
+inline void ioport_vlink::empty_pipe(int* pipe, int* deferred_drain){
 	int ret;
 
-	//Just take the byte from the pipe	
-	ret = ::read(pipe[READ],&c,sizeof(c));
-	(void)ret; // todo use the value
+	if(*deferred_drain <= 0)
+		return;
+
+	//Just take the byte from the pipe
+	if(*deferred_drain > IO_IFACE_RING_SLOTS)	
+		ret = ::read(pipe[READ],draining_buffer,IO_IFACE_RING_SLOTS);
+	else
+		ret = ::read(pipe[READ],draining_buffer,*deferred_drain);
+		
+	if(ret > 0){
+		*deferred_drain -= ret;
+
+		if(unlikely( *deferred_drain < 0 ) ){
+			assert(0); //Desynchronized
+			*deferred_drain = 0;
+		}
+	}
 }
 
 datapacket_t* ioport_vlink::read(){
 
 	datapacket_t* pkt = input_queue->non_blocking_read();
+	datapacketx86* pkt_x86;
 		
 	//Attempt to read one byte from the pipe
 	if(pkt){
-		datapacketx86* pkt_x86 = (datapacketx86*) pkt->platform_state;
-		empty_pipe(rx_notify_pipe);
+		pkt_x86 = (datapacketx86*) pkt->platform_state;
+		deferred_drain_rx++;
+		empty_pipe(rx_notify_pipe, &deferred_drain_rx);
 		//FIXME statistics
 		pkt_x86->in_port = of_port_state->of_port_num;
 		pkt->matches.port_in = of_port_state->of_port_num;
 		pkt->matches.phy_port_in = of_port_state->of_port_num;
+
+		//Increment statistics&return
+		of_port_state->stats.rx_packets++;
+		of_port_state->stats.rx_bytes += pkt_x86->get_buffer_length();
 	}
 
 	return pkt;
@@ -133,8 +153,8 @@ datapacket_t* ioport_vlink::read(){
 unsigned int ioport_vlink::write(unsigned int q_id, unsigned int num_of_buckets){
 
 	datapacket_t* pkt;
-	//unsigned int cnt = 0;
-	//int tx_bytes_local = 0;
+	unsigned int cnt = 0;
+	int tx_bytes_local = 0;
 
 	circular_queue<datapacket_t>* queue = output_queues[q_id];
 
@@ -146,18 +166,34 @@ unsigned int ioport_vlink::write(unsigned int q_id, unsigned int num_of_buckets)
 		
 		if(!pkt)
 			break;
-		
-		empty_pipe(tx_notify_pipe);
+	
+		deferred_drain_tx++;	
 		
 		//Store in the input queue in the 
 		if(connected_port->tx_pkt(pkt) != ROFL_SUCCESS){
+		
+			//Increment errors
+			of_port_state->queues[q_id].stats.overrun++;
+			of_port_state->stats.tx_dropped++;
+	
 			//Congestion in the input queue of the vlink, drop
 			bufferpool::release_buffer(pkt);
+			continue;
 		}
-
+		
+		tx_bytes_local += ((datapacketx86*)pkt->platform_state)->get_buffer_length();
+		cnt++;
 	}
+		
 
-	//FIXME statistics
+	//Increment statistics
+	of_port_state->stats.tx_packets += cnt;
+	of_port_state->stats.tx_bytes += tx_bytes_local;
+	of_port_state->queues[q_id].stats.tx_packets += cnt;
+	of_port_state->queues[q_id].stats.tx_bytes += tx_bytes_local;
+
+	//Empty reading pipe (batch)
+	empty_pipe(tx_notify_pipe, &deferred_drain_tx);
 	
 	return num_of_buckets;
 }

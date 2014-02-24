@@ -292,7 +292,12 @@ afa_result_t switch_manager::__notify_port_add(switch_port_snapshot_t* port_snap
 	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
 		return AFA_FAILURE;
 
-	pthread_rwlock_rdlock(&switch_manager::rwlock);
+	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
+		//This can happen while destroying the LSI
+		if(port_snapshot->attached_sw_dpid == dpid_under_destruction)
+			return AFA_FAILURE;
+		usleep(50); //Calm down
+	}
 
 	sw = switch_manager::__get_switch_by_dpid(port_snapshot->attached_sw_dpid); 
 
@@ -314,7 +319,12 @@ afa_result_t switch_manager::__notify_port_status_changed(switch_port_snapshot_t
 	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
 		return AFA_FAILURE;
 
-	pthread_rwlock_rdlock(&switch_manager::rwlock);
+	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
+		//This can happen while destroying the LSI
+		if(port_snapshot->attached_sw_dpid == dpid_under_destruction)
+			return AFA_FAILURE;
+		usleep(50); //Calm down
+	}
 
 	sw = switch_manager::__get_switch_by_dpid(port_snapshot->attached_sw_dpid); 
 
@@ -337,7 +347,12 @@ afa_result_t switch_manager::__notify_port_delete(switch_port_snapshot_t* port_s
 	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
 		return AFA_FAILURE;
 
-	pthread_rwlock_rdlock(&switch_manager::rwlock);
+	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
+		//This can happen while destroying the LSI
+		if(port_snapshot->attached_sw_dpid == dpid_under_destruction)
+			return AFA_FAILURE;
+		usleep(50); //Calm down
+	}
 
 	sw = switch_manager::__get_switch_by_dpid(port_snapshot->attached_sw_dpid); 
 
@@ -366,7 +381,12 @@ afa_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 	if(dpid == dpid_under_destruction)
 		return AFA_SUCCESS;
 
-	pthread_rwlock_rdlock(&switch_manager::rwlock);
+	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
+		//This can happen while destroying the LSI
+		if(dpid == dpid_under_destruction)
+			return AFA_FAILURE;
+		usleep(50); //Calm down
+	}
 
 	sw = switch_manager::__get_switch_by_dpid(dpid); 
 
@@ -391,7 +411,12 @@ afa_result_t switch_manager::__process_of1x_flow_removed(uint64_t dpid,
 	if(dpid == dpid_under_destruction)
 		return AFA_SUCCESS;
 
-	pthread_rwlock_rdlock(&switch_manager::rwlock);
+	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
+		//This can happen while destroying the LSI
+		if(dpid == dpid_under_destruction)
+			return AFA_FAILURE;
+		usleep(50); //Calm down
+	}
 
 	sw = switch_manager::__get_switch_by_dpid(dpid); 
 

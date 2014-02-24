@@ -58,6 +58,16 @@ void* get_icmpv6_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->icmpv6(idx);
 }
 
+void* get_icmpv6_opt_lladr_source_hdr(struct classify_state* clas_state, int idx){
+	//NOTE returns the icmpv6 header: getters and setters should perform accordingly
+	return ((pktclassifier*)clas_state)->icmpv6(idx);
+}
+
+void* get_icmpv6_opt_lladr_target_hdr(struct classify_state* clas_state, int idx){
+	//NOTE returns the icmpv6 header: getters and setters should perform accordingly
+	return ((pktclassifier*)clas_state)->icmpv6(idx);
+}
+
 void* get_udp_hdr(struct classify_state* clas_state, int idx){
 	return ((pktclassifier*)clas_state)->udp(idx);
 }

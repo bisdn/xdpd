@@ -44,6 +44,8 @@ void* get_ipv4_hdr(struct classify_state* clas_state, int idx);
 void* get_icmpv4_hdr(struct classify_state* clas_state, int idx);
 void* get_ipv6_hdr(struct classify_state* clas_state, int idx);
 void* get_icmpv6_hdr(struct classify_state* clas_state, int idx);
+void* get_icmpv6_opt_lladr_source_hdr(struct classify_state* clas_state, int idx);
+void* get_icmpv6_opt_lladr_target_hdr(struct classify_state* clas_state, int idx);
 void* get_udp_hdr(struct classify_state* clas_state, int idx);
 void* get_tcp_hdr(struct classify_state* clas_state, int idx);
 void* get_pppoe_hdr(struct classify_state* clas_state, int idx);

@@ -125,15 +125,19 @@ inline void ioport_mmap::empty_pipe(){
 		return;
 
 	//Just take deferred_drain from the pipe 
-	ret = ::read(notify_pipe[READ], draining_buffer, deferred_drain);
+	if(deferred_drain > IO_IFACE_RING_SLOTS)	
+		ret = ::read(notify_pipe[READ], draining_buffer, IO_IFACE_RING_SLOTS);
+	else
+		ret = ::read(notify_pipe[READ], draining_buffer, deferred_drain);
+	
 
-	if(unlikely(ret == -1)){
-		//EAGAIN
-	}else{
-		if(unlikely( (deferred_drain - ret) < 0 ) ){
+	if(ret > 0){
+		deferred_drain -= ret;
+		
+		if(unlikely( deferred_drain< 0 ) ){
+			assert(0); //Desynchronized
 			deferred_drain = 0;
-		}else
-			deferred_drain -= ret;
+		}
 	}
 }
 

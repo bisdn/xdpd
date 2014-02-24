@@ -116,8 +116,14 @@ inline void ioport_vlink::empty_pipe(int* pipe, int* deferred_drain){
 	else
 		ret = ::read(pipe[READ],draining_buffer,*deferred_drain);
 		
-	if(ret > 0)
-		*deferred_drain -= ret; // todo use the value
+	if(ret > 0){
+		*deferred_drain -= ret;
+
+		if(unlikely( *deferred_drain < 0 ) ){
+			assert(0); //Desynchronized
+			*deferred_drain = 0;
+		}
+	}
 }
 
 datapacket_t* ioport_vlink::read(){

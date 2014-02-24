@@ -24,12 +24,8 @@ namespace gnu_linux {
 
 //#define PTHREAD_IMP 1 
 
-typedef enum{
-		RB_BUFFER_AVAILABLE = 0,
-		RB_BUFFER_FULL = 1,
-		RB_BUFFER_CRITICALLY_FULL = 2,
-		RB_BUFFER_INVALID = -1,
-}circular_queue_state_t;
+//Exception
+class eCircularQueueInvalidSize{};
 
 template<typename T>
 class circular_queue{
@@ -54,7 +50,9 @@ public:
 	}
 
 	inline bool is_empty(void);
+	inline bool is_empty(T*** write, T*** read);
 	inline bool is_full(void);
+	inline bool is_full(T*** write, T*** read);
 
 	long long unsigned int slots;
 
@@ -62,9 +60,6 @@ public:
 private:
 	//Buffer
 	T** elements;
-
-	//Buffer state 
-	circular_queue_state_t state;
 
 	T** writep;
 	T** _writep; //used only between writers (assembly 2 stage commit)
@@ -92,28 +87,37 @@ inline bool circular_queue<T>::is_full(){
 }
 
 template<typename T>
+inline bool circular_queue<T>::is_full(T*** write, T*** read){
+	return ((size_t)(*write + 1 - elements) & (slots-1)) == (size_t)(*read - elements);
+}
+
+template<typename T>
 inline bool circular_queue<T>::is_empty(){
 	return writep == readp;
 }
 
 template<typename T>
-inline T** circular_queue<T>::circ_inc_pointer(T** pointer){
-	T** return_pointer;
+inline bool circular_queue<T>::is_empty(T*** write, T*** read){
+	return *write == *read;
+}
 
-	if ((elements + slots) == (pointer) + 1) {
-		return_pointer = &elements[0];
-	} else {
-		return_pointer = pointer+1;
-	}
-	
-	return return_pointer;
+template<typename T>
+inline T** circular_queue<T>::circ_inc_pointer(T** pointer){
+	if ((elements + slots) == (pointer + 1) )
+		return &elements[0];
+	else
+		return pointer+1;
 }
 
 template<typename T>
 circular_queue<T>::circular_queue(long long unsigned int capacity){
 
-	if(!capacity)
-		return;
+
+	if( ( (capacity & (capacity - 1)) != 0 ) || capacity == 0){
+		//Not power of 2!!
+		ROFL_ERR("Unable to instantiate queue of size: %u. It is not power of 2! Revise your settings",capacity);
+		throw eCircularQueueInvalidSize();
+	}
 
 	//Allocate
 	elements = new T*[capacity];
@@ -152,27 +156,24 @@ T* circular_queue<T>::non_blocking_read(void){
 
 
 #ifndef PTHREAD_IMP
-	
-	T** pointer, **read_cpy;
+	T** next, **read_cpy;
 	T* to_return;
 
-	//Increment
 	do{
-		if (unlikely(is_empty())) {
+		//Recover current read pointer: MUST BE HERE
+		read_cpy = readp;
+
+		if (unlikely(is_empty(&writep, &read_cpy))) {
 			return NULL;
 		}
 		
-		//Calculate readp+1
-		read_cpy = readp;
 		to_return = *read_cpy;
-		pointer = circ_inc_pointer(read_cpy); 
+		
+		//Calculate readp+1
+		next = circ_inc_pointer(read_cpy); 
 
-		assert( pointer < (elements+slots));
-
-		//Try to set it atomically
-	}while(__sync_bool_compare_and_swap(&readp, read_cpy, pointer) != true);
-
-	//fprintf(stderr, "Read in position: %p\n", readp);
+	//Try to set it atomically
+	}while(__sync_bool_compare_and_swap(&readp, read_cpy, next) != true);
 
 	return to_return;
 #else	
@@ -202,29 +203,27 @@ rofl_result_t circular_queue<T>::non_blocking_write(T* elem){
 
 #ifndef PTHREAD_IMP
 
-	T** pointer, **write_cpy;
+	T** next, **write_cpy;
 
 	//Increment
 	do{
-		if(unlikely(is_full())) {
+
+		//Calculate writep+1: MUST BE HERE
+		write_cpy = _writep;
+
+		if(unlikely(is_full(&write_cpy, &readp))) {
 			return ROFL_FAILURE;
 		}
 		
-		//Calculate writep+1
-		write_cpy = _writep;
-		pointer = circ_inc_pointer(write_cpy); 
+		next = circ_inc_pointer(write_cpy); 
 
 	//Try to set writers only index atomically
-	}while(__sync_bool_compare_and_swap(&_writep, write_cpy, pointer) != true);
-
-	usleep(50);
+	}while(__sync_bool_compare_and_swap(&_writep, write_cpy, next) != true);
 
 	*write_cpy = elem;
 
 	//Two stage commit, now let readers read it 
-	while(__sync_bool_compare_and_swap(&writep, write_cpy, pointer) != true);
-
-	//fprintf(stderr, "Wrote in position: %p\n", writep);
+	while(__sync_bool_compare_and_swap(&writep, write_cpy, next) != true);
 
 	return ROFL_SUCCESS;
 

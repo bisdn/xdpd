@@ -77,7 +77,7 @@ static void* process_packet_ins(void* param){
 		//Store packet in the storage system. Packet is NOT returned to the bufferpool
 		id = dps->store_packet(pkt);
 
-		if(id == datapacket_storage::ERROR){
+		if(unlikely(id == datapacket_storage::ERROR)){
 			ROFL_DEBUG("PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
 
 			//Return mbuf to the pool
@@ -105,7 +105,7 @@ static void* process_packet_ins(void* param){
 						((packet_matches_t*)&pkt->matches)
 				);
 
-		if( unlikely( rv != AFA_SUCCESS ) ){
+		if( rv != AFA_SUCCESS ){
 			ROFL_DEBUG("PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
 			//Take packet out from the storage
 			pkt = dps->get_packet(id);
@@ -152,17 +152,6 @@ rofl_result_t pktin_dispatcher_init(){
 
 	keep_on_pktins = true;
 
-#if 0
-	if( pthread_cond_init(&pktin_cond, NULL) < 0 ){
-		ROFL_ERR("Unable to create pthread cond\n");
-		return ROFL_FAILURE;
-	}
-	
-	if( pthread_mutex_init(&pktin_mutex, NULL) < 0 ){
-		ROFL_ERR("Unable to initialize pthread mutex\n");
-		return ROFL_FAILURE;
-	}	
-#endif
 	if(sem_init(&pktin_sem, 0,0) < 0){
 		return ROFL_FAILURE;
 	}	

@@ -356,9 +356,44 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 * @param name Port name (system's name)
 */
 afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name){
+	of_switch_t* lsw;
+	switch_port_t* port;
+	switch_port_snapshot_t *port_snapshot=NULL, *port_pair_snapshot=NULL;
+	
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw)
+		return AFA_FAILURE;
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling detach_port_from_switch()\n");
-	//XXX
+	port = physical_switch_get_port_by_name(name);
+
+	//Check if the port does exist and is really attached to the dpid
+	if( !port || !port->attached_sw || port->attached_sw->dpid != dpid)
+		return AFA_FAILURE;
+
+	//Snapshoting the port *before* it is detached 
+	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	
+	//TODO: vlink ports
+	//Deschedule port
+	processing_deschedule_port(port);
+	
+	//Detach it
+	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS){
+		ROFL_ERR(FWD_MOD_NAME" Error detaching port %s.\n",port->name);
+		assert(0);
+		goto FWD_MODULE_DETACH_ERROR;	
+	}
+	
+	//notify port dettached
+	cmm_notify_port_delete(port_snapshot);
+
+	return AFA_SUCCESS; 
+
+FWD_MODULE_DETACH_ERROR:
+	if(port_snapshot)
+		switch_port_destroy_snapshot(port_snapshot);	
+	if(port_pair_snapshot)
+		switch_port_destroy_snapshot(port_pair_snapshot);	
 
 	return AFA_FAILURE; 
 }
@@ -373,10 +408,17 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 */
 afa_result_t fwd_module_detach_port_from_switch_at_port_num(uint64_t dpid, const unsigned int of_port_num){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling detach_port_from_switch_at_port_num()\n");
+	of_switch_t* lsw;
 	
-	//XXX
-	return AFA_FAILURE;
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw)
+		return AFA_FAILURE;
+
+	//Check if the port does exist.
+	if(!of_port_num || of_port_num >= LOGICAL_SWITCH_MAX_LOG_PORTS || !lsw->logical_ports[of_port_num].port)
+		return AFA_FAILURE;
+
+	return fwd_module_detach_port_from_switch(dpid, lsw->logical_ports[of_port_num].port->name);
 }
 
 

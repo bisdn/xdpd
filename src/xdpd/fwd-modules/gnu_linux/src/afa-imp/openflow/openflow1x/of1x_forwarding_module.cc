@@ -357,7 +357,7 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 		datapacket_t* pkt = ((switch_platform_state_t*)lsw->platform_state)->storage->get_packet(buffer_id);
 		
 		if(!pkt){
-			assert(0);
+			//assert(0);
 			return AFA_FAILURE; //TODO: return really failure?
 		}
 

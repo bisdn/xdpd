@@ -8,6 +8,7 @@
 #include <net/if.h>
 #include <unistd.h>
 #include <rofl/common/utils/c_logger.h>
+#include "../bufferpool.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -40,9 +41,30 @@ ioport::ioport(switch_port_t* of_ps, unsigned int q_num){
 	}
 }
 ioport::~ioport(){
+	//Drain queues first
+	drain_queues();
+
 	delete input_queue;
 	for(int i=0;i<IO_IFACE_NUM_QUEUES;++i)
 		delete output_queues[i];
+}
+
+/**
+* Wipes output and input queues
+*/
+void ioport::drain_queues(){
+	datapacket_t* pkt;
+
+	//Drain input queue
+	while( ( pkt = input_queue->non_blocking_read() ) != NULL){
+		bufferpool::release_buffer(pkt);	
+	}
+	
+	for(int i=0;i<IO_IFACE_NUM_QUEUES;++i){
+		while( ( pkt = output_queues[i]->non_blocking_read() ) != NULL){
+			bufferpool::release_buffer(pkt);	
+		}
+	}
 }
 
 /**

@@ -73,7 +73,6 @@ AC_CONFIG_FILES([
 	src/xdpd/openflow/openflow10/Makefile
 	src/xdpd/openflow/openflow12/Makefile
 	test/Makefile
-	test/grouptest/Makefile
 ])
 
 # Doxygen (here to be the last Makefile) 

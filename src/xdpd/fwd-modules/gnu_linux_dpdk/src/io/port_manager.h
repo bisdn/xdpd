@@ -42,7 +42,7 @@ rofl_result_t port_manager_discover_system_ports(void);
 /**
 * Shutdown all ports in the system 
 */
-rofl_result_t port_manager_shutdown_ports(void);
+rofl_result_t port_manager_destroy(void);
 
 /**
 * Setup tx and rx queues 

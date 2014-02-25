@@ -242,13 +242,14 @@ rofl_result_t port_manager_disable(switch_port_t* port){
 /*
 * Shutdown all ports in the system 
 */
-rofl_result_t port_manager_shutdown_ports(void){
+rofl_result_t port_manager_destroy(void){
 
 	uint8_t i, num_of_ports;
 	num_of_ports = rte_eth_dev_count();
 	
 	for(i=0;i<num_of_ports;++i){
 		rte_eth_dev_stop(i);
+		rte_eth_dev_close(i);
 	}	
 
 	return ROFL_SUCCESS;

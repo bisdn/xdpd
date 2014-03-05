@@ -21,12 +21,12 @@
 #include <stdexcept>
 
 #include <rofl.h>
-#include <rofl/datapath/afa/afa.h>
-#include <rofl/datapath/afa/cmm.h>
 #include <rofl/common/caddress.h>
 #include <rofl/common/croflexception.h>
 
+#include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 
 /**
 * @file switch_manager.h
@@ -154,10 +154,10 @@ public:
 	//CMM demux
 	//
 	
-	static afa_result_t __notify_port_add(switch_port_snapshot_t* port_snapshot);	
-	static afa_result_t __notify_port_status_changed(switch_port_snapshot_t* port_snapshot);	
-	static afa_result_t __notify_port_delete(switch_port_snapshot_t* port_snapshot);	
-	static afa_result_t __process_of1x_packet_in(uint64_t dpid,
+	static rofl_result_t __notify_port_add(const switch_port_snapshot_t* port_snapshot);	
+	static rofl_result_t __notify_port_status_changed(const switch_port_snapshot_t* port_snapshot);	
+	static rofl_result_t __notify_port_delete(const switch_port_snapshot_t* port_snapshot);	
+	static rofl_result_t __process_of1x_packet_in(uint64_t dpid,
 					uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
@@ -166,7 +166,7 @@ public:
 					uint32_t buf_len,
 					uint16_t total_len,
 					packet_matches_t* matches);
-	static afa_result_t __process_of1x_flow_removed(uint64_t dpid, 
+	static rofl_result_t __process_of1x_flow_removed(uint64_t dpid, 
 					uint8_t reason, 	
 					of1x_flow_entry_t* removed_flow_entry);
 

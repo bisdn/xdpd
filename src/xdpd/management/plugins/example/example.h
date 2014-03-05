@@ -25,6 +25,16 @@ public:
 	virtual std::string get_name(void){
 		return std::string("Example plugin");
 	};
+
+	virtual void notify_port_add(const switch_port_snapshot_t* port_snapshot);
+		
+	virtual void notify_port_status_changed(const switch_port_snapshot_t* port_snapshot);
+	
+	virtual void notify_port_delete(const switch_port_snapshot_t* port_snapshot);
+	
+	virtual void notify_monitoring_state_changed(const monitoring_snapshot_state_t* monitoring_snapshot);
+
+
 };
 
 }// namespace xdpd 

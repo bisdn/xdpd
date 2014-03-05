@@ -61,7 +61,7 @@ public:
 	* Public interface for the instance
 	*/
 	
-	virtual afa_result_t process_packet_in(uint8_t table_id,
+	virtual rofl_result_t process_packet_in(uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
 					uint32_t buffer_id,
@@ -70,16 +70,16 @@ public:
 					uint16_t total_len,
 					packet_matches_t* matches);
 	
-	virtual afa_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry);
+	virtual rofl_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry);
 
 	/*
 	* Port async notifications
 	*/
-	virtual afa_result_t notify_port_add(switch_port_t* port);
+	virtual rofl_result_t notify_port_add(const switch_port_t* port);
 	
-	virtual afa_result_t notify_port_delete(switch_port_t* port);
+	virtual rofl_result_t notify_port_delete(const switch_port_t* port);
 	
-	virtual afa_result_t notify_port_status_changed(switch_port_t* port);
+	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
 
 	 /*
 	 * Connecting and disconnecting from a controller entity

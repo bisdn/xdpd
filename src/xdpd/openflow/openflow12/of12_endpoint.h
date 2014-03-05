@@ -50,7 +50,7 @@ public:
 	/**
 	 *
 	 */
-	afa_result_t
+	rofl_result_t
 	process_packet_in(
 			uint8_t table_id,
 			uint8_t reason,
@@ -65,7 +65,7 @@ public:
 	/**
 	 *
 	 */
-	afa_result_t
+	rofl_result_t
 	process_flow_removed(
 			uint8_t reason,
 			of1x_flow_entry *removed_flow_entry);
@@ -74,11 +74,11 @@ public:
 	* Port notifications
 	*/
 
-	virtual	afa_result_t notify_port_add(switch_port_t* port);
+	virtual	rofl_result_t notify_port_add(const switch_port_t* port);
 	
-	virtual afa_result_t notify_port_delete(switch_port_t* port);
+	virtual rofl_result_t notify_port_delete(const switch_port_t* port);
 
-	virtual afa_result_t notify_port_status_changed(switch_port_t* port);
+	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
 
 
 

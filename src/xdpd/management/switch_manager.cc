@@ -284,18 +284,18 @@ openflow_switch* switch_manager::__get_switch_by_dpid(uint64_t dpid){
 //CMM demux
 //
 
-afa_result_t switch_manager::__notify_port_add(switch_port_snapshot_t* port_snapshot){
+rofl_result_t switch_manager::__notify_port_add(const switch_port_snapshot_t* port_snapshot){
 	
-	afa_result_t result;
+	rofl_result_t result;
 	openflow_switch* sw;	
 
 	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 
 	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
 		//This can happen while destroying the LSI
 		if(port_snapshot->attached_sw_dpid == dpid_under_destruction)
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		usleep(50); //Calm down
 	}
 
@@ -304,25 +304,25 @@ afa_result_t switch_manager::__notify_port_add(switch_port_snapshot_t* port_snap
 	if(sw)
 		result = sw->notify_port_add(port_snapshot);
 	else	
-		result = AFA_FAILURE;
+		result = ROFL_FAILURE;
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 
 	return result;	
 }	
 
-afa_result_t switch_manager::__notify_port_status_changed(switch_port_snapshot_t* port_snapshot){
+rofl_result_t switch_manager::__notify_port_status_changed(const switch_port_snapshot_t* port_snapshot){
 	
-	afa_result_t result;
+	rofl_result_t result;
 	openflow_switch* sw;	
 
 	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 
 	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
 		//This can happen while destroying the LSI
 		if(port_snapshot->attached_sw_dpid == dpid_under_destruction)
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		usleep(50); //Calm down
 	}
 
@@ -331,7 +331,7 @@ afa_result_t switch_manager::__notify_port_status_changed(switch_port_snapshot_t
 	if(sw)
 		result = sw->notify_port_status_changed(port_snapshot);
 	else	
-		result = AFA_FAILURE;
+		result = ROFL_FAILURE;
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 
@@ -339,18 +339,18 @@ afa_result_t switch_manager::__notify_port_status_changed(switch_port_snapshot_t
 
 }
 
-afa_result_t switch_manager::__notify_port_delete(switch_port_snapshot_t* port_snapshot){
+rofl_result_t switch_manager::__notify_port_delete(const switch_port_snapshot_t* port_snapshot){
 	
-	afa_result_t result;
+	rofl_result_t result;
 	openflow_switch* sw;	
 
 	if(!port_snapshot || port_snapshot->attached_sw_dpid == dpid_under_destruction)
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 
 	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
 		//This can happen while destroying the LSI
 		if(port_snapshot->attached_sw_dpid == dpid_under_destruction)
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		usleep(50); //Calm down
 	}
 
@@ -359,14 +359,14 @@ afa_result_t switch_manager::__notify_port_delete(switch_port_snapshot_t* port_s
 	if(sw)
 		result = sw->notify_port_delete(port_snapshot);
 	else	
-		result = AFA_FAILURE;
+		result = ROFL_FAILURE;
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 
 	return result;	
 }
 
-afa_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
+rofl_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 				uint8_t table_id,
 				uint8_t reason,
 				uint32_t in_port,
@@ -375,16 +375,16 @@ afa_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 				uint32_t buf_len,
 				uint16_t total_len,
 				packet_matches_t* matches){
-	afa_result_t result;
+	rofl_result_t result;
 	openflow_switch* sw;	
 
 	if(dpid == dpid_under_destruction)
-		return AFA_SUCCESS;
+		return ROFL_SUCCESS;
 
 	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
 		//This can happen while destroying the LSI
 		if(dpid == dpid_under_destruction)
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		usleep(50); //Calm down
 	}
 
@@ -393,7 +393,7 @@ afa_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 	if(sw)
 		result = sw->process_packet_in(table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);
 	else	
-		result = AFA_FAILURE;
+		result = ROFL_FAILURE;
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 
@@ -401,20 +401,20 @@ afa_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 
 }
 
-afa_result_t switch_manager::__process_of1x_flow_removed(uint64_t dpid, 
+rofl_result_t switch_manager::__process_of1x_flow_removed(uint64_t dpid, 
 				uint8_t reason, 	
 				of1x_flow_entry_t* removed_flow_entry){
 
-	afa_result_t result;
+	rofl_result_t result;
 	openflow_switch* sw;	
 
 	if(dpid == dpid_under_destruction)
-		return AFA_SUCCESS;
+		return ROFL_SUCCESS;
 
 	while( pthread_rwlock_tryrdlock(&switch_manager::rwlock) != 0 ){
 		//This can happen while destroying the LSI
 		if(dpid == dpid_under_destruction)
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		usleep(50); //Calm down
 	}
 
@@ -423,7 +423,7 @@ afa_result_t switch_manager::__process_of1x_flow_removed(uint64_t dpid,
 	if(sw)
 		result = sw->process_flow_removed(reason, removed_flow_entry);
 	else	
-		result = AFA_FAILURE;
+		result = ROFL_FAILURE;
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 

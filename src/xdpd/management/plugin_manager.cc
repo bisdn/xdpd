@@ -18,7 +18,7 @@ rofl_result_t plugin_manager::init(int argc, char** argv){
 	plugin_manager::pre_init();
 
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		ROFL_INFO("[plugin_manager] Loading plugin [%s]...\n", (*it)->get_name().c_str());
+		ROFL_INFO("[plugin_manager] Loading plugin (%s)...\n", (*it)->get_name().c_str());
 		(*it)->init(argc,argv);
 		optind=0; //Reset getopt
 	}

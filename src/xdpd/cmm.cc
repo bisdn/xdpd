@@ -20,6 +20,9 @@ afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 	
 	if(!port_snapshot)
 		return AFA_FAILURE;
+
+	//Notify port manager
+	port_manager::notify_port_add(port_snapshot);
 	
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
@@ -42,6 +45,9 @@ afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	if (!port_snapshot)
 		return AFA_FAILURE;
 
+	//Notify port manager
+	port_manager::notify_port_delete(port_snapshot);
+
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
 		//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
@@ -62,6 +68,9 @@ afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapsho
 	
 	if (!port_snapshot)
 		return AFA_FAILURE;
+
+	//Notify port manager
+	port_manager::notify_port_status_changed(port_snapshot);
 
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)

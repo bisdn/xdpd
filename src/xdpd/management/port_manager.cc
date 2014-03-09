@@ -1,5 +1,4 @@
 #include "port_manager.h"
-#include <rofl/common/utils/c_logger.h>
 #include "switch_manager.h"
 
 using namespace rofl;

@@ -98,10 +98,13 @@ public:
 	*/
 	static void of13_map_reverse_packet_matches(packet_matches_t* packet_matches, cofmatch& match);
 
+	static void of13_map_bitmap_matches(uint64_t* bitmap, coftable_feature_prop_oxm& matches);
 	static uint64_t of13_map_bitmap_matches(uint64_t* bitmap);
 
+	static void of13_map_bitmap_actions(uint32_t *write_actions, coftable_feature_prop_actions& actions);
 	static uint32_t of13_map_bitmap_actions(uint32_t* bitmap);
 
+	static void of13_map_bitmap_instructions(uint32_t* bitmap, coftable_feature_prop_instructions& instructions);
 	static uint32_t of13_map_bitmap_instructions(uint32_t* bitmap);
 };
 

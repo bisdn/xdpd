@@ -176,6 +176,20 @@ private:
 	 *
 	 */
 	virtual void
+	handle_table_features_stats_request(crofctl& ctl, cofmsg_table_features_request& msg, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_port_desc_stats_request(crofctl& ctl, cofmsg_port_desc_stats_request& msg, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
 	handle_experimenter_stats_request(crofctl& ctl, cofmsg_experimenter_stats_request& msg, uint8_t aux_id = 0);
 
 	/** Handle OF packet-out messages. To be overwritten by derived class.

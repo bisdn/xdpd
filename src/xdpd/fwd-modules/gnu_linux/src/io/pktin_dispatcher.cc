@@ -18,7 +18,8 @@
 
 using namespace xdpd::gnu_linux;
 
-#define BUCKETS_PER_LS 10
+#define BUCKETS_PER_LS 16
+#define DUMMY_BUF_SIZE 128
 #define ITERATIONS_PER_ROUND 2
 
 int pktin_not_pipe[2];
@@ -31,8 +32,9 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
 	afa_result_t rv;
-	storeid id;	
-	char null_buf[BUCKETS_PER_LS];
+	storeid id;
+	static char null_buf[DUMMY_BUF_SIZE];
+	static unsigned int pending_to_read=0;
 	
 	//Recover platform state
 	switch_platform_state_t* ls_int = (switch_platform_state_t*)sw->platform_state;
@@ -53,7 +55,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 		id = ls_int->storage->store_packet(pkt);
 
 		if(id == datapacket_storage::ERROR){
-			ROFL_DEBUG("PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
+			ROFL_DEBUG(FWD_MOD_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
 	
 			//Return to the bufferpool
 			bufferpool::release_buffer(pkt);
@@ -78,10 +80,10 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 						);
 
 		if( unlikely(rv != AFA_SUCCESS) ){
-			ROFL_DEBUG("PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
+			ROFL_DEBUG(FWD_MOD_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
 			//Take packet out from the storage
 			if( unlikely(ls_int->storage->get_packet(id) != pkt) ){
-				ROFL_ERR("Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
+				ROFL_ERR(FWD_MOD_NAME"[pkt-in-dispatcher] Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
 
 				assert(0);
 			}
@@ -95,9 +97,20 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 		
 	}
 
-	//Empty pipe (n tokens)
-	ret = read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf,i);
-	(void)ret;
+	//Empty pipe
+	pending_to_read += i;
+
+	if( pending_to_read > 0 ){
+
+		if(pending_to_read > DUMMY_BUF_SIZE){
+			ret = read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf, DUMMY_BUF_SIZE);
+		}else{
+			ret = read(pktin_not_pipe[PKT_IN_PIPE_READ], &null_buf, pending_to_read);
+		}
+
+		if(ret > 0)
+			pending_to_read -= ret; 
+	}
 }
 
 //Initialize pkt in notification pipe
@@ -143,5 +156,28 @@ void process_packet_ins(){
 				}
 			}
 		}
+	}
+}
+
+
+void drain_packet_ins(of_switch_t* sw){
+	
+	datapacket_t* pkt;
+	switch_platform_state_t* ls_int;
+ 
+	if(!sw)
+		assert(0);
+		
+	//Recover platform state
+	ls_int = (switch_platform_state_t*)sw->platform_state;
+
+	//Let the pending pkt_ins to be drained
+	while(ls_int->pkt_in_queue->size() != 0){
+
+		pkt = ls_int->pkt_in_queue->non_blocking_read();
+	
+		//Return to the bufferpool
+		if(pkt)
+			bufferpool::release_buffer(pkt);
 	}
 }

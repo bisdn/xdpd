@@ -10,7 +10,9 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <rofl.h>
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/common/croflexception.h>
 
 /**
@@ -106,6 +108,38 @@ public:
 	 */
 	static void detach_port_from_switch_by_num(uint64_t dpid, unsigned int port_num);
 
+	//
+	// Notifications
+	//
+	
+	/**
+	* Log a port addition in the system event
+	*/
+	static inline void notify_port_add(const switch_port_snapshot_t* port_snapshot){
+
+	if(!port_snapshot->is_attached_to_sw)
+		ROFL_INFO("[port_manager][%s] added to the system; admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+	};
+		
+	/**
+	* Log a port status changed in the system event
+	*/
+	static inline void notify_port_status_changed(const switch_port_snapshot_t* port_snapshot){
+
+	if(port_snapshot->is_attached_to_sw)
+		ROFL_INFO("[port_manager][0x%"PRIx64":%u(%s)] admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+	else
+		ROFL_INFO("[port_manager][%s] admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+	};
+	
+	/**
+	* Log a port deletion in the system event
+	*/
+	static inline void notify_port_delete(const switch_port_snapshot_t* port_snapshot){
+		if(!port_snapshot->is_attached_to_sw)
+			ROFL_INFO("[port_manager][%s] removed from the system;\n", port_snapshot->name);
+	};
+	
 private:
 	static pthread_mutex_t mutex;	
 	

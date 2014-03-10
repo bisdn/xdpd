@@ -9,11 +9,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include "../pktclassifier.h"
 
 #include "./headers/cpc_arpv4.h"
 #include "./headers/cpc_ethernet.h"
 #include "./headers/cpc_gtpu.h"
 #include "./headers/cpc_icmpv4.h"
+#include "./headers/cpc_icmpv6_opt.h"
 #include "./headers/cpc_icmpv6.h"
 #include "./headers/cpc_ipv4.h"
 #include "./headers/cpc_ipv6.h"
@@ -41,12 +43,13 @@ enum header_type{
 	HEADER_TYPE_ICMPV4 = 5,
 	HEADER_TYPE_IPV6 = 6,	
 	HEADER_TYPE_ICMPV6 = 7,	
-	HEADER_TYPE_UDP = 8,	
-	HEADER_TYPE_TCP = 9,	
-	HEADER_TYPE_SCTP = 10,	
-	HEADER_TYPE_PPPOE = 11,	
-	HEADER_TYPE_PPP = 12,	
-	HEADER_TYPE_GTP = 13,
+	HEADER_TYPE_ICMPV6_OPT = 8,	
+	HEADER_TYPE_UDP = 9,	
+	HEADER_TYPE_TCP = 10,	
+	HEADER_TYPE_SCTP = 11,	
+	HEADER_TYPE_PPPOE = 12,	
+	HEADER_TYPE_PPP = 13,	
+	HEADER_TYPE_GTP = 14,
 
 	//Must be the last one
 	HEADER_TYPE_MAX
@@ -62,7 +65,8 @@ enum header_type{
 #define MAX_IPV4_FRAMES 2
 #define MAX_ICMPV4_FRAMES 2
 #define MAX_IPV6_FRAMES 2
-#define MAX_ICMPV6_FRAMES 2
+#define MAX_ICMPV6_FRAMES 1
+#define MAX_ICMPV6_OPT_FRAMES 3
 #define MAX_UDP_FRAMES 2
 #define MAX_TCP_FRAMES 2
 #define MAX_SCTP_FRAMES 2
@@ -79,6 +83,7 @@ enum header_type{
 						MAX_ICMPV4_FRAMES + \
 						MAX_IPV6_FRAMES + \
 						MAX_ICMPV6_FRAMES + \
+						MAX_ICMPV6_OPT_FRAMES + \
 						MAX_UDP_FRAMES + \
 						MAX_TCP_FRAMES + \
 						MAX_SCTP_FRAMES + \
@@ -97,12 +102,17 @@ enum header_type{
 #define FIRST_ICMPV4_FRAME_POS FIRST_IPV4_FRAME_POS+MAX_IPV4_FRAMES
 #define FIRST_IPV6_FRAME_POS FIRST_ICMPV4_FRAME_POS+MAX_ICMPV4_FRAMES
 #define FIRST_ICMPV6_FRAME_POS FIRST_IPV6_FRAME_POS+MAX_IPV6_FRAMES
-#define FIRST_UDP_FRAME_POS FIRST_ICMPV6_FRAME_POS+MAX_ICMPV6_FRAMES
+#define FIRST_ICMPV6_OPT_FRAME_POS FIRST_ICMPV6_FRAME_POS+MAX_ICMPV6_FRAMES
+#define FIRST_UDP_FRAME_POS FIRST_ICMPV6_OPT_FRAME_POS+MAX_ICMPV6_OPT_FRAMES
 #define FIRST_TCP_FRAME_POS FIRST_UDP_FRAME_POS+MAX_UDP_FRAMES
 #define FIRST_SCTP_FRAME_POS FIRST_TCP_FRAME_POS+MAX_TCP_FRAMES
 #define FIRST_PPPOE_FRAME_POS FIRST_SCTP_FRAME_POS+MAX_SCTP_FRAMES
 #define FIRST_PPP_FRAME_POS FIRST_PPPOE_FRAME_POS+MAX_PPPOE_FRAMES
 #define FIRST_GTP_FRAME_POS FIRST_PPP_FRAME_POS+MAX_PPP_FRAMES
+
+#define OFFSET_ICMPV6_OPT_LLADDR_SOURCE 0
+#define OFFSET_ICMPV6_OPT_LLADDR_TARGET 1
+#define OFFSET_ICMPV6_OPT_PREFIX_INFO 2
 
 //Just to be on the safe side of life
 //assert( (FIRST_PPP_FRAME_POS + MAX_PPP_FRAMES) == MAX_HEADERS);
@@ -144,12 +154,7 @@ typedef struct classify_state{
 }classify_state_t;
 
 
-//function declarations
-classify_state_t* init_classifier(datapacket_t*const pkt);
-void destroy_classifier(classify_state_t* clas_state);
-void classify_packet(classify_state_t* clas_state, uint8_t* pkt, size_t len,  uint32_t port_in, uint32_t phy_port_in);
-void reset_classifier(classify_state_t* clas_state);
-
+//inline function implementations
 inline static 
 void* get_ether_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;
@@ -294,6 +299,60 @@ void* get_icmpv6_hdr(classify_state_t* clas_state, int idx){
 }
 
 inline static
+void* get_icmpv6_opt_hdr(classify_state_t* clas_state, int idx){
+	unsigned int pos;	
+
+	if(idx > (int)MAX_ICMPV6_OPT_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_ICMPV6_OPT_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_ICMPV6_OPT] - 1;
+	else
+		pos = FIRST_ICMPV6_OPT_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){
+	//only one option of this kind is allowed
+	unsigned int pos;
+	pos = FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_SOURCE;
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* get_icmpv6_opt_lladr_target_hdr(classify_state_t* clas_state, int idx){
+	//only one option of this kind is allowed
+	unsigned int pos;
+	pos = FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_TARGET;
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
+void* get_icmpv6_opt_prefix_info_hdr(classify_state_t* clas_state, int idx){
+	//only one option of this kind is allowed
+	unsigned int pos;
+	pos = FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_PREFIX_INFO;
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
 void* get_udp_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
@@ -382,23 +441,6 @@ void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
 		return clas_state->headers[pos].frame;
 	return NULL;
 }
-
-//push & pop
-void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state);
-void pop_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-
-void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type);
-
-//void pkt_push();
-//void pkt_pop();
-
-void dump_pkt_classifier(classify_state_t* clas_state);
-size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to);
 
 //shifts
 inline static 

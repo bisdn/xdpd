@@ -41,7 +41,7 @@ public:
 	/**
 	* @brief Constructor for the ioport
 	* Constructs the ioport. The state of the port is explicitely undefined
-	* (usually down) unless enable/disable is called AFTER the constructor.
+	* (usually down) unless up/down is called AFTER the constructor.
 	*/
 	ioport(switch_port_t* of_ps, unsigned int q_num=IO_IFACE_NUM_QUEUES);
 
@@ -67,7 +67,6 @@ public:
 		
 		return 0;
 	} 
-
 
 	/**
 	* Enque packet for transmission(this must be a non blocking call). 
@@ -127,12 +126,12 @@ public:
 	/**
 	 * Sets the port administratively up. This MUST change the of_port_state appropiately
 	 */
-	virtual rofl_result_t enable(void)=0;
+	virtual rofl_result_t up(void)=0;
 
 	/**
 	 * Sets the port administratively down. This MUST change the of_port_state appropiately
 	 */
-	virtual rofl_result_t disable(void)=0;
+	virtual rofl_result_t down(void)=0;
 
 	/**
 	 * Sets the port receiving behaviour. This MUST change the of_port_state appropiately
@@ -189,6 +188,12 @@ public:
 	pthread_rwlock_t rwlock; //Serialize management actions
 
 protected:
+
+	/**
+	* Wipes output and input queues
+	*/
+	virtual void drain_queues(void);
+
 	static const unsigned int NUM_OF_REQUIRED_BUFFERS=IO_IFACE_REQUIRED_BUFFERS; /* Required buffers for the port to operate at line rate */
 	
 	//Output QoS queues

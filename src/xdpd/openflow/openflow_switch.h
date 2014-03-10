@@ -49,7 +49,7 @@ public:
 	/*
 	* Pure virtual methods
 	*/
-	virtual afa_result_t process_packet_in(
+	virtual rofl_result_t process_packet_in(
 					uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
@@ -58,18 +58,18 @@ public:
 					uint32_t buf_len,
 					uint16_t total_len,
 					packet_matches_t* matches)=0;
-	virtual afa_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry)=0;
+	virtual rofl_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry)=0;
 
 	/**
 	*
 	* Dispatching of version agnostic messages comming from the driver
 	*
 	*/
-	virtual afa_result_t notify_port_add(switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_add(const switch_port_t* port)=0;
 	
-	virtual afa_result_t notify_port_delete(switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_delete(const switch_port_t* port)=0;
 	
-	virtual afa_result_t notify_port_status_changed(switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port)=0;
 
 	/**
 	 * Connecting and disconnecting from a controller entity

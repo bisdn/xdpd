@@ -1,5 +1,4 @@
 #include "port_manager.h"
-#include <rofl/common/utils/c_logger.h>
 #include "switch_manager.h"
 
 using namespace rofl;
@@ -132,9 +131,13 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1,
 void port_manager::detach_port_from_switch(uint64_t dpid, std::string& port_name){
 	if (fwd_module_detach_port_from_switch(dpid,port_name.c_str()) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
+
+	ROFL_INFO("[port_manager] Port %s detached from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
 }
 
 void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int port_num){
 	if (fwd_module_detach_port_from_switch_at_port_num(dpid,port_num) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
+
+	ROFL_INFO("[port_manager] Port %d detached from switch with dpid 0x%llx\n", port_num, (long long unsigned)dpid);
 }

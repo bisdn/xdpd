@@ -2,7 +2,6 @@
 
 //Include here the classifier you want to use
 #ifndef C_PACKET_CLASSIFIER
-	#include "packet_classifiers/cpp_pktclassifier/rofl_pktclassifier.h"
 	#include "packet_classifiers/cpp_pktclassifier/static_pktclassifier.h"
 #endif
 
@@ -17,8 +16,6 @@ typedef struct classify_state pktclassifier;
 
 //Constructor
 datapacketx86::datapacketx86(datapacket_t*const pkt) :
-	buffer_id(0),
-	internal_buffer_id(0),
 	lsw(0),
 	in_port(0),
 	in_phy_port(0),

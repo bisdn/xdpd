@@ -46,6 +46,9 @@ m4_include([config/verbose.m4])
 #Check for profiling mode
 m4_include([config/profiling.m4])
 
+# Checking OpenSSL
+m4_include([config/openssl.m4])
+
 #Boost
 m4_include([config/boost.m4])
 
@@ -71,7 +74,6 @@ AC_CONFIG_FILES([
 	src/xdpd/openflow/openflow12/Makefile
 	src/xdpd/openflow/openflow13/Makefile
 	test/Makefile
-	test/grouptest/Makefile
 ])
 
 # Doxygen (here to be the last Makefile) 

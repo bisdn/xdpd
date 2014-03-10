@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <vector>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 /**
 * @file pktin_dispatcher.h
@@ -54,6 +55,12 @@ inline void notify_packet_in(void){
 * Process packet_ins for all LSI 
 */
 void process_packet_ins(void);
+
+/**
+* Drain packet_ins for an LSI
+*/
+void drain_packet_ins(of_switch_t* sw);
+
 
 /**
 * Initialize notification pipe

@@ -7,7 +7,7 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/iface_utils.cc \
 	$(top_srcdir)/src/pipeline-imp/platform_hooks_of1x.cc \
 	$(top_srcdir)/src/pipeline-imp/pthread_lock.c \
-	$(top_srcdir)/src/pipeline-imp/pthread_atomic_operations.c \
+	$(top_srcdir)/src/pipeline-imp/atomic_operations.c \
 	$(top_srcdir)/src/pipeline-imp/timing.c \
 	$(top_srcdir)/src/io/pktin_dispatcher.cc \
 	$(top_srcdir)/src/io/iomanager.cc \
@@ -34,7 +34,6 @@ CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/c_pktclassifier/c_pktclas
 else
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.cc \
 		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/packetclassifier.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/rofl_pktclassifier.cc \
 		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/static_pktclassifier.cc \
 		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_ethernet.cc \
 		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_arpv4.cc \

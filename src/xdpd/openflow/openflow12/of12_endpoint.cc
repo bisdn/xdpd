@@ -4,6 +4,10 @@
 #include <rofl/common/utils/c_logger.h>
 #include "of12_translation_utils.h"
 
+#ifdef HAVE_OPENSSL
+#include <rofl/common/ssl_lib.h>
+#endif
+
 using namespace xdpd;
 
 /*
@@ -13,7 +17,8 @@ of12_endpoint::of12_endpoint(
 		openflow_switch* sw,
 		int reconnect_start_timeout,
 		caddress const& controller_addr,
-		caddress const& binding_addr)  throw (eOfSmErrorOnCreation) {
+		caddress const& binding_addr,
+		ssl_context *ctx)  throw (eOfSmErrorOnCreation) {
 
 	//Reference back to the sw
 	this->sw = sw;
@@ -22,9 +27,9 @@ of12_endpoint::of12_endpoint(
 	crofbase::get_versionbitmap().add_ofp_version(rofl::openflow12::OFP_VERSION);
 	cofhello_elem_versionbitmap versionbitmap;
 	versionbitmap.add_ofp_version(openflow12::OFP_VERSION);
-	
+
 	//Connect to controller
-	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr);
+	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr, PF_INET, SOCK_STREAM, IPPROTO_TCP, ctx);
 }
 
 /*
@@ -707,7 +712,7 @@ of12_endpoint::handle_packet_out(
 
 
 
-afa_result_t
+rofl_result_t
 of12_endpoint::process_packet_in(
 		uint8_t table_id,
 		uint8_t reason,
@@ -733,7 +738,7 @@ of12_endpoint::process_packet_in(
 				match,
 				pkt_buffer, buf_len);
 
-		return AFA_SUCCESS;
+		return ROFL_SUCCESS;
 
 	} catch (...) {
 
@@ -741,7 +746,7 @@ of12_endpoint::process_packet_in(
 		if (buffer_id == OF1XP_NO_BUFFER) {
 			rofl::logging::error << "[xdpd][of12][packet-in] unable to send Packet-In message" << std::endl;
 
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		}
 
 		rofl::logging::error << "[xdpd][of12][packet-in] unable to send Packet-In message, dropping packet from occupied pkt slot" << std::endl;
@@ -753,7 +758,7 @@ of12_endpoint::process_packet_in(
 			of12_translation_utils::of12_map_flow_entry_actions(NULL, sw, actions, action_group, NULL);
 		}catch(...){
 			of1x_destroy_action_group(action_group);
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		}
 
 		/* assumption: driver can handle all situations properly:
@@ -773,17 +778,17 @@ of12_endpoint::process_packet_in(
 		of1x_destroy_action_group(action_group);
 #endif
 
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 	}
 
-	return AFA_FAILURE;
+	return ROFL_FAILURE;
 }
 
 /*
 * Port async notifications processing 
 */
 
-afa_result_t of12_endpoint::notify_port_add(switch_port_snapshot_t* port){
+rofl_result_t of12_endpoint::notify_port_add(const switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -796,7 +801,7 @@ afa_result_t of12_endpoint::notify_port_add(switch_port_snapshot_t* port){
 	
 	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
+	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
 	ofport.set_state(port->state);
@@ -810,10 +815,10 @@ afa_result_t of12_endpoint::notify_port_add(switch_port_snapshot_t* port){
 	//Send message
 	send_port_status_message(openflow12::OFPPR_ADD, ofport);
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
-afa_result_t of12_endpoint::notify_port_delete(switch_port_snapshot_t* port){
+rofl_result_t of12_endpoint::notify_port_delete(const switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -825,7 +830,7 @@ afa_result_t of12_endpoint::notify_port_delete(switch_port_snapshot_t* port){
 	
 	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
+	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
 	ofport.set_state(port->state);
@@ -839,10 +844,10 @@ afa_result_t of12_endpoint::notify_port_delete(switch_port_snapshot_t* port){
 	//Send message
 	send_port_status_message(openflow12::OFPPR_DELETE, ofport);
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
-afa_result_t of12_endpoint::notify_port_status_changed(switch_port_snapshot_t* port){
+rofl_result_t of12_endpoint::notify_port_status_changed(const switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -855,7 +860,7 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_snapshot_t* p
 	//Notify OF controller
 	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
+	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
 	ofport.set_state(port->state);
@@ -869,7 +874,7 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_snapshot_t* p
 	//Send message
 	send_port_status_message(openflow12::OFPPR_MODIFY, ofport);
 
-	return AFA_SUCCESS; // ignore this notification
+	return ROFL_SUCCESS; // ignore this notification
 }
 
 
@@ -1057,7 +1062,7 @@ of12_endpoint::flow_mod_delete(
 
 
 
-afa_result_t
+rofl_result_t
 of12_endpoint::process_flow_removed(
 		uint8_t reason,
 		of1x_flow_entry *entry)
@@ -1083,7 +1088,7 @@ of12_endpoint::process_flow_removed(
 			entry->stats.packet_count,
 			entry->stats.byte_count);
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
 

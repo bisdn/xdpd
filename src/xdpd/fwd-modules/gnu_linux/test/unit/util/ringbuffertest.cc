@@ -17,6 +17,11 @@
 using namespace std;
 using namespace xdpd::gnu_linux;
 
+#define READERS 3
+#define WRITERS 3
+
+int *pool;
+
 class RingBufferTestCase : public CppUnit::TestCase{
 
 	CPPUNIT_TEST_SUITE(RingBufferTestCase);
@@ -33,16 +38,19 @@ class RingBufferTestCase : public CppUnit::TestCase{
 	static void* blockingWrite(void* obj);
 
 	//Suff
-	unsigned int randomIterations;
-	static const unsigned int SLEEP_TIME_MS=200;	
-	static const unsigned int MIN_ITERATIONS=5000;	
-	static const unsigned int MAX_ITERATIONS=12000;	
-	circular_queue<datapacket_t>* buffer;
+	static unsigned int randomIterations;
+	static const unsigned int SLEEP_TIME_MS=20;	
+	static const unsigned int MIN_ITERATIONS=50000;	
+	static const unsigned int MAX_ITERATIONS=120000;	
+	static circular_queue<datapacket_t>* buffer;
 
 	public:
 		void setUp(void);
 		void tearDown(void);
 };
+
+unsigned int RingBufferTestCase::randomIterations = 0;
+circular_queue<datapacket_t>* RingBufferTestCase::buffer = new circular_queue<datapacket_t>(1024);
 
 /* Other CPPUnit stuff */
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( RingBufferTestCase, "RingBufferTestCase" );
@@ -58,15 +66,11 @@ CppUnit::Test* suite(){
 
 /* Setup and tear down */
 void RingBufferTestCase::setUp(){
-
-	buffer = new circular_queue<datapacket_t>(32/*1024*/);
-
+	//buffer = new circular_queue<datapacket_t>(1024);
 }
 
 void RingBufferTestCase::tearDown(){
-
-	delete buffer;
-
+	//delete buffer;
 }
 
 /* Test specific methods */
@@ -97,30 +101,41 @@ void RingBufferTestCase::bufferFilling(){
 
 void* RingBufferTestCase::blockingRead(void* obj){
 
-	datapacket_t* pkt, *prev=NULL;
-	RingBufferTestCase* test = (RingBufferTestCase*)obj;
+	int id = ((int*)obj-(int*)NULL);
+	unsigned int pkt_id, cnt=0;
+	datapacket_t* pkt;
 
-	cerr << "Reading..." << test->randomIterations << endl;
+	fprintf(stderr, "#R%u Reading... %u\n", id, randomIterations/READERS);
 
 	//Read up to N and quit
-	for(unsigned int i=0;i<test->randomIterations;i++){
+	for(unsigned int i=0; i < (randomIterations/READERS); i++){
 
 		do{
-			pkt = test->buffer->non_blocking_read();
+			pkt = buffer->non_blocking_read();
 		}while(!pkt);
+		
+		pkt_id = (unsigned int)(pkt - (datapacket_t*)0x01UL);
+		
+		//fprintf(stderr,"Read pkt %p %u\n", pkt, pkt_id);	
+		
+		if(pool[pkt_id] != 1){
+			fprintf(stderr,"\n#%u Packet id: %u has value %d instead of 1.\n",id, pkt_id, pool[pkt_id]);
+			//Dump status
+			for(unsigned int j=0;j<randomIterations;j++){
+				fprintf(stderr,"[%3u: %d] %s",j, pool[j], ((j+1)%10 == 0)?"\n":"");
+			}
+		}
+
+		CPPUNIT_ASSERT(pool[pkt_id] == 1);
+		pool[pkt_id] = 2;
 	
-		if(pkt != ((datapacket_t*)0x1)+i)
-			fprintf(stderr,"Expected %p got %p, previous %p\n", (((datapacket_t*)0x1)+i), pkt, prev);
-
-		//cerr<<"Read ["<<i<<","<<pkt<<"]\n";	
-		assert(pkt == ((datapacket_t*)0x1)+i);
-		CPPUNIT_ASSERT(pkt == ((datapacket_t*)0x1)+i);
-		prev = pkt;
-
 		//20% prob. sleep
 		if(rand()%100 > 80)
-			usleep(test->SLEEP_TIME_MS);	
+			usleep(SLEEP_TIME_MS);	
+		cnt++;
 	}
+	
+	fprintf(stderr, "#R%u Read... %u\n", id, cnt);
 	
 	return NULL;	
 }
@@ -128,44 +143,71 @@ void* RingBufferTestCase::blockingRead(void* obj){
 void* RingBufferTestCase::blockingWrite(void* obj){
 
 	int ret;
-	RingBufferTestCase* test = (RingBufferTestCase*)obj;
-
-	cerr << "Writing..." << test->randomIterations << endl;
+	int id = ((int*)obj-(int*)NULL);
+	unsigned int cnt=0, from, to;
+	
+	from = (id*(randomIterations/WRITERS));
+	to = ((id+1)*randomIterations/WRITERS);
+	fprintf(stderr, "#W%u Writing... %u [%u->%u] \n", id, randomIterations/WRITERS, from, to);
 	
 	//Write up to N and quit
-	for(unsigned int i=0;i<test->randomIterations;i++){
+	for(unsigned int i=from;i<to;i++){
 
-		//cerr<<"Writing"<<i<<"\n";
-		do{	
-			ret = test->buffer->non_blocking_write(((datapacket_t*)0x1)+i);
+		do{
+			pool[i] = 1;
+			ret = buffer->non_blocking_write(((datapacket_t*)0x1UL+(uint64_t)i));
 		}while(ret != ROFL_SUCCESS);
 		
+
 		//20% prob. sleep
 		if(rand()%100 > 80)
-			usleep(test->SLEEP_TIME_MS);	
+			usleep(SLEEP_TIME_MS);
+		cnt++;
 	}
+	
+	fprintf(stderr, "#W%u Wrote... %u\n", id, cnt);
 
 	return NULL;	
 }
 
 void RingBufferTestCase::concurrentAccess(){
 
-	pthread_t writer, reader;
-
+	unsigned int i;
+	pthread_t writer[WRITERS], reader[READERS];
 
 	//set the random number
 	srand(time(NULL));
 	randomIterations = ( rand() % (MAX_ITERATIONS-MIN_ITERATIONS) ) + MIN_ITERATIONS; 
+	//randomIterations = MIN_ITERATIONS;
+
+	//Normalize
+	randomIterations = (randomIterations/READERS);
+	randomIterations *=READERS;
+	
+	fprintf(stderr, "Iterations %u\n", randomIterations);
+
+	pool = (int*)malloc(sizeof(int)*randomIterations);
+
+	CPPUNIT_ASSERT(pool != NULL);
+
+	memset(pool, 0, sizeof(int)*randomIterations);
 
 	//Show #iterations
-	//TODO
-	//Launch two threads that read and write async	
-	pthread_create(&reader,NULL, RingBufferTestCase::blockingRead, this);
-	pthread_create(&writer,NULL, RingBufferTestCase::blockingWrite, this);
+	for(i=0;i<READERS;i++)
+		pthread_create(&reader[i], NULL, RingBufferTestCase::blockingRead, ((int*)0x0+i));
+	for(i=0;i<WRITERS;i++)
+		pthread_create(&writer[i], NULL, RingBufferTestCase::blockingWrite, ((int*)0x0+i));
 
 	//join them
-	pthread_join(reader,NULL);	
-	pthread_join(writer,NULL);	
+	for(i=0;i<READERS;i++)
+		pthread_join(reader[i],NULL);	
+	for(i=0;i<WRITERS;i++)
+		pthread_join(writer[i],NULL);	
+
+	for(i=0;i<randomIterations;i++)
+		CPPUNIT_ASSERT(pool[i] == 2);
+
+	free(pool);
 
 	//asserts
 	CPPUNIT_ASSERT(buffer->size() == 0);

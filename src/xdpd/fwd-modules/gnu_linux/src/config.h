@@ -38,6 +38,8 @@
 /*
 * General parameters
 */
+//Forwarding module name
+#define FWD_MOD_NAME "[gnu-linux]"
 
 //None for the moment
 
@@ -56,6 +58,11 @@
 
 //Bufferpool reservoir(PKT_INs); ideally at least X*max_num_lsis
 #define IO_BUFFERPOOL_RESERVOIR 2048
+
+//Number of buffers available for I/O. Dimension according to the 
+//the maximum number of interfaces that can run at the same time
+//Warning: changing the size of this variable can have ARNING:
+#define IO_BUFFERPOOL_CAPACITY 2048*16 //32K buffers
 
 //Max frame size (WARNING: do not go beyond 8192 bytes, and never underneath 2048 bytes)
 //Align to a power of 2
@@ -102,7 +109,7 @@
 //Per thread input queue to the switch
 //Align to a power of 2
 //WARNING: do not over-size it or congestion can be created
-#define PROCESSING_PKT_IN_QUEUE_SLOTS 4
+#define PROCESSING_PKT_IN_QUEUE_SLOTS 64
 
 /* 
 * Other

@@ -23,6 +23,7 @@
 #include <rofl/common/caddress.h>
 #include <rofl/common/utils/c_logger.h>
 #include "../../../util/likely.h"
+#include "../../../config.h"
 
 /**
 * @file mmap_tx.h
@@ -93,11 +94,11 @@ public:
 	};
 
 	inline rofl_result_t send(void){
-		ROFL_DEBUG_VERBOSE("%s() on socket descriptor %d\n", __FUNCTION__, sd);
+		ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" %s() on socket descriptor %d\n", __FUNCTION__, sd);
 
 		if ( unlikely( ::sendto(sd, NULL, 0, MSG_DONTWAIT, NULL, 0) ) < 0) {
 
-			ROFL_ERR("[%s:mmap_tx]: Error in port's sendto(), errno:%d, %s\n", devname.c_str(), errno, strerror(errno));
+			ROFL_ERR(FWD_MOD_NAME"[%s:mmap_tx]: Error in port's sendto(), errno:%d, %s\n", devname.c_str(), errno, strerror(errno));
 				return ROFL_FAILURE;	
 		}
 		return ROFL_SUCCESS;	

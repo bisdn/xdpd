@@ -17,7 +17,7 @@ mmap_tx::mmap_tx(
 		ll_addr(ETH_P_ALL, devname, 0, 0, NULL, 0),
 		tpos(0)
 {
-	ROFL_DEBUG_VERBOSE( "mmap_tx(%p)::mmap_tx() %s\n",
+	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" mmap_tx(%p)::mmap_tx() %s\n",
 			this, "RX-RING");
 
 	memset(&req, 0, sizeof(req));
@@ -82,7 +82,7 @@ mmap_tx::mmap_tx(
 	req.tp_frame_nr 	= req.tp_block_size * req.tp_block_nr / req.tp_frame_size;
 
 
-	ROFL_DEBUG_VERBOSE( "mmap_tx(%p)::initialize() block-size:%u block-nr:%u frame-size:%u frame-nr:%u\n",
+	ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" mmap_tx(%p)::initialize() block-size:%u block-nr:%u frame-size:%u frame-nr:%u\n",
 			this,
 			req.tp_block_size,
 			req.tp_block_nr,
@@ -96,7 +96,7 @@ mmap_tx::mmap_tx(
 	if ((rc = setsockopt(sd, SOL_PACKET, PACKET_VERSION,
 			(void *) &val, sizeof(val))) < 0)
 	{
-		ROFL_ERR( "mmap_tx(%p)::initialize() setsockopt() sys-call failed for PACKET_VERSION "
+		ROFL_ERR(FWD_MOD_NAME" mmap_tx(%p)::initialize() setsockopt() sys-call failed for PACKET_VERSION "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw eConstructorMmapTx();
 	}
@@ -107,7 +107,7 @@ mmap_tx::mmap_tx(
 	{
 		// todo implement a retry if the request is not accepted
 
-		ROFL_DEBUG_VERBOSE( "mmap_tx(%p)::initialize() setsockopt() sys-call failed "
+		ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" mmap_tx(%p)::initialize() setsockopt() sys-call failed "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw eConstructorMmapTx();
 	}
@@ -118,7 +118,7 @@ mmap_tx::mmap_tx(
         /* change the buffer size */
 	if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &req.tp_frame_size, sizeof(req.tp_frame_size))< 0)
 	{
-		ROFL_ERR( "mmap_tx(%p)::initialize() Could not change buffer_size\n");
+		ROFL_ERR(FWD_MOD_NAME" mmap_tx(%p)::initialize() Could not change buffer_size\n");
 		throw eConstructorMmapTx();
 	}
 #endif
@@ -147,7 +147,7 @@ mmap_tx::mmap_tx(
 			PROT_READ | PROT_WRITE /* | PROT_EXEC*/, MAP_SHARED,
 			/*file descriptor*/sd, /*offset*/0)) == MAP_FAILED)
 	{
-		ROFL_ERR( "mmap_tx(%p)::initialize() mmap() sys-call failed "
+		ROFL_ERR(FWD_MOD_NAME" mmap_tx(%p)::initialize() mmap() sys-call failed "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw eConstructorMmapTx();
 	}
@@ -172,7 +172,7 @@ mmap_tx::mmap_tx(
 
 mmap_tx::~mmap_tx()
 {
-	//ROFL_DEBUG_VERBOSE( "mmap_tx(%p)::~mmap_tx() %s\n",
+	//ROFL_DEBUG_VERBOSE(FWD_MOD_NAME" mmap_tx(%p)::~mmap_tx() %s\n",
 	//		this, "TX-RING");
 
 	if (-1 != sd)
@@ -183,7 +183,7 @@ mmap_tx::~mmap_tx()
 
 			if ((rc = munmap(map, req.tp_block_size * req.tp_block_nr)) < 0)
 			{
-				ROFL_ERR("mmap_tx(%p)::~mmap_tx() %s => errno: %d (%s) \n",
+				ROFL_ERR(FWD_MOD_NAME" mmap_tx(%p)::~mmap_tx() %s => errno: %d (%s) \n",
 						this, "TX-RING", errno, strerror(errno));
 
 			}

@@ -24,12 +24,8 @@ namespace gnu_linux {
 
 //#define PTHREAD_IMP 1 
 
-typedef enum{
-		RB_BUFFER_AVAILABLE = 0,
-		RB_BUFFER_FULL = 1,
-		RB_BUFFER_CRITICALLY_FULL = 2,
-		RB_BUFFER_INVALID = -1,
-}circular_queue_state_t;
+//Exception
+class eCircularQueueInvalidSize{};
 
 template<typename T>
 class circular_queue{
@@ -54,7 +50,9 @@ public:
 	}
 
 	inline bool is_empty(void);
+	inline bool is_empty(T*** write, T*** read);
 	inline bool is_full(void);
+	inline bool is_full(T*** write, T*** read);
 
 	long long unsigned int slots;
 
@@ -62,9 +60,6 @@ public:
 private:
 	//Buffer
 	T** elements;
-
-	//Buffer state 
-	circular_queue_state_t state;
 
 	T** writep;
 	T** _writep; //used only between writers (assembly 2 stage commit)
@@ -92,28 +87,37 @@ inline bool circular_queue<T>::is_full(){
 }
 
 template<typename T>
+inline bool circular_queue<T>::is_full(T*** write, T*** read){
+	return ((size_t)(*write + 1 - elements) & (slots-1)) == (size_t)(*read - elements);
+}
+
+template<typename T>
 inline bool circular_queue<T>::is_empty(){
 	return writep == readp;
 }
 
 template<typename T>
-inline T** circular_queue<T>::circ_inc_pointer(T** pointer){
-	T** return_pointer;
+inline bool circular_queue<T>::is_empty(T*** write, T*** read){
+	return *write == *read;
+}
 
-	if ((elements + slots) == (pointer) + 1) {
-		return_pointer = &elements[0];
-	} else {
-		return_pointer = pointer+1;
-	}
-	
-	return return_pointer;
+template<typename T>
+inline T** circular_queue<T>::circ_inc_pointer(T** pointer){
+	if ((elements + slots) == (pointer + 1) )
+		return &elements[0];
+	else
+		return pointer+1;
 }
 
 template<typename T>
 circular_queue<T>::circular_queue(long long unsigned int capacity){
 
-	if(!capacity)
-		return;
+
+	if( ( (capacity & (capacity - 1)) != 0 ) || capacity == 0){
+		//Not power of 2!!
+		ROFL_ERR("Unable to instantiate queue of size: %u. It is not power of 2! Revise your settings",capacity);
+		throw eCircularQueueInvalidSize();
+	}
 
 	//Allocate
 	elements = new T*[capacity];
@@ -152,90 +156,46 @@ T* circular_queue<T>::non_blocking_read(void){
 
 
 #ifndef PTHREAD_IMP
-	
-	T** pointer, **read_cpy;
+	T** next, **read_cpy;
 	T* to_return;
 
-	//Increment
 	do{
-		if (unlikely(is_empty())) {
+		//Recover current read pointer: MUST BE HERE
+		read_cpy = readp;
+
+		if (unlikely(is_empty(&writep, &read_cpy))) {
 			return NULL;
 		}
 		
-		//Calculate readp+1
-		read_cpy = readp;
 		to_return = *read_cpy;
-		pointer = circ_inc_pointer(read_cpy); 
+		
+		//Calculate readp+1
+		next = circ_inc_pointer(read_cpy); 
 
-		assert( pointer < (elements+slots));
-
-		//Try to set it atomically
-	}while(__sync_bool_compare_and_swap(&readp, read_cpy, pointer) != true);
+	//Try to set it atomically
+	}while(__sync_bool_compare_and_swap(&readp, read_cpy, next) != true);
 
 	return to_return;
 #else	
 	T* elem;
 	
-	#ifdef RB_MULTI_READERS
-		pthread_mutex_lock(&mutex_readers);
-	#endif //RB_MULTI_READERS
-		if (is_empty()) {
-	#ifdef RB_MULTI_WRITERS
-			pthread_mutex_unlock(&mutex_readers);
-	#endif //RB_MULTI_WRITERS
-			return NULL;
-		}
-
-		elem = *readp;
-		readp = circ_inc_pointer(readp);
-
-	#ifdef RB_MULTI_READERS
-		pthread_mutex_unlock(&mutex_readers);
-	#endif //RB_MULTI_READERS
-
-		pthread_cond_broadcast(&write_cond);
-		return elem;
-#endif
-}
-
-#if 0
-template<typename T>
-T* circular_queue<T>::blocking_read(unsigned int seconds){
-
-	T* elem;
-	struct timespec timeout;
-
-	//Try it straight away
-	elem = non_blocking_read();
+	pthread_mutex_lock(&mutex_readers);
 	
-	while(!elem) {
-
-		//Acquire lock for pthread_cond_wait
-		pthread_mutex_lock(&mutex_readers);
-
-		//Sleep until signal or timeout (in case defined)
-		if(seconds){
-			timeout.tv_sec = time(NULL) + seconds;
-			timeout.tv_nsec = 0;
-			pthread_cond_timedwait(&read_cond, &mutex_readers,&timeout);
-		}else	
-			pthread_cond_wait(&read_cond, &mutex_readers);
-
-		//Release it
+	if (is_empty()) {
 		pthread_mutex_unlock(&mutex_readers);
-
-
-		//Retry
-		elem = non_blocking_read();
-		
-		if(seconds)
-			//if timeout, then only once needs to be tried and exit
-			break;
-	
+		return NULL;
 	}
+
+	elem = *readp;
+	//*readp = NULL;
+	readp = circ_inc_pointer(readp);
+
+	pthread_mutex_unlock(&mutex_readers);
+	
 	return elem;
-}
 #endif
+}
+
 
 //Write
 template<typename T>
@@ -243,92 +203,48 @@ rofl_result_t circular_queue<T>::non_blocking_write(T* elem){
 
 #ifndef PTHREAD_IMP
 
-	T** pointer, **write_cpy;
+	T** next, **write_cpy;
 
 	//Increment
 	do{
-		if(unlikely(is_full())) {
+
+		//Calculate writep+1: MUST BE HERE
+		write_cpy = _writep;
+
+		if(unlikely(is_full(&write_cpy, &readp))) {
 			return ROFL_FAILURE;
 		}
 		
-		//Calculate writep+1
-		write_cpy = _writep;
-		pointer = circ_inc_pointer(write_cpy); 
+		next = circ_inc_pointer(write_cpy); 
 
 	//Try to set writers only index atomically
-	}while(__sync_bool_compare_and_swap(&_writep, write_cpy, pointer) != true);
+	}while(__sync_bool_compare_and_swap(&_writep, write_cpy, next) != true);
 
 	*write_cpy = elem;
 
 	//Two stage commit, now let readers read it 
-	while(__sync_bool_compare_and_swap(&writep, write_cpy, pointer) != true);
-
+	while(__sync_bool_compare_and_swap(&writep, write_cpy, next) != true);
 
 	return ROFL_SUCCESS;
 
 #else
 
-	#ifdef RB_MULTI_WRITERS
-		pthread_mutex_lock(&mutex_writers);
-	#endif
+	pthread_mutex_lock(&mutex_writers);
 
-		if (is_full()) {
-	#ifdef RB_MULTI_WRITERS
-			pthread_mutex_unlock(&mutex_writers);
-	#endif
-			return ROFL_FAILURE;
-		}
-
-		*writep = elem;
-		writep = circ_inc_pointer(writep);
-
-	#ifdef RB_MULTI_WRITERS
+	if (is_full()) {
 		pthread_mutex_unlock(&mutex_writers);
-	#endif
-
-		pthread_cond_broadcast(&read_cond);
-
-		return ROFL_SUCCESS;
-#endif
-}
-
-#if 0
-
-template<typename T>
-rofl_result_t circular_queue<T>::blocking_write(T* elem, unsigned int seconds){
-
-	rofl_result_t result;
-	struct timespec timeout;
-
-	//Try it straight away
-	result = non_blocking_write(elem);
-
-	while(result == ROFL_FAILURE) {
-	
-		//Acquire lock for pthread_cond_wait
-		pthread_mutex_lock(&mutex_writers);
-
-		//Sleep until signal or timeout (in case defined)
-		if(seconds){
-			timeout.tv_sec = time(NULL) + seconds;
-			pthread_cond_timedwait(&write_cond, &mutex_writers, &timeout);
-		}else
-	 		pthread_cond_wait(&write_cond, &mutex_writers);
-
-		//Release it
-		pthread_mutex_unlock(&mutex_writers);
-
-		//Retry
-		result = non_blocking_write(elem);
-		
-		if(seconds)
-			//if timeout, then only once needs to be tried and exit
-			break;
+		return ROFL_FAILURE;
 	}
 
-	return result;
-}
+	*writep = elem;
+	writep = circ_inc_pointer(writep);
+
+	pthread_mutex_unlock(&mutex_writers);
+
+	return ROFL_SUCCESS;
 #endif
+}
+
 
 template<typename T>
 void circular_queue<T>::dump(void){

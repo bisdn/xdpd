@@ -52,10 +52,10 @@ public:
 	inline virtual int get_write_fd(void){return tx_notify_pipe[READ];};
 
 	virtual rofl_result_t 
-	disable();
+	down();
 
 	virtual rofl_result_t
-	enable();
+	up();
 
 	/**
 	* Emulate transmission of the packet
@@ -71,15 +71,19 @@ protected:
 	//fds
 	int rx_notify_pipe[2];
 	int tx_notify_pipe[2];
-
-
+	int deferred_drain_rx;
+	int deferred_drain_tx;
+	
+	//Used to drain the pipe
+	char draining_buffer[IO_IFACE_RING_SLOTS];
+	
 	//Pipe extremes
 	static const unsigned int READ=0;
 	static const unsigned int WRITE=1;
 	
 	static const unsigned int MIN_PKT_LEN=14;
 	
-	void empty_pipe(int* pipe);
+	void empty_pipe(int* pipe, int* deferred_drain);
 };
 
 }// namespace xdpd::gnu_linux 

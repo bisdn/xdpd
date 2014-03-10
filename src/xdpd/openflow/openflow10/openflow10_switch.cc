@@ -22,7 +22,8 @@ openflow10_switch::openflow10_switch(uint64_t dpid,
 				int* ma_list,
 				int reconnect_start_timeout,
 				caddress const& controller_addr,
-				caddress const& binding_addr) throw (eOfSmVersionNotSupported)
+				caddress const& binding_addr,
+				ssl_context *ctx) throw (eOfSmVersionNotSupported)
 		: openflow_switch(dpid, dpname, version, num_of_tables)
 {
 
@@ -35,8 +36,7 @@ openflow10_switch::openflow10_switch(uint64_t dpid,
 	}
 
 	//Initialize the endpoint, and launch control channel
-	endpoint = new of10_endpoint(this, reconnect_start_timeout, controller_addr, binding_addr);
-
+	endpoint = new of10_endpoint(this, reconnect_start_timeout, controller_addr, binding_addr, ctx);
 }
 
 
@@ -53,7 +53,7 @@ openflow10_switch::~openflow10_switch(){
 }
 
 /* Public interfaces for receving async messages from the driver */
-afa_result_t openflow10_switch::process_packet_in(uint8_t table_id,
+rofl_result_t openflow10_switch::process_packet_in(uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
 					uint32_t buffer_id,
@@ -72,20 +72,20 @@ afa_result_t openflow10_switch::process_packet_in(uint8_t table_id,
 					matches);
 }
 
-afa_result_t openflow10_switch::process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
+rofl_result_t openflow10_switch::process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
 	return ((of10_endpoint*)endpoint)->process_flow_removed(reason, removed_flow_entry);
 }
 
 /*
 * Port notfications. Process them directly in the endpoint
 */
-afa_result_t openflow10_switch::notify_port_add(switch_port_t* port){
+rofl_result_t openflow10_switch::notify_port_add(const switch_port_t* port){
 	return endpoint->notify_port_add(port);
 }
-afa_result_t openflow10_switch::notify_port_delete(switch_port_t* port){
+rofl_result_t openflow10_switch::notify_port_delete(const switch_port_t* port){
 	return endpoint->notify_port_delete(port);
 }
-afa_result_t openflow10_switch::notify_port_status_changed(switch_port_t* port){
+rofl_result_t openflow10_switch::notify_port_status_changed(const switch_port_t* port){
 	return endpoint->notify_port_status_changed(port);
 }
 

@@ -39,9 +39,6 @@ of13_endpoint::handle_features_request(
 		cofmsg_features_request& msg,
 		uint8_t aux_id)
 {
-	logical_switch_port_t* ls_port;	
-	switch_port_snapshot_t* _port;	
-	
 	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
@@ -54,49 +51,6 @@ of13_endpoint::handle_features_request(
 	num_of_tables 	= of13switch->pipeline.num_of_tables;
 	num_of_buffers 	= of13switch->pipeline.num_of_buffers;
 	capabilities 	= of13switch->pipeline.capabilities;
-
-	// array of structures ofp_port
-	rofl::cofports ports(ctl.get_version());
-
-	//we check all the positions in case there are empty slots
-	for (unsigned int n = 1; n < of13switch->max_ports; n++){
-
-		ls_port = &of13switch->logical_ports[n];
-		_port = ls_port->port;
-
-		if(_port!=NULL && ls_port->attachment_state!=LOGICAL_PORT_STATE_DETACHED){
-
-			//Mapping of port state
-			assert(n == _port->of_port_num);
-
-			cofport port(ctl.get_version());
-
-			port.set_port_no(_port->of_port_num);
-			port.set_hwaddr(cmacaddr(_port->hwaddr, OFP_ETH_ALEN));
-			port.set_name(std::string(_port->name));
-			
-			uint32_t config = 0;
-			if(!_port->up)	
-				config |= openflow13::OFPPC_PORT_DOWN;
-			if(_port->drop_received)
-				config |= openflow13::OFPPC_NO_RECV;
-			if(!_port->forward_packets)	
-				config |= openflow13::OFPPC_NO_FWD;
-			if(!_port->of_generate_packet_in)
-				config |= openflow13::OFPPC_NO_PACKET_IN;
-
-			port.set_config(config);
-			port.set_state(_port->state);
-			port.set_curr(_port->curr);
-			port.set_advertised(_port->advertised);
-			port.set_supported(_port->supported);
-			port.set_peer(_port->peer);
-			port.set_curr_speed(of13_translation_utils::get_port_speed_kb(_port->curr_speed));
-			port.set_max_speed(of13_translation_utils::get_port_speed_kb(_port->curr_max_speed));
-
-			ports.add_port(_port->of_port_num) = port;
-		}
- 	}
 	
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
@@ -107,9 +61,7 @@ of13_endpoint::handle_features_request(
 			num_of_buffers,	// n_buffers
 			num_of_tables,	// n_tables
 			capabilities,	// capabilities
-			0,
-			0,
-			ports);
+			aux_id);		// auxiliary connection id
 }
 
 
@@ -751,7 +703,61 @@ of13_endpoint::handle_port_desc_stats_request(
 		cofmsg_port_desc_stats_request& msg,
 		uint8_t aux_id)
 {
+	logical_switch_port_t* ls_port;
+	switch_port_snapshot_t* _port;
 
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!of13switch)
+		throw eRofBase();
+
+	// array of structures ofp_port
+	rofl::cofports ports(ctl.get_version());
+
+	//we check all the positions in case there are empty slots
+	for (unsigned int n = 1; n < of13switch->max_ports; n++){
+
+		ls_port = &of13switch->logical_ports[n];
+		_port = ls_port->port;
+
+		if(_port!=NULL && ls_port->attachment_state!=LOGICAL_PORT_STATE_DETACHED){
+
+			//Mapping of port state
+			assert(n == _port->of_port_num);
+
+			cofport port(ctl.get_version());
+
+			port.set_port_no(_port->of_port_num);
+			port.set_hwaddr(cmacaddr(_port->hwaddr, OFP_ETH_ALEN));
+			port.set_name(std::string(_port->name));
+
+			uint32_t config = 0;
+			if(!_port->up)
+				config |= openflow13::OFPPC_PORT_DOWN;
+			if(_port->drop_received)
+				config |= openflow13::OFPPC_NO_RECV;
+			if(!_port->forward_packets)
+				config |= openflow13::OFPPC_NO_FWD;
+			if(!_port->of_generate_packet_in)
+				config |= openflow13::OFPPC_NO_PACKET_IN;
+
+			port.set_config(config);
+			port.set_state(_port->state);
+			port.set_curr(_port->curr);
+			port.set_advertised(_port->advertised);
+			port.set_supported(_port->supported);
+			port.set_peer(_port->peer);
+			port.set_curr_speed(of13_translation_utils::get_port_speed_kb(_port->curr_speed));
+			port.set_max_speed(of13_translation_utils::get_port_speed_kb(_port->curr_max_speed));
+
+			ports.add_port(_port->of_port_num) = port;
+		}
+ 	}
+
+	//Destroy the snapshot
+	of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
+
+	ctl.send_port_desc_stats_reply(msg.get_xid(), ports, 0);
 }
 
 

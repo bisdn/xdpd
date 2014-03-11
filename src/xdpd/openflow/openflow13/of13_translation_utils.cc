@@ -1880,37 +1880,180 @@ uint64_t of13_translation_utils::of13_map_bitmap_matches(uint64_t* bitmap){
 	return mapped_bitmap;	
 }
 
-void of13_translation_utils::of13_map_bitmap_actions(uint32_t *write_actions, coftable_feature_prop_actions& actions)
-{
-#if 0
-	for (unsigned int i = 0; i < write_actions->num_of_actions; i++) {
-		switch (write_actions->write_actions[i].type) {
-		case OF1X_AT_COPY_TTL_IN:	actions.add_action(rofl::openflow13::OFPAT_COPY_TTL_IN, 4);	break;
-		case OF1X_AT_POP_VLAN:		actions.add_action(rofl::openflow13::OFPAT_POP_VLAN, 4);	break;
-		case OF1X_AT_POP_MPLS:		actions.add_action(rofl::openflow13::OFPAT_POP_MPLS, 4);	break;
-		// TODO: POP_GTP
-		// TODO: POP_PPPOE
-		case OF1X_AT_POP_PBB:		actions.add_action(rofl::openflow13::OFPAT_POP_PBB, 4);		break;
-		case OF1X_AT_PUSH_PBB:		actions.add_action(rofl::openflow13::OFPAT_PUSH_PBB, 4);	break;
-		// TODO: PUSH_PPPOE
-		// TODO: PUSH_GTP
-		case OF1X_AT_PUSH_MPLS:		actions.add_action(rofl::openflow13::OFPAT_PUSH_MPLS, 4);	break;
-		case OF1X_AT_PUSH_VLAN:		actions.add_action(rofl::openflow13::OFPAT_PUSH_VLAN, 4);	break;
-		case OF1X_AT_COPY_TTL_OUT:	actions.add_action(rofl::openflow13::OFPAT_COPY_TTL_OUT, 4);break;
-		case OF1X_AT_DEC_NW_TTL:	actions.add_action(rofl::openflow13::OFPAT_DEC_NW_TTL, 4);	break;
-		case OF1X_AT_DEC_MPLS_TTL:	actions.add_action(rofl::openflow13::OFPAT_DEC_MPLS_TTL, 4);break;
-		case OF1X_AT_SET_MPLS_TTL:	actions.add_action(rofl::openflow13::OFPAT_SET_MPLS_TTL, 4);break;
-		case OF1X_AT_SET_NW_TTL:	actions.add_action(rofl::openflow13::OFPAT_SET_NW_TTL, 4);	break;
-		case OF1X_AT_SET_QUEUE:		actions.add_action(rofl::openflow13::OFPAT_SET_QUEUE, 4);	break;
-		case OF1X_AT_GROUP:			actions.add_action(rofl::openflow13::OFPAT_GROUP, 4);		break;
-		case OF1X_AT_OUTPUT:		actions.add_action(rofl::openflow13::OFPAT_OUTPUT, 4);		break;
-		default: break;
-		}
 
-	}
-	if (true)
+void of13_translation_utils::of13_map_bitmap_set_fields(uint64_t* bitmap, coftable_feature_prop_oxm& matches)
+{
+	if (*bitmap & (1UL << OF1X_MATCH_ETH_DST))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_DST);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ETH_SRC))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_SRC);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ETH_TYPE))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_TYPE);
+
+	if (*bitmap & (1UL << OF1X_MATCH_MPLS_LABEL))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_LABEL);
+
+	if (*bitmap & (1UL << OF1X_MATCH_MPLS_TC))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_TC);
+
+	if (*bitmap & (1UL << OF1X_MATCH_MPLS_BOS))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_BOS);
+
+	if (*bitmap & (1UL << OF1X_MATCH_VLAN_VID))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_VLAN_VID);
+
+	if (*bitmap & (1UL << OF1X_MATCH_VLAN_PCP))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_VLAN_PCP);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ARP_OP))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_OP);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ARP_SHA))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_SHA);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ARP_SPA))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_SPA);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ARP_THA))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_THA);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ARP_TPA))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_TPA);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IP_DSCP))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_DSCP);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IP_ECN))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_ECN);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IP_PROTO))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_PROTO);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV4_SRC))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV4_SRC);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV4_DST))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV4_DST);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV6_SRC))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_SRC);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV6_DST))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_DST);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV6_FLABEL))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_FLABEL);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV6_ND_TARGET))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_TARGET);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV6_ND_SLL))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_SLL);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV6_ND_TLL))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_TLL);
+
+	if (*bitmap & (1UL << OF1X_MATCH_IPV6_EXTHDR))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_EXTHDR);
+
+	if (*bitmap & (1UL << OF1X_MATCH_TCP_SRC))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TCP_SRC);
+
+	if (*bitmap & (1UL << OF1X_MATCH_TCP_DST))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TCP_DST);
+
+	if (*bitmap & (1UL << OF1X_MATCH_UDP_SRC))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_UDP_SRC);
+
+	if (*bitmap & (1UL << OF1X_MATCH_UDP_DST))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_UDP_DST);
+
+	if (*bitmap & (1UL << OF1X_MATCH_SCTP_SRC))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_SCTP_SRC);
+
+	if (*bitmap & (1UL << OF1X_MATCH_SCTP_DST))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_SCTP_DST);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ICMPV4_TYPE))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV4_TYPE);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ICMPV4_CODE))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV4_CODE);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ICMPV6_TYPE))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV6_TYPE);
+
+	if (*bitmap & (1UL << OF1X_MATCH_ICMPV6_CODE))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV6_CODE);
+
+	if (*bitmap & (1UL << OF1X_MATCH_PBB_ISID))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_PBB_ISID);
+
+	if (*bitmap & (1UL << OF1X_MATCH_TUNNEL_ID))
+		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TUNNEL_ID);
+}
+
+
+void of13_translation_utils::of13_map_bitmap_actions(uint32_t *bitmap, coftable_feature_prop_actions& actions)
+{
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_COPY_TTL_IN))
+		actions.add_action(rofl::openflow13::OFPAT_COPY_TTL_IN, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_POP_VLAN))
+		actions.add_action(rofl::openflow13::OFPAT_POP_VLAN, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_POP_MPLS))
+		actions.add_action(rofl::openflow13::OFPAT_POP_MPLS, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_POP_PBB))
+		actions.add_action(rofl::openflow13::OFPAT_POP_PBB, 4);
+
+	// TODO: POP_PPPOE
+	// TODO: POP_GTP
+
+	// TODO: PUSH_GTP
+	// TODO: PUSH_PPPOE
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_PBB))
+		actions.add_action(rofl::openflow13::OFPAT_PUSH_PBB, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_MPLS))
+		actions.add_action(rofl::openflow13::OFPAT_PUSH_MPLS, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_MPLS))
+		actions.add_action(rofl::openflow13::OFPAT_PUSH_MPLS, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_VLAN))
+		actions.add_action(rofl::openflow13::OFPAT_PUSH_VLAN, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_COPY_TTL_OUT))
+		actions.add_action(rofl::openflow13::OFPAT_COPY_TTL_OUT, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_DEC_NW_TTL))
+		actions.add_action(rofl::openflow13::OFPAT_DEC_NW_TTL, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_DEC_MPLS_TTL))
+		actions.add_action(rofl::openflow13::OFPAT_DEC_MPLS_TTL, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_MPLS_TTL))
+		actions.add_action(rofl::openflow13::OFPAT_SET_MPLS_TTL, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_NW_TTL))
+		actions.add_action(rofl::openflow13::OFPAT_SET_NW_TTL, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_QUEUE))
+		actions.add_action(rofl::openflow13::OFPAT_SET_QUEUE, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_GROUP))
+		actions.add_action(rofl::openflow13::OFPAT_GROUP, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_OUTPUT))
+		actions.add_action(rofl::openflow13::OFPAT_OUTPUT, 4);
+
+	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_FIELD))
 		actions.add_action(rofl::openflow13::OFPAT_SET_FIELD, 4);
-#endif
 }
 
 uint32_t of13_translation_utils::of13_map_bitmap_actions(uint32_t* bitmap){

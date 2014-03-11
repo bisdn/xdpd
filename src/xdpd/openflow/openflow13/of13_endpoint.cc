@@ -601,20 +601,16 @@ of13_endpoint::handle_table_features_stats_request(
 {
 	rofl::openflow::coftables tables(ctl.get_version());
 
-	unsigned int num_of_tables;
-	of1x_flow_table_t* table;
-	of1x_flow_table_config_t* tc;
-
 	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
 
-	num_of_tables = of13switch->pipeline.num_of_tables;
+	unsigned int num_of_tables = of13switch->pipeline.num_of_tables;
 	for (unsigned int n = 0; n < num_of_tables; n++) {
 
-		table = &of13switch->pipeline.tables[n];
-		tc = &table->config;
+		of1x_flow_table_t* table = &of13switch->pipeline.tables[n];
+		of1x_flow_table_config_t* tc = &table->config;
 		uint8_t table_id = table->number;
 
 		tables.set_table(table_id).set_table_id(table_id);
@@ -631,15 +627,14 @@ of13_endpoint::handle_table_features_stats_request(
 		if(tc->instructions & ( 1 << OF1X_IT_APPLY_ACTIONS)) {
 			of13_translation_utils::of13_map_bitmap_actions(&tc->apply_actions, tables.set_table(table_id).set_properties().set_tfp_apply_actions());
 			of13_translation_utils::of13_map_bitmap_actions(&tc->apply_actions, tables.set_table(table_id).set_properties().set_tfp_apply_actions_miss());
-			of13_translation_utils::of13_map_bitmap_matches(&tc->apply_setfields, tables.set_table(table_id).set_properties().set_tfp_apply_setfield());
-			of13_translation_utils::of13_map_bitmap_matches(&tc->apply_setfields, tables.set_table(table_id).set_properties().set_tfp_apply_setfield_miss());
+			of13_translation_utils::of13_map_bitmap_set_fields(&tc->apply_setfields, tables.set_table(table_id).set_properties().set_tfp_apply_setfield());
+			of13_translation_utils::of13_map_bitmap_set_fields(&tc->apply_setfields, tables.set_table(table_id).set_properties().set_tfp_apply_setfield_miss());
 		}
 		if(tc->instructions & ( 1 << OF1X_IT_WRITE_ACTIONS)) {
 			of13_translation_utils::of13_map_bitmap_actions(&tc->write_actions, tables.set_table(table_id).set_properties().set_tfp_write_actions());
 			of13_translation_utils::of13_map_bitmap_actions(&tc->write_actions, tables.set_table(table_id).set_properties().set_tfp_write_actions_miss());
-			of13_translation_utils::of13_map_bitmap_matches(&tc->write_setfields, tables.set_table(table_id).set_properties().set_tfp_write_setfield());
-			of13_translation_utils::of13_map_bitmap_matches(&tc->write_setfields, tables.set_table(table_id).set_properties().set_tfp_write_setfield_miss());
-			std::cerr << "WRITE-SETFIELD-MISS ===> " << std::endl << tables.set_table(table_id).set_properties().set_tfp_write_setfield_miss();
+			of13_translation_utils::of13_map_bitmap_set_fields(&tc->write_setfields, tables.set_table(table_id).set_properties().set_tfp_write_setfield());
+			of13_translation_utils::of13_map_bitmap_set_fields(&tc->write_setfields, tables.set_table(table_id).set_properties().set_tfp_write_setfield_miss());
 		}
 		if(tc->instructions & ( 1 << OF1X_IT_GOTO_TABLE)) {
 			for (unsigned int i = n + 1; i < num_of_tables; i++) {
@@ -647,29 +642,6 @@ of13_endpoint::handle_table_features_stats_request(
 				tables.set_table(table_id).set_properties().set_tfp_next_tables_miss().add_table_id(i);
 			}
 		}
-
-#if 0
-		table_stats.push_back(
-				coftable_stats_reply(
-					ctl.get_version(),
-					table->number,
-					std::string(table->name, strnlen(table->name, OFP_MAX_TABLE_NAME_LEN)),
-					of13_translation_utils::of13_map_bitmap_matches(&tc->match),
-					of13_translation_utils::of13_map_bitmap_matches(&tc->wildcards),
-					of13_translation_utils::of13_map_bitmap_actions(&tc->write_actions),
-					of13_translation_utils::of13_map_bitmap_actions(&tc->apply_actions),
-					of13_translation_utils::of13_map_bitmap_matches(&tc->write_setfields),
-					of13_translation_utils::of13_map_bitmap_matches(&tc->apply_setfields),
-					tc->metadata_match, //FIXME: this needs to be properly mapped once METADATA is implemented
-					tc->metadata_write, //FIXME: this needs to be properly mapped once METADATA is implemented
-					of13_translation_utils::of13_map_bitmap_instructions(&tc->instructions),
-					tc->table_miss_config,
-					(table->max_entries),
-					(table->num_of_entries),
-					(table->stats.lookup_count),
-					(table->stats.matched_count)
-				));
-#endif
 	}
 
 	//Destroy the snapshot

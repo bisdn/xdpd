@@ -56,6 +56,7 @@ rofl_result_t update_port_status(char * name){
 	ioport* io_port = ((ioport*)port->platform_port_state);
 	
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
+		assert(0);
 		return ROFL_FAILURE;
 	}
 
@@ -63,6 +64,7 @@ rofl_result_t update_port_status(char * name){
 	strcpy(ifr.ifr_name, port->name);
 
 	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0){
+		assert(0);
 		return ROFL_FAILURE;
 	}
 
@@ -73,6 +75,7 @@ rofl_result_t update_port_status(char * name){
 	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
 		close(sd);
 		pthread_rwlock_unlock(&io_port->rwlock);
+		assert(0);
 		return ROFL_FAILURE;
 	}
 	
@@ -90,7 +93,7 @@ rofl_result_t update_port_status(char * name){
 		iomanager::bring_port_down(io_port);
 	}
 	
-	//port_status message needs to be created if the port id attached to switch
+	//Notify the change of state to the CMM
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
 	cmm_notify_port_status_changed(port_snapshot);
 	
@@ -518,6 +521,7 @@ rofl_result_t destroy_ports(){
 rofl_result_t update_physical_ports(){
 
 	switch_port_t *port, **ports;
+	switch_port_snapshot_t *port_snapshot;
 	int sock;
 	struct ifaddrs *ifaddr, *ifa;
 	unsigned int i, max_ports;
@@ -567,6 +571,11 @@ rofl_result_t update_physical_ports(){
 				continue;
 
 			ROFL_INFO(FWD_MOD_NAME"[ports] Interface %s has been removed from the system. The interface will now be detached from any logical switch it is attached to (if any), and removed from the list of physical interfaces.\n", it->first.c_str());
+	
+			//Notify CMM
+			port_snapshot = physical_switch_get_port_snapshot(port->name); 
+			cmm_notify_port_delete(port_snapshot);
+
 			//Detach
 			if(port->attached_sw && (fwd_module_detach_port_from_switch(port->attached_sw->dpid, port->name) != AFA_SUCCESS) ){
 				ROFL_WARN(FWD_MOD_NAME"[ports] WARNING: unable to detach port %s from switch. This can lead to an unknown behaviour\n", it->first.c_str());
@@ -593,6 +602,10 @@ rofl_result_t update_physical_ports(){
 			freeifaddrs(ifaddr);
 			continue;	
 		}
+
+		//Notify CMM
+		port_snapshot = physical_switch_get_port_snapshot(port->name); 
+		cmm_notify_port_add(port_snapshot);
 
 	}
 	

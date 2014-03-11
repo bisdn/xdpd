@@ -255,7 +255,6 @@ switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
 afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 
 	switch_port_t* port;
-	switch_port_snapshot_t* port_snapshot;
 	of_switch_t* lsw;
 
 	//Check switch existance
@@ -289,12 +288,6 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 		return AFA_FAILURE;	
 	}
 
-	//notify port attached(get first snapshot)
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_add(port_snapshot)!=AFA_SUCCESS){
-		//return AFA_FAILURE; //Ignore
-	}
-	
 	return AFA_SUCCESS;
 }
 
@@ -345,7 +338,6 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 		return AFA_FAILURE;
 	}
 	
-
 	//Set switch ports and return
 	*port1 = physical_switch_get_port_snapshot(vport1->of_port_state->name);
 	*port2 = physical_switch_get_port_snapshot(vport2->of_port_state->name);
@@ -423,7 +415,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 			goto FWD_MODULE_DETACH_ERROR;
 		}
 
-		//notify port dettached
+		//notify port detached and deleted
 		cmm_notify_port_delete(port_pair_snapshot);
 		
 		//Remove from the pipeline and delete
@@ -443,11 +435,11 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 
 		delete (ioport*)port->platform_port_state;
 		delete (ioport*)port_pair->platform_port_state;
+	
+		//notify port detached and deleted
+		cmm_notify_port_delete(port_snapshot);
 	}
 	
-	//notify port dettached
-	cmm_notify_port_delete(port_snapshot);
-
 	return AFA_SUCCESS; 
 
 FWD_MODULE_DETACH_ERROR:
@@ -520,10 +512,12 @@ afa_result_t fwd_module_bring_port_up(const char* name){
 			return AFA_FAILURE;
 	}
 
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
-	
+	//Notify only if its virtual; otherwise bg will do it for us
+	if(port->type == PORT_TYPE_VIRTUAL){
+		port_snapshot = physical_switch_get_port_snapshot(port->name); 
+		cmm_notify_port_status_changed(port_snapshot);
+	}
+		
 	return AFA_SUCCESS;
 }
 
@@ -555,10 +549,12 @@ afa_result_t fwd_module_bring_port_down(const char* name){
 			return AFA_FAILURE;
 	}
 
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
-	
+	//Notify only if its virtual; otherwise bg will do it for us
+	if(port->type == PORT_TYPE_VIRTUAL){
+		port_snapshot = physical_switch_get_port_snapshot(port->name); 
+		cmm_notify_port_status_changed(port_snapshot);
+	}
+
 	return AFA_SUCCESS;
 }
 
@@ -587,9 +583,11 @@ afa_result_t fwd_module_bring_port_up_by_num(uint64_t dpid, unsigned int port_nu
 	if(iomanager::bring_port_up((ioport*)lsw->logical_ports[port_num].port->platform_port_state) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
-	port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
+	//Notify only if its virtual; otherwise bg will do it for us
+	if(lsw->logical_ports[port_num].port->type == PORT_TYPE_VIRTUAL){
+		port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+		cmm_notify_port_status_changed(port_snapshot);
+	}
 	
 	return AFA_SUCCESS;
 }
@@ -618,10 +616,12 @@ afa_result_t fwd_module_bring_port_down_by_num(uint64_t dpid, unsigned int port_
 	//Call I/O manager to bring it down
 	if(iomanager::bring_port_down((ioport*)lsw->logical_ports[port_num].port->platform_port_state) != ROFL_SUCCESS)
 		return AFA_FAILURE;
-	
-	port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
+		
+	//Notify only if its virtual; otherwise bg will do it for us
+	if(lsw->logical_ports[port_num].port->type == PORT_TYPE_VIRTUAL){
+		port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+		cmm_notify_port_status_changed(port_snapshot);
+	}
 	
 	return AFA_SUCCESS;
 }

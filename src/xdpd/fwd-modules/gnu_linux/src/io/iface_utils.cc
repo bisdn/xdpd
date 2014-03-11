@@ -338,10 +338,10 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 
 	//Init the pipeline ports
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 0);
-	port1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+	port1 = switch_port_init(port_name, false, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
 
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 1);
-	port2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+	port2 = switch_port_init(port_name, false, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
 
 	if(!port1 || !port2){
 		free(port1);

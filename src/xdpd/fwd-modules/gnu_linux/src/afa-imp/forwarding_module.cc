@@ -183,7 +183,6 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 
 	//Stop all ports and remove it from being scheduled by I/O first
 	for(i=0;i<sw->max_ports;i++){
-
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
 			//Take it out from the group
 			if( iomanager::remove_port((ioport*)sw->logical_ports[i].port->platform_port_state) != ROFL_SUCCESS ){
@@ -204,7 +203,6 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
-
 	//Remove switch from the switch bank
 	if(physical_switch_remove_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;
@@ -316,15 +314,18 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 
 /**
 * @name    fwd_module_connect_switches
-* @brief   Attemps to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. 
+* @brief   Attempts to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. On success, the two ports must be functional and process packets and the fwd_module MUST inform the CMM of the new ports via two separate port_add messages, with the appropriate information of attachment of the ports. 
 * @ingroup management
 *
 * @param dpid_lsi1 Datapath ID of the LSI1
-* @param dpid_lsi2 Datapath ID of the LSI2 
+* @param port1 A pointer to a snapshot of the virtual port attached to the LS1 that MUST be destroyed using switch_port_destroy_snapshot()
+* @param dpid_lsi2 Datapath ID of the LSI2
+* @param port1 A pointer to a snapshot of the virtual port attached to the LS2 that MUST be destroyed using switch_port_destroy_snapshot()
 */
 afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, switch_port_snapshot_t** port2){
 
 	of_switch_t *lsw1, *lsw2;
+	switch_port_snapshot_t *port1_not, *port2_not;
 	ioport *vport1, *vport2;
 	unsigned int port_num = 0; //We don't care about of the port
 
@@ -354,16 +355,31 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 		return AFA_FAILURE;
 	}
 
+	//Notify port add as requested by the API
+	port1_not = physical_switch_get_port_snapshot(vport1->of_port_state->name);
+	port2_not = physical_switch_get_port_snapshot(vport2->of_port_state->name);
+	if(!port1_not || !port2_not){
+		assert(0);
+		return AFA_FAILURE;
+	}
+	
+	cmm_notify_port_add(port1_not);
+	cmm_notify_port_add(port2_not);
+
+
 	//Enable interfaces (start packet transmission)
 	if(fwd_module_bring_port_up(vport1->of_port_state->name) != AFA_SUCCESS || fwd_module_bring_port_up(vport2->of_port_state->name) != AFA_SUCCESS){
 		ROFL_ERR(FWD_MOD_NAME" ERROR: unable to bring up vlink ports.\n");
 		assert(0);
 		return AFA_FAILURE;
 	}
-	
+
 	//Set switch ports and return
 	*port1 = physical_switch_get_port_snapshot(vport1->of_port_state->name);
 	*port2 = physical_switch_get_port_snapshot(vport2->of_port_state->name);
+	
+	assert(*port1 != NULL);
+	assert(*port2 != NULL);
 
 	return AFA_SUCCESS; 
 }

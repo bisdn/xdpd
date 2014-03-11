@@ -122,39 +122,22 @@ of13_endpoint::handle_table_stats_request(
 		cofmsg_table_stats_request& msg,
 		uint8_t aux_id)
 {
-	unsigned int num_of_tables;
-	of1x_flow_table_t* table;
-	of1x_flow_table_config_t* tc;
-
 	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
 	
-	num_of_tables = of13switch->pipeline.num_of_tables;
+	unsigned int num_of_tables = of13switch->pipeline.num_of_tables;
 	std::vector<coftable_stats_reply> table_stats;
 
 	for (unsigned int n = 0; n < num_of_tables; n++) {
 	
-		table = &of13switch->pipeline.tables[n]; 
-		tc = &table->config;
- 
+		of1x_flow_table_t *table = &of13switch->pipeline.tables[n];
+
 		table_stats.push_back(
 				coftable_stats_reply(
 					ctl.get_version(),
 					table->number,
-					std::string(table->name, strnlen(table->name, OFP_MAX_TABLE_NAME_LEN)),
-					of13_translation_utils::of13_map_bitmap_matches(&tc->match),
-					of13_translation_utils::of13_map_bitmap_matches(&tc->wildcards),
-					of13_translation_utils::of13_map_bitmap_actions(&tc->write_actions),
-					of13_translation_utils::of13_map_bitmap_actions(&tc->apply_actions),
-					of13_translation_utils::of13_map_bitmap_matches(&tc->write_setfields),
-					of13_translation_utils::of13_map_bitmap_matches(&tc->apply_setfields),
-					tc->metadata_match, //FIXME: this needs to be properly mapped once METADATA is implemented
-					tc->metadata_write, //FIXME: this needs to be properly mapped once METADATA is implemented
-					of13_translation_utils::of13_map_bitmap_instructions(&tc->instructions),
-					tc->table_miss_config,
-					(table->max_entries),
 					(table->num_of_entries),
 					(table->stats.lookup_count),
 					(table->stats.matched_count)

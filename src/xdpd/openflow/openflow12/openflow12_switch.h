@@ -75,9 +75,9 @@ public:
 	/*
 	* Port async notifications
 	*/
-	virtual rofl_result_t notify_port_attachment(const switch_port_t* port);
+	virtual rofl_result_t notify_port_attached(const switch_port_t* port);
 	
-	virtual rofl_result_t notify_port_detachment(const switch_port_t* port);
+	virtual rofl_result_t notify_port_detached(const switch_port_t* port);
 	
 	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
 

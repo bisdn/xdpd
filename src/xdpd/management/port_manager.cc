@@ -1,5 +1,7 @@
 #include "port_manager.h"
+#include <assert.h>
 #include "switch_manager.h"
+#include "plugin_manager.h"
 
 using namespace rofl;
 using namespace xdpd;
@@ -62,7 +64,9 @@ void port_manager::bring_up(std::string& name){
 
 	if(result != AFA_SUCCESS)
 	       throw ePmUnknownError();
-	ROFL_INFO("[port_manager] Port %s brought administratively up\n", name.c_str());
+
+	//Redundant, the fwd_module should inform us about the change of state in the port
+	ROFL_DEBUG("[port_manager] Port %s brought administratively up\n", name.c_str());
 }
 
 void port_manager::bring_down(std::string& name){
@@ -77,7 +81,9 @@ void port_manager::bring_down(std::string& name){
 
 	if(result != AFA_SUCCESS)
 		throw ePmUnknownError();      
-	ROFL_INFO("[port_manager] Port %s brought administratively down\n", name.c_str());
+	
+	//Redundant, the fwd_module should inform us about the change of state in the port
+	ROFL_DEBUG("[port_manager] Port %s brought administratively down\n", name.c_str());
 }
 
 
@@ -85,10 +91,7 @@ void port_manager::bring_down(std::string& name){
 //Port attachment/detachment
 //
 
-//Port attachment/detachment
-void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, unsigned int *of_port_num){
-
-	unsigned int i=0;
+void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, unsigned int* of_port_num){
 
 	//Check port existance
 	if(!port_exists(port_name))
@@ -98,14 +101,24 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, 
 	if(!switch_manager::exists(dpid))
 		throw eOfSmDoesNotExist();	
 
-	if (fwd_module_attach_port_to_switch(dpid,port_name.c_str(),&i) != AFA_SUCCESS)
+	if (fwd_module_attach_port_to_switch(dpid, port_name.c_str(), of_port_num) != AFA_SUCCESS)
 		throw eOfSmGeneralError();
+	
+	ROFL_INFO("[port_manager] Port %s attached to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
 
-	ROFL_INFO("[port_manager] Port %s attached to switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
-	*of_port_num = i;
+	//Recover current snapshot
+	switch_port_snapshot_t* port_snapshot = fwd_module_get_port_snapshot_by_name(port_name.c_str());
+
+	//Notify switch
+	switch_manager::__notify_port_attached(port_snapshot);
+		
+	//Notify plugins
+	plugin_manager::__notify_port_attached(port_snapshot);
+	
+	//Destroy snapshot
+	switch_port_destroy_snapshot(port_snapshot);	
 }
 
-//Port attachment/detachment
 void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1, uint64_t dpid_lsi2, std::string& port_name2){
 
 	switch_port_t *port1 = NULL, *port2 = NULL;
@@ -122,6 +135,12 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1,
 	port_name2 = std::string(port2->name);
 
 	ROFL_INFO("[port_manager] Link created between switch with dpid 0x%llx and 0x%llx, with virtual interface names %s and %s respectively \n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2, port1->name, port2->name);
+
+	/*
+	* Note that there is no need to notify switch_manager or plugin_manager
+	* the fwd_module must notify CMM with a port_add message with the appropriate
+	* attached dpid after the connection has been done.
+	*/
 	
 	//Destroy copies
 	switch_port_destroy_snapshot(port1);	
@@ -129,15 +148,74 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1,
 }
 
 void port_manager::detach_port_from_switch(uint64_t dpid, std::string& port_name){
-	if (fwd_module_detach_port_from_switch(dpid,port_name.c_str()) != AFA_SUCCESS)
+
+	//Recover current snapshot
+	switch_port_snapshot_t* port_snapshot = fwd_module_get_port_snapshot_by_name(port_name.c_str());
+
+	if(!port_snapshot){
+		assert(0);
+		throw ePmInvalidPort();
+	}
+
+	if (fwd_module_detach_port_from_switch(dpid,port_name.c_str()) != AFA_SUCCESS){
+		switch_port_destroy_snapshot(port_snapshot);	
 		throw eOfSmGeneralError();
+	}
 
 	ROFL_INFO("[port_manager] Port %s detached from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
+
+	/*
+	* If the port has been deleted due to the detachment, there is no
+	* need to notify switch_manager and plugin_manager; the fwd_module must 
+	* notify it via port_delete message
+	*/
+	if(!port_exists(port_name))
+		goto DETACH_RETURN;
+
+	//Notify switch
+	switch_manager::__notify_port_detached(port_snapshot);
+		
+	//Notify plugins
+	plugin_manager::__notify_port_detached(port_snapshot);
+
+DETACH_RETURN:
+	//Destroy snapshot
+	switch_port_destroy_snapshot(port_snapshot);	
 }
 
 void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int port_num){
-	if (fwd_module_detach_port_from_switch_at_port_num(dpid,port_num) != AFA_SUCCESS)
+
+	//Recover current snapshot
+	switch_port_snapshot_t* port_snapshot = fwd_module_get_port_snapshot_by_num(dpid, port_num);
+
+	if(!port_snapshot){
+		assert(0);
+		throw ePmInvalidPort();
+	}
+
+	if (fwd_module_detach_port_from_switch_at_port_num(dpid,port_num) != AFA_SUCCESS){
+		switch_port_destroy_snapshot(port_snapshot);	
 		throw eOfSmGeneralError();
+	}
 
 	ROFL_INFO("[port_manager] Port %d detached from switch with dpid 0x%llx\n", port_num, (long long unsigned)dpid);
+
+	/*
+	* If the port has been deleted due to the detachment, there is no
+	* need to notify switch_manager and plugin_manager; the fwd_module must 
+	* notify it via port_delete message
+	*/
+	std::string port_name(port_snapshot->name);
+	if(!port_exists(port_name))
+		goto DETACH_BY_NUM_RETURN;
+	
+	//Notify switch
+	switch_manager::__notify_port_detached(port_snapshot);
+		
+	//Notify plugins
+	plugin_manager::__notify_port_detached(port_snapshot);
+	
+DETACH_BY_NUM_RETURN:
+	//Destroy snapshot
+	switch_port_destroy_snapshot(port_snapshot);	
 }

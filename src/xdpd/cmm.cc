@@ -22,15 +22,15 @@ afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 		return AFA_FAILURE;
 
 	//Notify port manager
-	port_manager::notify_port_add(port_snapshot);
+	port_manager::__notify_port_added(port_snapshot);
 
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
 		//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-		result = (afa_result_t)switch_manager::__notify_port_attachment((const switch_port_snapshot_t*)port_snapshot);
+		result = (afa_result_t)switch_manager::__notify_port_attached((const switch_port_snapshot_t*)port_snapshot);
 	
 	//Notify MGMT framework
-	plugin_manager::notify_port_add((const switch_port_snapshot_t*)port_snapshot);	
+	plugin_manager::__notify_port_added((const switch_port_snapshot_t*)port_snapshot);	
 
 	//Destroy the snapshot
 	switch_port_destroy_snapshot(port_snapshot);
@@ -46,15 +46,15 @@ afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 		return AFA_FAILURE;
 
 	//Notify port manager
-	port_manager::notify_port_delete(port_snapshot);
+	port_manager::__notify_port_deleted(port_snapshot);
 
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
 		//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-		result = (afa_result_t)switch_manager::__notify_port_detachment((const switch_port_snapshot_t*)port_snapshot);
+		result = (afa_result_t)switch_manager::__notify_port_detached((const switch_port_snapshot_t*)port_snapshot);
 
 	//Notify MGMT framework
-	plugin_manager::notify_port_delete((const switch_port_snapshot_t*)port_snapshot);	
+	plugin_manager::__notify_port_deleted((const switch_port_snapshot_t*)port_snapshot);	
 
 	//Destroy the snapshot
 	switch_port_destroy_snapshot(port_snapshot);
@@ -70,7 +70,7 @@ afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapsho
 		return AFA_FAILURE;
 
 	//Notify port manager
-	port_manager::notify_port_status_changed(port_snapshot);
+	port_manager::__notify_port_status_changed(port_snapshot);
 
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
@@ -78,7 +78,7 @@ afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapsho
 		result = (afa_result_t)switch_manager::__notify_port_status_changed((const switch_port_snapshot_t*)port_snapshot);
 
 	//Notify MGMT framework
-	plugin_manager::notify_port_status_changed((const switch_port_snapshot_t*)port_snapshot);	
+	plugin_manager::__notify_port_status_changed((const switch_port_snapshot_t*)port_snapshot);	
 
 	//Destroy the snapshot
 	switch_port_destroy_snapshot(port_snapshot);
@@ -94,7 +94,7 @@ afa_result_t cmm_notify_monitoring_state_changed(monitoring_snapshot_state_t* mo
 		return AFA_FAILURE;
 
 	//Notify MGMT framework
-	plugin_manager::notify_monitoring_state_changed((const monitoring_snapshot_state_t*)monitoring_snapshot);	
+	plugin_manager::__notify_monitoring_state_changed((const monitoring_snapshot_state_t*)monitoring_snapshot);	
 
 	//Destroy the snapshot
 	monitoring_destroy_snapshot(monitoring_snapshot);

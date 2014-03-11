@@ -284,7 +284,7 @@ openflow_switch* switch_manager::__get_switch_by_dpid(uint64_t dpid){
 //CMM demux
 //
 
-rofl_result_t switch_manager::__notify_port_attachment(const switch_port_snapshot_t* port_snapshot){
+rofl_result_t switch_manager::__notify_port_attached(const switch_port_snapshot_t* port_snapshot){
 	
 	rofl_result_t result;
 	openflow_switch* sw;	
@@ -302,7 +302,7 @@ rofl_result_t switch_manager::__notify_port_attachment(const switch_port_snapsho
 	sw = switch_manager::__get_switch_by_dpid(port_snapshot->attached_sw_dpid); 
 
 	if(sw)
-		result = sw->notify_port_attachment(port_snapshot);
+		result = sw->notify_port_attached(port_snapshot);
 	else	
 		result = ROFL_FAILURE;
 	
@@ -339,7 +339,7 @@ rofl_result_t switch_manager::__notify_port_status_changed(const switch_port_sna
 
 }
 
-rofl_result_t switch_manager::__notify_port_detachment(const switch_port_snapshot_t* port_snapshot){
+rofl_result_t switch_manager::__notify_port_detached(const switch_port_snapshot_t* port_snapshot){
 	
 	rofl_result_t result;
 	openflow_switch* sw;	
@@ -357,7 +357,7 @@ rofl_result_t switch_manager::__notify_port_detachment(const switch_port_snapsho
 	sw = switch_manager::__get_switch_by_dpid(port_snapshot->attached_sw_dpid); 
 
 	if(sw)
-		result = sw->notify_port_detachment(port_snapshot);
+		result = sw->notify_port_detached(port_snapshot);
 	else	
 		result = ROFL_FAILURE;
 	

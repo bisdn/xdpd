@@ -605,7 +605,7 @@ of10_endpoint::handle_packet_out(
 	of1x_action_group_t* action_group = of1x_init_action_group(NULL);
 
 	try{
-		of10_translation_utils::of1x_map_flow_entry_actions(&ctl, sw, msg.get_actions(), action_group, NULL); //TODO: is this OK always NULL?
+		of10_translation_utils::of1x_map_flow_entry_actions(&ctl, sw, msg.set_actions(), action_group, NULL); //TODO: is this OK always NULL?
 	}catch(...){
 		of1x_destroy_action_group(action_group);
 		throw;

@@ -44,13 +44,9 @@ of13_endpoint::handle_features_request(
 	if(!of13switch)
 		throw eRofBase();
 	
-	uint32_t num_of_tables 	= 0;
-	uint32_t num_of_buffers = 0;
-	uint32_t capabilities 	= 0;
-
-	num_of_tables 	= of13switch->pipeline.num_of_tables;
-	num_of_buffers 	= of13switch->pipeline.num_of_buffers;
-	capabilities 	= of13switch->pipeline.capabilities;
+	uint32_t num_of_tables 	= of13switch->pipeline.num_of_tables;
+	uint32_t num_of_buffers = of13switch->pipeline.num_of_buffers;
+	uint32_t capabilities 	= of13switch->pipeline.capabilities;
 	
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
@@ -72,21 +68,227 @@ of13_endpoint::handle_get_config_request(
 		cofmsg_get_config_request& msg,
 		uint8_t aux_id)
 {
-	uint16_t flags = 0x0;
-	uint16_t miss_send_len = 0;
-
 	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
 	
-	flags = of13switch->pipeline.capabilities;
-	miss_send_len = of13switch->pipeline.miss_send_len;
+	uint16_t flags 			= of13switch->pipeline.capabilities;
+	uint16_t miss_send_len 	= of13switch->pipeline.miss_send_len;
 
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
 
 	ctl.send_get_config_reply(msg.get_xid(), flags, miss_send_len);
+}
+
+
+
+void
+of13_endpoint::handle_set_config(
+		crofctl& ctl,
+		cofmsg_set_config& msg,
+		uint8_t aux_id)
+{
+	//Instruct the driver to process the set config
+	if(AFA_FAILURE == fwd_module_of1x_set_pipeline_config(sw->dpid, msg.get_flags(), msg.get_miss_send_len())){
+		throw eTableModBadConfig();
+	}
+}
+
+
+
+void
+of13_endpoint::handle_packet_out(
+		crofctl& ctl,
+		cofmsg_packet_out& msg,
+		uint8_t aux_id)
+{
+	of1x_action_group_t* action_group = of1x_init_action_group(NULL);
+
+	try{
+		of13_translation_utils::of13_map_flow_entry_actions(&ctl, sw, msg.set_actions(), action_group, NULL); //TODO: is this OK always NULL?
+	}catch(...){
+		of1x_destroy_action_group(action_group);
+		throw;
+	}
+
+	/* assumption: driver can handle all situations properly:
+	 * - data and datalen both 0 and buffer_id != OFP_NO_BUFFER
+	 * - buffer_id == OFP_NO_BUFFER and data and datalen both != 0
+	 * - everything else is an error?
+	 */
+	if (AFA_FAILURE == fwd_module_of1x_process_packet_out(sw->dpid,
+							msg.get_buffer_id(),
+							msg.get_in_port(),
+							action_group,
+							msg.get_packet().soframe(), msg.get_packet().framelen())){
+		// log error
+		//FIXME: send error
+	}
+
+	of1x_destroy_action_group(action_group);
+}
+
+
+
+void
+of13_endpoint::handle_flow_mod(
+		crofctl& ctl,
+		cofmsg_flow_mod& msg,
+		uint8_t aux_id)
+{
+	switch (msg.get_command()) {
+	case openflow13::OFPFC_ADD: {
+		flow_mod_add(ctl, msg);
+	} break;
+	case openflow13::OFPFC_MODIFY: {
+		flow_mod_modify(ctl, msg, false);
+	} break;
+	case openflow13::OFPFC_MODIFY_STRICT: {
+		flow_mod_modify(ctl, msg, true);
+	} break;
+	case openflow13::OFPFC_DELETE: {
+		flow_mod_delete(ctl, msg, false);
+	} break;
+	case openflow13::OFPFC_DELETE_STRICT: {
+		flow_mod_delete(ctl, msg, true);
+	} break;
+	default:
+		throw eFlowModBadCommand();
+	}
+}
+
+
+
+void
+of13_endpoint::flow_mod_add(
+		crofctl& ctl,
+		cofmsg_flow_mod& msg)
+{
+	uint8_t table_id = msg.get_table_id();
+	afa_result_t res;
+	of1x_flow_entry_t *entry=NULL;
+
+	// sanity check: table for table-id must exist
+	if ( (table_id > sw->num_of_tables) && (table_id != openflow13::OFPTT_ALL) ){
+		rofl::logging::error << "[xdpd][of13][flow-mod-add] unable to add flow-mod due to " <<
+				"invalid table-id:" << msg.get_table_id() << " on dpt:" << sw->dpname << std::endl;
+		throw eFlowModBadTableId();
+	}
+
+	try{
+		entry = of13_translation_utils::of13_map_flow_entry(&ctl, &msg, sw);
+	}catch(...){
+		rofl::logging::error << "[xdpd][of13][flow-mod-add] unable to map flow-mod entry to internal representation on dpt:" << sw->dpname << std::endl;
+		throw eFlowModUnknown();
+	}
+
+	if(!entry){
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+	}
+
+	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
+								msg.get_table_id(),
+								&entry,
+								msg.get_buffer_id(),
+								msg.get_flags() & openflow13::OFPFF_CHECK_OVERLAP,
+								msg.get_flags() & openflow13::OFPFF_RESET_COUNTS))){
+		// log error
+		rofl::logging::error << "[xdpd][of13][flow-mod-add] error inserting flow-mod on dpt:" << sw->dpname << std::endl;
+		of1x_destroy_flow_entry(entry);
+
+		if(res == AFA_FM_OVERLAP_FAILURE){
+			throw eFlowModOverlap();
+		}else{
+			throw eFlowModTableFull();
+		}
+	}
+}
+
+
+
+void
+of13_endpoint::flow_mod_modify(
+		crofctl& ctl,
+		cofmsg_flow_mod& pack,
+		bool strict)
+{
+	of1x_flow_entry_t *entry=NULL;
+
+	// sanity check: table for table-id must exist
+	if (pack.get_table_id() > sw->num_of_tables)
+	{
+		rofl::logging::error << "[xdpd][of13][flow-mod-modify] unable to modify flow-mod due to " <<
+				"invalid table-id:" << pack.get_table_id() << " on dpt:" << sw->dpname << std::endl;
+		throw eFlowModBadTableId();
+	}
+
+	try{
+		entry = of13_translation_utils::of13_map_flow_entry(&ctl, &pack, sw);
+	}catch(...){
+		rofl::logging::error << "[xdpd][of13][flow-mod-modify] unable to map flow-mod entry to internal representation on dpt:" << sw->dpname << std::endl;
+		throw eFlowModUnknown();
+	}
+
+	if(!entry){
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+	}
+
+
+	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
+
+
+	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_modify(sw->dpid,
+								pack.get_table_id(),
+								&entry,
+								pack.get_buffer_id(),
+								strictness,
+								pack.get_flags() & openflow13::OFPFF_RESET_COUNTS)){
+		rofl::logging::error << "[xdpd][of13][flow-mod-modify] error modifying flow-mod on dpt:" << sw->dpname << std::endl;
+		of1x_destroy_flow_entry(entry);
+
+		throw eFlowModBase();
+	}
+}
+
+
+
+void
+of13_endpoint::flow_mod_delete(
+		crofctl& ctl,
+		cofmsg_flow_mod& pack,
+		bool strict)
+{
+
+	of1x_flow_entry_t *entry=NULL;
+
+	try{
+		entry = of13_translation_utils::of13_map_flow_entry(&ctl, &pack, sw);
+	}catch(...){
+		rofl::logging::error << "[xdpd][of13][flow-mod-delete] unable to map flow-mod entry to internal representation on dpt:" << sw->dpname << std::endl;
+		throw eFlowModUnknown();
+	}
+
+	if(!entry)
+		throw eFlowModUnknown();//Just for safety, but shall never reach this
+
+
+	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
+
+	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_delete(sw->dpid,
+								pack.get_table_id(),
+								entry,
+								pack.get_out_port(),
+								pack.get_out_group(),
+								strictness)) {
+		rofl::logging::error << "[xdpd][of13][flow-mod-delete] error deleting flow-mod on dpt:" << sw->dpname << std::endl;
+		of1x_destroy_flow_entry(entry);
+		throw eFlowModBase();
+	}
+
+	//Always delete entry
+	of1x_destroy_flow_entry(entry);
 }
 
 
@@ -98,8 +300,8 @@ of13_endpoint::handle_desc_stats_request(
 		uint8_t aux_id)
 {
 	std::string mfr_desc("eXtensible Data Path");
-	std::string hw_desc("v0.3.0");
-	std::string sw_desc("v0.3.0");
+	std::string hw_desc(XDPD_VERSION);
+	std::string sw_desc(XDPD_VERSION);
 	std::string serial_num("0");
 	std::string dp_desc("xDP");
 
@@ -112,6 +314,145 @@ of13_endpoint::handle_desc_stats_request(
 			dp_desc);
 
 	ctl.send_desc_stats_reply(msg.get_xid(), desc_stats);
+}
+
+
+
+void
+of13_endpoint::handle_flow_stats_request(
+		crofctl& ctl,
+		cofmsg_flow_stats_request& msg,
+		uint8_t aux_id)
+{
+	//Map the match structure from OpenFlow to packet_matches_t
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(NULL, NULL, false);
+
+	try{
+		of13_translation_utils::of13_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
+	}catch(...){
+		of1x_destroy_flow_entry(entry);
+		throw eBadRequestBadStat();
+	}
+
+	//Ask the Forwarding Plane to process stats
+	of1x_stats_flow_msg_t* fp_msg = fwd_module_of1x_get_flow_stats(
+													sw->dpid,
+													msg.get_flow_stats().get_table_id(),
+													msg.get_flow_stats().get_cookie(),
+													msg.get_flow_stats().get_cookie_mask(),
+													msg.get_flow_stats().get_out_port(),
+													msg.get_flow_stats().get_out_group(),
+													&entry->matches);
+
+	if(!fp_msg){
+		of1x_destroy_flow_entry(entry);
+		throw eBadRequestBadStat();
+	}
+
+	//Construct OF message
+	of1x_stats_single_flow_msg_t *elem = fp_msg->flows_head;
+
+	std::vector<cofflow_stats_reply> flow_stats;
+
+	for(elem = fp_msg->flows_head; elem; elem = elem->next){
+
+		cofmatch match;
+		of13_translation_utils::of13_map_reverse_flow_entry_matches(elem->matches, match);
+
+		cofinstructions instructions(ctl.get_version());
+		of13_translation_utils::of13_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
+
+
+		flow_stats.push_back(
+				cofflow_stats_reply(
+						ctl.get_version(),
+						elem->table_id,
+						elem->duration_sec,
+						elem->duration_nsec,
+						elem->priority,
+						elem->idle_timeout,
+						elem->hard_timeout,
+						elem->cookie,
+						elem->packet_count,
+						elem->byte_count,
+						match,
+						instructions));
+	}
+
+
+	try{
+		//Send message
+		ctl.send_flow_stats_reply(msg.get_xid(), flow_stats);
+	}catch(...){
+		of1x_destroy_stats_flow_msg(fp_msg);
+		of1x_destroy_flow_entry(entry);
+		throw;
+	}
+	//Destroy FP stats
+	of1x_destroy_stats_flow_msg(fp_msg);
+	of1x_destroy_flow_entry(entry);
+}
+
+
+
+void
+of13_endpoint::handle_aggregate_stats_request(
+		crofctl& ctl,
+		cofmsg_aggr_stats_request& msg,
+		uint8_t aux_id)
+{
+	of1x_stats_flow_aggregate_msg_t* fp_msg;
+	of1x_flow_entry_t* entry;
+
+//	cmemory body(sizeof(struct ofp_flow_stats));
+//	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
+
+	//Map the match structure from OpenFlow to packet_matches_t
+	entry = of1x_init_flow_entry(NULL, NULL, false);
+
+	if(!entry)
+		throw eBadRequestBadStat();
+
+	try{
+		of13_translation_utils::of13_map_flow_entry_matches(&ctl, msg.get_aggr_stats().get_match(), sw, entry);
+	}catch(...){
+		of1x_destroy_flow_entry(entry);
+		throw eBadRequestBadStat();
+	}
+
+	//TODO check error while mapping
+
+	//Ask the Forwarding Plane to process stats
+	fp_msg = fwd_module_of1x_get_flow_aggregate_stats(sw->dpid,
+					msg.get_aggr_stats().get_table_id(),
+					msg.get_aggr_stats().get_cookie(),
+					msg.get_aggr_stats().get_cookie_mask(),
+					msg.get_aggr_stats().get_out_port(),
+					msg.get_aggr_stats().get_out_group(),
+					&entry->matches);
+
+	if(!fp_msg){
+		of1x_destroy_flow_entry(entry);
+		throw eBadRequestBadStat();
+	}
+
+	try{
+		cofaggr_stats_reply aggr_stats_reply(
+				ctl.get_version(),
+				fp_msg->packet_count,
+				fp_msg->byte_count,
+				fp_msg->flow_count);
+		//Construct OF message
+		ctl.send_aggr_stats_reply(msg.get_xid(), aggr_stats_reply);
+	}catch(...){
+		of1x_destroy_stats_flow_aggregate_msg(fp_msg);
+		of1x_destroy_flow_entry(entry);
+		throw;
+	}
+
+	//Destroy FP stats
+	of1x_destroy_stats_flow_aggregate_msg(fp_msg);
+	of1x_destroy_flow_entry(entry);
 }
 
 
@@ -246,146 +587,6 @@ of13_endpoint::handle_port_stats_request(
 	ctl.send_port_stats_reply(msg.get_xid(), port_stats, false);
 }
 
-
-
-void
-of13_endpoint::handle_flow_stats_request(
-		crofctl& ctl,
-		cofmsg_flow_stats_request& msg,
-		uint8_t aux_id)
-{
-	of1x_stats_flow_msg_t* fp_msg = NULL;
-	of1x_flow_entry_t* entry = NULL;
-
-	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
-	
-	try{
-		of13_translation_utils::of13_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
-	}catch(...){
-		of1x_destroy_flow_entry(entry);	
-		throw eBadRequestBadStat(); 
-	}
-
-	//Ask the Forwarding Plane to process stats
-	fp_msg = fwd_module_of1x_get_flow_stats(sw->dpid,
-			msg.get_flow_stats().get_table_id(),
-			msg.get_flow_stats().get_cookie(),
-			msg.get_flow_stats().get_cookie_mask(),
-			msg.get_flow_stats().get_out_port(),
-			msg.get_flow_stats().get_out_group(),
-					&entry->matches);
-	
-	if(!fp_msg){
-		of1x_destroy_flow_entry(entry);	
-		throw eBadRequestBadStat(); 
-	}
-
-	//Construct OF message
-	of1x_stats_single_flow_msg_t *elem = fp_msg->flows_head;
-
-	std::vector<cofflow_stats_reply> flow_stats;
-
-	for(elem = fp_msg->flows_head; elem; elem = elem->next){
-
-		cofmatch match;
-		of13_translation_utils::of13_map_reverse_flow_entry_matches(elem->matches, match);
-
-		cofinstructions instructions(ctl.get_version());
-		of13_translation_utils::of13_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
-
-
-		flow_stats.push_back(
-				cofflow_stats_reply(
-						ctl.get_version(),
-						elem->table_id,
-						elem->duration_sec,
-						elem->duration_nsec,
-						elem->priority,
-						elem->idle_timeout,
-						elem->hard_timeout,
-						elem->cookie,
-						elem->packet_count,
-						elem->byte_count,
-						match,
-						instructions));
-	}
-
-	
-	try{
-		//Send message
-		ctl.send_flow_stats_reply(msg.get_xid(), flow_stats);
-	}catch(...){
-		of1x_destroy_stats_flow_msg(fp_msg);	
-		of1x_destroy_flow_entry(entry);	
-		throw;
-	}
-	//Destroy FP stats
-	of1x_destroy_stats_flow_msg(fp_msg);	
-	of1x_destroy_flow_entry(entry);	
-}
-
-
-
-void
-of13_endpoint::handle_aggregate_stats_request(
-		crofctl& ctl,
-		cofmsg_aggr_stats_request& msg,
-		uint8_t aux_id)
-{
-	of1x_stats_flow_aggregate_msg_t* fp_msg;
-	of1x_flow_entry_t* entry;
-
-//	cmemory body(sizeof(struct ofp_flow_stats));
-//	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
-
-	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
-
-	if(!entry)
-		throw eBadRequestBadStat(); 
-
-	try{	
-		of13_translation_utils::of13_map_flow_entry_matches(&ctl, msg.get_aggr_stats().get_match(), sw, entry);
-	}catch(...){
-		of1x_destroy_flow_entry(entry);	
-		throw eBadRequestBadStat(); 
-	}
-
-	//TODO check error while mapping 
-
-	//Ask the Forwarding Plane to process stats
-	fp_msg = fwd_module_of1x_get_flow_aggregate_stats(sw->dpid,
-					msg.get_aggr_stats().get_table_id(),
-					msg.get_aggr_stats().get_cookie(),
-					msg.get_aggr_stats().get_cookie_mask(),
-					msg.get_aggr_stats().get_out_port(),
-					msg.get_aggr_stats().get_out_group(),
-					&entry->matches);
-	
-	if(!fp_msg){
-		of1x_destroy_flow_entry(entry);
-		throw eBadRequestBadStat(); 
-	}
-
-	try{
-		cofaggr_stats_reply aggr_stats_reply(
-				ctl.get_version(),
-				fp_msg->packet_count,
-				fp_msg->byte_count,
-				fp_msg->flow_count);
-		//Construct OF message
-		ctl.send_aggr_stats_reply(msg.get_xid(), aggr_stats_reply);
-	}catch(...){
-		of1x_destroy_stats_flow_aggregate_msg(fp_msg);	
-		of1x_destroy_flow_entry(entry);
-		throw;
-	}
-
-	//Destroy FP stats
-	of1x_destroy_stats_flow_aggregate_msg(fp_msg);	
-	of1x_destroy_flow_entry(entry);
-}
 
 
 
@@ -599,6 +800,8 @@ of13_endpoint::handle_table_features_stats_request(
 		cofmsg_table_features_request& msg,
 		uint8_t aux_id)
 {
+	// TODO: check for pipeline definition within request and configure pipeline accordingly
+
 	rofl::openflow::coftables tables(ctl.get_version());
 
 	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
@@ -724,40 +927,6 @@ of13_endpoint::handle_experimenter_stats_request(
 		uint8_t aux_id)
 {
 	//TODO: when exp are supported 
-}
-
-
-
-void
-of13_endpoint::handle_packet_out(
-		crofctl& ctl,
-		cofmsg_packet_out& msg,
-		uint8_t aux_id)
-{
-	of1x_action_group_t* action_group = of1x_init_action_group(NULL);
-
-	try{
-		of13_translation_utils::of13_map_flow_entry_actions(&ctl, sw, msg.get_actions(), action_group, NULL); //TODO: is this OK always NULL?
-	}catch(...){
-		of1x_destroy_action_group(action_group);
-		throw;
-	}
-
-	/* assumption: driver can handle all situations properly:
-	 * - data and datalen both 0 and buffer_id != OFP_NO_BUFFER
-	 * - buffer_id == OFP_NO_BUFFER and data and datalen both != 0
-	 * - everything else is an error?
-	 */
-	if (AFA_FAILURE == fwd_module_of1x_process_packet_out(sw->dpid,
-							msg.get_buffer_id(),
-							msg.get_in_port(),
-							action_group,
-							msg.get_packet().soframe(), msg.get_packet().framelen())){
-		// log error
-		//FIXME: send error
-	}
-
-	of1x_destroy_action_group(action_group);
 }
 
 
@@ -947,169 +1116,6 @@ of13_endpoint::handle_barrier_request(
 
 
 
-void
-of13_endpoint::handle_flow_mod(
-		crofctl& ctl,
-		cofmsg_flow_mod& msg,
-		uint8_t aux_id)
-{
-	switch (msg.get_command()) {
-		case openflow13::OFPFC_ADD: {
-				flow_mod_add(ctl, msg);
-			} break;
-		
-		case openflow13::OFPFC_MODIFY: {
-				flow_mod_modify(ctl, msg, false);
-			} break;
-		
-		case openflow13::OFPFC_MODIFY_STRICT: {
-				flow_mod_modify(ctl, msg, true);
-			} break;
-		
-		case openflow13::OFPFC_DELETE: {
-				flow_mod_delete(ctl, msg, false);
-			} break;
-		
-		case openflow13::OFPFC_DELETE_STRICT: {
-				flow_mod_delete(ctl, msg, true);
-			} break;
-		
-		default:
-			throw eFlowModBadCommand();
-	}
-}
-
-
-
-void
-of13_endpoint::flow_mod_add(
-		crofctl& ctl,
-		cofmsg_flow_mod& msg)
-{
-	uint8_t table_id = msg.get_table_id();
-	afa_result_t res;
-	of1x_flow_entry_t *entry=NULL;
-
-	// sanity check: table for table-id must exist
-	if ( (table_id > sw->num_of_tables) && (table_id != openflow13::OFPTT_ALL) ){
-		rofl::logging::error << "[xdpd][of13][flow-mod-add] unable to add flow-mod due to " <<
-				"invalid table-id:" << msg.get_table_id() << " on dpt:" << sw->dpname << std::endl;
-		throw eFlowModBadTableId();
-	}
-
-	try{
-		entry = of13_translation_utils::of13_map_flow_entry(&ctl, &msg, sw);
-	}catch(...){
-		rofl::logging::error << "[xdpd][of13][flow-mod-add] unable to map flow-mod entry to internal representation on dpt:" << sw->dpname << std::endl;
-		throw eFlowModUnknown();
-	}
-
-	if(!entry){
-		throw eFlowModUnknown();//Just for safety, but shall never reach this
-	}
-
-	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
-								msg.get_table_id(),
-								&entry,
-								msg.get_buffer_id(),
-								msg.get_flags() & openflow13::OFPFF_CHECK_OVERLAP,
-								msg.get_flags() & openflow13::OFPFF_RESET_COUNTS))){
-		// log error
-		rofl::logging::error << "[xdpd][of13][flow-mod-add] error inserting flow-mod on dpt:" << sw->dpname << std::endl;
-		of1x_destroy_flow_entry(entry);
-
-		if(res == AFA_FM_OVERLAP_FAILURE){
-			throw eFlowModOverlap();
-		}else{
-			throw eFlowModTableFull();
-		}
-	}
-}
-
-
-
-void
-of13_endpoint::flow_mod_modify(
-		crofctl& ctl,
-		cofmsg_flow_mod& pack,
-		bool strict)
-{
-	of1x_flow_entry_t *entry=NULL;
-
-	// sanity check: table for table-id must exist
-	if (pack.get_table_id() > sw->num_of_tables)
-	{
-		rofl::logging::error << "[xdpd][of13][flow-mod-modify] unable to modify flow-mod due to " <<
-				"invalid table-id:" << pack.get_table_id() << " on dpt:" << sw->dpname << std::endl;
-		throw eFlowModBadTableId();
-	}
-
-	try{
-		entry = of13_translation_utils::of13_map_flow_entry(&ctl, &pack, sw);
-	}catch(...){
-		rofl::logging::error << "[xdpd][of13][flow-mod-modify] unable to map flow-mod entry to internal representation on dpt:" << sw->dpname << std::endl;
-		throw eFlowModUnknown();
-	}
-
-	if(!entry){
-		throw eFlowModUnknown();//Just for safety, but shall never reach this
-	}
-
-
-	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
-
-
-	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_modify(sw->dpid,
-								pack.get_table_id(),
-								&entry,
-								pack.get_buffer_id(),
-								strictness,
-								pack.get_flags() & openflow13::OFPFF_RESET_COUNTS)){
-		rofl::logging::error << "[xdpd][of13][flow-mod-modify] error modifying flow-mod on dpt:" << sw->dpname << std::endl;
-		of1x_destroy_flow_entry(entry);
-		
-		throw eFlowModBase(); 
-	} 
-}
-
-
-
-void
-of13_endpoint::flow_mod_delete(
-		crofctl& ctl,
-		cofmsg_flow_mod& pack,
-		bool strict)
-{
-
-	of1x_flow_entry_t *entry=NULL;
-	
-	try{
-		entry = of13_translation_utils::of13_map_flow_entry(&ctl, &pack, sw);
-	}catch(...){
-		rofl::logging::error << "[xdpd][of13][flow-mod-delete] unable to map flow-mod entry to internal representation on dpt:" << sw->dpname << std::endl;
-		throw eFlowModUnknown();
-	}
-
-	if(!entry)
-		throw eFlowModUnknown();//Just for safety, but shall never reach this
-
-
-	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
-
-	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_delete(sw->dpid,
-								pack.get_table_id(),
-								entry,
-								pack.get_out_port(),
-								pack.get_out_group(),
-								strictness)) {
-		rofl::logging::error << "[xdpd][of13][flow-mod-delete] error deleting flow-mod on dpt:" << sw->dpname << std::endl;
-		of1x_destroy_flow_entry(entry);
-		throw eFlowModBase(); 
-	} 
-	
-	//Always delete entry
-	of1x_destroy_flow_entry(entry);
-}
 
 
 
@@ -1360,19 +1366,6 @@ of13_endpoint::handle_port_mod(
 #endif
 }
 
-
-
-void
-of13_endpoint::handle_set_config(
-		crofctl& ctl,
-		cofmsg_set_config& msg,
-		uint8_t aux_id)
-{
-	//Instruct the driver to process the set config	
-	if(AFA_FAILURE == fwd_module_of1x_set_pipeline_config(sw->dpid, msg.get_flags(), msg.get_miss_send_len())){
-		throw eTableModBadConfig();
-	}
-}
 
 
 

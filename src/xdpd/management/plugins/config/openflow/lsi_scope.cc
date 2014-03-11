@@ -225,9 +225,12 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 				throw eConfParseError(); 	
 			
 			}				
-			//Then push it to the list of ports
-			ports.push_back(port);	
 		}
+		
+		//Then push it to the list of ports
+		//Note empty ports are valid (empty, ignore slot)
+		ports.push_back(port);
+	
 	}	
 
 	if(ports.size() < 2 && dry_run){
@@ -382,6 +385,11 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		std::vector<std::string>::iterator port_it;
 		unsigned int i;
 		for(port_it = ports.begin(), i=1; port_it != ports.end(); ++port_it, ++i){
+				
+			//Ignore empty ports	
+			if(*port_it == "")
+				continue;
+		
 			try{
 				//Attach
 				port_manager::attach_port_to_switch(dpid, *port_it, &i);

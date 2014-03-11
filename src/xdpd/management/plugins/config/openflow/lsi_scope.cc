@@ -368,7 +368,6 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//Execute
 	if(!dry_run){
 		openflow_switch* sw;
-		unsigned int port_num;
 
 		//Create switch
 		sw = switch_manager::create_switch(version, dpid, name, num_of_tables,
@@ -381,10 +380,11 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	
 		//Attach ports
 		std::vector<std::string>::iterator port_it;
-		for(port_it = ports.begin(); port_it != ports.end(); ++port_it){
+		unsigned int i;
+		for(port_it = ports.begin(), i=1; port_it != ports.end(); ++port_it, ++i){
 			try{
 				//Attach
-				port_manager::attach_port_to_switch(dpid, *port_it, &port_num);
+				port_manager::attach_port_to_switch(dpid, *port_it, &i);
 				//Bring up
 				port_manager::bring_up(*port_it);
 			}catch(...){	

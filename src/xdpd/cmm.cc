@@ -23,11 +23,11 @@ afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 
 	//Notify port manager
 	port_manager::notify_port_add(port_snapshot);
-	
+
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
 		//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-		result = (afa_result_t)switch_manager::__notify_port_add((const switch_port_snapshot_t*)port_snapshot);
+		result = (afa_result_t)switch_manager::__notify_port_attachment((const switch_port_snapshot_t*)port_snapshot);
 	
 	//Notify MGMT framework
 	plugin_manager::notify_port_add((const switch_port_snapshot_t*)port_snapshot);	
@@ -51,7 +51,7 @@ afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
 		//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-		result = (afa_result_t)switch_manager::__notify_port_delete((const switch_port_snapshot_t*)port_snapshot);
+		result = (afa_result_t)switch_manager::__notify_port_detachment((const switch_port_snapshot_t*)port_snapshot);
 
 	//Notify MGMT framework
 	plugin_manager::notify_port_delete((const switch_port_snapshot_t*)port_snapshot);	

@@ -79,11 +79,11 @@ rofl_result_t openflow10_switch::process_flow_removed(uint8_t reason, of1x_flow_
 /*
 * Port notfications. Process them directly in the endpoint
 */
-rofl_result_t openflow10_switch::notify_port_add(const switch_port_t* port){
-	return endpoint->notify_port_add(port);
+rofl_result_t openflow10_switch::notify_port_attachment(const switch_port_t* port){
+	return endpoint->notify_port_attachment(port);
 }
-rofl_result_t openflow10_switch::notify_port_delete(const switch_port_t* port){
-	return endpoint->notify_port_delete(port);
+rofl_result_t openflow10_switch::notify_port_detachment(const switch_port_t* port){
+	return endpoint->notify_port_detachment(port);
 }
 rofl_result_t openflow10_switch::notify_port_status_changed(const switch_port_t* port){
 	return endpoint->notify_port_status_changed(port);

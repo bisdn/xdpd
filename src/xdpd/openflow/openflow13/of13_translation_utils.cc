@@ -2022,9 +2022,6 @@ void of13_translation_utils::of13_map_bitmap_actions(uint32_t *bitmap, coftable_
 	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_MPLS))
 		actions.add_action(rofl::openflow13::OFPAT_PUSH_MPLS, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_MPLS))
-		actions.add_action(rofl::openflow13::OFPAT_PUSH_MPLS, 4);
-
 	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_VLAN))
 		actions.add_action(rofl::openflow13::OFPAT_PUSH_VLAN, 4);
 

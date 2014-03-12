@@ -7,6 +7,8 @@
 #include <rofl/common/ssl_lib.h>
 #endif
 
+#include "port_manager.h"
+
 //Add here the headers of the version-dependant Openflow switchs 
 #include "../openflow/openflow_switch.h"
 #include "../openflow/openflow10/openflow10_switch.h"
@@ -97,6 +99,11 @@ openflow_switch* switch_manager::create_switch(
 //static
 void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 
+	unsigned int i;
+	of_switch_snapshot_t* sw_snapshot;
+	switch_port_snapshot_t* port;
+	std::string port_name;
+
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
@@ -104,6 +111,34 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 		throw eOfSmDoesNotExist();
 	}
 
+	//First detach all ports, so that port_detach messages are properly sent
+	sw_snapshot = fwd_module_get_switch_snapshot_by_dpid(dpid);
+	
+	if(!sw_snapshot){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		assert(0);
+		ROFL_ERR("[switch_manager] Unknown ERROR: unable to create snapshot for dpid 0x%llx. Switch deletion aborted...\n", (long long unsigned)dpid);
+		throw eOfSmGeneralError(); 
+	}
+
+	for(i=0;i<sw_snapshot->max_ports;++i){
+		port = sw_snapshot->logical_ports[i].port;
+		if(!port || sw_snapshot->logical_ports[i].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
+			continue;
+
+		try{
+			port_name = std::string(port->name);
+			//Detach port
+			port_manager::detach_port_from_switch(dpid, port_name);
+		}catch(...){
+			pthread_rwlock_unlock(&switch_manager::rwlock);
+			ROFL_ERR("[switch_manager] ERROR: unable to detach port %s from dpid 0x%llx. Switch deletion aborted...\n", port->name, (long long unsigned)dpid);
+			assert(0);
+
+			of_switch_destroy_snapshot(sw_snapshot);		
+			throw;
+		}
+	}
 	
 	//Get switch instance 
 	openflow_switch* dp = switch_manager::switchs[dpid];
@@ -120,7 +155,9 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	dpid_under_destruction = 0x0;
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
-	
+
+	//Destroy snapshot
+	of_switch_destroy_snapshot(sw_snapshot);		
 }
 
 //static

@@ -401,14 +401,8 @@ of13_endpoint::handle_aggregate_stats_request(
 		cofmsg_aggr_stats_request& msg,
 		uint8_t aux_id)
 {
-	of1x_stats_flow_aggregate_msg_t* fp_msg;
-	of1x_flow_entry_t* entry;
-
-//	cmemory body(sizeof(struct ofp_flow_stats));
-//	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
-
 	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
+	 of1x_flow_entry_t* entry = of1x_init_flow_entry(NULL, NULL, false);
 
 	if(!entry)
 		throw eBadRequestBadStat();
@@ -423,7 +417,7 @@ of13_endpoint::handle_aggregate_stats_request(
 	//TODO check error while mapping
 
 	//Ask the Forwarding Plane to process stats
-	fp_msg = fwd_module_of1x_get_flow_aggregate_stats(sw->dpid,
+	of1x_stats_flow_aggregate_msg_t* fp_msg = fwd_module_of1x_get_flow_aggregate_stats(sw->dpid,
 					msg.get_aggr_stats().get_table_id(),
 					msg.get_aggr_stats().get_cookie(),
 					msg.get_aggr_stats().get_cookie_mask(),
@@ -537,7 +531,9 @@ of13_endpoint::handle_port_stats_request(
 								port->stats.rx_frame_err,
 								port->stats.rx_over_err,
 								port->stats.rx_crc_err,
-								port->stats.collisions));
+								port->stats.collisions,
+								/*duration_sec=*/0,
+								/*duration_nsec=*/0));
 			}
 	 	}
 
@@ -572,7 +568,9 @@ of13_endpoint::handle_port_stats_request(
 								port->stats.rx_frame_err,
 								port->stats.rx_over_err,
 								port->stats.rx_crc_err,
-								port->stats.collisions));
+								port->stats.collisions,
+								/*duration_sec=*/0,
+								/*duration_nsec=*/0));
 
 				break;
 			}
@@ -646,7 +644,9 @@ of13_endpoint::handle_queue_stats_request(
 									i,
 									port->queues[i].stats.tx_bytes,
 									port->queues[i].stats.tx_packets,
-									port->queues[i].stats.overrun));
+									port->queues[i].stats.overrun,
+									/*duration_sec=*/0,
+									/*duration_nsec=*/0));
 				}
 
 			} else {
@@ -667,7 +667,9 @@ of13_endpoint::handle_queue_stats_request(
 									queue_id,
 									port->queues[queue_id].stats.tx_bytes,
 									port->queues[queue_id].stats.tx_packets,
-									port->queues[queue_id].stats.overrun));
+									port->queues[queue_id].stats.overrun,
+									/*duration_sec=*/0,
+									/*duration_nsec=*/0));
 
 				}
 			}

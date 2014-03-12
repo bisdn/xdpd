@@ -266,7 +266,9 @@ of12_endpoint::handle_port_stats_request(
 								port->stats.rx_frame_err,
 								port->stats.rx_over_err,
 								port->stats.rx_crc_err,
-								port->stats.collisions));
+								port->stats.collisions,
+								0,
+								0));
 			}
 	 	}
 
@@ -301,7 +303,9 @@ of12_endpoint::handle_port_stats_request(
 								port->stats.rx_frame_err,
 								port->stats.rx_over_err,
 								port->stats.rx_crc_err,
-								port->stats.collisions));
+								port->stats.collisions,
+								0,
+								0));
 
 				break;
 			}
@@ -515,7 +519,9 @@ of12_endpoint::handle_queue_stats_request(
 									i,
 									port->queues[i].stats.tx_bytes,
 									port->queues[i].stats.tx_packets,
-									port->queues[i].stats.overrun));
+									port->queues[i].stats.overrun,
+									0,
+									0));
 				}
 
 			} else {
@@ -536,7 +542,9 @@ of12_endpoint::handle_queue_stats_request(
 									queue_id,
 									port->queues[queue_id].stats.tx_bytes,
 									port->queues[queue_id].stats.tx_packets,
-									port->queues[queue_id].stats.overrun));
+									port->queues[queue_id].stats.overrun,
+									0,
+									0));
 
 				}
 			}

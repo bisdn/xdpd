@@ -25,9 +25,10 @@
 
 namespace xdpd {
 
-class ePmBase		: public rofl::RoflException {};	// base error class for all switch_manager related errors
-class ePmInvalidPort	: public ePmBase {};
-class ePmUnknownError	: public ePmBase {};
+class ePmBase			: public rofl::RoflException {};	// base error class for all switch_manager related errors
+class ePmInvalidPort		: public ePmBase {};
+class ePmUnknownError		: public ePmBase {};
+class ePmPortNotAttachedError	: public ePmBase {};
 
 /**
 * @brief Port management API.

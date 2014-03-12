@@ -139,6 +139,28 @@ switch_port_name_list_t* fwd_module_get_all_port_names(void){
 switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
 	return NULL;
 }
+/**
+ * @name fwd_module_get_port_by_num
+ * @brief Retrieves a snapshot of the current state of the port of the Logical Switch Instance with dpid at port_num, if exists. The snapshot MUST be deleted using switch_port_destroy_snapshot()
+ * @ingroup port_management
+ * @param dpid DatapathID 
+ * @param port_num Port number
+ */
+switch_port_snapshot_t* fwd_module_get_port_snapshot_by_num(uint64_t dpid, unsigned int port_num){
+	
+	of_switch_t* lsw;
+	
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw)
+		return NULL; 
+
+	//Check if the port does exist.
+	if(!port_num || port_num >= LOGICAL_SWITCH_MAX_LOG_PORTS || !lsw->logical_ports[port_num].port)
+		return NULL;
+
+	return physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+}
+
 
 /*
 * @name    fwd_module_attach_physical_port_to_switch

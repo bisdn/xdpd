@@ -597,6 +597,8 @@ of12_endpoint::handle_group_stats_request(
 				htobe32(g_msg->ref_count),
 				htobe64(g_msg->packet_count),
 				htobe64(g_msg->byte_count),
+				0,
+				0,
 				num_of_buckets);
 
 		for(i=0;i<num_of_buckets;i++) {

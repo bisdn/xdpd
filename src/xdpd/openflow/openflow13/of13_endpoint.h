@@ -68,9 +68,9 @@ public:
 	* Port notifications
 	*/
 
-	virtual	rofl_result_t notify_port_add(const switch_port_t* port);
+	virtual	rofl_result_t notify_port_attached(const switch_port_t* port);
 	
-	virtual rofl_result_t notify_port_delete(const switch_port_t* port);
+	virtual rofl_result_t notify_port_detached(const switch_port_t* port);
 
 	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
 

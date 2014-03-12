@@ -1,4 +1,5 @@
 #include "plugin_manager.h"
+#include <assert.h>
 #include <rofl/common/utils/c_logger.h>
 
 using namespace xdpd;
@@ -67,7 +68,13 @@ void plugin_manager::__notify_port_added(const switch_port_snapshot_t* port_snap
 
 	//Distribute event
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		(*it)->notify_port_added(port_snapshot); 
+		try{
+			(*it)->notify_port_added(port_snapshot);
+ 		}catch(...){
+			ROFL_ERR("[plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			assert(0);
+			//Continue with the rest of the plugins
+		}
 	}
 }	
 	
@@ -79,7 +86,13 @@ void plugin_manager::__notify_port_attached(const switch_port_snapshot_t* port_s
 
 	//Distribute event
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		(*it)->notify_port_attached(port_snapshot); 
+		try{
+			(*it)->notify_port_attached(port_snapshot);
+ 		}catch(...){
+			ROFL_ERR("[plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			assert(0);
+			//Continue with the rest of the plugins
+		}
 	}
 }
 
@@ -91,7 +104,13 @@ void plugin_manager::__notify_port_status_changed(const switch_port_snapshot_t* 
 
 	//Distribute event
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		(*it)->notify_port_status_changed(port_snapshot); 
+		try{
+			(*it)->notify_port_status_changed(port_snapshot); 
+		}catch(...){
+			ROFL_ERR("[plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			assert(0);
+			//Continue with the rest of the plugins
+		}
 	}
 }	
 
@@ -103,7 +122,13 @@ void plugin_manager::__notify_port_detached(const switch_port_snapshot_t* port_s
 
 	//Distribute event
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		(*it)->notify_port_detached(port_snapshot); 
+		try{
+			(*it)->notify_port_detached(port_snapshot); 
+		}catch(...){
+			ROFL_ERR("[plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			assert(0);
+			//Continue with the rest of the plugins
+		}
 	}
 
 }
@@ -116,7 +141,13 @@ void plugin_manager::__notify_port_deleted(const switch_port_snapshot_t* port_sn
 
 	//Distribute event
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		(*it)->notify_port_deleted(port_snapshot); 
+		try{
+			(*it)->notify_port_deleted(port_snapshot); 
+		}catch(...){
+			ROFL_ERR("[plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			assert(0);
+			//Continue with the rest of the plugins
+		}
 	}
 
 }	
@@ -129,9 +160,13 @@ void plugin_manager::__notify_monitoring_state_changed(const monitoring_snapshot
 
 	//Distribute event
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		(*it)->notify_monitoring_state_changed(monitoring_snapshot); 
+		try{
+			(*it)->notify_monitoring_state_changed(monitoring_snapshot); 
+		}catch(...){
+			ROFL_ERR("[plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			assert(0);
+			//Continue with the rest of the plugins
+		}
 	}
-
 }
-
 

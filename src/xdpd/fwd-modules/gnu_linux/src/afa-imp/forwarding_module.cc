@@ -183,7 +183,6 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 
 	//Stop all ports and remove it from being scheduled by I/O first
 	for(i=0;i<sw->max_ports;i++){
-
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
 			//Take it out from the group
 			if( iomanager::remove_port((ioport*)sw->logical_ports[i].port->platform_port_state) != ROFL_SUCCESS ){
@@ -204,7 +203,6 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
-
 	//Remove switch from the switch bank
 	if(physical_switch_remove_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;
@@ -243,6 +241,29 @@ switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
 	return physical_switch_get_port_snapshot(name); 
 }
 
+/**
+ * @name fwd_module_get_port_by_num
+ * @brief Retrieves a snapshot of the current state of the port of the Logical Switch Instance with dpid at port_num, if exists. The snapshot MUST be deleted using switch_port_destroy_snapshot()
+ * @ingroup port_management
+ * @param dpid DatapathID 
+ * @param port_num Port number
+ */
+switch_port_snapshot_t* fwd_module_get_port_snapshot_by_num(uint64_t dpid, unsigned int port_num){
+	
+	of_switch_t* lsw;
+	
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw)
+		return NULL; 
+
+	//Check if the port does exist.
+	if(!port_num || port_num >= LOGICAL_SWITCH_MAX_LOG_PORTS || !lsw->logical_ports[port_num].port)
+		return NULL;
+
+	return physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+}
+
+
 /*
 * @name    fwd_module_attach_physical_port_to_switch
 * @brief   Attemps to attach a system's port to switch, at of_port_num if defined, otherwise in the first empty OF port number.
@@ -255,7 +276,6 @@ switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
 afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 
 	switch_port_t* port;
-	switch_port_snapshot_t* port_snapshot;
 	of_switch_t* lsw;
 
 	//Check switch existance
@@ -289,26 +309,23 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 		return AFA_FAILURE;	
 	}
 
-	//notify port attached(get first snapshot)
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_add(port_snapshot)!=AFA_SUCCESS){
-		//return AFA_FAILURE; //Ignore
-	}
-	
 	return AFA_SUCCESS;
 }
 
 /**
 * @name    fwd_module_connect_switches
-* @brief   Attemps to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. 
+* @brief   Attempts to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. On success, the two ports must be functional and process packets and the fwd_module MUST inform the CMM of the new ports via two separate port_add messages, with the appropriate information of attachment of the ports. 
 * @ingroup management
 *
 * @param dpid_lsi1 Datapath ID of the LSI1
-* @param dpid_lsi2 Datapath ID of the LSI2 
+* @param port1 A pointer to a snapshot of the virtual port attached to the LS1 that MUST be destroyed using switch_port_destroy_snapshot()
+* @param dpid_lsi2 Datapath ID of the LSI2
+* @param port1 A pointer to a snapshot of the virtual port attached to the LS2 that MUST be destroyed using switch_port_destroy_snapshot()
 */
 afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, switch_port_snapshot_t** port2){
 
 	of_switch_t *lsw1, *lsw2;
+	switch_port_snapshot_t *port1_not, *port2_not;
 	ioport *vport1, *vport2;
 	unsigned int port_num = 0; //We don't care about of the port
 
@@ -338,17 +355,31 @@ afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 		return AFA_FAILURE;
 	}
 
+	//Notify port add as requested by the API
+	port1_not = physical_switch_get_port_snapshot(vport1->of_port_state->name);
+	port2_not = physical_switch_get_port_snapshot(vport2->of_port_state->name);
+	if(!port1_not || !port2_not){
+		assert(0);
+		return AFA_FAILURE;
+	}
+	
+	cmm_notify_port_add(port1_not);
+	cmm_notify_port_add(port2_not);
+
+
 	//Enable interfaces (start packet transmission)
 	if(fwd_module_bring_port_up(vport1->of_port_state->name) != AFA_SUCCESS || fwd_module_bring_port_up(vport2->of_port_state->name) != AFA_SUCCESS){
 		ROFL_ERR(FWD_MOD_NAME" ERROR: unable to bring up vlink ports.\n");
 		assert(0);
 		return AFA_FAILURE;
 	}
-	
 
 	//Set switch ports and return
 	*port1 = physical_switch_get_port_snapshot(vport1->of_port_state->name);
 	*port2 = physical_switch_get_port_snapshot(vport2->of_port_state->name);
+	
+	assert(*port1 != NULL);
+	assert(*port2 != NULL);
 
 	return AFA_SUCCESS; 
 }
@@ -423,7 +454,7 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 			goto FWD_MODULE_DETACH_ERROR;
 		}
 
-		//notify port dettached
+		//notify port detached and deleted
 		cmm_notify_port_delete(port_pair_snapshot);
 		
 		//Remove from the pipeline and delete
@@ -443,11 +474,11 @@ afa_result_t fwd_module_detach_port_from_switch(uint64_t dpid, const char* name)
 
 		delete (ioport*)port->platform_port_state;
 		delete (ioport*)port_pair->platform_port_state;
+	
+		//notify port detached and deleted
+		cmm_notify_port_delete(port_snapshot);
 	}
 	
-	//notify port dettached
-	cmm_notify_port_delete(port_snapshot);
-
 	return AFA_SUCCESS; 
 
 FWD_MODULE_DETACH_ERROR:
@@ -520,10 +551,12 @@ afa_result_t fwd_module_bring_port_up(const char* name){
 			return AFA_FAILURE;
 	}
 
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
-	
+	//Notify only if its virtual; otherwise bg will do it for us
+	if(port->type == PORT_TYPE_VIRTUAL){
+		port_snapshot = physical_switch_get_port_snapshot(port->name); 
+		cmm_notify_port_status_changed(port_snapshot);
+	}
+		
 	return AFA_SUCCESS;
 }
 
@@ -555,10 +588,12 @@ afa_result_t fwd_module_bring_port_down(const char* name){
 			return AFA_FAILURE;
 	}
 
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
-	
+	//Notify only if its virtual; otherwise bg will do it for us
+	if(port->type == PORT_TYPE_VIRTUAL){
+		port_snapshot = physical_switch_get_port_snapshot(port->name); 
+		cmm_notify_port_status_changed(port_snapshot);
+	}
+
 	return AFA_SUCCESS;
 }
 
@@ -587,9 +622,11 @@ afa_result_t fwd_module_bring_port_up_by_num(uint64_t dpid, unsigned int port_nu
 	if(iomanager::bring_port_up((ioport*)lsw->logical_ports[port_num].port->platform_port_state) != ROFL_SUCCESS)
 		return AFA_FAILURE;
 	
-	port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
+	//Notify only if its virtual; otherwise bg will do it for us
+	if(lsw->logical_ports[port_num].port->type == PORT_TYPE_VIRTUAL){
+		port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+		cmm_notify_port_status_changed(port_snapshot);
+	}
 	
 	return AFA_SUCCESS;
 }
@@ -618,10 +655,12 @@ afa_result_t fwd_module_bring_port_down_by_num(uint64_t dpid, unsigned int port_
 	//Call I/O manager to bring it down
 	if(iomanager::bring_port_down((ioport*)lsw->logical_ports[port_num].port->platform_port_state) != ROFL_SUCCESS)
 		return AFA_FAILURE;
-	
-	port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
+		
+	//Notify only if its virtual; otherwise bg will do it for us
+	if(lsw->logical_ports[port_num].port->type == PORT_TYPE_VIRTUAL){
+		port_snapshot = physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+		cmm_notify_port_status_changed(port_snapshot);
+	}
 	
 	return AFA_SUCCESS;
 }

@@ -798,7 +798,7 @@ of12_endpoint::process_packet_in(
 * Port async notifications processing 
 */
 
-rofl_result_t of12_endpoint::notify_port_add(const switch_port_snapshot_t* port){
+rofl_result_t of12_endpoint::notify_port_attached(const switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -828,7 +828,7 @@ rofl_result_t of12_endpoint::notify_port_add(const switch_port_snapshot_t* port)
 	return ROFL_SUCCESS;
 }
 
-rofl_result_t of12_endpoint::notify_port_delete(const switch_port_snapshot_t* port){
+rofl_result_t of12_endpoint::notify_port_detached(const switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 

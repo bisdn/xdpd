@@ -17,6 +17,7 @@ v0.4
 [+][GNU/Linux] Adding support for stats in ioport_vlink.
 
 [B][GNU/Linux] Fixed bug: not properly updating of_port_state in ioport_mmap ports when up/down events were done externally (i.e. ifconfig) 
+[+][GNU/Linux] of13_endpoint adjusted to OF13 support in ROFL endpoint
 
 v0.3.5 
 

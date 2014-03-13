@@ -791,6 +791,17 @@ of13_endpoint::handle_group_features_stats_request(
 {
 	cofgroup_features_stats_reply group_features_reply(ctl.get_version());
 
+	group_features_reply.set_types((uint32_t)0);
+	group_features_reply.set_capabilities((uint32_t)0);
+	group_features_reply.set_max_groups()[0] = (uint32_t)0;
+	group_features_reply.set_max_groups()[1] = (uint32_t)0;
+	group_features_reply.set_max_groups()[2] = (uint32_t)0;
+	group_features_reply.set_max_groups()[3] = (uint32_t)0;
+	group_features_reply.set_actions()[0] = (uint32_t)0;
+	group_features_reply.set_actions()[1] = (uint32_t)0;
+	group_features_reply.set_actions()[2] = (uint32_t)0;
+	group_features_reply.set_actions()[3] = (uint32_t)0;
+
 	//TODO: fill in group_features_reply, when groups are implemented
 
 	ctl.send_group_features_stats_reply(msg.get_xid(), group_features_reply);

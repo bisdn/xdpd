@@ -359,6 +359,26 @@ private:
 			bool strict);
 
 
+	/**
+	 * @name	port_set_config
+	 * @brief
+	 *
+	 * This method changes a port configuration.
+	 *
+	 * @param dpid switch dpid
+	 * @param portno OF port number
+	 * @param config parameter received from message OFPT_PORT_MOD
+	 * @param mask parameter received from message OFPT_PORT_MOD
+	 * @param advertise parameter received from message OFPT_PORT_MOD
+	 */
+	void
+	port_set_config(
+			uint64_t dpid,
+			uint32_t portno,
+			uint32_t config,
+			uint32_t mask,
+			uint32_t advertise);
+
 };
 
 }// namespace rofl

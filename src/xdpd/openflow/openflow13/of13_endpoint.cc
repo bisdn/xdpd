@@ -1291,32 +1291,9 @@ of13_endpoint::handle_table_mod(
 		cofmsg_table_mod& msg,
 		uint8_t aux_id)
 {
-
-	/*
-	 * the parameters defined in the pipeline OF1X_TABLE_...
-	 * match those defined by the OF1.3 specification.
-	 * This may change in the future for other versions, so map
-	 * the OF official numbers to the ones used by the pipeline.
-	 *
-	 * at least we map network byte order to host byte order here ...
-	 */
-
-	//FIXME: table config is different in OF1.3
-/*
-	of1x_flow_table_miss_config_t config = OF1X_TABLE_MISS_CONTROLLER; //Default 
-
-	if (msg.get_config() == openflow13::OFPTC_TABLE_MISS_CONTINUE){
-		config = OF1X_TABLE_MISS_CONTINUE;
-	}else if (msg.get_config() == openflow13::OFPTC_TABLE_MISS_CONTROLLER){
-		config = OF1X_TABLE_MISS_CONTROLLER;
-	}else if (msg.get_config() == openflow13::OFPTC_TABLE_MISS_DROP){
-		config = OF1X_TABLE_MISS_DROP;
-	}
-
-	if( AFA_FAILURE == fwd_module_of1x_set_table_config(sw->dpid, msg.get_table_id(), config) ){
-		//TODO: treat exception
-	} 
-*/
+	// table config is different in OF1.3
+	// well, in fact, it's deprecated, but kept for backwards compatibility ;)
+	// hence, we ignore incoming messages of type OFPT_TABLE_MOD
 }
 
 
@@ -1327,6 +1304,10 @@ of13_endpoint::handle_port_mod(
 		cofmsg_port_mod& msg,
 		uint8_t aux_id)
 {
+
+
+
+
 	uint32_t config, mask, advertise, port_num;
 
 	config 		= msg.get_config();
@@ -1336,36 +1317,84 @@ of13_endpoint::handle_port_mod(
 
 	//Check if port_num FLOOD
 	//TODO: Inspect if this is right. Spec does not clearly define if this should be supported or not
-	if( port_num == openflow13::OFPP_ALL )
-		throw ePortModBadPort(); 
-		
+
+	switch (port_num) {
+	case rofl::openflow13::OFPP_MAX:
+	case rofl::openflow13::OFPP_IN_PORT:
+	case rofl::openflow13::OFPP_TABLE:
+	case rofl::openflow13::OFPP_NORMAL:
+	case rofl::openflow13::OFPP_FLOOD:
+	case rofl::openflow13::OFPP_CONTROLLER:
+	case rofl::openflow13::OFPP_LOCAL:
+	case rofl::openflow13::OFPP_ANY: {
+		throw ePortModBadPort();
+	}
+	case rofl::openflow13::OFPP_ALL: {
+
+		of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+		if(!of13switch)
+			throw eRofBase();
+		//we check all the positions in case there are empty slots
+		for (unsigned int n = 1; n < of13switch->max_ports; n++){
+			logical_switch_port_t* ls_port = &of13switch->logical_ports[n];
+			switch_port_snapshot_t* _port = ls_port->port;
+			if(_port!=NULL && ls_port->attachment_state!=LOGICAL_PORT_STATE_DETACHED){
+				//Mapping of port state
+				assert(n == _port->of_port_num);
+
+				port_set_config(sw->dpid, _port->of_port_num, config, mask, advertise);
+			}
+	 	}
+		//Destroy the snapshot
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
+
+	} break;
+	default: {
+
+		port_set_config(sw->dpid, port_num, config, mask, advertise);
+
+	};
+	}
+}
+
+
+
+void
+of13_endpoint::port_set_config(
+		uint64_t dpid,
+		uint32_t portno,
+		uint32_t config,
+		uint32_t mask,
+		uint32_t advertise)
+{
+
 	//Drop received
 	if( mask &  openflow13::OFPPC_NO_RECV )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & openflow13::OFPPC_NO_RECV ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(dpid, portno, config & openflow13::OFPPC_NO_RECV ) )
 			throw ePortModBase(); 
 	//No forward
 	if( mask &  openflow13::OFPPC_NO_FWD )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & openflow13::OFPPC_NO_FWD) ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(dpid, portno, !(config & openflow13::OFPPC_NO_FWD) ) )
 			throw ePortModBase(); 
 	//No packet in
 	if( mask &  openflow13::OFPPC_NO_PACKET_IN )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & openflow13::OFPPC_NO_PACKET_IN) ) )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(dpid, portno, !(config & openflow13::OFPPC_NO_PACKET_IN) ) )
 			throw ePortModBase(); 
 
 	//Advertised
 	if( advertise )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_advertise_config(sw->dpid, port_num, advertise)  )
+		if( AFA_FAILURE == fwd_module_of1x_set_port_advertise_config(dpid, portno, advertise)  )
 			throw ePortModBase(); 
 
 	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
 	if( mask &  openflow13::OFPPC_PORT_DOWN ){
 		if( (config & openflow13::OFPPC_PORT_DOWN)  ){
 			//Disable port
-			if( AFA_FAILURE == fwd_module_bring_port_down_by_num(sw->dpid, port_num) ){
+			if( AFA_FAILURE == fwd_module_bring_port_down_by_num(dpid, portno) ){
 				throw ePortModBase(); 
 			}
 		}else{
-			if( AFA_FAILURE == fwd_module_bring_port_up_by_num(sw->dpid, port_num) ){
+			if( AFA_FAILURE == fwd_module_bring_port_up_by_num(dpid, portno) ){
 				throw ePortModBase(); 
 			}
 		}

@@ -199,6 +199,9 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 		
 	}
 	
+	//Was not found (not scheduled), simply set the state
+	port->of_port_state->up = false;
+	
 	if(!mutex_locked)
 		pthread_mutex_unlock(&mutex);
 		
@@ -275,6 +278,9 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 		ROFL_ERR(FWD_MOD_NAME"[iomanager] Exception thrown while trying to bring %s port up\n", port->of_port_state->name);
 		assert(0);
 	}
+
+	//Was not found (not scheduled), simply set the state
+	port->of_port_state->up = true;
 	
 	pthread_mutex_unlock(&mutex);
 	return ROFL_FAILURE;

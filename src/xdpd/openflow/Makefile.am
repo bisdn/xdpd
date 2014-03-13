@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = openflow10 openflow12
+SUBDIRS = openflow10 openflow12 openflow13
 
 
 noinst_LTLIBRARIES = libxdpd_openflow.la
@@ -12,5 +12,5 @@ libxdpd_openflow_la_SOURCES = \
 	
 libxdpd_openflow_la_LIBADD = \
 		openflow10/libxdpd_openflow10.la \
-		openflow12/libxdpd_openflow12.la
-	
+		openflow12/libxdpd_openflow12.la \
+		openflow13/libxdpd_openflow13.la

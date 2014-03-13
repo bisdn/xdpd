@@ -126,12 +126,14 @@ int main(int argc, char** argv){
 	//Destroy all state
 	switch_manager::destroy_all_switches();
 
-	//Let plugin manager destroy all registered plugins
-	plugin_manager::destroy();
-	
 	//Call fwd_module to shutdown
 	fwd_module_destroy();
 	
+	//Let plugin manager destroy all registered plugins
+	//This must be after calling fwd_module_destroy()
+	plugin_manager::destroy();
+	
+
 	ROFL_INFO("House cleaned!\nGoodbye\n");
 	
 	csyslog::closelog();

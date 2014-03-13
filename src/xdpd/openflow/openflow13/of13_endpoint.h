@@ -3,47 +3,43 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
-* @file of10_endpoint.h
+* @file of13_endpoint.h
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 * @author Marc Sune<marc.sune (at) bisdn.de>
+* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+* @author Tobias Jungel<tobias.jungel (at) bisdn.de>
 *
-* @brief OF1.0 endpoint implementation
+* @brief OF1.3 endpoint implementation
 */
 
-#ifndef OF10_ENDPOINT_H_
-#define OF10_ENDPOINT_H_
+#ifndef OF13_ENDPOINT_H
+#define OF13_ENDPOINT_H 
 
-#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h> // use OF12 pipeline for emulating OF10 data path element
+#include <rofl/platform/unix/csyslog.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include "../openflow_switch.h"
 #include "../of_endpoint.h"
 #include "../../management/switch_manager.h"
-#include <rofl/common/openflow/cofhelloelemversionbitmap.h>
-
-namespace rofl {
-	class ssl_context;
-}  // namespace rofl
 
 using namespace rofl;
 
 namespace xdpd {
 
 /**
-* @brief of10_endpoint is an OpenFlow 1.0 OF agent implementation
+* @brief of13_endpoint is an OpenFlow 1.3 OF agent implementation
 * @ingroup cmm_of
 **/
-class of10_endpoint : public of_endpoint {
-
-	uint64_t 		ctlid;	// controller id
+class of13_endpoint : public of_endpoint {
+	
 
 public:
 
 	//Main constructor
-	of10_endpoint(
+	of13_endpoint(
 			openflow_switch* sw,
 			int reconnect_start_timeout,
 			caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633),
-			caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0),
-			ssl_context *ctx = NULL) throw (eOfSmErrorOnCreation);
+			caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmErrorOnCreation);
 
 	/**
 	 *
@@ -73,7 +69,7 @@ public:
 	*/
 
 	virtual	rofl_result_t notify_port_attached(const switch_port_t* port);
-
+	
 	virtual rofl_result_t notify_port_detached(const switch_port_t* port);
 
 	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
@@ -82,10 +78,10 @@ public:
 
 private:
 
-	/**
+	/* *
 	 ** This section is in charge of the handling of the OF messages
 	 ** comming from the cofctl(OF endpoints). These are version specific
-	 ** and must be implemented by the derived class (ofXX_dphcl)
+	 ** and must be implemented by the derived class (ofXX_dphcl) 
 	 **/
 
 	/** Handle OF features request. To be overwritten by derived class.
@@ -100,7 +96,7 @@ private:
 	 * @param pack OF packet received from controlling entity.
 	 */
 	virtual void
-	handle_features_request(crofctl& ctl, cofmsg_features_request& pack, uint8_t aux_id = 0);
+	handle_features_request(crofctl& ctl, cofmsg_features_request& msg, uint8_t aux_id = 0);
 
 	/** Handle OF get-config request. To be overwritten by derived class.
 	 *
@@ -131,35 +127,70 @@ private:
 	 *
 	 */
 	virtual void
-	handle_port_stats_request(crofctl& ctl, cofmsg_port_stats_request& pack, uint8_t aux_id = 0);
+	handle_port_stats_request(crofctl& ctl, cofmsg_port_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_flow_stats_request(crofctl& ctl, cofmsg_flow_stats_request& pack, uint8_t aux_id = 0);
+	handle_flow_stats_request(crofctl& ctl, cofmsg_flow_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_aggregate_stats_request(crofctl& ctl, cofmsg_aggr_stats_request& pack, uint8_t aux_id = 0);
+	handle_aggregate_stats_request(crofctl& ctl, cofmsg_aggr_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_queue_stats_request(crofctl& ctl, cofmsg_queue_stats_request& pack, uint8_t aux_id = 0);
+	handle_queue_stats_request(crofctl& ctl, cofmsg_queue_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_experimenter_stats_request(crofctl& ctl, cofmsg_stats_request& pack, uint8_t aux_id = 0);
+	handle_group_stats_request(crofctl& ctl, cofmsg_group_stats_request& msg, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_group_desc_stats_request(crofctl& ctl, cofmsg_group_desc_stats_request& msg, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_group_features_stats_request(crofctl& ctl, cofmsg_group_features_stats_request& msg, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_table_features_stats_request(crofctl& ctl, cofmsg_table_features_request& msg, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_port_desc_stats_request(crofctl& ctl, cofmsg_port_desc_stats_request& msg, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_experimenter_stats_request(crofctl& ctl, cofmsg_experimenter_stats_request& msg, uint8_t aux_id = 0);
 
 	/** Handle OF packet-out messages. To be overwritten by derived class.
 	 *
@@ -169,7 +200,7 @@ private:
 	 * @param pack PACKET-OUT.message packet received from controller.
 	 */
 	virtual void
-	handle_packet_out(crofctl& ctl, cofmsg_packet_out& pack, uint8_t aux_id = 0);
+	handle_packet_out(crofctl& ctl, cofmsg_packet_out& msg, uint8_t aux_id = 0);
 
 	/** Handle OF barrier request. To be overwritten by derived class.
 	 *
@@ -191,6 +222,16 @@ private:
 	virtual void
 	handle_flow_mod(crofctl& ctl, cofmsg_flow_mod& msg, uint8_t aux_id = 0);
 
+	/** Handle OF group-mod message. To be overwritten by derived class.
+	 *
+	 * Called upon reception of a GROUP-MOD.message from the controlling entity.
+	 * The OF packet must be removed from heap by the overwritten method.
+	 *
+	 * @param pack GROUP-MOD.message packet received from controller.
+	 */
+	virtual void
+	handle_group_mod(crofctl& ctl, cofmsg_group_mod& msg, uint8_t aux_id = 0);
+
 	/** Handle OF table-mod message. To be overwritten by derived class.
 	 *
 	 * Called upon reception of a TABLE-MOD.message from the controlling entity.
@@ -199,7 +240,7 @@ private:
 	 * @param pack TABLE-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_table_mod(crofctl& ctl, cofmsg_table_mod& pack, uint8_t aux_id = 0);
+	handle_table_mod(crofctl& ctl, cofmsg_table_mod& msg, uint8_t aux_id = 0);
 
 	/** Handle OF port-mod message. To be overwritten by derived class.
 	 *
@@ -209,7 +250,7 @@ private:
 	 * @param pack PORT-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_port_mod(crofctl& ctl, cofmsg_port_mod& pack, uint8_t aux_id = 0);
+	handle_port_mod(crofctl& ctl, cofmsg_port_mod& msg, uint8_t aux_id = 0);
 
 	/** Handle OF set-config message. To be overwritten by derived class.
 	 *
@@ -276,7 +317,7 @@ private:
 	void
 	flow_mod_add(
 			crofctl& ctl,
-			cofmsg_flow_mod& pack); //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull);
+			cofmsg_flow_mod& pack);
 
 
 
@@ -315,12 +356,31 @@ private:
 	flow_mod_delete(
 			crofctl& ctl,
 			cofmsg_flow_mod& pack,
-			bool strict); // throw (eOfSmPipelineBadTableId);
+			bool strict);
 
+
+	/**
+	 * @name	port_set_config
+	 * @brief
+	 *
+	 * This method changes a port configuration.
+	 *
+	 * @param dpid switch dpid
+	 * @param portno OF port number
+	 * @param config parameter received from message OFPT_PORT_MOD
+	 * @param mask parameter received from message OFPT_PORT_MOD
+	 * @param advertise parameter received from message OFPT_PORT_MOD
+	 */
+	void
+	port_set_config(
+			uint64_t dpid,
+			uint32_t portno,
+			uint32_t config,
+			uint32_t mask,
+			uint32_t advertise);
 
 };
 
+}// namespace rofl
 
-} // end of namespace
-
-#endif /* OF10_ENDPOINT_H_ */
+#endif /* OF13_ENDPOINT_H_ */

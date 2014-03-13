@@ -89,10 +89,7 @@ void lsi_scope::parse_version(libconfig::Setting& setting, of_version_t* version
 	}else if(of_ver == 1.2){
 		*version = OF_VERSION_12;
 	}else if(of_ver == 1.3){
-		//*version = OF_VERSION_13;
-		ROFL_ERR("%s: version 1.3 version not yet supported\n", setting.getPath().c_str());
-		throw eConfParseError(); 
-
+		*version = OF_VERSION_13;
 	}else{
 		ROFL_ERR("%s: invalid OpenFlow version. Valid version numbers are 1.0, 1.2 and 1.3. Found: %f\n", setting.getPath().c_str(), of_ver);
 		throw eConfParseError(); 	
@@ -225,9 +222,12 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 				throw eConfParseError(); 	
 			
 			}				
-			//Then push it to the list of ports
-			ports.push_back(port);	
 		}
+		
+		//Then push it to the list of ports
+		//Note empty ports are valid (empty, ignore slot)
+		ports.push_back(port);
+	
 	}	
 
 	if(ports.size() < 2 && dry_run){
@@ -368,7 +368,6 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//Execute
 	if(!dry_run){
 		openflow_switch* sw;
-		unsigned int port_num;
 
 		//Create switch
 		sw = switch_manager::create_switch(version, dpid, name, num_of_tables,
@@ -381,10 +380,16 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	
 		//Attach ports
 		std::vector<std::string>::iterator port_it;
-		for(port_it = ports.begin(); port_it != ports.end(); ++port_it){
+		unsigned int i;
+		for(port_it = ports.begin(), i=1; port_it != ports.end(); ++port_it, ++i){
+				
+			//Ignore empty ports	
+			if(*port_it == "")
+				continue;
+		
 			try{
 				//Attach
-				port_manager::attach_port_to_switch(dpid, *port_it, &port_num);
+				port_manager::attach_port_to_switch(dpid, *port_it, &i);
 				//Bring up
 				port_manager::bring_up(*port_it);
 			}catch(...){	

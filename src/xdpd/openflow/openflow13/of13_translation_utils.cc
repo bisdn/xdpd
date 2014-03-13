@@ -1273,11 +1273,11 @@ of13_translation_utils::of13_map_reverse_flow_entry_instruction(
 	} break;
 	case OF1X_IT_WRITE_ACTIONS: {
 		instruction = cofinst_write_actions(OFP12_VERSION);
-		for (unsigned int i = 0; i < OF1X_IT_GOTO_TABLE; i++) {
-			if (OF1X_AT_NO_ACTION == inst->write_actions->write_actions[i].type)
+		for (unsigned int i = 0; i < inst->write_actions->num_of_actions; i++) {
+			if (OF1X_AT_NO_ACTION == inst->write_actions->actions[i].type)
 				continue;
 			cofaction action(OFP12_VERSION);
-			of13_map_reverse_flow_entry_action(&(inst->write_actions->write_actions[i]), action);
+			of13_map_reverse_flow_entry_action(&(inst->write_actions->actions[i]), action);
 			instruction.get_actions().append_action(action);
 		}
 	} break;

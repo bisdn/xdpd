@@ -14,14 +14,12 @@
 		x=__bswap_64(x); \
 		x>>=16; \
 	}while(0)
-	#define U128TOBE(x) SWAP_U128(x)
 #else
 	#define MACTOBE(x) (x)
-	#define U128TOBE(x) (x)
 #endif
 
 #define BETOHMAC(x) MACTOBE(x)
-#define BETOHU128(x) U128TOBE(x)
+
 
 using namespace xdpd;
 
@@ -477,10 +475,10 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	try {
 		caddress value(ofmatch.get_ipv6_src_value());
 		uint128__t val = value.get_ipv6_addr();
-		U128TOBE(val);
+		HTONB128(val);
 		caddress mask (ofmatch.get_ipv6_src_mask());
 		uint128__t msk = mask.get_ipv6_addr();
-		U128TOBE(msk);
+		HTONB128(msk);
 		
 		of1x_match_t *match = of1x_init_ip6_src_match(
 								/*prev*/NULL,
@@ -494,10 +492,10 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	try {
 		caddress value(ofmatch.get_ipv6_dst_value());
 		uint128__t val = value.get_ipv6_addr();
-		U128TOBE(val);
+		HTONB128(val);
 		caddress mask (ofmatch.get_ipv6_dst_mask());
 		uint128__t msk = mask.get_ipv6_addr();
-		U128TOBE(msk);
+		HTONB128(msk);
 		of1x_match_t *match = of1x_init_ip6_dst_match(
 								/*prev*/NULL,
 								/*prev*/NULL,
@@ -534,7 +532,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	try {
 		caddress value(ofmatch.get_ipv6_nd_target());
 		uint128__t val = value.get_ipv6_addr();
-		U128TOBE(val);
+		HTONB128(val);
 		of1x_match_t *match = of1x_init_ip6_nd_target_match(
 								NULL,
 								NULL,
@@ -894,12 +892,12 @@ of12_translation_utils::of12_map_flow_entry_actions(
 
 				case openflow12::OFPXMT_OFB_IPV6_SRC: {
 					field.u128 = oxm.u128addr().get_ipv6_addr();
-					U128TOBE(field.u128);
+					HTONB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_DST: {
 					field.u128 = oxm.u128addr().get_ipv6_addr();
-					U128TOBE(field.u128);
+					HTONB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_DST, field, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_FLABEL: {
@@ -908,7 +906,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_ND_TARGET: {
 					field.u128 = oxm.u128addr().get_ipv6_addr();
-					U128TOBE(field.u128);
+					HTONB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_ND_SLL: {
@@ -1179,13 +1177,13 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IPV6_SRC: {
 			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
 			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val), sizeof(uint128__t));
-			BETOHU128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
+			NTOHB128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
 			match.set_ipv6_src(addr);
 			}break;
 		case OF1X_MATCH_IPV6_DST:{
 			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
 			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val), sizeof(uint128__t));
-			BETOHU128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
+			NTOHB128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
 			match.set_ipv6_dst(addr);
 			}break;
 		case OF1X_MATCH_IPV6_FLABEL:
@@ -1201,7 +1199,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
 			/*TODO deal with endianess??*/
 			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val),sizeof(uint128__t));
-			BETOHU128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
+			NTOHB128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
 			match.set_ipv6_nd_target(addr);
 			}break;
 		case OF1X_MATCH_IPV6_ND_SLL:
@@ -1488,12 +1486,12 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	
 	case OF1X_AT_SET_FIELD_IPV6_SRC: {
 		uint128__t addr = of1x_action->field.u128;
-		BETOHU128(addr);
+		NTOHB128(addr);
 		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_ipv6_src((uint8_t*)addr.val,16));
 	} break;
 	case OF1X_AT_SET_FIELD_IPV6_DST: {
 		uint128__t addr = of1x_action->field.u128;
-		BETOHU128(addr);
+		NTOHB128(addr);
 		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_ipv6_dst((uint8_t*)addr.val,16));
 	} break;
 	case OF1X_AT_SET_FIELD_IPV6_FLABEL: {
@@ -1501,7 +1499,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	} break;
 	case OF1X_AT_SET_FIELD_IPV6_ND_TARGET: {
 		uint128__t addr = of1x_action->field.u128;
-		BETOHU128(addr);
+		NTOHB128(addr);
 		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_ipv6_nd_target((uint8_t*)addr.val,16));
 	} break;
 	case OF1X_AT_SET_FIELD_IPV6_ND_SLL: {
@@ -1652,14 +1650,14 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	if( UINT128__T_HI(packet_matches->ipv6_src) || UINT128__T_LO(packet_matches->ipv6_src) ){
 		caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
 		uint128__t addru128 = packet_matches->ipv6_src;
-		BETOHU128(addru128);
+		NTOHB128(addru128);
 		addr.set_ipv6_addr(addru128);
 		match.set_ipv6_src(addr);
 	}
 	if( UINT128__T_HI(packet_matches->ipv6_dst) || UINT128__T_LO(packet_matches->ipv6_dst) ){
 		caddress addr(AF_INET6,"0:0:0:0");
 		uint128__t addru128 = packet_matches->ipv6_dst;
-		BETOHU128(addru128);
+		NTOHB128(addru128);
 		addr.set_ipv6_addr(addru128);
 		match.set_ipv6_dst(addr);
 	}
@@ -1668,7 +1666,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	if( UINT128__T_HI(packet_matches->ipv6_nd_target) || UINT128__T_LO(packet_matches->ipv6_nd_target) ){
 		caddress addr(AF_INET6,"0:0:0:0");
 		uint128__t addru128 = packet_matches->ipv6_nd_target;
-		BETOHU128(addru128);
+		NTOHB128(addru128);
 		addr.set_ipv6_addr(addru128);
 		match.set_ipv6_nd_target(addr);
 	}

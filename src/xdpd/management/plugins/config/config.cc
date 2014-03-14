@@ -54,6 +54,10 @@ void config::init(int args, char** argv){
 	delete cfg;
 	delete root;
 
+	if (env_parser.is_arg_set(std::string("test-config"))) {
+		exit(0);
+	}
+
 	//Execute
 	cfg = new Config;
 	root = new root_scope();

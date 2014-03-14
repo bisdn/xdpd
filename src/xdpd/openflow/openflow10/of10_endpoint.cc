@@ -365,7 +365,9 @@ of10_endpoint::handle_flow_stats_request(
 	//Construct OF message
 	of1x_stats_single_flow_msg_t *elem = fp_msg->flows_head;
 
-	std::vector<cofflow_stats_reply> flow_stats;
+	rofl::openflow::cofflowstatsarray flowstatsarray(ctl.get_version());
+
+	uint32_t flow_id = 0;
 
 	try{
 		for(elem = fp_msg->flows_head; elem; elem = elem->next){
@@ -376,26 +378,24 @@ of10_endpoint::handle_flow_stats_request(
 			cofactions actions(rofl::openflow10::OFP_VERSION);
 			of10_translation_utils::of1x_map_reverse_flow_entry_actions((of1x_instruction_group_t*)(elem->inst_grp), actions, of10switch->pipeline.miss_send_len);
 
-			flow_stats.push_back(
-					cofflow_stats_reply(
-							ctl.get_version(),
-							elem->table_id,
-							elem->duration_sec,
-							elem->duration_nsec,
-							elem->priority,
-							elem->idle_timeout,
-							elem->hard_timeout,
-							elem->cookie,
-							elem->packet_count,
-							elem->byte_count,
-							match,
-							actions));
+			flowstatsarray.set_flow_stats(flow_id++).set_table_id(elem->table_id);
+			flowstatsarray.set_flow_stats(flow_id++).set_duration_sec(elem->duration_sec);
+			flowstatsarray.set_flow_stats(flow_id++).set_duration_nsec(elem->duration_nsec);
+			flowstatsarray.set_flow_stats(flow_id++).set_priority(elem->priority);
+			flowstatsarray.set_flow_stats(flow_id++).set_idle_timeout(elem->idle_timeout);
+			flowstatsarray.set_flow_stats(flow_id++).set_hard_timeout(elem->hard_timeout);
+			flowstatsarray.set_flow_stats(flow_id++).set_cookie(elem->cookie);
+			flowstatsarray.set_flow_stats(flow_id++).set_packet_count(elem->packet_count);
+			flowstatsarray.set_flow_stats(flow_id++).set_byte_count(elem->byte_count);
+			flowstatsarray.set_flow_stats(flow_id++).set_match() = match;
+			flowstatsarray.set_flow_stats(flow_id++).set_actions() = actions;
+
 			// TODO: check this implicit assumption of always using a single instruction?
 			// this should be an instruction of type OFPIT_APPLY_ACTIONS anyway
 		}
 
 		//Send message
-		ctl.send_flow_stats_reply(msg.get_xid(), flow_stats);
+		ctl.send_flow_stats_reply(msg.get_xid(), flowstatsarray);
 	}catch(...){
 		of1x_destroy_stats_flow_msg(fp_msg);
 		of1x_destroy_flow_entry(entry);

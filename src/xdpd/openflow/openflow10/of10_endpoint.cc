@@ -512,7 +512,7 @@ of10_endpoint::handle_queue_stats_request(
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
-	std::vector<cofqueue_stats_reply> stats;
+	rofl::openflow::cofqueuestatsarray queuestatsarray(ctl.get_version());
 
 	/*
 	* port num
@@ -531,23 +531,17 @@ of10_endpoint::handle_queue_stats_request(
 
 			if (OFPQ_ALL == queue_id){
 
-				// TODO: iterate over all queues
-
 				for(unsigned int i=0; i<port->max_queues; i++){
 					if(!port->queues[i].set)
 						continue;
 
-					//Set values
-					stats.push_back(
-							cofqueue_stats_reply(
-									ctl.get_version(),
-									port->of_port_num,
-									i,
-									port->queues[i].stats.tx_bytes,
-									port->queues[i].stats.tx_packets,
-									port->queues[i].stats.overrun,
-									0,
-									0));
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_port_no(port->of_port_num);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_queue_id(i);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_bytes(port->queues[i].stats.tx_bytes);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_packets(port->queues[i].stats.tx_packets);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_errors(port->queues[i].stats.overrun);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_duration_sec(0); 	// TODO
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_duration_nsec(0); // TODO
 				}
 
 			} else {
@@ -563,17 +557,14 @@ of10_endpoint::handle_queue_stats_request(
 				//Check if the queue is really in use
 				if(port->queues[queue_id].set){
 					//Set values
-					stats.push_back(
-							cofqueue_stats_reply(
-									ctl.get_version(),
-									portnum,
-									queue_id,
-									port->queues[queue_id].stats.tx_bytes,
-									port->queues[queue_id].stats.tx_packets,
-									port->queues[queue_id].stats.overrun,
-									0,
-									0));
 
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_port_no(portnum);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_queue_id(queue_id);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_bytes(port->queues[queue_id].stats.tx_bytes);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_packets(port->queues[queue_id].stats.tx_packets);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_errors(port->queues[queue_id].stats.overrun);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_duration_sec(0); 	// TODO
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_duration_nsec(0); 	// TODO
 				}
 			}
 		}
@@ -585,7 +576,7 @@ of10_endpoint::handle_queue_stats_request(
 
 	ctl.send_queue_stats_reply(
 			pack.get_xid(),
-			stats,
+			queuestatsarray,
 			false);
 }
 

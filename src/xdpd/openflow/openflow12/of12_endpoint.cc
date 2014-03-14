@@ -486,7 +486,7 @@ of12_endpoint::handle_queue_stats_request(
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
-	std::vector<cofqueue_stats_reply> stats;
+	rofl::openflow::cofqueuestatsarray queuestatsarray(ctl.get_version());
 
 	/*
 	* port num
@@ -511,17 +511,13 @@ of12_endpoint::handle_queue_stats_request(
 					if(!port->queues[i].set)
 						continue;
 
-					//Set values
-					stats.push_back(
-							cofqueue_stats_reply(
-									ctl.get_version(),
-									port->of_port_num,
-									i,
-									port->queues[i].stats.tx_bytes,
-									port->queues[i].stats.tx_packets,
-									port->queues[i].stats.overrun,
-									0,
-									0));
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_port_no(port->of_port_num);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_queue_id(i);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_bytes(port->queues[i].stats.tx_bytes);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_packets(port->queues[i].stats.tx_packets);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_errors(port->queues[i].stats.overrun);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_duration_sec(0); 	// TODO
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_duration_nsec(0); // TODO
 				}
 
 			} else {
@@ -535,17 +531,14 @@ of12_endpoint::handle_queue_stats_request(
 				//Check if the queue is really in use
 				if(port->queues[queue_id].set){
 					//Set values
-					stats.push_back(
-							cofqueue_stats_reply(
-									ctl.get_version(),
-									portnum,
-									queue_id,
-									port->queues[queue_id].stats.tx_bytes,
-									port->queues[queue_id].stats.tx_packets,
-									port->queues[queue_id].stats.overrun,
-									0,
-									0));
 
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_port_no(portnum);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_queue_id(queue_id);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_bytes(port->queues[queue_id].stats.tx_bytes);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_packets(port->queues[queue_id].stats.tx_packets);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_errors(port->queues[queue_id].stats.overrun);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_duration_sec(0); 	// TODO
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_duration_nsec(0); 	// TODO
 				}
 			}
 		}
@@ -554,7 +547,7 @@ of12_endpoint::handle_queue_stats_request(
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 	
-	ctl.send_queue_stats_reply(pack.get_xid(), stats);
+	ctl.send_queue_stats_reply(pack.get_xid(), queuestatsarray);
 }
 
 
@@ -585,22 +578,22 @@ of12_endpoint::handle_group_stats_request(
 		logging::error << "[xdpd][of12][group-stats] unable to retrieve group statistics from pipeline" << std::endl;
 	}
 	
-	rofl::openflow::cofgroups groups(ctl.get_version());
+	rofl::openflow::cofgroupstatsarray groups(ctl.get_version());
 	
 	for(g_msg = g_msg_all; g_msg; g_msg = g_msg->next){
 		num_of_buckets = g_msg->num_of_buckets;
 
-		groups.set_group(g_msg->group_id).set_group_id(g_msg->group_id);
-		groups.set_group(g_msg->group_id).set_ref_count(g_msg->ref_count);
-		groups.set_group(g_msg->group_id).set_packet_count(g_msg->packet_count);
-		groups.set_group(g_msg->group_id).set_byte_count(g_msg->byte_count);
-		groups.set_group(g_msg->group_id).set_duration_sec(0);
-		groups.set_group(g_msg->group_id).set_duration_nsec(0);
-		groups.set_group(g_msg->group_id).set_duration_nsec(num_of_buckets);
+		groups.set_group_stats(g_msg->group_id).set_group_id(g_msg->group_id);
+		groups.set_group_stats(g_msg->group_id).set_ref_count(g_msg->ref_count);
+		groups.set_group_stats(g_msg->group_id).set_packet_count(g_msg->packet_count);
+		groups.set_group_stats(g_msg->group_id).set_byte_count(g_msg->byte_count);
+		groups.set_group_stats(g_msg->group_id).set_duration_sec(0);
+		groups.set_group_stats(g_msg->group_id).set_duration_nsec(0);
+		groups.set_group_stats(g_msg->group_id).set_duration_nsec(num_of_buckets);
 
 		for(i=0;i<num_of_buckets;i++) {
-			groups.set_group(g_msg->group_id).get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
-			groups.set_group(g_msg->group_id).get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
+			groups.set_group_stats(g_msg->group_id).get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
+			groups.set_group_stats(g_msg->group_id).get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
 		}
 	}
 
@@ -624,7 +617,7 @@ of12_endpoint::handle_group_desc_stats_request(
 		cofmsg_group_desc_stats_request& msg,
 		uint8_t aux_id)
 {
-	rofl::openflow::cofgroupdescs groupdescs(ctl.get_version());
+	rofl::openflow::cofgroupdescstatsarray groupdescs(ctl.get_version());
 
 	of1x_group_table_t group_table;
 	of1x_group_t *group_it;
@@ -637,9 +630,9 @@ of12_endpoint::handle_group_desc_stats_request(
 		cofbuckets bclist(ctl.get_version());
 		of12_translation_utils::of12_map_reverse_bucket_list(bclist,group_it->bc_list);
 
-		groupdescs.set_group_desc(group_it->id).set_group_type(group_it->type);
-		groupdescs.set_group_desc(group_it->id).set_group_id(group_it->id);
-		groupdescs.set_group_desc(group_it->id).set_buckets(bclist);
+		groupdescs.set_group_desc_stats(group_it->id).set_group_type(group_it->type);
+		groupdescs.set_group_desc_stats(group_it->id).set_group_id(group_it->id);
+		groupdescs.set_group_desc_stats(group_it->id).set_buckets(bclist);
 	}
 
 	ctl.send_group_desc_stats_reply(msg.get_xid(), groupdescs);

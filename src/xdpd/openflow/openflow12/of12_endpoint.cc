@@ -237,7 +237,7 @@ of12_endpoint::handle_port_stats_request(
 	if(!of12switch)
 		throw eRofBase();
 
-	std::vector<cofport_stats_reply> port_stats;
+	rofl::openflow::cofportstatsarray portstatsarray(ctl.get_version());
 
 	/*
 	 *  send statistics for all ports
@@ -251,24 +251,19 @@ of12_endpoint::handle_port_stats_request(
 	
 			if((port != NULL) && (of12switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
 
-				port_stats.push_back(
-						cofport_stats_reply(
-								ctl.get_version(),
-								port->of_port_num,
-								port->stats.rx_packets,
-								port->stats.tx_packets,
-								port->stats.rx_bytes,
-								port->stats.tx_bytes,
-								port->stats.rx_dropped,
-								port->stats.tx_dropped,
-								port->stats.rx_errors,
-								port->stats.tx_errors,
-								port->stats.rx_frame_err,
-								port->stats.rx_over_err,
-								port->stats.rx_crc_err,
-								port->stats.collisions,
-								0,
-								0));
+				portstatsarray.set_port_stats(port->of_port_num).set_portno(port->of_port_num);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_bytes(port->stats.tx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_dropped(port->stats.rx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_dropped(port->stats.tx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_errors(port->stats.rx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_errors(port->stats.tx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_frame_err(port->stats.rx_frame_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_over_err(port->stats.rx_over_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_crc_err(port->stats.rx_crc_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_collisions(port->stats.collisions);
 			}
 	 	}
 
@@ -288,24 +283,19 @@ of12_endpoint::handle_port_stats_request(
 				(port->of_port_num == port_no)
 			){
 				//Mapping of port state
-				port_stats.push_back(
-						cofport_stats_reply(
-								ctl.get_version(),
-								port->of_port_num,
-								port->stats.rx_packets,
-								port->stats.tx_packets,
-								port->stats.rx_bytes,
-								port->stats.tx_bytes,
-								port->stats.rx_dropped,
-								port->stats.tx_dropped,
-								port->stats.rx_errors,
-								port->stats.tx_errors,
-								port->stats.rx_frame_err,
-								port->stats.rx_over_err,
-								port->stats.rx_crc_err,
-								port->stats.collisions,
-								0,
-								0));
+				portstatsarray.set_port_stats(port->of_port_num).set_portno(port->of_port_num);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_bytes(port->stats.tx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_dropped(port->stats.rx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_dropped(port->stats.tx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_errors(port->stats.rx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_errors(port->stats.tx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_frame_err(port->stats.rx_frame_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_over_err(port->stats.rx_over_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_crc_err(port->stats.rx_crc_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_collisions(port->stats.collisions);
 
 				break;
 			}
@@ -317,7 +307,7 @@ of12_endpoint::handle_port_stats_request(
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 
-	ctl.send_port_stats_reply(msg.get_xid(), port_stats, false);
+	ctl.send_port_stats_reply(msg.get_xid(), portstatsarray, false);
 }
 
 
@@ -516,8 +506,6 @@ of12_endpoint::handle_queue_stats_request(
 					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_bytes(port->queues[i].stats.tx_bytes);
 					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_packets(port->queues[i].stats.tx_packets);
 					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_errors(port->queues[i].stats.overrun);
-					queuestatsarray.set_queue_stats(port->of_port_num, i).set_duration_sec(0); 	// TODO
-					queuestatsarray.set_queue_stats(port->of_port_num, i).set_duration_nsec(0); // TODO
 				}
 
 			} else {
@@ -537,8 +525,6 @@ of12_endpoint::handle_queue_stats_request(
 					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_bytes(port->queues[queue_id].stats.tx_bytes);
 					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_packets(port->queues[queue_id].stats.tx_packets);
 					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_errors(port->queues[queue_id].stats.overrun);
-					queuestatsarray.set_queue_stats(portnum, queue_id).set_duration_sec(0); 	// TODO
-					queuestatsarray.set_queue_stats(portnum, queue_id).set_duration_nsec(0); 	// TODO
 				}
 			}
 		}

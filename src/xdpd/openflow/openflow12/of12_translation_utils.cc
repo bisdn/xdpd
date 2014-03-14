@@ -13,7 +13,7 @@
 	#define MACTOBE(x) do{ \
 		x=__bswap_64(x); \
 		x>>=16; \
-	}while(0)
+		}while(0)
 #else
 	#define MACTOBE(x) (x)
 #endif
@@ -205,7 +205,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_port_in_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								htobe32(ofmatch.get_in_port()));
+								ofmatch.get_in_port());
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
@@ -214,7 +214,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_port_in_phy_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								htobe32(ofmatch.get_in_phy_port()));
+								ofmatch.get_in_phy_port());
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
@@ -688,7 +688,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 
 		switch (raction.get_type()) {
 		case openflow12::OFPAT_OUTPUT:
-			field.u32 = be32toh(raction.oac_12output->port); //NOTE do I need to change that as well?
+			field.u32 = be32toh(raction.oac_12output->port);
 			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
 			break;
 		case openflow12::OFPAT_COPY_TTL_OUT:
@@ -1048,10 +1048,10 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 	{
 		switch (m->type) {
 		case OF1X_MATCH_IN_PORT:
-			match.set_in_port(be32toh(m->value->value.u32));
+			match.set_in_port(m->value->value.u32);
 			break;
 		case OF1X_MATCH_IN_PHY_PORT:
-			match.set_in_phy_port(be32toh(m->value->value.u32));
+			match.set_in_phy_port(m->value->value.u32);
 			break;
 		case OF1X_MATCH_METADATA:
 			match.set_metadata(m->value->value.u64);
@@ -1375,19 +1375,19 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		action = cofaction_pop_vlan(OFP12_VERSION);
 	} break;
 	case OF1X_AT_POP_MPLS: {
-		action = cofaction_pop_mpls(OFP12_VERSION, (uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK));
+		action = cofaction_pop_mpls(OFP12_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_POP_PPPOE: {
-		action = cofaction_pop_pppoe(OFP12_VERSION, (uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK));
+		action = cofaction_pop_pppoe(OFP12_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_PUSH_PPPOE: {
-		action = cofaction_push_pppoe(OFP12_VERSION, (uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK));
+		action = cofaction_push_pppoe(OFP12_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_PUSH_MPLS: {
-		action = cofaction_push_mpls(OFP12_VERSION, (uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK));
+		action = cofaction_push_mpls(OFP12_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_PUSH_VLAN: {
-		action = cofaction_push_vlan(OFP12_VERSION, (uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK));
+		action = cofaction_push_vlan(OFP12_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_COPY_TTL_OUT: {
 		action = cofaction_copy_ttl_out(OFP12_VERSION);
@@ -1570,9 +1570,9 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 
 void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* packet_matches, cofmatch& match){
 	if(packet_matches->port_in)
-		match.set_in_port(be32toh(packet_matches->port_in));
+		match.set_in_port(packet_matches->port_in);
 	if(packet_matches->phy_port_in)
-		match.set_in_phy_port(be32toh(packet_matches->phy_port_in));
+		match.set_in_phy_port(packet_matches->phy_port_in);
 	if(packet_matches->metadata)
 		match.set_metadata(packet_matches->metadata);
 	if(packet_matches->eth_dst){

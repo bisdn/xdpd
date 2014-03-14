@@ -366,7 +366,7 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 
 
 #ifdef DEBUG
-	of1x_dump_table(&lsw->pipeline.tables[table_id]);
+	of1x_dump_table(&lsw->pipeline.tables[table_id], false);
 #endif
 	
 	return AFA_SUCCESS;

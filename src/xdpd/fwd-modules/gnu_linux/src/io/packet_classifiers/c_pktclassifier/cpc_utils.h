@@ -20,7 +20,7 @@
 	x>>=16; \
 }while(0)
 
-#define CPC_IN_HOSTBYTEORDER
+//#define CPC_IN_HOSTBYTEORDER
 #ifdef CPC_IN_HOSTBYTEORDER
 #  define CPC_HTOBE16(x) htobe16(x)
 #  define CPC_HTOLE16(x) htole16(x)
@@ -38,7 +38,7 @@
 #  define CPC_LE64TOH(x) le64toh(x)
 
 #	if __BYTE_ORDER == __LITTLE_ENDIAN
-#		define CPC_SWAP_U128(x) SWAP_U128(x)
+#		define CPC_SWAP_U128(x) NTOHB128(x)
 #		define CPC_SWAP_MAC(x) SWAP_MAC(x)
 #	else
 #		define CPC_SWAP_U128(x)

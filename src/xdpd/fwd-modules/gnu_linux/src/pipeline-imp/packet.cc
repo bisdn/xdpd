@@ -1008,7 +1008,7 @@ static void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_
 		
 		ROFL_DEBUG(FWD_MOD_NAME"[pkt][%s] OUTPUT packet(%p)\n", port->name, pkt);
 #ifdef DEBUG
-		dump_packet_matches(&pkt->matches);
+		dump_packet_matches(&pkt->matches, false);
 #endif
 
 		TM_STAMP_STAGE(pkt, TM_SA5_PRE);
@@ -1122,7 +1122,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 		}
 
 #ifdef DEBUG
-		dump_packet_matches(&pkt->matches);
+		dump_packet_matches(&pkt->matches, false);
 #endif
 			
 		//discard the original packet always (has been replicated)

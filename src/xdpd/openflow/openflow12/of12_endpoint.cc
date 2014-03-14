@@ -185,39 +185,36 @@ of12_endpoint::handle_table_stats_request(
 		throw eRofBase();
 	
 	num_of_tables = of12switch->pipeline.num_of_tables;
-	std::vector<coftable_stats_reply> table_stats;
+	rofl::openflow::coftablestatsarray tablestatsarray(ctl.get_version());
 
 	for (unsigned int n = 0; n < num_of_tables; n++) {
 	
 		table = &of12switch->pipeline.tables[n]; 
 		tc = &table->config;
- 
-		table_stats.push_back(
-				coftable_stats_reply(
-					ctl.get_version(),
-					table->number,
-					std::string(table->name, strnlen(table->name, OFP_MAX_TABLE_NAME_LEN)),
-					of12_translation_utils::of12_map_bitmap_matches(&tc->match),
-					of12_translation_utils::of12_map_bitmap_matches(&tc->wildcards),
-					of12_translation_utils::of12_map_bitmap_actions(&tc->write_actions),
-					of12_translation_utils::of12_map_bitmap_actions(&tc->apply_actions),
-					of12_translation_utils::of12_map_bitmap_matches(&tc->write_setfields),
-					of12_translation_utils::of12_map_bitmap_matches(&tc->apply_setfields),
-					tc->metadata_match, //FIXME: this needs to be properly mapped once METADATA is implemented
-					tc->metadata_write, //FIXME: this needs to be properly mapped once METADATA is implemented
-					of12_translation_utils::of12_map_bitmap_instructions(&tc->instructions),
-					tc->table_miss_config,
-					(table->max_entries),
-					(table->num_of_entries),
-					(table->stats.lookup_count),
-					(table->stats.matched_count)
-				));
+		uint8_t table_id = table->number;
+
+		tablestatsarray.set_table_stats(table_id).set_table_id(table->number);
+		tablestatsarray.set_table_stats(table_id).set_name(std::string(table->name, strnlen(table->name, OFP_MAX_TABLE_NAME_LEN)));
+		tablestatsarray.set_table_stats(table_id).set_match(of12_translation_utils::of12_map_bitmap_matches(&tc->match));
+		tablestatsarray.set_table_stats(table_id).set_wildcards(of12_translation_utils::of12_map_bitmap_matches(&tc->wildcards));
+		tablestatsarray.set_table_stats(table_id).set_write_actions(of12_translation_utils::of12_map_bitmap_actions(&tc->write_actions));
+		tablestatsarray.set_table_stats(table_id).set_apply_actions(of12_translation_utils::of12_map_bitmap_actions(&tc->apply_actions));
+		tablestatsarray.set_table_stats(table_id).set_write_setfields(of12_translation_utils::of12_map_bitmap_matches(&tc->write_setfields));
+		tablestatsarray.set_table_stats(table_id).set_apply_setfields(of12_translation_utils::of12_map_bitmap_matches(&tc->apply_setfields));
+		tablestatsarray.set_table_stats(table_id).set_metadata_match(tc->metadata_match);//FIXME: this needs to be properly mapped once METADATA is implemented
+		tablestatsarray.set_table_stats(table_id).set_metadata_write(tc->metadata_write);//FIXME: this needs to be properly mapped once METADATA is implemented
+		tablestatsarray.set_table_stats(table_id).set_instructions(of12_translation_utils::of12_map_bitmap_instructions(&tc->instructions));
+		tablestatsarray.set_table_stats(table_id).set_config(tc->table_miss_config);
+		tablestatsarray.set_table_stats(table_id).set_max_entries(table->max_entries);
+		tablestatsarray.set_table_stats(table_id).set_active_count(table->num_of_entries);
+		tablestatsarray.set_table_stats(table_id).set_lookup_count(table->stats.lookup_count);
+		tablestatsarray.set_table_stats(table_id).set_matched_count(table->stats.matched_count);
 	}
 
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 
-	ctl.send_table_stats_reply(msg.get_xid(), table_stats, false);
+	ctl.send_table_stats_reply(msg.get_xid(), tablestatsarray, false);
 }
 
 

@@ -463,26 +463,23 @@ of13_endpoint::handle_table_stats_request(
 		throw eRofBase();
 	
 	unsigned int num_of_tables = of13switch->pipeline.num_of_tables;
-	std::vector<coftable_stats_reply> table_stats;
+	rofl::openflow::coftablestatsarray tablestatsarray(ctl.get_version());
 
 	for (unsigned int n = 0; n < num_of_tables; n++) {
 	
 		of1x_flow_table_t *table = &of13switch->pipeline.tables[n];
+		uint8_t table_id = table->number;
 
-		table_stats.push_back(
-				coftable_stats_reply(
-					ctl.get_version(),
-					table->number,
-					(table->num_of_entries),
-					(table->stats.lookup_count),
-					(table->stats.matched_count)
-				));
+		tablestatsarray.set_table_stats(table_id).set_table_id(table->number);
+		tablestatsarray.set_table_stats(table_id).set_active_count(table->num_of_entries);
+		tablestatsarray.set_table_stats(table_id).set_lookup_count(table->stats.lookup_count);
+		tablestatsarray.set_table_stats(table_id).set_matched_count(table->stats.matched_count);
 	}
 
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
 
-	ctl.send_table_stats_reply(msg.get_xid(), table_stats, false);
+	ctl.send_table_stats_reply(msg.get_xid(), tablestatsarray, false);
 }
 
 

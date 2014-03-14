@@ -194,36 +194,34 @@ of10_endpoint::handle_table_stats_request(
 	num_of_tables = of10switch->pipeline.num_of_tables;
 	
 	//Reply to fill in
-	std::vector<coftable_stats_reply> table_stats;
+	rofl::openflow::coftablestatsarray tablestatsarray(ctl.get_version());
 
 	for (unsigned int n = 0; n < num_of_tables; n++) {
 
-		table_stats.push_back(
-				coftable_stats_reply(
-					ctl.get_version(),
-					of10switch->pipeline.tables[n].number,
-					std::string(of10switch->pipeline.tables[n].name, strnlen(of10switch->pipeline.tables[n].name, OFP_MAX_TABLE_NAME_LEN)),
-					(of10switch->pipeline.tables[n].config.match),
-					(of10switch->pipeline.tables[n].config.wildcards),
-					(of10switch->pipeline.tables[n].config.write_actions),
-					(of10switch->pipeline.tables[n].config.apply_actions),
-					(of10switch->pipeline.tables[n].config.write_setfields),
-					(of10switch->pipeline.tables[n].config.apply_setfields),
-					(of10switch->pipeline.tables[n].config.metadata_match),
-					(of10switch->pipeline.tables[n].config.metadata_write),
-					(of10switch->pipeline.tables[n].config.instructions),
-					(of10switch->pipeline.tables[n].config.table_miss_config),
-					(of10switch->pipeline.tables[n].max_entries),
-					(of10switch->pipeline.tables[n].num_of_entries),
-					(of10switch->pipeline.tables[n].stats.lookup_count),
-					(of10switch->pipeline.tables[n].stats.matched_count)
-				));
+		uint8_t table_id = of10switch->pipeline.tables[n].number;
+
+		tablestatsarray.set_table_stats(table_id).set_table_id(of10switch->pipeline.tables[n].number);
+		tablestatsarray.set_table_stats(table_id).set_name(std::string(of10switch->pipeline.tables[n].name, strnlen(of10switch->pipeline.tables[n].name, OFP_MAX_TABLE_NAME_LEN)));
+		tablestatsarray.set_table_stats(table_id).set_match(of10switch->pipeline.tables[n].config.match);
+		tablestatsarray.set_table_stats(table_id).set_wildcards(of10switch->pipeline.tables[n].config.wildcards);
+		tablestatsarray.set_table_stats(table_id).set_write_actions(of10switch->pipeline.tables[n].config.write_actions);
+		tablestatsarray.set_table_stats(table_id).set_apply_actions(of10switch->pipeline.tables[n].config.apply_actions);
+		tablestatsarray.set_table_stats(table_id).set_write_setfields(of10switch->pipeline.tables[n].config.write_setfields);
+		tablestatsarray.set_table_stats(table_id).set_apply_setfields(of10switch->pipeline.tables[n].config.apply_setfields);
+		tablestatsarray.set_table_stats(table_id).set_metadata_match(of10switch->pipeline.tables[n].config.metadata_match);
+		tablestatsarray.set_table_stats(table_id).set_metadata_write(of10switch->pipeline.tables[n].config.metadata_write);
+		tablestatsarray.set_table_stats(table_id).set_instructions(of10switch->pipeline.tables[n].config.instructions);
+		tablestatsarray.set_table_stats(table_id).set_config(of10switch->pipeline.tables[n].config.table_miss_config);
+		tablestatsarray.set_table_stats(table_id).set_max_entries(of10switch->pipeline.tables[n].max_entries);
+		tablestatsarray.set_table_stats(table_id).set_active_count(of10switch->pipeline.tables[n].num_of_entries);
+		tablestatsarray.set_table_stats(table_id).set_lookup_count(of10switch->pipeline.tables[n].stats.lookup_count);
+		tablestatsarray.set_table_stats(table_id).set_matched_count(of10switch->pipeline.tables[n].stats.matched_count);
 	}
 
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
-	ctl.send_table_stats_reply(msg.get_xid(), table_stats, false);
+	ctl.send_table_stats_reply(msg.get_xid(), tablestatsarray, false);
 
 }
 

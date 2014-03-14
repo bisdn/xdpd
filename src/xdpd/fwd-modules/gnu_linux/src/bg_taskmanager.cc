@@ -192,7 +192,7 @@ int process_timeouts()
 				
 #ifdef DEBUG
 				if(dummy%20 == 0)
-					of1x_full_dump_switch((of1x_switch_t*)logical_switches[i]);
+					of1x_full_dump_switch((of1x_switch_t*)logical_switches[i], false);
 #endif
 			}
 		}

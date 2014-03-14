@@ -10,7 +10,6 @@ AC_C_BIGENDIAN(
 
 
 AC_CHECK_HEADER(byteswap.h,
-    [AC_DEFINE(BYTESWAP_HEADER_DETECTED)],
-    [AC_ERROR([Could not find or include byteswap.h])]
-    )
-
+	[AC_DEFINE(BYTESWAP_HEADER_DETECTED)],
+	[AC_ERROR([Could not find or include byteswap.h])]
+	)

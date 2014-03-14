@@ -710,33 +710,28 @@ of13_endpoint::handle_group_stats_request(
 		logging::error << "[xdpd][of13][group-stats] unable to retrieve group statistics from pipeline" << std::endl;
 	}
 	
-	std::vector<cofgroup_stats_reply> group_stats;
+	rofl::openflow::cofgroups groups(ctl.get_version());
 	
 	for(g_msg = g_msg_all; g_msg; g_msg = g_msg->next){
 		num_of_buckets = g_msg->num_of_buckets;
 
-		cofgroup_stats_reply stats(
-				ctl.get_version(),
-				/*msg->get_group_stats().get_group_id(),*/
-				htobe32(g_msg->group_id),
-				htobe32(g_msg->ref_count),
-				htobe64(g_msg->packet_count),
-				htobe64(g_msg->byte_count),
-				/*duration_sec=*/0,
-				/*duration_nsec=*/0,
-				num_of_buckets);
+		groups.set_group(g_msg->group_id).set_group_id(g_msg->group_id);
+		groups.set_group(g_msg->group_id).set_ref_count(g_msg->ref_count);
+		groups.set_group(g_msg->group_id).set_packet_count(g_msg->packet_count);
+		groups.set_group(g_msg->group_id).set_byte_count(g_msg->byte_count);
+		groups.set_group(g_msg->group_id).set_duration_sec(0);
+		groups.set_group(g_msg->group_id).set_duration_nsec(0);
+		groups.set_group(g_msg->group_id).set_duration_nsec(num_of_buckets);
 
 		for(i=0;i<num_of_buckets;i++) {
-			stats.get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
-			stats.get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
+			groups.set_group(g_msg->group_id).get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
+			groups.set_group(g_msg->group_id).get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
 		}
-		
-		group_stats.push_back(stats);
 	}
 
 	try{
 		//Send the group stats
-		ctl.send_group_stats_reply(msg.get_xid(), group_stats);
+		ctl.send_group_stats_reply(msg.get_xid(), groups);
 	}catch(...){
 		of1x_destroy_stats_group_msg(g_msg_all);
 		throw;

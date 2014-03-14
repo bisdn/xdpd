@@ -754,9 +754,7 @@ of13_endpoint::handle_group_desc_stats_request(
 		cofmsg_group_desc_stats_request& msg,
 		uint8_t aux_id)
 {
-	std::vector<cofgroup_desc_stats_reply> group_desc_stats;
-
-	//TODO: fill in std::vector<...> group_desc_stats, when groups are implemented
+	rofl::openflow::cofgroupdescs groupdescs(ctl.get_version());
 
 	of1x_group_table_t group_table;
 	of1x_group_t *group_it;
@@ -769,16 +767,12 @@ of13_endpoint::handle_group_desc_stats_request(
 		cofbuckets bclist(ctl.get_version());
 		of13_translation_utils::of13_map_reverse_bucket_list(bclist,group_it->bc_list);
 		
-		group_desc_stats.push_back(
-				cofgroup_desc_stats_reply(
-					ctl.get_version(),
-					group_it->type,
-					group_it->id,
-					bclist ));
+		groupdescs.set_group_desc(group_it->id).set_group_type(group_it->type);
+		groupdescs.set_group_desc(group_it->id).set_group_id(group_it->id);
+		groupdescs.set_group_desc(group_it->id).set_buckets(bclist);
 	}
 
-
-	ctl.send_group_desc_stats_reply(msg.get_xid(), group_desc_stats);
+	ctl.send_group_desc_stats_reply(msg.get_xid(), groupdescs);
 }
 
 
@@ -812,7 +806,7 @@ of13_endpoint::handle_group_features_stats_request(
 void
 of13_endpoint::handle_table_features_stats_request(
 		crofctl& ctl,
-		cofmsg_table_features_request& msg,
+		cofmsg_table_features_stats_request& msg,
 		uint8_t aux_id)
 {
 	// TODO: check for pipeline definition within request and configure pipeline accordingly

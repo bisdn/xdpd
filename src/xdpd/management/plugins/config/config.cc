@@ -54,16 +54,15 @@ void config::init(int args, char** argv){
 	delete cfg;
 	delete root;
 
-	if (env_parser.is_arg_set(std::string("test-config"))) {
-		exit(0);
+	//Unless test-config is set, execute the config
+	if(!env_parser.is_arg_set(std::string("test-config"))) {
+		//Execute
+		cfg = new Config;
+		root = new root_scope();
+
+		parse_config(cfg,env_parser);
+		root->execute(*cfg);
+		delete cfg;
+		delete root;
 	}
-
-	//Execute
-	cfg = new Config;
-	root = new root_scope();
-
-	parse_config(cfg,env_parser);
-	root->execute(*cfg);
-	delete cfg;
-	delete root;
 }

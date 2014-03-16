@@ -20,6 +20,7 @@ extern int optind;
 #define XDPD_CLOG_FILE "./xdpd.log"
 #define XDPD_LOG_FILE "/var/log/xdpd.log"
 #define XDPD_PID_FILE "/var/run/xdpd.pid"
+#define XDPD_DEFAULT_DEBUG_LEVEL 5 //NOTICE
 
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
@@ -53,7 +54,9 @@ void dump_version(){
  */
 int main(int argc, char** argv){
 
-
+	bool dry_run;
+	cunixenv* env_parser;
+		
 	//Check for root privileges 
 	if(geteuid() != 0){
 		ROFL_ERR("ERROR: Root permissions are required to run %s\n",argv[0]);	
@@ -65,60 +68,81 @@ int main(int argc, char** argv){
 	rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
 #endif
 	
-	/* Add additional arguments */
 	char s_dbg[32];
 	memset(s_dbg, 0, sizeof(s_dbg));
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
 
-	{ //Make valgrind happy
-		cunixenv env_parser(argc, argv);
-		
-		/* update defaults */
-		env_parser.update_default_option("logfile", XDPD_CLOG_FILE);
-		env_parser.add_option(coption(true, NO_ARGUMENT, 'v', "version", "Retrieve xDPd version and exit", std::string("")));
+	/* Parse arguments. Add first additional arguments */
+	env_parser = new cunixenv(argc, argv);
+	
+	/* update defaults */
+	env_parser->update_default_option("logfile", XDPD_CLOG_FILE);
+	env_parser->add_option(coption(true, NO_ARGUMENT, 'v', "version", "Retrieve xDPd version and exit", std::string("")));
 
-		//Parse
-		env_parser.parse_args();
+	//Parse
+	env_parser->parse_args();
 
-		if (env_parser.is_arg_set("version")) {
-			dump_version();
-		}
-		
-		if (not env_parser.is_arg_set("daemonize")) {
-			// only do this in non
-			std::string ident(XDPD_CLOG_FILE);
-
-			csyslog::initlog(csyslog::LOGTYPE_FILE,
-					static_cast<csyslog::DebugLevel>(atoi(env_parser.get_arg("debug").c_str())), // todo needs checking
-					env_parser.get_arg("logfile"),
-					ident.c_str());
-
-			logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
-		}
-
-		//Daemonize
-		if (env_parser.is_arg_set("daemonize")) {
-			rofl::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
-			rofl::logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
-			rofl::logging::notice << "[xdpd][main] daemonizing successful" << std::endl;
-		}
-
-		//Capture control+C
-		signal(SIGINT, interrupt_handler);
+	if (env_parser->is_arg_set("version")) {
+		dump_version();
 	}
+	
+	if (not env_parser->is_arg_set("daemonize")) {
+		// only do this in non
+		std::string ident(XDPD_CLOG_FILE);
+		unsigned int debug_level;
+
+		if(!env_parser->is_arg_set("debug"))
+			debug_level = XDPD_DEFAULT_DEBUG_LEVEL;
+		else
+			debug_level = atoi(env_parser->get_arg("debug").c_str());
+	
+		fprintf(stderr, "Setting debug_level %u\n", debug_level);
+	
+		//TODO: Remove csyslog?
+		csyslog::initlog(csyslog::LOGTYPE_FILE,
+				 // todo needs checking
+				static_cast<csyslog::DebugLevel>(debug_level),	
+				env_parser->get_arg("logfile"),
+				ident.c_str());
+	
+		//Set logging level
+		logging::set_debug_level(debug_level);
+	}
+
+	//Initial trace
+	rofl::logging::notice << "[xdpd] Initializing..." << std::endl;
+
+	//Daemonize
+	if (env_parser->is_arg_set("daemonize")) {
+		rofl::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
+		rofl::logging::set_debug_level(atoi(env_parser->get_arg("debug").c_str()));
+		rofl::logging::notice << "[xdpd][main] daemonizing successful" << std::endl;
+	}
+
+	//Set dry-run flag
+	dry_run = env_parser->is_arg_set(std::string("test-config"));
+
+	//Capture control+C
+	signal(SIGINT, interrupt_handler);
+		
+	if(dry_run)
+		rofl::logging::notice << "[xdpd] Launched with -t (--test-config). Doing a dry-run execution" << std::endl;
 
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
-		ROFL_INFO("Init driver failed\n");	
-		exit(-1);
+		ROFL_INFO("Initialization of platform driver failed\n");	
+		exit(EXIT_FAILURE);
 	}
 
 	//Load plugins
 	optind=0;
 	plugin_manager::init(argc, argv);
 
-	//ciosrv run. Only will stop in Ctrl+C
-	ciosrv::run();
+	//If test-config is not set, launch ciosrv loop, otherwise terminate execution
+	if(!dry_run){
+		//ciosrv run. Only will stop in Ctrl+C
+		ciosrv::run();
+	}
 
 	//Printing nice trace
 	ROFL_INFO("\nCleaning the house...\n");	
@@ -133,18 +157,17 @@ int main(int argc, char** argv){
 	//This must be after calling fwd_module_destroy()
 	plugin_manager::destroy();
 	
-
-	ROFL_INFO("House cleaned!\nGoodbye\n");
-	
+	//Logging	
 	csyslog::closelog();
-
 	logging::close();
 
+	//Release ciosrv loop resources
 	rofl::cioloop::shutdown();
+
+	//Release cunixenv
+	delete env_parser;	
+
+	ROFL_INFO("House cleaned!\nGoodbye\n");
 
 	exit(EXIT_SUCCESS);
 }
-
-
-
-

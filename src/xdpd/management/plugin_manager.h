@@ -134,7 +134,8 @@ protected:
 	* information of the particular driver in use.
 	*
 	* WARNING: this call is uncaught and execute before xDPd is completely bootstrap; any call
-	* to any of the management APIs will fail.
+	* to any of the management APIs is forbidden and will fail. The only exceptions are system_manager::get_option_value()
+	* and system_manager::is_option_set() 
 	*/	
 	virtual std::string get_driver_extra_params(){
 		return std::string();

@@ -6,7 +6,7 @@ using namespace xdpd;
 
 #define PLUGIN_NAME "example_plugin" 
 
-void example::init(int args, char** argv){
+void example::init(){
 	//DO something
 	ROFL_INFO("\n\n["PLUGIN_NAME"] **************************\n");	
 	ROFL_INFO("["PLUGIN_NAME"] This is the init function of the example plugin. This plugin won't do anything beyond printing this trace and other port notification traces.\n");

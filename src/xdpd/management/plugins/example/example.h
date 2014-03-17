@@ -20,7 +20,7 @@ namespace xdpd {
 class example:public plugin {
 	
 public:
-	virtual void init(int args, char** argv);
+	virtual void init(void);
 
 	virtual std::string get_name(void){
 		return std::string("Example plugin");

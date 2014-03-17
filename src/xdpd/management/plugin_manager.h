@@ -126,6 +126,21 @@ protected:
 		return std::vector<rofl::coption>();
 	};
 
+	/**
+	* @brief Return the platform driver (fwd_module) extra parameters
+	*
+	* The extra_params string is an opaque string that can be sent to the forwarding module (i.e. driver)
+	* for hardware specific feature initialization. You can use ./xdpd --help to get the specific
+	* information of the particular driver in use.
+	*
+	* WARNING: this call is uncaught and execute before xDPd is completely bootstrap; any call
+	* to any of the management APIs will fail.
+	*/	
+	virtual std::string get_driver_extra_params(){
+		return std::string();
+	};
+
+
 	virtual ~plugin(){}; 
 };
 
@@ -207,6 +222,10 @@ public:
 	*/	
 	static std::vector<rofl::coption> __get_plugin_options(void);
 
+	/**
+	* Get driver extra parameters string from plugins
+	*/
+	static std::string __get_driver_extra_params(void);
 private:
 	/**
 	* Pre-init hook where plugins can and must be added (registered)

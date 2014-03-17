@@ -152,9 +152,11 @@ private:
 	static const unsigned int XDPD_DEFAULT_DEBUG_LEVEL;
 
 	static const std::string XDPD_TEST_RUN_OPT_FULL_NAME;
+	static const std::string XDPD_EXTRA_PARAMS_OPT_FULL_NAME;
 
 	//Other helper internal functions
 	static void init_command_line_options(void);
+	static std::string get_driver_extra_params(void); 
 	static void dump_help(void); 
 };
 

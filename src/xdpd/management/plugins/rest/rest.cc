@@ -44,7 +44,7 @@ namespace xdpd
       }
     }
 
-  void rest::init(int args, char** argv)
+  void rest::init()
     {
     ROFL_INFO("Starting REST server\n");
     boost::thread t(&srvthread);

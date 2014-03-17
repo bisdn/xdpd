@@ -28,10 +28,10 @@ namespace xdpd {
   class rest:public plugin {
     
   public:
-    virtual void init(int args, char** argv);
+    virtual void init();
 
     virtual std::string get_name(void){
-      return std::string("REST plugin");
+      return std::string("rest");
     };
   };
 

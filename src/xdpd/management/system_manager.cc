@@ -25,7 +25,9 @@ const std::string system_manager::XDPD_CLOG_FILE="./xdpd.log";
 const std::string system_manager::XDPD_LOG_FILE="/var/log/xdpd.log";
 const std::string system_manager::XDPD_PID_FILE="/var/run/xdpd.pid";
 const unsigned int system_manager::XDPD_DEFAULT_DEBUG_LEVEL=5; //NOTICE
+
 const std::string system_manager::XDPD_TEST_RUN_OPT_FULL_NAME="test-config";
+const std::string system_manager::XDPD_EXTRA_PARAMS_OPT_FULL_NAME="extra-params";
 
 
 //Handler to stop ciosrv
@@ -34,6 +36,29 @@ void interrupt_handler(int dummy=0) {
 	ciosrv::stop();
 }
 
+
+std::string system_manager::get_driver_extra_params(){
+
+	std::string extra="";
+	std::string extra_plugins;
+
+	//First recover the CL option if exists
+	if(is_option_set(XDPD_EXTRA_PARAMS_OPT_FULL_NAME))
+		extra = get_option_value(XDPD_EXTRA_PARAMS_OPT_FULL_NAME);
+
+	//Recover plugins extra
+	extra_plugins = plugin_manager::__get_driver_extra_params();
+
+	if(extra_plugins != ""){
+		if(extra != ""){
+			//Notify user
+			ROFL_WARN("[xdpd][system] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
+		}else
+			extra = extra_plugins;
+	}
+
+	return extra;
+}
 
 void system_manager::init_command_line_options(){
 
@@ -44,7 +69,7 @@ void system_manager::init_command_line_options(){
 	env_parser->add_option(coption(true,REQUIRED_ARGUMENT,'l',"logfile","Log file used when daemonization", XDPD_CLOG_FILE));
 	
 	//Extra forwarding module parameters
-	env_parser->add_option(coption(true,REQUIRED_ARGUMENT, 'e', "extra-params", "Quoted string of extra parameters that will be passed to the platform driver. Use -h to get the details of the particular options on your platform driver", ""));
+	env_parser->add_option(coption(true,REQUIRED_ARGUMENT, 'e', XDPD_EXTRA_PARAMS_OPT_FULL_NAME, "Quoted string of extra parameters that will be passed to the platform driver. Use -h to get the details of the particular options on your platform driver", ""));
 
 	//Test
 	env_parser->add_option(coption(true, NO_ARGUMENT, 't', XDPD_TEST_RUN_OPT_FULL_NAME, "Test configuration only and exit", ""));
@@ -115,7 +140,7 @@ void system_manager::init(int argc, char** argv){
 		rofl::logging::notice << "[xdpd][system] Launched with -t "<< XDPD_TEST_RUN_OPT_FULL_NAME <<". Doing a test-run execution" << std::endl;
 
 	//Forwarding module initialization
-	if(fwd_module_init(NULL/*XXX*/) != AFA_SUCCESS){
+	if(fwd_module_init(get_driver_extra_params().c_str()) != AFA_SUCCESS){
 		ROFL_ERR("[xdpd][system] ERROR: initialization of platform driver failed! Aborting...\n");	
 		exit(EXIT_FAILURE);
 	}

@@ -43,6 +43,11 @@ public:
 		return vec;
 	};
 	
+	virtual std::string get_driver_extra_params(void){
+		//XXX: properly read it 
+		return std::string("");
+	}
+	
 	virtual std::string get_name(void){
 		return std::string("config");
 	};

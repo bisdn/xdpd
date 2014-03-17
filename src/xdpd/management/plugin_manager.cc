@@ -190,3 +190,22 @@ std::vector<rofl::coption> plugin_manager::__get_plugin_options(void){
 	
 	return vec;
 }
+
+//Get driver extra parameters
+std::string plugin_manager::__get_driver_extra_params(){
+	
+	std::string extra = "";
+	std::string tmp; 
+
+	//Go through all plugins (backwards), highest priority first
+	for(std::vector<plugin*>::reverse_iterator rit = plugins.rbegin(); rit!= plugins.rend(); ++rit){
+
+		tmp = (*rit)->get_driver_extra_params();
+
+		//Retrieve extra if any
+		if( tmp != "") 
+			extra = tmp;
+	}
+	
+	return extra;
+}

@@ -60,7 +60,11 @@ void system_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//Execute
 	if(!dry_run && logging_level!=-1){
 		//Set logging
-		system_manager::set_logging_debug_level(logging_level);
+		try{
+			system_manager::set_logging_debug_level(logging_level);
+		}catch(eSystemLogLevelSetviaCL& e){
+			//Ignore. Trace is already printed by system_manager
+		}	
 	}
 }
 

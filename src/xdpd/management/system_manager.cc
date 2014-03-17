@@ -94,15 +94,6 @@ void system_manager::set_logging_debug_level(unsigned int level){
 	
 	//Adjust C logging debug level
 	rofl_set_logging_level(/*cn,*/c_level);
-#if 0
-	//FIXME translate C++ DEBUG level to C
-	#if DEBUG && VERBOSE_DEBUG
-		//Set verbose debug if necessary
-		rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
-	#else
-		//XXX
-	#endif
-#endif
 }
 
 void system_manager::init_command_line_options(){

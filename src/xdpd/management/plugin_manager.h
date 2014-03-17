@@ -10,6 +10,7 @@
 #include <rofl.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/datapath/pipeline/monitoring.h>
+#include <rofl/platform/unix/cunixenv.h>
 
 /**
 * @file plugin_manager.h
@@ -98,16 +99,33 @@ protected:
 	* within this method. Please consider using ciosrv APIs to avoid wasting
 	* of pthreads.
 	*
-	* argc and argc are xdpd's command-line parameters. The plugin can, at its wish
-	* define its own arguments and parse them, usually using optargs or cunixenv
-	* APIs. Plugin Manager will reset argc for each plugin.
-	*
-	* It is up t the plugins not to clash with other plugins arguments.
-	*
-	* @param argc Number of arguments that xdpd received
-	* @param argv argv's of xdpd.
+	* The plugin can at wish recover the value of such arguments at init() time using
+	* system_manager::is_option_set() and system_manager::get_option_value()
+	
+	* It is up the plugins not to clash with other plugins arguments.
 	*/
-	virtual void init(int argc, char** argv)=0;
+	virtual void init(void)=0;
+
+	/**
+	* @brief Allows the plugin to define command line options
+	*
+	* @description Override this method and return an appropriate array
+	* of coption elements to define new command line options (arguments) specific
+	* to the plugin.
+	*
+	* Special care must be taken to not override any of the default arguments of xdpd
+	* or any other plugin arguments. 
+	*
+	* The plugin can at wish recover the value of such arguments at init() time using
+	* system_manager::is_option_set() and system_manager::get_option_value()
+	*
+	* WARNING: this call is uncaught and execute before xDPd is completely bootstrap; any call
+	* to any of the management APIs will fail.
+	*/
+	virtual std::vector<rofl::coption> get_options(void){
+		return std::vector<rofl::coption>();
+	};
+
 	virtual ~plugin(){}; 
 };
 
@@ -122,7 +140,7 @@ public:
 	/**
 	* Initializes all the compiled plugins
 	*/
-	static rofl_result init(int args, char** argv);
+	static rofl_result init(void);
 	
 	/**
 	* Destroys registered plugins 
@@ -183,6 +201,11 @@ public:
 	* @warning: monitoring_snapshot MUST NOT be written or destroyed, use monitoring_clone_snapshot() in case of need.
 	*/
 	static void __notify_monitoring_state_changed(const monitoring_snapshot_state_t* monitoring_snapshot);
+	
+	/**
+	* Get plugin specific command line options. This shall only be called by system_manager
+	*/	
+	static std::vector<rofl::coption> __get_plugin_options(void);
 
 private:
 	/**

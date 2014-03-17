@@ -32,14 +32,25 @@ public:
 	virtual ~config();
 		
 	
-	virtual void init(int args, char** argv);
+	virtual void init(void);
+	
+	virtual std::vector<rofl::coption> get_options(void){
+		std::vector<rofl::coption> vec;
+
+		//Add mandatory -c argument
+		vec.push_back(rofl::coption(false,REQUIRED_ARGUMENT, CONFIG_FILE_OPT_CODE,  CONFIG_FILE_OPT_FULL_NAME, "xDPd config file","./example.cfg"));
+	
+		return vec;
+	};
 	
 	virtual std::string get_name(void){
 		return std::string("config");
 	};
 
 private:
-	void parse_config(libconfig::Config* cfg, rofl::cunixenv& env_parser);
+	void get_config_file_contents(libconfig::Config* cfg);
+	static const std::string CONFIG_FILE_OPT_FULL_NAME;
+	static const char CONFIG_FILE_OPT_CODE = 'c';
 };
 
 }// namespace xdpd 

@@ -24,7 +24,10 @@ namespace xdpd {
 
 //System manager exceptions
 class eSystemBase		: public rofl::RoflException {};	// base error class for all system_manager related errors
+class eSystemGeneralError	: public eSystemBase {};
 class eSystemUnknownError	: public eSystemBase {};
+class eSystemLogLevelSetviaCL	: public eSystemBase {};
+class eSystemLogInvalidLevel	: public eSystemBase {};
 
 /**
 * @brief System management API.
@@ -45,17 +48,44 @@ public:
 	//
 	// General information
 	//
+	
+	/**
+	* Get xDPd version number, build number and other information
+	*/
 	static std::string get_version(void);
+
+	/**
+	* Returns true if is a test run (no real execution only validation)
+	*/
+	static bool is_test_run(void){
+		return is_option_set((std::string&)XDPD_TEST_RUN_OPT_FULL_NAME);	
+	};
 
 	//
 	// xDPd arguments
 	//
-	static std::string get_option_value(std::string& option);
+	
+	/**
+	* Returns true/false if a certain command line option_name 's value (if present).
+	*/
+	static bool is_option_set(const std::string& option_name);
+	/**
+	* Get command line option_name's value (if present).
+	*/
+	static std::string get_option_value(const std::string& option_name);
 
 	//
 	// xDPd logging
 	//
-	/* TODO */
+
+	/**
+	* Set the logging debug level for xDPd. Note that when -d is used in the CLI
+	* The call to set_logging_debug_level() will throw eSystemLogLevelSetviaCL exception
+	* since CLI options have always preference over runtime API.
+	*
+	* Use logging::EMERG, logging::ALERT ... defined in rofl/common/logging.h
+	*/
+	static void set_logging_debug_level(unsigned int level);	
 
 	//
 	// Platform driver  
@@ -120,6 +150,12 @@ private:
 	static const std::string XDPD_LOG_FILE;
 	static const std::string XDPD_PID_FILE;
 	static const unsigned int XDPD_DEFAULT_DEBUG_LEVEL;
+
+	static const std::string XDPD_TEST_RUN_OPT_FULL_NAME;
+
+	//Other helper internal functions
+	static void init_command_line_options(void);
+	static void dump_help(void); 
 };
 
 }// namespace xdpd 

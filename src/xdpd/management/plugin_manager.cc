@@ -11,16 +11,13 @@ std::vector<plugin*> plugin_manager::plugins;
 //Getopt 
 extern int optind;
 
-rofl_result_t plugin_manager::init(int argc, char** argv){
+rofl_result_t plugin_manager::init(){
 
 	ROFL_DEBUG("[plugin_manager] Initializing Plugin Manager\n");
 
-	//Call register
-	plugin_manager::pre_init();
-
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
 		ROFL_INFO("[plugin_manager] Loading plugin (%s)...\n", (*it)->get_name().c_str());
-		(*it)->init(argc,argv);
+		(*it)->init();
 		optind=0; //Reset getopt
 	}
 
@@ -170,3 +167,26 @@ void plugin_manager::__notify_monitoring_state_changed(const monitoring_snapshot
 	}
 }
 
+/**
+* Get plugin specific command line options. This shall only be called by system_manager
+*/	
+std::vector<rofl::coption> plugin_manager::__get_plugin_options(void){
+	
+	std::vector<rofl::coption> vec;
+	std::vector<rofl::coption> plugin_vec;
+
+	//Call register
+	plugin_manager::pre_init();
+
+	//Go through all plugins
+	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
+
+		//Retrieve the options specific to the plugin
+		plugin_vec = (*it)->get_options();
+	
+		for(std::vector<rofl::coption>::iterator it2 = plugin_vec.begin(); it2 != plugin_vec.end(); ++it2)
+			vec.push_back(*it2);
+	}
+	
+	return vec;
+}

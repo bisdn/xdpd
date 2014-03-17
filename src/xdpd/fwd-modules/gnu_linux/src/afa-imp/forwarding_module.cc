@@ -45,7 +45,6 @@ using namespace xdpd::gnu_linux;
 #define GNU_LINUX_DESC  "GNU/Linux user-space forwarding module. TODO: improve"
 #define GNU_LINUX_USAGE  "" //We don't support extra params
 #define GNU_LINUX_EXTRA_PARAMS "" //We don't support extra params
-static fwd_module_info_t info;
 
 /*
 * @name    fwd_module_init
@@ -75,13 +74,6 @@ afa_result_t fwd_module_init(const char* extra_params){
 		return AFA_FAILURE;
 	}
 
-	//Fill-in fwd_module_info_t
-	strncpy(info.code_name, GNU_LINUX_CODE_NAME, FWD_MOD_CODE_NAME_MAX_LEN);
-	strncpy(info.version, GNU_LINUX_VERSION, FWD_MOD_VERSION_MAX_LEN);
-	strncpy(info.description, GNU_LINUX_DESC, FWD_MOD_DESCRIPTION_MAX_LEN);
-	strncpy(info.usage, GNU_LINUX_USAGE, FWD_MOD_USAGE_MAX_LEN);
-	strncpy(info.extra_params, GNU_LINUX_EXTRA_PARAMS, FWD_MOD_EXTRA_PARAMS_MAX_LEN);
-	
 	return AFA_SUCCESS; 
 }
 
@@ -90,8 +82,13 @@ afa_result_t fwd_module_init(const char* extra_params){
 * @brief   Get the information of the forwarding_module (code-name, version, usage...)
 * @ingroup fwd_module_management
 */
-void fwd_module_get_info(fwd_module_info_t* _info){
-	memcpy(_info, &info, sizeof(fwd_module_info_t));
+void fwd_module_get_info(fwd_module_info_t* info){
+	//Fill-in fwd_module_info_t
+	strncpy(info->code_name, GNU_LINUX_CODE_NAME, FWD_MOD_CODE_NAME_MAX_LEN);
+	strncpy(info->version, GNU_LINUX_VERSION, FWD_MOD_VERSION_MAX_LEN);
+	strncpy(info->description, GNU_LINUX_DESC, FWD_MOD_DESCRIPTION_MAX_LEN);
+	strncpy(info->usage, GNU_LINUX_USAGE, FWD_MOD_USAGE_MAX_LEN);
+	strncpy(info->extra_params, GNU_LINUX_EXTRA_PARAMS, FWD_MOD_EXTRA_PARAMS_MAX_LEN);
 }
 
 

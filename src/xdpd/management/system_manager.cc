@@ -25,6 +25,7 @@ const std::string system_manager::XDPD_CLOG_FILE="./xdpd.log";
 const std::string system_manager::XDPD_LOG_FILE="/var/log/xdpd.log";
 const std::string system_manager::XDPD_PID_FILE="/var/run/xdpd.pid";
 const unsigned int system_manager::XDPD_DEFAULT_DEBUG_LEVEL=5; //NOTICE
+const std::string system_manager::XDPD_TEST_RUN_OPT_FULL_NAME="test-config";
 
 
 //Handler to stop ciosrv
@@ -33,89 +34,85 @@ void interrupt_handler(int dummy=0) {
 	ciosrv::stop();
 }
 
-//Prints version and build numbers and exits
-std::string system_manager::get_version(){
 
-	std::stringstream ss("");
+void system_manager::init_command_line_options(){
+
+	//Daemonize
+	env_parser->add_option(coption(true, NO_ARGUMENT,'D',"daemonize","Daemonize execution",""));
 	
-	//Print version and exit
-	ss << "The eXtensible OpenFlow Datapath daemon (xDPd)" << std::endl;	
-	ss << "Version: "<< XDPD_VERSION << std::endl;
-
-#ifdef XDPD_BUILD
-	ss << "Build: " << XDPD_BUILD << std::endl;
-	ss << "Compiled in branch: " << XDPD_BRANCH << std::endl;
-	ss << "\t" << XDPD_DESCRIBE << std::endl;
-#endif	
-
-	//TODO: add forwarding module
-
-	ss << "\n-- Libraries --" << std::endl;
-	ss << "[ROFL]" << std::endl;
-	ss << "ROFL version: " << ROFL_VERSION << std::endl;
-	ss << "ROFL build: " << ROFL_BUILD_NUM << std::endl;
-	ss << "ROFL compiled in branch: " << ROFL_BUILD_BRANCH << std::endl;
-	ss << "\t" << ROFL_BUILD_DESCRIBE << std::endl << std::endl;
+	//Log file
+	env_parser->add_option(coption(true,REQUIRED_ARGUMENT,'l',"logfile","Log file used when daemonization", XDPD_CLOG_FILE));
 	
-	return ss.str();
+	//Extra forwarding module parameters
+	env_parser->add_option(coption(true,REQUIRED_ARGUMENT, 'e', "extra-params", "Quoted string of extra parameters that will be passed to the platform driver. Use -h to get the details of the particular options on your platform driver", ""));
+
+	//Test
+	env_parser->add_option(coption(true, NO_ARGUMENT, 't', XDPD_TEST_RUN_OPT_FULL_NAME, "Test configuration only and exit", ""));
+
+	//Version
+	env_parser->add_option(coption(true, NO_ARGUMENT, 'v', "version", "Retrieve xDPd version and exit", std::string("")));
+
+
+	//Add plugin options
+	std::vector<coption> plugin_options = plugin_manager::__get_plugin_options();
+	
+	//Add them 
+	for(std::vector<coption>::iterator it = plugin_options.begin(); it != plugin_options.end(); ++it){
+		env_parser->add_option(*it);
+	}
 }
 
 
 void system_manager::init(int argc, char** argv){
 
-	bool dry_run;
 	unsigned int debug_level;
 
 	//Prevent double calls to init()
 	if(inited)
 		ROFL_ERR("[xdpd][system] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
 
-	//Mark as initied
-	inited = true;
-	
+	//Set forwarding module info cache
+	fwd_module_get_info(&info);
+
 	/* Parse arguments. Add first additional arguments */
 	env_parser = new cunixenv(argc, argv);
+
+	//Initialize command line options 
+	init_command_line_options();
 	
-	/* update defaults */
-	env_parser->update_default_option("logfile", XDPD_CLOG_FILE);
-	env_parser->add_option(coption(true, NO_ARGUMENT, 'v', "version", "Retrieve xDPd version and exit", std::string("")));
-
-	//Request extra arguments to the plugin manager
-	//XXX 
-
 	//Parse arguments
 	env_parser->parse_args();
 
-	//If -v is set, print version and return immediately
-	if (env_parser->is_arg_set("version")) {
-		ROFL_INFO(get_version().c_str());	
-		return;
+	//If -v is set, print version and return immediately. Note that this must be here after
+	//get_info 
+	if(env_parser->is_arg_set("version")) {
+		ROFL_INFO(get_version().c_str());
+		goto SYSTEM_MANAGER_CLEANUP;
+	}
+
+	//Help
+	if(env_parser->is_arg_set("help")) {
+		dump_help();
+		goto SYSTEM_MANAGER_CLEANUP;
 	}
 	
 	//Set debugging
 	debug_level = XDPD_DEFAULT_DEBUG_LEVEL;
-	if(env_parser->is_arg_set("debug"))
+	if(env_parser->is_arg_set("debug"))	
 		debug_level = atoi(env_parser->get_arg("debug").c_str());
-	logging::set_debug_level(debug_level);
-	#if DEBUG && VERBOSE_DEBUG
-		//Set verbose debug if necessary
-		rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
-	#endif
+	set_logging_debug_level(debug_level);
 
 	//Daemonize
-	if (env_parser->is_arg_set("daemonize")) {
+	if(env_parser->is_arg_set("daemonize")) {
 		rofl::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
 		rofl::logging::notice << "[xdpd][system] daemonizing successful" << std::endl;
 	}
 
-	//Set dry-run flag
-	dry_run = env_parser->is_arg_set(std::string("test-config"));
-
 	//Capture control+C
 	signal(SIGINT, interrupt_handler);
 		
-	if(dry_run)
-		rofl::logging::notice << "[xdpd][system] Launched with -t (--test-config). Doing a dry-run execution" << std::endl;
+	if(is_test_run())
+		rofl::logging::notice << "[xdpd][system] Launched with -t "<< XDPD_TEST_RUN_OPT_FULL_NAME <<". Doing a test-run execution" << std::endl;
 
 	//Forwarding module initialization
 	if(fwd_module_init(NULL/*XXX*/) != AFA_SUCCESS){
@@ -123,15 +120,16 @@ void system_manager::init(int argc, char** argv){
 		exit(EXIT_FAILURE);
 	}
 
-	//Set forwarding module info cache
-	fwd_module_get_info(&info);
-
+	//Mark as initied. MUST BE here, after the first setting of the logging level has been
+	//done
+	inited = true;
+	
 	//Load plugins
 	optind=0;
-	plugin_manager::init(argc, argv);
+	plugin_manager::init();
 
 	//If test-config is not set, launch ciosrv loop, otherwise terminate execution
-	if(!dry_run){
+	if(!is_test_run()){
 		//ciosrv run. Only will stop in Ctrl+C
 		ciosrv::run();
 	}
@@ -155,16 +153,100 @@ void system_manager::init(int argc, char** argv){
 	//Release ciosrv loop resources
 	rofl::cioloop::shutdown();
 
+	//Print a nice trace
+	ROFL_INFO("\n[xdpd][system] Shutted down.\n");
+
+SYSTEM_MANAGER_CLEANUP:
+
 	//Release cunixenv
 	delete env_parser;	
-
-	ROFL_INFO("\n[xdpd][system] Shutted down.\n");	
 }
 
-std::string system_manager::get_option_value(std::string& option){
 
-	//XXX
-	return std::string();
-};
+//Set the debug level
+void system_manager::set_logging_debug_level(unsigned int level){
+	
+	if( inited && env_parser->is_arg_set("debug") ){
+		ROFL_ERR("[xdpd][system] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
+		throw eSystemLogLevelSetviaCL(); 
+	}
 
+	//Validate level
+	switch(level){
+		case logging::EMERG:
+		case logging::ALERT:
+		case logging::CRIT:
+		case logging::ERROR:
+		case logging::WARN:
+		case logging::NOTICE:
+		case logging::INFO:
+		case logging::DBG:
+		case logging::TRACE:
+			break;
+		default:
+			throw eSystemLogInvalidLevel(); 
+	}
+	//Adjust C++ logging debug level	
+	logging::set_debug_level(level);
+	
+	//Adjust C logging debug level
+	//FIXME translate C++ DEBUG level to C
+	#if DEBUG && VERBOSE_DEBUG
+		//Set verbose debug if necessary
+		rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
+	#else
+		//XXX
+	#endif
+}
+
+//Dumps help
+void system_manager::dump_help(){
+	std::string xdpd_name="xdpd";
+	ROFL_INFO("\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
+}
+
+
+//Generates the version string
+std::string system_manager::get_version(){
+
+	std::stringstream ss("");
+	
+	//xDPd CMM information
+	ss << std::endl << "The eXtensible OpenFlow Datapath daemon (xDPd)" << std::endl;	
+	ss << "Version: "<< XDPD_VERSION << std::endl;
+
+#ifdef XDPD_BUILD
+	ss << "Build: " << XDPD_BUILD << std::endl;
+	ss << "Compiled in branch: " << XDPD_BRANCH << std::endl;
+	ss << "Detailed build information:" << XDPD_DESCRIBE << std::endl;
+#endif	
+
+	//xDPd forwarding module information
+	ss << "\n-- Hardware support (forwarding module) --" << std::endl;
+	ss << "Driver code name: "<< info.code_name << std::endl;
+	ss << "Driver version: "<< info.version << std::endl;
+	ss << "Driver description: "<< info.description << std::endl;
+	
+	//Libraries info	
+	ss << "\n-- Libraries --" << std::endl;
+	ss << "[ROFL]" << std::endl;
+	ss << "  Version: " << ROFL_VERSION << std::endl;
+	ss << "  Build: " << ROFL_BUILD_NUM << std::endl;
+	ss << "  Compiled in branch: " << ROFL_BUILD_BRANCH << std::endl;
+	ss << "  Detailed build information:" << ROFL_BUILD_DESCRIBE << std::endl << std::endl;
+	
+	return ss.str();
+}
+
+//
+// Options
+//
+
+bool system_manager::is_option_set(const std::string& option_name){
+	return env_parser->is_arg_set(option_name);	
+}
+
+std::string system_manager::get_option_value(const std::string& option_name){
+	return env_parser->get_arg(option_name);
+}
 

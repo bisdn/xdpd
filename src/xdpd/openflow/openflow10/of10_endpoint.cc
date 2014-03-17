@@ -255,7 +255,7 @@ of10_endpoint::handle_port_stats_request(
 
 			if((port != NULL) && (of10switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
 
-				portstatsarray.set_port_stats(port->of_port_num).set_portno(port->of_port_num);
+				portstatsarray.set_port_stats(port->of_port_num).set_port_no(port->of_port_num);
 				portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
 				portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
 				portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
@@ -285,7 +285,7 @@ of10_endpoint::handle_port_stats_request(
 		){
 
 			//Mapping of port state
-			portstatsarray.set_port_stats(port->of_port_num).set_portno(port->of_port_num);
+			portstatsarray.set_port_stats(port->of_port_num).set_port_no(port->of_port_num);
 			portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
 			portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
 			portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);

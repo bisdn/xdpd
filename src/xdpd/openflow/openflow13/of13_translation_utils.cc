@@ -1193,16 +1193,17 @@ of13_translation_utils::of13_map_bucket_list(
 		of1x_bucket_list_t* bucket_list)
 {	
 	
-	for(cofbuckets::iterator jt = of_buckets.begin();jt != of_buckets.end();++jt){
+	for (std::map<uint32_t, cofbucket>::iterator
+			it = of_buckets.set_buckets().begin(); it != of_buckets.set_buckets().end(); ++it) {
 		//for each bucket we must map its actions
-		cofbucket& bucket_ptr = *(*jt);
+		cofbucket& bucket_ptr = it->second;
 		of1x_action_group_t* action_group = of1x_init_action_group(NULL);
 		if(action_group == NULL){
 			//TODO Handle Error
 		}
 		
-		of13_map_flow_entry_actions(ctl,sw,bucket_ptr.actions,action_group,NULL);
-		of1x_insert_bucket_in_list(bucket_list,of1x_init_bucket(bucket_ptr.weight, bucket_ptr.watch_port, bucket_ptr.watch_group, action_group));
+		of13_map_flow_entry_actions(ctl,sw,bucket_ptr.set_actions(),action_group,NULL);
+		of1x_insert_bucket_in_list(bucket_list,of1x_init_bucket(bucket_ptr.get_weight(), bucket_ptr.get_watch_port(), bucket_ptr.get_watch_group(), action_group));
 	}
 }
 
@@ -1210,6 +1211,8 @@ void of13_translation_utils::of13_map_reverse_bucket_list(
 		cofbuckets& of_buckets,
 		of1x_bucket_list_t* bucket_list){
 	
+	uint32_t bucket_id = 0;
+
 	for(of1x_bucket_t *bu_it=bucket_list->head;bu_it;bu_it=bu_it->next){
 		//cofbucket single_bucket;
 		cofactions ac_list(OFP12_VERSION);
@@ -1221,15 +1224,13 @@ void of13_translation_utils::of13_map_reverse_bucket_list(
 			//push this action into the list
 			ac_list.append_action(action);
 		}
-		of_buckets.append_bucket(cofbucket(OFP12_VERSION));
-		cofbucket &single_bucket = of_buckets.back();
-		// insert action list in the bucket
-		single_bucket.actions=ac_list;
-		single_bucket.watch_port = bu_it->port;
-		single_bucket.watch_group = bu_it->group;
-		single_bucket.weight = bu_it->weight;
-		// insert bucket in bucket_list
 
+		of_buckets.set_bucket(bucket_id).set_actions() = ac_list;
+		of_buckets.set_bucket(bucket_id).set_watch_port(bu_it->port);
+		of_buckets.set_bucket(bucket_id).set_watch_group(bu_it->group);
+		of_buckets.set_bucket(bucket_id).set_weight(bu_it->weight);
+
+		bucket_id++;
 	}
 }
 

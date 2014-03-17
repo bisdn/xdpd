@@ -514,7 +514,7 @@ of13_endpoint::handle_port_stats_request(
 	
 			if((port != NULL) && (of13switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
 
-				portstatsarray.set_port_stats(port->of_port_num).set_portno(port->of_port_num);
+				portstatsarray.set_port_stats(port->of_port_num).set_port_no(port->of_port_num);
 				portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
 				portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
 				portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
@@ -548,7 +548,7 @@ of13_endpoint::handle_port_stats_request(
 				(port->of_port_num == port_no)
 			){
 				//Mapping of port state
-				portstatsarray.set_port_stats(port->of_port_num).set_portno(port->of_port_num);
+				portstatsarray.set_port_stats(port->of_port_num).set_port_no(port->of_port_num);
 				portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
 				portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
 				portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
@@ -709,10 +709,9 @@ of13_endpoint::handle_group_stats_request(
 		groups.set_group_stats(g_msg->group_id).set_duration_sec(0);
 		groups.set_group_stats(g_msg->group_id).set_duration_nsec(0);
 		groups.set_group_stats(g_msg->group_id).set_duration_nsec(num_of_buckets);
-
 		for(i=0;i<num_of_buckets;i++) {
-			groups.set_group_stats(g_msg->group_id).get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
-			groups.set_group_stats(g_msg->group_id).get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
+			groups.set_group_stats(g_msg->group_id).set_bucket_counters().set_bucket_counter(i).set_packet_count(g_msg->bucket_stats[i].packet_count);
+			groups.set_group_stats(g_msg->group_id).set_bucket_counters().set_bucket_counter(i).set_byte_count(g_msg->bucket_stats[i].byte_count);
 		}
 	}
 

@@ -42,7 +42,9 @@ using namespace xdpd::gnu_linux;
 //Fwd module static info
 #define GNU_LINUX_CODE_NAME "gnu-linux"
 #define GNU_LINUX_VERSION VERSION 
-#define GNU_LINUX_DESC  "GNU/Linux user-space forwarding module. TODO: improve"
+#define GNU_LINUX_DESC \
+"GNU/Linux user-space driver.\n\nThe GNU/Linux forwarding module is a user-space driver and serves as a reference implementation. It contains all the necessary bits and pieces to process packets in software, including a complete I/O subsystem written in C/C++. Access to network interfaces (NICs) is done via PACKET_MMAP.\n\nAlthough this forwarding module does not provide cutting-edge performance, still provides a reasonable level of throughput\n\nFeatures:\n - Supports the following OpenFlow versions: v1.0, v1.2, v1.3.X\n - Supports multiple Logical Switch Instances (LSIs)\n - Supports virtual links between LSIs\n - Supports vast majority of network protocols defined by OpenFlow + extensions (GTP, PPP/PPPoE).\n\nMore details here:\n\nhttps://www.codebasin.net/redmine/projects/xdpd/wiki"
+
 #define GNU_LINUX_USAGE  "" //We don't support extra params
 #define GNU_LINUX_EXTRA_PARAMS "" //We don't support extra params
 

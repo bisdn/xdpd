@@ -10,6 +10,8 @@ Change log
 
 v0.4
 
+[+] Change in the build system. Documentation is compiled via 'make doc'.
+
 [+] Added systemd service.unit file for xdpd
 [+] Added plugin event notification system. Supported events: port add/attach/detach/delete/status and monitoring status.
 [+] Improved boot-strapping workflow.
@@ -17,10 +19,10 @@ v0.4
 [+] Added system_manager and monitoring_manager APIs. 
 [+] Improved command line options treatment (system_manager)
 [+] Improved CMM debugging via new ROFL logger. Unified logging level (C/C++) setting at runtime (via system_manager).
+
 [+][GNU/Linux] Improved I/O subsytem, including new packet classifier (c_pktclassifier).
 [+][GNU/Linux] Adding support for stats in ioport_vlink.
 [+][GNU/Linux] Added support for OF1.3.
-
 [B][GNU/Linux] Fixed bug: not properly updating of_port_state in ioport_mmap ports when up/down events were done externally (i.e. ifconfig) 
 
 v0.3.5 

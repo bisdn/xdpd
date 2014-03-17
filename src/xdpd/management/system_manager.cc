@@ -246,7 +246,11 @@ void system_manager::dump_help(){
 
 	ROFL_INFO("\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
 	ROFL_INFO("Compiled with plugins: %s\n", plugin_list.str().c_str());
-	ROFL_INFO("Compiled with hardware support for: %s\n\n", get_fwd_module_code_name().c_str());
+	ROFL_INFO("Compiled with hardware support for: %s\n", get_fwd_module_code_name().c_str());
+	if(get_fwd_module_description()!="")
+		ROFL_INFO("Hardware driver description: %s\n\n", get_fwd_module_description().c_str());
+	else
+		ROFL_INFO("\n");
 }
 
 

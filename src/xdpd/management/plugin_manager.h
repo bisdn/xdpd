@@ -35,7 +35,7 @@ class plugin {
 	
 public:
 	/**
-	* Returns the plugin name
+	* Returns the plugin name (code-name)
 	*/
 	virtual std::string get_name(void)=0;
 

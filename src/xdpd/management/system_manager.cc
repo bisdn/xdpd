@@ -60,6 +60,51 @@ std::string system_manager::get_driver_extra_params(){
 	return extra;
 }
 
+//Set the debug level
+void system_manager::set_logging_debug_level(unsigned int level){
+
+	enum rofl_debug_levels c_level;
+	
+	if( inited && env_parser->is_arg_set("debug") ){
+		ROFL_ERR("[xdpd][system] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
+		throw eSystemLogLevelSetviaCL(); 
+	}
+
+	//Validate level and map to C
+	switch(level){
+		case logging::EMERG:
+		case logging::ALERT:
+		case logging::CRIT:
+		case logging::ERROR: c_level = ERROR_LEVEL;
+			break;
+		case logging::WARN: c_level = WARN_LEVEL;
+			break;
+		case logging::NOTICE:
+		case logging::INFO: c_level = INFO_LEVEL;
+			break;
+		case logging::DBG: c_level = DBG_LEVEL;
+			break;
+		case logging::TRACE: c_level = DBG_VERBOSE_LEVEL;
+			break;
+		default:
+			throw eSystemLogInvalidLevel(); 
+	}
+	//Adjust C++ logging debug level	
+	logging::set_debug_level(level);
+	
+	//Adjust C logging debug level
+	rofl_set_logging_level(/*cn,*/c_level);
+#if 0
+	//FIXME translate C++ DEBUG level to C
+	#if DEBUG && VERBOSE_DEBUG
+		//Set verbose debug if necessary
+		rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
+	#else
+		//XXX
+	#endif
+#endif
+}
+
 void system_manager::init_command_line_options(){
 
 	//Daemonize
@@ -86,7 +131,6 @@ void system_manager::init_command_line_options(){
 		env_parser->add_option(*it);
 	}
 }
-
 
 void system_manager::init(int argc, char** argv){
 
@@ -188,41 +232,7 @@ SYSTEM_MANAGER_CLEANUP:
 }
 
 
-//Set the debug level
-void system_manager::set_logging_debug_level(unsigned int level){
-	
-	if( inited && env_parser->is_arg_set("debug") ){
-		ROFL_ERR("[xdpd][system] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
-		throw eSystemLogLevelSetviaCL(); 
-	}
 
-	//Validate level
-	switch(level){
-		case logging::EMERG:
-		case logging::ALERT:
-		case logging::CRIT:
-		case logging::ERROR:
-		case logging::WARN:
-		case logging::NOTICE:
-		case logging::INFO:
-		case logging::DBG:
-		case logging::TRACE:
-			break;
-		default:
-			throw eSystemLogInvalidLevel(); 
-	}
-	//Adjust C++ logging debug level	
-	logging::set_debug_level(level);
-	
-	//Adjust C logging debug level
-	//FIXME translate C++ DEBUG level to C
-	#if DEBUG && VERBOSE_DEBUG
-		//Set verbose debug if necessary
-		rofl_set_logging_level(/*cn,*/ DBG_VERBOSE_LEVEL);
-	#else
-		//XXX
-	#endif
-}
 
 //Dumps help
 void system_manager::dump_help(){

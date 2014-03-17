@@ -107,6 +107,8 @@ void system_manager::set_logging_debug_level(unsigned int level){
 
 void system_manager::init_command_line_options(){
 
+	std::stringstream composed_usage("");
+
 	//Daemonize
 	env_parser->add_option(coption(true, NO_ARGUMENT,'D',"daemonize","Daemonize execution",""));
 	
@@ -114,7 +116,9 @@ void system_manager::init_command_line_options(){
 	env_parser->add_option(coption(true,REQUIRED_ARGUMENT,'l',"logfile","Log file used when daemonization", XDPD_CLOG_FILE));
 	
 	//Extra forwarding module parameters
-	env_parser->add_option(coption(true,REQUIRED_ARGUMENT, 'e', XDPD_EXTRA_PARAMS_OPT_FULL_NAME, "Quoted string of extra parameters that will be passed to the platform driver. Use -h to get the details of the particular options on your platform driver", ""));
+	composed_usage << "Quoted string of extra parameters that will be passed to the platform driver \n";
+	composed_usage << "\t\t\t       ["<<get_fwd_module_code_name()<<"] supported extra parameters: "<< get_fwd_module_usage();
+	env_parser->add_option(coption(true,REQUIRED_ARGUMENT, 'e', XDPD_EXTRA_PARAMS_OPT_FULL_NAME, composed_usage.str(), ""));
 
 	//Test
 	env_parser->add_option(coption(true, NO_ARGUMENT, 't', XDPD_TEST_RUN_OPT_FULL_NAME, "Test configuration only and exit", ""));
@@ -237,7 +241,21 @@ SYSTEM_MANAGER_CLEANUP:
 //Dumps help
 void system_manager::dump_help(){
 	std::string xdpd_name="xdpd";
+	std::stringstream plugin_list("");	
+	
+	//Compose plugin list
+	std::vector<plugin*> plugins = plugin_manager::get_plugins();
+
+	//Destroy all plugins
+	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
+		plugin_list<<(*it)->get_name();
+		if(it+1 != plugins.end())
+			plugin_list<<", ";
+	}
+
 	ROFL_INFO("\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
+	ROFL_INFO("Compiled with plugins: %s\n", plugin_list.str().c_str());
+	ROFL_INFO("Compiled with hardware support for: %s\n\n", get_fwd_module_code_name().c_str());
 }
 
 

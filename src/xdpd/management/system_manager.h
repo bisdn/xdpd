@@ -104,7 +104,11 @@ public:
 	* Retrieve the forwarding module usage(help)
 	*/
 	static std::string get_fwd_module_usage(void){
-		return std::string(info.usage);
+		std::string usage(info.usage);
+		if(usage == "")
+			return std::string("not supported"); 
+		else
+			return usage;
 	}	
 		
 	/**

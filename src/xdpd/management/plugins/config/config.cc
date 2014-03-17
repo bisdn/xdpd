@@ -23,7 +23,7 @@ void config::get_config_file_contents(Config* cfg){
 	std::string conf_file;
 
 	if(!system_manager::is_option_set(CONFIG_FILE_OPT_FULL_NAME)){
-		ROFL_ERR("No configuration file specified either via -c or --config-file\n");	
+		ROFL_ERR(CONF_PLUGIN_ID "No configuration file specified either via -c or --config-file\n");	
 		throw eConfParamNotFound();
 	}
 
@@ -31,11 +31,11 @@ void config::get_config_file_contents(Config* cfg){
 		conf_file = system_manager::get_option_value(CONFIG_FILE_OPT_FULL_NAME).c_str();
 		cfg->readFile(conf_file.c_str());
 	}catch(const FileIOException &fioex){
-		ROFL_ERR("Config file %s not found. Aborting...\n",conf_file.c_str());	
+		ROFL_ERR(CONF_PLUGIN_ID "Config file %s not found. Aborting...\n",conf_file.c_str());	
 		throw eConfFileNotFound();
 		throw fioex;
 	}catch(ParseException &pex){
-		ROFL_ERR("Error while parsing file %s at line: %u \nAborting...\n",conf_file.c_str(),pex.getLine());
+		ROFL_ERR(CONF_PLUGIN_ID "Error while parsing file %s at line: %u \nAborting...\n",conf_file.c_str(),pex.getLine());
 		throw eConfParseError();
 	}
 }

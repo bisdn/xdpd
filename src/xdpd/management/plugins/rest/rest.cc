@@ -39,14 +39,14 @@ namespace xdpd
       }
     catch(boost::thread_interrupted&)
       {
-      ROFL_INFO("REST Server shutting down\n");
+      ROFL_INFO("[xdpd][rest] REST Server shutting down\n");
       return;
       }
     }
 
   void rest::init()
     {
-    ROFL_INFO("Starting REST server\n");
+    ROFL_INFO("[xdpd][rest] Starting REST server\n");
     boost::thread t(&srvthread);
 
     return;

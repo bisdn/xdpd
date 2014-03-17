@@ -24,6 +24,9 @@
 
 namespace xdpd {
 
+//Macro for C logging
+#define CONF_PLUGIN_ID "[xdpd][config] "
+
 /**
 * @brief libconfig based configuration plugin
 * @ingroup cmm_mgmt_plugins

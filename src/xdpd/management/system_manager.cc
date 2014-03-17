@@ -52,7 +52,7 @@ std::string system_manager::get_driver_extra_params(){
 	if(extra_plugins != ""){
 		if(extra != ""){
 			//Notify user
-			ROFL_WARN("[xdpd][system] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
+			ROFL_ERR("[xdpd][system] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
 		}else
 			extra = extra_plugins;
 	}

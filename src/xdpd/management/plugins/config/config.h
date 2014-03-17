@@ -12,6 +12,9 @@
 #include "../../plugin_manager.h"
 #include "scope.h"
 
+//get params
+#include "system/system_scope.h" 
+
 /**
 * @file config_plugin.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
@@ -44,8 +47,9 @@ public:
 	};
 	
 	virtual std::string get_driver_extra_params(void){
-		//XXX: properly read it 
-		return std::string("");
+		libconfig::Config cfg;
+		get_config_file_contents(&cfg);
+		return system_scope::get_driver_extra_params(cfg); 
 	}
 	
 	virtual std::string get_name(void){

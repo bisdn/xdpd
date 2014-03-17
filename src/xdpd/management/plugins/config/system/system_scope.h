@@ -19,6 +19,8 @@ public:
 	system_scope(std::string scope_name="system", bool mandatory=false);
 		
 	virtual void post_validate(libconfig::Setting& setting, bool dry_run);
+	
+	static std::string get_driver_extra_params(libconfig::Config& cfg);
 };
 
 }// namespace xdpd 

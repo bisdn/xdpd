@@ -4,12 +4,15 @@
 #include <inttypes.h>
 #include <rofl/common/logging.h>
 #include "../../../system_manager.h"
+#include "../config.h"
 
 using namespace xdpd;
 using namespace rofl;
+using namespace libconfig;
 
 #define LOGGING_LEVEL "logging-level"
 #define DRIVER_EXTRA_PARAMS "driver-extra-params"
+#define DRIVER_EXTRA_PARAMS_FULL "config.system.driver-extra-params"
 
 
 system_scope::system_scope(std::string name, bool mandatory):scope(name, mandatory){
@@ -59,4 +62,17 @@ void system_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		//Set logging
 		system_manager::set_logging_debug_level(logging_level);
 	}
+}
+
+//By passes all validations since it is pre-plugin init bootstrap
+//and xDPd core services CANNOT be used
+std::string system_scope::get_driver_extra_params(Config& cfg){
+
+	std::string extra("");
+
+	if(cfg.exists((DRIVER_EXTRA_PARAMS_FULL))){
+		return cfg.lookup(DRIVER_EXTRA_PARAMS_FULL);
+	}
+	
+	return extra;
 }

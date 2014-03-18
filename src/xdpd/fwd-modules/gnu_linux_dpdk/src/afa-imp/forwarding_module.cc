@@ -43,7 +43,7 @@ using namespace xdpd::gnu_linux;
 #define GNU_LINUX_DPDK_CODE_NAME "gnu-linux-dpdk"
 #define GNU_LINUX_DPDK_VERSION VERSION 
 #define GNU_LINUX_DPDK_DESC \
-"GNU/Linux DPDK driver.\n TODO"
+"GNU/Linux DPDK driver. TODO: improve"
 #define GNU_LINUX_DPDK_USAGE  "" //We don't support extra params
 #define GNU_LINUX_DPDK_EXTRA_PARAMS "" //We don't support extra params
 

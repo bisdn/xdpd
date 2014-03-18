@@ -19,6 +19,7 @@ extern int optind;
 * Static member initialization
 */
 bool system_manager::inited = false;
+std::string system_manager::id("000000001");
 fwd_module_info_t system_manager::info;
 rofl::cunixenv* system_manager::env_parser = NULL;
 const std::string system_manager::XDPD_CLOG_FILE="./xdpd.log";

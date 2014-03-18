@@ -10,6 +10,7 @@ using namespace xdpd;
 using namespace rofl;
 using namespace libconfig;
 
+#define ID "id" 
 #define LOGGING_LEVEL "logging-level"
 #define DRIVER_EXTRA_PARAMS "driver-extra-params"
 #define DRIVER_EXTRA_PARAMS_FULL "config.system.driver-extra-params"
@@ -18,6 +19,7 @@ using namespace libconfig;
 system_scope::system_scope(std::string name, bool mandatory):scope(name, mandatory){
 	
 	//Register parameters
+	register_parameter(ID);
 	register_parameter(LOGGING_LEVEL);
 	register_parameter(DRIVER_EXTRA_PARAMS);
 
@@ -59,12 +61,20 @@ void system_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	}	
 	//Execute
 	if(!dry_run && logging_level!=-1){
+		
+		//Set id
+		if(setting.exists(ID)){
+			std::string id = setting[ID];
+			system_manager::set_id(id);
+		}
+		
 		//Set logging
 		try{
 			system_manager::set_logging_debug_level(logging_level);
 		}catch(eSystemLogLevelSetviaCL& e){
 			//Ignore. Trace is already printed by system_manager
-		}	
+		}
+		
 	}
 }
 

@@ -51,7 +51,7 @@ void DriverPortStatusTestCase::setUp(){
 	fprintf(stderr,"<%s:%d> ************** Set up ************\n",__func__,__LINE__);
 	snprintf(port_name, 6, "%s", PORT_NAME);
 	
-	res = fwd_module_init();//discovery of ports
+	res = fwd_module_init(NULL);//discovery of ports
 		
 	if( res != AFA_SUCCESS )
 		exit(-1);

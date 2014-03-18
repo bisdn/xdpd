@@ -176,7 +176,7 @@ private:
 	 *
 	 */
 	virtual void
-	handle_table_features_stats_request(crofctl& ctl, cofmsg_table_features_request& msg, uint8_t aux_id = 0);
+	handle_table_features_stats_request(crofctl& ctl, cofmsg_table_features_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**

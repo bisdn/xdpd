@@ -352,7 +352,9 @@ of13_endpoint::handle_flow_stats_request(
 	//Construct OF message
 	of1x_stats_single_flow_msg_t *elem = fp_msg->flows_head;
 
-	std::vector<cofflow_stats_reply> flow_stats;
+	rofl::openflow::cofflowstatsarray flowstatsarray(ctl.get_version());
+
+	uint32_t flow_id = 0;
 
 	for(elem = fp_msg->flows_head; elem; elem = elem->next){
 
@@ -363,26 +365,25 @@ of13_endpoint::handle_flow_stats_request(
 		of13_translation_utils::of13_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
 
-		flow_stats.push_back(
-				cofflow_stats_reply(
-						ctl.get_version(),
-						elem->table_id,
-						elem->duration_sec,
-						elem->duration_nsec,
-						elem->priority,
-						elem->idle_timeout,
-						elem->hard_timeout,
-						elem->cookie,
-						elem->packet_count,
-						elem->byte_count,
-						match,
-						instructions));
+		flowstatsarray.set_flow_stats(flow_id).set_table_id(elem->table_id);
+		flowstatsarray.set_flow_stats(flow_id).set_duration_sec(elem->duration_sec);
+		flowstatsarray.set_flow_stats(flow_id).set_duration_nsec(elem->duration_nsec);
+		flowstatsarray.set_flow_stats(flow_id).set_priority(elem->priority);
+		flowstatsarray.set_flow_stats(flow_id).set_idle_timeout(elem->idle_timeout);
+		flowstatsarray.set_flow_stats(flow_id).set_hard_timeout(elem->hard_timeout);
+		flowstatsarray.set_flow_stats(flow_id).set_cookie(elem->cookie);
+		flowstatsarray.set_flow_stats(flow_id).set_packet_count(elem->packet_count);
+		flowstatsarray.set_flow_stats(flow_id).set_byte_count(elem->byte_count);
+		flowstatsarray.set_flow_stats(flow_id).set_match() = match;
+		flowstatsarray.set_flow_stats(flow_id).set_instructions() = instructions;
+
+		flow_id++;
 	}
 
 
 	try{
 		//Send message
-		ctl.send_flow_stats_reply(msg.get_xid(), flow_stats);
+		ctl.send_flow_stats_reply(msg.get_xid(), flowstatsarray);
 	}catch(...){
 		of1x_destroy_stats_flow_msg(fp_msg);
 		of1x_destroy_flow_entry(entry);
@@ -463,26 +464,23 @@ of13_endpoint::handle_table_stats_request(
 		throw eRofBase();
 	
 	unsigned int num_of_tables = of13switch->pipeline.num_of_tables;
-	std::vector<coftable_stats_reply> table_stats;
+	rofl::openflow::coftablestatsarray tablestatsarray(ctl.get_version());
 
 	for (unsigned int n = 0; n < num_of_tables; n++) {
 	
 		of1x_flow_table_t *table = &of13switch->pipeline.tables[n];
+		uint8_t table_id = table->number;
 
-		table_stats.push_back(
-				coftable_stats_reply(
-					ctl.get_version(),
-					table->number,
-					(table->num_of_entries),
-					(table->stats.lookup_count),
-					(table->stats.matched_count)
-				));
+		tablestatsarray.set_table_stats(table_id).set_table_id(table->number);
+		tablestatsarray.set_table_stats(table_id).set_active_count(table->num_of_entries);
+		tablestatsarray.set_table_stats(table_id).set_lookup_count(table->stats.lookup_count);
+		tablestatsarray.set_table_stats(table_id).set_matched_count(table->stats.matched_count);
 	}
 
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
 
-	ctl.send_table_stats_reply(msg.get_xid(), table_stats, false);
+	ctl.send_table_stats_reply(msg.get_xid(), tablestatsarray, false);
 }
 
 
@@ -502,12 +500,12 @@ of13_endpoint::handle_port_stats_request(
 	if(!of13switch)
 		throw eRofBase();
 
-	std::vector<cofport_stats_reply> port_stats;
+	rofl::openflow::cofportstatsarray portstatsarray(ctl.get_version());
 
 	/*
 	 *  send statistics for all ports
 	 */
-	if (openflow13::OFPP_ALL == port_no){
+	if (openflow13::OFPP_ANY == port_no){
 
 		//we check all the positions in case there are empty slots
 		for (unsigned int n = 1; n < of13switch->max_ports; n++){
@@ -516,24 +514,21 @@ of13_endpoint::handle_port_stats_request(
 	
 			if((port != NULL) && (of13switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
 
-				port_stats.push_back(
-						cofport_stats_reply(
-								ctl.get_version(),
-								port->of_port_num,
-								port->stats.rx_packets,
-								port->stats.tx_packets,
-								port->stats.rx_bytes,
-								port->stats.tx_bytes,
-								port->stats.rx_dropped,
-								port->stats.tx_dropped,
-								port->stats.rx_errors,
-								port->stats.tx_errors,
-								port->stats.rx_frame_err,
-								port->stats.rx_over_err,
-								port->stats.rx_crc_err,
-								port->stats.collisions,
-								/*duration_sec=*/0,
-								/*duration_nsec=*/0));
+				portstatsarray.set_port_stats(port->of_port_num).set_port_no(port->of_port_num);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_bytes(port->stats.tx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_dropped(port->stats.rx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_dropped(port->stats.tx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_errors(port->stats.rx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_errors(port->stats.tx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_frame_err(port->stats.rx_frame_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_over_err(port->stats.rx_over_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_crc_err(port->stats.rx_crc_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_collisions(port->stats.collisions);
+				portstatsarray.set_port_stats(port->of_port_num).set_duration_sec(0); 	// TODO
+				portstatsarray.set_port_stats(port->of_port_num).set_duration_nsec(0); 	// TODO
 			}
 	 	}
 
@@ -553,24 +548,22 @@ of13_endpoint::handle_port_stats_request(
 				(port->of_port_num == port_no)
 			){
 				//Mapping of port state
-				port_stats.push_back(
-						cofport_stats_reply(
-								ctl.get_version(),
-								port->of_port_num,
-								port->stats.rx_packets,
-								port->stats.tx_packets,
-								port->stats.rx_bytes,
-								port->stats.tx_bytes,
-								port->stats.rx_dropped,
-								port->stats.tx_dropped,
-								port->stats.rx_errors,
-								port->stats.tx_errors,
-								port->stats.rx_frame_err,
-								port->stats.rx_over_err,
-								port->stats.rx_crc_err,
-								port->stats.collisions,
-								/*duration_sec=*/0,
-								/*duration_nsec=*/0));
+				portstatsarray.set_port_stats(port->of_port_num).set_port_no(port->of_port_num);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_bytes(port->stats.tx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_dropped(port->stats.rx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_dropped(port->stats.tx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_errors(port->stats.rx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_errors(port->stats.tx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_frame_err(port->stats.rx_frame_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_over_err(port->stats.rx_over_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_crc_err(port->stats.rx_crc_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_collisions(port->stats.collisions);
+				portstatsarray.set_port_stats(port->of_port_num).set_duration_sec(0); 	// TODO
+				portstatsarray.set_port_stats(port->of_port_num).set_duration_nsec(0); 	// TODO
+
 
 				break;
 			}
@@ -582,7 +575,7 @@ of13_endpoint::handle_port_stats_request(
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
 
-	ctl.send_port_stats_reply(msg.get_xid(), port_stats, false);
+	ctl.send_port_stats_reply(msg.get_xid(), portstatsarray, false);
 }
 
 
@@ -611,7 +604,7 @@ of13_endpoint::handle_queue_stats_request(
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
-	std::vector<cofqueue_stats_reply> stats;
+	rofl::openflow::cofqueuestatsarray queuestatsarray(ctl.get_version());
 
 	/*
 	* port num
@@ -637,16 +630,13 @@ of13_endpoint::handle_queue_stats_request(
 						continue;
 
 					//Set values
-					stats.push_back(
-							cofqueue_stats_reply(
-									ctl.get_version(),
-									port->of_port_num,
-									i,
-									port->queues[i].stats.tx_bytes,
-									port->queues[i].stats.tx_packets,
-									port->queues[i].stats.overrun,
-									/*duration_sec=*/0,
-									/*duration_nsec=*/0));
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_port_no(port->of_port_num);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_queue_id(i);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_bytes(port->queues[i].stats.tx_bytes);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_packets(port->queues[i].stats.tx_packets);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_errors(port->queues[i].stats.overrun);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_duration_sec(0); 	// TODO
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_duration_nsec(0); // TODO
 				}
 
 			} else {
@@ -660,17 +650,14 @@ of13_endpoint::handle_queue_stats_request(
 				//Check if the queue is really in use
 				if(port->queues[queue_id].set){
 					//Set values
-					stats.push_back(
-							cofqueue_stats_reply(
-									ctl.get_version(),
-									portnum,
-									queue_id,
-									port->queues[queue_id].stats.tx_bytes,
-									port->queues[queue_id].stats.tx_packets,
-									port->queues[queue_id].stats.overrun,
-									/*duration_sec=*/0,
-									/*duration_nsec=*/0));
 
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_port_no(portnum);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_queue_id(queue_id);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_bytes(port->queues[queue_id].stats.tx_bytes);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_packets(port->queues[queue_id].stats.tx_packets);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_errors(port->queues[queue_id].stats.overrun);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_duration_sec(0); 	// TODO
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_duration_nsec(0); 	// TODO
 				}
 			}
 		}
@@ -679,7 +666,7 @@ of13_endpoint::handle_queue_stats_request(
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
 	
-	ctl.send_queue_stats_reply(pack.get_xid(), stats);
+	ctl.send_queue_stats_reply(pack.get_xid(), queuestatsarray);
 }
 
 
@@ -710,33 +697,26 @@ of13_endpoint::handle_group_stats_request(
 		logging::error << "[xdpd][of13][group-stats] unable to retrieve group statistics from pipeline" << std::endl;
 	}
 	
-	std::vector<cofgroup_stats_reply> group_stats;
+	rofl::openflow::cofgroupstatsarray groups(ctl.get_version());
 	
 	for(g_msg = g_msg_all; g_msg; g_msg = g_msg->next){
 		num_of_buckets = g_msg->num_of_buckets;
 
-		cofgroup_stats_reply stats(
-				ctl.get_version(),
-				/*msg->get_group_stats().get_group_id(),*/
-				htobe32(g_msg->group_id),
-				htobe32(g_msg->ref_count),
-				htobe64(g_msg->packet_count),
-				htobe64(g_msg->byte_count),
-				/*duration_sec=*/0,
-				/*duration_nsec=*/0,
-				num_of_buckets);
-
+		groups.set_group_stats(g_msg->group_id).set_group_id(g_msg->group_id);
+		groups.set_group_stats(g_msg->group_id).set_ref_count(g_msg->ref_count);
+		groups.set_group_stats(g_msg->group_id).set_packet_count(g_msg->packet_count);
+		groups.set_group_stats(g_msg->group_id).set_byte_count(g_msg->byte_count);
+		groups.set_group_stats(g_msg->group_id).set_duration_sec(0);
+		groups.set_group_stats(g_msg->group_id).set_duration_nsec(0);
 		for(i=0;i<num_of_buckets;i++) {
-			stats.get_bucket_counter(i).packet_count = g_msg->bucket_stats[i].packet_count;
-			stats.get_bucket_counter(i).byte_count = g_msg->bucket_stats[i].byte_count;
+			groups.set_group_stats(g_msg->group_id).set_bucket_counters().set_bucket_counter(i).set_packet_count(g_msg->bucket_stats[i].packet_count);
+			groups.set_group_stats(g_msg->group_id).set_bucket_counters().set_bucket_counter(i).set_byte_count(g_msg->bucket_stats[i].byte_count);
 		}
-		
-		group_stats.push_back(stats);
 	}
 
 	try{
 		//Send the group stats
-		ctl.send_group_stats_reply(msg.get_xid(), group_stats);
+		ctl.send_group_stats_reply(msg.get_xid(), groups);
 	}catch(...){
 		of1x_destroy_stats_group_msg(g_msg_all);
 		throw;
@@ -754,9 +734,7 @@ of13_endpoint::handle_group_desc_stats_request(
 		cofmsg_group_desc_stats_request& msg,
 		uint8_t aux_id)
 {
-	std::vector<cofgroup_desc_stats_reply> group_desc_stats;
-
-	//TODO: fill in std::vector<...> group_desc_stats, when groups are implemented
+	rofl::openflow::cofgroupdescstatsarray groupdescs(ctl.get_version());
 
 	of1x_group_table_t group_table;
 	of1x_group_t *group_it;
@@ -769,16 +747,12 @@ of13_endpoint::handle_group_desc_stats_request(
 		cofbuckets bclist(ctl.get_version());
 		of13_translation_utils::of13_map_reverse_bucket_list(bclist,group_it->bc_list);
 		
-		group_desc_stats.push_back(
-				cofgroup_desc_stats_reply(
-					ctl.get_version(),
-					group_it->type,
-					group_it->id,
-					bclist ));
+		groupdescs.set_group_desc_stats(group_it->id).set_group_type(group_it->type);
+		groupdescs.set_group_desc_stats(group_it->id).set_group_id(group_it->id);
+		groupdescs.set_group_desc_stats(group_it->id).set_buckets(bclist);
 	}
 
-
-	ctl.send_group_desc_stats_reply(msg.get_xid(), group_desc_stats);
+	ctl.send_group_desc_stats_reply(msg.get_xid(), groupdescs);
 }
 
 
@@ -812,7 +786,7 @@ of13_endpoint::handle_group_features_stats_request(
 void
 of13_endpoint::handle_table_features_stats_request(
 		crofctl& ctl,
-		cofmsg_table_features_request& msg,
+		cofmsg_table_features_stats_request& msg,
 		uint8_t aux_id)
 {
 	// TODO: check for pipeline definition within request and configure pipeline accordingly
@@ -1325,10 +1299,10 @@ of13_endpoint::handle_port_mod(
 	case rofl::openflow13::OFPP_NORMAL:
 	case rofl::openflow13::OFPP_FLOOD:
 	case rofl::openflow13::OFPP_CONTROLLER:
-	case rofl::openflow13::OFPP_LOCAL:
-	case rofl::openflow13::OFPP_ANY: {
+	case rofl::openflow13::OFPP_LOCAL: {
 		throw ePortModBadPort();
 	}
+	case rofl::openflow13::OFPP_ANY: // be liberal what you accept, and conservative, what you send
 	case rofl::openflow13::OFPP_ALL: {
 
 		of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);

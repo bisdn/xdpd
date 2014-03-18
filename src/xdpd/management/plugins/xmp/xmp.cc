@@ -29,7 +29,7 @@ xmp::~xmp()
 
 
 void
-xmp::init(int args, char** argv)
+xmp::init()
 {
 	rofl::logging::error << "[xdpd][xmp] initializing ..." << std::endl;
 	socket.listen(caddress(AF_INET, udp_addr.c_str(), udp_port), AF_INET, SOCK_DGRAM, IPPROTO_UDP, NULL, 10);

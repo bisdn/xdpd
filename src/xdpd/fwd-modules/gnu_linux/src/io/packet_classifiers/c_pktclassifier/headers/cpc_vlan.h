@@ -33,7 +33,7 @@ typedef struct cpc_vlan_hdr {
 	// tag control identifier (TCI)
 	uint8_t byte0;
 	uint8_t byte1;
-	//uint16_t hdr;			// vid + cfi + pcp
+	//uint16_t hdr;			// vid (12b) + cfi (1b) + pcp (3b)
 	uint16_t dl_type;  		// ethernet type
 } __attribute__((packed)) cpc_vlan_hdr_t;
 
@@ -59,11 +59,7 @@ uint16_t get_vlan_id(void* hdr){
 
 inline static
 void set_vlan_pcp(void* hdr, uint8_t pcp){
-#ifdef CPC_IN_HOSTBYTEORDER
 	((cpc_vlan_hdr_t*)hdr)->byte0 = ((pcp & 0x07) << 5) + (((cpc_vlan_hdr_t*)hdr)->byte0 & 0x1f);
-#else
-	((cpc_vlan_hdr_t*)hdr)->byte0 = ((pcp & 0x07) << 5) + (((cpc_vlan_hdr_t*)hdr)->byte0 & 0x1f);
-#endif
 }
 
 inline static

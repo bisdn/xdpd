@@ -27,6 +27,7 @@ enum hdlc_code_t {
 //
 
 enum ppp_prot_t {
+#ifdef CPC_IN_HOSTBYTEORDER
 	PPP_PROT_PADDING 	= 0x0001, // 0x00 0x01 in network byte order
 	PPP_PROT_LCP 		= 0xc021, // 0xc0 0x21 in network byte order
 	PPP_PROT_PAP 		= 0xc023, // 0xc0 0x23 in network byte order
@@ -38,6 +39,19 @@ enum ppp_prot_t {
 	PPP_PROT_IPV6CP 	= 0x8057, // 0x80 0x57 in network byte order
 	PPP_PROT_IPV6 		= 0x0057, // 0x00 0x57 in network byte order
 	PPP_PROT_CCP 		= 0x80fd, // 0x80 0xfd in network byte order
+#else
+	PPP_PROT_PADDING 	= 0x0100, // 0x00 0x01 in network byte order
+	PPP_PROT_LCP 		= 0x21c0, // 0xc0 0x21 in network byte order
+	PPP_PROT_PAP 		= 0x23c0, // 0xc0 0x23 in network byte order
+	PPP_PROT_LQR 		= 0x25c0, // 0xc0 0x25 in network byte order
+	PPP_PROT_CHAP 		= 0x23c2, // 0xc2 0x23 in network byte order
+	PPP_PROT_EAP 		= 0x27c2, // 0xc2 0x27 in network byte order
+	PPP_PROT_IPCP 		= 0x2180, // 0x80 0x21 in network byte order
+	PPP_PROT_IPV4 		= 0x2100, // 0x00 0x21 in network byte order
+	PPP_PROT_IPV6CP 	= 0x5780, // 0x80 0x57 in network byte order
+	PPP_PROT_IPV6 		= 0x5700, // 0x00 0x57 in network byte order
+	PPP_PROT_CCP 		= 0xfd80, // 0x80 0xfd in network byte order
+#endif
 };
 
 struct cpc_ppp_hdr {

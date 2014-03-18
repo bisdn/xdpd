@@ -27,8 +27,13 @@ enum pppoe_type_t {
 
 // PPPoE ethernet types
 enum pppoe_ether_t {
+#ifdef CPC_IN_HOSTBYTEORDER
 	PPPOE_ETHER_DISCOVERY = 0x8863,
 	PPPOE_ETHER_SESSION = 0x8864,
+#else
+	PPPOE_ETHER_DISCOVERY = 0x6388,
+	PPPOE_ETHER_SESSION = 0x6488,
+#endif
 };
 
 // PPPoE codes

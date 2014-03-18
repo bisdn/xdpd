@@ -7,24 +7,7 @@
 #include <stdint.h>
 
 #include <rofl/common/utils/c_logger.h>
-
-#include <rofl/datapath/pipeline/common/large_types.h>
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-	#define MACTOBE(x) do{ \
-		x=__bswap_64(x); \
-		x>>=16; \
-		}while(0)
-
-	#define LABELTOBE(x) do{ \
-		x<<=12; \
-		x=__bswap_32(x); \
-		}while(0)
-#else
-	#define MACTOBE(x) (x)
-#endif
-
-#define BETOHMAC(x) MACTOBE(x)
-#define BETOHLABEL(x) LABELTOBE(x)
+#include "../endianess_translation_utils.h"
 
 using namespace xdpd;
 
@@ -273,11 +256,9 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	try {
 		
 		bool vlan_present = false;
-		uint16_t vid = htobe16(ofmatch.get_vlan_vid()); //NBO
-		uint16_t value = ofmatch.get_vlan_vid_value(); //HBO
-		uint16_t ofvid_present = openflow::OFPVID_PRESENT; //HBO
+		uint16_t vid = htobe16(ofmatch.get_vlan_vid());
 		
-		if( (value&ofvid_present) > 0)
+		if( (ofmatch.get_vlan_vid_value() & openflow::OFPVID_PRESENT) > 0)
 			vlan_present = true;
 		
 		of1x_match_t *match = of1x_init_vlan_vid_match(

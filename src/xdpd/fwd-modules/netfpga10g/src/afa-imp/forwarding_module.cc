@@ -21,12 +21,21 @@ using namespace xdpd::gnu_linux;
 //Static pipeline switch instance
 static of_switch_t* sw=NULL;
 
+#define NETFPGA10G_CODE_NAME FWD_MOD_NAME 
+#define NETFPGA10G_VERSION VERSION 
+#define NETFPGA10G_DESC \
+"NetFPGA-10G OpenFlow switch forwarding module.\n\nThe forwarding module is currently based on the HW implementation that can be found under the Beta NetFPGA 10G repository under the folder:\n\nNetFPGA-10G-live/contrib-projects/openflow_switch/\n\nwritten by Tatsuya Yabe (et al.?).\n\nSince this HW implementation is only OF1.0 compliant, the forwarding module is currently exposing itself as a _very_ restricted OF1.2 compliant fwd_module. Check more details here:\n\nhttps://www.codebasin.net/redmine/projects/xdpd/wiki\n\nWARNING: this driver is experimental"
+
+#define NETFPGA10G_USAGE  "" //We don't support extra params
+#define NETFPGA10G_EXTRA_PARAMS "" //We don't support extra params
+
+
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself
 * @ingroup fwd_module_management
 */
-afa_result_t fwd_module_init(){
+afa_result_t fwd_module_init(const char* extra_params){
 
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
 	ROFL_ERR("["FWD_MOD_NAME"] !!!!!!!!! WARNING: NetFPGA 10G forwarding module is experimental. Be advised. !!!!!!!!!\n");
@@ -58,6 +67,21 @@ afa_result_t fwd_module_init(){
 	
 	return AFA_SUCCESS; 
 }
+
+/**
+* @name    fwd_module_get_info
+* @brief   Get the information of the forwarding_module (code-name, version, usage...)
+* @ingroup fwd_module_management
+*/
+void fwd_module_get_info(fwd_module_info_t* info){
+	//Fill-in fwd_module_info_t
+	strncpy(info->code_name, NETFPGA10G_CODE_NAME, FWD_MOD_CODE_NAME_MAX_LEN);
+	strncpy(info->version, NETFPGA10G_VERSION, FWD_MOD_VERSION_MAX_LEN);
+	strncpy(info->description, NETFPGA10G_DESC, FWD_MOD_DESCRIPTION_MAX_LEN);
+	strncpy(info->usage, NETFPGA10G_USAGE, FWD_MOD_USAGE_MAX_LEN);
+	strncpy(info->extra_params, NETFPGA10G_EXTRA_PARAMS, FWD_MOD_EXTRA_PARAMS_MAX_LEN);
+}
+
 
 /*
 * @name    fwd_module_destroy
@@ -228,6 +252,28 @@ switch_port_name_list_t* fwd_module_get_all_port_names(void){
  */
 switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
 	return physical_switch_get_port_snapshot(name); 
+}
+
+/**
+ * @name fwd_module_get_port_by_num
+ * @brief Retrieves a snapshot of the current state of the port of the Logical Switch Instance with dpid at port_num, if exists. The snapshot MUST be deleted using switch_port_destroy_snapshot()
+ * @ingroup port_management
+ * @param dpid DatapathID 
+ * @param port_num Port number
+ */
+switch_port_snapshot_t* fwd_module_get_port_snapshot_by_num(uint64_t dpid, unsigned int port_num){
+	
+	of_switch_t* lsw;
+	
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw)
+		return NULL; 
+
+	//Check if the port does exist.
+	if(!port_num || port_num >= LOGICAL_SWITCH_MAX_LOG_PORTS || !lsw->logical_ports[port_num].port)
+		return NULL;
+
+	return physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
 }
 
 /*

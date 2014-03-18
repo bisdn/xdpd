@@ -57,11 +57,11 @@ public:
 	* Port notifications
 	*/
 
-	virtual afa_result_t notify_port_add(switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_attached(const switch_port_t* port)=0;
 	
-	virtual afa_result_t notify_port_delete(switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_detached(const switch_port_t* port)=0;
 
-	virtual afa_result_t notify_port_status_changed(switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port)=0;
 
 
 

@@ -10,10 +10,13 @@
 
 #include "qmfagent.h"
 #include <rofl/platform/unix/cunixenv.h>
+#include "../../system_manager.h"
 
 using namespace xdpd;
 using namespace rofl;
 
+const std::string qmfagent::QMF_BROKER_URL_OPT="qmfaddr";
+const std::string qmfagent::QMF_XDPD_ID_OPT="qmfXdpdID";
 
 qmfagent::qmfagent():qmf_package("de.bisdn.xdpd")
 {
@@ -21,25 +24,11 @@ qmfagent::qmfagent():qmf_package("de.bisdn.xdpd")
 }
 		
 
-void qmfagent::init(int argc, char** argv)
+void qmfagent::init()
 {
-	cunixenv env_parser(argc, argv);
- 
-	//Add additional arguments
-	env_parser.add_option(
-		coption(true, REQUIRED_ARGUMENT, 'q', "qmfaddr", "qmf broker address",
-		std::string("127.0.0.1")));
-
-	env_parser.add_option(
-		coption(true, REQUIRED_ARGUMENT, 'x', "qmfXdpdID", "qmf xdpd ID",
-		std::string("xdpd-0")));
-
-	//Parse
-	env_parser.parse_args();
-	
-	//Recover
-	broker_url = env_parser.get_arg('q');
-	xdpd_id = env_parser.get_arg('x');
+	//Recover option values
+	broker_url = system_manager::get_option_value(QMF_BROKER_URL_OPT);
+	xdpd_id = system_manager::get_option_value(QMF_XDPD_ID_OPT);
 
 	connection = qpid::messaging::Connection(broker_url, "{reconnect:True}");
 	connection.open();

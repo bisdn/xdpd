@@ -544,6 +544,8 @@ rofl_result_t ioport_mmap::up() {
 		return ROFL_SUCCESS;
 	}
 
+	of_port_state->up = true;
+	
 	//Prevent race conditions with LINK/STATUS notification threads (bg)
 	pthread_rwlock_wrlock(&rwlock);
 
@@ -568,9 +570,6 @@ rofl_result_t ioport_mmap::up() {
 		tx = new mmap_tx(std::string(of_port_state->name), block_size, n_blocks, frame_size);
 	}
 
-	// todo recheck?
-	// todo check link state IFF_RUNNING
-	of_port_state->up = true;
 
 	close(sd);
 	return ROFL_SUCCESS;
@@ -611,6 +610,8 @@ rofl_result_t ioport_mmap::down() {
 		tx = NULL;
 	}
 
+	of_port_state->up = false;
+	
 	if ( !(IFF_UP & ifr.ifr_flags) ) {
 		close(sd);
 		//Already down.. Silently skip
@@ -631,11 +632,6 @@ rofl_result_t ioport_mmap::down() {
 
 	//Release mutex		
 	pthread_rwlock_unlock(&rwlock);
-
-
-	// todo recheck?
-	// todo check link state IFF_RUNNING
-	of_port_state->up = false;
 
 	close(sd);
 

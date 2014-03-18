@@ -13,12 +13,23 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
+//Fwd module static info
+#define EXAMPLE_CODE_NAME "example"
+#define EXAMPLE_VERSION VERSION 
+#define EXAMPLE_DESC  "Example forwarding module. This is an empty non-functional driver that can be used as a blank canvas to port new platforms."
+#define EXAMPLE_USAGE  "use format: \"key1=value1;key2=value2;\"\n\t\t\t\t\t- key1: explanation of key1\n\t\t\t\t\t- key2: explanation of key2" //Do not terminate it with \n
+
+//Here we are going to store the parameters that we got
+//and that we were able to parse (understand) and execute
+char extra_params[FWD_MOD_EXTRA_PARAMS_MAX_LEN];
+
+
 /*
 * @name    fwd_module_init
 * @brief   Initializes driver. Before using the AFA_DRIVER routines, higher layers must allow driver to initialize itself
 * @ingroup fwd_module_management
 */
-afa_result_t fwd_module_init(){
+afa_result_t fwd_module_init(const char* _extra_params){
 
 	
 	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
@@ -36,8 +47,24 @@ afa_result_t fwd_module_init(){
 	
 	ROFL_INFO("["FWD_MOD_NAME"] This forwarding module is an empty example. xDPd will not be able to bootstrap any configuration (LSIs) since it is not a functional forwarding module, so it will throw a deliverately uncaught exception\n");
 	
+	strncpy(extra_params, _extra_params, FWD_MOD_EXTRA_PARAMS_MAX_LEN);
 	return AFA_SUCCESS; 
 }
+
+/**
+* @name    fwd_module_get_info
+* @brief   Get the information of the forwarding_module (code-name, version, usage...)
+* @ingroup fwd_module_management
+*/
+void fwd_module_get_info(fwd_module_info_t* info){
+	//Fill-in fwd_module_info_t
+	strncpy(info->code_name, EXAMPLE_CODE_NAME, FWD_MOD_CODE_NAME_MAX_LEN);
+	strncpy(info->version, EXAMPLE_VERSION, FWD_MOD_VERSION_MAX_LEN);
+	strncpy(info->description, EXAMPLE_DESC, FWD_MOD_DESCRIPTION_MAX_LEN);
+	strncpy(info->usage, EXAMPLE_USAGE, FWD_MOD_USAGE_MAX_LEN);
+	strncpy(info->extra_params, extra_params, FWD_MOD_EXTRA_PARAMS_MAX_LEN);
+}
+
 
 /*
 * @name    fwd_module_destroy
@@ -139,6 +166,28 @@ switch_port_name_list_t* fwd_module_get_all_port_names(void){
 switch_port_snapshot_t* fwd_module_get_port_snapshot_by_name(const char *name){
 	return NULL;
 }
+/**
+ * @name fwd_module_get_port_by_num
+ * @brief Retrieves a snapshot of the current state of the port of the Logical Switch Instance with dpid at port_num, if exists. The snapshot MUST be deleted using switch_port_destroy_snapshot()
+ * @ingroup port_management
+ * @param dpid DatapathID 
+ * @param port_num Port number
+ */
+switch_port_snapshot_t* fwd_module_get_port_snapshot_by_num(uint64_t dpid, unsigned int port_num){
+	
+	of_switch_t* lsw;
+	
+	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
+	if(!lsw)
+		return NULL; 
+
+	//Check if the port does exist.
+	if(!port_num || port_num >= LOGICAL_SWITCH_MAX_LOG_PORTS || !lsw->logical_ports[port_num].port)
+		return NULL;
+
+	return physical_switch_get_port_snapshot(lsw->logical_ports[port_num].port->name); 
+}
+
 
 /*
 * @name    fwd_module_attach_physical_port_to_switch

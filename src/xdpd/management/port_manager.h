@@ -10,7 +10,9 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <rofl.h>
+#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/common/croflexception.h>
 
 /**
@@ -23,9 +25,10 @@
 
 namespace xdpd {
 
-class ePmBase		: public rofl::RoflException {};	// base error class for all switch_manager related errors
-class ePmInvalidPort	: public ePmBase {};
-class ePmUnknownError	: public ePmBase {};
+class ePmBase			: public rofl::RoflException {};	// base error class for all switch_manager related errors
+class ePmInvalidPort		: public ePmBase {};
+class ePmUnknownError		: public ePmBase {};
+class ePmPortNotAttachedError	: public ePmBase {};
 
 /**
 * @brief Port management API.
@@ -84,7 +87,8 @@ public:
 	//
 
 	/**
-	 * @brief Attaches a port to a logical switch previously created. 
+	 * @brief Attaches a port to a logical switch previously created.
+	* @param of_port_num If *of_port_num is non-zero, try to attach to of_port_num of the logical switch, otherwise try to attach to the first available port and return the result in of_port_num
 	 */
 	static void attach_port_to_switch(uint64_t dpid, std::string& port_name, unsigned int* of_port_num);
 
@@ -106,6 +110,41 @@ public:
 	 */
 	static void detach_port_from_switch_by_num(uint64_t dpid, unsigned int port_num);
 
+	//
+	// Notifications
+	//
+	
+	/**
+	* Log a port addition in the system event
+	*/
+	static inline void __notify_port_added(const switch_port_snapshot_t* port_snapshot){
+		if(port_snapshot->is_attached_to_sw)
+			ROFL_INFO("[port_manager][0x%"PRIx64":%u(%s)] added to the system and attached; admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+		else
+			ROFL_INFO("[port_manager][%s] added to the system; admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+	};
+		
+	/**
+	* Log a port status changed in the system event
+	*/
+	static inline void __notify_port_status_changed(const switch_port_snapshot_t* port_snapshot){
+
+	if(port_snapshot->is_attached_to_sw)
+		ROFL_INFO("[port_manager][0x%"PRIx64":%u(%s)] admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+	else
+		ROFL_INFO("[port_manager][%s] admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+	};
+	
+	/**
+	* Log a port deletion in the system event
+	*/
+	static inline void __notify_port_deleted(const switch_port_snapshot_t* port_snapshot){
+		if(port_snapshot->is_attached_to_sw)
+			ROFL_INFO("[port_manager][0x%"PRIx64":%u(%s)] detached and removed from the system\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name);
+		else
+			ROFL_INFO("[port_manager][%s] removed from the system;\n", port_snapshot->name);
+	};
+	
 private:
 	static pthread_mutex_t mutex;	
 	

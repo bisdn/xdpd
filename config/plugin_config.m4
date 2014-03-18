@@ -15,6 +15,7 @@ AC_CONFIG_FILES([
 	src/xdpd/management/plugins/config/Makefile
 	src/xdpd/management/plugins/config/interfaces/Makefile
 	src/xdpd/management/plugins/config/openflow/Makefile
+	src/xdpd/management/plugins/config/system/Makefile
 ])
 
 

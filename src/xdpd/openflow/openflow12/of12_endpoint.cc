@@ -266,7 +266,9 @@ of12_endpoint::handle_port_stats_request(
 								port->stats.rx_frame_err,
 								port->stats.rx_over_err,
 								port->stats.rx_crc_err,
-								port->stats.collisions));
+								port->stats.collisions,
+								0,
+								0));
 			}
 	 	}
 
@@ -301,7 +303,9 @@ of12_endpoint::handle_port_stats_request(
 								port->stats.rx_frame_err,
 								port->stats.rx_over_err,
 								port->stats.rx_crc_err,
-								port->stats.collisions));
+								port->stats.collisions,
+								0,
+								0));
 
 				break;
 			}
@@ -515,7 +519,9 @@ of12_endpoint::handle_queue_stats_request(
 									i,
 									port->queues[i].stats.tx_bytes,
 									port->queues[i].stats.tx_packets,
-									port->queues[i].stats.overrun));
+									port->queues[i].stats.overrun,
+									0,
+									0));
 				}
 
 			} else {
@@ -536,7 +542,9 @@ of12_endpoint::handle_queue_stats_request(
 									queue_id,
 									port->queues[queue_id].stats.tx_bytes,
 									port->queues[queue_id].stats.tx_packets,
-									port->queues[queue_id].stats.overrun));
+									port->queues[queue_id].stats.overrun,
+									0,
+									0));
 
 				}
 			}
@@ -589,6 +597,8 @@ of12_endpoint::handle_group_stats_request(
 				htobe32(g_msg->ref_count),
 				htobe64(g_msg->packet_count),
 				htobe64(g_msg->byte_count),
+				0,
+				0,
 				num_of_buckets);
 
 		for(i=0;i<num_of_buckets;i++) {
@@ -683,7 +693,7 @@ of12_endpoint::handle_packet_out(
 	of1x_action_group_t* action_group = of1x_init_action_group(NULL);
 
 	try{
-		of12_translation_utils::of12_map_flow_entry_actions(&ctl, sw, msg.get_actions(), action_group, NULL); //TODO: is this OK always NULL?
+		of12_translation_utils::of12_map_flow_entry_actions(&ctl, sw, msg.set_actions(), action_group, NULL); //TODO: is this OK always NULL?
 	}catch(...){
 		of1x_destroy_action_group(action_group);
 		throw;
@@ -712,7 +722,7 @@ of12_endpoint::handle_packet_out(
 
 
 
-afa_result_t
+rofl_result_t
 of12_endpoint::process_packet_in(
 		uint8_t table_id,
 		uint8_t reason,
@@ -738,7 +748,7 @@ of12_endpoint::process_packet_in(
 				match,
 				pkt_buffer, buf_len);
 
-		return AFA_SUCCESS;
+		return ROFL_SUCCESS;
 
 	} catch (...) {
 
@@ -746,7 +756,7 @@ of12_endpoint::process_packet_in(
 		if (buffer_id == OF1XP_NO_BUFFER) {
 			rofl::logging::error << "[xdpd][of12][packet-in] unable to send Packet-In message" << std::endl;
 
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		}
 
 		rofl::logging::error << "[xdpd][of12][packet-in] unable to send Packet-In message, dropping packet from occupied pkt slot" << std::endl;
@@ -758,7 +768,7 @@ of12_endpoint::process_packet_in(
 			of12_translation_utils::of12_map_flow_entry_actions(NULL, sw, actions, action_group, NULL);
 		}catch(...){
 			of1x_destroy_action_group(action_group);
-			return AFA_FAILURE;
+			return ROFL_FAILURE;
 		}
 
 		/* assumption: driver can handle all situations properly:
@@ -778,17 +788,17 @@ of12_endpoint::process_packet_in(
 		of1x_destroy_action_group(action_group);
 #endif
 
-		return AFA_FAILURE;
+		return ROFL_FAILURE;
 	}
 
-	return AFA_FAILURE;
+	return ROFL_FAILURE;
 }
 
 /*
 * Port async notifications processing 
 */
 
-afa_result_t of12_endpoint::notify_port_add(switch_port_snapshot_t* port){
+rofl_result_t of12_endpoint::notify_port_attached(const switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -801,7 +811,7 @@ afa_result_t of12_endpoint::notify_port_add(switch_port_snapshot_t* port){
 	
 	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
+	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
 	ofport.set_state(port->state);
@@ -815,10 +825,10 @@ afa_result_t of12_endpoint::notify_port_add(switch_port_snapshot_t* port){
 	//Send message
 	send_port_status_message(openflow12::OFPPR_ADD, ofport);
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
-afa_result_t of12_endpoint::notify_port_delete(switch_port_snapshot_t* port){
+rofl_result_t of12_endpoint::notify_port_detached(const switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -830,7 +840,7 @@ afa_result_t of12_endpoint::notify_port_delete(switch_port_snapshot_t* port){
 	
 	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
+	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
 	ofport.set_state(port->state);
@@ -844,10 +854,10 @@ afa_result_t of12_endpoint::notify_port_delete(switch_port_snapshot_t* port){
 	//Send message
 	send_port_status_message(openflow12::OFPPR_DELETE, ofport);
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
-afa_result_t of12_endpoint::notify_port_status_changed(switch_port_snapshot_t* port){
+rofl_result_t of12_endpoint::notify_port_status_changed(const switch_port_snapshot_t* port){
 
 	uint32_t config=0x0;
 
@@ -860,7 +870,7 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_snapshot_t* p
 	//Notify OF controller
 	cofport ofport(openflow12::OFP_VERSION);
 	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr(port->hwaddr, OFP_ETH_ALEN));
+	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 	ofport.set_name(std::string(port->name));
 	ofport.set_config(config);
 	ofport.set_state(port->state);
@@ -874,7 +884,7 @@ afa_result_t of12_endpoint::notify_port_status_changed(switch_port_snapshot_t* p
 	//Send message
 	send_port_status_message(openflow12::OFPPR_MODIFY, ofport);
 
-	return AFA_SUCCESS; // ignore this notification
+	return ROFL_SUCCESS; // ignore this notification
 }
 
 
@@ -1062,7 +1072,7 @@ of12_endpoint::flow_mod_delete(
 
 
 
-afa_result_t
+rofl_result_t
 of12_endpoint::process_flow_removed(
 		uint8_t reason,
 		of1x_flow_entry *entry)
@@ -1088,7 +1098,7 @@ of12_endpoint::process_flow_removed(
 			entry->stats.packet_count,
 			entry->stats.byte_count);
 
-	return AFA_SUCCESS;
+	return ROFL_SUCCESS;
 }
 
 

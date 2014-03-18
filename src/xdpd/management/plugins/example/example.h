@@ -20,11 +20,22 @@ namespace xdpd {
 class example:public plugin {
 	
 public:
-	virtual void init(int args, char** argv);
+	virtual void init(void);
 
 	virtual std::string get_name(void){
-		return std::string("Example plugin");
+		//Use code-name
+		return std::string("example");
 	};
+
+	virtual void notify_port_added(const switch_port_snapshot_t* port_snapshot);
+	virtual void notify_port_attached(const switch_port_snapshot_t* port_snapshot);
+	virtual void notify_port_status_changed(const switch_port_snapshot_t* port_snapshot);
+	virtual void notify_port_detached(const switch_port_snapshot_t* port_snapshot);
+	virtual void notify_port_deleted(const switch_port_snapshot_t* port_snapshot);
+	
+	virtual void notify_monitoring_state_changed(const monitoring_snapshot_state_t* monitoring_snapshot);
+
+
 };
 
 }// namespace xdpd 

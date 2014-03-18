@@ -5,6 +5,7 @@
 //sub scopes
 #include "openflow/openflow_scope.h" 
 #include "interfaces/interfaces_scope.h" 
+#include "system/system_scope.h" 
 
 using namespace xdpd;
 using namespace rofl;
@@ -26,6 +27,9 @@ config_scope::config_scope():scope("config", true){
 	
 	//Interfaces subhierarchy
 	register_subscope(new interfaces_scope());	
+	
+	//System subhierarchy
+	register_subscope(new system_scope());	
 }
 
 config_scope::~config_scope(){

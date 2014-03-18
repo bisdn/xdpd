@@ -91,7 +91,18 @@ public:
 	/**
 	 *
 	 */
-	virtual void init(int argc, char** argv);
+	virtual void init(void);
+
+	virtual std::vector<rofl::coption> get_options(void){
+		std::vector<rofl::coption> vec;
+
+		//Add -q and -x arguments
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'q', QMF_BROKER_URL_OPT, "qmf broker address", std::string("127.0.0.1")));
+		
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'x', QMF_XDPD_ID_OPT, "qmf xdpd ID", std::string("xdpd-0")));
+
+		return vec;
+	};
 
 	virtual std::string get_name(){
 		return std::string("qmf_agent");
@@ -112,6 +123,9 @@ protected:
 	handle_revent(int fd);
 
 private:
+
+	static const std::string QMF_BROKER_URL_OPT;
+	static const std::string QMF_XDPD_ID_OPT;
 
 	/**
 	 *

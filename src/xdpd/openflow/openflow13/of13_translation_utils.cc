@@ -1613,8 +1613,10 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 * Table capability bitmap
 */
 
-void of13_translation_utils::of13_map_bitmap_matches(uint64_t* bitmap, coftable_feature_prop_oxm& matches)
+void of13_translation_utils::of13_map_bitmap_matches(bitmap128_t* bitmap, coftable_feature_prop_oxm& matches)
 {
+
+#if 0
 	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IN_PORT))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IN_PORT);
 
@@ -1734,156 +1736,14 @@ void of13_translation_utils::of13_map_bitmap_matches(uint64_t* bitmap, coftable_
 
 	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_TUNNEL_ID))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TUNNEL_ID);
+
+#endif
 }
 
-uint64_t of13_translation_utils::of13_map_bitmap_matches(uint64_t* bitmap){
-
-	uint64_t mapped_bitmap=0x0;
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IN_PORT))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IN_PHY_PORT))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PHY_PORT);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_METADATA))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_METADATA);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ETH_DST))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ETH_DST);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ETH_SRC))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ETH_SRC);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ETH_TYPE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ETH_TYPE);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_VLAN_VID))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_VLAN_VID);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_VLAN_PCP))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_VLAN_PCP);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_MPLS_LABEL))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_MPLS_LABEL);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_MPLS_TC))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_MPLS_TC);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_OP))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ARP_OP);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_SPA))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ARP_SPA);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_TPA))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ARP_TPA);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_SHA))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ARP_SHA);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_THA))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ARP_THA);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IP_DSCP))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IP_DSCP);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IP_ECN))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IP_ECN);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IP_PROTO))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IP_PROTO);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV4_SRC))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV4_SRC);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV4_DST))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV4_DST);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_SRC))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_SRC);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_DST))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_DST);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_FLABEL))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_FLABEL);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ICMPV6_TYPE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ICMPV6_TYPE);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ICMPV6_CODE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ICMPV6_CODE);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_ND_TARGET))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_ND_TARGET);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_ND_SLL))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_ND_SLL);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_ND_TLL))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_ND_TLL);
-#if 0
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_EXTHDR))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_EXTHDR);
-#endif
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_TCP_SRC))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_TCP_SRC);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_TCP_DST))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_TCP_DST);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_UDP_SRC))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_UDP_SRC);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_UDP_DST))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_UDP_DST);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_SCTP_SRC))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_SCTP_SRC);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_SCTP_DST))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_SCTP_DST);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ICMPV4_TYPE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ICMPV4_TYPE);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ICMPV4_CODE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ICMPV4_CODE);
-
-//	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_PBB_ISID))
-//		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_MATCH_PBB_ISID);
-
-//	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_TUNNEL_ID))
-//		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_TUNNEL_ID);
-
-//TODO: codes now collide
-#if 0
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_PPPOE_CODE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_PPPOE_TYPE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_PPPOE_SID))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_PPP_PROT))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_GTP_MSG_TYPE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_GTP_TEID))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-#endif
-
-	return mapped_bitmap;	
-}
-
-
-void of13_translation_utils::of13_map_bitmap_set_fields(uint64_t* bitmap, coftable_feature_prop_oxm& matches)
+void of13_translation_utils::of13_map_bitmap_set_fields(bitmap128_t* bitmap, coftable_feature_prop_oxm& matches)
 {
+
+#if 0
 	if (*bitmap & (1UL << OF1X_MATCH_ETH_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_DST);
 
@@ -1994,11 +1854,15 @@ void of13_translation_utils::of13_map_bitmap_set_fields(uint64_t* bitmap, coftab
 
 	if (*bitmap & (1UL << OF1X_MATCH_TUNNEL_ID))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TUNNEL_ID);
+
+#endif
 }
 
 
-void of13_translation_utils::of13_map_bitmap_actions(uint32_t *bitmap, coftable_feature_prop_actions& actions)
+void of13_translation_utils::of13_map_bitmap_actions(bitmap128_t *bitmap, coftable_feature_prop_actions& actions)
 {
+	
+#if 0
 	if (*bitmap & (1 << rofl::openflow13::OFPAT_COPY_TTL_IN))
 		actions.add_action(rofl::openflow13::OFPAT_COPY_TTL_IN, 4);
 
@@ -2052,11 +1916,7 @@ void of13_translation_utils::of13_map_bitmap_actions(uint32_t *bitmap, coftable_
 
 	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_FIELD))
 		actions.add_action(rofl::openflow13::OFPAT_SET_FIELD, 4);
-}
-
-uint32_t of13_translation_utils::of13_map_bitmap_actions(uint32_t* bitmap){
-	//No mapping required (yet)
-	return *bitmap;	
+#endif
 }
 
 void of13_translation_utils::of13_map_bitmap_instructions(uint32_t* bitmap, coftable_feature_prop_instructions& instructions)
@@ -2080,29 +1940,4 @@ void of13_translation_utils::of13_map_bitmap_instructions(uint32_t* bitmap, coft
 	if(*bitmap & ( 1 << OF1X_IT_METER))
 		instructions.add_instruction(rofl::openflow::OFPIT_METER, 4);
 #endif
-}
-
-uint32_t of13_translation_utils::of13_map_bitmap_instructions(uint32_t* bitmap){
-	
-	uint32_t mapped_bitmap=0x0;
-
-	if(*bitmap & ( 1 << OF1X_IT_APPLY_ACTIONS))
-		mapped_bitmap |= (1 << openflow12::OFPIT_APPLY_ACTIONS);
-
-	if(*bitmap & ( 1 << OF1X_IT_CLEAR_ACTIONS))
-		mapped_bitmap |= (1 << openflow12::OFPIT_CLEAR_ACTIONS);
-
-	if(*bitmap & ( 1 << OF1X_IT_WRITE_ACTIONS))
-		mapped_bitmap |= (1 << openflow12::OFPIT_WRITE_ACTIONS);
-
-	if(*bitmap & ( 1 << OF1X_IT_WRITE_METADATA))
-		mapped_bitmap |= (1 << openflow12::OFPIT_WRITE_METADATA);
-	
-	if(*bitmap & ( 1 << OF1X_IT_GOTO_TABLE))
-		mapped_bitmap |= (1 << openflow12::OFPIT_GOTO_TABLE);
-#if 0
-	if(*bitmap & ( 1 << OF1X_IT_METER))
-		mapped_bitmap |= (1 << openflow12::OFPIT_METER);
-#endif
-	return mapped_bitmap;	
 }

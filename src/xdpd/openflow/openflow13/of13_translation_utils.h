@@ -101,32 +101,17 @@ public:
 	/**
 	*
 	*/
-	static uint64_t of13_map_bitmap_matches(uint64_t* bitmap);
+	static void of13_map_bitmap_matches(bitmap128_t* bitmap, coftable_feature_prop_oxm& matches);
 
 	/**
 	*
 	*/
-	static uint32_t of13_map_bitmap_actions(uint32_t* bitmap);
+	static void of13_map_bitmap_set_fields(bitmap128_t* bitmap, coftable_feature_prop_oxm& matches);
 
 	/**
 	*
 	*/
-	static uint32_t of13_map_bitmap_instructions(uint32_t* bitmap);
-
-	/**
-	*
-	*/
-	static void of13_map_bitmap_matches(uint64_t* bitmap, coftable_feature_prop_oxm& matches);
-
-	/**
-	*
-	*/
-	static void of13_map_bitmap_set_fields(uint64_t* bitmap, coftable_feature_prop_oxm& matches);
-
-	/**
-	*
-	*/
-	static void of13_map_bitmap_actions(uint32_t *write_actions, coftable_feature_prop_actions& actions);
+	static void of13_map_bitmap_actions(bitmap128_t* bitmap, coftable_feature_prop_actions& actions);
 
 	/**
 	*

@@ -89,6 +89,12 @@ public:
 	static uint32_t get_supported_actions(of1x_switch_t* lsw);
 	
 	/**
+	 * Wildcards supported by switch
+	 */
+	static uint32_t get_supported_wildcards(of1x_switch_t* lsw);
+	
+
+	/**
 	 * Translate special port numbers from 1.0 to 1.X
 	 */
 	static uint64_t get_out_port(uint16_t port);

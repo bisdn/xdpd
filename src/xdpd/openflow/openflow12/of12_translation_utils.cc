@@ -14,12 +14,17 @@
 		x=__bswap_64(x); \
 		x>>=16; \
 		}while(0)
+
+	#define LABELTOBE(x) do{ \
+		x<<=12; \
+		x=__bswap_32(x); \
+		}while(0)
 #else
 	#define MACTOBE(x) (x)
 #endif
 
 #define BETOHMAC(x) MACTOBE(x)
-
+#define BETOHLABEL(x) LABELTOBE(x)
 
 using namespace xdpd;
 
@@ -266,11 +271,21 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
+		
+		bool vlan_present = false;
+		uint16_t vid = htobe16(ofmatch.get_vlan_vid()); //NBO
+		uint16_t value = ofmatch.get_vlan_vid_value(); //HBO
+		uint16_t ofvid_present = openflow::OFPVID_PRESENT; //HBO
+		
+		if( (value&ofvid_present) > 0)
+			vlan_present = true;
+		
 		of1x_match_t *match = of1x_init_vlan_vid_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								htobe16(ofmatch.get_vlan_vid_value()),
-								htobe16(ofmatch.get_vlan_vid_mask()));
+								vid,
+								htobe16(ofmatch.get_vlan_vid_mask()),
+								vlan_present);
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
@@ -573,10 +588,12 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	}catch (eOFmatchNotFound& e) {}
 #endif	
 	try {
+		uint32_t label = ofmatch.get_mpls_label();
+		LABELTOBE(label);
 		of1x_match_t *match = of1x_init_mpls_label_match(
 								/*prev*/NULL,
 								/*next*/NULL,
-								htobe32(ofmatch.get_mpls_label()));
+								label);
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
@@ -705,19 +722,19 @@ of12_translation_utils::of12_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_DEC_MPLS_TTL, field, NULL, NULL);
 			break;
 		case openflow12::OFPAT_PUSH_VLAN:
-			field.u16 = be16toh(raction.oac_oacu.oacu_12push->ethertype);
+			field.u16 = raction.oac_oacu.oacu_12push->ethertype;
 			action = of1x_init_packet_action( OF1X_AT_PUSH_VLAN, field, NULL, NULL);
 			break;
 		case openflow12::OFPAT_POP_VLAN:
-			field.u16 = be16toh(raction.oac_12push->ethertype);
+			field.u16 = raction.oac_12push->ethertype;
 			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, NULL, NULL);
 			break;
 		case openflow12::OFPAT_PUSH_MPLS:
-			field.u16 = be16toh(raction.oac_12push->ethertype);
+			field.u16 = raction.oac_12push->ethertype;
 			action = of1x_init_packet_action( OF1X_AT_PUSH_MPLS, field, NULL, NULL);
 			break;
 		case openflow12::OFPAT_POP_MPLS:
-			field.u16 = be16toh(raction.oac_12push->ethertype);
+			field.u16 = raction.oac_12push->ethertype;
 			action = of1x_init_packet_action( OF1X_AT_POP_MPLS,  field, NULL, NULL);
 			break;
 		case openflow12::OFPAT_SET_QUEUE:
@@ -843,7 +860,8 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					break;
 				case openflow12::OFPXMT_OFB_MPLS_LABEL:
 				{
-					field.u32 = htobe32(oxm.uint32_value());
+					field.u32 = oxm.uint32_value();
+					LABELTOBE(field.u32);
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_LABEL, field, NULL, NULL);
 				}
 					break;
@@ -1208,9 +1226,11 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IPV6_ND_TLL:
 			match.set_icmpv6_neighbor_target_lladdr(be64toh(m->value->value.u64));
 			break;
-		case OF1X_MATCH_MPLS_LABEL:
-			match.set_mpls_label(be32toh(m->value->value.u32));
-			break;
+		case OF1X_MATCH_MPLS_LABEL:	{
+			uint32_t label = m->value->value.u32;
+			BETOHLABEL(label);
+			match.set_mpls_label(label);
+			}break;
 		case OF1X_MATCH_MPLS_TC:
 			match.set_mpls_tc(m->value->value.u8);
 			break;
@@ -1525,7 +1545,9 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_icmpv6_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
 	} break;
 	case OF1X_AT_SET_FIELD_MPLS_LABEL: {
-		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_mpls_label(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
+		uint32_t label = of1x_action->field.u32;
+		BETOHLABEL(label);
+		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_mpls_label(label & OF1X_4_BYTE_MASK));
 	} break;
 	case OF1X_AT_SET_FIELD_MPLS_TC: {
 		action = cofaction_set_field(OFP12_VERSION, coxmatch_ofb_mpls_tc((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
@@ -1689,8 +1711,11 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->icmpv6_code)
 		match.set_icmpv6_code(packet_matches->icmpv6_code);
 		
-	if(packet_matches->mpls_label)
-		match.set_mpls_label(be32toh(packet_matches->mpls_label));
+	if(packet_matches->mpls_label){
+		uint32_t label = packet_matches->mpls_label;
+		BETOHLABEL(label);
+		match.set_mpls_label(label);
+	}
 	if(packet_matches->mpls_tc)
 		match.set_mpls_tc(packet_matches->mpls_tc);
 	if(packet_matches->pppoe_code)

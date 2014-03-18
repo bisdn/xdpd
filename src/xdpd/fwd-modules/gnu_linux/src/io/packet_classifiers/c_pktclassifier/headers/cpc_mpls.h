@@ -14,8 +14,13 @@
 
 // VLAN ethernet types
 enum mpls_ether_t {
-	MPLS_ETHER = 0x8847,
-	MPLS_ETHER_UPSTREAM = 0x8848,
+#ifdef CPC_IN_HOSTBYTEORDER
+ 	MPLS_ETHER = 0x8847,
+ 	MPLS_ETHER_UPSTREAM = 0x8848,
+#else
+	MPLS_ETHER = 0x4788,
+	MPLS_ETHER_UPSTREAM = 0x4888,
+#endif
 };
 
 // MPLS header
@@ -26,17 +31,30 @@ typedef struct cpc_mpls_hdr {
 
 inline static
 void set_mpls_label(void *hdr, uint32_t label){
+#ifdef CPC_IN_HOSTBYTEORDER
 	((cpc_mpls_hdr_t*)hdr)->label[0] =  (label & 0x000ff000) >> 12;
 	((cpc_mpls_hdr_t*)hdr)->label[1] =  (label & 0x00000ff0) >>  4;
 	((cpc_mpls_hdr_t*)hdr)->label[2] = ((label & 0x0000000f) <<  4) | (((cpc_mpls_hdr_t*)hdr)->label[2] & 0x0f);
+#else
+	uint32_t *ptr = (uint32_t*) &((cpc_mpls_hdr_t*)hdr)->label[0];
+	*ptr = ((*ptr)&0xFF0F0000) | (label&0x00F0FFFF);
+#endif
 }
 
 inline static
 uint32_t get_mpls_label(void *hdr){
+#ifdef CPC_IN_HOSTBYTEORDER
 	uint32_t label =
 			(((cpc_mpls_hdr_t*)hdr)->label[0] << 12) +
 			(((cpc_mpls_hdr_t*)hdr)->label[1] <<  4) +
 			((((cpc_mpls_hdr_t*)hdr)->label[2] & 0xf0) >>  4);
+#else
+	uint32_t label = *(uint32_t*) &((cpc_mpls_hdr_t*)hdr)->label[0] ;
+	label &= 0x00F0FFFF; //WARNING valid for BE machine?
+//			(((cpc_mpls_hdr_t*)hdr)->label[0]) +
+//			(((cpc_mpls_hdr_t*)hdr)->label[1] <<  8) +
+//			((((cpc_mpls_hdr_t*)hdr)->label[2] & 0xf0) << 16);
+#endif
 	return label;
 }
 

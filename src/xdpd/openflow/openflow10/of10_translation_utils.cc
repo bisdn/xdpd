@@ -146,11 +146,13 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
+		bool vlan_present=true; //FIXME
 		of1x_match_t *match = of1x_init_vlan_vid_match(
 								/*prev*/NULL,
 								/*next*/NULL,
 								ofmatch.get_vlan_vid_value()|OF1X_VLAN_PRESENT_MASK,
-								0x1FFF); // no mask in OF1.0
+								0x1FFF,
+								vlan_present); // no mask in OF1.0
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}

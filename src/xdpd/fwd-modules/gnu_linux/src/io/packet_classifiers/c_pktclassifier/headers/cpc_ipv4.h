@@ -18,7 +18,11 @@
 /* IPv4 constants and definitions */
 // IPv4 ethernet types
 enum ipv4_ether_t {
+#ifdef CPC_IN_HOSTBYTEORDER
 	IPV4_ETHER = 0x0800,
+#else
+	IPV4_ETHER = 0x0008,
+#endif
 };
 
 enum ipv4_ip_proto_t {

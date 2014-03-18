@@ -15,7 +15,6 @@
 #ifndef OF13_ENDPOINT_H
 #define OF13_ENDPOINT_H 
 
-#include <rofl/platform/unix/csyslog.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include "../openflow_switch.h"
 #include "../of_endpoint.h"

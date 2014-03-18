@@ -4,10 +4,10 @@
 #include "../scope.h"
 
 /**
-* @file openflow_scope.h 
+* @file interfaces_scope.h 
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief Openflow libconfig file hierarchy 
+* @brief Interfaces libconfig file hierarchy 
 * 
 */
 

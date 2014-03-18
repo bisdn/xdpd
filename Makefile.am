@@ -13,6 +13,11 @@ MAINTAINERCLEANFILES = $(top_srcdir)/aclocal.m4 \
 
 SUBDIRS = src doc test
 
+#Could be improved.. 
+.PHONY: doc
+doc:
+	@cd doc/ && make doc		
+
 install-exec-hook:
 	@echo "Install"
 uninstall-hook:

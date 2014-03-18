@@ -1762,7 +1762,7 @@ uint64_t of12_translation_utils::of12_map_bitmap_matches(bitmap128_t* bitmap){
 
 uint32_t of12_translation_utils::of12_map_bitmap_actions(bitmap128_t* bitmap){
 
-	uint64_t t =0x0;
+	uint64_t t = 0x0;
 
 	t |= 1 << OFPAT_SET_FIELD;      
 	if(bitmap128_is_bit_set(bitmap, OF1X_AT_OUTPUT ))
@@ -1801,10 +1801,87 @@ uint32_t of12_translation_utils::of12_map_bitmap_actions(bitmap128_t* bitmap){
 
 uint64_t of12_translation_utils::of12_map_bitmap_set_fields(bitmap128_t* bitmap){
 
-	uint64_t t =0x0;
+	uint64_t t = 0x0;
 
-	//XXX
-
+	//Metadata ???
+	//if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_METADATA ))
+	//	 t |= 1UL << OFPXMT_OFB_METADATA;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ETH_DST ))
+		 t |= 1UL << OFPXMT_OFB_ETH_DST;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ETH_SRC ))
+		 t |= 1UL << OFPXMT_OFB_ETH_SRC;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ETH_TYPE ))
+		 t |= 1UL << OFPXMT_OFB_ETH_TYPE;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_VLAN_VID ))
+		 t |= 1UL << OFPXMT_OFB_VLAN_VID;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_VLAN_PCP ))
+		 t |= 1UL << OFPXMT_OFB_VLAN_PCP;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IP_DSCP ))
+		 t |= 1UL << OFPXMT_OFB_IP_DSCP;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IP_ECN ))
+		 t |= 1UL << OFPXMT_OFB_IP_ECN;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IP_PROTO ))
+		 t |= 1UL << OFPXMT_OFB_IP_PROTO;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV4_SRC ))
+		 t |= 1UL << OFPXMT_OFB_IPV4_SRC;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV4_DST ))
+		 t |= 1UL << OFPXMT_OFB_IPV4_DST;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_TCP_SRC ))
+		 t |= 1UL << OFPXMT_OFB_TCP_SRC;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_TCP_DST ))
+		 t |= 1UL << OFPXMT_OFB_TCP_DST;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_UDP_SRC ))
+		 t |= 1UL << OFPXMT_OFB_UDP_SRC;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_UDP_DST ))
+		 t |= 1UL << OFPXMT_OFB_UDP_DST;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_SCTP_SRC ))
+		 t |= 1UL << OFPXMT_OFB_SCTP_SRC;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_SCTP_DST ))
+		 t |= 1UL << OFPXMT_OFB_SCTP_DST;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ICMPV4_TYPE ))
+		 t |= 1UL << OFPXMT_OFB_ICMPV4_TYPE;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ICMPV4_CODE ))
+		 t |= 1UL << OFPXMT_OFB_ICMPV4_CODE;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ARP_OPCODE ))
+		 t |= 1UL << OFPXMT_OFB_ARP_OP;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ARP_SPA ))
+		 t |= 1UL << OFPXMT_OFB_ARP_SPA;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ARP_TPA ))
+		 t |= 1UL << OFPXMT_OFB_ARP_TPA;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ARP_SHA ))
+		 t |= 1UL << OFPXMT_OFB_ARP_SHA;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ARP_THA ))
+		 t |= 1UL << OFPXMT_OFB_ARP_THA;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_SRC ))
+		 t |= 1UL << OFPXMT_OFB_IPV6_SRC;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_DST ))
+		 t |= 1UL << OFPXMT_OFB_IPV6_DST;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_FLABEL ))
+		 t |= 1UL << OFPXMT_OFB_IPV6_FLABEL;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ICMPV6_TYPE ))
+		 t |= 1UL << OFPXMT_OFB_ICMPV6_TYPE;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_ICMPV6_CODE ))
+		 t |= 1UL << OFPXMT_OFB_ICMPV6_CODE;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_ND_TARGET ))
+		 t |= 1UL << OFPXMT_OFB_IPV6_ND_TARGET;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_ND_SLL ))
+		 t |= 1UL << OFPXMT_OFB_IPV6_ND_SLL;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_ND_TLL ))
+		 t |= 1UL << OFPXMT_OFB_IPV6_ND_TLL;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_MPLS_LABEL ))
+		 t |= 1UL << OFPXMT_OFB_MPLS_LABEL;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_MPLS_TC ))
+		 t |= 1UL << OFPXMT_OFB_MPLS_TC;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_MPLS_BOS ))
+		 t |= 1UL << OFPXMT_OFB_MPLS_BOS;
+	/*
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_PBB_ISID ))
+		 t |= 1UL << OFPXMT_OFB_PBB_ISID;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_TUNNEL_ID ))
+		 t |= 1UL << OFPXMT_OFB_TUNNEL_ID;
+	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_EXTHDR ))
+		 t |= 1UL << OFPXMT_OFB_IPV6_EXTHDR;
+	*/
 	return t;
 }
 

@@ -708,7 +708,6 @@ of13_endpoint::handle_group_stats_request(
 		groups.set_group_stats(g_msg->group_id).set_byte_count(g_msg->byte_count);
 		groups.set_group_stats(g_msg->group_id).set_duration_sec(0);
 		groups.set_group_stats(g_msg->group_id).set_duration_nsec(0);
-		groups.set_group_stats(g_msg->group_id).set_duration_nsec(num_of_buckets);
 		for(i=0;i<num_of_buckets;i++) {
 			groups.set_group_stats(g_msg->group_id).set_bucket_counters().set_bucket_counter(i).set_packet_count(g_msg->bucket_stats[i].packet_count);
 			groups.set_group_stats(g_msg->group_id).set_bucket_counters().set_bucket_counter(i).set_byte_count(g_msg->bucket_stats[i].byte_count);

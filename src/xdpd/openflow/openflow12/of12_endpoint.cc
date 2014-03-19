@@ -3,6 +3,7 @@
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include "of12_translation_utils.h"
+#include "../../management/system_manager.h"
 
 #ifdef HAVE_OPENSSL
 #include <rofl/common/ssl_lib.h>
@@ -150,19 +151,18 @@ of12_endpoint::handle_desc_stats_request(
 		cofmsg_desc_stats_request& msg,
 		uint8_t aux_id)
 {
-	std::string mfr_desc("eXtensible Data Path");
-	std::string hw_desc("v0.3.0");
-	std::string sw_desc("v0.3.0");
-	std::string serial_num("0");
-	std::string dp_desc("xDP");
+	std::string mfr_desc(PACKAGE_NAME);
+	std::string hw_desc(VERSION);
+	std::string sw_desc(VERSION);
 
 	cofdesc_stats_reply desc_stats(
 			ctl.get_version(),
 			mfr_desc,
 			hw_desc,
 			sw_desc,
-			serial_num,
-			dp_desc);
+			system_manager::get_id(),
+			system_manager::get_fwd_module_description()
+			);
 
 	ctl.send_desc_stats_reply(msg.get_xid(), desc_stats);
 }
@@ -199,10 +199,10 @@ of12_endpoint::handle_table_stats_request(
 		tablestatsarray.set_table_stats(table_id).set_wildcards(of12_translation_utils::of12_map_bitmap_matches(&tc->wildcards));
 		tablestatsarray.set_table_stats(table_id).set_write_actions(of12_translation_utils::of12_map_bitmap_actions(&tc->write_actions));
 		tablestatsarray.set_table_stats(table_id).set_apply_actions(of12_translation_utils::of12_map_bitmap_actions(&tc->apply_actions));
-		tablestatsarray.set_table_stats(table_id).set_write_setfields(of12_translation_utils::of12_map_bitmap_matches(&tc->write_setfields));
-		tablestatsarray.set_table_stats(table_id).set_apply_setfields(of12_translation_utils::of12_map_bitmap_matches(&tc->apply_setfields));
-		tablestatsarray.set_table_stats(table_id).set_metadata_match(tc->metadata_match);//FIXME: this needs to be properly mapped once METADATA is implemented
-		tablestatsarray.set_table_stats(table_id).set_metadata_write(tc->metadata_write);//FIXME: this needs to be properly mapped once METADATA is implemented
+		tablestatsarray.set_table_stats(table_id).set_write_setfields(of12_translation_utils::of12_map_bitmap_set_fields(&tc->write_actions));
+		tablestatsarray.set_table_stats(table_id).set_apply_setfields(of12_translation_utils::of12_map_bitmap_set_fields(&tc->apply_actions));
+		tablestatsarray.set_table_stats(table_id).set_metadata_match(tc->metadata_match);
+		tablestatsarray.set_table_stats(table_id).set_metadata_write(tc->metadata_write);
 		tablestatsarray.set_table_stats(table_id).set_instructions(of12_translation_utils::of12_map_bitmap_instructions(&tc->instructions));
 		tablestatsarray.set_table_stats(table_id).set_config(tc->table_miss_config);
 		tablestatsarray.set_table_stats(table_id).set_max_entries(table->max_entries);
@@ -357,17 +357,19 @@ of12_endpoint::handle_flow_stats_request(
 		cofinstructions instructions(ctl.get_version());
 		of12_translation_utils::of12_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
-		flowstatsarray.set_flow_stats(flow_id++).set_table_id(elem->table_id);
-		flowstatsarray.set_flow_stats(flow_id++).set_duration_sec(elem->duration_sec);
-		flowstatsarray.set_flow_stats(flow_id++).set_duration_nsec(elem->duration_nsec);
-		flowstatsarray.set_flow_stats(flow_id++).set_priority(elem->priority);
-		flowstatsarray.set_flow_stats(flow_id++).set_idle_timeout(elem->idle_timeout);
-		flowstatsarray.set_flow_stats(flow_id++).set_hard_timeout(elem->hard_timeout);
-		flowstatsarray.set_flow_stats(flow_id++).set_cookie(elem->cookie);
-		flowstatsarray.set_flow_stats(flow_id++).set_packet_count(elem->packet_count);
-		flowstatsarray.set_flow_stats(flow_id++).set_byte_count(elem->byte_count);
-		flowstatsarray.set_flow_stats(flow_id++).set_match() = match;
-		flowstatsarray.set_flow_stats(flow_id++).set_instructions() = instructions;
+		flowstatsarray.set_flow_stats(flow_id).set_table_id(elem->table_id);
+		flowstatsarray.set_flow_stats(flow_id).set_duration_sec(elem->duration_sec);
+		flowstatsarray.set_flow_stats(flow_id).set_duration_nsec(elem->duration_nsec);
+		flowstatsarray.set_flow_stats(flow_id).set_priority(elem->priority);
+		flowstatsarray.set_flow_stats(flow_id).set_idle_timeout(elem->idle_timeout);
+		flowstatsarray.set_flow_stats(flow_id).set_hard_timeout(elem->hard_timeout);
+		flowstatsarray.set_flow_stats(flow_id).set_cookie(elem->cookie);
+		flowstatsarray.set_flow_stats(flow_id).set_packet_count(elem->packet_count);
+		flowstatsarray.set_flow_stats(flow_id).set_byte_count(elem->byte_count);
+		flowstatsarray.set_flow_stats(flow_id).set_match() = match;
+		flowstatsarray.set_flow_stats(flow_id).set_instructions() = instructions;
+
+		flow_id++;
 	}
 
 	

@@ -10,6 +10,7 @@
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include "of10_translation_utils.h"
+#include "../../management/system_manager.h"
 
 using namespace rofl;
 using namespace xdpd;
@@ -160,19 +161,18 @@ of10_endpoint::handle_desc_stats_request(
 		cofmsg_desc_stats_request& msg,
 		uint8_t aux_id)
 {
-	std::string mfr_desc("eXtensible Data Path");
-	std::string hw_desc("v0.3.0");
-	std::string sw_desc("v0.3.0");
-	std::string serial_num("0");
-	std::string dp_desc("xDP");
+	std::string mfr_desc(PACKAGE_NAME);
+	std::string hw_desc(VERSION);
+	std::string sw_desc(VERSION);
 
 	cofdesc_stats_reply desc_stats(
 			ctl.get_version(),
 			mfr_desc,
 			hw_desc,
 			sw_desc,
-			serial_num,
-			dp_desc);
+			system_manager::get_id(),
+			system_manager::get_fwd_module_description()
+			);
 
 	ctl.send_desc_stats_reply(msg.get_xid(), desc_stats);
 }
@@ -200,16 +200,15 @@ of10_endpoint::handle_table_stats_request(
 
 		uint8_t table_id = of10switch->pipeline.tables[n].number;
 
+		//Main information
 		tablestatsarray.set_table_stats(table_id).set_table_id(of10switch->pipeline.tables[n].number);
 		tablestatsarray.set_table_stats(table_id).set_name(std::string(of10switch->pipeline.tables[n].name, strnlen(of10switch->pipeline.tables[n].name, OFP_MAX_TABLE_NAME_LEN)));
-		tablestatsarray.set_table_stats(table_id).set_match(of10switch->pipeline.tables[n].config.match);
-		tablestatsarray.set_table_stats(table_id).set_wildcards(of10switch->pipeline.tables[n].config.wildcards);
-		tablestatsarray.set_table_stats(table_id).set_write_actions(of10switch->pipeline.tables[n].config.write_actions);
-		tablestatsarray.set_table_stats(table_id).set_apply_actions(of10switch->pipeline.tables[n].config.apply_actions);
-		tablestatsarray.set_table_stats(table_id).set_write_setfields(of10switch->pipeline.tables[n].config.write_setfields);
-		tablestatsarray.set_table_stats(table_id).set_apply_setfields(of10switch->pipeline.tables[n].config.apply_setfields);
-		tablestatsarray.set_table_stats(table_id).set_metadata_match(of10switch->pipeline.tables[n].config.metadata_match);
-		tablestatsarray.set_table_stats(table_id).set_metadata_write(of10switch->pipeline.tables[n].config.metadata_write);
+
+		//Capabilities
+		tablestatsarray.set_table_stats(table_id).set_wildcards(of10_translation_utils::get_supported_wildcards(of10switch));
+		//tablestatsarray.set_table_stats(table_id).set_apply_actions(of10_translation_utils::get_supported_actions(of10switch));
+
+		//Other information
 		tablestatsarray.set_table_stats(table_id).set_instructions(of10switch->pipeline.tables[n].config.instructions);
 		tablestatsarray.set_table_stats(table_id).set_config(of10switch->pipeline.tables[n].config.table_miss_config);
 		tablestatsarray.set_table_stats(table_id).set_max_entries(of10switch->pipeline.tables[n].max_entries);
@@ -378,17 +377,19 @@ of10_endpoint::handle_flow_stats_request(
 			cofactions actions(rofl::openflow10::OFP_VERSION);
 			of10_translation_utils::of1x_map_reverse_flow_entry_actions((of1x_instruction_group_t*)(elem->inst_grp), actions, of10switch->pipeline.miss_send_len);
 
-			flowstatsarray.set_flow_stats(flow_id++).set_table_id(elem->table_id);
-			flowstatsarray.set_flow_stats(flow_id++).set_duration_sec(elem->duration_sec);
-			flowstatsarray.set_flow_stats(flow_id++).set_duration_nsec(elem->duration_nsec);
-			flowstatsarray.set_flow_stats(flow_id++).set_priority(elem->priority);
-			flowstatsarray.set_flow_stats(flow_id++).set_idle_timeout(elem->idle_timeout);
-			flowstatsarray.set_flow_stats(flow_id++).set_hard_timeout(elem->hard_timeout);
-			flowstatsarray.set_flow_stats(flow_id++).set_cookie(elem->cookie);
-			flowstatsarray.set_flow_stats(flow_id++).set_packet_count(elem->packet_count);
-			flowstatsarray.set_flow_stats(flow_id++).set_byte_count(elem->byte_count);
-			flowstatsarray.set_flow_stats(flow_id++).set_match() = match;
-			flowstatsarray.set_flow_stats(flow_id++).set_actions() = actions;
+			flowstatsarray.set_flow_stats(flow_id).set_table_id(elem->table_id);
+			flowstatsarray.set_flow_stats(flow_id).set_duration_sec(elem->duration_sec);
+			flowstatsarray.set_flow_stats(flow_id).set_duration_nsec(elem->duration_nsec);
+			flowstatsarray.set_flow_stats(flow_id).set_priority(elem->priority);
+			flowstatsarray.set_flow_stats(flow_id).set_idle_timeout(elem->idle_timeout);
+			flowstatsarray.set_flow_stats(flow_id).set_hard_timeout(elem->hard_timeout);
+			flowstatsarray.set_flow_stats(flow_id).set_cookie(elem->cookie);
+			flowstatsarray.set_flow_stats(flow_id).set_packet_count(elem->packet_count);
+			flowstatsarray.set_flow_stats(flow_id).set_byte_count(elem->byte_count);
+			flowstatsarray.set_flow_stats(flow_id).set_match() = match;
+			flowstatsarray.set_flow_stats(flow_id).set_actions() = actions;
+
+			flow_id++;
 
 			// TODO: check this implicit assumption of always using a single instruction?
 			// this should be an instruction of type OFPIT_APPLY_ACTIONS anyway

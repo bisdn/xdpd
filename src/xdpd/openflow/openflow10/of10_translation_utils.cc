@@ -708,47 +708,88 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 uint32_t of10_translation_utils::get_supported_actions(of1x_switch_snapshot_t *lsw){
 	uint32_t mask = 0;
 	
-	of1x_flow_table_config_t config = lsw->pipeline.tables[0].config;
+	of1x_flow_table_config_t* config = &lsw->pipeline.tables[0].config;
 		
-	if (config.apply_actions&(1UL<<OF12PAT_OUTPUT))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_OUTPUT))
 		mask |= 1 << rofl::openflow10::OFPAT_OUTPUT;
 	
-	if (config.match&(1UL<<OF1X_MATCH_VLAN_VID))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_VLAN_VID))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_VLAN_VID;
 	
-	if (config.match&(1UL<<OF1X_MATCH_VLAN_PCP))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_VLAN_PCP))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_VLAN_PCP;
 	
-	if (config.apply_actions&(1UL<<OF12PAT_POP_VLAN))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_POP_VLAN))
 		mask |= 1 << rofl::openflow10::OFPAT_STRIP_VLAN;
 	
-	if (config.match&(1UL<<OF1X_MATCH_ETH_SRC))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_ETH_SRC))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_DL_SRC;
 	
-	if (config.match&(1UL<<OF1X_MATCH_ETH_DST))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_ETH_DST))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_DL_DST;
 	
-	if (config.match&(1UL<<OF1X_MATCH_IPV4_SRC))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_IPV4_SRC))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_SRC;
 	
-	if (config.match&(1UL<<OF1X_MATCH_IPV4_DST))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_IPV4_DST))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_DST;
 	
-	if (config.match&(1UL<<OF1X_MATCH_IP_DSCP))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_IP_DSCP))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_NW_TOS;
 	
-	if (config.match&(UINT64_C(1)<<OF1X_MATCH_TP_SRC))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_TP_SRC))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_TP_SRC;
 	
-	if (config.match&(UINT64_C(1)<<OF1X_MATCH_TP_DST))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_FIELD_TP_DST))
 		mask |= 1 << rofl::openflow10::OFPAT_SET_TP_DST;
 	
-	if (config.apply_actions&(1UL<<OF12PAT_SET_QUEUE))
+	if (bitmap128_is_bit_set(&config->apply_actions, OF1X_AT_SET_QUEUE))
 		mask |= 1 << rofl::openflow10::OFPAT_ENQUEUE;
 		
 	return mask;
 }
 
+uint32_t of10_translation_utils::get_supported_wildcards(of1x_switch_snapshot_t *lsw){
+	uint32_t mask = 0;
+
+	//TODO
+#if 0	
+	of1x_flow_table_config_t* config = &lsw->pipeline.tables[0].config;
+
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_DST)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_SRC)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_TYPE)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_VLAN_VID)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_VLAN_PCP)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ARP_OP)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ARP_SPA)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ARP_TPA)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_IP_DSCP)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_IP_ECN)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_PROTO)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_SRC)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_DST)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_TP_SRC)
+		mask |= 1 <<  ;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_TP_DST)
+		mask |= 1 <<  ;
+#endif
+	return mask;
+}
+	
 uint64_t of10_translation_utils::get_out_port(uint16_t port){
 	switch(port){
 		case rofl::openflow10::OFPP_MAX:

@@ -50,6 +50,21 @@ public:
 	//
 	
 	/**
+	* Get id (e.g. serial number)
+	*/
+	static std::string get_id(void){
+		return id;
+	};
+	
+	/**
+	* Set id (e.g. serial number)
+	*/
+	static void set_id(std::string& _id){
+		id = _id;
+	};
+
+
+	/**
 	* Get xDPd version number, build number and other information
 	*/
 	static std::string get_version(void);
@@ -143,6 +158,9 @@ private:
 	//Prevent double initializations
 	static bool inited;	
 
+	//Identification number (e.g. Serial number)
+	static std::string id;
+	
 	//Cache platform driver information
 	static fwd_module_info_t info;
 

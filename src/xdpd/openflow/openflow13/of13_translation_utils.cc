@@ -816,6 +816,12 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_TC, field, 0x0, NULL, NULL);
 				}
 					break;
+				case openflow13::OFPXMT_OFB_MPLS_BOS:
+				{
+					field.u8 = oxm.uint8_value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_BOS, field, 0x0, NULL, NULL);
+				}
+					break;
 				case openflow12::OFPXMT_OFB_VLAN_VID:
 				{
 					field.u16 = oxm.uint16_value();

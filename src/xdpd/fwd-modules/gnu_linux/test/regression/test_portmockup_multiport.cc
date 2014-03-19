@@ -52,7 +52,7 @@ void DriverMultiPortMockupTestCase::setUp(){
 	unsigned int of_port_num=0;
 	fprintf(stderr,"<%s:%d> ************** Set up ************\n",__func__,__LINE__);
 
-	res = fwd_module_init();//discovery of ports
+	res = fwd_module_init(NULL);//discovery of ports
 	
 	if( res != AFA_SUCCESS )
 		exit(-1);

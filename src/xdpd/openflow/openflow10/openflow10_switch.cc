@@ -7,7 +7,6 @@
 
 #include "openflow10_switch.h"
 
-#include <rofl/platform/unix/csyslog.h>
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
 

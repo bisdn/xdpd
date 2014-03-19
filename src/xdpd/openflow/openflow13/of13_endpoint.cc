@@ -3,6 +3,7 @@
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include "of13_translation_utils.h"
+#include "../../management/system_manager.h"
 
 using namespace xdpd;
 
@@ -299,19 +300,19 @@ of13_endpoint::handle_desc_stats_request(
 		cofmsg_desc_stats_request& msg,
 		uint8_t aux_id)
 {
-	std::string mfr_desc("eXtensible Data Path");
-	std::string hw_desc(XDPD_VERSION);
-	std::string sw_desc(XDPD_VERSION);
-	std::string serial_num("0");
-	std::string dp_desc("xDP");
+
+	std::string mfr_desc(PACKAGE_NAME);
+	std::string hw_desc(VERSION);
+	std::string sw_desc(VERSION);
 
 	cofdesc_stats_reply desc_stats(
 			ctl.get_version(),
 			mfr_desc,
 			hw_desc,
 			sw_desc,
-			serial_num,
-			dp_desc);
+			system_manager::get_id(),
+			system_manager::get_fwd_module_description()
+			);
 
 	ctl.send_desc_stats_reply(msg.get_xid(), desc_stats);
 }

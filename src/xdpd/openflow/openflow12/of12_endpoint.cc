@@ -357,17 +357,19 @@ of12_endpoint::handle_flow_stats_request(
 		cofinstructions instructions(ctl.get_version());
 		of12_translation_utils::of12_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
-		flowstatsarray.set_flow_stats(flow_id++).set_table_id(elem->table_id);
-		flowstatsarray.set_flow_stats(flow_id++).set_duration_sec(elem->duration_sec);
-		flowstatsarray.set_flow_stats(flow_id++).set_duration_nsec(elem->duration_nsec);
-		flowstatsarray.set_flow_stats(flow_id++).set_priority(elem->priority);
-		flowstatsarray.set_flow_stats(flow_id++).set_idle_timeout(elem->idle_timeout);
-		flowstatsarray.set_flow_stats(flow_id++).set_hard_timeout(elem->hard_timeout);
-		flowstatsarray.set_flow_stats(flow_id++).set_cookie(elem->cookie);
-		flowstatsarray.set_flow_stats(flow_id++).set_packet_count(elem->packet_count);
-		flowstatsarray.set_flow_stats(flow_id++).set_byte_count(elem->byte_count);
-		flowstatsarray.set_flow_stats(flow_id++).set_match() = match;
-		flowstatsarray.set_flow_stats(flow_id++).set_instructions() = instructions;
+		flowstatsarray.set_flow_stats(flow_id).set_table_id(elem->table_id);
+		flowstatsarray.set_flow_stats(flow_id).set_duration_sec(elem->duration_sec);
+		flowstatsarray.set_flow_stats(flow_id).set_duration_nsec(elem->duration_nsec);
+		flowstatsarray.set_flow_stats(flow_id).set_priority(elem->priority);
+		flowstatsarray.set_flow_stats(flow_id).set_idle_timeout(elem->idle_timeout);
+		flowstatsarray.set_flow_stats(flow_id).set_hard_timeout(elem->hard_timeout);
+		flowstatsarray.set_flow_stats(flow_id).set_cookie(elem->cookie);
+		flowstatsarray.set_flow_stats(flow_id).set_packet_count(elem->packet_count);
+		flowstatsarray.set_flow_stats(flow_id).set_byte_count(elem->byte_count);
+		flowstatsarray.set_flow_stats(flow_id).set_match() = match;
+		flowstatsarray.set_flow_stats(flow_id).set_instructions() = instructions;
+
+		flow_id++;
 	}
 
 	

@@ -634,6 +634,8 @@ of10_endpoint::process_packet_in(
 		cofmatch match(rofl::openflow10::OFP_VERSION);
 		of10_translation_utils::of1x_map_reverse_packet_matches(matches, match);
 
+		size_t len = (total_len < buf_len) ? total_len : buf_len;
+
 		send_packet_in_message(
 				buffer_id,
 				total_len,
@@ -642,7 +644,7 @@ of10_endpoint::process_packet_in(
 				/*cookie=*/0,
 				in_port, // OF1.0 only
 				match,
-				pkt_buffer, buf_len);
+				pkt_buffer, len);
 
 		return ROFL_SUCCESS;
 

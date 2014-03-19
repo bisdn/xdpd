@@ -150,8 +150,6 @@ afa_result_t fwd_module_of1x_set_port_advertise_config(uint64_t dpid, unsigned i
  */
 afa_result_t fwd_module_of1x_set_pipeline_config(uint64_t dpid, unsigned int flags, uint16_t miss_send_len){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-	
 	of_switch_t* lsw;
 
 	//Recover switch 
@@ -182,8 +180,6 @@ afa_result_t fwd_module_of1x_set_pipeline_config(uint64_t dpid, unsigned int fla
  */
 afa_result_t fwd_module_of1x_set_table_config(uint64_t dpid, unsigned int table_id, of1x_flow_table_miss_config_t config){
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-
 	of1x_switch_t* lsw;
 	unsigned int i;
 
@@ -466,8 +462,6 @@ of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
 	
 	of1x_switch_t* lsw;
 
-	ROFL_DEBUG("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-
 	//Recover port	
 	lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 
@@ -498,8 +492,6 @@ of1x_stats_flow_msg_t* fwd_module_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
  */
 of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_group_t* matches){
 
-	ROFL_DEBUG("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-
 	of1x_switch_t* lsw;
 
 	//Recover port	
@@ -525,8 +517,6 @@ of1x_stats_flow_aggregate_msg_t* fwd_module_of1x_get_flow_aggregate_stats(uint64
  */
 rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t** buckets){
 	
-	ROFL_DEBUG("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-		
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
 	if(!lsw){
@@ -546,8 +536,6 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_add(uint64_t dpid, of1x_group_ty
  */
 rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t** buckets){
 	
-	ROFL_DEBUG("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-		
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
 	if(!lsw){
@@ -567,8 +555,6 @@ rofl_of1x_gm_result_t fwd_module_of1x_group_mod_modify(uint64_t dpid, of1x_group
  */
 rofl_of1x_gm_result_t fwd_module_of1x_group_mod_delete(uint64_t dpid, uint32_t id){
 	
-	ROFL_DEBUG("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-		
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
 	if(!lsw){
@@ -609,8 +595,6 @@ afa_result_t fwd_module_of1x_fetch_group_table(uint64_t dpid, of1x_group_table_t
  */
 of1x_stats_group_msg_t * fwd_module_of1x_get_group_stats(uint64_t dpid, uint32_t id){
 
-	ROFL_DEBUG("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
-		
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
 	if(!lsw){

@@ -62,7 +62,7 @@ afa_result_t fwd_module_init(const char* extra_params){
 	const char* argv_fake[EAL_ARGS] = {"xdpd", "-c", XSTR(RTE_CORE_MASK), "-n", XSTR(RTE_MEM_CHANNELS), NULL};
 	
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_init()\n");
+	ROFL_INFO("["FWD_MOD_NAME"] Initializing...\n");
 	
         /* init EAL library */
 	optind=1;
@@ -147,7 +147,7 @@ void fwd_module_get_info(fwd_module_info_t* info){
 */
 afa_result_t fwd_module_destroy(){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling fwd_mod_destroy()\n");
+	ROFL_INFO("["FWD_MOD_NAME"] Destroying...\n");
 	
 	//Cleanup processing. This must be the first thing to do
 	processing_destroy();
@@ -211,7 +211,7 @@ afa_result_t fwd_module_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	of_switch_t* sw;
 	
-	ROFL_INFO("["FWD_MOD_NAME"] calling create switch. Name: %s, number of tables: %d\n",name, num_of_tables);
+	ROFL_INFO("["FWD_MOD_NAME"] Creating switch. Name: %s, number of tables: %d\n",name, num_of_tables);
 	
 	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
@@ -387,8 +387,7 @@ afa_result_t fwd_module_attach_port_to_switch(uint64_t dpid, const char* name, u
 */
 afa_result_t fwd_module_connect_switches(uint64_t dpid_lsi1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, switch_port_snapshot_t** port2){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling connect_switches()\n");
-	//XXX
+	//TODO: implemented
 	return AFA_FAILURE; 
 }
 

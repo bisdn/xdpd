@@ -10,6 +10,7 @@
 #include <rofl/datapath/afa/fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include "of10_translation_utils.h"
+#include "../../management/system_manager.h"
 
 using namespace rofl;
 using namespace xdpd;
@@ -160,19 +161,18 @@ of10_endpoint::handle_desc_stats_request(
 		cofmsg_desc_stats_request& msg,
 		uint8_t aux_id)
 {
-	std::string mfr_desc("eXtensible Data Path");
-	std::string hw_desc("v0.3.0");
-	std::string sw_desc("v0.3.0");
-	std::string serial_num("0");
-	std::string dp_desc("xDP");
+	std::string mfr_desc(PACKAGE_NAME);
+	std::string hw_desc(VERSION);
+	std::string sw_desc(VERSION);
 
 	cofdesc_stats_reply desc_stats(
 			ctl.get_version(),
 			mfr_desc,
 			hw_desc,
 			sw_desc,
-			serial_num,
-			dp_desc);
+			system_manager::get_id(),
+			system_manager::get_fwd_module_description()
+			);
 
 	ctl.send_desc_stats_reply(msg.get_xid(), desc_stats);
 }
@@ -194,36 +194,33 @@ of10_endpoint::handle_table_stats_request(
 	num_of_tables = of10switch->pipeline.num_of_tables;
 	
 	//Reply to fill in
-	std::vector<coftable_stats_reply> table_stats;
+	rofl::openflow::coftablestatsarray tablestatsarray(ctl.get_version());
 
 	for (unsigned int n = 0; n < num_of_tables; n++) {
 
-		table_stats.push_back(
-				coftable_stats_reply(
-					ctl.get_version(),
-					of10switch->pipeline.tables[n].number,
-					std::string(of10switch->pipeline.tables[n].name, strnlen(of10switch->pipeline.tables[n].name, OFP_MAX_TABLE_NAME_LEN)),
-					(of10switch->pipeline.tables[n].config.match),
-					(of10switch->pipeline.tables[n].config.wildcards),
-					(of10switch->pipeline.tables[n].config.write_actions),
-					(of10switch->pipeline.tables[n].config.apply_actions),
-					(of10switch->pipeline.tables[n].config.write_setfields),
-					(of10switch->pipeline.tables[n].config.apply_setfields),
-					(of10switch->pipeline.tables[n].config.metadata_match),
-					(of10switch->pipeline.tables[n].config.metadata_write),
-					(of10switch->pipeline.tables[n].config.instructions),
-					(of10switch->pipeline.tables[n].config.table_miss_config),
-					(of10switch->pipeline.tables[n].max_entries),
-					(of10switch->pipeline.tables[n].num_of_entries),
-					(of10switch->pipeline.tables[n].stats.lookup_count),
-					(of10switch->pipeline.tables[n].stats.matched_count)
-				));
+		uint8_t table_id = of10switch->pipeline.tables[n].number;
+
+		//Main information
+		tablestatsarray.set_table_stats(table_id).set_table_id(of10switch->pipeline.tables[n].number);
+		tablestatsarray.set_table_stats(table_id).set_name(std::string(of10switch->pipeline.tables[n].name, strnlen(of10switch->pipeline.tables[n].name, OFP_MAX_TABLE_NAME_LEN)));
+
+		//Capabilities
+		tablestatsarray.set_table_stats(table_id).set_wildcards(of10_translation_utils::get_supported_wildcards(of10switch));
+		//tablestatsarray.set_table_stats(table_id).set_apply_actions(of10_translation_utils::get_supported_actions(of10switch));
+
+		//Other information
+		tablestatsarray.set_table_stats(table_id).set_instructions(of10switch->pipeline.tables[n].config.instructions);
+		tablestatsarray.set_table_stats(table_id).set_config(of10switch->pipeline.tables[n].config.table_miss_config);
+		tablestatsarray.set_table_stats(table_id).set_max_entries(of10switch->pipeline.tables[n].max_entries);
+		tablestatsarray.set_table_stats(table_id).set_active_count(of10switch->pipeline.tables[n].num_of_entries);
+		tablestatsarray.set_table_stats(table_id).set_lookup_count(of10switch->pipeline.tables[n].stats.lookup_count);
+		tablestatsarray.set_table_stats(table_id).set_matched_count(of10switch->pipeline.tables[n].stats.matched_count);
 	}
 
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
-	ctl.send_table_stats_reply(msg.get_xid(), table_stats, false);
+	ctl.send_table_stats_reply(msg.get_xid(), tablestatsarray, false);
 
 }
 
@@ -243,7 +240,7 @@ of10_endpoint::handle_port_stats_request(
 	if(!of10switch)
 		throw eRofBase();
 	
-	std::vector<cofport_stats_reply> port_stats;
+	rofl::openflow::cofportstatsarray portstatsarray(ctl.get_version());
 
 	/*
 	 *  send statistics for all ports
@@ -257,24 +254,19 @@ of10_endpoint::handle_port_stats_request(
 
 			if((port != NULL) && (of10switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED)){
 
-				port_stats.push_back(
-						cofport_stats_reply(
-								ctl.get_version(),
-								port->of_port_num,
-								port->stats.rx_packets,
-								port->stats.tx_packets,
-								port->stats.rx_bytes,
-								port->stats.tx_bytes,
-								port->stats.rx_dropped,
-								port->stats.tx_dropped,
-								port->stats.rx_errors,
-								port->stats.tx_errors,
-								port->stats.rx_frame_err,
-								port->stats.rx_over_err,
-								port->stats.rx_crc_err,
-								port->stats.collisions,
-								0,
-								0));
+				portstatsarray.set_port_stats(port->of_port_num).set_port_no(port->of_port_num);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_bytes(port->stats.tx_bytes);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_dropped(port->stats.rx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_dropped(port->stats.tx_dropped);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_errors(port->stats.rx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_tx_errors(port->stats.tx_errors);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_frame_err(port->stats.rx_frame_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_over_err(port->stats.rx_over_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_rx_crc_err(port->stats.rx_crc_err);
+				portstatsarray.set_port_stats(port->of_port_num).set_collisions(port->stats.collisions);
 			}
 	 	}
 
@@ -290,26 +282,21 @@ of10_endpoint::handle_port_stats_request(
 			(of10switch->logical_ports[port_no].attachment_state == LOGICAL_PORT_STATE_ATTACHED) &&
 			(port->of_port_num == port_no)
 		){
-			//Mapping of port state
-			port_stats.push_back(
-					cofport_stats_reply(
-							ctl.get_version(),
-							port->of_port_num,
-							port->stats.rx_packets,
-							port->stats.tx_packets,
-							port->stats.rx_bytes,
-							port->stats.tx_bytes,
-							port->stats.rx_dropped,
-							port->stats.tx_dropped,
-							port->stats.rx_errors,
-							port->stats.tx_errors,
-							port->stats.rx_frame_err,
-							port->stats.rx_over_err,
-							port->stats.rx_crc_err,
-							port->stats.collisions,
-							0,
-							0));
 
+			//Mapping of port state
+			portstatsarray.set_port_stats(port->of_port_num).set_port_no(port->of_port_num);
+			portstatsarray.set_port_stats(port->of_port_num).set_rx_packets(port->stats.rx_packets);
+			portstatsarray.set_port_stats(port->of_port_num).set_tx_packets(port->stats.tx_packets);
+			portstatsarray.set_port_stats(port->of_port_num).set_rx_bytes(port->stats.rx_bytes);
+			portstatsarray.set_port_stats(port->of_port_num).set_tx_bytes(port->stats.tx_bytes);
+			portstatsarray.set_port_stats(port->of_port_num).set_rx_dropped(port->stats.rx_dropped);
+			portstatsarray.set_port_stats(port->of_port_num).set_tx_dropped(port->stats.tx_dropped);
+			portstatsarray.set_port_stats(port->of_port_num).set_rx_errors(port->stats.rx_errors);
+			portstatsarray.set_port_stats(port->of_port_num).set_tx_errors(port->stats.tx_errors);
+			portstatsarray.set_port_stats(port->of_port_num).set_rx_frame_err(port->stats.rx_frame_err);
+			portstatsarray.set_port_stats(port->of_port_num).set_rx_over_err(port->stats.rx_over_err);
+			portstatsarray.set_port_stats(port->of_port_num).set_rx_crc_err(port->stats.rx_crc_err);
+			portstatsarray.set_port_stats(port->of_port_num).set_collisions(port->stats.collisions);
 		}
 
 		// if port_no was not found, body.memlen() is 0
@@ -321,7 +308,7 @@ of10_endpoint::handle_port_stats_request(
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 
-	ctl.send_port_stats_reply(msg.get_xid(), port_stats, false);
+	ctl.send_port_stats_reply(msg.get_xid(), portstatsarray, false);
 }
 
 
@@ -377,7 +364,9 @@ of10_endpoint::handle_flow_stats_request(
 	//Construct OF message
 	of1x_stats_single_flow_msg_t *elem = fp_msg->flows_head;
 
-	std::vector<cofflow_stats_reply> flow_stats;
+	rofl::openflow::cofflowstatsarray flowstatsarray(ctl.get_version());
+
+	uint32_t flow_id = 0;
 
 	try{
 		for(elem = fp_msg->flows_head; elem; elem = elem->next){
@@ -388,26 +377,26 @@ of10_endpoint::handle_flow_stats_request(
 			cofactions actions(rofl::openflow10::OFP_VERSION);
 			of10_translation_utils::of1x_map_reverse_flow_entry_actions((of1x_instruction_group_t*)(elem->inst_grp), actions, of10switch->pipeline.miss_send_len);
 
-			flow_stats.push_back(
-					cofflow_stats_reply(
-							ctl.get_version(),
-							elem->table_id,
-							elem->duration_sec,
-							elem->duration_nsec,
-							elem->priority,
-							elem->idle_timeout,
-							elem->hard_timeout,
-							elem->cookie,
-							elem->packet_count,
-							elem->byte_count,
-							match,
-							actions));
+			flowstatsarray.set_flow_stats(flow_id).set_table_id(elem->table_id);
+			flowstatsarray.set_flow_stats(flow_id).set_duration_sec(elem->duration_sec);
+			flowstatsarray.set_flow_stats(flow_id).set_duration_nsec(elem->duration_nsec);
+			flowstatsarray.set_flow_stats(flow_id).set_priority(elem->priority);
+			flowstatsarray.set_flow_stats(flow_id).set_idle_timeout(elem->idle_timeout);
+			flowstatsarray.set_flow_stats(flow_id).set_hard_timeout(elem->hard_timeout);
+			flowstatsarray.set_flow_stats(flow_id).set_cookie(elem->cookie);
+			flowstatsarray.set_flow_stats(flow_id).set_packet_count(elem->packet_count);
+			flowstatsarray.set_flow_stats(flow_id).set_byte_count(elem->byte_count);
+			flowstatsarray.set_flow_stats(flow_id).set_match() = match;
+			flowstatsarray.set_flow_stats(flow_id).set_actions() = actions;
+
+			flow_id++;
+
 			// TODO: check this implicit assumption of always using a single instruction?
 			// this should be an instruction of type OFPIT_APPLY_ACTIONS anyway
 		}
 
 		//Send message
-		ctl.send_flow_stats_reply(msg.get_xid(), flow_stats);
+		ctl.send_flow_stats_reply(msg.get_xid(), flowstatsarray);
 	}catch(...){
 		of1x_destroy_stats_flow_msg(fp_msg);
 		of1x_destroy_flow_entry(entry);
@@ -512,7 +501,7 @@ of10_endpoint::handle_queue_stats_request(
 		throw eBadRequestBadPort(); 	//Invalid port num
 	}
 
-	std::vector<cofqueue_stats_reply> stats;
+	rofl::openflow::cofqueuestatsarray queuestatsarray(ctl.get_version());
 
 	/*
 	* port num
@@ -531,23 +520,15 @@ of10_endpoint::handle_queue_stats_request(
 
 			if (OFPQ_ALL == queue_id){
 
-				// TODO: iterate over all queues
-
 				for(unsigned int i=0; i<port->max_queues; i++){
 					if(!port->queues[i].set)
 						continue;
 
-					//Set values
-					stats.push_back(
-							cofqueue_stats_reply(
-									ctl.get_version(),
-									port->of_port_num,
-									i,
-									port->queues[i].stats.tx_bytes,
-									port->queues[i].stats.tx_packets,
-									port->queues[i].stats.overrun,
-									0,
-									0));
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_port_no(port->of_port_num);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_queue_id(i);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_bytes(port->queues[i].stats.tx_bytes);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_packets(port->queues[i].stats.tx_packets);
+					queuestatsarray.set_queue_stats(port->of_port_num, i).set_tx_errors(port->queues[i].stats.overrun);
 				}
 
 			} else {
@@ -563,17 +544,12 @@ of10_endpoint::handle_queue_stats_request(
 				//Check if the queue is really in use
 				if(port->queues[queue_id].set){
 					//Set values
-					stats.push_back(
-							cofqueue_stats_reply(
-									ctl.get_version(),
-									portnum,
-									queue_id,
-									port->queues[queue_id].stats.tx_bytes,
-									port->queues[queue_id].stats.tx_packets,
-									port->queues[queue_id].stats.overrun,
-									0,
-									0));
 
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_port_no(portnum);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_queue_id(queue_id);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_bytes(port->queues[queue_id].stats.tx_bytes);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_packets(port->queues[queue_id].stats.tx_packets);
+					queuestatsarray.set_queue_stats(portnum, queue_id).set_tx_errors(port->queues[queue_id].stats.overrun);
 				}
 			}
 		}
@@ -585,7 +561,7 @@ of10_endpoint::handle_queue_stats_request(
 
 	ctl.send_queue_stats_reply(
 			pack.get_xid(),
-			stats,
+			queuestatsarray,
 			false);
 }
 
@@ -687,91 +663,113 @@ of10_endpoint::process_packet_in(
 
 rofl_result_t of10_endpoint::notify_port_attached(const switch_port_snapshot_t* port){
 
-	uint32_t config=0x0;
+	try {
+		uint32_t config=0x0;
 
-	//Compose port config
-	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
-	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
+		//Compose port config
+		if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+		if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+		if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+		if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
 
-	cofport ofport(rofl::openflow10::OFP_VERSION);
-	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
-	ofport.set_name(std::string(port->name));
-	ofport.set_config(config);
-	ofport.set_state(port->state&0x1); //Only first bit is relevant
-	ofport.set_curr(port->curr);
-	ofport.set_advertised(port->advertised);
-	ofport.set_supported(port->supported);
-	ofport.set_peer(port->peer);
-	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+		cofport ofport(rofl::openflow10::OFP_VERSION);
+		ofport.set_port_no(port->of_port_num);
+		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
+		ofport.set_name(std::string(port->name));
+		ofport.set_config(config);
+		ofport.set_state(port->state&0x1); //Only first bit is relevant
+		ofport.set_curr(port->curr);
+		ofport.set_advertised(port->advertised);
+		ofport.set_supported(port->supported);
+		ofport.set_peer(port->peer);
+		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
-	//Send message
-	send_port_status_message(rofl::openflow10::OFPPR_ADD, ofport);
+		//Send message
+		send_port_status_message(rofl::openflow10::OFPPR_ADD, ofport);
 
-	return ROFL_SUCCESS;
+		return ROFL_SUCCESS;
+
+	} catch (...) {
+
+		return ROFL_FAILURE;
+	}
+
 }
 
 rofl_result_t of10_endpoint::notify_port_detached(const switch_port_snapshot_t* port){
 
-	uint32_t config=0x0;
+	try {
+		uint32_t config=0x0;
 
-	//Compose port config
-	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
-	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
+		//Compose port config
+		if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+		if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+		if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+		if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
-	cofport ofport(rofl::openflow10::OFP_VERSION);
-	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
-	ofport.set_name(std::string(port->name));
-	ofport.set_config(config);
-	ofport.set_state(port->state&0x1); //Only first bit is relevant
-	ofport.set_curr(port->curr);
-	ofport.set_advertised(port->advertised);
-	ofport.set_supported(port->supported);
-	ofport.set_peer(port->peer);
-	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+		cofport ofport(rofl::openflow10::OFP_VERSION);
+		ofport.set_port_no(port->of_port_num);
+		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
+		ofport.set_name(std::string(port->name));
+		ofport.set_config(config);
+		ofport.set_state(port->state&0x1); //Only first bit is relevant
+		ofport.set_curr(port->curr);
+		ofport.set_advertised(port->advertised);
+		ofport.set_supported(port->supported);
+		ofport.set_peer(port->peer);
+		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
-	//Send message
-	send_port_status_message(rofl::openflow10::OFPPR_DELETE, ofport);
+		//Send message
+		send_port_status_message(rofl::openflow10::OFPPR_DELETE, ofport);
 
-	return ROFL_SUCCESS;
+		return ROFL_SUCCESS;
+
+
+	} catch (...) {
+
+		return ROFL_FAILURE;
+	}
+
 }
 
 rofl_result_t of10_endpoint::notify_port_status_changed(const switch_port_snapshot_t* port){
 
-	uint32_t config=0x0;
+	try {
+		uint32_t config=0x0;
 
-	//Compose port config
-	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
-	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
+		//Compose port config
+		if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+		if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+		if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+		if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
-	//Notify OF controller
-	cofport ofport(rofl::openflow10::OFP_VERSION);
-	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
-	ofport.set_name(std::string(port->name));
-	ofport.set_config(config);
-	ofport.set_state(port->state&0x1); //Only first bit is relevant
-	ofport.set_curr(port->curr);
-	ofport.set_advertised(port->advertised);
-	ofport.set_supported(port->supported);
-	ofport.set_peer(port->peer);
-	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+		//Notify OF controller
+		cofport ofport(rofl::openflow10::OFP_VERSION);
+		ofport.set_port_no(port->of_port_num);
+		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
+		ofport.set_name(std::string(port->name));
+		ofport.set_config(config);
+		ofport.set_state(port->state&0x1); //Only first bit is relevant
+		ofport.set_curr(port->curr);
+		ofport.set_advertised(port->advertised);
+		ofport.set_supported(port->supported);
+		ofport.set_peer(port->peer);
+		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
-	//Send message
-	send_port_status_message(rofl::openflow10::OFPPR_MODIFY, ofport);
+		//Send message
+		send_port_status_message(rofl::openflow10::OFPPR_MODIFY, ofport);
 
-	return ROFL_SUCCESS; // ignore this notification
+		return ROFL_SUCCESS; // ignore this notification
+
+	} catch (...) {
+
+		return ROFL_FAILURE;
+	}
+
 }
 
 
@@ -967,29 +965,36 @@ of10_endpoint::process_flow_removed(
 		uint8_t reason,
 		of1x_flow_entry *entry)
 {
-	cofmatch match(rofl::openflow10::OFP_VERSION);
-	uint32_t sec,nsec;
+	try {
+		cofmatch match(rofl::openflow10::OFP_VERSION);
+		uint32_t sec,nsec;
 
-	of10_translation_utils::of1x_map_reverse_flow_entry_matches(entry->matches.head, match);
+		of10_translation_utils::of1x_map_reverse_flow_entry_matches(entry->matches.head, match);
 
-	//get duration of the flow mod
-	of1x_stats_flow_get_duration(entry, &sec, &nsec);
+		//get duration of the flow mod
+		of1x_stats_flow_get_duration(entry, &sec, &nsec);
 
 
-	send_flow_removed_message(
-			match,
-			entry->cookie,
-			entry->priority,
-			reason,
-			entry->table->number,
-			sec,
-			nsec,
-			entry->timer_info.idle_timeout,
-			entry->timer_info.hard_timeout,
-			entry->stats.packet_count,
-			entry->stats.byte_count);
+		send_flow_removed_message(
+				match,
+				entry->cookie,
+				entry->priority,
+				reason,
+				entry->table->number,
+				sec,
+				nsec,
+				entry->timer_info.idle_timeout,
+				entry->timer_info.hard_timeout,
+				entry->stats.packet_count,
+				entry->stats.byte_count);
 
-	return ROFL_SUCCESS;
+		return ROFL_SUCCESS;
+
+	} catch (...) {
+
+		return ROFL_FAILURE;
+	}
+
 }
 
 

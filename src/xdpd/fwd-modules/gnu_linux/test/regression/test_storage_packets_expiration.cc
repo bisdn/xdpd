@@ -55,7 +55,7 @@ void DriverStoragePacketsExpirationTestCase::setUp(){
 	afa_result_t res;
 	fprintf(stderr,"<%s:%d> ************** Set up ************\n",__func__,__LINE__);
 	
-	res = fwd_module_init();//discovery of ports
+	res = fwd_module_init(NULL);//discovery of ports
 	CPPUNIT_ASSERT( res == AFA_SUCCESS );
 	(void)res;
 	

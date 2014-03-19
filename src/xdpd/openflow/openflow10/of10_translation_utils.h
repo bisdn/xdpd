@@ -8,7 +8,6 @@
 #include <rofl/common/crofbase.h>
 #include <rofl/common/openflow/messages/cofmsg_features.h>
 #include <rofl/common/openflow/messages/cofmsg_flow_mod.h>
-#include <rofl/platform/unix/csyslog.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_action.h>
@@ -88,6 +87,12 @@ public:
 	 */
 	static uint32_t get_supported_actions(of1x_switch_t* lsw);
 	
+	/**
+	 * Wildcards supported by switch
+	 */
+	static uint32_t get_supported_wildcards(of1x_switch_t* lsw);
+	
+
 	/**
 	 * Translate special port numbers from 1.0 to 1.X
 	 */

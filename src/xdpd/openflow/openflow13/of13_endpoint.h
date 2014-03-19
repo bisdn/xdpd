@@ -15,7 +15,6 @@
 #ifndef OF13_ENDPOINT_H
 #define OF13_ENDPOINT_H 
 
-#include <rofl/platform/unix/csyslog.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include "../openflow_switch.h"
 #include "../of_endpoint.h"
@@ -176,7 +175,7 @@ private:
 	 *
 	 */
 	virtual void
-	handle_table_features_stats_request(crofctl& ctl, cofmsg_table_features_request& msg, uint8_t aux_id = 0);
+	handle_table_features_stats_request(crofctl& ctl, cofmsg_table_features_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**

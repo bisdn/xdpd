@@ -8,7 +8,6 @@
 #include <rofl/common/crofbase.h>
 #include <rofl/common/openflow/messages/cofmsg_features.h>
 #include <rofl/common/openflow/messages/cofmsg_flow_mod.h>
-#include <rofl/platform/unix/csyslog.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_action.h>
@@ -98,11 +97,13 @@ public:
 	*/
 	static void of12_map_reverse_packet_matches(packet_matches_t* packet_matches, cofmatch& match);
 
-	static uint64_t of12_map_bitmap_matches(uint64_t* bitmap);
+	static uint64_t of12_map_bitmap_matches(bitmap128_t* bitmap);
 
-	static uint32_t of12_map_bitmap_actions(uint32_t* bitmap);
+	static uint32_t of12_map_bitmap_actions(bitmap128_t* bitmap);
 
 	static uint32_t of12_map_bitmap_instructions(uint32_t* bitmap);
+	
+	static uint64_t of12_map_bitmap_set_fields(bitmap128_t* bitmap);
 };
 
 }// namespace rofl

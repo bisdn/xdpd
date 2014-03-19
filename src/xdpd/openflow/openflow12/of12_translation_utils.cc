@@ -656,51 +656,51 @@ of12_translation_utils::of12_map_flow_entry_actions(
 		switch (raction.get_type()) {
 		case openflow12::OFPAT_OUTPUT:
 			field.u32 = be32toh(raction.oac_12output->port);
-			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, be16toh(raction.oac_12output->max_len), NULL, NULL);
 			break;
 		case openflow12::OFPAT_COPY_TTL_OUT:
-			action = of1x_init_packet_action( OF1X_AT_COPY_TTL_OUT, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_COPY_TTL_OUT, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_COPY_TTL_IN:
-			action = of1x_init_packet_action( OF1X_AT_COPY_TTL_IN, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_COPY_TTL_IN, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_SET_MPLS_TTL:
 			field.u8 = raction.oac_12mpls_ttl->mpls_ttl;
-			action = of1x_init_packet_action( OF1X_AT_SET_MPLS_TTL, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_MPLS_TTL, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_DEC_MPLS_TTL:
-			action = of1x_init_packet_action( OF1X_AT_DEC_MPLS_TTL, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_DEC_MPLS_TTL, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_PUSH_VLAN:
 			field.u16 = be16toh(raction.oac_oacu.oacu_12push->ethertype);
-			action = of1x_init_packet_action( OF1X_AT_PUSH_VLAN, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_PUSH_VLAN, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_POP_VLAN:
 			field.u16 = be16toh(raction.oac_12push->ethertype);
-			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_PUSH_MPLS:
 			field.u16 = be16toh(raction.oac_12push->ethertype);
-			action = of1x_init_packet_action( OF1X_AT_PUSH_MPLS, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_PUSH_MPLS, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_POP_MPLS:
 			field.u16 = be16toh(raction.oac_12push->ethertype);
-			action = of1x_init_packet_action( OF1X_AT_POP_MPLS,  field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_POP_MPLS,  field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_SET_QUEUE:
 			field.u32 = be32toh(raction.oac_12set_queue->queue_id);
-			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_GROUP:
 			field.u32 = be32toh(raction.oac_12group->group_id);
-			action = of1x_init_packet_action( OF1X_AT_GROUP, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_GROUP, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_SET_NW_TTL:
 			field.u8 = raction.oac_12nw_ttl->nw_ttl;
-			action = of1x_init_packet_action( OF1X_AT_SET_NW_TTL, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_NW_TTL, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_DEC_NW_TTL:
-			action = of1x_init_packet_action( OF1X_AT_DEC_NW_TTL, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_DEC_NW_TTL, field, 0x0, NULL, NULL);
 			break;
 		case openflow12::OFPAT_SET_FIELD:
 		{
@@ -714,182 +714,182 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				{
 					cmacaddr mac(oxm.oxm_uint48t->value, 6);
 					field.u64 = mac.get_mac();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ETH_SRC:
 				{
 					cmacaddr mac(oxm.oxm_uint48t->value, 6);
 					field.u64 = mac.get_mac();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ETH_TYPE:
 				{
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_TYPE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_TYPE, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ARP_OP:
 				{
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_OPCODE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_OPCODE, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ARP_SHA:
 				{
 					cmacaddr mac(oxm.oxm_uint48t->value, 6);
 					field.u64 = mac.get_mac();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SHA, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SHA, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ARP_SPA:
 				{
 					field.u32 = oxm.uint32_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SPA, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SPA, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ARP_THA:
 				{
 					cmacaddr mac(oxm.oxm_uint48t->value, 6);
 					field.u64 = mac.get_mac();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_THA, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_THA, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ARP_TPA:
 				{
 					field.u32 = oxm.uint32_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_TPA, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_TPA, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ICMPV4_CODE:
 				{
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ICMPV4_CODE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ICMPV4_CODE, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_ICMPV4_TYPE:
 				{
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ICMPV4_TYPE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ICMPV4_TYPE, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_IPV4_DST:
 				{
 					field.u32 = oxm.uint32_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IPV4_DST, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IPV4_DST, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_IPV4_SRC:
 				{
 					field.u32 = oxm.uint32_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IPV4_SRC, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IPV4_SRC, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_IP_DSCP:
 				{
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_IP_ECN:
 				{
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_ECN, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_ECN, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_IP_PROTO:
 				{
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_PROTO, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_PROTO, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_MPLS_LABEL:
 				{
 					field.u32 = oxm.uint32_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_LABEL, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_LABEL, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_MPLS_TC:
 				{
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_TC, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_TC, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_VLAN_VID:
 				{
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_VLAN_PCP:
 				{
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_TCP_DST:
 				{
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_TCP_DST, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_TCP_DST, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_TCP_SRC:
 				{
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_TCP_SRC, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_TCP_SRC, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_UDP_DST:
 				{
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_UDP_DST, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_UDP_DST, field, 0x0, NULL, NULL);
 				}
 					break;
 				case openflow12::OFPXMT_OFB_UDP_SRC:
 				{
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_UDP_SRC, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_UDP_SRC, field, 0x0, NULL, NULL);
 				}
 					break;
 
 				case openflow12::OFPXMT_OFB_IPV6_SRC: {
 					field.u128 = oxm.u128addr().get_ipv6_addr();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, 0x0, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_DST: {
 					field.u128 = oxm.u128addr().get_ipv6_addr();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_DST, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_DST, field, 0x0, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_FLABEL: {
 					field.u32 = oxm.uint32_value();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_FLABEL, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_FLABEL, field, 0x0, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_ND_TARGET: {
 					field.u128 = oxm.u128addr().get_ipv6_addr();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, 0x0, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_ND_SLL: {
 					field.u64 = oxm.uint64_value();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_SLL, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_SLL, field, 0x0, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_IPV6_ND_TLL: {
 					field.u64 = oxm.uint64_value();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TLL, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TLL, field, 0x0, NULL, NULL);
 				}break;
 #if 0
 				case openflow12::OFPXMT_OFB_IPV6_EXTHDR: {
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_EXTHDR, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_EXTHDR, field, 0x0, NULL, NULL);
 				}break;
 #endif
 				case openflow12::OFPXMT_OFB_ICMPV6_TYPE: {
 					field.u64 = oxm.uint64_value();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_ICMPV6_TYPE, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_ICMPV6_TYPE, field, 0x0, NULL, NULL);
 				}break;
 				case openflow12::OFPXMT_OFB_ICMPV6_CODE: {
 					field.u64 = oxm.uint64_value();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_ICMPV6_CODE, field, NULL, NULL);
+					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_ICMPV6_CODE, field, 0x0, NULL, NULL);
 				}break;
 					
 				default:
@@ -907,27 +907,27 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				switch (oxm.get_oxm_field()) {
 				case openflow::experimental::OFPXMT_OFX_PPPOE_CODE: {
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_CODE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_CODE, field, 0x0, NULL, NULL);
 				} break;
 				case openflow::experimental::OFPXMT_OFX_PPPOE_TYPE: {
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_TYPE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_TYPE, field, 0x0, NULL, NULL);
 				} break;
 				case openflow::experimental::OFPXMT_OFX_PPPOE_SID: {
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_SID, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_SID, field, 0x0, NULL, NULL);
 				} break;
 				case openflow::experimental::OFPXMT_OFX_PPP_PROT: {
 					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPP_PROT, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPP_PROT, field, 0x0, NULL, NULL);
 				} break;
 				case openflow::experimental::OFPXMT_OFX_GTP_MSG_TYPE: {
 					field.u8 = oxm.uint8_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_MSG_TYPE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_MSG_TYPE, field, 0x0, NULL, NULL);
 				} break;
 				case openflow::experimental::OFPXMT_OFX_GTP_TEID: {
 					field.u32 = oxm.uint32_value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_TEID, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_TEID, field, 0x0, NULL, NULL);
 				} break;
 				}
 
@@ -961,12 +961,12 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				case cofaction_push_pppoe::OFXAT_PUSH_PPPOE: {
 					cofaction_push_pppoe paction(eaction);
 					field.u16 = be16toh(paction.eoac_push_pppoe->expbody.ethertype);
-					action = of1x_init_packet_action( OF1X_AT_PUSH_PPPOE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_PUSH_PPPOE, field, 0x0, NULL, NULL);
 				} break;
 				case cofaction_pop_pppoe::OFXAT_POP_PPPOE: {
 					cofaction_pop_pppoe paction(eaction);
 					field.u16 = be16toh(paction.eoac_pop_pppoe->expbody.ethertype);
-					action = of1x_init_packet_action( OF1X_AT_POP_PPPOE, field, NULL, NULL);
+					action = of1x_init_packet_action( OF1X_AT_POP_PPPOE, field, 0x0, NULL, NULL);
 				} break;
 				}
 
@@ -1480,7 +1480,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		// TODO
 	} break;
 	case OF1X_AT_OUTPUT: {
-		action = cofaction_output(OFP12_VERSION, (uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK));
+		action = cofaction_output(OFP12_VERSION, (uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK), of1x_action->send_len);
 	} break;
 	default: {
 		// do nothing

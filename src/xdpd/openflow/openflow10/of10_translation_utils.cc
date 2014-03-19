@@ -267,55 +267,55 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		case rofl::openflow10::OFPAT_OUTPUT:
 			//Translate special values to of1x
 			field.u64 = get_out_port(be16toh(raction.oac_10output->port));
-			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, be16toh(raction.oac_10output->max_len), NULL, NULL);
 			break;
 		case rofl::openflow10::OFPAT_SET_VLAN_VID:
 			field.u64 = be16toh(raction.oac_10vlanvid->vlan_vid);
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, 0x0, NULL, NULL);
 			break;
 		case rofl::openflow10::OFPAT_SET_VLAN_PCP:
 			field.u64 = be16toh(raction.oac_10vlanpcp->vlan_pcp)>>8;
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, 0x0, NULL, NULL);
 			break;
 		case rofl::openflow10::OFPAT_STRIP_VLAN:
-			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, NULL, NULL); 
+			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, 0x0, NULL, NULL); 
 			break;
 		case rofl::openflow10::OFPAT_SET_DL_SRC: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, 0x0, NULL, NULL);
 			} break;
 		case rofl::openflow10::OFPAT_SET_DL_DST: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0, NULL, NULL);
 			} break;
 		case rofl::openflow10::OFPAT_SET_NW_SRC:
 			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, 0x0, NULL, NULL);
 			break;
 		case rofl::openflow10::OFPAT_SET_NW_DST:
 			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0, NULL, NULL);
 			break;
 		case rofl::openflow10::OFPAT_SET_NW_TOS:
 			field.u64 = raction.oac_10nwtos->nw_tos>>2;
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, 0x0, NULL, NULL);
 			break;
 		case rofl::openflow10::OFPAT_SET_TP_SRC:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
-			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, NULL, NULL);
+			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, 0x0, NULL, NULL);
 			break;
 		case rofl::openflow10::OFPAT_SET_TP_DST:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
-			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, NULL, NULL);
+			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, 0x0, NULL, NULL);
 			break;
 		case rofl::openflow10::OFPAT_ENQUEUE:
 			field.u64 = be32toh(raction.oac_10enqueue->queue_id);
-			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, 0x0, NULL, NULL);
 			if (NULL != apply_actions) of1x_push_packet_action_to_group(apply_actions, action);
 			field.u64 = get_out_port(be16toh(raction.oac_10enqueue->port));
-			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, 0x0, NULL, NULL);
 			break;
 		}
 
@@ -589,7 +589,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 	}break;
 	case OF1X_AT_OUTPUT: {
 		//Setting max_len to the switch max_len (we do not support per action max_len)
-		action = cofaction_output(OFP10_VERSION, get_out_port_reverse(of1x_action->field.u64), pipeline_miss_send_len);
+		action = cofaction_output(OFP10_VERSION, get_out_port_reverse(of1x_action->field.u64), of1x_action->send_len);
 	} break;
 	default: {
 		// do nothing

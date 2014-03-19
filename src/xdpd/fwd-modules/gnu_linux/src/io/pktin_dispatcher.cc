@@ -28,7 +28,7 @@ int pktin_not_pipe[2];
 static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 
 	int ret;
-	unsigned int i, pkt_size;
+	unsigned int i;
 	datapacket_t* pkt;
 	datapacketx86* pkt_x86;
 	afa_result_t rv;
@@ -62,11 +62,6 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 			continue;
 		}
 
-		//Normalize size
-		pkt_size = pkt_x86->get_buffer_length();
-		if(pkt_size > sw->pipeline.miss_send_len)
-			pkt_size = sw->pipeline.miss_send_len;
-			
 		//Process packet in
         	rv = cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_x86->pktin_table_id, 	
@@ -74,7 +69,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 						pkt_x86->in_port, 
 						id, 	
 						pkt_x86->get_buffer(), 
-						pkt_size,
+						pkt_x86->pktin_send_len,
 						pkt_x86->get_buffer_length(),
 						&pkt->matches
 						);

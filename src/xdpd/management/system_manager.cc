@@ -3,6 +3,7 @@
 #include <sstream>
 #include <rofl/common/ciosrv.h>
 #include <rofl/common/utils/c_logger.h>
+#include <rofl/datapath/pipeline/util/logging.h>
 #include <rofl/platform/unix/cdaemon.h>
 #include "switch_manager.h"
 #include "port_manager.h"
@@ -95,6 +96,7 @@ void system_manager::set_logging_debug_level(unsigned int level){
 	
 	//Adjust C logging debug level
 	rofl_set_logging_level(/*cn,*/c_level);
+	rofl_pipeline_set_logging_level(/*cn,*/(rofl_pipeline_debug_levels)c_level);
 }
 
 void system_manager::init_command_line_options(){

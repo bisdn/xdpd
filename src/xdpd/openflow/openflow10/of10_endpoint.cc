@@ -662,91 +662,113 @@ of10_endpoint::process_packet_in(
 
 rofl_result_t of10_endpoint::notify_port_attached(const switch_port_snapshot_t* port){
 
-	uint32_t config=0x0;
+	try {
+		uint32_t config=0x0;
 
-	//Compose port config
-	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
-	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
+		//Compose port config
+		if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+		if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+		if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+		if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
 
-	cofport ofport(rofl::openflow10::OFP_VERSION);
-	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
-	ofport.set_name(std::string(port->name));
-	ofport.set_config(config);
-	ofport.set_state(port->state&0x1); //Only first bit is relevant
-	ofport.set_curr(port->curr);
-	ofport.set_advertised(port->advertised);
-	ofport.set_supported(port->supported);
-	ofport.set_peer(port->peer);
-	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+		cofport ofport(rofl::openflow10::OFP_VERSION);
+		ofport.set_port_no(port->of_port_num);
+		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
+		ofport.set_name(std::string(port->name));
+		ofport.set_config(config);
+		ofport.set_state(port->state&0x1); //Only first bit is relevant
+		ofport.set_curr(port->curr);
+		ofport.set_advertised(port->advertised);
+		ofport.set_supported(port->supported);
+		ofport.set_peer(port->peer);
+		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
-	//Send message
-	send_port_status_message(rofl::openflow10::OFPPR_ADD, ofport);
+		//Send message
+		send_port_status_message(rofl::openflow10::OFPPR_ADD, ofport);
 
-	return ROFL_SUCCESS;
+		return ROFL_SUCCESS;
+
+	} catch (...) {
+
+		return ROFL_FAILURE;
+	}
+
 }
 
 rofl_result_t of10_endpoint::notify_port_detached(const switch_port_snapshot_t* port){
 
-	uint32_t config=0x0;
+	try {
+		uint32_t config=0x0;
 
-	//Compose port config
-	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
-	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
+		//Compose port config
+		if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+		if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+		if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+		if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
-	cofport ofport(rofl::openflow10::OFP_VERSION);
-	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
-	ofport.set_name(std::string(port->name));
-	ofport.set_config(config);
-	ofport.set_state(port->state&0x1); //Only first bit is relevant
-	ofport.set_curr(port->curr);
-	ofport.set_advertised(port->advertised);
-	ofport.set_supported(port->supported);
-	ofport.set_peer(port->peer);
-	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+		cofport ofport(rofl::openflow10::OFP_VERSION);
+		ofport.set_port_no(port->of_port_num);
+		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
+		ofport.set_name(std::string(port->name));
+		ofport.set_config(config);
+		ofport.set_state(port->state&0x1); //Only first bit is relevant
+		ofport.set_curr(port->curr);
+		ofport.set_advertised(port->advertised);
+		ofport.set_supported(port->supported);
+		ofport.set_peer(port->peer);
+		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
-	//Send message
-	send_port_status_message(rofl::openflow10::OFPPR_DELETE, ofport);
+		//Send message
+		send_port_status_message(rofl::openflow10::OFPPR_DELETE, ofport);
 
-	return ROFL_SUCCESS;
+		return ROFL_SUCCESS;
+
+
+	} catch (...) {
+
+		return ROFL_FAILURE;
+	}
+
 }
 
 rofl_result_t of10_endpoint::notify_port_status_changed(const switch_port_snapshot_t* port){
 
-	uint32_t config=0x0;
+	try {
+		uint32_t config=0x0;
 
-	//Compose port config
-	if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
-	if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
-	if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
-	if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
+		//Compose port config
+		if(!port->up) config |= rofl::openflow10::OFPPC_PORT_DOWN;
+		if(!port->of_generate_packet_in) config |= rofl::openflow10::OFPPC_NO_PACKET_IN;
+		if(!port->forward_packets) config |= rofl::openflow10::OFPPC_NO_FWD;
+		if(port->drop_received) config |= rofl::openflow10::OFPPC_NO_RECV;
 
-	//Notify OF controller
-	cofport ofport(rofl::openflow10::OFP_VERSION);
-	ofport.set_port_no(port->of_port_num);
-	ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
-	ofport.set_name(std::string(port->name));
-	ofport.set_config(config);
-	ofport.set_state(port->state&0x1); //Only first bit is relevant
-	ofport.set_curr(port->curr);
-	ofport.set_advertised(port->advertised);
-	ofport.set_supported(port->supported);
-	ofport.set_peer(port->peer);
-	//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
-	//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
+		//Notify OF controller
+		cofport ofport(rofl::openflow10::OFP_VERSION);
+		ofport.set_port_no(port->of_port_num);
+		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
+		ofport.set_name(std::string(port->name));
+		ofport.set_config(config);
+		ofport.set_state(port->state&0x1); //Only first bit is relevant
+		ofport.set_curr(port->curr);
+		ofport.set_advertised(port->advertised);
+		ofport.set_supported(port->supported);
+		ofport.set_peer(port->peer);
+		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
+		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
-	//Send message
-	send_port_status_message(rofl::openflow10::OFPPR_MODIFY, ofport);
+		//Send message
+		send_port_status_message(rofl::openflow10::OFPPR_MODIFY, ofport);
 
-	return ROFL_SUCCESS; // ignore this notification
+		return ROFL_SUCCESS; // ignore this notification
+
+	} catch (...) {
+
+		return ROFL_FAILURE;
+	}
+
 }
 
 
@@ -942,29 +964,36 @@ of10_endpoint::process_flow_removed(
 		uint8_t reason,
 		of1x_flow_entry *entry)
 {
-	cofmatch match(rofl::openflow10::OFP_VERSION);
-	uint32_t sec,nsec;
+	try {
+		cofmatch match(rofl::openflow10::OFP_VERSION);
+		uint32_t sec,nsec;
 
-	of10_translation_utils::of1x_map_reverse_flow_entry_matches(entry->matches.head, match);
+		of10_translation_utils::of1x_map_reverse_flow_entry_matches(entry->matches.head, match);
 
-	//get duration of the flow mod
-	of1x_stats_flow_get_duration(entry, &sec, &nsec);
+		//get duration of the flow mod
+		of1x_stats_flow_get_duration(entry, &sec, &nsec);
 
 
-	send_flow_removed_message(
-			match,
-			entry->cookie,
-			entry->priority,
-			reason,
-			entry->table->number,
-			sec,
-			nsec,
-			entry->timer_info.idle_timeout,
-			entry->timer_info.hard_timeout,
-			entry->stats.packet_count,
-			entry->stats.byte_count);
+		send_flow_removed_message(
+				match,
+				entry->cookie,
+				entry->priority,
+				reason,
+				entry->table->number,
+				sec,
+				nsec,
+				entry->timer_info.idle_timeout,
+				entry->timer_info.hard_timeout,
+				entry->stats.packet_count,
+				entry->stats.byte_count);
 
-	return ROFL_SUCCESS;
+		return ROFL_SUCCESS;
+
+	} catch (...) {
+
+		return ROFL_FAILURE;
+	}
+
 }
 
 

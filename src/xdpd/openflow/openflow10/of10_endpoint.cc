@@ -200,16 +200,15 @@ of10_endpoint::handle_table_stats_request(
 
 		uint8_t table_id = of10switch->pipeline.tables[n].number;
 
+		//Main information
 		tablestatsarray.set_table_stats(table_id).set_table_id(of10switch->pipeline.tables[n].number);
 		tablestatsarray.set_table_stats(table_id).set_name(std::string(of10switch->pipeline.tables[n].name, strnlen(of10switch->pipeline.tables[n].name, OFP_MAX_TABLE_NAME_LEN)));
-		tablestatsarray.set_table_stats(table_id).set_match(of10switch->pipeline.tables[n].config.match);
-		tablestatsarray.set_table_stats(table_id).set_wildcards(of10switch->pipeline.tables[n].config.wildcards);
-		tablestatsarray.set_table_stats(table_id).set_write_actions(of10switch->pipeline.tables[n].config.write_actions);
-		tablestatsarray.set_table_stats(table_id).set_apply_actions(of10switch->pipeline.tables[n].config.apply_actions);
-		tablestatsarray.set_table_stats(table_id).set_write_setfields(of10switch->pipeline.tables[n].config.write_setfields);
-		tablestatsarray.set_table_stats(table_id).set_apply_setfields(of10switch->pipeline.tables[n].config.apply_setfields);
-		tablestatsarray.set_table_stats(table_id).set_metadata_match(of10switch->pipeline.tables[n].config.metadata_match);
-		tablestatsarray.set_table_stats(table_id).set_metadata_write(of10switch->pipeline.tables[n].config.metadata_write);
+
+		//Capabilities
+		tablestatsarray.set_table_stats(table_id).set_wildcards(of10_translation_utils::get_supported_wildcards(of10switch));
+		//tablestatsarray.set_table_stats(table_id).set_apply_actions(of10_translation_utils::get_supported_actions(of10switch));
+
+		//Other information
 		tablestatsarray.set_table_stats(table_id).set_instructions(of10switch->pipeline.tables[n].config.instructions);
 		tablestatsarray.set_table_stats(table_id).set_config(of10switch->pipeline.tables[n].config.table_miss_config);
 		tablestatsarray.set_table_stats(table_id).set_max_entries(of10switch->pipeline.tables[n].max_entries);

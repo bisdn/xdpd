@@ -199,10 +199,10 @@ of12_endpoint::handle_table_stats_request(
 		tablestatsarray.set_table_stats(table_id).set_wildcards(of12_translation_utils::of12_map_bitmap_matches(&tc->wildcards));
 		tablestatsarray.set_table_stats(table_id).set_write_actions(of12_translation_utils::of12_map_bitmap_actions(&tc->write_actions));
 		tablestatsarray.set_table_stats(table_id).set_apply_actions(of12_translation_utils::of12_map_bitmap_actions(&tc->apply_actions));
-		tablestatsarray.set_table_stats(table_id).set_write_setfields(of12_translation_utils::of12_map_bitmap_matches(&tc->write_setfields));
-		tablestatsarray.set_table_stats(table_id).set_apply_setfields(of12_translation_utils::of12_map_bitmap_matches(&tc->apply_setfields));
-		tablestatsarray.set_table_stats(table_id).set_metadata_match(tc->metadata_match);//FIXME: this needs to be properly mapped once METADATA is implemented
-		tablestatsarray.set_table_stats(table_id).set_metadata_write(tc->metadata_write);//FIXME: this needs to be properly mapped once METADATA is implemented
+		tablestatsarray.set_table_stats(table_id).set_write_setfields(of12_translation_utils::of12_map_bitmap_set_fields(&tc->write_actions));
+		tablestatsarray.set_table_stats(table_id).set_apply_setfields(of12_translation_utils::of12_map_bitmap_set_fields(&tc->apply_actions));
+		tablestatsarray.set_table_stats(table_id).set_metadata_match(tc->metadata_match);
+		tablestatsarray.set_table_stats(table_id).set_metadata_write(tc->metadata_write);
 		tablestatsarray.set_table_stats(table_id).set_instructions(of12_translation_utils::of12_map_bitmap_instructions(&tc->instructions));
 		tablestatsarray.set_table_stats(table_id).set_config(tc->table_miss_config);
 		tablestatsarray.set_table_stats(table_id).set_max_entries(table->max_entries);

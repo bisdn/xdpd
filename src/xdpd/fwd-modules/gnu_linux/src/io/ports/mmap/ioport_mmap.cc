@@ -150,11 +150,15 @@ inline void ioport_mmap::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86 *
 	memcpy(pkt_x86->get_buffer(), (uint8_t*)hdr + hdr->tp_mac, sizeof(struct fetherframe::eth_hdr_t));
 
 	// set dl_type to vlan
+#if 0
+	((struct fetherframe::eth_hdr_t*)pkt_x86->get_buffer())->dl_type = (((struct fetherframe::eth_hdr_t*)((uint8_t*)hdr + hdr->tp_mac))->dl_type);
+#else
 	if( htobe16(ETH_P_8021Q) == ((struct fetherframe::eth_hdr_t*)((uint8_t*)hdr + hdr->tp_mac))->dl_type ) {
 		((struct fetherframe::eth_hdr_t*)pkt_x86->get_buffer())->dl_type = htobe16(ETH_P_8021Q); // tdoo maybe this should be ETH_P_8021AD
 	}else{
 		((struct fetherframe::eth_hdr_t*)pkt_x86->get_buffer())->dl_type = htobe16(ETH_P_8021Q);
 	}
+#endif
 
 	// write vlan
 	struct fvlanframe::vlan_hdr_t* vlanptr =

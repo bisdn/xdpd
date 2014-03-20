@@ -206,11 +206,8 @@ of10_endpoint::handle_table_stats_request(
 
 		//Capabilities
 		tablestatsarray.set_table_stats(table_id).set_wildcards(of10_translation_utils::get_supported_wildcards(of10switch));
-		//tablestatsarray.set_table_stats(table_id).set_apply_actions(of10_translation_utils::get_supported_actions(of10switch));
 
 		//Other information
-		tablestatsarray.set_table_stats(table_id).set_instructions(of10switch->pipeline.tables[n].config.instructions);
-		tablestatsarray.set_table_stats(table_id).set_config(of10switch->pipeline.tables[n].config.table_miss_config);
 		tablestatsarray.set_table_stats(table_id).set_max_entries(of10switch->pipeline.tables[n].max_entries);
 		tablestatsarray.set_table_stats(table_id).set_active_count(of10switch->pipeline.tables[n].num_of_entries);
 		tablestatsarray.set_table_stats(table_id).set_lookup_count(of10switch->pipeline.tables[n].stats.lookup_count);

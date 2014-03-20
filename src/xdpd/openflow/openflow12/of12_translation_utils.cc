@@ -510,7 +510,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		uint64_t mac = ofmatch.get_icmpv6_neighbor_source_lladdr().get_mac();
+		uint64_t mac = ofmatch.get_ipv6_nd_sll().get_mac();
 		of1x_match_t *match = of1x_init_ip6_nd_sll_match(
 								NULL,
 								NULL,
@@ -519,7 +519,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		uint64_t mac = ofmatch.get_icmpv6_neighbor_target_lladdr().get_mac();
+		uint64_t mac = ofmatch.get_ipv6_nd_tll().get_mac();
 		of1x_match_t *match = of1x_init_ip6_nd_tll_match(
 								NULL,
 								NULL,
@@ -1144,10 +1144,10 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			match.set_ipv6_nd_target(addr);
 			}break;
 		case OF1X_MATCH_IPV6_ND_SLL:
-			match.set_icmpv6_neighbor_source_lladdr(m->value->value.u64);
+			match.set_ipv6_nd_sll(m->value->value.u64);
 			break;
 		case OF1X_MATCH_IPV6_ND_TLL:
-			match.set_icmpv6_neighbor_target_lladdr(m->value->value.u64);
+			match.set_ipv6_nd_tll(m->value->value.u64);
 			break;
 		case OF1X_MATCH_MPLS_LABEL:
 			match.set_mpls_label(m->value->value.u32);
@@ -1580,9 +1580,9 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		match.set_ipv6_nd_target(addr);
 	}
 	if(packet_matches->ipv6_nd_sll)
-		match.set_icmpv6_neighbor_source_lladdr(packet_matches->ipv6_nd_sll);
+		match.set_ipv6_nd_sll(packet_matches->ipv6_nd_sll);
 	if(packet_matches->ipv6_nd_tll)
-		match.set_icmpv6_neighbor_target_lladdr(packet_matches->ipv6_nd_tll);
+		match.set_ipv6_nd_tll(packet_matches->ipv6_nd_tll);
 	//TODO IPv6 ext hdr not yet implemented in cofmatch
 	//if(packet_matches->ipv6_exthdr)
 		//match.set_ipv6_exthdr(packet_matches->ipv6_exthdr);

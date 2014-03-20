@@ -351,7 +351,7 @@ of12_endpoint::handle_flow_stats_request(
 
 	for(elem = fp_msg->flows_head; elem; elem = elem->next){
 
-		cofmatch match;
+		cofmatch match(rofl::openflow12::OFP_VERSION);
 		of12_translation_utils::of12_map_reverse_flow_entry_matches(elem->matches, match);
 
 		cofinstructions instructions(ctl.get_version());
@@ -699,7 +699,7 @@ of12_endpoint::process_packet_in(
 {
 	try {
 		//Transform matches 
-		cofmatch match;
+		cofmatch match(rofl::openflow12::OFP_VERSION);
 		of12_translation_utils::of12_map_reverse_packet_matches(matches, match);
 
 		size_t len = (total_len < buf_len) ? total_len : buf_len;
@@ -1065,7 +1065,7 @@ of12_endpoint::process_flow_removed(
 		of1x_flow_entry *entry)
 {
 	try {
-		cofmatch match;
+		cofmatch match(rofl::openflow12::OFP_VERSION);
 		uint32_t sec,nsec;
 
 		of12_translation_utils::of12_map_reverse_flow_entry_matches(entry->matches.head, match);

@@ -50,6 +50,7 @@ typedef struct datapacket_dpdk{
 	//Temporary store for pkt_in information
 	uint8_t pktin_table_id;
 	of_packet_in_reason_t pktin_reason;
+	uint16_t pktin_send_len;
 	
 	//Time profiling
 	TM_PKT_STATE;

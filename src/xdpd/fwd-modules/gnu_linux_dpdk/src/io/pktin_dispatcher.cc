@@ -25,7 +25,6 @@ static void* process_packet_ins(void* param){
 	datapacket_t* pkt;
 	datapacket_dpdk_t* pkt_dpdk;
 	afa_result_t rv;
-	unsigned int pkt_size;
 	storeid id;
 	of1x_switch_t* sw;	
 	datapacket_storage* dps;
@@ -88,11 +87,6 @@ static void* process_packet_ins(void* param){
 			continue;
 		}
 
-		//Normalize size
-		pkt_size = get_buffer_length_dpdk(pkt_dpdk);
-		if(pkt_size > sw->pipeline.miss_send_len)
-			pkt_size = sw->pipeline.miss_send_len;
-			
 		//Process packet in
 		rv = cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_dpdk->pktin_table_id, 	
@@ -100,7 +94,7 @@ static void* process_packet_ins(void* param){
 						pkt_dpdk->in_port, 
 						id, 	
 						get_buffer_dpdk(pkt_dpdk), 
-						pkt_size,
+						pkt_dpdk->pktin_send_len, 
 						get_buffer_length_dpdk(pkt_dpdk),
 						((packet_matches_t*)&pkt->matches)
 				);

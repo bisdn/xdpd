@@ -988,11 +988,14 @@ static inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t
 	//Initialize replica buffer and classify  //TODO: classification state could be copied
 	init_datapacket_dpdk(pkt_dpdk_copy, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->in_port, 0, true, true);
 
-	//Replicate the packet(copy contents)	
-	pkt_dpdk_copy->ipv4_recalc_checksum 		= pkt_dpdk->ipv4_recalc_checksum;
-	pkt_dpdk_copy->icmpv4_recalc_checksum 		= pkt_dpdk->icmpv4_recalc_checksum;
-	pkt_dpdk_copy->tcp_recalc_checksum 		= pkt_dpdk->tcp_recalc_checksum;
-	pkt_dpdk_copy->udp_recalc_checksum 		= pkt_dpdk->udp_recalc_checksum;
+	//Replicate the packet(copy contents)
+	pkt_dpdk_copy->in_port = pkt_dpdk->in_port;
+	pkt_dpdk_copy->in_phy_port = pkt_dpdk->in_phy_port;
+	pkt_dpdk_copy->output_queue = pkt_dpdk->output_queue;
+	pkt_dpdk_copy->ipv4_recalc_checksum = pkt_dpdk->ipv4_recalc_checksum;
+	pkt_dpdk_copy->icmpv4_recalc_checksum = pkt_dpdk->icmpv4_recalc_checksum;
+	pkt_dpdk_copy->tcp_recalc_checksum = pkt_dpdk->tcp_recalc_checksum;
+	pkt_dpdk_copy->udp_recalc_checksum = pkt_dpdk->udp_recalc_checksum;
 
 }
 

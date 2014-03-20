@@ -82,7 +82,7 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 */
 
 
-void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
+void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, uint16_t send_len, of_packet_in_reason_t reason)
 {
 	datapacket_t* detached_pkt;
 	datapacket_dpdk_t *dpkt;
@@ -97,7 +97,13 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		detached_pkt = platform_packet_detach__(pkt);
 	else
 		detached_pkt = pkt;
-
+	
+	dpkt = (datapacket_dpdk_t*)detached_pkt->platform_state;
+	
+	dpkt->pktin_table_id = table_id;
+	dpkt->pktin_reason = reason;
+	dpkt->pktin_send_len = send_len;
+	
 	if(unlikely(!detached_pkt)){
 		ROFL_DEBUG("Replicate packet(PKT_IN); could not clone pkt(%p). Dropping...\n");
 		goto PKT_IN_ERROR;

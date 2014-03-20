@@ -409,10 +409,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		}
 			break;
 		case OF1X_MATCH_IP_DSCP:
-			match.set_ip_dscp((m->value->value.u8));
-			break;
-		case OF1X_MATCH_IP_ECN:
-			match.set_ip_ecn(m->value->value.u8);
+			match.set_nw_tos((m->value->value.u8));
 			break;
 		case OF1X_MATCH_NW_PROTO:
 			match.set_nw_proto(m->value->value.u8);

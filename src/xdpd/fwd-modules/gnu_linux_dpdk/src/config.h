@@ -16,7 +16,7 @@
 */
 
 //XXX delete this
-#define FWD_MOD_NAME "xdpd][dpdk"
+#define FWD_MOD_NAME "[xdpd][dpdk]"
 
 /*
 * BG stuff

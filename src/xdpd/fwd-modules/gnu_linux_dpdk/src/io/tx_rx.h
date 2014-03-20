@@ -51,7 +51,7 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 
 	//XXX: statistics
 
-	//ROFL_DEBUG("Read burst from %s (%u pkts)\n", port->name, burst_len);
+	//ROFL_DEBUG(FWD_MOD_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 
 	//Process them 
 	for(i=0;i<burst_len;++i){
@@ -91,16 +91,16 @@ process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_tab
 		//static int j=0;
 		//j++;
 		//if((j%1000000 == 0) && (queue_id == 0))
-		//	ROFL_DEBUG("Auto purge to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
+		//	ROFL_DEBUG(FWD_MOD_NAME"[io] Auto purge to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
 		return;
 	}
 
-	ROFL_DEBUG("Trying to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
+	ROFL_DEBUG(FWD_MOD_NAME"[io] Trying to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
 	//Send burst
 	ret = rte_eth_tx_burst(port_id, queue_id, queue->m_table, queue->len);
 	//XXX port_statistics[port].tx += ret;
 	
-	ROFL_DEBUG("+++++++++++++++++++++++++++ Transmited %u pkts, on port %s(%u)\n", ret, port->name, port_id);
+	ROFL_DEBUG(FWD_MOD_NAME"[io] +++++++++++++++++++++++++++ Transmited %u pkts, on port %s(%u)\n", ret, port->name, port_id);
 
 	if (unlikely(ret < queue->len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -140,7 +140,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 		return;
 	}
 
-	ROFL_DEBUG("Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+	ROFL_DEBUG(FWD_MOD_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
 
 	//Enqueue
 	len = pkt_burst->len; 

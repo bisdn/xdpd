@@ -42,7 +42,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	}
 
 	//Initialize pipeline port
-	port = switch_port_init(port_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_NONE);
+	port = switch_port_init(port_name, false, PORT_TYPE_PHYSICAL, PORT_STATE_NONE);
 	if(!port)
 		return NULL; 
 

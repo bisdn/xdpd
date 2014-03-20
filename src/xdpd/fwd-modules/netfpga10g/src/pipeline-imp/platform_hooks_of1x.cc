@@ -63,11 +63,16 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 * Packet in
 */
 
-void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
+void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, uint16_t send_len, of_packet_in_reason_t reason)
 {
 
 	datapacketx86* pkt_x86;
-	//struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
+	afa_result_t rv;
+	storeid id;
+	struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
+
+	if(!pkt)
+		return;
 
 	assert(OF_VERSION_12 == sw->of_ver);
 
@@ -76,26 +81,45 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	//Recover platform state
 	pkt_x86 = (datapacketx86*)pkt->platform_state;
 	
-	//Recover platform state and fill it so that state can be recovered afterwards
-	pkt_x86 = (datapacketx86*)pkt->platform_state;
-	pkt_x86->pktin_table_id = table_id;
-	pkt_x86->pktin_reason = reason;
+	//Store packet in the storage system. Packet is NOT returned to the bufferpool
+	id = ls_state->storage->store_packet(pkt);
+
+	if(id == datapacket_storage::ERROR){
+		ROFL_DEBUG(FWD_MOD_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
+
+		//Return to the bufferpool
+		bufferpool::release_buffer(pkt);
+		return; 
+	}
+
+	//Process packet in
+	rv = cmm_process_of1x_packet_in(sw->dpid, 
+					table_id, 	
+					reason, 	
+					pkt_x86->in_port, 
+					id, 	
+					pkt_x86->get_buffer(), 
+					send_len,
+					pkt_x86->get_buffer_length(),
+					&pkt->matches
+					);
+
+	if(rv == AFA_FAILURE){
+		ROFL_DEBUG(FWD_MOD_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
+		//Take packet out from the storage
+		if( unlikely(ls_state->storage->get_packet(id) != pkt) ){
+			ROFL_ERR(FWD_MOD_NAME"[pkt-in-dispatcher] Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
+
+			assert(0);
+		}
+
+		//Return to datapacket_storage
+		ls_state->storage->get_packet(id);
 
 
-	//XXX
-	//XXX Implement
-	//XXX	
-#if 0	
-	//Enqueue
-	if( ls_state->pkt_in_queue->non_blocking_write(pkt) == ROFL_SUCCESS ){
-		//Notify
-		notify_packet_in();
-	}else{
-		ROFL_DEBUG("PKT_IN for packet(%p) could not be sent for sw:%s (PKT_IN queue full). Dropping..\n",pkt,sw->name);
 		//Return to the bufferpool
 		bufferpool::release_buffer(pkt);
 	}
-#endif
 }
 
 //Flow removed

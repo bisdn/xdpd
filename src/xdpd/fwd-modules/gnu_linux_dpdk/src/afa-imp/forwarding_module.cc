@@ -492,8 +492,7 @@ afa_result_t fwd_module_bring_port_up(const char* name){
 	port_manager_enable(port);
 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
+	cmm_notify_port_status_changed(port_snapshot);
 	
 	return AFA_SUCCESS;
 }
@@ -520,8 +519,7 @@ afa_result_t fwd_module_bring_port_down(const char* name){
 	port_manager_disable(port);
 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_status_changed(port_snapshot)!=AFA_SUCCESS)
-		return AFA_FAILURE;
+	cmm_notify_port_status_changed(port_snapshot);
 	
 	return AFA_SUCCESS;
 }

@@ -901,6 +901,12 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					field.u64 = oxm.uint64_value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TUNNEL_ID, field, 0x0, NULL, NULL);
 				}break;
+				case rofl::openflow13::OFPXMT_OFB_PBB_ISID:
+				{
+					field.u32 = oxm.uint32_value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PBB_ISID, field, 0x0, NULL, NULL);
+				}
+					break;
 					
 				default:
 				{

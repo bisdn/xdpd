@@ -256,8 +256,6 @@ afa_result_t fwd_module_destroy_switch_by_dpid(const uint64_t dpid){
 	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;
 
-	
-
 	//Remove switch from the switch bank
 	if(physical_switch_remove_logical_switch(sw)!=ROFL_SUCCESS)
 		return AFA_FAILURE;

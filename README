@@ -46,8 +46,9 @@ sh# ./autogen.sh
 sh# cd build
 sh# ../configure
 sh# make
+sh# make install
 
-Optionally you can 'make check' for consistency checks and 'make install' to install xdpd in the system.
+Optionally you can 'make check' for consistency checks.
 
 How to run it
 ================================

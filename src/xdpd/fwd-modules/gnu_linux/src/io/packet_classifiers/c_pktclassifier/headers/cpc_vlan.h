@@ -53,7 +53,8 @@ uint16_t get_vlan_id(void* hdr){
 #ifdef CPC_IN_HOSTBYTEORDER
 	return (((((cpc_vlan_hdr_t*)hdr)->byte0 & 0x0f) << 8) + ((cpc_vlan_hdr_t*)hdr)->byte1);
 #else
-	return (((((cpc_vlan_hdr_t*)hdr)->byte0 & 0x0f)) + (((cpc_vlan_hdr_t*)hdr)->byte1 << 8) );
+	//return (((((cpc_vlan_hdr_t*)hdr)->byte0 & 0x0f)) + (((cpc_vlan_hdr_t*)hdr)->byte1 << 8) );
+	return ( *(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 ) & OF1X_VLAN_ID_MASK;
 #endif
 }
 

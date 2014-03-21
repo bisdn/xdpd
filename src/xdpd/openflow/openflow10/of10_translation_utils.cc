@@ -46,7 +46,7 @@ of10_translation_utils::of1x_map_flow_entry(
 		openflow_switch* sw)
 {
 
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(NULL, NULL, msg->get_flags() & openflow10::OFPFF_SEND_FLOW_REM);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flags() & openflow10::OFPFF_SEND_FLOW_REM);
 
 	if(!entry)
 		throw eFlowModUnknown();
@@ -100,10 +100,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_flow_entry *entry)
 {
 	try {
-		of1x_match_t *match = of1x_init_port_in_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_in_port());
+		of1x_match_t *match = of1x_init_port_in_match(ofmatch.get_in_port());
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
@@ -113,74 +110,44 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	try {
 		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();;
 		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
-
-		of1x_match_t *match = of1x_init_eth_dst_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								maddr,
-								mmask);
-
+		of1x_match_t *match = of1x_init_eth_dst_match(maddr, mmask);
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
 		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
+		of1x_match_t *match = of1x_init_eth_src_match(maddr, mmask);
+		of1x_add_match_to_entry(entry, match);
+	} catch (eOFmatchNotFound& e) {}
 
-		of1x_match_t *match = of1x_init_eth_src_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								maddr,
-								mmask);
+	try {
+		of1x_match_t *match = of1x_init_eth_type_match(ofmatch.get_eth_type());
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		of1x_match_t *match = of1x_init_eth_type_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_eth_type());
-
+		of1x_match_t *match = of1x_init_vlan_vid_match(ofmatch.get_vlan_vid_value()|OF1X_VLAN_PRESENT_MASK, 0x1FFF); // no mask in OF1.0
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	try {
-		of1x_match_t *match = of1x_init_vlan_vid_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_vlan_vid_value()|OF1X_VLAN_PRESENT_MASK,
-								0x1FFF); // no mask in OF1.0
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (eOFmatchNotFound& e) {}
-
-	try {
-		of1x_match_t *match = of1x_init_vlan_pcp_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_vlan_pcp());
+		of1x_match_t *match = of1x_init_vlan_pcp_match(ofmatch.get_vlan_pcp());
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	//NW TOS
 	try {
-		of1x_match_t *match = of1x_init_ip_dscp_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_nw_tos()>>2);
+		of1x_match_t *match = of1x_init_ip_dscp_match(ofmatch.get_nw_tos()>>2);
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	//NW PROTO 
 	try {
-		of1x_match_t *match = of1x_init_nw_proto_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_nw_proto());
-
+		of1x_match_t *match = of1x_init_nw_proto_match(ofmatch.get_nw_proto());
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
@@ -190,13 +157,8 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = NULL; 
 		caddress value(ofmatch.get_nw_src_value());
 		caddress mask(ofmatch.get_nw_src_mask());
-	
 		if(mask.ca_s4addr->sin_addr.s_addr){	
-			match = of1x_init_nw_src_match(	/*prev*/NULL,
-							/*next*/NULL,
-							be32toh(value.ca_s4addr->sin_addr.s_addr),
-							be32toh(mask.ca_s4addr->sin_addr.s_addr));
-
+			match = of1x_init_nw_src_match(be32toh(value.ca_s4addr->sin_addr.s_addr), be32toh(mask.ca_s4addr->sin_addr.s_addr));
 			of1x_add_match_to_entry(entry, match);
 		}
 
@@ -208,32 +170,21 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = NULL; 
 		caddress value(ofmatch.get_nw_dst_value());
 		caddress mask(ofmatch.get_nw_dst_mask());
-		
 		if(mask.ca_s4addr->sin_addr.s_addr){	
-			match = of1x_init_nw_dst_match(	/*prev*/NULL,
-							/*next*/NULL,
-							be32toh(value.ca_s4addr->sin_addr.s_addr),
-							be32toh(mask.ca_s4addr->sin_addr.s_addr));
-
+			match = of1x_init_nw_dst_match(be32toh(value.ca_s4addr->sin_addr.s_addr), be32toh(mask.ca_s4addr->sin_addr.s_addr));
 			of1x_add_match_to_entry(entry, match);
 		}
 	} catch (eOFmatchNotFound& e) {}
 
 	//TP SRC
 	try {
-		of1x_match_t *match = of1x_init_tp_src_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_tp_src());
+		of1x_match_t *match = of1x_init_tp_src_match(ofmatch.get_tp_src());
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
 	//TP DST
 	try {
-		of1x_match_t *match = of1x_init_tp_dst_match(
-								/*prev*/NULL,
-								/*next*/NULL,
-								ofmatch.get_tp_dst());
+		of1x_match_t *match = of1x_init_tp_dst_match(ofmatch.get_tp_dst());
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 
@@ -267,55 +218,55 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		case rofl::openflow10::OFPAT_OUTPUT:
 			//Translate special values to of1x
 			field.u64 = get_out_port(be16toh(raction.oac_10output->port));
-			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, be16toh(raction.oac_10output->max_len), NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, be16toh(raction.oac_10output->max_len));
 			break;
 		case rofl::openflow10::OFPAT_SET_VLAN_VID:
 			field.u64 = be16toh(raction.oac_10vlanvid->vlan_vid);
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_VLAN_PCP:
 			field.u64 = be16toh(raction.oac_10vlanpcp->vlan_pcp)>>8;
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_STRIP_VLAN:
-			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, 0x0, NULL, NULL); 
+			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, 0x0); 
 			break;
 		case rofl::openflow10::OFPAT_SET_DL_SRC: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, 0x0);
 			} break;
 		case rofl::openflow10::OFPAT_SET_DL_DST: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0);
 			} break;
 		case rofl::openflow10::OFPAT_SET_NW_SRC:
 			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_NW_DST:
 			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_NW_TOS:
 			field.u64 = raction.oac_10nwtos->nw_tos>>2;
-			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_TP_SRC:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
-			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_TP_DST:
 			field.u64 = be16toh(raction.oac_10tpport->tp_port);
-			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_ENQUEUE:
 			field.u64 = be32toh(raction.oac_10enqueue->queue_id);
-			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, 0x0);
 			if (NULL != apply_actions) of1x_push_packet_action_to_group(apply_actions, action);
 			field.u64 = get_out_port(be16toh(raction.oac_10enqueue->port));
-			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, 0x0, NULL, NULL);
+			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, 0x0);
 			break;
 		}
 

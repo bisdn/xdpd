@@ -325,7 +325,7 @@ of10_endpoint::handle_flow_stats_request(
 		throw eRofBase();
 
 	//Map the match structure from OpenFlow to of1x_packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
+	entry = of1x_init_flow_entry(false);
 
 	try{
 		of10_translation_utils::of10_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
@@ -426,7 +426,7 @@ of10_endpoint::handle_aggregate_stats_request(
 //	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
 
 	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
+	entry = of1x_init_flow_entry(false);
 
 	if(!entry)
 		throw eBadRequestBadStat();

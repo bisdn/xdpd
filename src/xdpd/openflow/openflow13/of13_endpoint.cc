@@ -326,7 +326,7 @@ of13_endpoint::handle_flow_stats_request(
 		uint8_t aux_id)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	of1x_flow_entry_t* entry = of1x_init_flow_entry(NULL, NULL, false);
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
 
 	try{
 		of13_translation_utils::of13_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
@@ -404,7 +404,7 @@ of13_endpoint::handle_aggregate_stats_request(
 		uint8_t aux_id)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	 of1x_flow_entry_t* entry = of1x_init_flow_entry(NULL, NULL, false);
+	 of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
 
 	if(!entry)
 		throw eBadRequestBadStat();

@@ -320,37 +320,15 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			match.set_vlan_pcp(m->value->value.u8);
 			break;
 		case OF1X_MATCH_ARP_OP:
-			//match.set_arp_opcode(m->value->value.u16);
 			match.set_nw_proto(m->value->value.u16);
 			break;
-#if 0
-		case OF1X_MATCH_ARP_SHA:
-		{
-			cmacaddr maddr(m->value->value.u64);
-			cmacaddr mmask(m->value->mask.u64);
-			//match.set_arp_sha(maddr, mmask);
-			match.set_eth_src(maddr, mmask);  // TODO: the same for ARP request and ARP reply?
-		}
-			break;
-#endif
 		case OF1X_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(m->value->value.u32);
-			//match.set_arp_spa(addr);
 			match.set_nw_src(addr);	// TODO: the same for ARP request and ARP reply?
 		}
 			break;
-#if 0
-		case OF1X_MATCH_ARP_THA:
-		{
-			cmacaddr maddr(m->value->value.u64);
-			cmacaddr mmask(m->value->mask.u64);
-			//match.set_arp_tha(maddr, mmask);
-			match.set_eth_dst(maddr, mmask);  // TODO: the same for ARP request and ARP reply?
-		}
-			break;
-#endif
 		case OF1X_MATCH_ARP_TPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
@@ -390,32 +368,6 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_TP_DST:
 			match.set_tp_dst(m->value->value.u16);
 			break;
-#if 0
-		case OF1X_MATCH_MPLS_LABEL:
-			match.set_mpls_label(m->value->value.u32);
-			break;
-		case OF1X_MATCH_MPLS_TC:
-			match.set_mpls_tc(m->value->value.u8);
-			break;
-		case OF1X_MATCH_PPPOE_CODE:
-			match.insert(coxmatch_ofx_pppoe_code(m->value->value.u8));
-			break;
-		case OF1X_MATCH_PPPOE_TYPE:
-			match.insert(coxmatch_ofx_pppoe_type(m->value->value.u8));
-			break;
-		case OF1X_MATCH_PPPOE_SID:
-			match.insert(coxmatch_ofx_pppoe_sid(m->value->value.u16));
-			break;
-		case OF1X_MATCH_PPP_PROT:
-			match.insert(coxmatch_ofx_ppp_prot(m->value->value.u16));
-			break;
-		case OF1X_MATCH_GTP_MSG_TYPE:
-			match.insert(coxmatch_ofx_gtp_msg_type(m->value->value.u8));
-			break;
-		case OF1X_MATCH_GTP_TEID:
-			match.insert(coxmatch_ofx_gtp_teid(m->value->value.u32));
-			break;
-#endif
 		default:
 			break;
 		}
@@ -572,27 +524,14 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)
 		match.set_nw_proto(packet_matches->arp_opcode);
-		//match.set_arp_opcode(packet_matches->arp_opcode);
-#if 0
-	if(packet_matches->arp_sha)
-		match.set_eth_src(cmacaddr(packet_matches->arp_sha));
-		//match.set_arp_sha(cmacaddr(packet_matches->arp_sha));
-#endif
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_spa);
-		//match.set_arp_spa(addr);
 		match.set_nw_src(addr);
 	}
-#if 0
-	if(packet_matches->arp_tha)
-		match.set_eth_dst(cmacaddr(packet_matches->arp_tha));
-		//match.set_arp_tha(cmacaddr(packet_matches->arp_tha));
-#endif
 	if(packet_matches->arp_tpa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_tpa);
-		//match.set_arp_tpa(addr);
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches->ip_dscp)
@@ -604,53 +543,25 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->ipv4_src){
 			caddress addr(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(packet_matches->ipv4_src);
-			//match.set_ipv4_src(addr);
 			match.set_nw_src(addr);
 	}
 	if(packet_matches->ipv4_dst){
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->ipv4_dst);
-		//match.set_ipv4_dst(addr);
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches->tcp_src)
 		match.set_tp_src(packet_matches->tcp_src);
-		//match.set_tcp_src(packet_matches->tcp_src);
 	if(packet_matches->tcp_dst)
 		match.set_tp_dst(packet_matches->tcp_dst);
-		//match.set_tcp_dst(packet_matches->tcp_dst);
 	if(packet_matches->udp_src)
 		match.set_tp_src(packet_matches->udp_src);
-		//match.set_udp_src(packet_matches->udp_src);
 	if(packet_matches->udp_dst)
 		match.set_tp_dst(packet_matches->udp_dst);
-		//match.set_udp_dst(packet_matches->udp_dst);
 	if(packet_matches->icmpv4_type)
 		match.set_tp_src(packet_matches->icmpv4_type);
-		//match.set_icmpv4_type(packet_matches->icmpv4_type);
 	if(packet_matches->icmpv4_code)
 		match.set_tp_dst(packet_matches->icmpv4_code);
-		//match.set_icmpv4_code(packet_matches->icmpv4_code);
-
-#if 0
-	//TODO IPv6
-	if(packet_matches->mpls_label)
-		match.set_mpls_label(packet_matches->mpls_label);
-	if(packet_matches->mpls_tc)
-		match.set_mpls_tc(packet_matches->mpls_tc);
-	if(packet_matches->pppoe_code)
-		match.insert(coxmatch_ofx_pppoe_code(packet_matches->pppoe_code));
-	if(packet_matches->pppoe_type)
-		match.insert(coxmatch_ofx_pppoe_type(packet_matches->pppoe_type));
-	if(packet_matches->pppoe_sid)
-		match.insert(coxmatch_ofx_pppoe_sid(packet_matches->pppoe_sid));
-	if(packet_matches->ppp_proto)
-		match.insert(coxmatch_ofx_ppp_prot(packet_matches->ppp_proto));
-	if(packet_matches->gtp_msg_type)
-		match.insert(coxmatch_ofx_gtp_msg_type(packet_matches->gtp_msg_type));
-	if(packet_matches->gtp_teid)
-		match.insert(coxmatch_ofx_gtp_teid(packet_matches->gtp_teid));
-#endif
 }
 
 uint32_t of10_translation_utils::get_supported_actions(of1x_switch_snapshot_t *lsw){

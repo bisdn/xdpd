@@ -418,16 +418,6 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_ip6_nd_tll_match(mac);
 		of1x_add_match_to_entry(entry,match);
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
-#if 0	
-	try{
-
-		/*TODO IPV6_EXTHDR*/
-		of1x_match_t *match = of1x_init_ip6_exthdr_match(ofmatch.get_ipv6_exthdr());
-		of1x_add_match_to_entry(entry,match);
-
-		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() openflow12::OFPXMT_OFB_IPV6_EXTHDR is missing")); // TODO
-	}catch (rofl::openflow::eOFmatchNotFound& e) {}
-#endif	
 	try {
 		of1x_match_t *match = of1x_init_mpls_label_match(ofmatch.get_mpls_label());
 
@@ -741,12 +731,6 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					field.u64 = oxm.uint64_value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TLL, field, 0x0);
 				}break;
-#if 0
-				case openflow12::OFPXMT_OFB_IPV6_EXTHDR: {
-					field.u16 = oxm.uint16_value();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_EXTHDR, field, 0x0);
-				}break;
-#endif
 				case openflow12::OFPXMT_OFB_ICMPV6_TYPE: {
 					field.u64 = oxm.uint64_value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_ICMPV6_TYPE, field, 0x0);
@@ -1303,10 +1287,6 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		cmacaddr maddr(of1x_action->field.u64);
 		action = rofl::openflow::cofaction_set_field(OFP12_VERSION, rofl::openflow::coxmatch_ofb_ipv6_nd_tll(maddr));
 	} break;
-	/*TODO EXT HDR*/
-	case OF1X_AT_SET_FIELD_IPV6_EXTHDR:
-		throw eNotImplemented(std::string("of12_translation_utils::of12_map_reverse_flow_entry_action() IPV6 ICMPV6"));
-		break;
 	case OF1X_AT_SET_FIELD_ICMPV6_TYPE: {
 		action = rofl::openflow::cofaction_set_field(OFP12_VERSION, rofl::openflow::coxmatch_ofb_icmpv6_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
 	} break;
@@ -1447,9 +1427,6 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		match.set_ipv6_nd_sll(packet_matches->ipv6_nd_sll);
 	if(packet_matches->ipv6_nd_tll)
 		match.set_ipv6_nd_tll(packet_matches->ipv6_nd_tll);
-	//TODO IPv6 ext hdr not yet implemented in cofmatch
-	//if(packet_matches->ipv6_exthdr)
-		//match.set_ipv6_exthdr(packet_matches->ipv6_exthdr);
 	
 	if(packet_matches->icmpv6_type)
 		match.set_icmpv6_type(packet_matches->icmpv6_type);
@@ -1566,10 +1543,7 @@ uint64_t of12_translation_utils::of12_map_bitmap_matches(bitmap128_t* bitmap){
 
 	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_ND_TLL))
 		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_ND_TLL);
-
-//	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_EXTHDR))
-//		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IPV6_EXTHDR);
-
+	
 	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_TCP_SRC))
 		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_TCP_SRC);
 
@@ -1593,33 +1567,6 @@ uint64_t of12_translation_utils::of12_map_bitmap_matches(bitmap128_t* bitmap){
 
 	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV4_CODE))
 		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_ICMPV4_CODE);
-
-//	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_PBB_ISID))
-//		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_MATCH_PBB_ISID);
-
-//	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_TUNNEL_ID))
-//		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_TUNNEL_ID);
-
-//TODO: codes now collide
-#if 0
-	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_PPPOE_CODE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_PPPOE_TYPE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_PPPOE_SID))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_PPP_PROT))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_GTP_MSG_TYPE))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-
-	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_GTP_TEID))
-		mapped_bitmap |= ( UINT64_C(1) <<  openflow12::OFPXMT_OFB_IN_PORT);
-#endif
 
 	return mapped_bitmap;	
 }
@@ -1736,16 +1683,6 @@ uint64_t of12_translation_utils::of12_map_bitmap_set_fields(bitmap128_t* bitmap)
 		 t |= 1UL << rofl::openflow::OFPXMT_OFB_MPLS_LABEL;
 	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_MPLS_TC ))
 		 t |= 1UL << rofl::openflow::OFPXMT_OFB_MPLS_TC;
-	/*
-	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_MPLS_BOS ))
-		 t |= 1UL << rofl::openflow::OFPXMT_OFB_MPLS_BOS;
-	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_PBB_ISID ))
-		 t |= 1UL << OFPXMT_OFB_PBB_ISID;
-	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_TUNNEL_ID ))
-		 t |= 1UL << OFPXMT_OFB_TUNNEL_ID;
-	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_EXTHDR ))
-		 t |= 1UL << OFPXMT_OFB_IPV6_EXTHDR;
-	*/
 	return t;
 }
 
@@ -1767,9 +1704,6 @@ uint32_t of12_translation_utils::of12_map_bitmap_instructions(uint32_t* bitmap){
 	
 	if(*bitmap & ( 1 << OF1X_IT_GOTO_TABLE))
 		mapped_bitmap |= (1 << openflow12::OFPIT_GOTO_TABLE);
-#if 0
-	if(*bitmap & ( 1 << OF1X_IT_METER))
-		mapped_bitmap |= (1 << openflow12::OFPIT_METER);
-#endif
+
 	return mapped_bitmap;	
 }

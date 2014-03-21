@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include <rofl/common/utils/c_logger.h>
-#include "../endianess_translation_utils.h"
+#include "../endianness_translation_utils.h"
 
 using namespace xdpd;
 

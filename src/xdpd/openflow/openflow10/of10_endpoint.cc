@@ -68,7 +68,7 @@ of10_endpoint::handle_features_request(
 	capabilities 	= of10switch->pipeline.capabilities;
 
 	// array of structures ofp_port
-	rofl::cofports ports(ctl.get_version());
+	rofl::openflow::cofports ports(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for (unsigned int n = 1; n < of10switch->max_ports; n++){
@@ -206,11 +206,8 @@ of10_endpoint::handle_table_stats_request(
 
 		//Capabilities
 		tablestatsarray.set_table_stats(table_id).set_wildcards(of10_translation_utils::get_supported_wildcards(of10switch));
-		//tablestatsarray.set_table_stats(table_id).set_apply_actions(of10_translation_utils::get_supported_actions(of10switch));
 
 		//Other information
-		tablestatsarray.set_table_stats(table_id).set_instructions(of10switch->pipeline.tables[n].config.instructions);
-		tablestatsarray.set_table_stats(table_id).set_config(of10switch->pipeline.tables[n].config.table_miss_config);
 		tablestatsarray.set_table_stats(table_id).set_max_entries(of10switch->pipeline.tables[n].max_entries);
 		tablestatsarray.set_table_stats(table_id).set_active_count(of10switch->pipeline.tables[n].num_of_entries);
 		tablestatsarray.set_table_stats(table_id).set_lookup_count(of10switch->pipeline.tables[n].stats.lookup_count);
@@ -328,7 +325,7 @@ of10_endpoint::handle_flow_stats_request(
 		throw eRofBase();
 
 	//Map the match structure from OpenFlow to of1x_packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
+	entry = of1x_init_flow_entry(false);
 
 	try{
 		of10_translation_utils::of10_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
@@ -429,7 +426,7 @@ of10_endpoint::handle_aggregate_stats_request(
 //	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
 
 	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
+	entry = of1x_init_flow_entry(false);
 
 	if(!entry)
 		throw eBadRequestBadStat();
@@ -634,6 +631,8 @@ of10_endpoint::process_packet_in(
 		cofmatch match(rofl::openflow10::OFP_VERSION);
 		of10_translation_utils::of1x_map_reverse_packet_matches(matches, match);
 
+		size_t len = (total_len < buf_len) ? total_len : buf_len;
+
 		send_packet_in_message(
 				buffer_id,
 				total_len,
@@ -642,7 +641,7 @@ of10_endpoint::process_packet_in(
 				/*cookie=*/0,
 				in_port, // OF1.0 only
 				match,
-				pkt_buffer, buf_len);
+				pkt_buffer, len);
 
 		return ROFL_SUCCESS;
 

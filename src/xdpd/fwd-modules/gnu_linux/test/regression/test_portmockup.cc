@@ -156,14 +156,14 @@ void DriverPortMockupTestCase::test_output(){
 	 * set a flow mod and an action OUTPUT to see how the packets go through
 	 */
 	fprintf(stderr,"<%s:%d>************** Starting test output action**************\n",__func__,__LINE__);
-	of1x_match_t *match = of1x_init_port_in_match(NULL,NULL,1);
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(NULL,NULL, false);
+	of1x_match_t *match = of1x_init_port_in_match(1);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry( false);
 	of1x_action_group_t* ac_group = of1x_init_action_group(NULL);
 	entry->priority = 1;
 	
 	of1x_add_match_to_entry(entry,match);
 	field.u64 = 1;
-	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, NULL,NULL));
+	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, 0x0));
 	of1x_add_instruction_to_group(&entry->inst_grp, OF1X_IT_APPLY_ACTIONS, ac_group , NULL, NULL, 0);
 	of1x_add_flow_entry_table( &((of1x_switch_t *)sw)->pipeline, 0, &entry, false, false );
 	
@@ -195,8 +195,8 @@ void DriverPortMockupTestCase::test_flow_expiration(){
 	wrap_uint_t field;
 	
 	fprintf(stderr,"<%s:%d>************** Initialize test flow expiration **************\n",__func__,__LINE__);
-	of1x_match_t *match = of1x_init_port_in_match(NULL,NULL,1);
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(NULL,NULL,false);
+	of1x_match_t *match = of1x_init_port_in_match(1);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(false);
 	of1x_action_group_t* ac_group = of1x_init_action_group(NULL);
 	entry->priority = 1;
 	
@@ -204,7 +204,7 @@ void DriverPortMockupTestCase::test_flow_expiration(){
 	
 	of1x_add_match_to_entry(entry,match);
 	field.u64 = 1;
-	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, NULL,NULL));
+	of1x_push_packet_action_to_group(ac_group, of1x_init_packet_action(/*(of1x_switch_t*)sw,*/ OF1X_AT_OUTPUT, field, 0x0));
 	of1x_add_instruction_to_group(&entry->inst_grp, OF1X_IT_APPLY_ACTIONS, ac_group , NULL, NULL, 0);
 	of1x_add_flow_entry_table( &((of1x_switch_t *)sw)->pipeline, 0, &entry, false, false );
 	

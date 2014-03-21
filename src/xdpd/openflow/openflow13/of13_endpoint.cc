@@ -326,7 +326,7 @@ of13_endpoint::handle_flow_stats_request(
 		uint8_t aux_id)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	of1x_flow_entry_t* entry = of1x_init_flow_entry(NULL, NULL, false);
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
 
 	try{
 		of13_translation_utils::of13_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
@@ -359,7 +359,7 @@ of13_endpoint::handle_flow_stats_request(
 
 	for(elem = fp_msg->flows_head; elem; elem = elem->next){
 
-		cofmatch match;
+		cofmatch match(rofl::openflow13::OFP_VERSION);
 		of13_translation_utils::of13_map_reverse_flow_entry_matches(elem->matches, match);
 
 		cofinstructions instructions(ctl.get_version());
@@ -404,7 +404,7 @@ of13_endpoint::handle_aggregate_stats_request(
 		uint8_t aux_id)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	 of1x_flow_entry_t* entry = of1x_init_flow_entry(NULL, NULL, false);
+	 of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
 
 	if(!entry)
 		throw eBadRequestBadStat();
@@ -860,7 +860,7 @@ of13_endpoint::handle_port_desc_stats_request(
 		throw eRofBase();
 
 	// array of structures ofp_port
-	rofl::cofports ports(ctl.get_version());
+	rofl::openflow::cofports ports(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for (unsigned int n = 1; n < of13switch->max_ports; n++){
@@ -938,8 +938,10 @@ of13_endpoint::process_packet_in(
 {
 	try {
 		//Transform matches 
-		cofmatch match;
+		cofmatch match(rofl::openflow13::OFP_VERSION);
 		of13_translation_utils::of13_map_reverse_packet_matches(matches, match);
+
+		size_t len = (total_len < buf_len) ? total_len : buf_len;
 
 		send_packet_in_message(
 				buffer_id,
@@ -949,7 +951,7 @@ of13_endpoint::process_packet_in(
 				/*cookie=*/0,
 				/*in_port=*/0, // OF1.0 only
 				match,
-				pkt_buffer, buf_len);
+				pkt_buffer, len);
 
 		return ROFL_SUCCESS;
 
@@ -1142,7 +1144,7 @@ of13_endpoint::process_flow_removed(
 {
 	try {
 
-		cofmatch match;
+		cofmatch match(rofl::openflow13::OFP_VERSION);
 		uint32_t sec,nsec;
 
 		of13_translation_utils::of13_map_reverse_flow_entry_matches(entry->matches.head, match);

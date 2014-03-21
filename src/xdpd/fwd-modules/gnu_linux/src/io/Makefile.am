@@ -4,10 +4,6 @@ SUBDIRS = packet_classifiers ports scheduler
 
 noinst_LTLIBRARIES = libfwd_module_gnu_linux_io.la
 
-libfwd_module_gnu_linux_io_ladir = $(includedir)/fwd-modules/gnu_linux/io
-
-libfwd_module_gnu_linux_io_la_HEADERS =
-
 libfwd_module_gnu_linux_io_la_SOURCES = \
 	bufferpool.cc \
 	bufferpool.h \

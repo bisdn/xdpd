@@ -62,7 +62,7 @@ of12_endpoint::handle_features_request(
 	capabilities 	= of12switch->pipeline.capabilities;
 
 	// array of structures ofp_port
-	rofl::cofports ports(ctl.get_version());
+	rofl::openflow::cofports ports(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for (unsigned int n = 1; n < of12switch->max_ports; n++){
@@ -319,7 +319,7 @@ of12_endpoint::handle_flow_stats_request(
 	of1x_flow_entry_t* entry = NULL;
 
 	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
+	entry = of1x_init_flow_entry(false);
 	
 	try{
 		of12_translation_utils::of12_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
@@ -351,7 +351,7 @@ of12_endpoint::handle_flow_stats_request(
 
 	for(elem = fp_msg->flows_head; elem; elem = elem->next){
 
-		cofmatch match;
+		cofmatch match(rofl::openflow12::OFP_VERSION);
 		of12_translation_utils::of12_map_reverse_flow_entry_matches(elem->matches, match);
 
 		cofinstructions instructions(ctl.get_version());
@@ -401,7 +401,7 @@ of12_endpoint::handle_aggregate_stats_request(
 //	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
 
 	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(NULL, NULL, false);
+	entry = of1x_init_flow_entry(false);
 
 	if(!entry)
 		throw eBadRequestBadStat(); 
@@ -699,8 +699,10 @@ of12_endpoint::process_packet_in(
 {
 	try {
 		//Transform matches 
-		cofmatch match;
+		cofmatch match(rofl::openflow12::OFP_VERSION);
 		of12_translation_utils::of12_map_reverse_packet_matches(matches, match);
+
+		size_t len = (total_len < buf_len) ? total_len : buf_len;
 
 		send_packet_in_message(
 				buffer_id,
@@ -710,7 +712,7 @@ of12_endpoint::process_packet_in(
 				/*cookie=*/0,
 				/*in_port=*/0, // OF1.0 only
 				match,
-				pkt_buffer, buf_len);
+				pkt_buffer, len);
 
 		return ROFL_SUCCESS;
 
@@ -1063,7 +1065,7 @@ of12_endpoint::process_flow_removed(
 		of1x_flow_entry *entry)
 {
 	try {
-		cofmatch match;
+		cofmatch match(rofl::openflow12::OFP_VERSION);
 		uint32_t sec,nsec;
 
 		of12_translation_utils::of12_map_reverse_flow_entry_matches(entry->matches.head, match);

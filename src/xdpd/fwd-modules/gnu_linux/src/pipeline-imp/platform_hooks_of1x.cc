@@ -94,7 +94,7 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 * Packet in
 */
 
-void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
+void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, uint16_t send_len, of_packet_in_reason_t reason)
 {
 	datapacketx86* pkt_x86;
 	switch_platform_state_t* ls_state = (switch_platform_state_t*)sw->platform_state;
@@ -105,6 +105,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	pkt_x86 = (datapacketx86*)pkt->platform_state;
 	pkt_x86->pktin_table_id = table_id;
 	pkt_x86->pktin_reason = reason;
+	pkt_x86->pktin_send_len = send_len;
 	
 	//Timestamp SB6_PRE	
 	TM_STAMP_STAGE(pkt, TM_SB5_PRE);

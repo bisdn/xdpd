@@ -80,7 +80,7 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 * Packet in
 */
 
-void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, of_packet_in_reason_t reason)
+void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapacket_t* pkt, uint16_t send_len, of_packet_in_reason_t reason)
 {
 	assert(OF_VERSION_12 == sw->of_ver);
 

@@ -75,6 +75,7 @@ public:
 	//Temporary store for pkt_in information
 	uint8_t pktin_table_id;
 	of_packet_in_reason_t pktin_reason;	
+	uint16_t pktin_send_len;
 
 	//Opaque pointer
 	void* extra;

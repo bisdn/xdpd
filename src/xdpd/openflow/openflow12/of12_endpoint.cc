@@ -62,7 +62,7 @@ of12_endpoint::handle_features_request(
 	capabilities 	= of12switch->pipeline.capabilities;
 
 	// array of structures ofp_port
-	rofl::cofports ports(ctl.get_version());
+	rofl::openflow::cofports ports(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for (unsigned int n = 1; n < of12switch->max_ports; n++){

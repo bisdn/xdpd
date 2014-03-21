@@ -860,7 +860,7 @@ of13_endpoint::handle_port_desc_stats_request(
 		throw eRofBase();
 
 	// array of structures ofp_port
-	rofl::cofports ports(ctl.get_version());
+	rofl::openflow::cofports ports(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for (unsigned int n = 1; n < of13switch->max_ports; n++){

@@ -47,55 +47,55 @@ public:
 	/**
 	* Maps a of1x_flow_entry from an OF1.2 Header
 	*/
-	static of1x_flow_entry_t* of12_map_flow_entry(crofctl *ctl,  cofmsg_flow_mod *msg, openflow_switch* sw);
+	static of1x_flow_entry_t* of12_map_flow_entry(crofctl *ctl,  rofl::openflow::cofmsg_flow_mod *msg, openflow_switch* sw);
 
 	/**
 	* Maps a of1x_match from an OF1.2 Header
 	*/
-	static void of12_map_flow_entry_matches(crofctl *ctl, cofmatch const& match, openflow_switch* sw, of1x_flow_entry* entry);
+	static void of12_map_flow_entry_matches(crofctl *ctl, rofl::openflow::cofmatch const& match, openflow_switch* sw, of1x_flow_entry* entry);
 
 
 
 	/**
 	* Maps a of1x_action from an OF1.2 Header
 	*/
-	static void of12_map_flow_entry_actions(crofctl *ctl, openflow_switch* sw, cofactions& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
+	static void of12_map_flow_entry_actions(crofctl *ctl, openflow_switch* sw, rofl::openflow::cofactions& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
 
 
 	/**
 	* Maps a of1x_match from an OF1.2 Header
 	*/
-	static void of12_map_reverse_flow_entry_matches(of1x_match_t* m, cofmatch& match);
+	static void of12_map_reverse_flow_entry_matches(of1x_match_t* m, rofl::openflow::cofmatch& match);
 	
 	/**
 	 * Maps a of12_group_bucket from an OF1.2 Header
 	 */
-	static void of12_map_bucket_list(crofctl *ctl, openflow_switch* sw, cofbuckets& of_buckets, of1x_bucket_list_t* bucket_list);
+	static void of12_map_bucket_list(crofctl *ctl, openflow_switch* sw, rofl::openflow::cofbuckets& of_buckets, of1x_bucket_list_t* bucket_list);
 
 	/**
 	 * Reverse maps a bucket list 
 	 */
-	static void of12_map_reverse_bucket_list(	cofbuckets& of_buckets, of1x_bucket_list_t* bucket_list);
+	static void of12_map_reverse_bucket_list(	rofl::openflow::cofbuckets& of_buckets, of1x_bucket_list_t* bucket_list);
 	
 	/**
 	*
 	*/
-	static void of12_map_reverse_flow_entry_instructions(of1x_instruction_group_t* group, cofinstructions& instructions);
+	static void of12_map_reverse_flow_entry_instructions(of1x_instruction_group_t* group, rofl::openflow::cofinstructions& instructions);
 
 	/**
 	*
 	*/
-	static void of12_map_reverse_flow_entry_instruction(of1x_instruction_t* inst, cofinst& instruction);
+	static void of12_map_reverse_flow_entry_instruction(of1x_instruction_t* inst, rofl::openflow::cofinst& instruction);
 
 	/**
 	*
 	*/
-	static void of12_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, cofaction& action);
+	static void of12_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, rofl::openflow::cofaction& action);
 
 	/**
 	*
 	*/
-	static void of12_map_reverse_packet_matches(packet_matches_t* packet_matches, cofmatch& match);
+	static void of12_map_reverse_packet_matches(packet_matches_t* packet_matches, rofl::openflow::cofmatch& match);
 
 	static uint64_t of12_map_bitmap_matches(bitmap128_t* bitmap);
 

@@ -49,7 +49,7 @@ class of_endpoint : public crofbase {
 
 public:
 
-	of_endpoint(cofhello_elem_versionbitmap const& versionbitmap = cofhello_elem_versionbitmap()) : crofbase(versionbitmap), sw(NULL) {};
+	of_endpoint(rofl::openflow::cofhello_elem_versionbitmap const& versionbitmap = rofl::openflow::cofhello_elem_versionbitmap()) : crofbase(versionbitmap), sw(NULL) {};
 
 	virtual ~of_endpoint() {};
 

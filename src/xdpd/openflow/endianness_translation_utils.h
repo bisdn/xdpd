@@ -26,7 +26,8 @@
 		x=__bswap_32(x); \
 		}while(0)
 #else
-	#define MACTOBE(x) (x)
+	#define MACTOBE(x) 
+	#define LABELTOBE(x) 
 #endif
 
 #define BETOHMAC(x) MACTOBE(x)

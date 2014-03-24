@@ -1778,15 +1778,15 @@ uint64_t of12_translation_utils::of12_map_bitmap_set_fields(bitmap128_t* bitmap)
 	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_ND_TARGET ))
 		 t |= 1UL << OFPXMT_OFB_IPV6_ND_TARGET;
 	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_ND_SLL ))
-		 t |= 1UL << OFPXMT_OFB_IPV6_ND_SLL;
+		 t |= 1ULL << OFPXMT_OFB_IPV6_ND_SLL;
 	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_IPV6_ND_TLL ))
-		 t |= 1UL << OFPXMT_OFB_IPV6_ND_TLL;
+		 t |= 1ULL << OFPXMT_OFB_IPV6_ND_TLL;
 	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_MPLS_LABEL ))
-		 t |= 1UL << OFPXMT_OFB_MPLS_LABEL;
+		 t |= 1ULL << OFPXMT_OFB_MPLS_LABEL;
 	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_MPLS_TC ))
-		 t |= 1UL << OFPXMT_OFB_MPLS_TC;
+		 t |= 1ULL << OFPXMT_OFB_MPLS_TC;
 	 if(bitmap128_is_bit_set(bitmap, OF1X_AT_SET_FIELD_MPLS_BOS ))
-		 t |= 1UL << OFPXMT_OFB_MPLS_BOS;
+		 t |= 1ULL << OFPXMT_OFB_MPLS_BOS;
 	
 	return t;
 }

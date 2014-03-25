@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <rofl/common/utils/c_logger.h>
+#include "../endianness_translation_utils.h"
 
 using namespace xdpd;
 
@@ -239,7 +240,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		uint16_t vid = htobe16(ofmatch.get_vlan_vid());
 		
 		if( (ofmatch.get_vlan_vid_value() & openflow::OFPVID_PRESENT) > 0)
-			vlan_present = true
+			vlan_present = true;
 			
 		of1x_match_t *match = of1x_init_vlan_vid_match(
 								vid,
@@ -425,8 +426,8 @@ of13_translation_utils::of13_map_flow_entry_matches(
 
 	try {
 		caddress value(ofmatch.get_ipv6_nd_target());
-		uint128__t msk = mask.get_ipv6_addr();
-		HTONB128(msk);
+		uint128__t val = value.get_ipv6_addr();
+		HTONB128(val);
 		of1x_match_t *match = of1x_init_ip6_nd_target_match(val);
 		of1x_add_match_to_entry(entry,match);
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
@@ -826,7 +827,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_PBB_ISID: {
 					field.u32 = oxm.uint32_value();
-					H24BITTOBE(field.u32)
+					H24BITTOBE(field.u32);
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PBB_ISID, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_EXTHDR: {
@@ -1100,7 +1101,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			match.set_icmpv6_type(be64toh(m->value->value.u64));
 			break;
 		case OF1X_MATCH_ICMPV6_CODE:
-			match.set_icmpv6_code(be64toh(m->value->value.u64);
+			match.set_icmpv6_code(be64toh(m->value->value.u64));
 			break;
 		case OF1X_MATCH_IPV6_ND_TARGET:{
 			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
@@ -1115,11 +1116,11 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IPV6_ND_TLL:
 			match.set_ipv6_nd_tll(be64toh(m->value->value.u64));
 			break;
-		case OF1X_MATCH_MPLS_LABEL:
+		case OF1X_MATCH_MPLS_LABEL:{
 			uint32_t label = m->value->value.u32;
 			BETOHLABEL(label);
 			match.set_mpls_label(label);
-			break;
+			}break;
 		case OF1X_MATCH_MPLS_TC:
 			match.set_mpls_tc(m->value->value.u8);
 			break;
@@ -1129,13 +1130,13 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_TUNNEL_ID:
 			match.set_tunnel_id(be64toh(m->value->value.u64), be64toh(m->value->mask.u64));
 			break;
-		case OF1X_MATCH_PBB_ISID:
+		case OF1X_MATCH_PBB_ISID:{
 			uint32_t value = m->value->value.u32;
 			BETOH24BIT(value);
 			uint32_t mask = m->value->mask.u32;
 			BETOH24BIT(mask);
 			match.set_pbb_isid(value, mask);
-			break;
+			}break;
 		case OF1X_MATCH_IPV6_EXTHDR:
 			match.set_ipv6_exthdr(be16toh(m->value->value.u16), be16toh(m->value->mask.u16));
 			break;
@@ -1421,7 +1422,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 	case OF1X_AT_SET_FIELD_IPV6_DST: {
 		uint128__t addr = of1x_action->field.u128;
 		NTOHB128(addr);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow13::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_dst((uint8_t*)addr.val16));
+		action = rofl::openflow::cofaction_set_field(rofl::openflow13::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_dst((uint8_t*)addr.val,16));
 	} break;
 	case OF1X_AT_SET_FIELD_IPV6_FLABEL: {
 		action = rofl::openflow::cofaction_set_field(rofl::openflow13::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_flabel(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));

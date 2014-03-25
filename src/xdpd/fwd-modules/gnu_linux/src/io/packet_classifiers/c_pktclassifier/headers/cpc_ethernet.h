@@ -18,11 +18,7 @@
 #define DEFAULT_ETHER_FRAME_SIZE 1518
 #define CPC_ETH_ALEN 6
 
-#ifdef CPC_IN_HOSTBYTEORDER
-	#define LLC_DELIMITER 0x0600
-#else
-	#define LLC_DELIMITER 0x0006
-#endif
+#define LLC_DELIMITER_HBO 0x0600
 
 static inline
 uint64_t mac_addr_to_u64(uint8_t *mac){
@@ -93,7 +89,8 @@ void set_ether_dl_src(void* hdr, uint64_t dl_src){
 
 inline static
 bool is_llc_frame(void* hdr){
-	return ( CPC_BE16TOH(((cpc_eth_hdr_t*)hdr)->dl_type) < LLC_DELIMITER );
+	//return ( CPC_BE16TOH(((cpc_eth_hdr_t*)hdr)->dl_type) < LLC_DELIMITER );
+	return ( be16toh(((cpc_eth_hdr_t*)hdr)->dl_type) < LLC_DELIMITER_HBO );
 }
 
 inline static

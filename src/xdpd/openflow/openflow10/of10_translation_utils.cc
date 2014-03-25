@@ -137,9 +137,10 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	try {
 		bool vlan_present=false; //FIXME
-		uint16_t vid = htobe16(ofmatch.get_vlan_vid());
+		uint16_t value = ofmatch.get_vlan_vid_value();
+		uint16_t vid = htobe16(value & ~openflow::OFPVID_PRESENT);
 		
-		if( (ofmatch.get_vlan_vid_value() & openflow::OFPVID_PRESENT) > 0)
+		if( (value & openflow::OFPVID_PRESENT) > 0)
 			vlan_present = true;
 		
 		of1x_match_t *match = of1x_init_vlan_vid_match(vid, OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0

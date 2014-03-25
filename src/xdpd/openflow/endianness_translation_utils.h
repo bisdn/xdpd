@@ -25,12 +25,19 @@
 		x<<=12; \
 		x=__bswap_32(x); \
 		}while(0)
+		
+	 #define H24BITTOBE(x) do{ \
+		x<<=8; \
+		x=__bswap_32(x); \
+		}while(0)
 #else
 	#define MACTOBE(x) 
 	#define LABELTOBE(x) 
+	#define H24BITTOBE(x) 
 #endif
 
 #define BETOHMAC(x) MACTOBE(x)
 #define BETOHLABEL(x) LABELTOBE(x)
+#define BETOH24BIT(x) H24BITTOBE(x)
 
 #endif //_ENDIANNESS_TRANSLATION_UTILS_H_

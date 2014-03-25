@@ -93,7 +93,7 @@ rofl_result_t openflow10_switch::notify_port_status_changed(const switch_port_t*
 * Connecting and disconnecting from a controller entity
 */
 void openflow10_switch::rpc_connect_to_ctl(caddress const& controller_addr){
-	cofhello_elem_versionbitmap versionbitmap;
+	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
 	versionbitmap.add_ofp_version(version);
 	endpoint->rpc_connect_to_ctl(versionbitmap, 0, controller_addr);
 }

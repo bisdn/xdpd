@@ -46,17 +46,37 @@ sh# ./autogen.sh
 sh# cd build
 sh# ../configure
 sh# make
+sh# make install
 
 Optionally you can 'make check' for consistency checks.
+
+How to run it
+================================
+
+Copy the example.cfg: 
+
+sh# cd build/src/xdpd
+sh# cp src/xdpd/management/plugins/config/example.cfg .
+
+Now edit the configuration. Make sure ports attached to the Logical Switch Instance (LSI) exist in the system.
+
+sh# vi src/xdpd/management/plugins/config/example.cfg  
+
+Run xdpd:
+
+sh# ./xdpd -c example.cfg
 
 Optional ../configure parameters
 ================================
 
---enable-[platform-name]: Compiles support for the platform-name (forwarding module). Default is gnu-linux.
+--with-hw-support=platform-name: Compiles support for the platform-name (forwarding module). Default is gnu-linux.
 --with-plugins="plugin1...pluginN": Compile with plugin1..pluginN enabled. Default is --with-plugins="config" plugin
 --enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).
 --disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)
---with-doc: Generate documentation along with compilation. configure will fail if Doxygen is not found.
+
+Doxygen documentation
+================================
+Documentation can be compiled via 'make doc'. Documentation is generated in build/doc/ folder
 
 More information, documentation and support
 ===========================================

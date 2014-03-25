@@ -214,27 +214,22 @@ void* epoll_ioscheduler::process_io(void* grp){
 		res = epoll_wait(epfd, events, current_num_of_ports, EPOLL_TIMEOUT_MS);
 		
 		if(unlikely(res == -1)){
-#ifdef DEBUG
-			if (errno != EINTR){
-				ROFL_DEBUG(FWD_MOD_NAME"[epoll_ioscheduler] epoll returned -1 (%s) Continuing...\n",strerror(errno));
-				assert(0);
-			}
-#endif
-			continue;
-		}
+			//This can occur when interfaces are removed from the system
+		}else{
 
-		if(unlikely(res == 0)){
-			//Timeout
-		}else{	
-			ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[epoll_ioscheduler] Got %d events\n", res); 
-			for(i=0; i<res; ++i){
-				
-				port = ((epoll_event_data_t*)events[i].data.ptr)->port;
-				
-				if(is_rx)
-					epoll_ioscheduler::process_port_rx(port);
-				else
-					epoll_ioscheduler::process_port_tx(port);
+			if(res == 0){
+				//Timeout
+			}else{	
+				ROFL_DEBUG_VERBOSE(FWD_MOD_NAME"[epoll_ioscheduler] Got %d events\n", res); 
+				for(i=0; i<res; ++i){
+					
+					port = ((epoll_event_data_t*)events[i].data.ptr)->port;
+					
+					if(is_rx)
+						epoll_ioscheduler::process_port_rx(port);
+					else
+						epoll_ioscheduler::process_port_tx(port);
+				}
 			}
 		}
 

@@ -1,8 +1,8 @@
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/pipeline/openflow/of_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
+#include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline_pp.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_statistics.h>
 #include <rofl/datapath/pipeline/platform/timing.h>

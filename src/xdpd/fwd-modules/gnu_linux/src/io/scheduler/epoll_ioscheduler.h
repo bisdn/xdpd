@@ -12,6 +12,7 @@
 #include <iostream> 
 #include <sys/syscall.h>
 #include <errno.h>
+#include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 #include "ioscheduler.h" 
 #include "../iomanager.h"
 #include "../bufferpool.h"

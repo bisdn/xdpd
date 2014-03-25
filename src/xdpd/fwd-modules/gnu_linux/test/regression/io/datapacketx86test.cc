@@ -33,7 +33,7 @@
 	#include "io/packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
 #endif
 
-#include "../../../openflow/endianess_translation_utils.h"
+#include "../../../openflow/endianness_translation_utils.h"
 
 using namespace rofl;
 using namespace std;

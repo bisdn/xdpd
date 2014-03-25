@@ -304,7 +304,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 
 
 /*
-* Maps a of1x_action TO an OF1.2 Header
+* Maps a of1x_action TO an OF1.0 Header
 */
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_matches(
@@ -352,14 +352,14 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(m->value->value.u32);
+			addr.set_ipv4_addr(be32toh(m->value->value.u32));
 			match.set_nw_src(addr);	// TODO: the same for ARP request and ARP reply?
 		}
 			break;
 		case OF1X_MATCH_ARP_TPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(m->value->value.u32);
+			addr.set_ipv4_addr(be32toh(m->value->value.u32));
 			match.set_arp_tpa(addr);
 			match.set_nw_dst(addr);	// TODO: the same for ARP request and ARP reply?
 		}
@@ -374,8 +374,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			caddress mask(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(m->value->value.u32);
-			mask.set_ipv4_addr(m->value->mask.u32);
+			addr.set_ipv4_addr(be32toh(m->value->value.u32));
+			mask.set_ipv4_addr(be32toh(m->value->mask.u32));
 			match.set_nw_src(addr, mask);
 
 		}
@@ -384,8 +384,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			caddress mask(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(m->value->value.u32);
-			mask.set_ipv4_addr(m->value->mask.u32);
+			addr.set_ipv4_addr(be32toh(m->value->value.u32));
+			mask.set_ipv4_addr(be32toh(m->value->mask.u32));
 			match.set_nw_dst(addr, mask);
 		}
 			break;

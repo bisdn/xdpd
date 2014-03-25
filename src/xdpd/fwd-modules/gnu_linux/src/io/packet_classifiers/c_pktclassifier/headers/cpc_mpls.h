@@ -37,7 +37,7 @@ void set_mpls_label(void *hdr, uint32_t label){
 	((cpc_mpls_hdr_t*)hdr)->label[2] = ((label & 0x0000000f) <<  4) | (((cpc_mpls_hdr_t*)hdr)->label[2] & 0x0f);
 #else
 	uint32_t *ptr = (uint32_t*) &((cpc_mpls_hdr_t*)hdr)->label[0];
-	*ptr = ((*ptr)&0xFF0F0000) | (label&0x00F0FFFF);
+	*ptr = ((*ptr)&0xFF0F0000) | (label&OF1X_20_BITS_MASK);
 #endif
 }
 
@@ -50,10 +50,7 @@ uint32_t get_mpls_label(void *hdr){
 			((((cpc_mpls_hdr_t*)hdr)->label[2] & 0xf0) >>  4);
 #else
 	uint32_t label = *(uint32_t*) &((cpc_mpls_hdr_t*)hdr)->label[0] ;
-	label &= 0x00F0FFFF; //WARNING valid for BE machine?
-//			(((cpc_mpls_hdr_t*)hdr)->label[0]) +
-//			(((cpc_mpls_hdr_t*)hdr)->label[1] <<  8) +
-//			((((cpc_mpls_hdr_t*)hdr)->label[2] & 0xf0) << 16);
+	label &= OF1X_20_BITS_MASK;
 #endif
 	return label;
 }

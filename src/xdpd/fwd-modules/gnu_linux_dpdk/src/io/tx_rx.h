@@ -22,7 +22,7 @@
 #include "port_state.h"
 #include "port_manager.h"
 #include "../processing/processing.h"
-#include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 
 namespace xdpd {
 namespace gnu_linux_dpdk {

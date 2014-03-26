@@ -1108,7 +1108,7 @@ static void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pack, swi
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
 #ifdef DEBUG
-		dump_packet_matches(&pkt->matches);
+		dump_packet_matches(&pkt->matches, false);
 #endif
 
 		tx_pkt(port, pack->output_queue, pkt);	
@@ -1217,7 +1217,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 		}
 
 #ifdef DEBUG
-		dump_packet_matches(&pkt->matches);
+		dump_packet_matches(&pkt->matches, false);
 #endif
 			
 		//discard the original packet always (has been replicated)

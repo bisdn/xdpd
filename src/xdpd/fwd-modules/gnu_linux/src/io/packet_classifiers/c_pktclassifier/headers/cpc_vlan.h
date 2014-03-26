@@ -45,7 +45,7 @@ void set_vlan_id(void* hdr, uint16_t vid){
 #else
 	//((cpc_vlan_hdr_t*)hdr)->byte1 = (vid & 0xff00)>>8;
 	//((cpc_vlan_hdr_t*)hdr)->byte0 = (((cpc_vlan_hdr_t*)hdr)->byte0 & 0xf0) + (vid & 0x0f);
-	*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 = vid & OF1X_VLAN_ID_MASK;
+	*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 = (*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 & ~OF1X_VLAN_ID_MASK) | (vid & OF1X_VLAN_ID_MASK);
 #endif
 }
 

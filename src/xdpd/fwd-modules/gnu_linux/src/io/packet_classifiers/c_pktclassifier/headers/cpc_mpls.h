@@ -37,7 +37,7 @@ void set_mpls_label(void *hdr, uint32_t label){
 	((cpc_mpls_hdr_t*)hdr)->label[2] = ((label & 0x0000000f) <<  4) | (((cpc_mpls_hdr_t*)hdr)->label[2] & 0x0f);
 #else
 	uint32_t *ptr = (uint32_t*) &((cpc_mpls_hdr_t*)hdr)->label[0];
-	*ptr = ((*ptr)&0xFF0F0000) | (label&OF1X_20_BITS_MASK);
+	*ptr = ((*ptr)&~OF1X_20_BITS_MASK) | (label&OF1X_20_BITS_MASK);
 #endif
 }
 

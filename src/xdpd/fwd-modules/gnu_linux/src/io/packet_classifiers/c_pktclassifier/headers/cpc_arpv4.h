@@ -17,7 +17,11 @@
 
 /* ARPv4 constants and definitions */
 enum arpv4_ether_t {
+#ifdef CPC_IN_HOSTBYTEORDER
 	ARPV4_ETHER = 0x0806,
+#else
+	ARPV4_ETHER = 0x0608,
+#endif
 };
 
 typedef struct cpc_arpv4_hdr {

@@ -24,7 +24,11 @@ struct cpc_ipv6_ext_hdr_t {
 /* ipv6 constants and definitions */
 // ipv6 ethernet types
 enum ipv6_ether_t {
+#ifdef CPC_IN_HOSTBYTEORDER
 	IPV6_ETHER = 0x86dd,
+#else
+	IPV6_ETHER = 0xdd86,
+#endif
 };
 
 enum ipv6_ext_t {

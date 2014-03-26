@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#include "../endianness_translation_utils.h"
+
 using namespace xdpd;
 
 /*
@@ -108,27 +110,41 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	// no in_phy_port in OF1.0
 
 	try {
-		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();;
+		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();
+		MACTOBE(maddr);
 		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
-		of1x_match_t *match = of1x_init_eth_dst_match(maddr, mmask);
+		MACTOBE(mmask);
+		of1x_match_t *match = of1x_init_eth_dst_match(maddr,mmask);
+
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
+		MACTOBE(maddr);
 		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
-		of1x_match_t *match = of1x_init_eth_src_match(maddr, mmask);
-		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
-
-	try {
-		of1x_match_t *match = of1x_init_eth_type_match(ofmatch.get_eth_type());
+		MACTOBE(mmask);
+		of1x_match_t *match = of1x_init_eth_src_match(maddr,mmask);
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
 
 	try {
-		of1x_match_t *match = of1x_init_vlan_vid_match(ofmatch.get_vlan_vid_value()|OF1X_VLAN_PRESENT_MASK, 0x1FFF); // no mask in OF1.0
+		of1x_match_t *match = of1x_init_eth_type_match(htobe16(ofmatch.get_eth_type()));
+
+		of1x_add_match_to_entry(entry, match);
+	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+
+	try {
+		bool vlan_present=false; //FIXME
+		uint16_t value = ofmatch.get_vlan_vid_value();
+		uint16_t vid = htobe16(value & ~openflow::OFPVID_PRESENT);
+		
+		if( (value & openflow::OFPVID_PRESENT) > 0)
+			vlan_present = true;
+		
+		of1x_match_t *match = of1x_init_vlan_vid_match(vid, OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
+
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
 
@@ -158,7 +174,9 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		caddress value(ofmatch.get_nw_src_value());
 		caddress mask(ofmatch.get_nw_src_mask());
 		if(mask.ca_s4addr->sin_addr.s_addr){	
-			match = of1x_init_nw_src_match(be32toh(value.ca_s4addr->sin_addr.s_addr), be32toh(mask.ca_s4addr->sin_addr.s_addr));
+			match = of1x_init_nw_src_match(
+							value.ca_s4addr->sin_addr.s_addr,
+							mask.ca_s4addr->sin_addr.s_addr);
 			of1x_add_match_to_entry(entry, match);
 		}
 
@@ -171,20 +189,23 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		caddress value(ofmatch.get_nw_dst_value());
 		caddress mask(ofmatch.get_nw_dst_mask());
 		if(mask.ca_s4addr->sin_addr.s_addr){	
-			match = of1x_init_nw_dst_match(be32toh(value.ca_s4addr->sin_addr.s_addr), be32toh(mask.ca_s4addr->sin_addr.s_addr));
+			match = of1x_init_nw_dst_match(
+							value.ca_s4addr->sin_addr.s_addr,
+							mask.ca_s4addr->sin_addr.s_addr);
+
 			of1x_add_match_to_entry(entry, match);
 		}
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
 
 	//TP SRC
 	try {
-		of1x_match_t *match = of1x_init_tp_src_match(ofmatch.get_tp_src());
+		of1x_match_t *match = of1x_init_tp_src_match(htobe16(ofmatch.get_tp_src()));
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
 
 	//TP DST
 	try {
-		of1x_match_t *match = of1x_init_tp_dst_match(ofmatch.get_tp_dst());
+		of1x_match_t *match = of1x_init_tp_dst_match(htobe16(ofmatch.get_tp_dst()));
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
 
@@ -221,7 +242,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, be16toh(raction.oac_10output->max_len));
 			break;
 		case rofl::openflow10::OFPAT_SET_VLAN_VID:
-			field.u64 = be16toh(raction.oac_10vlanvid->vlan_vid);
+			field.u64 = raction.oac_10vlanvid->vlan_vid;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_VLAN_PCP:
@@ -234,19 +255,21 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		case rofl::openflow10::OFPAT_SET_DL_SRC: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
+			MACTOBE(field.u64);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, 0x0);
 			} break;
 		case rofl::openflow10::OFPAT_SET_DL_DST: {
 			cmacaddr mac(raction.oac_10dladdr->dl_addr, 6);
 			field.u64 = mac.get_mac();
+			MACTOBE(field.u64);
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0);
 			} break;
 		case rofl::openflow10::OFPAT_SET_NW_SRC:
-			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
+			field.u32 = raction.oac_10nwaddr->nw_addr;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_NW_DST:
-			field.u32 = be32toh(raction.oac_10nwaddr->nw_addr);
+			field.u32 = raction.oac_10nwaddr->nw_addr;
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_NW_TOS:
@@ -254,11 +277,11 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_TP_SRC:
-			field.u64 = be16toh(raction.oac_10tpport->tp_port);
+			field.u64 = raction.oac_10tpport->tp_port;
 			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_SET_TP_DST:
-			field.u64 = be16toh(raction.oac_10tpport->tp_port);
+			field.u64 = raction.oac_10tpport->tp_port;
 			action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, 0x0);
 			break;
 		case rofl::openflow10::OFPAT_ENQUEUE:
@@ -281,7 +304,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 
 
 /*
-* Maps a of1x_action TO an OF1.2 Header
+* Maps a of1x_action TO an OF1.0 Header
 */
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_matches(
@@ -297,42 +320,46 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			break;
 		case OF1X_MATCH_ETH_DST:
 		{
-			cmacaddr maddr(m->value->value.u64);
-			cmacaddr mmask(m->value->mask.u64);
-			match.set_eth_dst(maddr, mmask);
+			uint64_t mac = m->value->value.u64;
+			BETOHMAC(mac);
+			uint64_t msk = m->value->mask.u64;
+			BETOHMAC(msk);
+			match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
 		}
 			break;
 		case OF1X_MATCH_ETH_SRC:
 		{
-			cmacaddr maddr(m->value->value.u64);
-			cmacaddr mmask(m->value->mask.u64);
-			match.set_eth_src(maddr, mmask);
+			uint64_t mac = m->value->value.u64;
+			BETOHMAC(mac);
+			uint64_t msk = m->value->mask.u64;
+			BETOHMAC(msk);
+			match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
 		}
 			break;
 		case OF1X_MATCH_ETH_TYPE:
-			match.set_eth_type(m->value->value.u16);
+			match.set_eth_type(be16toh(m->value->value.u16));
 			break;
 		case OF1X_MATCH_VLAN_VID:
 			has_vlan = true;
-			match.set_vlan_vid(m->value->value.u16&OF1X_VLAN_ID_MASK);
+			match.set_vlan_vid(be16toh(m->value->value.u16&OF1X_VLAN_ID_MASK));
 			break;
 		case OF1X_MATCH_VLAN_PCP:
 			match.set_vlan_pcp(m->value->value.u8);
 			break;
 		case OF1X_MATCH_ARP_OP:
-			match.set_nw_proto(m->value->value.u16);
+			match.set_nw_proto(be16toh(m->value->value.u16));
 			break;
 		case OF1X_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(m->value->value.u32);
+			addr.set_ipv4_addr(be32toh(m->value->value.u32));
 			match.set_nw_src(addr);	// TODO: the same for ARP request and ARP reply?
 		}
 			break;
 		case OF1X_MATCH_ARP_TPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(m->value->value.u32);
+			addr.set_ipv4_addr(be32toh(m->value->value.u32));
 			match.set_arp_tpa(addr);
 			match.set_nw_dst(addr);	// TODO: the same for ARP request and ARP reply?
 		}
@@ -347,8 +374,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			caddress mask(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(m->value->value.u32);
-			mask.set_ipv4_addr(m->value->mask.u32);
+			addr.set_ipv4_addr(be32toh(m->value->value.u32));
+			mask.set_ipv4_addr(be32toh(m->value->mask.u32));
 			match.set_nw_src(addr, mask);
 
 		}
@@ -357,16 +384,16 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		{
 			caddress addr(AF_INET, "0.0.0.0");
 			caddress mask(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(m->value->value.u32);
-			mask.set_ipv4_addr(m->value->mask.u32);
+			addr.set_ipv4_addr(be32toh(m->value->value.u32));
+			mask.set_ipv4_addr(be32toh(m->value->mask.u32));
 			match.set_nw_dst(addr, mask);
 		}
 			break;
 		case OF1X_MATCH_TP_SRC:
-			match.set_tp_src(m->value->value.u16);
+			match.set_tp_src(be16toh(m->value->value.u16));
 			break;
 		case OF1X_MATCH_TP_DST:
-			match.set_tp_dst(m->value->value.u16);
+			match.set_tp_dst(be16toh(m->value->value.u16));
 			break;
 		default:
 			break;
@@ -462,19 +489,19 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 	} break;
 	case OF1X_AT_SET_FIELD_NW_SRC: {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(of1x_action->field.u32);
+		addr.set_ipv4_addr(be32toh(of1x_action->field.u32));
 		action = rofl::openflow::cofaction_set_nw_src(OFP10_VERSION, addr);
 	} break;
 	case OF1X_AT_SET_FIELD_NW_DST: {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(of1x_action->field.u32);
+		addr.set_ipv4_addr(be32toh(of1x_action->field.u32));
 		action = rofl::openflow::cofaction_set_nw_dst(OFP10_VERSION, addr);
 	} break;
 	case OF1X_AT_SET_FIELD_TP_SRC: {
-		action = rofl::openflow::cofaction_set_tp_src(OFP10_VERSION, of1x_action->field.u16);
+		action = rofl::openflow::cofaction_set_tp_src(OFP10_VERSION, be16toh(of1x_action->field.u16));
 	} break;
 	case OF1X_AT_SET_FIELD_TP_DST: {
-		action = rofl::openflow::cofaction_set_tp_dst(OFP10_VERSION, of1x_action->field.u16);
+		action = rofl::openflow::cofaction_set_tp_dst(OFP10_VERSION, be16toh(of1x_action->field.u16));
 	} break;
 	case OF1X_AT_EXPERIMENTER: {
 		// TODO
@@ -507,23 +534,27 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->port_in)
 		match.set_in_port(packet_matches->port_in);
 	if(packet_matches->eth_dst){
-		cmacaddr maddr(packet_matches->eth_dst);
-		cmacaddr mmask(0x0000FFFFFFFFFFFFULL);
-		match.set_eth_dst(maddr, mmask);
+		uint64_t mac = packet_matches->eth_dst;
+		BETOHMAC(mac);
+		uint64_t msk = 0x0000FFFFFFFFFFFFULL;
+		BETOHMAC(msk);
+		match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
 	}
 	if(packet_matches->eth_src){
-		cmacaddr maddr(packet_matches->eth_src);
-		cmacaddr mmask(0x0000FFFFFFFFFFFFULL);
-		match.set_eth_src(maddr, mmask);
+		uint64_t mac = packet_matches->eth_src;
+		BETOHMAC(mac);
+		uint64_t msk = 0x0000FFFFFFFFFFFFULL;
+		BETOHMAC(msk);
+		match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
 	}
 	if(packet_matches->eth_type)
-		match.set_eth_type(packet_matches->eth_type);
+		match.set_eth_type(be16toh(packet_matches->eth_type));
 	if(packet_matches->vlan_vid)
-		match.set_vlan_vid(packet_matches->vlan_vid);
+		match.set_vlan_vid(be16toh(packet_matches->vlan_vid));
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)
-		match.set_nw_proto(packet_matches->arp_opcode);
+		match.set_nw_proto(be16toh(packet_matches->arp_opcode));
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(packet_matches->arp_spa);
@@ -541,9 +572,9 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->ip_proto)
 		match.set_ip_proto(packet_matches->ip_proto);
 	if(packet_matches->ipv4_src){
-			caddress addr(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(packet_matches->ipv4_src);
-			match.set_nw_src(addr);
+		caddress addr(AF_INET, "0.0.0.0");
+		addr.set_ipv4_addr(packet_matches->ipv4_src);
+		match.set_nw_src(addr);
 	}
 	if(packet_matches->ipv4_dst){
 		caddress addr(AF_INET, "0.0.0.0");
@@ -551,13 +582,13 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches->tcp_src)
-		match.set_tp_src(packet_matches->tcp_src);
+		match.set_tp_src(be16toh(packet_matches->tcp_src));
 	if(packet_matches->tcp_dst)
-		match.set_tp_dst(packet_matches->tcp_dst);
+		match.set_tp_dst(be16toh(packet_matches->tcp_dst));
 	if(packet_matches->udp_src)
-		match.set_tp_src(packet_matches->udp_src);
+		match.set_tp_src(be16toh(packet_matches->udp_src));
 	if(packet_matches->udp_dst)
-		match.set_tp_dst(packet_matches->udp_dst);
+		match.set_tp_dst(be16toh(packet_matches->udp_dst));
 	if(packet_matches->icmpv4_type)
 		match.set_tp_src(packet_matches->icmpv4_type);
 	if(packet_matches->icmpv4_code)

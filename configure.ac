@@ -28,8 +28,6 @@ AC_DEFINE(__STDC_FORMAT_MACROS)
 #Check libs used
 AC_CHECK_LIB(pthread, pthread_kill,,AC_MSG_ERROR([pthread library not found])) 
 AC_CHECK_LIB(rt, clock_gettime,,[AC_MSG_ERROR([rt library not found])]) 
-#AC_CHECK_LIB(rofl_pipeline, physical_switch_init,,[AC_MSG_ERROR([rofl_pipeline library not found])]) 
-#AC_CHECK_LIB(rofl_pipeline, physical_switch_init,,[AC_MSG_ERROR([rofl_core library not found])]) 
 
 PKG_CHECK_MODULES([ROFL], [rofl >= 0.4.0], [have_rofl=yes], AC_MSG_ERROR([Revised OpenFlow Libraries(ROFL) not found]))
 if (test "${have_rofl}" = "yes"); then
@@ -42,6 +40,9 @@ m4_include([config/debug.m4])
 
 #Application verbosity 
 m4_include([config/verbose.m4])
+
+#Endianness
+m4_include([config/endianness.m4])
 
 #Check for profiling mode
 m4_include([config/profiling.m4])

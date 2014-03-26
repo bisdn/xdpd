@@ -1,3 +1,8 @@
+//Guards used only when inlining
+#ifndef ATOMIC_OPS_IMPL_INLINE__
+#define ATOMIC_OPS_IMPL_INLINE__
+
+//Must be the first one
 #include "atomic_operations.h"
 #include "pthread_lock.h" 
 
@@ -57,3 +62,5 @@ STATIC_ATOMIC_INLINE__ void platform_atomic_dec32(uint32_t* counter, platform_mu
 	platform_mutex_unlock(mutex);
 #endif
 }
+
+#endif //Guards

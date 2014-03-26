@@ -1,3 +1,10 @@
+//Guards used only when inlining
+#ifndef PACKET_IMPL_INLINE__
+#define PACKET_IMPL_INLINE__
+
+//Must be the first one
+#include "packet.h"
+
 #include <inttypes.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -12,7 +19,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "packet.h"
 #include "../io/datapacketx86.h"
 #include "../io/bufferpool.h"
 #include "../io/ports/ioport.h"
@@ -1206,3 +1212,4 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 
 }
 
+#endif //Guards

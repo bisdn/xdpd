@@ -1,3 +1,7 @@
+//Guards used only when inlining
+#ifndef PTHREAD_LOCK_IMPL_INLINE__
+#define PTHREAD_LOCK_IMPL_INLINE__
+
 #include "pthread_lock.h"
 #include <rofl/datapath/pipeline/platform/memory.h>
 
@@ -72,3 +76,5 @@ STATIC_LOCK_INLINE__ void platform_rwlock_wrlock(platform_rwlock_t* rwlock){
 STATIC_LOCK_INLINE__ void platform_rwlock_wrunlock(platform_rwlock_t* rwlock){
 	pthread_rwlock_unlock((pthread_rwlock_t*)rwlock);
 }
+
+#endif //Guards 

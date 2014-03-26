@@ -1,6 +1,7 @@
 #include "system_manager.h"
 
 #include <sstream>
+#include <stdexcept>
 #include <rofl/common/ciosrv.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/util/logging.h>
@@ -173,6 +174,30 @@ void system_manager::init(int argc, char** argv){
 	if(env_parser->is_arg_set("daemonize")) {
 		rofl::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
 		rofl::logging::notice << "[xdpd][system] daemonizing successful" << std::endl;
+	}else{
+		//If not daemonized and logfile is set: redirects the output to logfile. TODO: maybe logfile shouldn't depend on daemonize.
+		if(env_parser->is_arg_set("logfile")){
+			try{
+				int fd = open(env_parser->get_arg("logfile").c_str(), O_RDWR | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+				if (fd >=0){
+					std::cout << " All OUTPUT will be redirected to the logfile: " << env_parser->get_arg("logfile").c_str() << std::endl;
+				}
+				if (fd < 0) {
+					throw eSysCall("open()");
+				}
+				if (dup2(fd, STDIN_FILENO) < 0) {
+					throw eSysCall("dup2(): STDIN");
+				}
+				if (dup2(fd, STDOUT_FILENO) < 0) {
+					throw eSysCall("dup2(): STDOUT");
+				}
+				if (dup2(fd, STDERR_FILENO) < 0) {
+					throw eSysCall("dup2(): STDERR");
+				}
+			} catch (eSysCall& e) {
+					std::cerr << "Log file problem: "<< e << std::endl;
+			}
+		}
 	}
 
 	//Capture control+C

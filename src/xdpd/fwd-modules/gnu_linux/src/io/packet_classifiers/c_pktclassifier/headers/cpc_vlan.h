@@ -31,9 +31,8 @@ enum vlan_ether_t {
 // VLAN header
 typedef struct cpc_vlan_hdr {
 	// tag control identifier (TCI)
-	uint8_t byte0;
+	uint8_t byte0;		// vid (12b) + cfi (1b) + pcp (3b)
 	uint8_t byte1;
-	//uint16_t hdr;			// vid (12b) + cfi (1b) + pcp (3b)
 	uint16_t dl_type;  		// ethernet type
 } __attribute__((packed)) cpc_vlan_hdr_t;
 
@@ -43,8 +42,6 @@ void set_vlan_id(void* hdr, uint16_t vid){
 	((cpc_vlan_hdr_t*)hdr)->byte1 = vid & 0x00ff;
 	((cpc_vlan_hdr_t*)hdr)->byte0 = (((cpc_vlan_hdr_t*)hdr)->byte0 & 0xf0) + ((vid & 0x0f00) >> 8);
 #else
-	//((cpc_vlan_hdr_t*)hdr)->byte1 = (vid & 0xff00)>>8;
-	//((cpc_vlan_hdr_t*)hdr)->byte0 = (((cpc_vlan_hdr_t*)hdr)->byte0 & 0xf0) + (vid & 0x0f);
 	*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 = (*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 & ~OF1X_VLAN_ID_MASK) | (vid & OF1X_VLAN_ID_MASK);
 #endif
 }
@@ -54,7 +51,6 @@ uint16_t get_vlan_id(void* hdr){
 #ifdef CPC_IN_HOSTBYTEORDER
 	return (((((cpc_vlan_hdr_t*)hdr)->byte0 & 0x0f) << 8) + ((cpc_vlan_hdr_t*)hdr)->byte1);
 #else
-	//return (((((cpc_vlan_hdr_t*)hdr)->byte0 & 0x0f)) + (((cpc_vlan_hdr_t*)hdr)->byte1 << 8) );
 	return ( *(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 ) & OF1X_VLAN_ID_MASK;
 #endif
 }

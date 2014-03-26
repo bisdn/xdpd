@@ -21,7 +21,7 @@ of13_endpoint::of13_endpoint(
 
 	//Set bitmaps
 	crofbase::get_versionbitmap().add_ofp_version(rofl::openflow13::OFP_VERSION);
-	cofhello_elem_versionbitmap versionbitmap;
+	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
 	versionbitmap.add_ofp_version(openflow13::OFP_VERSION);
 	
 	//Connect to controller
@@ -37,7 +37,7 @@ of13_endpoint::of13_endpoint(
 void
 of13_endpoint::handle_features_request(
 		crofctl& ctl,
-		cofmsg_features_request& msg,
+		rofl::openflow::cofmsg_features_request& msg,
 		uint8_t aux_id)
 {
 	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
@@ -66,7 +66,7 @@ of13_endpoint::handle_features_request(
 void
 of13_endpoint::handle_get_config_request(
 		crofctl& ctl,
-		cofmsg_get_config_request& msg,
+		rofl::openflow::cofmsg_get_config_request& msg,
 		uint8_t aux_id)
 {
 	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
@@ -88,7 +88,7 @@ of13_endpoint::handle_get_config_request(
 void
 of13_endpoint::handle_set_config(
 		crofctl& ctl,
-		cofmsg_set_config& msg,
+		rofl::openflow::cofmsg_set_config& msg,
 		uint8_t aux_id)
 {
 	//Instruct the driver to process the set config
@@ -102,7 +102,7 @@ of13_endpoint::handle_set_config(
 void
 of13_endpoint::handle_packet_out(
 		crofctl& ctl,
-		cofmsg_packet_out& msg,
+		rofl::openflow::cofmsg_packet_out& msg,
 		uint8_t aux_id)
 {
 	of1x_action_group_t* action_group = of1x_init_action_group(NULL);
@@ -136,7 +136,7 @@ of13_endpoint::handle_packet_out(
 void
 of13_endpoint::handle_flow_mod(
 		crofctl& ctl,
-		cofmsg_flow_mod& msg,
+		rofl::openflow::cofmsg_flow_mod& msg,
 		uint8_t aux_id)
 {
 	switch (msg.get_command()) {
@@ -165,7 +165,7 @@ of13_endpoint::handle_flow_mod(
 void
 of13_endpoint::flow_mod_add(
 		crofctl& ctl,
-		cofmsg_flow_mod& msg)
+		rofl::openflow::cofmsg_flow_mod& msg)
 {
 	uint8_t table_id = msg.get_table_id();
 	afa_result_t res;
@@ -212,7 +212,7 @@ of13_endpoint::flow_mod_add(
 void
 of13_endpoint::flow_mod_modify(
 		crofctl& ctl,
-		cofmsg_flow_mod& pack,
+		rofl::openflow::cofmsg_flow_mod& pack,
 		bool strict)
 {
 	of1x_flow_entry_t *entry=NULL;
@@ -258,7 +258,7 @@ of13_endpoint::flow_mod_modify(
 void
 of13_endpoint::flow_mod_delete(
 		crofctl& ctl,
-		cofmsg_flow_mod& pack,
+		rofl::openflow::cofmsg_flow_mod& pack,
 		bool strict)
 {
 
@@ -297,7 +297,7 @@ of13_endpoint::flow_mod_delete(
 void
 of13_endpoint::handle_desc_stats_request(
 		crofctl& ctl,
-		cofmsg_desc_stats_request& msg,
+		rofl::openflow::cofmsg_desc_stats_request& msg,
 		uint8_t aux_id)
 {
 
@@ -305,7 +305,7 @@ of13_endpoint::handle_desc_stats_request(
 	std::string hw_desc(VERSION);
 	std::string sw_desc(VERSION);
 
-	cofdesc_stats_reply desc_stats(
+	rofl::openflow::cofdesc_stats_reply desc_stats(
 			ctl.get_version(),
 			mfr_desc,
 			hw_desc,
@@ -322,11 +322,11 @@ of13_endpoint::handle_desc_stats_request(
 void
 of13_endpoint::handle_flow_stats_request(
 		crofctl& ctl,
-		cofmsg_flow_stats_request& msg,
+		rofl::openflow::cofmsg_flow_stats_request& msg,
 		uint8_t aux_id)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	of1x_flow_entry_t* entry = of1x_init_flow_entry(NULL, NULL, false);
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
 
 	try{
 		of13_translation_utils::of13_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
@@ -359,10 +359,10 @@ of13_endpoint::handle_flow_stats_request(
 
 	for(elem = fp_msg->flows_head; elem; elem = elem->next){
 
-		cofmatch match(rofl::openflow13::OFP_VERSION);
+		rofl::openflow::cofmatch match(rofl::openflow13::OFP_VERSION);
 		of13_translation_utils::of13_map_reverse_flow_entry_matches(elem->matches, match);
 
-		cofinstructions instructions(ctl.get_version());
+		rofl::openflow::cofinstructions instructions(ctl.get_version());
 		of13_translation_utils::of13_map_reverse_flow_entry_instructions((of1x_instruction_group_t*)(elem->inst_grp), instructions);
 
 
@@ -400,11 +400,11 @@ of13_endpoint::handle_flow_stats_request(
 void
 of13_endpoint::handle_aggregate_stats_request(
 		crofctl& ctl,
-		cofmsg_aggr_stats_request& msg,
+		rofl::openflow::cofmsg_aggr_stats_request& msg,
 		uint8_t aux_id)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	 of1x_flow_entry_t* entry = of1x_init_flow_entry(NULL, NULL, false);
+	 of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
 
 	if(!entry)
 		throw eBadRequestBadStat();
@@ -433,7 +433,7 @@ of13_endpoint::handle_aggregate_stats_request(
 	}
 
 	try{
-		cofaggr_stats_reply aggr_stats_reply(
+		rofl::openflow::cofaggr_stats_reply aggr_stats_reply(
 				ctl.get_version(),
 				fp_msg->packet_count,
 				fp_msg->byte_count,
@@ -456,7 +456,7 @@ of13_endpoint::handle_aggregate_stats_request(
 void
 of13_endpoint::handle_table_stats_request(
 		crofctl& ctl,
-		cofmsg_table_stats_request& msg,
+		rofl::openflow::cofmsg_table_stats_request& msg,
 		uint8_t aux_id)
 {
 	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
@@ -489,7 +489,7 @@ of13_endpoint::handle_table_stats_request(
 void
 of13_endpoint::handle_port_stats_request(
 		crofctl& ctl,
-		cofmsg_port_stats_request& msg,
+		rofl::openflow::cofmsg_port_stats_request& msg,
 		uint8_t aux_id)
 {
 
@@ -585,7 +585,7 @@ of13_endpoint::handle_port_stats_request(
 void
 of13_endpoint::handle_queue_stats_request(
 		crofctl& ctl,
-		cofmsg_queue_stats_request& pack,
+		rofl::openflow::cofmsg_queue_stats_request& pack,
 		uint8_t aux_id)
 {
 
@@ -675,7 +675,7 @@ of13_endpoint::handle_queue_stats_request(
 void
 of13_endpoint::handle_group_stats_request(
 		crofctl& ctl,
-		cofmsg_group_stats_request& msg,
+		rofl::openflow::cofmsg_group_stats_request& msg,
 		uint8_t aux_id)
 {
 	// we need to get the statistics, build a packet and send it
@@ -732,7 +732,7 @@ of13_endpoint::handle_group_stats_request(
 void
 of13_endpoint::handle_group_desc_stats_request(
 		crofctl& ctl,
-		cofmsg_group_desc_stats_request& msg,
+		rofl::openflow::cofmsg_group_desc_stats_request& msg,
 		uint8_t aux_id)
 {
 	rofl::openflow::cofgroupdescstatsarray groupdescs(ctl.get_version());
@@ -745,7 +745,7 @@ of13_endpoint::handle_group_desc_stats_request(
 	}
 	
 	for(group_it=group_table.head;group_it;group_it=group_it->next){
-		cofbuckets bclist(ctl.get_version());
+		rofl::openflow::cofbuckets bclist(ctl.get_version());
 		of13_translation_utils::of13_map_reverse_bucket_list(bclist,group_it->bc_list);
 		
 		groupdescs.set_group_desc_stats(group_it->id).set_group_type(group_it->type);
@@ -761,10 +761,10 @@ of13_endpoint::handle_group_desc_stats_request(
 void
 of13_endpoint::handle_group_features_stats_request(
 		crofctl& ctl,
-		cofmsg_group_features_stats_request& msg,
+		rofl::openflow::cofmsg_group_features_stats_request& msg,
 		uint8_t aux_id)
 {
-	cofgroup_features_stats_reply group_features_reply(ctl.get_version());
+	rofl::openflow::cofgroup_features_stats_reply group_features_reply(ctl.get_version());
 
 	group_features_reply.set_types((uint32_t)0);
 	group_features_reply.set_capabilities((uint32_t)0);
@@ -787,7 +787,7 @@ of13_endpoint::handle_group_features_stats_request(
 void
 of13_endpoint::handle_table_features_stats_request(
 		crofctl& ctl,
-		cofmsg_table_features_stats_request& msg,
+		rofl::openflow::cofmsg_table_features_stats_request& msg,
 		uint8_t aux_id)
 {
 	// TODO: check for pipeline definition within request and configure pipeline accordingly
@@ -848,7 +848,7 @@ of13_endpoint::handle_table_features_stats_request(
 void
 of13_endpoint::handle_port_desc_stats_request(
 		crofctl& ctl,
-		cofmsg_port_desc_stats_request& msg,
+		rofl::openflow::cofmsg_port_desc_stats_request& msg,
 		uint8_t aux_id)
 {
 	logical_switch_port_t* ls_port;
@@ -860,7 +860,7 @@ of13_endpoint::handle_port_desc_stats_request(
 		throw eRofBase();
 
 	// array of structures ofp_port
-	rofl::cofports ports(ctl.get_version());
+	rofl::openflow::cofports ports(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for (unsigned int n = 1; n < of13switch->max_ports; n++){
@@ -873,7 +873,7 @@ of13_endpoint::handle_port_desc_stats_request(
 			//Mapping of port state
 			assert(n == _port->of_port_num);
 
-			cofport port(ctl.get_version());
+			rofl::openflow::cofport port(ctl.get_version());
 
 			port.set_port_no(_port->of_port_num);
 			port.set_hwaddr(cmacaddr(_port->hwaddr, OFP_ETH_ALEN));
@@ -913,7 +913,7 @@ of13_endpoint::handle_port_desc_stats_request(
 void
 of13_endpoint::handle_experimenter_stats_request(
 		crofctl& ctl,
-		cofmsg_experimenter_stats_request& pack,
+		rofl::openflow::cofmsg_experimenter_stats_request& pack,
 		uint8_t aux_id)
 {
 	//TODO: when exp are supported 
@@ -938,7 +938,7 @@ of13_endpoint::process_packet_in(
 {
 	try {
 		//Transform matches 
-		cofmatch match(rofl::openflow13::OFP_VERSION);
+		rofl::openflow::cofmatch match(rofl::openflow13::OFP_VERSION);
 		of13_translation_utils::of13_map_reverse_packet_matches(matches, match);
 
 		size_t len = (total_len < buf_len) ? total_len : buf_len;
@@ -1015,7 +1015,7 @@ rofl_result_t of13_endpoint::notify_port_attached(const switch_port_snapshot_t* 
 		if(port->drop_received) config |= openflow13::OFPPC_NO_RECV;
 
 
-		cofport ofport(openflow13::OFP_VERSION);
+		rofl::openflow::cofport ofport(openflow13::OFP_VERSION);
 		ofport.set_port_no(port->of_port_num);
 		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 		ofport.set_name(std::string(port->name));
@@ -1052,7 +1052,7 @@ rofl_result_t of13_endpoint::notify_port_detached(const switch_port_snapshot_t* 
 		if(!port->forward_packets) config |= openflow13::OFPPC_NO_FWD;
 		if(port->drop_received) config |= openflow13::OFPPC_NO_RECV;
 
-		cofport ofport(openflow13::OFP_VERSION);
+		rofl::openflow::cofport ofport(openflow13::OFP_VERSION);
 		ofport.set_port_no(port->of_port_num);
 		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 		ofport.set_name(std::string(port->name));
@@ -1089,7 +1089,7 @@ rofl_result_t of13_endpoint::notify_port_status_changed(const switch_port_snapsh
 		if(port->drop_received) config |= openflow13::OFPPC_NO_RECV;
 
 		//Notify OF controller
-		cofport ofport(openflow13::OFP_VERSION);
+		rofl::openflow::cofport ofport(openflow13::OFP_VERSION);
 		ofport.set_port_no(port->of_port_num);
 		ofport.set_hwaddr(cmacaddr((uint8_t*)port->hwaddr, OFP_ETH_ALEN));
 		ofport.set_name(std::string(port->name));
@@ -1122,7 +1122,7 @@ rofl_result_t of13_endpoint::notify_port_status_changed(const switch_port_snapsh
 void
 of13_endpoint::handle_barrier_request(
 		crofctl& ctl,
-		cofmsg_barrier_request& pack,
+		rofl::openflow::cofmsg_barrier_request& pack,
 		uint8_t aux_id)
 {
 	//Since we are not queuing messages currently
@@ -1144,7 +1144,7 @@ of13_endpoint::process_flow_removed(
 {
 	try {
 
-		cofmatch match(rofl::openflow13::OFP_VERSION);
+		rofl::openflow::cofmatch match(rofl::openflow13::OFP_VERSION);
 		uint32_t sec,nsec;
 
 		of13_translation_utils::of13_map_reverse_flow_entry_matches(entry->matches.head, match);
@@ -1179,7 +1179,7 @@ of13_endpoint::process_flow_removed(
 void
 of13_endpoint::handle_group_mod(
 		crofctl& ctl,
-		cofmsg_group_mod& msg,
+		rofl::openflow::cofmsg_group_mod& msg,
 		uint8_t aux_id)
 {
 	//throw eNotImplemented(std::string("of13_endpoint::handle_group_mod()"));
@@ -1296,7 +1296,7 @@ of13_endpoint::handle_group_mod(
 void
 of13_endpoint::handle_table_mod(
 		crofctl& ctl,
-		cofmsg_table_mod& msg,
+		rofl::openflow::cofmsg_table_mod& msg,
 		uint8_t aux_id)
 {
 	// table config is different in OF1.3
@@ -1309,7 +1309,7 @@ of13_endpoint::handle_table_mod(
 void
 of13_endpoint::handle_port_mod(
 		crofctl& ctl,
-		cofmsg_port_mod& msg,
+		rofl::openflow::cofmsg_port_mod& msg,
 		uint8_t aux_id)
 {
 
@@ -1424,7 +1424,7 @@ of13_endpoint::port_set_config(
 void
 of13_endpoint::handle_queue_get_config_request(
 		crofctl& ctl,
-		cofmsg_queue_get_config_request& pack,
+		rofl::openflow::cofmsg_queue_get_config_request& pack,
 		uint8_t aux_id)
 {
 	switch_port_snapshot_t* port;
@@ -1440,7 +1440,7 @@ of13_endpoint::handle_queue_get_config_request(
 		throw eRofBase();
 
 
-	cofpacket_queue_list pql(ctl.get_version());
+	rofl::openflow::cofpacket_queue_list pql(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for(unsigned int n = 1; n < of13switch->max_ports; n++){
@@ -1460,11 +1460,11 @@ of13_endpoint::handle_queue_get_config_request(
 			if(!port->queues[i].set)
 				continue;
 
-			cofpacket_queue pq(ctl.get_version());
+			rofl::openflow::cofpacket_queue pq(ctl.get_version());
 			pq.set_queue_id(port->queues[i].id);
 			pq.set_port(port->of_port_num);
-			pq.get_queue_prop_list().next() = cofqueue_prop_min_rate(ctl.get_version(), port->queues[i].min_rate);
-			pq.get_queue_prop_list().next() = cofqueue_prop_max_rate(ctl.get_version(), port->queues[i].max_rate);
+			pq.get_queue_prop_list().next() = rofl::openflow::cofqueue_prop_min_rate(ctl.get_version(), port->queues[i].min_rate);
+			pq.get_queue_prop_list().next() = rofl::openflow::cofqueue_prop_max_rate(ctl.get_version(), port->queues[i].max_rate);
 			//fprintf(stderr, "min_rate: %d\n", port->queues[i].min_rate);
 			//fprintf(stderr, "max_rate: %d\n", port->queues[i].max_rate);
 
@@ -1483,7 +1483,7 @@ of13_endpoint::handle_queue_get_config_request(
 void
 of13_endpoint::handle_experimenter_message(
 		crofctl& ctl,
-		cofmsg_experimenter& pack,
+		rofl::openflow::cofmsg_experimenter& pack,
 		uint8_t aux_id)
 {
 	// TODO

@@ -7,10 +7,6 @@ SUBDIRS = \
 
 noinst_LTLIBRARIES = libfwd_module_gnu_linux_io_ports.la
 
-libfwd_module_gnu_linux_io_ports_ladir = $(includedir)/fwd-modules/gnu_linux/io/ports
-
-libfwd_module_gnu_linux_io_ports_la_HEADERS = ioport.h 
-
 libfwd_module_gnu_linux_io_ports_la_SOURCES = \
 	ioport.cc \
 	ioport.h 

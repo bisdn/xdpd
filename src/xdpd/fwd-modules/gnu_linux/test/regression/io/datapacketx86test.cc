@@ -33,6 +33,8 @@
 	#include "io/packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
 #endif
 
+#include "../../../openflow/endianness_translation_utils.h"
+
 using namespace rofl;
 using namespace std;
 using namespace xdpd::gnu_linux;
@@ -296,14 +298,18 @@ void DataPacketX86Test::testPopPPPoE()
 
 	classify_packet(pack->headers, pack->get_buffer(), pack->get_buffer_length(), 1, 1);
 
-	pop_pppoe(&pkt, pack->headers, rofl::fipv4frame::IPV4_ETHER);
+	pop_pppoe(&pkt, pack->headers, htobe16(rofl::fipv4frame::IPV4_ETHER))	;
 
-	set_ether_dl_dst(get_ether_hdr(pack->headers,0),cmacaddr("00:11:11:11:11:11").get_mac());
-	set_ether_dl_src(get_ether_hdr(pack->headers,0),cmacaddr("00:22:22:22:22:22").get_mac());
+	uint64_t mac = cmacaddr("00:11:11:11:11:11").get_mac();
+	MACTOBE(mac);
+	set_ether_dl_dst(get_ether_hdr(pack->headers,0),mac);
+	mac = cmacaddr("00:22:22:22:22:22").get_mac();
+	MACTOBE(mac);
+	set_ether_dl_src(get_ether_hdr(pack->headers,0),mac);
 
-	push_vlan(&pkt, pack->headers, rofl::fvlanframe::VLAN_CTAG_ETHER);
+	push_vlan(&pkt, pack->headers, htobe16(rofl::fvlanframe::VLAN_CTAG_ETHER));
 	set_vlan_cfi(get_vlan_hdr(pack->headers,0),true);
-	set_vlan_id(get_vlan_hdr(pack->headers,0),0x777);
+	set_vlan_id(get_vlan_hdr(pack->headers,0),htobe16(0x777));
 	set_vlan_pcp(get_vlan_hdr(pack->headers,0),0x3);
 
 	rofl::cmemory mResult(pack->get_buffer(), pack->get_buffer_length());

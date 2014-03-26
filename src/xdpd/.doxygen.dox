@@ -7,10 +7,9 @@
 *
 * The areas in which xDPd can be extended are mainly:
 *
-* - New platforms: Network processors, FPGAs, ASICs.. as well as non-ethernet devices
+* - New platforms: network processors, FPGAs, ASICs.. as well as non-ethernet devices
 * - New OpenFlow versions (without breaking or disabling existing ones!)
 * - New OpenFlow extensions (header matches, actions...)
-* - New software matching algorithms on software or hw/sw switches (flow_mod lookup)
 * - Support multiple management interfaces or RPCs (OFConfig, CLI, AMQP, Netconf...)
 *
 * xDPd is written in C/C++. It uses extensibly the Revised OpenFlow Libary (ROFL) libraries, mainly for OpenFlow endpoint management (ROFL-common) and as a forwarding plane engine (ROFL-pipeline).
@@ -18,13 +17,13 @@
 * @section features_sec Features 
 *
 * - Available platforms:
-*    - GNU/Linux user-space (MMAP-based): open-source.
-*    - OCTEON Network Processors: contact <a href="http://www.bisdn.de">BISDN</a> for details.
+*    - GNU/Linux user-space (MMAP-based) reference implementation.
+*    - GNU/Linux <a href="http://www.dpdk.org/">DPDK-accelerated</a>: contact <a href="http://www.bisdn.de">BISDN</a> for details.
+*    - NetFPGA 10G: open-source. FPGA forwarding plane based on OF switch contrib.
 *    - Broadcom Triumph2: contact <a href="http://www.bisdn.de">BISDN</a> for details. 
-*    - NetFPGA 10G: open-source. FPGA forwarding plane based on OF switch contrib (under development)
-*    - GNU/Linux <a href="http://www.dpdk.org/">DPDK-accelerated</a>: contact <a href="http://www.bisdn.de">BISDN</a> for details (under development).
+*    - OCTEON Network Processors: contact <a href="http://www.bisdn.de">BISDN</a> for details.
 * - Support multiple Logical Switch Instances (LSIs) or virtual switches.
-* - Support for multiple OpenFlow versions; 1.0 and 1.2 running simultaneously on different LSIs (1.3.2 coming soon).
+* - Support for multiple OpenFlow versions; 1.0, 1.2 and 1.3 running simultaneously on different LSIs.
 * - EICT/BISDN extensions: PPPoE/PPP and GTP.
 *
 * @section arch_sec Architecture
@@ -38,8 +37,8 @@
 * @section author Authors:
 *  - Marc Sune Clos <marc.sune (at) bisdn.de>
 *  - Victor Alvarez Roig <victor.alvarez (at) bisdn.de>
-*  - Tobias Jungel <tobias.jungel (at) bisdn.de>
 *  - Andreas Koepsel <andreas.koepsel (at) bisdn.de>
+*  - Tobias Jungel <tobias.jungel (at) bisdn.de>
 *
 * <a href ="http://www.bisdn.de"> BISDN GmbH </a>
 *

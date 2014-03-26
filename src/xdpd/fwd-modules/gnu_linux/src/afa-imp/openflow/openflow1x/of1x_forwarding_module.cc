@@ -1,8 +1,6 @@
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/pipeline/openflow/of_switch.h>
-#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_statistics.h>
 #include <rofl/datapath/pipeline/platform/timing.h>
@@ -12,6 +10,16 @@
 #include "../../../io/ports/ioport.h"
 #include "../../../processing/ls_internal_state.h"
 #include "../../../util/time_measurements.h"
+
+//Make sure pipeline-imp are BEFORE _pp.h
+//so that functions can be inlined
+#include "../../../pipeline-imp/atomic_operations.h"
+#include "../../../pipeline-imp/pthread_lock.h"
+#include "../../../pipeline-imp/packet.h"
+
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline_pp.h>
+#include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
+
 
 using namespace xdpd::gnu_linux;
 
@@ -366,7 +374,7 @@ afa_result_t fwd_module_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 
 
 #ifdef DEBUG
-	of1x_dump_table(&lsw->pipeline.tables[table_id]);
+	of1x_full_dump_switch(lsw, false);
 #endif
 	
 	return AFA_SUCCESS;
@@ -415,6 +423,10 @@ afa_result_t fwd_module_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 	}
 
 
+#ifdef DEBUG
+	of1x_full_dump_switch(lsw, false);
+#endif
+
 	return AFA_SUCCESS;
 }
 
@@ -459,6 +471,12 @@ afa_result_t fwd_module_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
 		if(of1x_remove_flow_entry_table(&lsw->pipeline, table_id, flow_entry, strictness, out_port, out_group) != ROFL_SUCCESS)
 			return AFA_FAILURE;
 	}
+
+
+#ifdef DEBUG
+	of1x_full_dump_switch(lsw, false);
+#endif
+
 	return AFA_SUCCESS;
 } 
 

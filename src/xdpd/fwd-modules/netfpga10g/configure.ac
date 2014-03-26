@@ -36,11 +36,18 @@ m4_include([../../../../config/debug.m4])
 # Application verbosity 
 m4_include([../../../../config/verbose.m4])
 
+# Endianness
+m4_include([../../../../config/endianness.m4])
+
 # Check for profiling mode
 m4_include([../../../../config/profiling.m4])
 
 # pkt classifier 
 m4_include([config/pktclassifier.m4])
+
+# Ensure rofl-pipeline platform functions are NOT inlined 
+m4_include([../../../../config/no_pipeline_inline.m4])
+
 
 AC_CONFIG_FILES([
 	Makefile

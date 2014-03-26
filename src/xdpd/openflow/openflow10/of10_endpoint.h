@@ -100,7 +100,7 @@ private:
 	 * @param pack OF packet received from controlling entity.
 	 */
 	virtual void
-	handle_features_request(crofctl& ctl, cofmsg_features_request& pack, uint8_t aux_id = 0);
+	handle_features_request(crofctl& ctl, rofl::openflow::cofmsg_features_request& pack, uint8_t aux_id = 0);
 
 	/** Handle OF get-config request. To be overwritten by derived class.
 	 *
@@ -111,55 +111,55 @@ private:
 	 * @pack OF GET-CONFIG.request packet received from controller
 	 */
 	virtual void
-	handle_get_config_request(crofctl& ctl, cofmsg_get_config_request& msg, uint8_t aux_id = 0);
+	handle_get_config_request(crofctl& ctl, rofl::openflow::cofmsg_get_config_request& msg, uint8_t aux_id = 0);
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_desc_stats_request(crofctl& ctl, cofmsg_desc_stats_request& msg, uint8_t aux_id = 0);
-
-
-	/**
-	 *
-	 */
-	virtual void
-	handle_table_stats_request(crofctl& ctl, cofmsg_table_stats_request& msg, uint8_t aux_id = 0);
+	handle_desc_stats_request(crofctl& ctl, rofl::openflow::cofmsg_desc_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_port_stats_request(crofctl& ctl, cofmsg_port_stats_request& pack, uint8_t aux_id = 0);
+	handle_table_stats_request(crofctl& ctl, rofl::openflow::cofmsg_table_stats_request& msg, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_flow_stats_request(crofctl& ctl, cofmsg_flow_stats_request& pack, uint8_t aux_id = 0);
+	handle_port_stats_request(crofctl& ctl, rofl::openflow::cofmsg_port_stats_request& pack, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_aggregate_stats_request(crofctl& ctl, cofmsg_aggr_stats_request& pack, uint8_t aux_id = 0);
+	handle_flow_stats_request(crofctl& ctl, rofl::openflow::cofmsg_flow_stats_request& pack, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_queue_stats_request(crofctl& ctl, cofmsg_queue_stats_request& pack, uint8_t aux_id = 0);
+	handle_aggregate_stats_request(crofctl& ctl, rofl::openflow::cofmsg_aggr_stats_request& pack, uint8_t aux_id = 0);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_experimenter_stats_request(crofctl& ctl, cofmsg_stats_request& pack, uint8_t aux_id = 0);
+	handle_queue_stats_request(crofctl& ctl, rofl::openflow::cofmsg_queue_stats_request& pack, uint8_t aux_id = 0);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_experimenter_stats_request(crofctl& ctl, rofl::openflow::cofmsg_stats_request& pack, uint8_t aux_id = 0);
 
 	/** Handle OF packet-out messages. To be overwritten by derived class.
 	 *
@@ -169,7 +169,7 @@ private:
 	 * @param pack PACKET-OUT.message packet received from controller.
 	 */
 	virtual void
-	handle_packet_out(crofctl& ctl, cofmsg_packet_out& pack, uint8_t aux_id = 0);
+	handle_packet_out(crofctl& ctl, rofl::openflow::cofmsg_packet_out& pack, uint8_t aux_id = 0);
 
 	/** Handle OF barrier request. To be overwritten by derived class.
 	 *
@@ -179,7 +179,7 @@ private:
 	 * @param pack BARRIER.request packet received from controller.
 	 */
 	virtual void
-	handle_barrier_request(crofctl& ctl, cofmsg_barrier_request& msg, uint8_t aux_id = 0);
+	handle_barrier_request(crofctl& ctl, rofl::openflow::cofmsg_barrier_request& msg, uint8_t aux_id = 0);
 
 	/** Handle OF flow-mod message. To be overwritten by derived class.
 	 *
@@ -189,7 +189,7 @@ private:
 	 * @param pack FLOW-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_flow_mod(crofctl& ctl, cofmsg_flow_mod& msg, uint8_t aux_id = 0);
+	handle_flow_mod(crofctl& ctl, rofl::openflow::cofmsg_flow_mod& msg, uint8_t aux_id = 0);
 
 	/** Handle OF table-mod message. To be overwritten by derived class.
 	 *
@@ -199,7 +199,7 @@ private:
 	 * @param pack TABLE-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_table_mod(crofctl& ctl, cofmsg_table_mod& pack, uint8_t aux_id = 0);
+	handle_table_mod(crofctl& ctl, rofl::openflow::cofmsg_table_mod& pack, uint8_t aux_id = 0);
 
 	/** Handle OF port-mod message. To be overwritten by derived class.
 	 *
@@ -209,7 +209,7 @@ private:
 	 * @param pack PORT-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_port_mod(crofctl& ctl, cofmsg_port_mod& pack, uint8_t aux_id = 0);
+	handle_port_mod(crofctl& ctl, rofl::openflow::cofmsg_port_mod& pack, uint8_t aux_id = 0);
 
 	/** Handle OF set-config message. To be overwritten by derived class.
 	 *
@@ -219,7 +219,7 @@ private:
 	 * @param pack SET-CONFIG.message packet received from controller.
 	 */
 	virtual void
-	handle_set_config(crofctl& ctl, cofmsg_set_config& msg, uint8_t aux_id = 0);
+	handle_set_config(crofctl& ctl, rofl::openflow::cofmsg_set_config& msg, uint8_t aux_id = 0);
 
 	/** Handle OF queue-get-config request. To be overwritten by derived class.
 	 *
@@ -230,7 +230,7 @@ private:
 	 * @param pack QUEUE-GET-CONFIG.reply packet received from datapath
 	 */
 	virtual void
-	handle_queue_get_config_request(crofctl& ctl, cofmsg_queue_get_config_request& msg, uint8_t aux_id = 0);
+	handle_queue_get_config_request(crofctl& ctl, rofl::openflow::cofmsg_queue_get_config_request& msg, uint8_t aux_id = 0);
 
 	/** Handle OF experimenter message. To be overwritten by derived class.
 	 *
@@ -240,7 +240,7 @@ private:
 	 * @param pack VENDOR.message packet received from controller.
 	 */
 	virtual void
-	handle_experimenter_message(crofctl& ctl, cofmsg_experimenter& msg, uint8_t aux_id = 0);
+	handle_experimenter_message(crofctl& ctl, rofl::openflow::cofmsg_experimenter& msg, uint8_t aux_id = 0);
 
 	/** Handle new ctrl
 	 *
@@ -276,7 +276,7 @@ private:
 	void
 	flow_mod_add(
 			crofctl& ctl,
-			cofmsg_flow_mod& pack); //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull);
+			rofl::openflow::cofmsg_flow_mod& pack); //throw (eOfSmPipelineBadTableId, eOfSmPipelineTableFull);
 
 
 
@@ -295,7 +295,7 @@ private:
 	void
 	flow_mod_modify(
 			crofctl& ctl,
-			cofmsg_flow_mod& pack,
+			rofl::openflow::cofmsg_flow_mod& pack,
 			bool strict);
 
 
@@ -314,7 +314,7 @@ private:
 	void
 	flow_mod_delete(
 			crofctl& ctl,
-			cofmsg_flow_mod& pack,
+			rofl::openflow::cofmsg_flow_mod& pack,
 			bool strict); // throw (eOfSmPipelineBadTableId);
 
 

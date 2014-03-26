@@ -1,24 +1,10 @@
 //Guards used only when inlining
-#ifndef ATOMIC_OPS_IMPL_INLINE
-#define ATOMIC_OPS_IMPL_INLINE
+#ifndef ATOMIC_OPS_IMPL_INLINE__
+#define ATOMIC_OPS_IMPL_INLINE__
 
-
-//Using GCC atomic built-ins when available
-//Defining them as static inline, such that this file can be symlinked 
-//when compiling ROFL-pipeline to inline them
-
-//Uncomment this line when you are inlining them in the pipeline
-#define GNU_LINUX_INLINE_ATOMIC 0
-
-#if GNU_LINUX_INLINE_ATOMIC == 1
-	#include <inttypes.h>
-	#define STATIC_ATOMIC_INLINE__ static inline
-#else
-	#define STATIC_ATOMIC_INLINE__ 
-	#include <rofl/datapath/pipeline/platform/atomic_operations.h>
-#endif
-
-#include <rofl/datapath/pipeline/platform/lock.h>
+//Must be the first one
+#include "atomic_operations.h"
+#include "pthread_lock.h" 
 
 /// these functins increase by one the counter
 STATIC_ATOMIC_INLINE__ void platform_atomic_inc64(uint64_t* counter, platform_mutex_t* mutex)
@@ -77,4 +63,4 @@ STATIC_ATOMIC_INLINE__ void platform_atomic_dec32(uint32_t* counter, platform_mu
 #endif
 }
 
-#endif //Guards used only when inlining
+#endif //Guards

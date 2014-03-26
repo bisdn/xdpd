@@ -49,10 +49,10 @@ uint32_t get_mpls_label(void *hdr){
 			(((cpc_mpls_hdr_t*)hdr)->label[1] <<  4) +
 			((((cpc_mpls_hdr_t*)hdr)->label[2] & 0xf0) >>  4);
 #else
-	uint32_t label = *(uint32_t*) &((cpc_mpls_hdr_t*)hdr)->label[0] ;
-	label &= OF1X_20_BITS_MASK;
+	uint32_t* label = (uint32_t*) &(((cpc_mpls_hdr_t*)hdr)->label[0]) ;
+	*label &= OF1X_20_BITS_MASK;
 #endif
-	return label;
+	return *label;
 }
 
 inline static

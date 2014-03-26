@@ -42,7 +42,9 @@ void set_vlan_id(void* hdr, uint16_t vid){
 	((cpc_vlan_hdr_t*)hdr)->byte1 = vid & 0x00ff;
 	((cpc_vlan_hdr_t*)hdr)->byte0 = (((cpc_vlan_hdr_t*)hdr)->byte0 & 0xf0) + ((vid & 0x0f00) >> 8);
 #else
-	*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 = (*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 & ~OF1X_VLAN_ID_MASK) | (vid & OF1X_VLAN_ID_MASK);
+	uint16_t *byte0 = (uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0;
+	*byte0 = ((*byte0) & ~OF1X_VLAN_ID_MASK) | (vid & OF1X_VLAN_ID_MASK);
+	//*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 = (*(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 & ~OF1X_VLAN_ID_MASK) | (vid & OF1X_VLAN_ID_MASK);
 #endif
 }
 
@@ -51,7 +53,8 @@ uint16_t get_vlan_id(void* hdr){
 #ifdef CPC_IN_HOSTBYTEORDER
 	return (((((cpc_vlan_hdr_t*)hdr)->byte0 & 0x0f) << 8) + ((cpc_vlan_hdr_t*)hdr)->byte1);
 #else
-	return ( *(uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0 ) & OF1X_VLAN_ID_MASK;
+	uint16_t *byte0 = (uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0;
+	return ( *byte0 & OF1X_VLAN_ID_MASK );
 #endif
 }
 

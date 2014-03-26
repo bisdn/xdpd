@@ -10,7 +10,7 @@
 	#include <rofl/datapath/pipeline/platform/lock.h>
 	#define STATIC_LOCK_INLINE__ 
 #else
-	#define STATIC_LOCK_INLINE__ static inline 
+	#define STATIC_LOCK_INLINE__ inline 
 	#include <rofl/datapath/pipeline/util/pp_guard.h> // Do not forget the guard 
 	#include <rofl/datapath/pipeline/platform/lock.h>
 	#include "pthread_lock.c" //Yes, nasty :)	

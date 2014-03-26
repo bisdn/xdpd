@@ -1,8 +1,6 @@
 #include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
-#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline_pp.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_statistics.h>
 #include <rofl/datapath/pipeline/platform/timing.h>
@@ -12,6 +10,16 @@
 #include "../../../io/ports/ioport.h"
 #include "../../../processing/ls_internal_state.h"
 #include "../../../util/time_measurements.h"
+
+//Make sure pipeline-imp are BEFORE _pp.h
+//so that functions can be inlined
+#include "../../../pipeline-imp/atomic_operations.h"
+#include "../../../pipeline-imp/pthread_lock.h"
+#include "../../../pipeline-imp/packet.h"
+
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline_pp.h>
+#include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
+
 
 using namespace xdpd::gnu_linux;
 

@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 
+//Do it here before any pipeline inclusion
+
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>

@@ -7,7 +7,7 @@
 
 #include "of10_endpoint.h"
 
-#include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/datapath/hal/driver.h>
 #include <rofl/common/utils/c_logger.h>
 #include "of10_translation_utils.h"
 #include "../../management/system_manager.h"
@@ -54,7 +54,7 @@ of10_endpoint::handle_features_request(
 	switch_port_snapshot_t* _port;
 	uint32_t supported_actions;
 
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
 		throw eRofBase();
@@ -139,7 +139,7 @@ of10_endpoint::handle_get_config_request(
 	uint16_t flags = 0x0;
 	uint16_t miss_send_len = 0;
 	
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
 		throw eRofBase();
@@ -171,7 +171,7 @@ of10_endpoint::handle_desc_stats_request(
 			hw_desc,
 			sw_desc,
 			system_manager::get_id(),
-			system_manager::get_fwd_module_description()
+			system_manager::get_driver_description()
 			);
 
 	ctl.send_desc_stats_reply(msg.get_xid(), desc_stats);
@@ -186,7 +186,7 @@ of10_endpoint::handle_table_stats_request(
 		uint8_t aux_id)
 {
 	unsigned int num_of_tables;
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
 		throw eRofBase();
@@ -232,7 +232,7 @@ of10_endpoint::handle_port_stats_request(
 	switch_port_snapshot_t* port;
 	uint32_t port_no = msg.get_port_stats().get_portno();
 
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
 		throw eRofBase();
@@ -319,7 +319,7 @@ of10_endpoint::handle_flow_stats_request(
 	of1x_stats_flow_msg_t* fp_msg = NULL;
 	of1x_flow_entry_t* entry = NULL;
 
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
 		throw eRofBase();
@@ -341,7 +341,7 @@ of10_endpoint::handle_flow_stats_request(
 	}
 
 	//Ask the Forwarding Plane to process stats
-	fp_msg = fwd_module_of1x_get_flow_stats(sw->dpid,
+	fp_msg = driver_of1x_get_flow_stats(sw->dpid,
 			msg.get_flow_stats().get_table_id(),
 			0,
 			0,
@@ -441,7 +441,7 @@ of10_endpoint::handle_aggregate_stats_request(
 	//TODO check error while mapping
 
 	//Ask the Forwarding Plane to process stats
-	fp_msg = fwd_module_of1x_get_flow_aggregate_stats(sw->dpid,
+	fp_msg = driver_of1x_get_flow_aggregate_stats(sw->dpid,
 					msg.get_aggr_stats().get_table_id(),
 					0,
 					0,
@@ -487,7 +487,7 @@ of10_endpoint::handle_queue_stats_request(
 	unsigned int portnum = pack.get_queue_stats().get_port_no();
 	unsigned int queue_id = pack.get_queue_stats().get_queue_id();
 
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
 		throw eRofBase();
@@ -597,7 +597,7 @@ of10_endpoint::handle_packet_out(
 	 * - buffer_id == rofl::openflow10::OFP_NO_BUFFER and data and datalen both != 0
 	 * - everything else is an error?
 	 */
-	if (AFA_FAILURE == fwd_module_of1x_process_packet_out(sw->dpid,
+	if (HAL_FAILURE == driver_of1x_process_packet_out(sw->dpid,
 							msg.get_buffer_id(),
 							msg.get_in_port(),
 							action_group,
@@ -827,7 +827,7 @@ of10_endpoint::flow_mod_add(
 		rofl::openflow::cofmsg_flow_mod& msg)
 {
 	uint8_t table_id = msg.get_table_id();
-	afa_result_t res;
+	hal_result_t res;
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
@@ -852,7 +852,7 @@ of10_endpoint::flow_mod_add(
 	if(!entry)
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 
-	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
+	if (HAL_SUCCESS != (res = driver_of1x_process_flow_mod_add(sw->dpid,
 								msg.get_table_id(),
 								&entry,
 								msg.get_buffer_id(),
@@ -862,7 +862,7 @@ of10_endpoint::flow_mod_add(
 		ROFL_DEBUG("Error inserting the flowmod\n");
 		of1x_destroy_flow_entry(entry);
 
-		if(res == AFA_FM_OVERLAP_FAILURE)
+		if(res == HAL_FM_OVERLAP_FAILURE)
 			throw eFlowModOverlap();
 		else
 			throw eFlowModTableFull();
@@ -903,7 +903,7 @@ of10_endpoint::flow_mod_modify(
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 
-	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_modify(sw->dpid,
+	if(HAL_SUCCESS != driver_of1x_process_flow_mod_modify(sw->dpid,
 								pack.get_table_id(),
 								&entry,
 								pack.get_buffer_id(),
@@ -942,7 +942,7 @@ of10_endpoint::flow_mod_delete(
 
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
-	if(AFA_SUCCESS != fwd_module_of1x_process_flow_mod_delete(sw->dpid,
+	if(HAL_SUCCESS != driver_of1x_process_flow_mod_delete(sw->dpid,
 								pack.get_table_id(),
 								entry,
 								of10_translation_utils::get_out_port(pack.get_out_port()),
@@ -1029,7 +1029,7 @@ of10_endpoint::handle_table_mod(
 		config = OF1X_TABLE_MISS_DROP;
 	}
 #endif
-	if( AFA_FAILURE == fwd_module_of1x_set_table_config(sw->dpid, msg.get_table_id(), config) ){
+	if( HAL_FAILURE == driver_of1x_set_table_config(sw->dpid, msg.get_table_id(), config) ){
 		//TODO: treat exception
 	}
 }
@@ -1050,7 +1050,7 @@ of10_endpoint::handle_port_mod(
 	advertise 	= msg.get_advertise();
 	port_num 	= (uint16_t)msg.get_port_no();
 
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
 		throw eRofBase();
@@ -1082,14 +1082,14 @@ of10_endpoint::handle_port_mod(
 
 	//Drop received
 	if( mask &  rofl::openflow10::OFPPC_NO_RECV )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_drop_received_config(sw->dpid, port_num, config & rofl::openflow10::OFPPC_NO_RECV ) ){
+		if( HAL_FAILURE == driver_of1x_set_port_drop_received_config(sw->dpid, port_num, config & rofl::openflow10::OFPPC_NO_RECV ) ){
 			//Destroy the snapshot
 			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
 		}
 	//No forward
 	if( mask &  rofl::openflow10::OFPPC_NO_FWD )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_forward_config(sw->dpid, port_num, !(config & rofl::openflow10::OFPPC_NO_FWD) ) ){
+		if( HAL_FAILURE == driver_of1x_set_port_forward_config(sw->dpid, port_num, !(config & rofl::openflow10::OFPPC_NO_FWD) ) ){
 			//Destroy the snapshot
 			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
@@ -1098,7 +1098,7 @@ of10_endpoint::handle_port_mod(
 	//No flood
 	if( mask &  rofl::openflow10::OFPPC_NO_FLOOD )
 	{
-		if( AFA_FAILURE == fwd_module_of1x_set_port_no_flood_config(sw->dpid, port_num, config & rofl::openflow10::OFPPC_NO_FLOOD ) ){
+		if( HAL_FAILURE == driver_of1x_set_port_no_flood_config(sw->dpid, port_num, config & rofl::openflow10::OFPPC_NO_FLOOD ) ){
 			//Destroy the snapshot
 			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
@@ -1107,7 +1107,7 @@ of10_endpoint::handle_port_mod(
 
 	//No packet in
 	if( mask &  rofl::openflow10::OFPPC_NO_PACKET_IN )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & rofl::openflow10::OFPPC_NO_PACKET_IN) ) ){
+		if( HAL_FAILURE == driver_of1x_set_port_generate_packet_in_config(sw->dpid, port_num, !(config & rofl::openflow10::OFPPC_NO_PACKET_IN) ) ){
 			//Destroy the snapshot
 			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
@@ -1115,23 +1115,23 @@ of10_endpoint::handle_port_mod(
 
 	//Advertised
 	if( advertise )
-		if( AFA_FAILURE == fwd_module_of1x_set_port_advertise_config(sw->dpid, port_num, advertise)  ){
+		if( HAL_FAILURE == driver_of1x_set_port_advertise_config(sw->dpid, port_num, advertise)  ){
 			//Destroy the snapshot
 			of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 			throw ePortModBase();
 		}
 
-	//Port admin down //TODO: evaluate if we can directly call fwd_module_enable_port_by_num instead
+	//Port admin down //TODO: evaluate if we can directly call driver_enable_port_by_num instead
 	if( mask &  rofl::openflow10::OFPPC_PORT_DOWN ){
 		if( (config & rofl::openflow10::OFPPC_PORT_DOWN)  ){
 			//Disable port
-			if( AFA_FAILURE == fwd_module_bring_port_down_by_num(sw->dpid, port_num) ){
+			if( HAL_FAILURE == driver_bring_port_down_by_num(sw->dpid, port_num) ){
 				//Destroy the snapshot
 				of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 				throw ePortModBase();
 			}
 		}else{
-			if( AFA_FAILURE == fwd_module_bring_port_up_by_num(sw->dpid, port_num) ){
+			if( HAL_FAILURE == driver_bring_port_up_by_num(sw->dpid, port_num) ){
 				//Destroy the snapshot
 				of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 				throw ePortModBase();
@@ -1163,7 +1163,7 @@ of10_endpoint::handle_set_config(
 {
 
 	//Instruct the driver to process the set config
-	if(AFA_FAILURE == fwd_module_of1x_set_pipeline_config(sw->dpid, msg.get_flags(), msg.get_miss_send_len())){
+	if(HAL_FAILURE == driver_of1x_set_pipeline_config(sw->dpid, msg.get_flags(), msg.get_miss_send_len())){
 		throw eTableModBadConfig();
 	}
 }
@@ -1179,7 +1179,7 @@ of10_endpoint::handle_queue_get_config_request(
 	switch_port_snapshot_t* port;
 	unsigned int portnum = pack.get_port_no();
 
-	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)fwd_module_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
 		throw eRofBase();

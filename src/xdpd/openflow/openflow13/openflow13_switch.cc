@@ -1,7 +1,7 @@
 #include "openflow13_switch.h"
 
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_driver.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 
 using namespace xdpd;
 
@@ -19,8 +19,8 @@ openflow13_switch::openflow13_switch(uint64_t dpid,
 		: openflow_switch(dpid, dpname, version, num_of_tables)
 {
 
-	if (fwd_module_create_switch((char*)dpname.c_str(),
-					     dpid, OF_VERSION_13, num_of_tables, ma_list) != AFA_SUCCESS){
+	if (driver_create_switch((char*)dpname.c_str(),
+					     dpid, OF_VERSION_13, num_of_tables, ma_list) != HAL_SUCCESS){
 		//WRITELOG(CDATAPATH, ERROR, "of13_endpoint::of13_endpoint() "
 		//		"failed to allocate switch instance in HAL, aborting");
 	
@@ -42,7 +42,7 @@ openflow13_switch::~openflow13_switch(){
 	delete endpoint;	
 
 	//Destroy forwarding plane state
-	fwd_module_destroy_switch_by_dpid(dpid);
+	driver_destroy_switch_by_dpid(dpid);
 }
 
 /* Public interfaces for receving async messages from the driver */

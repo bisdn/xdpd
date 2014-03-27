@@ -6,8 +6,8 @@
 #define OPENFLOW12_SWITCH_H 
 
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
-#include <rofl/datapath/afa/fwd_module.h>
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
+#include <rofl/datapath/hal/driver.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_driver.h>
 #include "../openflow_switch.h"
 #include "../openflow10/openflow10_switch.h"
 #include "of12_endpoint.h"
@@ -33,7 +33,7 @@ namespace xdpd{
 * @ingroup cmm_of 
 *
 * @description This includes the OF endpoint and the binding with the
-* forwarding plane (through AFA)
+* forwarding plane (through HAL)
 */
 class openflow12_switch : public openflow_switch {
 

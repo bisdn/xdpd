@@ -9,7 +9,7 @@ using namespace xdpd;
 pthread_mutex_t port_manager::mutex = PTHREAD_MUTEX_INITIALIZER; 
 
 bool port_manager::port_exists(std::string& port_name){
-	return driver_port_exists(port_name.c_str());
+	return hal_driver_port_exists(port_name.c_str());
 }
 
 std::list<std::string> port_manager::list_available_port_names(){
@@ -19,7 +19,7 @@ std::list<std::string> port_manager::list_available_port_names(){
 	std::list<std::string> port_name_list;
 	
 	//Call the driver to list the ports
-	port_names = driver_get_all_port_names();
+	port_names = hal_driver_get_all_port_names();
 	
 	if(!port_names)
 		throw eOfSmGeneralError();
@@ -42,7 +42,7 @@ bool port_manager::get_admin_state(std::string& name){
 	bool state;
 
 	//Get snapshot
-	switch_port_snapshot_t* port_snapshot = driver_get_port_snapshot_by_name(name.c_str());
+	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(name.c_str());
 	state = port_snapshot->up;	
 	//Destroy
 	switch_port_destroy_snapshot(port_snapshot);	
@@ -64,7 +64,7 @@ void port_manager::bring_up(std::string& name){
 		throw ePmInvalidPort();
 	}
 
-	result = driver_bring_port_up(name.c_str());
+	result = hal_driver_bring_port_up(name.c_str());
 	pthread_mutex_unlock(&port_manager::mutex);
 
 	if(result != HAL_SUCCESS)
@@ -88,7 +88,7 @@ void port_manager::bring_down(std::string& name){
 		throw ePmInvalidPort();
 	}
 
-	result = driver_bring_port_down(name.c_str());
+	result = hal_driver_bring_port_down(name.c_str());
 	pthread_mutex_unlock(&port_manager::mutex);
 
 	if(result != HAL_SUCCESS)
@@ -122,7 +122,7 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, 
 		throw eOfSmDoesNotExist();	
 	}
 
-	if(driver_attach_port_to_switch(dpid, port_name.c_str(), of_port_num) != HAL_SUCCESS){
+	if(hal_driver_attach_port_to_switch(dpid, port_name.c_str(), of_port_num) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
 		assert(0);
 		ROFL_ERR("[port_manager] ERROR: Driver was unable to attach port %s to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
@@ -132,7 +132,7 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, 
 	ROFL_INFO("[port_manager] Port %s attached to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
 
 	//Recover current snapshot
-	switch_port_snapshot_t* port_snapshot = driver_get_port_snapshot_by_name(port_name.c_str());
+	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(port_name.c_str());
 
 	//Notify switch
 	switch_manager::__notify_port_attached(port_snapshot);
@@ -161,7 +161,7 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1,
 		throw eOfSmDoesNotExist();
 	}
 
-	if(driver_connect_switches(dpid_lsi1, &port1, dpid_lsi2, &port2) != HAL_SUCCESS){
+	if(hal_driver_connect_switches(dpid_lsi1, &port1, dpid_lsi2, &port2) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
 		ROFL_ERR("[port_manager] Unknown ERROR: driver was unable to create a link between switch with dpid 0x%llx and 0x%llx\n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2);
 		assert(0);
@@ -194,7 +194,7 @@ void port_manager::detach_port_from_switch(uint64_t dpid, std::string& port_name
 	pthread_mutex_lock(&port_manager::mutex);
 
 	//Recover current snapshot
-	switch_port_snapshot_t* port_snapshot = driver_get_port_snapshot_by_name(port_name.c_str());
+	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(port_name.c_str());
 
 	if(!port_snapshot){
 		pthread_mutex_unlock(&port_manager::mutex);
@@ -210,7 +210,7 @@ void port_manager::detach_port_from_switch(uint64_t dpid, std::string& port_name
 		throw ePmPortNotAttachedError();	
 	}
 
-	if(driver_detach_port_from_switch(dpid,port_name.c_str()) != HAL_SUCCESS){
+	if(hal_driver_detach_port_from_switch(dpid,port_name.c_str()) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
 		switch_port_destroy_snapshot(port_snapshot);	
 		ROFL_ERR("[port_manager] Unknown ERROR: Driver was unabel to detach non-existent port %s from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
@@ -249,7 +249,7 @@ void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int po
 	pthread_mutex_lock(&port_manager::mutex);
 
 	//Recover current snapshot
-	switch_port_snapshot_t* port_snapshot = driver_get_port_snapshot_by_num(dpid, port_num);
+	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_num(dpid, port_num);
 
 	if(!port_snapshot){
 		pthread_mutex_unlock(&port_manager::mutex);
@@ -266,7 +266,7 @@ void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int po
 	}
 
 
-	if(driver_detach_port_from_switch_at_port_num(dpid,port_num) != HAL_SUCCESS){
+	if(hal_driver_detach_port_from_switch_at_port_num(dpid,port_num) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
 		ROFL_ERR("[port_manager] Unknown ERROR: Driver was unabel to detach port number %u from switch with dpid 0x%llx\n", port_num, (long long unsigned)dpid);
 		assert(0);

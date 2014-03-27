@@ -19,7 +19,7 @@ openflow13_switch::openflow13_switch(uint64_t dpid,
 		: openflow_switch(dpid, dpname, version, num_of_tables)
 {
 
-	if (driver_create_switch((char*)dpname.c_str(),
+	if (hal_driver_create_switch((char*)dpname.c_str(),
 					     dpid, OF_VERSION_13, num_of_tables, ma_list) != HAL_SUCCESS){
 		//WRITELOG(CDATAPATH, ERROR, "of13_endpoint::of13_endpoint() "
 		//		"failed to allocate switch instance in HAL, aborting");
@@ -42,7 +42,7 @@ openflow13_switch::~openflow13_switch(){
 	delete endpoint;	
 
 	//Destroy forwarding plane state
-	driver_destroy_switch_by_dpid(dpid);
+	hal_driver_destroy_switch_by_dpid(dpid);
 }
 
 /* Public interfaces for receving async messages from the driver */

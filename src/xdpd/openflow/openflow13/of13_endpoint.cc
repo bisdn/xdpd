@@ -40,7 +40,7 @@ of13_endpoint::handle_features_request(
 		rofl::openflow::cofmsg_features_request& msg,
 		uint8_t aux_id)
 {
-	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
@@ -69,7 +69,7 @@ of13_endpoint::handle_get_config_request(
 		rofl::openflow::cofmsg_get_config_request& msg,
 		uint8_t aux_id)
 {
-	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
@@ -92,7 +92,7 @@ of13_endpoint::handle_set_config(
 		uint8_t aux_id)
 {
 	//Instruct the driver to process the set config
-	if(HAL_FAILURE == driver_of1x_set_pipeline_config(sw->dpid, msg.get_flags(), msg.get_miss_send_len())){
+	if(HAL_FAILURE == hal_driver_of1x_set_pipeline_config(sw->dpid, msg.get_flags(), msg.get_miss_send_len())){
 		throw eTableModBadConfig();
 	}
 }
@@ -119,7 +119,7 @@ of13_endpoint::handle_packet_out(
 	 * - buffer_id == OFP_NO_BUFFER and data and datalen both != 0
 	 * - everything else is an error?
 	 */
-	if (HAL_FAILURE == driver_of1x_process_packet_out(sw->dpid,
+	if (HAL_FAILURE == hal_driver_of1x_process_packet_out(sw->dpid,
 							msg.get_buffer_id(),
 							msg.get_in_port(),
 							action_group,
@@ -189,7 +189,7 @@ of13_endpoint::flow_mod_add(
 		throw eFlowModUnknown();//Just for safety, but shall never reach this
 	}
 
-	if (HAL_SUCCESS != (res = driver_of1x_process_flow_mod_add(sw->dpid,
+	if (HAL_SUCCESS != (res = hal_driver_of1x_process_flow_mod_add(sw->dpid,
 								msg.get_table_id(),
 								&entry,
 								msg.get_buffer_id(),
@@ -240,7 +240,7 @@ of13_endpoint::flow_mod_modify(
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 
-	if(HAL_SUCCESS != driver_of1x_process_flow_mod_modify(sw->dpid,
+	if(HAL_SUCCESS != hal_driver_of1x_process_flow_mod_modify(sw->dpid,
 								pack.get_table_id(),
 								&entry,
 								pack.get_buffer_id(),
@@ -277,7 +277,7 @@ of13_endpoint::flow_mod_delete(
 
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
-	if(HAL_SUCCESS != driver_of1x_process_flow_mod_delete(sw->dpid,
+	if(HAL_SUCCESS != hal_driver_of1x_process_flow_mod_delete(sw->dpid,
 								pack.get_table_id(),
 								entry,
 								pack.get_out_port(),
@@ -336,7 +336,7 @@ of13_endpoint::handle_flow_stats_request(
 	}
 
 	//Ask the Forwarding Plane to process stats
-	of1x_stats_flow_msg_t* fp_msg = driver_of1x_get_flow_stats(
+	of1x_stats_flow_msg_t* fp_msg = hal_driver_of1x_get_flow_stats(
 													sw->dpid,
 													msg.get_flow_stats().get_table_id(),
 													msg.get_flow_stats().get_cookie(),
@@ -419,7 +419,7 @@ of13_endpoint::handle_aggregate_stats_request(
 	//TODO check error while mapping
 
 	//Ask the Forwarding Plane to process stats
-	of1x_stats_flow_aggregate_msg_t* fp_msg = driver_of1x_get_flow_aggregate_stats(sw->dpid,
+	of1x_stats_flow_aggregate_msg_t* fp_msg = hal_driver_of1x_get_flow_aggregate_stats(sw->dpid,
 					msg.get_aggr_stats().get_table_id(),
 					msg.get_aggr_stats().get_cookie(),
 					msg.get_aggr_stats().get_cookie_mask(),
@@ -459,7 +459,7 @@ of13_endpoint::handle_table_stats_request(
 		rofl::openflow::cofmsg_table_stats_request& msg,
 		uint8_t aux_id)
 {
-	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
@@ -496,7 +496,7 @@ of13_endpoint::handle_port_stats_request(
 	switch_port_snapshot_t* port;
 	uint32_t port_no = msg.get_port_stats().get_portno();
 
-	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
@@ -593,7 +593,7 @@ of13_endpoint::handle_queue_stats_request(
 	unsigned int portnum = pack.get_queue_stats().get_port_no();
 	unsigned int queue_id = pack.get_queue_stats().get_queue_id();
 
-	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
@@ -687,10 +687,10 @@ of13_endpoint::handle_group_stats_request(
 	uint32_t group_id = msg.get_group_stats().get_group_id();
 	
 	if(group_id==openflow13::OFPG_ALL){
-		g_msg_all = driver_of1x_get_group_all_stats(sw->dpid, group_id);
+		g_msg_all = hal_driver_of1x_get_group_all_stats(sw->dpid, group_id);
 	}
 	else{
-		g_msg_all = driver_of1x_get_group_stats(sw->dpid, group_id);
+		g_msg_all = hal_driver_of1x_get_group_stats(sw->dpid, group_id);
 	}
 	
 	if(g_msg_all==NULL){
@@ -739,7 +739,7 @@ of13_endpoint::handle_group_desc_stats_request(
 
 	of1x_group_table_t group_table;
 	of1x_group_t *group_it;
-	if(driver_of1x_fetch_group_table(sw->dpid,&group_table)!=HAL_SUCCESS){
+	if(hal_driver_of1x_fetch_group_table(sw->dpid,&group_table)!=HAL_SUCCESS){
 
 		//TODO throw exeption
 	}
@@ -794,7 +794,7 @@ of13_endpoint::handle_table_features_stats_request(
 
 	rofl::openflow::coftables tables(ctl.get_version());
 
-	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
@@ -854,7 +854,7 @@ of13_endpoint::handle_port_desc_stats_request(
 	logical_switch_port_t* ls_port;
 	switch_port_snapshot_t* _port;
 
-	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();
@@ -981,7 +981,7 @@ of13_endpoint::process_packet_in(
 		 * - buffer_id == OFP_NO_BUFFER and data and datalen both != 0
 		 * - everything else is an error?
 		 */
-		if (HAL_FAILURE == driver_of1x_process_packet_out(sw->dpid,
+		if (HAL_FAILURE == hal_driver_of1x_process_packet_out(sw->dpid,
 								buffer_id,
 								in_port,
 								action_group,
@@ -1217,16 +1217,16 @@ of13_endpoint::handle_group_mod(
 	switch(msg.get_command()){
 		case openflow13::OFPGC_ADD:
 			of13_translation_utils::of13_map_bucket_list(&ctl, sw, msg.get_buckets(), bucket_list);
-			ret_val = driver_of1x_group_mod_add(sw->dpid, (of1x_group_type_t)msg.get_group_type(), msg.get_group_id(), &bucket_list);
+			ret_val = hal_driver_of1x_group_mod_add(sw->dpid, (of1x_group_type_t)msg.get_group_type(), msg.get_group_id(), &bucket_list);
 			break;
 			
 		case openflow13::OFPGC_MODIFY:
 			of13_translation_utils::of13_map_bucket_list(&ctl, sw, msg.get_buckets(), bucket_list);
-			ret_val = driver_of1x_group_mod_modify(sw->dpid, (of1x_group_type_t)msg.get_group_type(), msg.get_group_id(), &bucket_list);
+			ret_val = hal_driver_of1x_group_mod_modify(sw->dpid, (of1x_group_type_t)msg.get_group_type(), msg.get_group_id(), &bucket_list);
 			break;
 		
 		case openflow13::OFPGC_DELETE:
-			ret_val = driver_of1x_group_mod_delete(sw->dpid, msg.get_group_id());
+			ret_val = hal_driver_of1x_group_mod_delete(sw->dpid, msg.get_group_id());
 			break;
 		
 		default:
@@ -1339,7 +1339,7 @@ of13_endpoint::handle_port_mod(
 	case rofl::openflow13::OFPP_ANY: // be liberal what you accept, and conservative, what you send
 	case rofl::openflow13::OFPP_ALL: {
 
-		of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+		of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 		if(!of13switch)
 			throw eRofBase();
 		//we check all the positions in case there are empty slots
@@ -1378,31 +1378,31 @@ of13_endpoint::port_set_config(
 
 	//Drop received
 	if( mask &  openflow13::OFPPC_NO_RECV )
-		if( HAL_FAILURE == driver_of1x_set_port_drop_received_config(dpid, portno, config & openflow13::OFPPC_NO_RECV ) )
+		if( HAL_FAILURE == hal_driver_of1x_set_port_drop_received_config(dpid, portno, config & openflow13::OFPPC_NO_RECV ) )
 			throw ePortModBase(); 
 	//No forward
 	if( mask &  openflow13::OFPPC_NO_FWD )
-		if( HAL_FAILURE == driver_of1x_set_port_forward_config(dpid, portno, !(config & openflow13::OFPPC_NO_FWD) ) )
+		if( HAL_FAILURE == hal_driver_of1x_set_port_forward_config(dpid, portno, !(config & openflow13::OFPPC_NO_FWD) ) )
 			throw ePortModBase(); 
 	//No packet in
 	if( mask &  openflow13::OFPPC_NO_PACKET_IN )
-		if( HAL_FAILURE == driver_of1x_set_port_generate_packet_in_config(dpid, portno, !(config & openflow13::OFPPC_NO_PACKET_IN) ) )
+		if( HAL_FAILURE == hal_driver_of1x_set_port_generate_packet_in_config(dpid, portno, !(config & openflow13::OFPPC_NO_PACKET_IN) ) )
 			throw ePortModBase(); 
 
 	//Advertised
 	if( advertise )
-		if( HAL_FAILURE == driver_of1x_set_port_advertise_config(dpid, portno, advertise)  )
+		if( HAL_FAILURE == hal_driver_of1x_set_port_advertise_config(dpid, portno, advertise)  )
 			throw ePortModBase(); 
 
-	//Port admin down //TODO: evaluate if we can directly call driver_enable_port_by_num instead
+	//Port admin down //TODO: evaluate if we can directly call hal_driver_enable_port_by_num instead
 	if( mask &  openflow13::OFPPC_PORT_DOWN ){
 		if( (config & openflow13::OFPPC_PORT_DOWN)  ){
 			//Disable port
-			if( HAL_FAILURE == driver_bring_port_down_by_num(dpid, portno) ){
+			if( HAL_FAILURE == hal_driver_bring_port_down_by_num(dpid, portno) ){
 				throw ePortModBase(); 
 			}
 		}else{
-			if( HAL_FAILURE == driver_bring_port_up_by_num(dpid, portno) ){
+			if( HAL_FAILURE == hal_driver_bring_port_up_by_num(dpid, portno) ){
 				throw ePortModBase(); 
 			}
 		}
@@ -1434,7 +1434,7 @@ of13_endpoint::handle_queue_get_config_request(
 	if (0 /*add check for existence of port*/)
 		throw eBadRequestBadPort();
 
-	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)driver_get_switch_snapshot_by_dpid(sw->dpid);
+	of1x_switch_snapshot_t* of13switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of13switch)
 		throw eRofBase();

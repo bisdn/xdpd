@@ -136,7 +136,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
-		bool vlan_present=true;
+		enum of1x_vlan_present vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
 		uint16_t value = ofmatch.get_vlan_vid_value();
 		/*
 		 * clear bit 12 in value, even if this does not exist in OF10,
@@ -312,7 +312,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		of1x_match_t* m,
 		rofl::openflow::cofmatch& match)
 {
-	bool has_vlan=false;
+	//bool has_vlan=false;
 	while (NULL != m)
 	{
 		switch (m->type) {
@@ -341,7 +341,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			match.set_eth_type(be16toh(m->value->value.u16));
 			break;
 		case OF1X_MATCH_VLAN_VID:
-			has_vlan = true;
+			//has_vlan = true;
 			match.set_vlan_vid(be16toh(m->value->value.u16&OF1X_VLAN_ID_MASK));
 			break;
 		case OF1X_MATCH_VLAN_PCP:
@@ -405,8 +405,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 	}
 
 	//In 1.0 if there is no VLAN OFP10_VLAN_NONE has to be set...
-	if(!has_vlan)
-		match.set_vlan_untagged();
+	//if(!has_vlan)
+	//	match.set_vlan_untagged();
 }
 
 

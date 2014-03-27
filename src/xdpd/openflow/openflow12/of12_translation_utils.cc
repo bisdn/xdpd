@@ -237,14 +237,19 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		bool vlan_present = false;
-		uint16_t vid = htobe16(ofmatch.get_vlan_vid());
-		
-		if( (ofmatch.get_vlan_vid_value() & openflow::OFPVID_PRESENT) > 0)
-			vlan_present = true;
+		uint16_t value = ofmatch.get_vlan_vid_value();
+		uint16_t mask  = ofmatch.get_vlan_vid_mask();
+		enum of1x_vlan_present vlan_present = OF1X_MATCH_VLAN_NONE;
+
+		if ((value == rofl::openflow12::OFPVID_PRESENT) && (mask == rofl::openflow12::OFPVID_PRESENT)){
+			vlan_present = OF1X_MATCH_VLAN_ANY;
+		} else
+		if (value & rofl::openflow12::OFPVID_PRESENT) {
+			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
+		}
 		
 		of1x_match_t *match = of1x_init_vlan_vid_match(
-								vid,
+								htobe16(htobe16(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT)),
 								htobe16(ofmatch.get_vlan_vid_mask()),
 								vlan_present);
 
@@ -921,7 +926,15 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			match.set_eth_type(be16toh(m->value->value.u16));
 			break;
 		case OF1X_MATCH_VLAN_VID:
-			match.set_vlan_vid(be16toh(m->value->value.u16));
+			if(m->vlan_present == OF1X_MATCH_VLAN_SPECIFIC) {
+				match.set_vlan_vid(be16toh(m->value->value.u16), be16toh(m->value->mask.u16));
+			}
+			if(m->vlan_present == OF1X_MATCH_VLAN_NONE) {
+				match.set_vlan_vid(rofl::openflow12::OFPVID_NONE);
+			}
+			if(m->vlan_present == OF1X_MATCH_VLAN_ANY) {
+				match.set_vlan_vid(rofl::openflow12::OFPVID_PRESENT, rofl::openflow12::OFPVID_PRESENT);
+			}
 			break;
 		case OF1X_MATCH_VLAN_PCP:
 			match.set_vlan_pcp(m->value->value.u8);

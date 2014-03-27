@@ -64,7 +64,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	ROFL_DEBUG("\n in port: %x ", pack->in_port);
 	
 
-	hal_result r=cmm_process_of1x_packet_in(
+	hal_result r=hal_cmm_process_of1x_packet_in(
 		sw->dpid,
 		pack->pktin_table_id,
 		pack->pktin_reason,

@@ -140,7 +140,7 @@ void system_manager::init(int argc, char** argv){
 		ROFL_ERR("[xdpd][system] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
 
 	//Set driver info cache
-	driver_get_info(&info);
+	hal_driver_get_info(&info);
 
 	/* Parse arguments. Add first additional arguments */
 	env_parser = new cunixenv(argc, argv);
@@ -207,7 +207,7 @@ void system_manager::init(int argc, char** argv){
 		rofl::logging::notice << "[xdpd][system] Launched with -t "<< XDPD_TEST_RUN_OPT_FULL_NAME <<". Doing a test-run execution" << std::endl;
 
 	//Driver initialization
-	if(driver_init(get_driver_extra_params().c_str()) != HAL_SUCCESS){
+	if(hal_driver_init(get_driver_extra_params().c_str()) != HAL_SUCCESS){
 		ROFL_ERR("[xdpd][system] ERROR: initialization of platform driver failed! Aborting...\n");	
 		exit(EXIT_FAILURE);
 	}
@@ -233,10 +233,10 @@ void system_manager::init(int argc, char** argv){
 	switch_manager::destroy_all_switches();
 
 	//Call driver to shutdown
-	driver_destroy();
+	hal_driver_destroy();
 	
 	//Let plugin manager destroy all registered plugins
-	//This must be after calling driver_destroy()
+	//This must be after calling hal_driver_destroy()
 	plugin_manager::destroy();
 	
 	//Logging	

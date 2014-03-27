@@ -117,7 +117,7 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	}
 
 	//First detach all ports, so that port_detach messages are properly sent
-	sw_snapshot = driver_get_switch_snapshot_by_dpid(dpid);
+	sw_snapshot = hal_driver_get_switch_snapshot_by_dpid(dpid);
 	
 	if(!sw_snapshot){
 		pthread_rwlock_unlock(&switch_manager::rwlock);
@@ -208,7 +208,7 @@ switch_manager::list_matching_algorithms(of_version_t of_version)
 	int i, count;
 
 	const char * const * names;
-	if(driver_list_matching_algorithms(of_version, &names, &count) != HAL_SUCCESS){
+	if(hal_driver_list_matching_algorithms(of_version, &names, &count) != HAL_SUCCESS){
 		return matching_algorithms;
 	}
 

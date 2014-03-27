@@ -54,14 +54,14 @@ void DriverPortMockupTestCase::setUp(){
 	unsigned int of_port_num=0;
 	fprintf(stderr,"<%s:%d> ************** Set up ************\n",__func__,__LINE__);
 	
-	res = driver_init(NULL);//discovery of ports
+	res = hal_driver_init(NULL);//discovery of ports
 	if( res != HAL_SUCCESS )
 		exit(-1);
 
 	char switch_name[] = "switch1";
 	of1x_matching_algorithm_available ma_list[] = { of1x_loop_matching_algorithm };
 	/* 0->CONTROLLER, 1->CONTINUE, 2->DROP, 3->MASK */
-	CPPUNIT_ASSERT(driver_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list) == HAL_SUCCESS);
+	CPPUNIT_ASSERT(hal_driver_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list) == HAL_SUCCESS);
 	sw = physical_switch_get_logical_switch_by_dpid(TEST_DPID);
 	CPPUNIT_ASSERT(sw->platform_state); /* internal state */
 
@@ -77,7 +77,7 @@ void DriverPortMockupTestCase::setUp(){
 	physical_switch_add_port(port); 
 	
 	//Attach
-	hal_result_t ret = driver_attach_port_to_switch(TEST_DPID, PORT_NAME , &of_port_num); 
+	hal_result_t ret = hal_driver_attach_port_to_switch(TEST_DPID, PORT_NAME , &of_port_num); 
 	CPPUNIT_ASSERT(ret == HAL_SUCCESS);
  	CPPUNIT_ASSERT(of_port_num > 0);
 	fprintf(stderr,"Port [%s] attached to sw [%s] at port #%u\n", PORT_NAME, sw->name,of_port_num);
@@ -91,13 +91,13 @@ void DriverPortMockupTestCase::tearDown(){
 	fprintf(stderr,"<%s:%d> ************** Tear Down ************\n",__func__,__LINE__);
 	
 	//delete switch
-	if(	(ret=driver_destroy_switch_by_dpid(sw->dpid))!=0)
+	if(	(ret=hal_driver_destroy_switch_by_dpid(sw->dpid))!=0)
 	{
 		fprintf(stderr,"destroy switch failure!");
 		exit(-1);
 	}
 	
-	if((ret=driver_destroy())!=0)
+	if((ret=hal_driver_destroy())!=0)
 	{
 		fprintf(stderr,"driver failure!");
 		exit(-1);

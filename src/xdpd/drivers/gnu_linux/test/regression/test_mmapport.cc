@@ -50,7 +50,7 @@ void DriverMMAPPortTestCase::setUp(){
 	fprintf(stderr,"<%s:%d> ************** Set up ************\n",__func__,__LINE__);
 	snprintf(port_name, 6, "%s", "veth0");
 	
-	res = driver_init(NULL);//discovery of ports
+	res = hal_driver_init(NULL);//discovery of ports
 		
 	if( res != HAL_SUCCESS )
 		exit(-1);
@@ -60,13 +60,13 @@ void DriverMMAPPortTestCase::setUp(){
 	char switch_name[] = "switch1";
 	of1x_matching_algorithm_available ma_list[] = { of1x_loop_matching_algorithm };
 	/* 0->CONTROLLER, 1->CONTINUE, 2->DROP, 3->MASK */
-	CPPUNIT_ASSERT(driver_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list) == HAL_SUCCESS);
+	CPPUNIT_ASSERT(hal_driver_create_switch(switch_name,TEST_DPID,OF_VERSION_12,1,(int *) ma_list) == HAL_SUCCESS);
 	sw = physical_switch_get_logical_switch_by_dpid(TEST_DPID);
 	CPPUNIT_ASSERT(sw->platform_state); /*ringbuffer*/
 
 
 	//Attach
-	res = driver_attach_port_to_switch(TEST_DPID, port_name , &of_port_num); 	
+	res = hal_driver_attach_port_to_switch(TEST_DPID, port_name , &of_port_num); 	
 	CPPUNIT_ASSERT( res == HAL_SUCCESS);
 
  	CPPUNIT_ASSERT(of_port_num > 0);
@@ -81,13 +81,13 @@ void DriverMMAPPortTestCase::tearDown(){
 	fprintf(stderr,"<%s:%d> ************** Tear Down ************\n",__func__,__LINE__);
 	
 	//delete switch
-	if(	(ret=driver_destroy_switch_by_dpid(sw->dpid))!=0)
+	if(	(ret=hal_driver_destroy_switch_by_dpid(sw->dpid))!=0)
 	{
 		fprintf(stderr,"destroy switch failure!");
 		exit(-1);
 	}
 	
-	if((ret=driver_destroy())!=0)
+	if((ret=hal_driver_destroy())!=0)
 	{
 		fprintf(stderr,"driver failure!");
 		exit(-1);
@@ -125,7 +125,7 @@ void DriverMMAPPortTestCase::bring_up_down_only(){
 	hal_result_t res;
 
 	//Bring up port
-	res = driver_bring_port_up(port_name);
+	res = hal_driver_bring_port_up(port_name);
 	CPPUNIT_ASSERT(res == HAL_SUCCESS);
 	(void)res;
 
@@ -133,7 +133,7 @@ void DriverMMAPPortTestCase::bring_up_down_only(){
 	sleep(10);
 
 	//Bring down
-	res = driver_bring_port_down(port_name);
+	res = hal_driver_bring_port_down(port_name);
 	CPPUNIT_ASSERT(res == HAL_SUCCESS);
 
 }

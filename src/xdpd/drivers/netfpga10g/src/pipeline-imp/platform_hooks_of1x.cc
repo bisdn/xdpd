@@ -93,7 +93,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	}
 
 	//Process packet in
-	rv = cmm_process_of1x_packet_in(sw->dpid, 
+	rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 					table_id, 	
 					reason, 	
 					pkt_x86->in_port, 
@@ -127,7 +127,7 @@ void platform_of1x_notify_flow_removed(const of1x_switch_t* sw,
 						of1x_flow_remove_reason_t reason, 
 						of1x_flow_entry_t* removed_flow_entry){
 
-	cmm_process_of1x_flow_removed(sw->dpid, (uint8_t)reason, removed_flow_entry);
+	hal_cmm_process_of1x_flow_removed(sw->dpid, (uint8_t)reason, removed_flow_entry);
 }
 
 

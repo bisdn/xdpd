@@ -156,7 +156,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				matches->src_port = 0x1 << (/*htons*/( (match->value->value.u32) - NETFPGA_PORT_BASE) *2);
 				masks->src_port = 0x00; //Exact
 				break;
- 			case OF1X_MATCH_ETH_DST:
+ 			case OF1X_MATCH_ETH_DST: //FIXME: NBO
 				//Does not require byte moving. 6 bytes are in the lower bytes of the uint64_t
 				//ROFL_DEBUG("\n : ETH DST ");
 				
@@ -193,7 +193,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				//netfpga_fillup_match(matches);
 				//TODO: add mask...
 				break;
- 			case OF1X_MATCH_ETH_SRC:
+ 			case OF1X_MATCH_ETH_SRC: //FIXME: NBO
 				//ROFL_DEBUG(": ETH SRC ");
 				//Does not require byte moving. 6 bytes are in the lower bytes of the uint64_t
 				aux = (uint8_t*) &(match->value->value.u64);
@@ -215,7 +215,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				//memset(&masks->eth_src,0xFF,sizeof(masks->eth_dst)); //TODO: add mask...
 				break;
  			case OF1X_MATCH_ETH_TYPE:
-				matches->eth_type = /*htons*/( match->value->value.u16 );	
+				matches->eth_type = htobe16( match->value->value.u16 );	
 				if(  (match->value->mask.u16)==0xFFFF ){
 					//Is wildcarded
 					entry->type = NETFPGA_FE_WILDCARDED;
@@ -228,7 +228,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				masks->vlan_id |= 0x7<< VID_PCP_SHIFT_BITS;
  				break;	
 			case OF1X_MATCH_VLAN_VID:
-				matches->vlan_id |= (match->value->value.u8) & VID_BITMASK;	
+				matches->vlan_id |= (match->value->value.u8) & VID_BITMASK;	 //FIXME: NBO
 				masks->vlan_id |= VID_BITMASK; //Exact
 				break;
  			case OF1X_MATCH_IP_DSCP:
@@ -248,8 +248,8 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				//ROFL_DEBUG("of1x_entry src_ip: %d ", match->value->value.u32);
 				
 
-				matches->ip_src = /*htonl*/( match->value->value.u32 );
-				tmp_mask = /*htonl*/( match->value->mask.u32 );
+				matches->ip_src = htobe32( match->value->value.u32 );
+				tmp_mask = htobe32( match->value->mask.u32 );
 				entry->type = NETFPGA_FE_WILDCARDED;
 				memset(&masks->ip_src,0x00,sizeof(masks->ip_src));
 				if(tmp_mask != 0xFFFF && tmp_mask != 0x0){
@@ -262,9 +262,9 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 
 				//ROFL_DEBUG("of1x_entry dst_ip: %d ",match->value->value.u32);
 
-				matches->ip_dst = /*htonl*/( match->value->value.u32 );
+				matches->ip_dst = htobe32( match->value->value.u32 );
 				
-				tmp_mask = /*htonl*/( match->value->mask.u32 );
+				tmp_mask = htobe32( match->value->mask.u32 );
 				memset(&masks->ip_dst,0x00,sizeof(masks->ip_dst));
 				entry->type = NETFPGA_FE_WILDCARDED;
 				if(tmp_mask != 0xFFFF && tmp_mask != 0x0){
@@ -277,13 +277,13 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
  			
 			case OF1X_MATCH_TCP_SRC:
  			case OF1X_MATCH_UDP_SRC:
-				matches->transp_src =  /*htons*/( match->value->value.u16 );
+				matches->transp_src = htobe16( match->value->value.u16 );
 				masks->transp_src = 0xFFFF;
 				entry->type = NETFPGA_FE_WILDCARDED;
 				break;
  			case OF1X_MATCH_TCP_DST:
  			case OF1X_MATCH_UDP_DST:
-				matches->transp_dst =  /*htons*/( match->value->value.u16 );	
+				matches->transp_dst = htobe16( match->value->value.u16 );	
 				masks->transp_dst = 0xFFFF;
 				entry->type = NETFPGA_FE_WILDCARDED;
 				break;
@@ -327,16 +327,16 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 		switch(action->type){
 
 			case OF1X_AT_SET_FIELD_ETH_DST:
-				actions->eth_dst = *( (netfpga_align_mac_addr_t*) (((uint8_t*) indirect)) ); //This is nasty, I know and apologize...
+				actions->eth_dst = *( (netfpga_align_mac_addr_t*) (((uint8_t*) indirect)) ); //This is nasty, I know and apologize... //FIXME: NBO
 				actions->action_flags |= (1 << NETFPGA_AT_SET_DL_DST);	
 				break;
 			case OF1X_AT_SET_FIELD_ETH_SRC:
-				actions->eth_src = *( (netfpga_align_mac_addr_t*) (((uint8_t*) indirect)) ); //This is nasty, I know and apologize...
+				actions->eth_src = *( (netfpga_align_mac_addr_t*) (((uint8_t*) indirect)) ); //This is nasty, I know and apologize... //FIXME: NBO
 				actions->action_flags |= (1 << NETFPGA_AT_SET_DL_SRC);	
 				break;
 
 			case OF1X_AT_SET_FIELD_VLAN_VID:
-				actions->vlan_id |= (*(((uint8_t*)indirect))) & VID_BITMASK;	
+				actions->vlan_id |= (*(((uint8_t*)indirect))) & VID_BITMASK; //FIXME: NBO	
 				actions->action_flags |= (1 << NETFPGA_AT_SET_VLAN_VID);	
 				break;
 			case OF1X_AT_SET_FIELD_VLAN_PCP:
@@ -354,26 +354,20 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 
 
 			case OF1X_AT_SET_FIELD_IPV4_SRC:
-				actions->ip_src = /*htonl*/(*(((uint32_t*)indirect) ));
+				actions->ip_src = htobe32(*(((uint32_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_SRC);	
 				break;
 			case OF1X_AT_SET_FIELD_IPV4_DST:
-				actions->ip_dst = /*htonl*/(*(((uint32_t*)indirect) ));
+				actions->ip_dst = htobe32(*(((uint32_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_DST);	
 				break;
-			case OF1X_AT_SET_FIELD_TCP_SRC:
-				actions->transp_src = /*htons*/(*(((uint16_t*)indirect) ));
+			case OF1X_AT_SET_FIELD_TP_SRC:
+				actions->transp_src = htobe16(*(((uint16_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_SRC);	
 				break;
-			case OF1X_AT_SET_FIELD_TCP_DST:
-				actions->transp_dst = /*htons*/(*(((uint16_t*)indirect) ));
+			case OF1X_AT_SET_FIELD_TP_DST:
+				actions->transp_dst = htobe16(*(((uint16_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_DST);	
-				break;
-			case OF1X_AT_SET_FIELD_UDP_SRC:
-				actions->transp_src = /*htons*/(*(((uint16_t*)indirect) ));
-				break;
-			case OF1X_AT_SET_FIELD_UDP_DST:
-				actions->transp_dst = /*htons*/(*(((uint16_t*)indirect) ));
 				break;
 			case OF1X_AT_OUTPUT:
 				port = *(((uint16_t*)indirect) )&0xFFFF;

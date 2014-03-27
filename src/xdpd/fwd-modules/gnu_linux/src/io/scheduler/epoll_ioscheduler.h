@@ -19,6 +19,14 @@
 #include "../../util/safevector.h"
 #include "../../util/circular_queue.h"
 
+//Make sure pipeline-imp are BEFORE _pp.h
+//so that functions can be inlined
+#include "../../pipeline-imp/atomic_operations.h"
+#include "../../pipeline-imp/pthread_lock.h"
+#include "../../pipeline-imp/packet.h"
+
+#include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
+
 //Profiling
 #include "../../util/time_measurements.h"
 

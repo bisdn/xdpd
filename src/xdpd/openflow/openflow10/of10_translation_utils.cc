@@ -136,13 +136,14 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
-		bool vlan_present=false; //FIXME
+		bool vlan_present=true;
 		uint16_t value = ofmatch.get_vlan_vid_value();
+		/*
+		 * clear bit 12 in value, even if this does not exist in OF10,
+		 * as the pipeline may get interprete this bit otherwise
+		 */
 		uint16_t vid = htobe16(value & ~openflow::OFPVID_PRESENT);
-		
-		if( (value & openflow::OFPVID_PRESENT) > 0)
-			vlan_present = true;
-		
+
 		of1x_match_t *match = of1x_init_vlan_vid_match(vid, OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
 
 		of1x_add_match_to_entry(entry, match);

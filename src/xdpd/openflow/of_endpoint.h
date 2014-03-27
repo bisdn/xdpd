@@ -20,7 +20,7 @@
 #include <stdexcept>
 
 #include <rofl/common/crofbase.h>
-#include <rofl/datapath/afa/afa.h>
+#include <rofl/datapath/hal/hal.h>
 //#include "openflow_switch.h"
 
 /**

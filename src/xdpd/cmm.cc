@@ -1,5 +1,5 @@
-#include <rofl/datapath/afa/cmm.h>
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
+#include <rofl/datapath/hal/cmm.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
@@ -11,23 +11,23 @@
 using namespace xdpd;
 
 /*
-* Dispatching of platform related messages comming from the fwd_module 
+* Dispatching of platform related messages comming from the driver 
 */
 
-afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
+hal_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 	
-	afa_result_t result=AFA_SUCCESS;
+	hal_result_t result=HAL_SUCCESS;
 	
 	if(!port_snapshot)
-		return AFA_FAILURE;
+		return HAL_FAILURE;
 
 	//Notify port manager
 	port_manager::__notify_port_added(port_snapshot);
 
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
-		//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-		result = (afa_result_t)switch_manager::__notify_port_attached((const switch_port_snapshot_t*)port_snapshot);
+		//Note that this typecast is valid because hal_result_t and rofl_result_t have intentionally and explicitely the same definition
+		result = (hal_result_t)switch_manager::__notify_port_attached((const switch_port_snapshot_t*)port_snapshot);
 	
 	//Notify MGMT framework
 	plugin_manager::__notify_port_added((const switch_port_snapshot_t*)port_snapshot);	
@@ -38,20 +38,20 @@ afa_result_t cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 	return result;
 }
 
-afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
+hal_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	
-	afa_result_t result = AFA_SUCCESS;
+	hal_result_t result = HAL_SUCCESS;
 	
 	if (!port_snapshot)
-		return AFA_FAILURE;
+		return HAL_FAILURE;
 
 	//Notify port manager
 	port_manager::__notify_port_deleted(port_snapshot);
 
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
-		//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-		result = (afa_result_t)switch_manager::__notify_port_detached((const switch_port_snapshot_t*)port_snapshot);
+		//Note that this typecast is valid because hal_result_t and rofl_result_t have intentionally and explicitely the same definition
+		result = (hal_result_t)switch_manager::__notify_port_detached((const switch_port_snapshot_t*)port_snapshot);
 
 	//Notify MGMT framework
 	plugin_manager::__notify_port_deleted((const switch_port_snapshot_t*)port_snapshot);	
@@ -62,20 +62,20 @@ afa_result_t cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	return result;
 }
 
-afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapshot){
+hal_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapshot){
 	
-	afa_result_t result = AFA_SUCCESS;
+	hal_result_t result = HAL_SUCCESS;
 	
 	if (!port_snapshot)
-		return AFA_FAILURE;
+		return HAL_FAILURE;
 
 	//Notify port manager
 	port_manager::__notify_port_status_changed(port_snapshot);
 
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
-		//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-		result = (afa_result_t)switch_manager::__notify_port_status_changed((const switch_port_snapshot_t*)port_snapshot);
+		//Note that this typecast is valid because hal_result_t and rofl_result_t have intentionally and explicitely the same definition
+		result = (hal_result_t)switch_manager::__notify_port_status_changed((const switch_port_snapshot_t*)port_snapshot);
 
 	//Notify MGMT framework
 	plugin_manager::__notify_port_status_changed((const switch_port_snapshot_t*)port_snapshot);	
@@ -86,12 +86,12 @@ afa_result_t cmm_notify_port_status_changed(switch_port_snapshot_t* port_snapsho
 	return result;
 }
 
-afa_result_t cmm_notify_monitoring_state_changed(monitoring_snapshot_state_t* monitoring_snapshot){
+hal_result_t cmm_notify_monitoring_state_changed(monitoring_snapshot_state_t* monitoring_snapshot){
 
-	afa_result_t result = AFA_SUCCESS;
+	hal_result_t result = HAL_SUCCESS;
 	
 	if (!monitoring_snapshot)
-		return AFA_FAILURE;
+		return HAL_FAILURE;
 
 	//Notify MGMT framework
 	plugin_manager::__notify_monitoring_state_changed((const monitoring_snapshot_state_t*)monitoring_snapshot);	
@@ -104,7 +104,7 @@ afa_result_t cmm_notify_monitoring_state_changed(monitoring_snapshot_state_t* mo
 /*
 * Driver CMM Openflow calls. Demultiplexing to the appropiate openflow_switch instance.
 */ 
-afa_result_t cmm_process_of1x_packet_in(uint64_t dpid,
+hal_result_t cmm_process_of1x_packet_in(uint64_t dpid,
 					uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
@@ -114,11 +114,11 @@ afa_result_t cmm_process_of1x_packet_in(uint64_t dpid,
 					uint16_t total_len,
 					packet_matches_t* matches){
 	
-	//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-	return (afa_result_t)switch_manager::__process_of1x_packet_in(dpid, table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);	
+	//Note that this typecast is valid because hal_result_t and rofl_result_t have intentionally and explicitely the same definition
+	return (hal_result_t)switch_manager::__process_of1x_packet_in(dpid, table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);	
 }
 
-afa_result_t cmm_process_of1x_flow_removed(uint64_t dpid, uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
-	//Note that this typecast is valid because afa_result_t and rofl_result_t have intentionally and explicitely the same definition
-	return (afa_result_t)switch_manager::__process_of1x_flow_removed(dpid, reason, removed_flow_entry);
+hal_result_t cmm_process_of1x_flow_removed(uint64_t dpid, uint8_t reason, of1x_flow_entry_t* removed_flow_entry){
+	//Note that this typecast is valid because hal_result_t and rofl_result_t have intentionally and explicitely the same definition
+	return (hal_result_t)switch_manager::__process_of1x_flow_removed(dpid, reason, removed_flow_entry);
 }

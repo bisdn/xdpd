@@ -67,7 +67,7 @@ AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	src/xdpd/Makefile
-	src/xdpd/fwd-modules/Makefile
+	src/xdpd/drivers/Makefile
 	src/xdpd/management/Makefile
 	src/xdpd/management/plugins/Makefile
 	src/xdpd/openflow/Makefile

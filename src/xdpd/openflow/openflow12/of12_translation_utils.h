@@ -33,7 +33,7 @@ using namespace rofl;
 namespace xdpd {
 
 /**
-* @brief Translates ROFL OF1.2 objects to AFA-compliant structures and vice-versa
+* @brief Translates ROFL OF1.2 objects to HAL-compliant structures and vice-versa
 * @ingroup cmm_of
 */
 class of12_translation_utils{

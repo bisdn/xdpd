@@ -13,6 +13,8 @@ v0.4
 [+] Change in the build system: documentation is now compiled via `make doc`.
 [+] Change in the build system: platform support is now compiled via `../configure --with-hw-support=driver-name`.
 
+[+] Adapted to the new ROFL v0.4 terminolofy (afa->hal, fwd_module->driver)
+
 [+] Added systemd service.unit file for xdpd
 [+] Added plugin event notification system. Supported events: port add/attach/detach/delete/status and monitoring status.
 [+] Improved boot-strapping workflow.

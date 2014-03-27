@@ -1,8 +1,8 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-noinst_LTLIBRARIES = libfwd_module_example_pipeline_imp.la
+noinst_LTLIBRARIES = libxdpd_driver_example_pipeline_imp.la
 
-libfwd_module_example_pipeline_imp_la_SOURCES = \
+libxdpd_driver_example_pipeline_imp_la_SOURCES = \
 					memory.c\
 					packet.c\
 					platform_hooks_of1x.cc\
@@ -10,4 +10,4 @@ libfwd_module_example_pipeline_imp_la_SOURCES = \
 					pthread_lock.c\
 					timing.c
 
-libfwd_module_example_pipeline_imp_la_LIBADD = 
+libxdpd_driver_example_pipeline_imp_la_LIBADD = 

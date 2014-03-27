@@ -1,4 +1,4 @@
-AC_INIT(xdpd - Example fwd-module, 0.3, rofl@bisdn.de,  xdpd_example_fm)
+AC_INIT(xdpd - Example driver, 0.4, rofl@bisdn.de,  xdpd_example_fm)
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
@@ -40,13 +40,13 @@ m4_include([../../../../config/profiling.m4])
 # Ensure rofl-pipeline platform functions are NOT inlined 
 m4_include([../../../../config/no_pipeline_inline.m4])
 
-AC_DEFINE(FWD_MOD_NAME,"example_platform")
+AC_DEFINE(DRIVER_NAME,"example_platform")
 
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
-	src/afa-imp/Makefile
-	src/afa-imp/openflow/openflow1x/Makefile
+	src/hal-imp/Makefile
+	src/hal-imp/openflow/openflow1x/Makefile
 	src/pipeline-imp/Makefile
 ])
 

@@ -1,15 +1,10 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = afa-imp pipeline-imp#Add more here... 
+SUBDIRS = hal-imp pipeline-imp#Add more here... 
 
-noinst_LTLIBRARIES = libfwd_module_example_src.la
+noinst_LTLIBRARIES = libxdpd_driver_example_src.la
 
-library_includedir=$(includedir)/fwd-modules/example
-include_HEADERS=
-
-libfwd_module_example_src_la_SOURCES =
-libfwd_module_example_src_la_LIBADD = \
-		afa-imp/libfwd_module_example_afa_imp.la\
-		pipeline-imp/libfwd_module_example_pipeline_imp.la 
-		
-library_include_HEADERS=
+libxdpd_driver_example_src_la_SOURCES =
+libxdpd_driver_example_src_la_LIBADD = \
+		hal-imp/libxdpd_driver_example_hal_imp.la\
+		pipeline-imp/libxdpd_driver_example_pipeline_imp.la 

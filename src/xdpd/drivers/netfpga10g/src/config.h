@@ -18,7 +18,7 @@
 * General parameters
 */
 
-#define FWD_MOD_NAME "netfpga10g"
+#define DRIVER_NAME "netfpga10g"
 
 //I/O
 //Bufferpool reservoir(PKT_INs); ideally at least X*max_num_lsis

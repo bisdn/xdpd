@@ -11,8 +11,8 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <pcap.h>
 
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_driver.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>

@@ -1,8 +1,8 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-noinst_LTLIBRARIES = libfwd_module_netfpga10g_pipeline_imp.la
+noinst_LTLIBRARIES = libxdpd_driver_netfpga10g_pipeline_imp.la
 
-libfwd_module_netfpga10g_pipeline_imp_la_SOURCES = \
+libxdpd_driver_netfpga10g_pipeline_imp_la_SOURCES = \
 					memory.c\
 					packet.cc\
 					platform_hooks_of1x.cc\
@@ -10,4 +10,4 @@ libfwd_module_netfpga10g_pipeline_imp_la_SOURCES = \
 					timing.c\
 					pthread_lock.c
 
-libfwd_module_netfpga10g_pipeline_imp_la_LIBADD = 
+libxdpd_driver_netfpga10g_pipeline_imp_la_LIBADD = 

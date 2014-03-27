@@ -1,4 +1,4 @@
-AC_INIT(xdpd - NetFPGA-10G fwd-module, 0.3, rofl@bisdn.de,  xdpd_netfpga10g_fm)
+AC_INIT(xdpd - NetFPGA-10G driver, 0.4, rofl@bisdn.de,  xdpd_netfpga10g_fm)
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
@@ -24,7 +24,7 @@ CFLAGS="-Werror -Wall -Wl,-export-dynamic $CFLAGS"
 CXXFLAGS="-Werror -Wall -Wl,-export-dynamic $CXXFLAGS"
 AC_DEFINE(__STDC_FORMAT_MACROS)
 
-PKG_CHECK_MODULES([ROFL], [rofl >= 0.3.0], [have_rofl=yes], [have_rofl=no])
+PKG_CHECK_MODULES([ROFL], [rofl >= 0.4.0], [have_rofl=yes], [have_rofl=no])
 if (test "${have_rofl}" = "yes"); then
         CPPFLAGS+="$ROFL_CFLAGS"
         LIBS+="$ROFL_LIBS"
@@ -52,13 +52,13 @@ m4_include([../../../../config/no_pipeline_inline.m4])
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
-	src/afa-imp/Makefile
+	src/hal-imp/Makefile
+	src/hal-imp/openflow/openflow1x/Makefile
 	src/io/Makefile
 	src/io/packet_classifiers/Makefile
 	src/io/packet_classifiers/cpp_pktclassifier/Makefile
 	src/io/packet_classifiers/c_pktclassifier/Makefile
 	src/netfpga/Makefile
-	src/afa-imp/openflow/openflow1x/Makefile
 	src/pipeline-imp/Makefile
 	src/util/Makefile
 ])

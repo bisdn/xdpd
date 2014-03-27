@@ -1,19 +1,14 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = afa-imp io netfpga pipeline-imp util
+SUBDIRS = hal-imp io netfpga pipeline-imp util
 
-noinst_LTLIBRARIES = libfwd_module_netfpga10g_src.la
+noinst_LTLIBRARIES = libxdpd_driver_netfpga10g_src.la
 
-library_includedir=$(includedir)/fwd-modules/netfpga10g
-include_HEADERS=
-
-libfwd_module_netfpga10g_src_la_SOURCES = bg_taskmanager.cc config.cc 
-libfwd_module_netfpga10g_src_la_LIBADD = \
-		afa-imp/libfwd_module_netfpga10g_afa_imp.la\
-		io/libfwd_module_netfpga10g_io.la\
-		netfpga/libfwd_module_netfpga10g_netfpga.la\
-		pipeline-imp/libfwd_module_netfpga10g_pipeline_imp.la\
-		util/libfwd_module_netfpga10g_util.la \
+libxdpd_driver_netfpga10g_src_la_SOURCES = bg_taskmanager.cc config.cc 
+libxdpd_driver_netfpga10g_src_la_LIBADD = \
+		hal-imp/libxdpd_driver_netfpga10g_hal_imp.la\
+		io/libxdpd_driver_netfpga10g_io.la\
+		netfpga/libxdpd_driver_netfpga10g_netfpga.la\
+		pipeline-imp/libxdpd_driver_netfpga10g_pipeline_imp.la\
+		util/libxdpd_driver_netfpga10g_util.la \
 		-lpcap
-		
-library_include_HEADERS=

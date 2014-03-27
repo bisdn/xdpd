@@ -2,7 +2,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_async_events_hooks.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_cmm.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include "../config.h"
@@ -12,7 +12,7 @@
 #include "../io/datapacketx86.h"
 #include "../pipeline-imp/ls_internal_state.h"
 
-#define FWD_MOD_NAME "netfpga10g"
+#define DRIVER_NAME "netfpga10g"
 
 using namespace xdpd::gnu_linux;
 
@@ -47,7 +47,7 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 
 rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
-	ROFL_INFO("["FWD_MOD_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	struct logical_switch_internals* ls_int =  (struct logical_switch_internals*)sw->platform_state;
 	
 	delete ls_int->storage;
@@ -67,7 +67,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 {
 
 	datapacketx86* pkt_x86;
-	afa_result_t rv;
+	hal_result_t rv;
 	storeid id;
 	struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
 
@@ -85,7 +85,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	id = ls_state->storage->store_packet(pkt);
 
 	if(id == datapacket_storage::ERROR){
-		ROFL_DEBUG(FWD_MOD_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
+		ROFL_DEBUG(DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
 
 		//Return to the bufferpool
 		bufferpool::release_buffer(pkt);
@@ -104,11 +104,11 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 					&pkt->matches
 					);
 
-	if(rv == AFA_FAILURE){
-		ROFL_DEBUG(FWD_MOD_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
+	if(rv == HAL_FAILURE){
+		ROFL_DEBUG(DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
 		//Take packet out from the storage
 		if( unlikely(ls_state->storage->get_packet(id) != pkt) ){
-			ROFL_ERR(FWD_MOD_NAME"[pkt-in-dispatcher] Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
+			ROFL_ERR(DRIVER_NAME"[pkt-in-dispatcher] Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
 
 			assert(0);
 		}

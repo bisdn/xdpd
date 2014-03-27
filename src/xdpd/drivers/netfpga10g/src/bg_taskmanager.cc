@@ -15,8 +15,8 @@
 
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl/datapath/afa/fwd_module.h>
-#include <rofl/datapath/afa/cmm.h>
+#include <rofl/datapath/hal/driver.h>
+#include <rofl/datapath/hal/cmm.h>
 
 #include "netfpga/netfpga.h"
 #include "netfpga/ports.h"

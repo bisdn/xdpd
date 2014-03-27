@@ -2,8 +2,8 @@ MAINTAINERCLEANFILES = Makefile.in
 
 #SUBDIRS = headers
 
-noinst_LTLIBRARIES = libfwd_module_netfpga10g_io_classifiers_c.la
+noinst_LTLIBRARIES = libxdpd_driver_netfpga10g_io_classifiers_c.la
 
-libfwd_module_netfpga10g_io_classifiers_c_la_SOURCES = \
+libxdpd_driver_netfpga10g_io_classifiers_c_la_SOURCES = \
 	c_pktclassifier.c \
 	../packet_operations.cc

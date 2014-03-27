@@ -2,9 +2,9 @@ MAINTAINERCLEANFILES = Makefile.in
 
 #SUBDIRS =
 
-noinst_LTLIBRARIES = libfwd_module_netfpga10g_io_classifiers_cpp.la
+noinst_LTLIBRARIES = libxdpd_driver_netfpga10g_io_classifiers_cpp.la
 
-libfwd_module_netfpga10g_io_classifiers_cpp_la_SOURCES = \
+libxdpd_driver_netfpga10g_io_classifiers_cpp_la_SOURCES = \
 	cpp_headers/cpp_arpv4.cc \
 	cpp_headers/cpp_ethernet.cc \
 	cpp_headers/cpp_gtpu.cc \

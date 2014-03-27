@@ -64,7 +64,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	ROFL_DEBUG("\n in port: %x ", pack->in_port);
 	
 
-	afa_result r=cmm_process_of1x_packet_in(
+	hal_result r=cmm_process_of1x_packet_in(
 		sw->dpid,
 		pack->pktin_table_id,
 		pack->pktin_reason,
@@ -76,8 +76,8 @@ void netpfga_io_read_from_port(switch_port_t* port){
 		matches );
 
 
-	if ( AFA_FAILURE == r  ) ROFL_DEBUG(" packet_io.cc cmm packet_in unsuccessful");
-	if ( AFA_SUCCESS == r  ) ROFL_DEBUG(" \n packet_io.cc cmm packet_in successful \n");
+	if ( HAL_FAILURE == r  ) ROFL_DEBUG(" packet_io.cc cmm packet_in unsuccessful");
+	if ( HAL_SUCCESS == r  ) ROFL_DEBUG(" \n packet_io.cc cmm packet_in successful \n");
 
 
 	//ROFL_DEBUG(" packet_io.cc ENDS \n \n \n \n");

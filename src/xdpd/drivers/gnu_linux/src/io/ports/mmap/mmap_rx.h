@@ -44,7 +44,7 @@ class eConstructorMmapRx : public rofl::RoflException {};
 /**
 * @brief MMAP RX internals (v2)
 *
-* @ingroup fm_gnu_linux_io_ports
+* @ingroup driver_gnu_linux_io_ports
 */
 class mmap_rx{
 

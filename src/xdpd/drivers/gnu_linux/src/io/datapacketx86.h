@@ -46,9 +46,7 @@ typedef enum{
 /**
 * @brief Datapacket abstraction for an x86 (GNU/Linux)
 *
-* @ingroup fm_gnu_linux_io
-*
-* @ingroup fm_gnu_linux_io
+* @ingroup driver_gnu_linux_io
 */
 class datapacketx86{
 

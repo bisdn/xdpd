@@ -10,7 +10,7 @@
 *
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief Configuration file for the xDPd NetfGPA 10G GNU/Linux forwarding module. 
+* @brief Configuration file for the xDPd NetfGPA 10G GNU/Linux driver. 
 * 
 */
 

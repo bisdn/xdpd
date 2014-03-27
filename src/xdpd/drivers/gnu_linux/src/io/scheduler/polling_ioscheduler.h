@@ -29,7 +29,7 @@ class portgroup_state;
 * @brief (experimental) I/O scheduler base class which defines the way
 * way I/O threads go through the ports for TX and RX.
 *
-* @ingroup fm_gnu_linux_io_schedulers
+* @ingroup driver_gnu_linux_io_schedulers
 *
 * @description Implements a simple I/O scheduler based on pure polling over
 * the interfaces. This scheduler sacrifices 1 virtual/real CPU

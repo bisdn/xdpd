@@ -38,7 +38,7 @@ typedef enum{
 /**
 * @brief I/O subsystem datapacket buffer pool management class
 *
-* @ingroup fm_gnu_linux_io
+* @ingroup driver_gnu_linux_io
 */
 class bufferpool{
 

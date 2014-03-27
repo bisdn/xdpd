@@ -127,9 +127,9 @@ protected:
 	};
 
 	/**
-	* @brief Return the platform driver (fwd_module) extra parameters
+	* @brief Return the platform driver extra parameters
 	*
-	* The extra_params string is an opaque string that can be sent to the forwarding module (i.e. driver)
+	* The extra_params string is an opaque string that can be sent to the driver (e.g. gnu-linux)
 	* for hardware specific feature initialization. You can use ./xdpd --help to get the specific
 	* information of the particular driver in use.
 	*

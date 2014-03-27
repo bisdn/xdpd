@@ -30,7 +30,7 @@ namespace gnu_linux {
 /**
 * @brief Processing manager. Creates/destroys the processing threads associated with a logical switch instance.
 *
-* @ingroup fm_gnu_linux_processing
+* @ingroup driver_gnu_linux_processing
 */
 class processingmanager{ 
 

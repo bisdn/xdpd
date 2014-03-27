@@ -35,7 +35,7 @@ namespace xdpd {
 * @ingroup cmm_of 
 *
 * @description This includes the OF endpoint and the binding with the
-* forwarding plane (through AFA)
+* forwarding plane (through HAL)
 */
 class openflow10_switch : public openflow_switch {
 

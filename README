@@ -6,8 +6,8 @@ What it is
 
 xDPd can also be considered a framework for building OpenFlow datapath elements, as it is designed to be easily extended with the support of new forwarding devices.
 
-Supported platforms
-===================
+Supported platforms (drivers)
+=============================
 
 Shipped with all xDPd instances:
 - GNU/Linux amd64/x86 user-space with mmap or netmap (gnu-linux). open-source
@@ -22,7 +22,7 @@ Also available:
 
 You may want to have a look to the particular README pages of each platform by inspecting:
 
-src/xdpd/fwd_modules/{platform_name}/README
+src/xdpd/drivers/{platform_name}/README
 
 Requirements
 ============

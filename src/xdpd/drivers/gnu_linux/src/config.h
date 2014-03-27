@@ -10,9 +10,9 @@
 *
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief Configuration file for the xDPd GNU/Linux forwarding module. Configuration is optimized by a 
+* @brief Configuration file for the xDPd GNU/Linux driver. Configuration is optimized by a 
 * system which has 4 hw cores (hw threads). Please adjust it to your needs (specially THREAD numbers).
-* @warning Incorrect values on this file can impact heavily the performance of this forwarding module... Be advised
+* @warning Incorrect values on this file can impact heavily the performance of this driver... Be advised
 * 
 */
 
@@ -38,7 +38,7 @@
 /*
 * General parameters
 */
-//Forwarding module name
+//Driver name
 #define DRIVER_NAME "[gnu-linux]"
 
 //None for the moment
@@ -88,7 +88,7 @@
 //Warning: change it only if you know what you are doing 
 #define IO_KERN_SCHED_POL SCHED_RR
 
-//Uncomment this to prevent fwd_module to change priority and scheduling policy for I/O threads
+//Uncomment this to prevent the driver to change priority and scheduling policy for I/O threads
 //Warning: change it only if you know what you are doing 
 //#define IO_KERN_DONOT_CHANGE_SCHED 
 

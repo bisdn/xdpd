@@ -23,17 +23,17 @@
 * @ingroup cmm_mgmt
 */
 
-//AFA
+//HAL
 /**
-* @defgroup afa Abstract Forwarding API (AFA)
-* @brief Refer to rofl-afa documentation for details on the AFA interface. 
+* @defgroup hal Hardware Abstraction Layer API (HAL)
+* @brief Refer to rofl-hal documentation for details on the HAL interface. 
 *
 */
 
-//Forwarding modules
+//Drivers
 /**
-* @defgroup fm Forwarding Modules (FMs)
-* @brief Forwarding backends (platforms) 
+* @defgroup drivers Platform drivers
+* @brief Driver backend support 
 */
 
 
@@ -43,34 +43,34 @@
 
 //Main group
 /**
-* @defgroup fm_gnu_linux GNU/Linux Forwarding Module
-* @ingroup fm
+* @defgroup driver_gnu_linux GNU/Linux Forwarding Module
+* @ingroup drivers
 * @brief User-space GNU/Linux forwarding backend
 *
-* @description The GNU/Linux forwarding module is a user-space (only) forwarding backend. It implements an entire I/O susbystem (currently using PACKET_MMAP RX/TX rings), processing subsystem and AFA handling code. 
+* @description The GNU/Linux driver is a user-space (only) forwarding backend. It implements an entire I/O susbystem (currently using PACKET_MMAP RX/TX rings), processing subsystem and HAL handling code. 
 * 
-* To know more about xdpd GNU/Linux forwarding module, please check the <a href="https://www.codebasin.net/redmine/projects/xdpd/wiki">wiki</a>.
+* To know more about xdpd GNU/Linux driver, please check the <a href="https://www.codebasin.net/redmine/projects/xdpd/wiki">wiki</a>.
 */
 
 //IO
 /**
-* @defgroup fm_gnu_linux_io GNU/Linux I/O subsystem
-* @ingroup fm_gnu_linux
+* @defgroup driver_gnu_linux_io GNU/Linux I/O subsystem
+* @ingroup drivers_gnu_linux
 */
 
 //IO-ports
 /**
-* @defgroup fm_gnu_linux_io_ports GNU/Linux I/O ports
-* @ingroup fm_gnu_linux_io
+* @defgroup driver_gnu_linux_io_ports GNU/Linux I/O ports
+* @ingroup drivers_gnu_linux_io
 */
 //IO-schedulers
 /**
-* @defgroup fm_gnu_linux_io_schedulers GNU/Linux I/O schedulers
-* @ingroup fm_gnu_linux_io
+* @defgroup driver_gnu_linux_io_schedulers GNU/Linux I/O schedulers
+* @ingroup drivers_gnu_linux_io
 */
 
 //Processing
 /**
-* @defgroup fm_gnu_linux_processing GNU/Linux processing subsystem 
-* @ingroup fm_gnu_linux
+* @defgroup driver_gnu_linux_processing GNU/Linux processing subsystem 
+* @ingroup drivers_gnu_linux
 */

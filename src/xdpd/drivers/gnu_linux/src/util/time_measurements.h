@@ -24,7 +24,7 @@
 */
 
 /*
-* Defines the different measuring points within the forwarding module
+* Defines the different measuring points within the driver
 */
 typedef enum{
 	//---------- I/O thread -----------

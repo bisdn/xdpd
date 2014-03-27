@@ -38,7 +38,7 @@ namespace gnu_linux {
 * @brief GNU/Linux interface access via Memory Mapped
 * region (MMAP) using PF_PACKET TX/RX rings (v2) 
 *
-* @ingroup fm_gnu_linux_io_ports
+* @ingroup driver_gnu_linux_io_ports
 */
 class ioport_mmap : public ioport{
 

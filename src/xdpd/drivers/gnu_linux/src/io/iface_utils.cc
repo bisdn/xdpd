@@ -540,7 +540,7 @@ rofl_result_t update_physical_ports(){
 		return ROFL_FAILURE;	
     	}
 	
-	//Call the forwarding module to list the ports
+	//Call the driver to get the list the ports
 	ports = physical_switch_get_physical_ports(&max_ports);
 
 	if(!ports){

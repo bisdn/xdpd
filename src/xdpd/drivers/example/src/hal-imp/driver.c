@@ -32,7 +32,7 @@ char extra_params[DRIVER_EXTRA_PARAMS_MAX_LEN];
 hal_result_t driver_init(const char* _extra_params){
 
 	
-	ROFL_INFO("["DRIVER_NAME"] calling fwd_mod_init()\n");
+	ROFL_INFO("["DRIVER_NAME"] calling driver_init()\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
 	//if(physical_switch_init() != ROFL_SUCCESS)
@@ -79,7 +79,7 @@ hal_result_t driver_destroy(){
 	//If using the pipeline you should call
 	//physical_switch_destroy();
 
-	ROFL_INFO("["DRIVER_NAME"] calling fwd_mod_destroy()\n");
+	ROFL_INFO("["DRIVER_NAME"] calling driver_destroy()\n");
 	
 	return HAL_SUCCESS; 
 }
@@ -207,7 +207,7 @@ hal_result_t driver_attach_port_to_switch(uint64_t dpid, const char* name, unsig
 
 /**
 * @name    driver_connect_switches
-* @brief   Attemps to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. 
+* @brief   Attemps to connect two logical switches via a virtual port. Driver may or may not support this functionality. 
 * @ingroup management
 *
 * @param dpid_lsi1 Datapath ID of the LSI1

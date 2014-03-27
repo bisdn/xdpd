@@ -9,7 +9,7 @@
  * 
  * @section DESCRIPTION 
  * 
- * GNU/Linux driver dispatching routines. This file contains primary AFA driver hooks
+ * GNU/Linux driver dispatching routines. This file contains primary HAL driver hooks
  * for CMM to call driver specific functions (e.g. bring up port, or create logical switch).
  * Openflow version dependant hooks are under openflow/ folder. 
 */

@@ -292,7 +292,7 @@ hal_result_t driver_attach_port_to_switch(uint64_t dpid, const char* name, unsig
 
 /**
 * @name    driver_connect_switches
-* @brief   Attemps to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. 
+* @brief   Attemps to connect two logical switches via a virtual port. Driver may or may not support this functionality. 
 * @ingroup management
 *
 * @param dpid_lsi1 Datapath ID of the LSI1

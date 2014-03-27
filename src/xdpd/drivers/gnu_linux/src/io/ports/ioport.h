@@ -33,7 +33,7 @@ namespace gnu_linux {
 /**
 * @brief Abstract class representing a network interface (port)
 *
-* @ingroup fm_gnu_linux_io_ports
+* @ingroup driver_gnu_linux_io_ports
 */
 class ioport{
 

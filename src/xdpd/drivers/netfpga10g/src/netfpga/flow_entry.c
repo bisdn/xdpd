@@ -470,7 +470,7 @@ static void netfpga_set_hw_position_wildcard(netfpga_device_t* nfpga, netfpga_fl
 		}
 	}		
 
-	//This cannot happen, since pre-condition should be checked by the fwd_module before calling rofl-pipeline entry insertion
+	//This cannot happen, since pre-condition should be checked by the driver before calling rofl-pipeline entry insertion
 	assert(0);
 }
 

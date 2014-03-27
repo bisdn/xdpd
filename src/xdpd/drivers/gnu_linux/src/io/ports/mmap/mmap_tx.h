@@ -43,7 +43,7 @@ class eConstructorMmapTx : public rofl::RoflException {};
 /**
 * @brief MMAP TX internals (v2)
 *
-* @ingroup fm_gnu_linux_io_ports
+* @ingroup driver_gnu_linux_io_ports
 */
 class mmap_tx{
 

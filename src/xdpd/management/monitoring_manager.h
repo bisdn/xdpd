@@ -36,7 +36,7 @@ class monitoring_manager {
 
 public:
 	/**
-	* Retrieve a monitoring snapshot of the forwarding module 
+	* Retrieve a monitoring snapshot of the driver 
 	*/
 	static monitoring_snapshot_state_t* get_monitoring_snapshot(uint64_t last_rev);
 

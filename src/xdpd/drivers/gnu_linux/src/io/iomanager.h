@@ -39,7 +39,7 @@ COMPILER_ASSERT( INVALID_default_threads_per_pg , (DEFAULT_THREADS_PER_PG == 1) 
 /**
 * Port group type
 *
-* @ingroup fm_gnu_linux_io
+* @ingroup driver_gnu_linux_io
 */
 typedef enum pg_type{
 	PG_RX,
@@ -49,7 +49,7 @@ typedef enum pg_type{
 /**
 * @brief Portgroup thread state
 *
-* @ingroup fm_gnu_linux_io
+* @ingroup driver_gnu_linux_io
 */
 class portgroup_state {
 
@@ -81,7 +81,7 @@ public:
 * @brief I/O manager, creates and destroys (launches and stops) I/O threads to work on the ports, or specifically a set of ports (portgroups). 
 * This class is purely static.
 *
-* @ingroup fm_gnu_linux_io
+* @ingroup driver_gnu_linux_io
 */
 class iomanager{ 
 

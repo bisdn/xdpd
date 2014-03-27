@@ -37,7 +37,7 @@ static of_switch_t* sw=NULL;
 */
 hal_result_t driver_init(const char* extra_params){
 
-	ROFL_INFO("["DRIVER_NAME"] calling fwd_mod_init()\n");
+	ROFL_INFO("["DRIVER_NAME"] calling driver_init()\n");
 	ROFL_ERR("["DRIVER_NAME"] !!!!!!!!! WARNING: NetFPGA 10G driver is experimental. Be advised. !!!!!!!!!\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
@@ -105,7 +105,7 @@ hal_result_t driver_destroy(){
 	//Destroy bufferpool
 	bufferpool::destroy();
 
-	ROFL_INFO("["DRIVER_NAME"] calling fwd_mod_destroy()\n");
+	ROFL_INFO("["DRIVER_NAME"] calling driver_destroy()\n");
 	
 	return HAL_SUCCESS; 
 }

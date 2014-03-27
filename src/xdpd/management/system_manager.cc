@@ -22,7 +22,7 @@ extern int optind;
 */
 bool system_manager::inited = false;
 std::string system_manager::id("000000001");
-fwd_module_info_t system_manager::info;
+driver_info_t system_manager::info;
 rofl::cunixenv* system_manager::env_parser = NULL;
 const std::string system_manager::XDPD_CLOG_FILE="./xdpd.log";
 const std::string system_manager::XDPD_LOG_FILE="/var/log/xdpd.log";
@@ -40,7 +40,7 @@ void interrupt_handler(int dummy=0) {
 }
 
 
-std::string system_manager::get_driver_extra_params(){
+std::string system_manager::__get_driver_extra_params(){
 
 	std::string extra="";
 	std::string extra_plugins;
@@ -110,9 +110,9 @@ void system_manager::init_command_line_options(){
 	//Log file
 	env_parser->add_option(coption(true,REQUIRED_ARGUMENT,'l',"logfile","Log file used when daemonization", XDPD_CLOG_FILE));
 	
-	//Extra forwarding module parameters
+	//Extra driver parameters
 	composed_usage << "Quoted string of extra parameters that will be passed to the platform driver \n";
-	composed_usage << "\t\t\t       ["<<get_fwd_module_code_name()<<"] supported extra parameters: "<< get_fwd_module_usage();
+	composed_usage << "\t\t\t       ["<<get_driver_code_name()<<"] supported extra parameters: "<< get_driver_usage();
 	env_parser->add_option(coption(true,REQUIRED_ARGUMENT, 'e', XDPD_EXTRA_PARAMS_OPT_FULL_NAME, composed_usage.str(), ""));
 
 	//Test
@@ -139,8 +139,8 @@ void system_manager::init(int argc, char** argv){
 	if(inited)
 		ROFL_ERR("[xdpd][system] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
 
-	//Set forwarding module info cache
-	fwd_module_get_info(&info);
+	//Set driver info cache
+	driver_get_info(&info);
 
 	/* Parse arguments. Add first additional arguments */
 	env_parser = new cunixenv(argc, argv);
@@ -206,8 +206,8 @@ void system_manager::init(int argc, char** argv){
 	if(is_test_run())
 		rofl::logging::notice << "[xdpd][system] Launched with -t "<< XDPD_TEST_RUN_OPT_FULL_NAME <<". Doing a test-run execution" << std::endl;
 
-	//Forwarding module initialization
-	if(fwd_module_init(get_driver_extra_params().c_str()) != AFA_SUCCESS){
+	//Driver initialization
+	if(driver_init(get_driver_extra_params().c_str()) != HAL_SUCCESS){
 		ROFL_ERR("[xdpd][system] ERROR: initialization of platform driver failed! Aborting...\n");	
 		exit(EXIT_FAILURE);
 	}
@@ -232,11 +232,11 @@ void system_manager::init(int argc, char** argv){
 	//Destroy all state
 	switch_manager::destroy_all_switches();
 
-	//Call fwd_module to shutdown
-	fwd_module_destroy();
+	//Call driver to shutdown
+	driver_destroy();
 	
 	//Let plugin manager destroy all registered plugins
-	//This must be after calling fwd_module_destroy()
+	//This must be after calling driver_destroy()
 	plugin_manager::destroy();
 	
 	//Logging	
@@ -274,9 +274,9 @@ void system_manager::dump_help(){
 
 	ROFL_INFO("\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
 	ROFL_INFO("Compiled with plugins: %s\n", plugin_list.str().c_str());
-	ROFL_INFO("Compiled with hardware support for: %s\n", get_fwd_module_code_name().c_str());
-	if(get_fwd_module_description()!="")
-		ROFL_INFO("Hardware driver description: %s\n\n", get_fwd_module_description().c_str());
+	ROFL_INFO("Compiled with hardware support for: %s\n", get_driver_code_name().c_str());
+	if(get_driver_description()!="")
+		ROFL_INFO("Hardware driver description: %s\n\n", get_driver_description().c_str());
 	else
 		ROFL_INFO("\n");
 }
@@ -297,8 +297,8 @@ std::string system_manager::get_version(){
 	ss << "Detailed build information:" << XDPD_DESCRIBE << std::endl;
 #endif	
 
-	//xDPd forwarding module information
-	ss << "\n-- Hardware support (forwarding module) --" << std::endl;
+	//xDPd driver information
+	ss << "\n-- Hardware support --" << std::endl;
 	ss << "Driver code name: "<< info.code_name << std::endl;
 	ss << "Driver version: "<< info.version << std::endl;
 	ss << "Driver description: "<< info.description << std::endl;

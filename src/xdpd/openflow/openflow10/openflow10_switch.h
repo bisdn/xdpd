@@ -9,8 +9,8 @@
 #define OPENFLOW10_SWITCH_H_
 
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
-#include <rofl/datapath/afa/fwd_module.h>
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
+#include <rofl/datapath/hal/driver.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_driver.h>
 #include "../openflow_switch.h"
 #include "of10_endpoint.h"
 

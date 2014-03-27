@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <rofl.h>
 #include <rofl/common/croflexception.h>
-#include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/datapath/hal/driver.h>
 
 /**
 * @file monitoring_manager.h

@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include <rofl.h>
 #include <rofl/common/utils/c_logger.h>
-#include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/datapath/hal/driver.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/common/croflexception.h>
 

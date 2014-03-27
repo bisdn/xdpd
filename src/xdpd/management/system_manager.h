@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <rofl.h>
 #include <rofl/common/croflexception.h>
-#include <rofl/datapath/afa/fwd_module.h>
+#include <rofl/datapath/hal/driver.h>
 #include <rofl/platform/unix/cunixenv.h>
 
 /**
@@ -107,18 +107,18 @@ public:
 	//
 	
 	/**
-	* Retrieve the forwarding module code-name (e.g. gnu-linux).
+	* Retrieve the driver code-name (e.g. gnu-linux).
 	*
 	* This method will always a valid code-name
 	*/
-	static std::string get_fwd_module_code_name(void){
+	static std::string get_driver_code_name(void){
 		return std::string(info.code_name);
 	}	
 	
 	/**
-	* Retrieve the forwarding module usage(help)
+	* Retrieve the driver usage(help)
 	*/
-	static std::string get_fwd_module_usage(void){
+	static std::string get_driver_usage(void){
 		std::string usage(info.usage);
 		if(usage == "")
 			return std::string("not supported"); 
@@ -127,29 +127,29 @@ public:
 	}	
 		
 	/**
-	* Retrieve the forwarding module version and build number.
+	* Retrieve the driver version and build number.
 	*/
-	static std::string get_fwd_module_version(void){
+	static std::string get_driver_version(void){
 		return std::string(info.version);
 	}	
 
 	/**
-	* Retrieve the forwarding module description 
+	* Retrieve the driver description 
 	*/
-	static std::string get_fwd_module_description(void){
+	static std::string get_driver_description(void){
 		return std::string(info.description);
 	}	
 	
 	/**
-	* Retrieve the forwarding module extra parameters that has
+	* Retrieve the driver extra parameters that has
 	* been instantiated with. 
 	*
 	* @warning Result will return only the parameters recognised
-	* by the forwarding module, which can be different from the 
+	* by the driver, which can be different from the 
 	* ones sent. Also note that the syntax of this parameters is
-	* deliverately fwd_module specific.
+	* deliverately driver specific.
 	*/
-	static std::string get_fwd_module_extra_params(void){
+	static std::string get_driver_extra_params(void){
 		return std::string(info.extra_params);
 	}	
 
@@ -162,7 +162,7 @@ private:
 	static std::string id;
 	
 	//Cache platform driver information
-	static fwd_module_info_t info;
+	static driver_info_t info;
 
 	//Command line options
 	static rofl::cunixenv* env_parser;
@@ -178,7 +178,7 @@ private:
 
 	//Other helper internal functions
 	static void init_command_line_options(void);
-	static std::string get_driver_extra_params(void); 
+	static std::string __get_driver_extra_params(void); 
 	static void dump_help(void); 
 };
 

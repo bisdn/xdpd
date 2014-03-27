@@ -6,8 +6,8 @@
 #define OPENFLOW13_SWITCH_H 
 
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
-#include <rofl/datapath/afa/fwd_module.h>
-#include <rofl/datapath/afa/openflow/openflow1x/of1x_fwd_module.h>
+#include <rofl/datapath/hal/driver.h>
+#include <rofl/datapath/hal/openflow/openflow1x/of1x_driver.h>
 #include "../openflow_switch.h"
 #include "../openflow10/openflow10_switch.h"
 #include "of13_endpoint.h"

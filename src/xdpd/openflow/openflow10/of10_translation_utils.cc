@@ -105,7 +105,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_port_in_match(ofmatch.get_in_port());
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	// no in_phy_port in OF1.0
 
@@ -117,7 +117,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_eth_dst_match(maddr,mmask);
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
@@ -127,13 +127,13 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_eth_src_match(maddr,mmask);
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		of1x_match_t *match = of1x_init_eth_type_match(htobe16(ofmatch.get_eth_type()));
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		bool vlan_present=false; //FIXME
@@ -146,26 +146,26 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_vlan_vid_match(vid, OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		of1x_match_t *match = of1x_init_vlan_pcp_match(ofmatch.get_vlan_pcp());
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW TOS
 	try {
 		of1x_match_t *match = of1x_init_ip_dscp_match(ofmatch.get_nw_tos()>>2);
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW PROTO 
 	try {
 		of1x_match_t *match = of1x_init_nw_proto_match(ofmatch.get_nw_proto());
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW SRC
 	try {
@@ -180,7 +180,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 			of1x_add_match_to_entry(entry, match);
 		}
 
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW DST 
 	try {
@@ -195,19 +195,19 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 			of1x_add_match_to_entry(entry, match);
 		}
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//TP SRC
 	try {
 		of1x_match_t *match = of1x_init_tp_src_match(htobe16(ofmatch.get_tp_src()));
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//TP DST
 	try {
 		of1x_match_t *match = of1x_init_tp_dst_match(htobe16(ofmatch.get_tp_dst()));
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 }
 
@@ -557,12 +557,12 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 		match.set_nw_proto(be16toh(packet_matches->arp_opcode));
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches->arp_spa);
+		addr.set_ipv4_addr(be32toh(packet_matches->arp_spa));
 		match.set_nw_src(addr);
 	}
 	if(packet_matches->arp_tpa) {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches->arp_tpa);
+		addr.set_ipv4_addr(be32toh(packet_matches->arp_tpa));
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches->ip_dscp)
@@ -573,12 +573,12 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 		match.set_ip_proto(packet_matches->ip_proto);
 	if(packet_matches->ipv4_src){
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches->ipv4_src);
+		addr.set_ipv4_addr(be32toh(packet_matches->ipv4_src));
 		match.set_nw_src(addr);
 	}
 	if(packet_matches->ipv4_dst){
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches->ipv4_dst);
+		addr.set_ipv4_addr(be32toh(packet_matches->ipv4_dst));
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches->tcp_src)

@@ -837,7 +837,8 @@ of10_endpoint::flow_mod_add(
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), msg.get_table_id());
 	
-		throw eFlowModBadTableId();
+		assert(0);
+		return;
 	}
 
 	try{
@@ -845,12 +846,14 @@ of10_endpoint::flow_mod_add(
 	}catch(...){
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
-	
-		throw eFlowModUnknown();
+		assert(0);
+		return;
 	}
 
-	if(!entry)
-		throw eFlowModUnknown();//Just for safety, but shall never reach this
+	if(!entry) {
+		assert(0);//Just for safety, but shall never reach this
+		return;
+	}
 
 	if (AFA_SUCCESS != (res = fwd_module_of1x_process_flow_mod_add(sw->dpid,
 								msg.get_table_id(),
@@ -882,11 +885,12 @@ of10_endpoint::flow_mod_modify(
 	// sanity check: table for table-id must exist
 	if (pack.get_table_id() > sw->num_of_tables)
 	{
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
+		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), pack.get_table_id());
 
-		throw eFlowModBadTableId();
+		assert(0);
+		return;
 	}
 
 	try{
@@ -894,11 +898,14 @@ of10_endpoint::flow_mod_modify(
 	}catch(...){
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
 				"unable to attempt to modify flow-entry", sw->dpname.c_str());
-		throw eFlowModUnknown();
+		assert(0);
+		return;
 	}
 
-	if(!entry)
-		throw eFlowModUnknown();//Just for safety, but shall never reach this
+	if(!entry) {
+		assert(0);//Just for safety, but shall never reach this
+		return;
+	}
 
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
@@ -911,8 +918,6 @@ of10_endpoint::flow_mod_modify(
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/)){
 		ROFL_DEBUG("Error modiying flowmod\n");
 		of1x_destroy_flow_entry(entry);
-
-		throw eFlowModBase();
 	}
 
 }
@@ -933,11 +938,14 @@ of10_endpoint::flow_mod_delete(
 	}catch(...){
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
 				"unable to attempt to remove flow-entry", sw->dpname.c_str());
-		throw eFlowModUnknown();
+		assert(0);
+		return;
 	}
 
-	if(!entry)
-		throw eFlowModUnknown();//Just for safety, but shall never reach this
+	if(!entry) {
+		assert(0);//Just for safety, but shall never reach this
+		return;
+	}
 
 
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
@@ -949,8 +957,6 @@ of10_endpoint::flow_mod_delete(
 								OF1X_GROUP_ANY,
 								strictness)) {
 		ROFL_DEBUG("Error deleting flowmod\n");
-		of1x_destroy_flow_entry(entry);
-		throw eFlowModBase();
 	}
 
 	//Always delete entry

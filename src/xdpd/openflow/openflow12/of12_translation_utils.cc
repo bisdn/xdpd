@@ -1039,18 +1039,18 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			NTOHB128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
 			match.set_ipv6_nd_target(addr);
 			}break;
-		case OF1X_MATCH_IPV6_ND_SLL:
+		case OF1X_MATCH_IPV6_ND_SLL:{
 			//match.set_ipv6_nd_sll(be64toh(m->value->value.u64)); // FIXME: check required
 			uint64_t mac = m->value->value.u64;
 			BETOHMAC(mac);
 			match.set_ipv6_nd_sll(cmacaddr(mac));
-			break;
-		case OF1X_MATCH_IPV6_ND_TLL:
+			}break;
+		case OF1X_MATCH_IPV6_ND_TLL:{
 			//match.set_ipv6_nd_tll(be64toh(m->value->value.u64)); // FIXME: check required
 			uint64_t mac = m->value->value.u64;
 			BETOHMAC(mac);
 			match.set_ipv6_nd_tll(cmacaddr(mac));
-			break;
+			}break;
 		case OF1X_MATCH_MPLS_LABEL:	{
 			uint32_t label = m->value->value.u32;
 			BETOHLABEL(label);

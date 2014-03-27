@@ -192,7 +192,7 @@ void bufferpool::release_buffer(datapacket_t* buf){
 	//Release
 	if( unlikely(bp->pool_status[id] != BUFFERPOOL_SLOT_IN_USE) ){
 		//Attempting to release an unallocated/unavailable buffer
-		ROFL_ERR(FWD_MOD_NAME"[bufferpool] Attempting to release an unallocated/unavailable buffer (pkt:%p). Ignoring..\n",buf);
+		ROFL_ERR(DRIVER_NAME"[bufferpool] Attempting to release an unallocated/unavailable buffer (pkt:%p). Ignoring..\n",buf);
 		assert(0);
 	}else{ 
 		buf->is_replica = false; //Make sure this flag is 0

@@ -2,12 +2,9 @@ MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS = packet_classifiers
 
-noinst_LTLIBRARIES = libfwd_module_gnu_linux_dpdk_src_io.la
+noinst_LTLIBRARIES = libxdpd_driver_gnu_linux_dpdk_src_io.la
 
-library_includedir=$(includedir)/fwd-modules/gnu_linux_dpdk/io
-include_HEADERS=
-
-libfwd_module_gnu_linux_dpdk_src_io_la_SOURCES = \
+libxdpd_driver_gnu_linux_dpdk_src_io_la_SOURCES = \
 					bufferpool.h\
 					bufferpool.cc\
 					dpdk_datapacket.h \
@@ -22,12 +19,10 @@ libfwd_module_gnu_linux_dpdk_src_io_la_SOURCES = \
 					tx_rx.cc
 
 if C_CLASSIFIER
-CLASSIFIER_LIB=packet_classifiers/c_pktclassifier/libfwd_module_gnu_linux_dpdk_io_classifiers_c.la
+CLASSIFIER_LIB=packet_classifiers/c_pktclassifier/libxdpd_driver_gnu_linux_dpdk_io_classifiers_c.la
 else
-CLASSIFIER_LIB=packet_classifiers/cpp_pktclassifier/libfwd_module_gnu_linux_dpdk_io_classifiers_cpp.la
+CLASSIFIER_LIB=packet_classifiers/cpp_pktclassifier/libxdpd_driver_gnu_linux_dpdk_io_classifiers_cpp.la
 endif
 					
-libfwd_module_gnu_linux_dpdk_src_io_la_LIBADD = \
+libxdpd_driver_gnu_linux_dpdk_src_io_la_LIBADD = \
 					$(CLASSIFIER_LIB)
-		
-library_include_HEADERS=

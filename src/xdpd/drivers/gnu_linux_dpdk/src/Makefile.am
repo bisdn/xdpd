@@ -1,19 +1,19 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = afa-imp io processing pipeline-imp util#Add more here... 
+SUBDIRS = hal-imp io processing pipeline-imp util#Add more here... 
 
-noinst_LTLIBRARIES = libfwd_module_gnu_linux_dpdk_src.la
+noinst_LTLIBRARIES = libxdpd_driver_gnu_linux_dpdk_src.la
 
 library_includedir=$(includedir)/fwd-modules/gnu_linux_dpdk
 include_HEADERS=
 
-libfwd_module_gnu_linux_dpdk_src_la_SOURCES = bg_taskmanager.cc config.cc
-libfwd_module_gnu_linux_dpdk_src_la_LIBADD = \
-		afa-imp/libfwd_module_gnu_linux_dpdk_src_afa_imp.la\
-		io/libfwd_module_gnu_linux_dpdk_src_io.la\
-		pipeline-imp/libfwd_module_gnu_linux_dpdk_src_pipeline_imp.la\
-		processing/libfwd_module_gnu_linux_dpdk_src_processing.la\
-		util/libfwd_module_gnu_linux_dpdk_src_util.la\
+libxdpd_driver_gnu_linux_dpdk_src_la_SOURCES = bg_taskmanager.cc config.cc
+libxdpd_driver_gnu_linux_dpdk_src_la_LIBADD = \
+		hal-imp/libxdpd_driver_gnu_linux_dpdk_src_hal_imp.la\
+		io/libxdpd_driver_gnu_linux_dpdk_src_io.la\
+		pipeline-imp/libxdpd_driver_gnu_linux_dpdk_src_pipeline_imp.la\
+		processing/libxdpd_driver_gnu_linux_dpdk_src_processing.la\
+		util/libxdpd_driver_gnu_linux_dpdk_src_util.la\
 		-lrte_eal\
 		-lethdev\
 		-lrte_hash\

@@ -1,4 +1,4 @@
-AC_INIT(xdpd - DPDK GNU/Linux fwd-module, 0.4, xdpd@bisdn.de, xdpd_gnu_linux_dpdk_fm)
+AC_INIT(xdpd - DPDK GNU/Linux driver, 0.4, xdpd@bisdn.de, xdpd_gnu_linux_dpdk_fm)
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
@@ -46,8 +46,8 @@ fi
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
-	src/afa-imp/Makefile
-	src/afa-imp/openflow/openflow1x/Makefile
+	src/hal-imp/Makefile
+	src/hal-imp/openflow/openflow1x/Makefile
 	src/io/Makefile
 	src/io/packet_classifiers/Makefile
 	src/io/packet_classifiers/c_pktclassifier/Makefile

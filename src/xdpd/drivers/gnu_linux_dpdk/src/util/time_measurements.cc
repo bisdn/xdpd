@@ -149,7 +149,7 @@ void tm_dump_measurements(void){
 }
 
 #ifdef ENABLE_TIME_MEASUREMENTS
-//Dumps the path of a packet through the GNU/Linux forwarding module (useful when debugging)
+//Dumps the path of a packet through the GNU/Linux DPDK driver (useful when debugging)
 void tm_dump_pkt(datapacket_t* pkt){
 
 	unsigned int i,j;	

@@ -37,7 +37,7 @@ static void processing_dump_cores_state(void){
 		role = rte_eal_lcore_role(i);
 		state = rte_eal_get_lcore_state(i);
 		
-		ROFL_DEBUG(FWD_MOD_NAME"[processing] Core %u ROLE:", i);
+		ROFL_DEBUG(DRIVER_NAME"[processing] Core %u ROLE:", i);
 		switch(role){
 			case ROLE_RTE:
 				ROFL_DEBUG(" RTE");
@@ -90,14 +90,14 @@ rofl_result_t processing_init(void){
 	max_cores = config->lcore_count;
 	rte_spinlock_init(&mutex);
 		
-	ROFL_DEBUG(FWD_MOD_NAME"[processing] Processing init: %u logical cores guessed from rte_eal_get_configuration(). Master is: %u\n", config->lcore_count, config->master_lcore);
+	ROFL_DEBUG(DRIVER_NAME"[processing] Processing init: %u logical cores guessed from rte_eal_get_configuration(). Master is: %u\n", config->lcore_count, config->master_lcore);
 
 	//Define available cores 
 	for(i=0; i < RTE_MAX_LCORE; ++i){
 		role = rte_eal_lcore_role(i);
 		if(role == ROLE_RTE && i != config->master_lcore){
 			processing_cores[i].available = true;
-			ROFL_DEBUG(FWD_MOD_NAME"[processing] Marking core %u as available\n",i);
+			ROFL_DEBUG(DRIVER_NAME"[processing] Marking core %u as available\n",i);
 		}
 	}
 
@@ -114,12 +114,12 @@ rofl_result_t processing_destroy(void){
 
 	unsigned int i;
 
-	ROFL_DEBUG(FWD_MOD_NAME"[processing] Shutting down all active cores\n");
+	ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down all active cores\n");
 	
 	//Stop all cores and wait for them to complete execution tasks
 	for(i=0;i<RTE_MAX_LCORE;++i){
 		if(processing_cores[i].available && processing_cores[i].active){
-			ROFL_DEBUG(FWD_MOD_NAME"[processing] Shutting down active core %u\n",i);
+			ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down active core %u\n",i);
 			processing_cores[i].active = false;
 			//Join core
 			rte_eal_wait_lcore(i);
@@ -214,7 +214,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	rte_spinlock_lock(&mutex);
 
 	if(total_num_of_ports == MAX_PORTS){
-		ROFL_ERR(FWD_MOD_NAME"[processing] Already MAX_PORTSAll cores are full. No available port slots\n");
+		ROFL_ERR(DRIVER_NAME"[processing] Already MAX_PORTSAll cores are full. No available port slots\n");
 		rte_spinlock_unlock(&mutex);
 		return ROFL_FAILURE;
 	}
@@ -233,20 +233,20 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		//We've already checked all positions. No core free. Return
 		if(current_core_index == index){
 			//All full 
-			ROFL_ERR(FWD_MOD_NAME"[processing] All cores are full. No available port slots\n");
+			ROFL_ERR(DRIVER_NAME"[processing] All cores are full. No available port slots\n");
 			assert(0);		
 			rte_spinlock_unlock(&mutex);
 			return ROFL_FAILURE;
 		}
 	}
 
-	ROFL_DEBUG(FWD_MOD_NAME"[processing] Selected core %u for scheduling port %s(%p)\n", current_core_index, port->name, port); 
+	ROFL_DEBUG(DRIVER_NAME"[processing] Selected core %u for scheduling port %s(%p)\n", current_core_index, port->name, port); 
 
 	num_of_ports = &processing_cores[current_core_index].num_of_rx_ports;
 
 	//Assign port and exit
 	if(processing_cores[current_core_index].port_list[*num_of_ports] != NULL){
-		ROFL_ERR(FWD_MOD_NAME"[processing] Corrupted state on the core task list\n");
+		ROFL_ERR(DRIVER_NAME"[processing] Corrupted state on the core task list\n");
 		assert(0);
 		rte_spinlock_unlock(&mutex);
 		return ROFL_FAILURE;
@@ -284,7 +284,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			rte_panic("Core status corrupted!");
 		}
 		
-		ROFL_DEBUG(FWD_MOD_NAME"[processing] Launching core %u due to scheduling action of port %p\n", index, port);
+		ROFL_DEBUG(DRIVER_NAME"[processing] Launching core %u due to scheduling action of port %p\n", index, port);
 
 		//Launch
 		ROFL_DEBUG_VERBOSE("Pre-launching core %u due to scheduling action of port %p\n", index, port);
@@ -308,7 +308,7 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	core_tasks_t* core_task = &processing_cores[port_state->core_id];
 
 	if(port_state->scheduled == false){
-		ROFL_ERR(FWD_MOD_NAME"[processing] Tyring to descheduled an unscheduled port\n");
+		ROFL_ERR(DRIVER_NAME"[processing] Tyring to descheduled an unscheduled port\n");
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -328,12 +328,12 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	//There are no more ports, so simply stop core
 	if(core_task->num_of_rx_ports == 0){
 		if(rte_eal_get_lcore_state(port_state->core_id) != RUNNING){
-			ROFL_ERR(FWD_MOD_NAME"[processing] Corrupted state; port was marked as active, but EAL informs it was not running..\n");
+			ROFL_ERR(DRIVER_NAME"[processing] Corrupted state; port was marked as active, but EAL informs it was not running..\n");
 			assert(0);
 			
 		}
 		
-		ROFL_DEBUG(FWD_MOD_NAME"[processing] Shutting down core %u, since port list is empty\n",i);
+		ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down core %u, since port list is empty\n",i);
 		
 		core_task->active = false;
 		
@@ -370,7 +370,7 @@ void processing_dump_core_state(void){
 			continue;
 
 		//Print basic info	
-		ROFL_DEBUG(FWD_MOD_NAME"[processing] Core: %u ",i);
+		ROFL_DEBUG(DRIVER_NAME"[processing] Core: %u ",i);
 		
 		if(!core_task->active)
 			ROFL_DEBUG("IN");

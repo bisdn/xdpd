@@ -10,13 +10,13 @@
 *
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
-* @brief Configuration file for the xDPd DPDK GNU/Linux forwarding module. 
+* @brief Configuration file for the xDPd DPDK GNU/Linux driver. 
 *
 * TODO 
 */
 
 //XXX delete this
-#define FWD_MOD_NAME "[xdpd][dpdk]"
+#define DRIVER_NAME "[xdpd][dpdk]"
 
 /*
 * BG stuff

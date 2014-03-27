@@ -98,12 +98,12 @@ void bufferpool::init(long long unsigned int capacity){
 
 	if(bufferpool::instance){
 		//Double-call to init??
-		ROFL_DEBUG(FWD_MOD_NAME"[bufferpool] Double call to bufferpool init!! Skipping...\n");
+		ROFL_DEBUG(DRIVER_NAME"[bufferpool] Double call to bufferpool init!! Skipping...\n");
 		pthread_mutex_unlock(&bufferpool::mutex);
 		return;	
 	}
 	
-	ROFL_DEBUG(FWD_MOD_NAME"[bufferpool] Initializing bufferpool with a capacity of %d buffers\n",capacity);
+	ROFL_DEBUG(DRIVER_NAME"[bufferpool] Initializing bufferpool with a capacity of %d buffers\n",capacity);
 
 	//Init 	
 	bufferpool::instance = new bufferpool(capacity);

@@ -88,7 +88,7 @@ static void* process_packet_ins(void* param){
 		}
 
 		//Process packet in
-		rv = cmm_process_of1x_packet_in(sw->dpid, 
+		rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_dpdk->pktin_table_id, 	
 						pkt_dpdk->pktin_reason, 	
 						pkt_dpdk->in_port, 

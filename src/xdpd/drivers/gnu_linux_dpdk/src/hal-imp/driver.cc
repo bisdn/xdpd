@@ -49,14 +49,14 @@ using namespace xdpd::gnu_linux;
 
 
 /*
-* @name    driver_init
+* @name    hal_driver_init
 * @brief   Initializes driver. Before using the HAL_DRIVER routines, higher layers must allow driver to initialize itself
 * @ingroup driver_management
 */
 
 #define EAL_ARGS 6
 
-hal_result_t driver_init(const char* extra_params){
+hal_result_t hal_driver_init(const char* extra_params){
 
 	int ret;
 	const char* argv_fake[EAL_ARGS] = {"xdpd", "-c", XSTR(RTE_CORE_MASK), "-n", XSTR(RTE_MEM_CHANNELS), NULL};
@@ -127,12 +127,12 @@ hal_result_t driver_init(const char* extra_params){
 }
 
 /**
-* @name    driver_get_info
+* @name    hal_driver_get_info
 * @brief   Get the information of the driver (code-name, version, usage...)
 * @ingroup driver_management
 */
-void driver_get_info(driver_info_t* info){
-	//Fill-in driver_info_t
+void hal_driver_get_info(driver_info_t* info){
+	//Fill-in hal_driver_info_t
 	strncpy(info->code_name, GNU_LINUX_DPDK_CODE_NAME, DRIVER_CODE_NAME_MAX_LEN);
 	strncpy(info->version, GNU_LINUX_DPDK_VERSION, DRIVER_VERSION_MAX_LEN);
 	strncpy(info->description, GNU_LINUX_DPDK_DESC, DRIVER_DESCRIPTION_MAX_LEN);
@@ -141,11 +141,11 @@ void driver_get_info(driver_info_t* info){
 }
 
 /*
-* @name    driver_destroy
+* @name    hal_driver_destroy
 * @brief   Destroy driver state. Allows platform state to be properly released. 
 * @ingroup driver_management
 */
-hal_result_t driver_destroy(){
+hal_result_t hal_driver_destroy(){
 
 	ROFL_INFO(DRIVER_NAME" Destroying...\n");
 	
@@ -177,7 +177,7 @@ hal_result_t driver_destroy(){
 * @brief   Checks if an LSI with the specified dpid exists 
 * @ingroup logical_switch_management
 */
-bool driver_switch_exists(uint64_t dpid){
+bool hal_driver_switch_exists(uint64_t dpid){
 	return physical_switch_get_logical_switch_by_dpid(dpid) != NULL;
 }
 
@@ -186,28 +186,28 @@ bool driver_switch_exists(uint64_t dpid){
 * @ingroup logical_switch_management
 * @retval  List of available dpids, which MUST be deleted using dpid_list_destroy().
 */
-dpid_list_t* driver_get_all_lsi_dpids(void){
+dpid_list_t* hal_driver_get_all_lsi_dpids(void){
 	return physical_switch_get_all_lsi_dpids();  
 }
 
 /**
- * @name driver_get_switch_snapshot_by_dpid 
+ * @name hal_driver_get_switch_snapshot_by_dpid 
  * @brief Retrieves a snapshot of the current state of a switch port, if the port name is found. The snapshot MUST be deleted using switch_port_destroy_snapshot()
  * @ingroup logical_switch_management
  * @retval  Pointer to of_switch_snapshot_t instance or NULL 
  */
-of_switch_snapshot_t* driver_get_switch_snapshot_by_dpid(uint64_t dpid){
+of_switch_snapshot_t* hal_driver_get_switch_snapshot_by_dpid(uint64_t dpid){
 	return physical_switch_get_logical_switch_snapshot(dpid);
 }
 
 
 /*
-* @name    driver_create_switch 
+* @name    hal_driver_create_switch 
 * @brief   Instruct driver to create an OF logical switch 
 * @ingroup logical_switch_management
 * @retval  Pointer to of_switch_t instance 
 */
-hal_result_t driver_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
+hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
 	
 	of_switch_t* sw;
 	
@@ -226,11 +226,11 @@ hal_result_t driver_create_switch(char* name, uint64_t dpid, of_version_t of_ver
 
 
 /*
-* @name    driver_destroy_switch_by_dpid 
+* @name    hal_driver_destroy_switch_by_dpid 
 * @brief   Instructs the driver to destroy the switch with the specified dpid 
 * @ingroup logical_switch_management
 */
-hal_result_t driver_destroy_switch_by_dpid(const uint64_t dpid){
+hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 
 	unsigned int i;
 	
@@ -271,37 +271,37 @@ hal_result_t driver_destroy_switch_by_dpid(const uint64_t dpid){
 * @brief   Checks if a port with the specified name exists 
 * @ingroup port_management 
 */
-bool driver_port_exists(const char *name){
+bool hal_driver_port_exists(const char *name){
 	return physical_switch_get_port_by_name(name) != NULL; 
 }
 
 /**
 * @brief   Retrieve the list of names of the available ports of the platform. You may want to 
-* 	   call driver_get_port_snapshot_by_name(name) to get more information of the port 
+* 	   call hal_driver_get_port_snapshot_by_name(name) to get more information of the port 
 * @ingroup port_management
 * @retval  List of available port names, which MUST be deleted using switch_port_name_list_destroy().
 */
-switch_port_name_list_t* driver_get_all_port_names(void){
+switch_port_name_list_t* hal_driver_get_all_port_names(void){
 	return physical_switch_get_all_port_names(); 
 }
 
 /**
- * @name driver_get_port_by_name
+ * @name hal_driver_get_port_by_name
  * @brief Retrieves a snapshot of the current state of a switch port, if the port name is found. The snapshot MUST be deleted using switch_port_destroy_snapshot()
  * @ingroup port_management
  */
-switch_port_snapshot_t* driver_get_port_snapshot_by_name(const char *name){
+switch_port_snapshot_t* hal_driver_get_port_snapshot_by_name(const char *name){
 	return physical_switch_get_port_snapshot(name); 
 }
 
 /**
- * @name driver_get_port_by_num
+ * @name hal_driver_get_port_by_num
  * @brief Retrieves a snapshot of the current state of the port of the Logical Switch Instance with dpid at port_num, if exists. The snapshot MUST be deleted using switch_port_destroy_snapshot()
  * @ingroup port_management
  * @param dpid DatapathID 
  * @param port_num Port number
  */
-switch_port_snapshot_t* driver_get_port_snapshot_by_num(uint64_t dpid, unsigned int port_num){
+switch_port_snapshot_t* hal_driver_get_port_snapshot_by_num(uint64_t dpid, unsigned int port_num){
 	
 	of_switch_t* lsw;
 	
@@ -318,7 +318,7 @@ switch_port_snapshot_t* driver_get_port_snapshot_by_num(uint64_t dpid, unsigned 
 
 
 /*
-* @name    driver_attach_physical_port_to_switch
+* @name    hal_driver_attach_physical_port_to_switch
 * @brief   Attemps to attach a system's port to switch, at of_port_num if defined, otherwise in the first empty OF port number.
 * @ingroup management
 *
@@ -326,10 +326,9 @@ switch_port_snapshot_t* driver_get_port_snapshot_by_num(uint64_t dpid, unsigned 
 * @param name Port name (system's name)
 * @param of_port_num If *of_port_num is non-zero, try to attach to of_port_num of the logical switch, otherwise try to attach to the first available port and return the result in of_port_num
 */
-hal_result_t driver_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
+hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 
 	switch_port_t* port;
-	switch_port_snapshot_t* port_snapshot;
 	of_switch_t* lsw;
 
 	//Check switch existance
@@ -366,38 +365,32 @@ hal_result_t driver_attach_port_to_switch(uint64_t dpid, const char* name, unsig
 		return HAL_FAILURE;
 	}		
 
-	//notify port attached
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	if(cmm_notify_port_add(port_snapshot)!=HAL_SUCCESS){
-		//return HAL_FAILURE; //Ignore
-	}
-	
 	return HAL_SUCCESS;
 }
 
 /**
-* @name    driver_connect_switches
+* @name    hal_driver_connect_switches
 * @brief   Attemps to connect two logical switches via a virtual port. Forwarding module may or may not support this functionality. 
 * @ingroup management
 *
 * @param dpid_lsi1 Datapath ID of the LSI1
 * @param dpid_lsi2 Datapath ID of the LSI2 
 */
-hal_result_t driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, switch_port_snapshot_t** port2){
+hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, switch_port_snapshot_t** port2){
 
 	//TODO: implemented
 	return HAL_FAILURE; 
 }
 
 /*
-* @name    driver_detach_port_from_switch
+* @name    hal_driver_detach_port_from_switch
 * @brief   Detaches a port from the switch 
 * @ingroup port_management
 *
 * @param dpid Datapath ID of the switch to detach the ports
 * @param name Port name (system's name)
 */
-hal_result_t driver_detach_port_from_switch(uint64_t dpid, const char* name){
+hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name){
 	of_switch_t* lsw;
 	switch_port_t* port;
 	switch_port_snapshot_t *port_snapshot=NULL, *port_pair_snapshot=NULL;
@@ -426,9 +419,6 @@ hal_result_t driver_detach_port_from_switch(uint64_t dpid, const char* name){
 		goto FWD_MODULE_DETACH_ERROR;	
 	}
 	
-	//notify port dettached
-	cmm_notify_port_delete(port_snapshot);
-
 	return HAL_SUCCESS; 
 
 FWD_MODULE_DETACH_ERROR:
@@ -441,14 +431,14 @@ FWD_MODULE_DETACH_ERROR:
 }
 
 /*
-* @name    driver_detach_port_from_switch_at_port_num
+* @name    hal_driver_detach_port_from_switch_at_port_num
 * @brief   Detaches port_num of the logical switch identified with dpid 
 * @ingroup port_management
 *
 * @param dpid Datapath ID of the switch to detach the ports
 * @param of_port_num Number of the port (OF number) 
 */
-hal_result_t driver_detach_port_from_switch_at_port_num(uint64_t dpid, const unsigned int of_port_num){
+hal_result_t hal_driver_detach_port_from_switch_at_port_num(uint64_t dpid, const unsigned int of_port_num){
 
 	of_switch_t* lsw;
 	
@@ -460,7 +450,7 @@ hal_result_t driver_detach_port_from_switch_at_port_num(uint64_t dpid, const uns
 	if(!of_port_num || of_port_num >= LOGICAL_SWITCH_MAX_LOG_PORTS || !lsw->logical_ports[of_port_num].port)
 		return HAL_FAILURE;
 
-	return driver_detach_port_from_switch(dpid, lsw->logical_ports[of_port_num].port->name);
+	return hal_driver_detach_port_from_switch(dpid, lsw->logical_ports[of_port_num].port->name);
 }
 
 
@@ -471,13 +461,13 @@ hal_result_t driver_detach_port_from_switch_at_port_num(uint64_t dpid, const uns
 */
 
 /*
-* @name    driver_bring_port_up
+* @name    hal_driver_bring_port_up
 * @brief   Brings up a system port. If the port is attached to an OF logical switch, this also schedules port for I/O and triggers PORTMOD message. 
 * @ingroup port_management
 *
 * @param name Port system name 
 */
-hal_result_t driver_bring_port_up(const char* name){
+hal_result_t hal_driver_bring_port_up(const char* name){
 
 	switch_port_t* port;
 	switch_port_snapshot_t* port_snapshot;
@@ -492,20 +482,20 @@ hal_result_t driver_bring_port_up(const char* name){
 	port_manager_enable(port);
 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	cmm_notify_port_status_changed(port_snapshot);
+	hal_cmm_notify_port_status_changed(port_snapshot);
 	
 	return HAL_SUCCESS;
 }
 
 
 /*
-* @name    driver_bring_port_down
+* @name    hal_driver_bring_port_down
 * @brief   Shutdowns (brings down) a system port. If the port is attached to an OF logical switch, this also de-schedules port and triggers PORTMOD message. 
 * @ingroup port_management
 *
 * @param name Port system name 
 */
-hal_result_t driver_bring_port_down(const char* name){
+hal_result_t hal_driver_bring_port_down(const char* name){
 
 	switch_port_t* port;
 	switch_port_snapshot_t* port_snapshot;
@@ -519,20 +509,20 @@ hal_result_t driver_bring_port_down(const char* name){
 	port_manager_disable(port);
 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	cmm_notify_port_status_changed(port_snapshot);
+	hal_cmm_notify_port_status_changed(port_snapshot);
 	
 	return HAL_SUCCESS;
 }
 
 /*
-* @name    driver_bring_port_up_by_num
+* @name    hal_driver_bring_port_up_by_num
 * @brief   Brings up a port from an OF logical switch (and the underlying physical interface). This function also triggers the PORTMOD message 
 * @ingroup port_management
 *
 * @param dpid DatapathID 
 * @param port_num OF port number
 */
-hal_result_t driver_bring_port_up_by_num(uint64_t dpid, unsigned int port_num){
+hal_result_t hal_driver_bring_port_up_by_num(uint64_t dpid, unsigned int port_num){
 
 	of_switch_t* lsw;
 	
@@ -544,18 +534,18 @@ hal_result_t driver_bring_port_up_by_num(uint64_t dpid, unsigned int port_num){
 	if( !lsw->logical_ports[port_num].port || lsw->logical_ports[port_num].attachment_state != LOGICAL_PORT_STATE_ATTACHED || lsw->logical_ports[port_num].port->attached_sw->dpid != dpid)
 		return HAL_FAILURE;
 
-	return driver_bring_port_up(lsw->logical_ports[port_num].port->name);
+	return hal_driver_bring_port_up(lsw->logical_ports[port_num].port->name);
 }
 
 /*
-* @name    driver_bring_port_down_by_num
+* @name    hal_driver_bring_port_down_by_num
 * @brief   Brings down a port from an OF logical switch (and the underlying physical interface). This also triggers the PORTMOD message.
 * @ingroup port_management
 *
 * @param dpid DatapathID 
 * @param port_num OF port number
 */
-hal_result_t driver_bring_port_down_by_num(uint64_t dpid, unsigned int port_num){
+hal_result_t hal_driver_bring_port_down_by_num(uint64_t dpid, unsigned int port_num){
 
 	of_switch_t* lsw;
 	
@@ -567,7 +557,7 @@ hal_result_t driver_bring_port_down_by_num(uint64_t dpid, unsigned int port_num)
 	if( !lsw->logical_ports[port_num].port || lsw->logical_ports[port_num].attachment_state != LOGICAL_PORT_STATE_ATTACHED || lsw->logical_ports[port_num].port->attached_sw->dpid != dpid)
 		return HAL_FAILURE;
 
-	return driver_bring_port_down(lsw->logical_ports[port_num].port->name);
+	return hal_driver_bring_port_down(lsw->logical_ports[port_num].port->name);
 }
 
 /**
@@ -579,7 +569,7 @@ hal_result_t driver_bring_port_down_by_num(uint64_t dpid, unsigned int port_num)
  * @param rev Last seen revision. Set to 0 to always get a new snapshot 
  * @return A snapshot of the monitoring state that MUST be destroyed using monitoring_destroy_snapshot() or NULL if there have been no changes (same rev)
  */ 
-monitoring_snapshot_state_t* driver_get_monitoring_snapshot(uint64_t rev){
+monitoring_snapshot_state_t* hal_driver_get_monitoring_snapshot(uint64_t rev){
 
 	monitoring_state_t* mon = physical_switch_get_monitoring();
 
@@ -598,6 +588,6 @@ monitoring_snapshot_state_t* driver_get_monitoring_snapshot(uint64_t rev){
  * @param count
  * @return
  */
-hal_result_t driver_list_matching_algorithms(of_version_t of_version, const char * const** name_list, int *count){
+hal_result_t hal_driver_list_matching_algorithms(of_version_t of_version, const char * const** name_list, int *count){
 	return (hal_result_t)of_get_switch_matching_algorithms(of_version, name_list, count);
 }

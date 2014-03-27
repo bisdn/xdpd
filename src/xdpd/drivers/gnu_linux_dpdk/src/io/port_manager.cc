@@ -288,7 +288,7 @@ void port_manager_update_links(){
 				
 				//Notify CMM port change
 				port_snapshot = physical_switch_get_port_snapshot(port->name); 
-				if(cmm_notify_port_status_changed(port_snapshot) != HAL_SUCCESS){
+				if(hal_cmm_notify_port_status_changed(port_snapshot) != HAL_SUCCESS){
 					ROFL_ERR(DRIVER_NAME"[port_manager] Unable to notify port status change for port %s\n", port->name);
 				}	
 			}

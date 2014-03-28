@@ -647,43 +647,37 @@ uint32_t of10_translation_utils::get_supported_actions(of1x_switch_snapshot_t *l
 }
 
 uint32_t of10_translation_utils::get_supported_wildcards(of1x_switch_snapshot_t *lsw){
+	
 	uint32_t mask = 0;
-
-	//TODO
-#if 0	
 	of1x_flow_table_config_t* config = &lsw->pipeline.tables[0].config;
 
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_DST)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_SRC)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_TYPE)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_VLAN_VID)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_VLAN_PCP)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ARP_OP)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ARP_SPA)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ARP_TPA)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_IP_DSCP)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_IP_ECN)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_PROTO)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_SRC)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_DST)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_TP_SRC)
-		mask |= 1 <<  ;
-	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_TP_DST)
-		mask |= 1 <<  ;
-#endif
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_IN_PORT ))
+		mask |= rofl::openflow10::OFPFW_IN_PORT;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_DST ))
+		mask |=  rofl::openflow10::OFPFW_DL_DST;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_SRC ))
+		mask |=  rofl::openflow10::OFPFW_DL_SRC;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_ETH_TYPE ))
+		mask |=  rofl::openflow10::OFPFW_DL_TYPE;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_VLAN_VID ))
+		mask |=  rofl::openflow10::OFPFW_DL_VLAN;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_VLAN_PCP ))
+		mask |=  rofl::openflow10::OFPFW_DL_VLAN_PCP;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_IP_DSCP ))
+		mask |=  rofl::openflow10::OFPFW_NW_TOS;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_PROTO ))
+		mask |=  rofl::openflow10::OFPFW_NW_PROTO;
+
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_SRC ))
+		mask |= rofl::openflow10::OFPFW_NW_SRC_ALL;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_NW_DST ))
+		mask |= rofl::openflow10::OFPFW_NW_DST_ALL;
+
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_TP_SRC ))
+		mask |=  rofl::openflow10::OFPFW_TP_SRC;
+	if( bitmap128_is_bit_set(&config->match, OF1X_MATCH_TP_DST ))
+		mask |=  rofl::openflow10::OFPFW_TP_DST;
+
 	return mask;
 }
 	

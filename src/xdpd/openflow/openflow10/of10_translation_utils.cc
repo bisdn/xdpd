@@ -344,9 +344,12 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			break;
 		case OF1X_MATCH_VLAN_VID:
 			//has_vlan = true;
-			if(m->vlan_present == OF1X_MATCH_VLAN_NONE)
+			if(m->vlan_present == OF1X_MATCH_VLAN_NONE){
 				match.set_vlan_vid(rofl::openflow10::OFP_VLAN_NONE);
-			else
+					
+				//Acording to spec 1.0.2 we should set pcp to 0 to avoid having wildcard flag for PCP
+				match.set_vlan_pcp(0x0);
+			}else
 				match.set_vlan_vid(be16toh(m->value->value.u16));
 			break;
 		case OF1X_MATCH_VLAN_PCP:

@@ -174,25 +174,24 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	try {
 
 		of1x_match_t *match = NULL; 
-		caddress value(ofmatch.get_nw_src_value());
-		caddress mask(ofmatch.get_nw_src_mask());
-		match = of1x_init_nw_src_match(
-						value.ca_s4addr->sin_addr.s_addr,
-						mask.ca_s4addr->sin_addr.s_addr);
-		of1x_add_match_to_entry(entry, match);
+		uint32_t value = htobe32(ofmatch.get_nw_src_value().get_ipv4_addr());
+		uint32_t mask = htobe32(ofmatch.get_nw_src_mask().get_ipv4_addr());
+		if(value != 0x0){
+			match = of1x_init_nw_src_match(value, mask);
+			of1x_add_match_to_entry(entry, match);
+		}
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW DST 
 	try {
 
 		of1x_match_t *match = NULL; 
-		caddress value(ofmatch.get_nw_dst_value());
-		caddress mask(ofmatch.get_nw_dst_mask());
-		match = of1x_init_nw_dst_match(
-						value.ca_s4addr->sin_addr.s_addr,
-						mask.ca_s4addr->sin_addr.s_addr);
-
-		of1x_add_match_to_entry(entry, match);
+		uint32_t value = htobe32(ofmatch.get_nw_dst_value().get_ipv4_addr());
+		uint32_t mask = htobe32(ofmatch.get_nw_dst_mask().get_ipv4_addr());
+		if(value != 0x0){
+			match = of1x_init_nw_dst_match(value, mask);
+			of1x_add_match_to_entry(entry, match);
+		}
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//TP SRC

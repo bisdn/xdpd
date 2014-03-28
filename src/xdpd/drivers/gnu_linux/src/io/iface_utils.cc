@@ -95,7 +95,7 @@ rofl_result_t update_port_status(char * name){
 	
 	//Notify the change of state to the CMM
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	cmm_notify_port_status_changed(port_snapshot);
+	hal_cmm_notify_port_status_changed(port_snapshot);
 	
 	return ROFL_SUCCESS;
 }
@@ -574,10 +574,10 @@ rofl_result_t update_physical_ports(){
 	
 			//Notify CMM
 			port_snapshot = physical_switch_get_port_snapshot(port->name); 
-			cmm_notify_port_delete(port_snapshot);
+			hal_cmm_notify_port_delete(port_snapshot);
 
 			//Detach
-			if(port->attached_sw && (driver_detach_port_from_switch(port->attached_sw->dpid, port->name) != HAL_SUCCESS) ){
+			if(port->attached_sw && (hal_driver_detach_port_from_switch(port->attached_sw->dpid, port->name) != HAL_SUCCESS) ){
 				ROFL_WARN(DRIVER_NAME"[ports] WARNING: unable to detach port %s from switch. This can lead to an unknown behaviour\n", it->first.c_str());
 				assert(0);
 			}
@@ -605,7 +605,7 @@ rofl_result_t update_physical_ports(){
 
 		//Notify CMM
 		port_snapshot = physical_switch_get_port_snapshot(port->name); 
-		cmm_notify_port_add(port_snapshot);
+		hal_cmm_notify_port_add(port_snapshot);
 
 	}
 	

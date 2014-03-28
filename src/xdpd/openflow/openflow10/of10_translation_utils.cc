@@ -105,7 +105,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_port_in_match(ofmatch.get_in_port());
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	// no in_phy_port in OF1.0
 
@@ -117,7 +117,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_eth_dst_match(maddr,mmask);
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
@@ -127,45 +127,46 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_eth_src_match(maddr,mmask);
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		of1x_match_t *match = of1x_init_eth_type_match(htobe16(ofmatch.get_eth_type()));
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
-		bool vlan_present=false; //FIXME
+		enum of1x_vlan_present vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
 		uint16_t value = ofmatch.get_vlan_vid_value();
+		/*
+		 * clear bit 12 in value, even if this does not exist in OF10,
+		 * as the pipeline may get interprete this bit otherwise
+		 */
 		uint16_t vid = htobe16(value & ~openflow::OFPVID_PRESENT);
-		
-		if( (value & openflow::OFPVID_PRESENT) > 0)
-			vlan_present = true;
-		
+
 		of1x_match_t *match = of1x_init_vlan_vid_match(vid, OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		of1x_match_t *match = of1x_init_vlan_pcp_match(ofmatch.get_vlan_pcp());
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW TOS
 	try {
 		of1x_match_t *match = of1x_init_ip_dscp_match(ofmatch.get_nw_tos()>>2);
 
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW PROTO 
 	try {
 		of1x_match_t *match = of1x_init_nw_proto_match(ofmatch.get_nw_proto());
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW SRC
 	try {
@@ -180,7 +181,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 			of1x_add_match_to_entry(entry, match);
 		}
 
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW DST 
 	try {
@@ -195,19 +196,19 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 			of1x_add_match_to_entry(entry, match);
 		}
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//TP SRC
 	try {
 		of1x_match_t *match = of1x_init_tp_src_match(htobe16(ofmatch.get_tp_src()));
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//TP DST
 	try {
 		of1x_match_t *match = of1x_init_tp_dst_match(htobe16(ofmatch.get_tp_dst()));
 		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
+	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 }
 
@@ -311,7 +312,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		of1x_match_t* m,
 		rofl::openflow::cofmatch& match)
 {
-	bool has_vlan=false;
+	//bool has_vlan=false;
 	while (NULL != m)
 	{
 		switch (m->type) {
@@ -340,7 +341,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			match.set_eth_type(be16toh(m->value->value.u16));
 			break;
 		case OF1X_MATCH_VLAN_VID:
-			has_vlan = true;
+			//has_vlan = true;
 			match.set_vlan_vid(be16toh(m->value->value.u16&OF1X_VLAN_ID_MASK));
 			break;
 		case OF1X_MATCH_VLAN_PCP:
@@ -404,8 +405,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 	}
 
 	//In 1.0 if there is no VLAN OFP10_VLAN_NONE has to be set...
-	if(!has_vlan)
-		match.set_vlan_untagged();
+	//if(!has_vlan)
+	//	match.set_vlan_untagged();
 }
 
 
@@ -557,12 +558,12 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 		match.set_nw_proto(be16toh(packet_matches->arp_opcode));
 	if(packet_matches->arp_spa) {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches->arp_spa);
+		addr.set_ipv4_addr(be32toh(packet_matches->arp_spa));
 		match.set_nw_src(addr);
 	}
 	if(packet_matches->arp_tpa) {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches->arp_tpa);
+		addr.set_ipv4_addr(be32toh(packet_matches->arp_tpa));
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches->ip_dscp)
@@ -573,12 +574,12 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 		match.set_ip_proto(packet_matches->ip_proto);
 	if(packet_matches->ipv4_src){
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches->ipv4_src);
+		addr.set_ipv4_addr(be32toh(packet_matches->ipv4_src));
 		match.set_nw_src(addr);
 	}
 	if(packet_matches->ipv4_dst){
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches->ipv4_dst);
+		addr.set_ipv4_addr(be32toh(packet_matches->ipv4_dst));
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches->tcp_src)

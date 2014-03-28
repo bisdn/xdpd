@@ -63,7 +63,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 		}
 
 		//Process packet in
-        	rv = cmm_process_of1x_packet_in(sw->dpid, 
+        	rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_x86->pktin_table_id, 	
 						pkt_x86->pktin_reason, 	
 						pkt_x86->in_port, 

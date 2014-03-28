@@ -180,7 +180,7 @@ void system_manager::init(int argc, char** argv){
 			try{
 				int fd = open(env_parser->get_arg("logfile").c_str(), O_RDWR | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
 				if (fd >=0){
-					std::cout << " All OUTPUT will be redirected to the logfile: " << env_parser->get_arg("logfile").c_str() << std::endl;
+					std::cout << " All OUTPUT will be redirected to the logfile: " << env_parser->get_arg("logfile").c_str() <<  "    pid: " << getpid()<< std::endl;
 				}
 				if (fd < 0) {
 					throw eSysCall("open()");

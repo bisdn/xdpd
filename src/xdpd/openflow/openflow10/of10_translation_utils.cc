@@ -479,7 +479,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		action = rofl::openflow::cofaction_strip_vlan(OFP10_VERSION);
 	} break;
 	case OF1X_AT_PUSH_VLAN: {
-		action = rofl::openflow::cofaction_push_vlan(OFP10_VERSION, of1x_action->field.u16);
+		action = rofl::openflow::cofaction_push_vlan(OFP10_VERSION, be16toh(of1x_action->field.u16));
 	} break;
 	case OF1X_AT_SET_FIELD_ETH_DST: {
 		uint64_t mac = of1x_action->field.u64;

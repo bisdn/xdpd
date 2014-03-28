@@ -146,7 +146,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 			vlan_present = OF1X_MATCH_VLAN_NONE;
 		else
 			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
-		of1x_match_t *match = of1x_init_vlan_vid_match(htobe16(value), OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
+		of1x_match_t *match = of1x_init_vlan_vid_match(htobe16(value & ~openflow::OFPVID_PRESENT), OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
 
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
@@ -176,13 +176,10 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = NULL; 
 		caddress value(ofmatch.get_nw_src_value());
 		caddress mask(ofmatch.get_nw_src_mask());
-		if(mask.ca_s4addr->sin_addr.s_addr){	
-			match = of1x_init_nw_src_match(
-							value.ca_s4addr->sin_addr.s_addr,
-							mask.ca_s4addr->sin_addr.s_addr);
-			of1x_add_match_to_entry(entry, match);
-		}
-
+		match = of1x_init_nw_src_match(
+						value.ca_s4addr->sin_addr.s_addr,
+						mask.ca_s4addr->sin_addr.s_addr);
+		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW DST 
@@ -191,13 +188,11 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_match_t *match = NULL; 
 		caddress value(ofmatch.get_nw_dst_value());
 		caddress mask(ofmatch.get_nw_dst_mask());
-		if(mask.ca_s4addr->sin_addr.s_addr){	
-			match = of1x_init_nw_dst_match(
-							value.ca_s4addr->sin_addr.s_addr,
-							mask.ca_s4addr->sin_addr.s_addr);
+		match = of1x_init_nw_dst_match(
+						value.ca_s4addr->sin_addr.s_addr,
+						mask.ca_s4addr->sin_addr.s_addr);
 
-			of1x_add_match_to_entry(entry, match);
-		}
+		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//TP SRC

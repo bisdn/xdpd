@@ -29,6 +29,7 @@ using namespace rofl;
 #define LSI_NUM_OF_TABLES "num-of-tables"
 #define LSI_TABLES_MATCHING_ALGORITHM "tables-matching-algorithm"
 #define LSI_PORTS "ports" 
+#define LSI_SOCKET_TYPE "socket-type"
 #ifdef HAVE_OPENSSL
 #define LSI_SSL "ssl"
 #define LSI_SSL_CERTIFICATE_FILE "SSLCertificateFile"
@@ -301,6 +302,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	caddress bind_address;
 	std::vector<std::string> ports;
 	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
+	enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
 
 	//Recover dpid and try to parse
 	std::string dpid_s = setting[LSI_DPID];
@@ -367,13 +369,27 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//Parse ports	
 	parse_ports(setting, ports, dry_run);
 
+	//Parse socket-type
+	if(setting.exists(LSI_SOCKET_TYPE)){
+		std::string s_socket_type = setting[LSI_SOCKET_TYPE];
+		if("plain"==s_socket_type){
+			socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
+		} else
+		if("openssl"==s_socket_type){
+			socket_type = rofl::csocket::SOCKET_TYPE_OPENSSL;
+		} else
+		/*default*/{
+			socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
+		}
+	}
+
 	//Execute
 	if(!dry_run){
 		openflow_switch* sw;
 
 		//Create switch => TODO: get rofl::csocket::socket_type_t from config file
 		sw = switch_manager::create_switch(version, dpid, name, num_of_tables,
-				ma_list, reconnect_time, rofl::csocket::SOCKET_TYPE_PLAIN, master_controller, bind_address, enable_ssl, cert_and_key_file);  //FIXME:: add slave and reconnect
+				ma_list, reconnect_time, socket_type, master_controller, bind_address, enable_ssl, cert_and_key_file);  //FIXME:: add slave and reconnect
 
 		if(!sw){
 			ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to create LSI %s; unknown error.\n", setting.getPath().c_str(), name.c_str());

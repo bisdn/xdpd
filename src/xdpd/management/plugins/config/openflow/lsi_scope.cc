@@ -371,9 +371,9 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	if(!dry_run){
 		openflow_switch* sw;
 
-		//Create switch
+		//Create switch => TODO: get rofl::csocket::socket_type_t from config file
 		sw = switch_manager::create_switch(version, dpid, name, num_of_tables,
-				ma_list, reconnect_time, master_controller, bind_address, enable_ssl, cert_and_key_file);  //FIXME:: add slave and reconnect
+				ma_list, reconnect_time, rofl::csocket::SOCKET_TYPE_PLAIN, master_controller, bind_address, enable_ssl, cert_and_key_file);  //FIXME:: add slave and reconnect
 
 		if(!sw){
 			ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to create LSI %s; unknown error.\n", setting.getPath().c_str(), name.c_str());

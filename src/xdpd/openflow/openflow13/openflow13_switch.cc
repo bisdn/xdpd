@@ -13,9 +13,9 @@ openflow13_switch::openflow13_switch(uint64_t dpid,
 				unsigned int num_of_tables,
 				int* ma_list,
 				int reconnect_start_timeout,
+				enum rofl::csocket::socket_type_t socket_type,
 				caddress const& controller_addr,
-				caddress const& binding_addr,
-				ssl_context *ctx) throw (eOfSmVersionNotSupported)
+				caddress const& binding_addr) throw (eOfSmVersionNotSupported)
 		: openflow_switch(dpid, dpname, version, num_of_tables)
 {
 
@@ -28,7 +28,7 @@ openflow13_switch::openflow13_switch(uint64_t dpid,
 	}
 
 	//Initialize the endpoint, and launch control channel
-	endpoint = new of13_endpoint(this, reconnect_start_timeout, controller_addr, binding_addr);
+	endpoint = new of13_endpoint(this, reconnect_start_timeout, socket_type, controller_addr, binding_addr);
 	
 }
 
@@ -86,10 +86,10 @@ rofl_result_t openflow13_switch::notify_port_status_changed(const switch_port_t*
 /*
 * Connecting and disconnecting from a controller entity
 */
-void openflow13_switch::rpc_connect_to_ctl(caddress const& controller_addr){
+void openflow13_switch::rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, caddress const& controller_addr){
 	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
 	versionbitmap.add_ofp_version(version);
-	endpoint->rpc_connect_to_ctl(versionbitmap, 0, controller_addr);
+	endpoint->rpc_connect_to_ctl(versionbitmap, 0, socket_type, controller_addr);
 }
 
 void openflow13_switch::rpc_disconnect_from_ctl(caddress const& controller_addr){

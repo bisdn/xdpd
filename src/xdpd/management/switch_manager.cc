@@ -36,6 +36,7 @@ openflow_switch* switch_manager::create_switch(
 		unsigned int num_of_tables,
 		int* ma_list,
 		int reconnect_start_timeout,
+		enum rofl::csocket::socket_type_t socket_type,
 		caddress const& controller_addr,
 		caddress const& binding_addr,
 		bool enable_ssl,
@@ -63,26 +64,23 @@ openflow_switch* switch_manager::create_switch(
 	switch(version){
 
 		case OF_VERSION_10:
-#ifdef HAVE_OPENSSL
-			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr, ctx);
-#else
-			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
-#endif
+			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, controller_addr, binding_addr);
+			// TODO: hand over SSL cert and key files
 
 			break;
 
 		case OF_VERSION_12:
-#ifdef HAVE_OPENSSL
-			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr, ctx);
-#else
-			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
-#endif
+			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, controller_addr, binding_addr);
+			// TODO: hand over SSL cert and key files
+
 			break;
 	
 		case OF_VERSION_13:
-			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
+			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, controller_addr, binding_addr);
+			// TODO: hand over SSL cert and key files
+
 			break;
-	
+
 		//Add more here...
 		
 		default:
@@ -278,7 +276,7 @@ uint64_t switch_manager::get_switch_dpid(std::string& name){
 
 
 void
-switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra){
+switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, caddress const& ra){
 
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
@@ -289,7 +287,7 @@ switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra){
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
-	dp->rpc_connect_to_ctl(ra);
+	dp->rpc_connect_to_ctl(socket_type, ra);
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 }
 

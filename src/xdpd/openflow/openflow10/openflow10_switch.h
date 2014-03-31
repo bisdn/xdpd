@@ -49,9 +49,9 @@ public:
 				unsigned int num_of_tables,
 				int* ma_list,
 				int reconnect_start_timeout = 2,
+				enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN,
 				caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633),
-				caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0),
-				ssl_context *ctx = NULL) throw (eOfSmVersionNotSupported);
+				caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmVersionNotSupported);
 
 	/**
 	 * Destructor
@@ -85,7 +85,7 @@ public:
 	 /*
 	 * Connecting and disconnecting from a controller entity
 	 */
-	virtual void rpc_connect_to_ctl(caddress const& controller_addr);
+	virtual void rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, caddress const& controller_addr);
 
 	virtual void rpc_disconnect_from_ctl(caddress const& controller_addr);
 

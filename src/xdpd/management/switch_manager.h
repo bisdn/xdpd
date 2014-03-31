@@ -21,6 +21,7 @@
 #include <stdexcept>
 
 #include <rofl.h>
+#include <rofl/common/csocket.h>
 #include <rofl/common/caddress.h>
 #include <rofl/common/croflexception.h>
 
@@ -83,6 +84,7 @@ public:
 					unsigned int num_of_tables,
 					int* ma_list,
 					int reconnect_start_timeout = 2,
+					enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN,
 					rofl::caddress const& controller_addr = switch_manager::controller_addr,
 					rofl::caddress const& binding_addr = switch_manager::binding_addr,
 					bool enable_ssl = false,
@@ -143,7 +145,7 @@ public:
 	/**
 	 * connect to controller
 	 */
-	static void rpc_connect_to_ctl(uint64_t dpid, rofl::caddress const& ra);
+	static void rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, rofl::caddress const& ra);
 
 	/**
 	 * disconnect from from controller

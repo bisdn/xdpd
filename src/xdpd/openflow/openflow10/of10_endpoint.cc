@@ -328,7 +328,7 @@ of10_endpoint::handle_flow_stats_request(
 	entry = of1x_init_flow_entry(false);
 
 	try{
-		of10_translation_utils::of10_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
+		of10_translation_utils::of10_map_flow_entry_matches(&ctl, msg.set_flow_stats().get_match(), sw, entry);
 	}catch(...){
 		of1x_destroy_flow_entry(entry);
 	

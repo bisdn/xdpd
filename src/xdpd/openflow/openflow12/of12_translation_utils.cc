@@ -1440,14 +1440,18 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		BETOHMAC(mac);
 		uint64_t msk = 0x0000FFFFFFFFFFFFULL;
 		BETOHMAC(msk);
-		match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
+		//match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
+		match.set_matches().set_match(rofl::openflow::OXM_TLV_BASIC_ETH_DST) =
+				rofl::openflow::coxmatch_ofb_eth_dst(cmacaddr(mac));
 	}
 	if(packet_matches->eth_src){
 		uint64_t mac = packet_matches->eth_src;
 		BETOHMAC(mac);
 		uint64_t msk = 0x0000FFFFFFFFFFFFULL;
 		BETOHMAC(msk);
-		match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
+		//match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
+		match.set_matches().set_match(rofl::openflow::OXM_TLV_BASIC_ETH_SRC) =
+				rofl::openflow::coxmatch_ofb_eth_src(cmacaddr(mac));
 	}
 	if(packet_matches->eth_type)
 		match.set_eth_type(be16toh(packet_matches->eth_type));

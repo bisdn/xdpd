@@ -1,7 +1,9 @@
 AC_INIT(xdpd - Example driver, 0.4, rofl@bisdn.de,  xdpd_example_fm)
-AC_CONFIG_AUX_DIR([.])
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_GNU_SOURCE
 
 AC_PROG_INSTALL

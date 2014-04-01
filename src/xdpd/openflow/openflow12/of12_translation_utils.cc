@@ -1434,7 +1434,9 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->phy_port_in)
 		match.set_in_phy_port(packet_matches->phy_port_in);
 	if(packet_matches->metadata)
-		match.set_metadata(packet_matches->metadata);
+		//match.set_metadata(packet_matches->metadata);
+		match.set_matches().set_match(rofl::openflow::OXM_TLV_BASIC_METADATA) =
+				rofl::openflow::coxmatch_ofb_metadata(packet_matches->metadata);
 	if(packet_matches->eth_dst){
 		uint64_t mac = packet_matches->eth_dst;
 		BETOHMAC(mac);
@@ -1456,7 +1458,9 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->eth_type)
 		match.set_eth_type(be16toh(packet_matches->eth_type));
 	if(packet_matches->vlan_vid)
-		match.set_vlan_vid(be16toh(packet_matches->vlan_vid));
+		//match.set_vlan_vid(be16toh(packet_matches->vlan_vid));
+		match.set_matches().set_match(rofl::openflow::OXM_TLV_BASIC_VLAN_VID) =
+				rofl::openflow::coxmatch_ofb_vlan_vid(packet_matches->vlan_vid);
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)

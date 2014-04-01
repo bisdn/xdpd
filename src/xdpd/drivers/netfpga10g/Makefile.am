@@ -8,4 +8,3 @@ libxdpd_driver_netfpga10g_la_SOURCES =
 
 libxdpd_driver_netfpga10g_la_LIBADD = src/libxdpd_driver_netfpga10g_src.la -lpcap
 	
-ACLOCAL_AMFLAGS = -I m4

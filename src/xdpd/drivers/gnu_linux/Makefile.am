@@ -9,4 +9,3 @@ libxdpd_driver_gnu_linux_la_SOURCES =
 libxdpd_driver_gnu_linux_la_LIBADD = \
 		src/libxdpd_driver_gnu_linux_src.la
 	
-ACLOCAL_AMFLAGS = -I m4

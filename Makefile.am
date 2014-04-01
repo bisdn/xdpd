@@ -1,8 +1,15 @@
 AUTOMAKE_OPTIONS = subdir-objects 1.5 foreign
 
-MAINTAINERCLEANFILES = \
+MAINTAINERCLEANFILES = $(top_srcdir)/aclocal.m4 \
+	$(top_srcdir)/ar-lib \
+	$(top_srcdir)/config.guess \
+	$(top_srcdir)/config.sub \
 	$(top_srcdir)/configure \
-	$(top_srcdir)/Makefile.in
+	$(top_srcdir)/depcomp \
+	$(top_srcdir)/install-sh \
+	$(top_srcdir)/ltmain.sh \
+	$(top_srcdir)/Makefile.in \
+	$(top_srcdir)/missing
 
 SUBDIRS = src doc test
 
@@ -18,6 +25,7 @@ uninstall-hook:
 
 maintainer-clean-local:
 	rm -rf $(top_srcdir)/m4
-	rm -rf $(top_srcdir)/build-aux
 
-ACLOCAL_AMFLAGS = -I m4
+#AM_CPPFLAGS=-I/home/andreas/local/rofl
+#AM_CFLAGS=-I/home/andreas/local/rofl
+#AM_LDFLAGS=-L/home/andreas/local/lib

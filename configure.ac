@@ -1,7 +1,10 @@
 AC_INIT(xdpd, 0.4, xdpd@bisdn.de, xdpd)
-AC_CONFIG_AUX_DIR([.])
+
+AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_MACRO_DIR([m4])
+
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
-#AC_CONFIG_MACRO_DIR([config])
+
 AC_GNU_SOURCE
 
 AC_PROG_INSTALL

@@ -286,11 +286,22 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 	}
 }
 
+void lsi_scope::parse_socket_parameters(libconfig::Setting& setting, rofl::cparams& socket_params){
+
+	for (std::map<std::string, cparam>::iterator
+			it = socket_params.set_params().begin(); it != socket_params.set_params().end(); ++it) {
+		if (setting.exists(it->first)) {
+			it->second.set_string(setting[it->first]);
+		}
+	}
+}
+
 /* Case insensitive */
 void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 	uint64_t dpid;
 	of_version_t version;
+	cparams socket_params;
 
 	//Default values
 	bool passive = false;
@@ -334,7 +345,9 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	}
 
 	// SSL details
+#ifdef HAVE_OPENSSL
 	bool enable_ssl = false;
+#endif
 	std::string cert_and_key_file("");
 #ifdef HAVE_OPENSSL
 	if (setting.exists(LSI_SSL)) {
@@ -383,13 +396,25 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		}
 	}
 
+	//get the necessary parameters for the socket type
+	socket_params = csocket::get_params(socket_type);
+
+	//Parse socket-parameters
+	parse_socket_parameters(setting, socket_params);
+
 	//Execute
 	if(!dry_run){
 		openflow_switch* sw;
 
+#if 0
 		//Create switch => TODO: get rofl::csocket::socket_type_t from config file
 		sw = switch_manager::create_switch(version, dpid, name, num_of_tables,
 				ma_list, reconnect_time, socket_type, master_controller, bind_address, enable_ssl, cert_and_key_file);  //FIXME:: add slave and reconnect
+#endif
+
+		sw = switch_manager::create_switch(version, dpid, name, num_of_tables,
+				ma_list, reconnect_time, socket_type, socket_params);
+
 
 		if(!sw){
 			ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to create LSI %s; unknown error.\n", setting.getPath().c_str(), name.c_str());

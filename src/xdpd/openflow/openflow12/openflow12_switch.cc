@@ -33,6 +33,30 @@ openflow12_switch::openflow12_switch(uint64_t dpid,
 }
 
 
+openflow12_switch::openflow12_switch(uint64_t dpid,
+				std::string const& dpname,
+				unsigned int num_of_tables,
+				int* ma_list,
+				int reconnect_start_timeout,
+				enum rofl::csocket::socket_type_t socket_type,
+				cparams const& socket_params) throw (eOfSmVersionNotSupported)
+		: openflow_switch(dpid, dpname, version, num_of_tables)
+{
+
+	if (hal_driver_create_switch((char*)dpname.c_str(),
+					     dpid, OF_VERSION_12, num_of_tables, ma_list) != HAL_SUCCESS){
+		//WRITELOG(CDATAPATH, ERROR, "of12_endpoint::of12_endpoint() "
+		//		"failed to allocate switch instance in HAL, aborting");
+
+		throw eOfSmErrorOnCreation();
+	}
+
+	//Initialize the endpoint, and launch control channel
+	endpoint = new of12_endpoint(this, reconnect_start_timeout, socket_type, socket_params);
+
+}
+
+
 openflow12_switch::~openflow12_switch(){
 		
 	//Destroy listening sockets and ofctl instances
@@ -90,6 +114,12 @@ void openflow12_switch::rpc_connect_to_ctl(enum rofl::csocket::socket_type_t soc
 	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
 	versionbitmap.add_ofp_version(version);
 	endpoint->rpc_connect_to_ctl(versionbitmap, 0, socket_type, controller_addr);
+}
+
+void openflow12_switch::rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){
+	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
+	versionbitmap.add_ofp_version(version);
+	endpoint->rpc_connect_to_ctl(versionbitmap, 0, socket_type, socket_params);
 }
 
 void openflow12_switch::rpc_disconnect_from_ctl(caddress const& controller_addr){

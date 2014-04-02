@@ -25,7 +25,7 @@ v0.4
 
 [+][GNU/Linux] Improved I/O subsytem, including new packet classifier (c_pktclassifier).
 [+][GNU/Linux] Adding support for stats in ioport_vlink.
-[+][GNU/Linux] Added support for OF1.3.
+[+][GNU/Linux] Added experimental support for OF1.3. WARNING: OF1.3 is marked as pre-alpha. 
 [B][GNU/Linux] Fixed bug: not properly updating of_port_state in ioport_mmap ports when up/down events were done externally (i.e. ifconfig) 
 
 v0.3.5 

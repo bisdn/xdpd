@@ -76,6 +76,8 @@ public:
 	 */
 	virtual void rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, caddress const& controller_addr)=0;
 
+	virtual void rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params)=0;
+
 	virtual void rpc_disconnect_from_ctl(caddress const& controller_addr)=0;
 };
 

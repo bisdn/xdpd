@@ -254,7 +254,7 @@ void system_manager::init(int argc, char** argv){
 	rofl::cioloop::shutdown();
 
 	//Print a nice trace
-	ROFL_INFO("\n[xdpd][system_manager] Shutted down.\n");
+	ROFL_INFO("[xdpd][system_manager] Shutted down.\n");
 
 SYSTEM_MANAGER_CLEANUP:
 

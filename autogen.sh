@@ -1,7 +1,10 @@
 #!/bin/sh
 set -e
 
-mkdir -p m4
+for d in $(find . -name configure.ac -exec dirname {} \;)
+do
+  mkdir -p $d/m4;
+done
 
 export AUTOMAKE="automake --foreign -a"
 autoreconf -f -i

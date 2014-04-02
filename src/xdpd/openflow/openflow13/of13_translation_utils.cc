@@ -248,7 +248,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		}
 		
 		of1x_match_t *match = of1x_init_vlan_vid_match(
-								htobe16(htobe16(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT)),
+								htobe16(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT),
 								htobe16(ofmatch.get_vlan_vid_mask()),
 								vlan_present);
 

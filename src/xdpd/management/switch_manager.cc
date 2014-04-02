@@ -81,7 +81,7 @@ openflow_switch* switch_manager::create_switch(
 	
 		case OF_VERSION_13:
 #if ! defined(EXPERIMENTAL)
-			ROFL_ERR("[switch_manager] ERROR: OF1.3 is experimental (i.e. alpha state). Compile xdpd enabling experimental code to test this feature. Don't forget to make clean\n"); 
+			ROFL_ERR("[xdpd][switch_manager] ERROR: OF1.3 is experimental (i.e. alpha state). Compile xdpd enabling experimental code to test this feature. Don't forget to make clean\n"); 
 			throw eOfSmExperimentalNotSupported(); 
 #endif
 			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
@@ -100,7 +100,7 @@ openflow_switch* switch_manager::create_switch(
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 	
-	ROFL_INFO("[switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
+	ROFL_INFO("[xdpd][switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
 
 	return dp; 
 }
@@ -126,7 +126,7 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	if(!sw_snapshot){
 		pthread_rwlock_unlock(&switch_manager::rwlock);
 		assert(0);
-		ROFL_ERR("[switch_manager] Unknown ERROR: unable to create snapshot for dpid 0x%llx. Switch deletion aborted...\n", (long long unsigned)dpid);
+		ROFL_ERR("[xdpd][switch_manager] Unknown ERROR: unable to create snapshot for dpid 0x%llx. Switch deletion aborted...\n", (long long unsigned)dpid);
 		throw eOfSmGeneralError(); 
 	}
 
@@ -141,7 +141,7 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 			port_manager::detach_port_from_switch(dpid, port_name);
 		}catch(...){
 			pthread_rwlock_unlock(&switch_manager::rwlock);
-			ROFL_ERR("[switch_manager] ERROR: unable to detach port %s from dpid 0x%llx. Switch deletion aborted...\n", port->name, (long long unsigned)dpid);
+			ROFL_ERR("[xdpd][switch_manager] ERROR: unable to detach port %s from dpid 0x%llx. Switch deletion aborted...\n", port->name, (long long unsigned)dpid);
 			assert(0);
 
 			of_switch_destroy_snapshot(sw_snapshot);		
@@ -153,7 +153,7 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	openflow_switch* dp = switch_manager::switchs[dpid];
 	switch_manager::switchs.erase(dpid);
 
-	ROFL_INFO("[switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
+	ROFL_INFO("[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
 
 	//Set the dpid under destruction
 	dpid_under_destruction = dp->dpid;

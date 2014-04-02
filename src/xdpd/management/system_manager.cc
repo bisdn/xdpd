@@ -56,7 +56,7 @@ std::string system_manager::__get_driver_extra_params(){
 	if(extra_plugins != ""){
 		if(extra != ""){
 			//Notify user
-			ROFL_ERR("[xdpd][system] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
+			ROFL_ERR("[xdpd][system_manager] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
 		}else
 			extra = extra_plugins;
 	}
@@ -70,7 +70,7 @@ void system_manager::set_logging_debug_level(unsigned int level){
 	enum rofl_debug_levels c_level;
 	
 	if( inited && env_parser->is_arg_set("debug") ){
-		ROFL_ERR("[xdpd][system] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
+		ROFL_ERR("[xdpd][system_manager] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
 		throw eSystemLogLevelSetviaCL(); 
 	}
 
@@ -138,7 +138,7 @@ void system_manager::init(int argc, char** argv){
 
 	//Prevent double calls to init()
 	if(inited)
-		ROFL_ERR("[xdpd][system] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
+		ROFL_ERR("[xdpd][system_manager] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
 
 	//Set driver info cache
 	hal_driver_get_info(&info);
@@ -174,7 +174,7 @@ void system_manager::init(int argc, char** argv){
 	//Daemonize
 	if(env_parser->is_arg_set("daemonize")) {
 		rofl::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
-		rofl::logging::notice << "[xdpd][system] daemonizing successful" << std::endl;
+		rofl::logging::notice << "[xdpd][system_manager] daemonizing successful" << std::endl;
 	}else{
 		//If not daemonized and logfile is set: redirects the output to logfile. TODO: maybe logfile shouldn't depend on daemonize.
 		if(env_parser->is_arg_set("logfile")){
@@ -212,11 +212,11 @@ void system_manager::init(int argc, char** argv){
 	signal(SIGINT, interrupt_handler);
 		
 	if(is_test_run())
-		rofl::logging::notice << "[xdpd][system] Launched with -t "<< XDPD_TEST_RUN_OPT_FULL_NAME <<". Doing a test-run execution" << std::endl;
+		rofl::logging::notice << "[xdpd][system_manager] Launched with -t "<< XDPD_TEST_RUN_OPT_FULL_NAME <<". Doing a test-run execution" << std::endl;
 
 	//Driver initialization
 	if(hal_driver_init(get_driver_extra_params().c_str()) != HAL_SUCCESS){
-		ROFL_ERR("[xdpd][system] ERROR: initialization of platform driver failed! Aborting...\n");	
+		ROFL_ERR("[xdpd][system_manager] ERROR: initialization of platform driver failed! Aborting...\n");	
 		exit(EXIT_FAILURE);
 	}
 
@@ -235,7 +235,7 @@ void system_manager::init(int argc, char** argv){
 	}
 
 	//Printing nice trace
-	ROFL_INFO("\n[xdpd][system] Shutting down...\n");	
+	ROFL_INFO("\n[xdpd][system_manager] Shutting down...\n");	
 
 	//Destroy all state
 	switch_manager::destroy_all_switches();
@@ -254,7 +254,7 @@ void system_manager::init(int argc, char** argv){
 	rofl::cioloop::shutdown();
 
 	//Print a nice trace
-	ROFL_INFO("\n[xdpd][system] Shutted down.\n");
+	ROFL_INFO("\n[xdpd][system_manager] Shutted down.\n");
 
 SYSTEM_MANAGER_CLEANUP:
 

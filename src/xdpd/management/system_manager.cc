@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <sys/stat.h>
 #include <rofl/common/ciosrv.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/util/logging.h>
@@ -180,8 +181,15 @@ void system_manager::init(int argc, char** argv){
 			try{
 				int fd = open(env_parser->get_arg("logfile").c_str(), O_RDWR | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
 				if (fd >=0){
-					std::cout << " All OUTPUT will be redirected to the logfile: " << env_parser->get_arg("logfile").c_str() << std::endl;
+					std::cout << " All OUTPUT will be redirected to the logfile: " << env_parser->get_arg("logfile").c_str() <<  "    pid: " << getpid()<< std::endl;
 				}
+
+				//Change the logfile mode, readable for all
+				if (chmod(env_parser->get_arg("logfile").c_str(), S_IRWXU|S_IRGRP|S_IROTH)){
+					std::cout << " Couldn't change the logfile mode." << std::endl;
+				}
+
+				//Redirect
 				if (fd < 0) {
 					throw eSysCall("open()");
 				}

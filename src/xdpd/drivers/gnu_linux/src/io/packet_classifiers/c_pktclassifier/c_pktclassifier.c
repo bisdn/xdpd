@@ -955,9 +955,11 @@ void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 	 * set default values in vlan tag
 	 */
 	cpc_vlan_hdr_t* vlan_header = get_vlan_hdr(clas_state, 0);
-	if ( get_vlan_hdr(clas_state, 1) ) {
-		set_vlan_id(vlan_header, get_vlan_id(get_vlan_hdr(clas_state, 1)));
-		set_vlan_pcp(vlan_header, get_vlan_pcp(get_vlan_hdr(clas_state, 1)));
+	cpc_vlan_hdr_t* inner_vlan_header = get_vlan_hdr(clas_state, 1);
+	
+	if ( inner_vlan_header ) {
+		set_vlan_id(vlan_header, get_vlan_id(inner_vlan_header));
+		set_vlan_pcp(vlan_header, get_vlan_pcp(inner_vlan_header));
 	} else {
 		set_vlan_id(vlan_header,0x0000);
 		set_vlan_pcp(vlan_header,0x00);
@@ -971,7 +973,7 @@ void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 
 void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
 	void* ether_header;
-	cpc_mpls_hdr_t* mpls_header;
+	cpc_mpls_hdr_t* mpls_header, *inner_mpls_header;
 	//unsigned int current_length;
 
 	if(!clas_state->is_classified || NULL == get_ether_hdr(clas_state, 0)){
@@ -1014,17 +1016,25 @@ void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 	 * set default values in mpls tag
 	 */
 	mpls_header = get_mpls_hdr(clas_state, 0);
+	inner_mpls_header = get_mpls_hdr(clas_state, 1);
+	cpc_ipv4_hdr_t *ipv4_hdr = get_ipv4_hdr(clas_state, 0);
+	cpc_ipv4_hdr_t *ipv6_hdr = get_ipv6_hdr(clas_state, 0);
 
-	if (get_mpls_hdr(clas_state, 1)){
+	if (inner_mpls_header){
 		set_mpls_bos(mpls_header, false);
-		set_mpls_label(mpls_header, get_mpls_label(get_mpls_hdr(clas_state, 1)));
-		set_mpls_tc(mpls_header, get_mpls_tc(get_mpls_hdr(clas_state, 1)));
-		set_mpls_ttl(mpls_header, get_mpls_ttl(get_mpls_hdr(clas_state, 1)));
+		set_mpls_label(mpls_header, get_mpls_label(inner_mpls_header));
+		set_mpls_tc(mpls_header, get_mpls_tc(inner_mpls_header));
+		set_mpls_ttl(mpls_header, get_mpls_ttl(inner_mpls_header));
 	} else {
 		set_mpls_bos(mpls_header, true);
 		set_mpls_label(mpls_header, 0x0000);
 		set_mpls_tc(mpls_header, 0x00);
-		set_mpls_ttl(mpls_header, 0x00);
+		if ( ipv4_hdr ){
+			set_mpls_ttl(mpls_header, get_ipv4_ttl(ipv4_hdr));
+		}else if ( ipv6_hdr ){
+			set_mpls_ttl(mpls_header, get_ipv6_hop_limit(ipv6_hdr));
+		}else
+			set_mpls_ttl(mpls_header, 0x00);
 	}
 
 	return mpls_header;

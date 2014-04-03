@@ -241,7 +241,15 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 
 		int ma_list[256] = { 0 };
 		rofl::caddress caddr(ctlaf, ctladdr.c_str(), ctlport);
-		xdpd::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, reconnect, caddr);
+
+		// TODO: add socket_type to AMQP/QMF communication
+		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
+		rofl::cparams socket_params = csocket::get_params(socket_type);
+
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(""+ctlport);
+
+		xdpd::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, reconnect, socket_type, socket_params);
 
 		// create QMF LSI object
 		qLSIs[dpid].data = qmf::Data(sch_lsi);

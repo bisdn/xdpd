@@ -9,6 +9,7 @@
 #include "../../../port_manager.h"
 
 #include "../config.h"
+#include "lsi_connections.h"
 
 using namespace xdpd;
 using namespace rofl;
@@ -17,58 +18,20 @@ using namespace rofl;
 #define LSI_DPID "dpid"
 #define LSI_VERSION "version"
 #define LSI_DESCRIPTION "description"
-#define LSI_MASTER_CONTROLLER_HOSTNAME "master-controller-hostname"
-#define LSI_MASTER_CONTROLLER_PORT "master-controller-port"
-#define LSI_SLAVE_CONTROLLER_HOSTNAME "slave-controller-hostname"
-#define LSI_SLAVE_CONTROLLER_PORT "slave-controller-port"
 #define LSI_RECONNECT_TIME "reconnect-time"
 #define LSI_NUM_OF_TABLES "num-of-tables"
 #define LSI_TABLES_MATCHING_ALGORITHM "tables-matching-algorithm"
 #define LSI_PORTS "ports" 
-#define LSI_SOCKET_TYPE "socket-type"
-#define LSI_SSL "ssl"
-#define LSI_SSL_CERTIFICATE_FILE "ssl-certificate-file"
-#define LSI_SSL_PRIVATE_KEY_FILE "ssl-key-file"
-#define LSI_SSL_CA_PATH_FILE "ssl-ca-path"
-#define LSI_SSL_CA_FILE_FILE "ssl-ca-file"
-
-//We are not supporting binding
-#if 0
-	#define LSI_MODE "mode"
-	#define LSI_ACTIVE_MODE "active"
-	#define LSI_PASSIVE_MODE "passive"
-	#define LSI_BIND_ADDRESS_IP "bind-address-ip"
-	#define LSI_BIND_ADDRESS_PORT "bind-address-port"
-#endif
 
 lsi_scope::lsi_scope(std::string name, bool mandatory):scope(name, mandatory){
 
 	register_parameter(LSI_DPID, true);
 	register_parameter(LSI_VERSION, true);
 	register_parameter(LSI_DESCRIPTION);
-//We are not supporting binding
-#if 0
-	register_parameter(LSI_MODE);
-#endif
 
-	//Connection params:active
-	register_parameter(LSI_MASTER_CONTROLLER_HOSTNAME); 
-	register_parameter(LSI_MASTER_CONTROLLER_PORT); 
-	register_parameter(LSI_SLAVE_CONTROLLER_HOSTNAME); 
-	register_parameter(LSI_SLAVE_CONTROLLER_PORT); 
-	register_parameter(LSI_RECONNECT_TIME);
-
-//We are not supporting binding
-#if 0
-	//passive
-	register_parameter(LSI_BIND_ADDRESS_IP);
-	register_parameter(LSI_BIND_ADDRESS_PORT);
-#endif
-
-	// ssl
-	register_parameter(LSI_SSL);
-	register_parameter(LSI_SSL_CERTIFICATE_FILE);
-
+	//Register connections subscope
+	register_subscope(new lsi_connections_scope());	
+	
 	//Number of tables and matching algorithms
 	register_parameter(LSI_NUM_OF_TABLES);
 	register_parameter(LSI_TABLES_MATCHING_ALGORITHM);
@@ -76,20 +39,6 @@ lsi_scope::lsi_scope(std::string name, bool mandatory):scope(name, mandatory){
 	//Port mappings
 	register_parameter(LSI_PORTS, true);
 }
-
-void lsi_scope::parse_ip(caddress& addr, std::string& ip, unsigned int port){
-
-	//Generate caddress master
-	try{
-		//IPv4
-		addr = caddress(AF_INET, ip.c_str(), port); 
-	}catch(...){
-		//IPv6
-		addr = caddress(AF_INET6, ip.c_str(), port); 
-	}
-}
-
-
 
 
 void lsi_scope::parse_version(libconfig::Setting& setting, of_version_t* version){
@@ -109,98 +58,6 @@ void lsi_scope::parse_version(libconfig::Setting& setting, of_version_t* version
 	}
 }
 
-//We are not supporting binding
-#if 0
-void lsi_scope::parse_passive_connection(libconfig::Setting& setting, caddress& bind_address){
-	
-	std::string bind_address_ip = "0.0.0.0";
-	unsigned int bind_address_port = 6634;
-
-	if(setting.exists(LSI_BIND_ADDRESS_IP)){
-		std::string _bind_address = setting[LSI_BIND_ADDRESS_IP];
-		bind_address_ip = _bind_address;
-	}
-
-	if(setting.exists(LSI_BIND_ADDRESS_PORT)){
-		bind_address_port = setting[LSI_BIND_ADDRESS_PORT];
-		
-		if(bind_address_port < 1 || bind_address_port > 65535){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: invalid bind address TCP port number %u. Must be [1-65535]\n", setting.getPath().c_str(), bind_address_port);
-			throw eConfParseError(); 	
-				
-		}
-	}
-	try{
-		parse_ip(bind_address, bind_address_ip, bind_address_port);
-	}catch(...){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: unable to parse passive bind IP. It must be either an IPv4 or an IPv6 IP\n", setting.getPath().c_str());
-		throw eConfParseError(); 	
-	
-	}
-}
-#endif
-
-void lsi_scope::parse_active_connections(libconfig::Setting& setting, std::string& master_controller, int& master_controller_port, std::string& slave_controller, int& slave_controller_port){
-
-	master_controller = "127.0.0.1";
-	master_controller_port = 6633;
-	slave_controller = "";
-	slave_controller_port = 6633;
-	
-	//Parse master controller IP if it exists
-	if(setting.exists(LSI_MASTER_CONTROLLER_HOSTNAME)){
-		setting.lookupValue(LSI_MASTER_CONTROLLER_HOSTNAME, master_controller);
-	}
-
-	//Parse master controller port if it exists 
-	if(setting.exists(LSI_MASTER_CONTROLLER_PORT)){
-		master_controller_port = setting[LSI_MASTER_CONTROLLER_PORT];
-		
-		if(master_controller_port < 1 || master_controller_port > 65535){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: invalid Master controller TCP port number %u. Must be [1-65535]\n", setting.getPath().c_str(), master_controller_port);
-			throw eConfParseError(); 	
-				
-		}
-	}
-
-	
-	//Parse controller port if it exists 
-	if(setting.exists(LSI_SLAVE_CONTROLLER_HOSTNAME)){
-		setting.lookupValue(LSI_SLAVE_CONTROLLER_HOSTNAME ,slave_controller);
-		
-		if(setting.exists(LSI_SLAVE_CONTROLLER_PORT)){
-			slave_controller_port = setting[LSI_SLAVE_CONTROLLER_PORT];
-			
-			if(slave_controller_port < 1 || slave_controller_port > 65535){
-				ROFL_ERR(CONF_PLUGIN_ID "%s: invalid Slave controller TCP port number %u. Must be [1-65535]\n", setting.getPath().c_str(), master_controller_port);
-				throw eConfParseError(); 	
-					
-			}
-		}
-	}
-
-#if 0
-	//Parse master ip
-	try{
-		parse_ip(master_controller, master_controller_ip, master_controller_port);
-	}catch(...){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: unable to parse Master controller hostname. It must be either an IPv4, an IPv6 IP or a FQDN\n", setting.getPath().c_str());
-		throw eConfParseError(); 	
-	
-	}
-	
-	//Parse slave ip
-	if(slave_controller_ip != ""){
-		try{
-			parse_ip(slave_controller, slave_controller_ip, slave_controller_port);
-		}catch(...){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: unable to parse Slave controller hostname. It must be either an IPv4, an IPv6 IP or a FQDN\n", setting.getPath().c_str());
-			throw eConfParseError(); 	
-		
-		}
-	}
-#endif
-}
 
 void lsi_scope::parse_reconnect_time(libconfig::Setting& setting, unsigned int* reconnect_time){
 
@@ -301,60 +158,13 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 	}
 }
 
-enum rofl::csocket::socket_type_t lsi_scope::parse_socket(libconfig::Setting& setting, rofl::cparams& p){ 
-
-	std::string master, slave; 
-	int master_port, slave_port;
-	std::stringstream ss;
-
-	enum rofl::csocket::socket_type_t socket_type;
-
-	if (setting.exists(LSI_SSL)) {
-		socket_type = rofl::csocket::SOCKET_TYPE_OPENSSL;
-		//Generate list of empty parameters for this socket
-		p = csocket::get_params(socket_type);	
-	}else{
-		socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
-		//Generate list of empty parameters for this socket
-		p = csocket::get_params(socket_type);
-	}
-
-	//Fill common parameters
-	parse_active_connections(setting, master, master_port, slave, slave_port);
-
-	p.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) = master;
-	ss << master_port;	
-	p.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = ss.str(); 
-
-	if(slave != ""){
-		//TODO
-	}	
-	
-	if(socket_type == rofl::csocket::SOCKET_TYPE_OPENSSL){
-		//SSL specific
-		std::string cert_and_key_file("");
-
-		if (not setting.lookupValue(LSI_SSL_CERTIFICATE_FILE, cert_and_key_file)) {
-			ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to recover certificate file path\n", setting.getPath().c_str());
-			throw eConfParseError();
-		}
-
-		//Fill in
-		p.set_param(rofl::csocket::PARAM_SSL_KEY_CERT) = cert_and_key_file;
-	
-		//TODO: add private-key, ca-path, ca-file
-	}
-
-	return socket_type;
-}
-
 /* Case insensitive */
 void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 	uint64_t dpid;
 	of_version_t version;
-	cparams socket_params;
-
+	std::vector<lsi_connection> connections;
+ 
 	//Default values
 	//bool passive = false;
 	unsigned int num_of_tables = 1;
@@ -365,7 +175,6 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//caddress bind_address;
 	std::vector<std::string> ports;
 	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
-	enum rofl::csocket::socket_type_t socket_type;
 
 	//Recover dpid and try to parse
 	std::string dpid_s = setting[LSI_DPID];
@@ -378,29 +187,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//Parse version
 	parse_version(setting, &version);
 
-//We are not supporting binding
-#if 0 
-	//Parse mode
-	if((setting.exists(LSI_MODE))){
-		std::string mode= setting[LSI_MODE];
-		if( mode == LSI_PASSIVE_MODE){
-			passive = true;
-		}else if(mode != LSI_ACTIVE_MODE){	
-			if(dry_run)
-				ROFL_WARN(CONF_PLUGIN_ID "%s: Unable to parse mode.. assuming ACTIVE\n", setting.getPath().c_str()); 
-		}
-	}	
-
-	//Parse connection details
-	if(passive){
-		parse_passive_connection(setting, bind_address);	
-	}else{
-		parse_active_connections(setting, master_controller, slave_controller, &reconnect_time);	
-	}
-#endif
-
-	//Parse socket
-	socket_type = parse_socket(setting, socket_params);
+	//Parse reconnect 
 	parse_reconnect_time(setting, &reconnect_time);
 
 
@@ -414,7 +201,6 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 			throw eConfParseError(); 	
 		}	
 	}
-
 	if(num_of_tables < 1 || num_of_tables > 255){
 		ROFL_ERR(CONF_PLUGIN_ID "%s: invalid num of tables %u. An LSI shall have from 1 to 255 tables.\n", setting.getPath().c_str(), num_of_tables);
 		throw eConfParseError(); 	
@@ -429,9 +215,11 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 	//Execute
 	if(!dry_run){
+		std::vector<lsi_connection> conns = static_cast<lsi_connections_scope*>(sub_scopes[0])->get_parsed_connections();
 		openflow_switch* sw;
 
-		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, reconnect_time, socket_type, socket_params);
+		//Create switch with the initial connection (connection 0)
+		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, reconnect_time, conns[0].type, conns[0].params);
 
 
 		if(!sw){
@@ -458,6 +246,11 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 				throw;
 			}
 		}
-		
+#if 0	
+		//Connect(1..N-1)
+		for(std::vector<lsi_connection>::iterator it = (conns.begin()+1); it != conns.end(); ++it) {
+			switch_manager::rpc_connect_to_ctl(dpid, it->type, it->params); 
+		}	
+#endif
 	}
 }

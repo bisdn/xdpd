@@ -1,0 +1,117 @@
+#include "lsi_connections.h"
+#include <sstream>
+
+//Default
+#define LSI_CONNECTION_CONTROLLER_HOSTNAME "hostname"
+#define LSI_CONNECTION_CONTROLLER_PORT "port"
+#define LSI_CONNECTION_CONTROLLER_FAMILY "family"
+
+//SSL stuff
+#define LSI_CONNECTION_SSL "ssl"
+#define LSI_CONNECTION_SSL_CERTIFICATE_FILE "ssl-certificate-file"
+#define LSI_CONNECTION_SSL_PRIVATE_KEY_FILE "ssl-key-file"
+#define LSI_CONNECTION_SSL_CA_PATH_FILE "ssl-ca-path"
+#define LSI_CONNECTION_SSL_CA_FILE_FILE "ssl-ca-file"
+
+//namespace
+using namespace xdpd;
+
+lsi_connections_scope::lsi_connections_scope(std::string name, bool mandatory):scope(name, mandatory){
+
+}
+
+void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting, std::string& hostname, std::string& port, std::string& family){
+	hostname = "127.0.0.1";
+	port = "6633";
+	family = "inet-any";
+	
+	//Parse hostname 
+	if(setting.exists(LSI_CONNECTION_CONTROLLER_HOSTNAME)){
+		setting.lookupValue(LSI_CONNECTION_CONTROLLER_HOSTNAME, hostname);
+	}
+
+	//Parse port 
+	if(setting.exists(LSI_CONNECTION_CONTROLLER_PORT)){
+		int _port = setting[LSI_CONNECTION_CONTROLLER_PORT];
+
+		if(_port < 1 || _port > 65535){
+			ROFL_ERR(CONF_PLUGIN_ID "%s: invalid controller port number %u. Must be [1-65535]\n", setting.getPath().c_str(), _port);
+			throw eConfParseError(); 	
+				
+		}
+			
+		//Convert to string
+		std::stringstream ss;
+		ss << _port;
+		port = ss.str();
+	}
+
+	//TODO: parse optional family type
+}
+
+void lsi_connections_scope::parse_ssl_connection_params(libconfig::Setting& setting, lsi_connection& con){
+	
+	//TODO
+	
+#if 0
+	//SSL specific
+	std::string cert_and_key_file("");
+
+	if (not setting.lookupValue(LSI_CONNECTION_SSL_CERTIFICATE_FILE, cert_and_key_file)) {
+		ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to recover certificate file path\n", setting.getPath().c_str());
+		throw eConfParseError();
+	}
+
+	//Fill in
+	p.set_param(rofl::csocket::PARAM_SSL_KEY_CERT) = cert_and_key_file;
+
+	//TODO: add private-key, ca-path, ca-file
+#endif
+}
+
+lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setting){ 
+
+	lsi_connection con;
+	std::string hostname, port, family;
+
+	if (setting.exists(LSI_CONNECTION_SSL)) {
+		con.type = rofl::csocket::SOCKET_TYPE_OPENSSL;
+		//Generate list of empty parameters for this socket
+		con.params = rofl::csocket::get_params(con.type);
+
+		//Parse specific stuff for SSL
+		parse_ssl_connection_params(setting, con);
+	}else{
+		con.type = rofl::csocket::SOCKET_TYPE_PLAIN;
+		//Generate list of empty parameters for this socket
+		con.params = rofl::csocket::get_params(con.type);
+	}
+
+	//Fill common parameters
+	parse_connection_params(setting, hostname, port, family);
+
+	con.params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) = hostname;
+	con.params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = port; 
+	//con.params.set_param(rofl::csocket::PARAM_KEY_FAMILY) = family
+
+	return con;
+}
+
+
+void lsi_connections_scope::pre_validate(libconfig::Setting& setting, bool dry_run){
+
+	if(setting.getLength() == 0){
+		ROFL_ERR(CONF_PLUGIN_ID "%s: No controller connections found! At least one connection is mandatory\n", setting.getPath().c_str());
+		throw eConfParseError(); 	
+		
+	}
+	
+	//Detect existing subscopes (logical switches) and register
+ 	for(int i = 0; i<setting.getLength(); ++i){
+		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "Found controller connection named: %s\n", setting[i].getName());
+
+		//Parse and add to the list of connections
+		parsed_connections.push_back(parse_connection(setting[i]));	
+	}
+		
+}

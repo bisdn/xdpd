@@ -50,6 +50,7 @@ class eOfSmPipelineBadTableId		: public eOfSmBase {};
 class eOfSmPipelineTableFull		: public eOfSmBase {};
 class eOfSmPortModBadPort		: public eOfSmBase {};
 class eOfSmVersionNotSupported		: public eOfSmBase {};
+class eOfSmUnknownSocketType		: public eOfSmBase {};
 class eOfSmExperimentalNotSupported	: public eOfSmBase {};
 
 //Fwd declaration

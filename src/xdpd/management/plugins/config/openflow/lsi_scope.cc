@@ -1,6 +1,7 @@
 #include "lsi_scope.h"
 #include <vector>
 #include <stdlib.h>
+#include <stdio.h>
 #include <inttypes.h>
 #include <algorithm>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
@@ -27,6 +28,9 @@ using namespace rofl;
 #define LSI_SOCKET_TYPE "socket-type"
 #define LSI_SSL "ssl"
 #define LSI_SSL_CERTIFICATE_FILE "ssl-certificate-file"
+#define LSI_SSL_PRIVATE_KEY_FILE "ssl-key-file"
+#define LSI_SSL_CA_PATH_FILE "ssl-ca-path"
+#define LSI_SSL_CA_FILE_FILE "ssl-ca-file"
 
 //We are not supporting binding
 #if 0
@@ -136,17 +140,16 @@ void lsi_scope::parse_passive_connection(libconfig::Setting& setting, caddress& 
 }
 #endif
 
-void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& master_controller, caddress& slave_controller, unsigned int* reconnect_time){
+void lsi_scope::parse_active_connections(libconfig::Setting& setting, std::string& master_controller, int& master_controller_port, std::string& slave_controller, int& slave_controller_port){
 
-	std::string master_controller_ip = "127.0.0.1";
-	unsigned int master_controller_port = 6633;
-	std::string slave_controller_ip = "";
-	unsigned int slave_controller_port = 6634;
+	master_controller = "127.0.0.1";
+	master_controller_port = 6633;
+	slave_controller = "";
+	slave_controller_port = 6633;
 	
 	//Parse master controller IP if it exists
 	if(setting.exists(LSI_MASTER_CONTROLLER_HOSTNAME)){
-		std::string _master_controller = setting[LSI_MASTER_CONTROLLER_HOSTNAME];
-		master_controller_ip = _master_controller; 
+		setting.lookupValue(LSI_MASTER_CONTROLLER_HOSTNAME, master_controller);
 	}
 
 	//Parse master controller port if it exists 
@@ -161,10 +164,9 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 	}
 
 	
-	//Parse r controller port if it exists 
+	//Parse controller port if it exists 
 	if(setting.exists(LSI_SLAVE_CONTROLLER_HOSTNAME)){
-		std::string _slave_controller = setting[LSI_SLAVE_CONTROLLER_HOSTNAME];
-		slave_controller_ip = _slave_controller; 
+		setting.lookupValue(LSI_SLAVE_CONTROLLER_HOSTNAME ,slave_controller);
 		
 		if(setting.exists(LSI_SLAVE_CONTROLLER_PORT)){
 			slave_controller_port = setting[LSI_SLAVE_CONTROLLER_PORT];
@@ -177,7 +179,7 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 		}
 	}
 
-
+#if 0
 	//Parse master ip
 	try{
 		parse_ip(master_controller, master_controller_ip, master_controller_port);
@@ -197,6 +199,10 @@ void lsi_scope::parse_active_connections(libconfig::Setting& setting, caddress& 
 		
 		}
 	}
+#endif
+}
+
+void lsi_scope::parse_reconnect_time(libconfig::Setting& setting, unsigned int* reconnect_time){
 
 	if(setting.exists(LSI_RECONNECT_TIME))
 		*reconnect_time = setting[LSI_RECONNECT_TIME];
@@ -295,23 +301,34 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 	}
 }
 
-enum rofl::csocket::socket_type_t lsi_scope::parse_socket(libconfig::Setting& setting, rofl::cparams& socket_params){
+enum rofl::csocket::socket_type_t lsi_scope::parse_socket(libconfig::Setting& setting, rofl::cparams& p){ 
+
+	std::string master, slave; 
+	int master_port, slave_port;
+	std::stringstream ss;
 
 	enum rofl::csocket::socket_type_t socket_type;
 
 	if (setting.exists(LSI_SSL)) {
 		socket_type = rofl::csocket::SOCKET_TYPE_OPENSSL;
 		//Generate list of empty parameters for this socket
-		socket_params = csocket::get_params(socket_type);	
+		p = csocket::get_params(socket_type);	
 	}else{
 		socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
 		//Generate list of empty parameters for this socket
-		socket_params = csocket::get_params(socket_type);
+		p = csocket::get_params(socket_type);
 	}
 
 	//Fill common parameters
-	//XXX
+	parse_active_connections(setting, master, master_port, slave, slave_port);
 
+	p.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) = master;
+	ss << master_port;	
+	p.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = ss.str(); 
+
+	if(slave != ""){
+		//TODO
+	}	
 	
 	if(socket_type == rofl::csocket::SOCKET_TYPE_OPENSSL){
 		//SSL specific
@@ -321,6 +338,11 @@ enum rofl::csocket::socket_type_t lsi_scope::parse_socket(libconfig::Setting& se
 			ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to recover certificate file path\n", setting.getPath().c_str());
 			throw eConfParseError();
 		}
+
+		//Fill in
+		p.set_param(rofl::csocket::PARAM_SSL_KEY_CERT) = cert_and_key_file;
+	
+		//TODO: add private-key, ca-path, ca-file
 	}
 
 	return socket_type;
@@ -377,8 +399,12 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	}
 #endif
 
-	
+	//Parse socket
+	socket_type = parse_socket(setting, socket_params);
+	parse_reconnect_time(setting, &reconnect_time);
 
+
+	//Num of tables
 	if(setting.exists(LSI_NUM_OF_TABLES)){
 		//Parse num_of_tables
 		num_of_tables = setting[LSI_NUM_OF_TABLES];
@@ -400,9 +426,6 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 	//Parse ports	
 	parse_ports(setting, ports, dry_run);
-
-	//parse socket
-	socket_type = parse_socket(setting, socket_params);
 
 	//Execute
 	if(!dry_run){

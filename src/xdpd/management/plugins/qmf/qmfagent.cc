@@ -388,7 +388,7 @@ qmfagent::methodCtlConnect(qmf::AgentEvent& event)
 {
 	try {
 		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
-		int ctlaf				= event.getArguments()["ctlaf"].asInt32();
+		//int ctlaf				= event.getArguments()["ctlaf"].asInt32();
 		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
 		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
 
@@ -426,7 +426,7 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 {
 	try {
 		uint64_t dpid 			= event.getArguments()["dpid"].asUint64();
-		int ctlaf				= event.getArguments()["ctlaf"].asInt32();
+		//int ctlaf				= event.getArguments()["ctlaf"].asInt32();
 		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
 		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
 

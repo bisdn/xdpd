@@ -38,13 +38,6 @@ public:
 			openflow_switch* sw,
 			int reconnect_start_timeout,
 			enum rofl::csocket::socket_type_t socket_type,
-			caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633),
-			caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0)) throw (eOfSmErrorOnCreation);
-
-	of13_endpoint(
-			openflow_switch* sw,
-			int reconnect_start_timeout,
-			enum rofl::csocket::socket_type_t socket_type,
 			cparams const& socket_params) throw (eOfSmErrorOnCreation);
 
 	/**

@@ -72,27 +72,6 @@ public:
 	//
 
 	/**
-	 * @brief	static factory method for creating a logical switch (LS) 
-	 *
-	 * This method creates a new Openflow Logical Switch instance with dpid and dpname.
-	 *
-	 * @param dpid data path element id
-	 * @param dpname name of this data path element (local significance only)
-	 */
-	static openflow_switch* create_switch(of_version_t version,
-					uint64_t dpid,
-					std::string const& dpname,
-					unsigned int num_of_tables,
-					int* ma_list,
-					int reconnect_start_timeout = 2,
-					enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN,
-					rofl::caddress const& controller_addr = switch_manager::controller_addr,
-					rofl::caddress const& binding_addr = switch_manager::binding_addr,
-					bool enable_ssl = false,
-					const std::string &cert_and_key_file = std::string("")) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
-
-
-	/**
 	 * @brief	static factory method for creating a logical switch (LS)
 	 *
 	 * This method creates a new Openflow Logical Switch instance with dpid and dpname.

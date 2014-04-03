@@ -119,9 +119,9 @@ public:
 	*/
 	static inline void __notify_port_added(const switch_port_snapshot_t* port_snapshot){
 		if(port_snapshot->is_attached_to_sw)
-			ROFL_INFO("[port_manager][0x%"PRIx64":%u(%s)] added to the system and attached; admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+			ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] added to the system and attached; admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 		else
-			ROFL_INFO("[port_manager][%s] added to the system; admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+			ROFL_INFO("[xdpd][port_manager][%s] added to the system; admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 	};
 		
 	/**
@@ -130,9 +130,9 @@ public:
 	static inline void __notify_port_status_changed(const switch_port_snapshot_t* port_snapshot){
 
 	if(port_snapshot->is_attached_to_sw)
-		ROFL_INFO("[port_manager][0x%"PRIx64":%u(%s)] admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+		ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 	else
-		ROFL_INFO("[port_manager][%s] admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+		ROFL_INFO("[xdpd][port_manager][%s] admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 	};
 	
 	/**
@@ -140,9 +140,9 @@ public:
 	*/
 	static inline void __notify_port_deleted(const switch_port_snapshot_t* port_snapshot){
 		if(port_snapshot->is_attached_to_sw)
-			ROFL_INFO("[port_manager][0x%"PRIx64":%u(%s)] detached and removed from the system\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name);
+			ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] detached and removed from the system\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name);
 		else
-			ROFL_INFO("[port_manager][%s] removed from the system;\n", port_snapshot->name);
+			ROFL_INFO("[xdpd][port_manager][%s] removed from the system;\n", port_snapshot->name);
 	};
 	
 private:

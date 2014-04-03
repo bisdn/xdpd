@@ -1,7 +1,9 @@
 AC_INIT(xdpd - NetFPGA-10G driver, 0.4, rofl@bisdn.de,  xdpd_netfpga10g_fm)
-AC_CONFIG_AUX_DIR([.])
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_GNU_SOURCE
 
 AC_PROG_INSTALL
@@ -35,9 +37,6 @@ m4_include([../../../../config/debug.m4])
 
 # Application verbosity 
 m4_include([../../../../config/verbose.m4])
-
-# Endianness
-m4_include([../../../../config/endianness.m4])
 
 # Check for profiling mode
 m4_include([../../../../config/profiling.m4])

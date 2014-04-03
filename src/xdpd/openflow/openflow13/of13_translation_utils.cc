@@ -248,7 +248,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		}
 		
 		of1x_match_t *match = of1x_init_vlan_vid_match(
-								htobe16(htobe16(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT)),
+								htobe16(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT),
 								htobe16(ofmatch.get_vlan_vid_mask()),
 								vlan_present);
 
@@ -510,7 +510,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	} catch (rofl::openflow::eOFmatchNotFound& e) {}
 #endif
 
-
+	/* Experimental */
 	try {
 		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code oxm_pppoe_code(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_CODE));
@@ -853,6 +853,8 @@ of13_translation_utils::of13_map_flow_entry_actions(
 				}
 			}
 				break;
+	
+			/* Experimental */
 			case rofl::openflow13::OFPXMC_EXPERIMENTER: {
 				switch (oxm.get_oxm_field()) {
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_CODE: {
@@ -883,6 +885,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 
 			}
 				break;
+			/* End of experimental */
 			default:
 			{
 				std::stringstream sstr; sstr << raction;
@@ -900,7 +903,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 
 			switch (eaction.get_exp_id()) {
 			case ROFL_EXPERIMENTER_ID: {
-
+				/* Experimental */
 				/*
 				 * but one does not have to, PPPoE still uses a different body definition
 				 */
@@ -919,6 +922,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					action = of1x_init_packet_action( OF1X_AT_POP_PPPOE, field, 0x0);
 				} break;
 				}
+				/* End of experimental */
 
 			} break;
 			default: {
@@ -1164,6 +1168,8 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_IPV6_EXTHDR:
 			match.set_ipv6_exthdr(be16toh(m->value->value.u16), be16toh(m->value->mask.u16));
 			break;
+				
+		/* Experimental */
 		case OF1X_MATCH_PPPOE_CODE:
 			match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(m->value->value.u8));
 			break;
@@ -1331,12 +1337,14 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 	case OF1X_AT_POP_MPLS: {
 		action = rofl::openflow::cofaction_pop_mpls(rofl::openflow13::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
+	/* Experimental */
 	case OF1X_AT_POP_PPPOE: {
 		action = rofl::openflow::cofaction_pop_pppoe(rofl::openflow13::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_PUSH_PPPOE: {
 		action = rofl::openflow::cofaction_push_pppoe(rofl::openflow13::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
+	/* End of experimental */
 	case OF1X_AT_PUSH_MPLS: {
 		action = rofl::openflow::cofaction_push_mpls(rofl::openflow13::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
@@ -1503,6 +1511,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		throw eNotImplemented(std::string("of13_translation_utils::of13_map_reverse_flow_entry_action() IPV6 ICMPV6"));
 		break;
 
+	/* Experimental */
 	case OF1X_AT_SET_FIELD_PPPOE_CODE: {
 		action = rofl::openflow::cofaction_set_field(rofl::openflow13::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
 	} break;
@@ -1521,6 +1530,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 	case OF1X_AT_SET_FIELD_GTP_TEID: {
 		action = rofl::openflow::cofaction_set_field(rofl::openflow13::OFP_VERSION, rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
 	} break;
+	/* End of experimental section */
 	case OF1X_AT_GROUP: {
 		action = rofl::openflow::cofaction_group(rofl::openflow13::OFP_VERSION, (uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK));
 	} break;
@@ -1551,16 +1561,12 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->eth_dst){
 		uint64_t mac = packet_matches->eth_dst;
 		BETOHMAC(mac);
-		uint64_t msk = 0x0000FFFFFFFFFFFFULL;
-		BETOHMAC(msk);
-		match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
+		match.set_eth_dst(cmacaddr(mac));
 	}
 	if(packet_matches->eth_src){
 		uint64_t mac = packet_matches->eth_src;
 		BETOHMAC(mac);
-		uint64_t msk = 0x0000FFFFFFFFFFFFULL;
-		BETOHMAC(msk);
-		match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
+		match.set_eth_src(cmacaddr(mac));
 	}
 	if(packet_matches->eth_type)
 		match.set_eth_type(be16toh(packet_matches->eth_type));
@@ -1678,6 +1684,8 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 	}
 	if(packet_matches->ipv6_exthdr)
 		match.set_ipv6_exthdr(be16toh(packet_matches->ipv6_exthdr));
+
+	/* Experimental */
 	if(packet_matches->pppoe_code)
 		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(packet_matches->pppoe_code));
 	if(packet_matches->pppoe_type)

@@ -246,8 +246,9 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
 		rofl::cparams socket_params = csocket::get_params(socket_type);
 
+		std::stringstream sctlport; sctlport << ctlport;
 		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
-		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(""+ctlport);
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(sctlport.str());
 
 		xdpd::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, reconnect, socket_type, socket_params);
 
@@ -396,8 +397,9 @@ qmfagent::methodCtlConnect(qmf::AgentEvent& event)
 		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
 		rofl::cparams socket_params = csocket::get_params(socket_type);
 
+		std::stringstream sctlport; sctlport << ctlport;
 		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
-		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(""+ctlport);
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(sctlport.str());
 
 		xdpd::switch_manager::rpc_connect_to_ctl(dpid, socket_type, socket_params);
 
@@ -434,8 +436,9 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
 		rofl::cparams socket_params = csocket::get_params(socket_type);
 
+		std::stringstream sctlport; sctlport << ctlport;
 		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
-		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(""+ctlport);
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(sctlport.str());
 
 		xdpd::switch_manager::rpc_disconnect_from_ctl(dpid, socket_type, socket_params);
 

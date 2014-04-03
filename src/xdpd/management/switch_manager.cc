@@ -3,10 +3,6 @@
 #include <rofl/datapath/hal/hal.h>
 #include <rofl/datapath/hal/cmm.h>
 #include <rofl/common/utils/c_logger.h>
-#ifdef HAVE_OPENSSL
-#include <rofl/common/ssl_lib.h>
-#endif
-
 #include "port_manager.h"
 
 //Add here the headers of the version-dependant Openflow switchs 

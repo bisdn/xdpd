@@ -5,10 +5,6 @@
 #include "of12_translation_utils.h"
 #include "../../management/system_manager.h"
 
-#ifdef HAVE_OPENSSL
-#include <rofl/common/ssl_lib.h>
-#endif
-
 using namespace xdpd;
 
 /*

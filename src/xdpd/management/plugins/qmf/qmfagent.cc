@@ -392,9 +392,14 @@ qmfagent::methodCtlConnect(qmf::AgentEvent& event)
 		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
 		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
 
-		rofl::caddress controller_address(ctlaf, ctladdr.c_str(), ctlport);
+		// TODO: add socket_type to AMQP/QMF communication
+		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
+		rofl::cparams socket_params = csocket::get_params(socket_type);
 
-		xdpd::switch_manager::rpc_connect_to_ctl(dpid, controller_address);
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(""+ctlport);
+
+		xdpd::switch_manager::rpc_connect_to_ctl(dpid, socket_type, socket_params);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);
@@ -425,9 +430,14 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
 		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
 
-		rofl::caddress controller_address(ctlaf, ctladdr.c_str(), ctlport);
+		// TODO: add socket_type to AMQP/QMF communication
+		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
+		rofl::cparams socket_params = csocket::get_params(socket_type);
 
-		xdpd::switch_manager::rpc_disconnect_from_ctl(dpid, controller_address);
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
+		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(""+ctlport);
+
+		xdpd::switch_manager::rpc_disconnect_from_ctl(dpid, socket_type, socket_params);
 
 		// TODO: create QMF port object (if this is deemed useful one day ...)
 		event.addReturnArgument("dpid", dpid);

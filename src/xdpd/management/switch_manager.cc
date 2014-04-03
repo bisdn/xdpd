@@ -280,7 +280,7 @@ uint64_t switch_manager::get_switch_dpid(std::string& name){
 
 
 void
-switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, caddress const& ra){
+switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){
 
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
@@ -291,14 +291,14 @@ switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_typ
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
-	dp->rpc_connect_to_ctl(socket_type, ra);
+	dp->rpc_connect_to_ctl(socket_type, socket_params);
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 }
 
 
 
 void
-switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra){
+switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){
 
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
@@ -309,7 +309,7 @@ switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra){
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
-	dp->rpc_disconnect_from_ctl(ra);
+	dp->rpc_disconnect_from_ctl(socket_type, socket_params);
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 }
 

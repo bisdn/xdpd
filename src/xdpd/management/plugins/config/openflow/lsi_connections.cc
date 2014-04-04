@@ -2,9 +2,11 @@
 #include <sstream>
 
 //Default
-#define LSI_CONNECTION_CONTROLLER_HOSTNAME "hostname"
+#define LSI_CONNECTION_CONTROLLER_HOSTNAME "remote-hostname"
 #define LSI_CONNECTION_CONTROLLER_PORT "port"
 #define LSI_CONNECTION_CONTROLLER_FAMILY "family"
+#define LSI_CONNECTION_CONTROLLER_BIND_ADDRESS "bind-address"
+#define LSI_CONNECTION_CONTROLLER_BIND_PORT "bind-port"
 
 //SSL stuff
 #define LSI_CONNECTION_SSL "ssl"
@@ -20,19 +22,26 @@ lsi_connections_scope::lsi_connections_scope(std::string name, bool mandatory):s
 
 }
 
-void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting, std::string& hostname, std::string& port, std::string& family){
-	hostname = "127.0.0.1";
-	port = "6633";
-	family = "inet-any";
+void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting, lsi_connection& con){
+
+	//Defaults
+	std::string hostname = "127.0.0.1";
+	std::string port = "6633";
 	
+	//Auxiliary
+	std::string aux; 
+	std::stringstream ss;
+	int _port;
+
 	//Parse hostname 
 	if(setting.exists(LSI_CONNECTION_CONTROLLER_HOSTNAME)){
 		setting.lookupValue(LSI_CONNECTION_CONTROLLER_HOSTNAME, hostname);
 	}
+	con.params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) = hostname;
 
 	//Parse port 
 	if(setting.exists(LSI_CONNECTION_CONTROLLER_PORT)){
-		int _port = setting[LSI_CONNECTION_CONTROLLER_PORT];
+		_port = setting[LSI_CONNECTION_CONTROLLER_PORT];
 
 		if(_port < 1 || _port > 65535){
 			ROFL_ERR(CONF_PLUGIN_ID "%s: invalid controller port number %u. Must be [1-65535]\n", setting.getPath().c_str(), _port);
@@ -41,12 +50,30 @@ void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting,
 		}
 			
 		//Convert to string
-		std::stringstream ss;
 		ss << _port;
 		port = ss.str();
 	}
+	con.params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = port; 
+	
+	//Parse family
+	if(setting.exists(LSI_CONNECTION_CONTROLLER_FAMILY)){
+		setting.lookupValue(LSI_CONNECTION_CONTROLLER_FAMILY, aux);
+		con.params.set_param(rofl::csocket::PARAM_KEY_DOMAIN) = aux;
+	}
+	//Bind address
+	if(setting.exists(LSI_CONNECTION_CONTROLLER_BIND_ADDRESS)){
+		setting.lookupValue(LSI_CONNECTION_CONTROLLER_BIND_ADDRESS, aux);
+		con.params.set_param(rofl::csocket::PARAM_KEY_LOCAL_HOSTNAME) = aux;
+	}
 
-	//TODO: parse optional family type
+	//Parse bind port
+	if(setting.exists(LSI_CONNECTION_CONTROLLER_BIND_PORT)){
+		_port = setting[LSI_CONNECTION_CONTROLLER_BIND_PORT];
+		ss.clear();
+		ss << _port;
+		con.params.set_param(rofl::csocket::PARAM_KEY_LOCAL_PORT) = ss.str();
+	}
+
 }
 
 void lsi_connections_scope::parse_ssl_connection_params(libconfig::Setting& setting, lsi_connection& con){
@@ -72,7 +99,6 @@ void lsi_connections_scope::parse_ssl_connection_params(libconfig::Setting& sett
 lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setting){ 
 
 	lsi_connection con;
-	std::string hostname, port, family;
 
 	if (setting.exists(LSI_CONNECTION_SSL)) {
 		con.type = rofl::csocket::SOCKET_TYPE_OPENSSL;
@@ -88,11 +114,7 @@ lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setti
 	}
 
 	//Fill common parameters
-	parse_connection_params(setting, hostname, port, family);
-
-	con.params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) = hostname;
-	con.params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = port; 
-	//con.params.set_param(rofl::csocket::PARAM_KEY_FAMILY) = family
+	parse_connection_params(setting, con);
 
 	return con;
 }

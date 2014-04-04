@@ -64,7 +64,6 @@ public:
 	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port)=0;
 
 
-
 protected:
 	
 	//Switch to which the endpoint belongs to

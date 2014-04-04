@@ -25,6 +25,7 @@ class eConfDuplicatedScope: public rofl::RoflException {};
 class eConfDuplicatedParameter: public rofl::RoflException {};
 class eConfMandatoryParameterNotPresent: public rofl::RoflException {};
 class eConfMandatoryScopeNotPresent: public rofl::RoflException {};
+class eConfUnknownElement: public rofl::RoflException {};
 
 class scope {
 	
@@ -45,6 +46,17 @@ protected:
 	void register_subscope(std::string name, scope* sc);
 	void register_subscope(scope* sc){register_subscope(sc->name,sc);};
 	void register_parameter(std::string name, bool mandatory=false);
+
+	//Geters
+	scope* get_subscope(std::string name){
+		std::vector<scope*>::iterator scope_iter;
+	
+		for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
+			if((*scope_iter)->name == name)
+				return *scope_iter;
+		}
+		return NULL;
+	}
 	
 	//Allow actions before and after parameter and scope validation	
 	virtual void pre_validate(libconfig::Config& config, bool dry_run){};

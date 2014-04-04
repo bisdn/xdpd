@@ -65,18 +65,18 @@ public:
 	* Dispatching of version agnostic messages comming from the driver
 	*
 	*/
-	virtual rofl_result_t notify_port_attached(const switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_attached(const switch_port_t* port);
 	
-	virtual rofl_result_t notify_port_detached(const switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_detached(const switch_port_t* port);
 	
-	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port)=0;
+	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
 
 	/**
 	 * Connecting and disconnecting from a controller entity
 	 */
-	virtual void rpc_connect_to_ctl(caddress const& controller_addr)=0;
+	virtual void rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params);
 
-	virtual void rpc_disconnect_from_ctl(caddress const& controller_addr)=0;
+	virtual void rpc_disconnect_from_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params);
 };
 
 }// namespace rofl

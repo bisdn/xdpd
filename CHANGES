@@ -8,20 +8,21 @@ Legend:
 Change log
 ==========
 
-v0.4
+v0.4RC1
 
 [+] Change in the build system: documentation is now compiled via `make doc`.
 [+] Change in the build system: platform support is now compiled via `../configure --with-hw-support=driver-name`.
 
-[+] Adapted to the new ROFL v0.4 terminolofy (afa->hal, fwd_module->driver)
-
+[+] Adapted to the new ROFL v0.4 terminology (afa->hal, fwd_module->driver)
+[+] Added support for opaque string platform driver initialization (also in the config file)
 [+] Added systemd service.unit file for xdpd
-[+] Added plugin event notification system. Supported events: port add/attach/detach/delete/status and monitoring status.
 [+] Improved boot-strapping workflow.
-[+] Added support for opaque string platform driver (fwd_module) initialization (also in the config file)
-[+] Added system_manager and monitoring_manager APIs. 
-[+] Improved command line options treatment (system_manager)
-[+] Improved CMM debugging via new ROFL logger. Unified logging level (C/C++) setting at runtime (via system_manager).
+[+] Improved command line options treatment
+
+[+][CMM] Added system_manager and monitoring_manager APIs. 
+[+][CMM] Added plugin event notification system. Supported events: port add/attach/detach/delete/status and monitoring status.
+[+][CMM] Improved CMM debugging via new ROFL loggers. Unified logging level (C/C++) setting at runtime (via system_manager).
+[+][plugins][config] Added support for multiple connections (>2). Added support for FQDNs, socket family and bind address and port.
 
 [+][GNU/Linux] Improved I/O subsytem, including new packet classifier (c_pktclassifier).
 [+][GNU/Linux] Adding support for stats in ioport_vlink.

@@ -44,6 +44,9 @@ void scope::register_parameter(std::string _name, bool mandatory){
 
 void scope::execute(libconfig::Setting& setting, bool dry_run){
 	
+	//Call pre-hook
+	pre_validate(setting, dry_run);
+
 	//Detect invalid paramaters if they are fixed
 	if(sub_scopes.size() != 0 || parameters.size() != 0){
 		for(int i=0; i < setting.getLength(); ++i){
@@ -65,10 +68,6 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 	
 		}
 	}
-
-	//Call pre-hook
-	pre_validate(setting, dry_run);
-
 	
 	//Go through parameters and validate if mandatory
 	std::map<std::string, bool>::iterator param_iter;

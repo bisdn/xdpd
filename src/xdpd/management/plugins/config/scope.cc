@@ -15,23 +15,21 @@ scope::scope(std::string scope_name, bool mandatory){
 scope::~scope(){
 
 	//Destroy all subscopes
-	std::vector<scope*>::iterator scope_iter;
+	std::map<std::string, scope*>::iterator scope_iter;
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter)
-		delete *scope_iter;
+		delete scope_iter->second;
 	sub_scopes.clear();
 		
 }
 		
 void scope::register_subscope(std::string _name, scope* sc){
 
-	std::vector<scope*>::iterator scope_iter;
-	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
-		if(*scope_iter == sc)
-			throw eConfDuplicatedScope();
+	//Look for the key in subscopes 
+	if(sub_scopes.find(_name) != sub_scopes.end())
+		throw eConfDuplicatedScope();
 			
-	}
-	
-	sub_scopes.push_back(sc);
+
+	sub_scopes[_name] = sc;
 }
 
 void scope::register_parameter(std::string _name, bool mandatory){
@@ -46,9 +44,32 @@ void scope::register_parameter(std::string _name, bool mandatory){
 
 void scope::execute(libconfig::Setting& setting, bool dry_run){
 	
+	//Detect invalid paramaters if they are fixed
+	if(sub_scopes.size() != 0 || parameters.size() != 0){
+		for(int i=0; i < setting.getLength(); ++i){
+
+			std::string aux = setting[i].getName();
+
+			//Look for the key in parameters
+			if(parameters.find(aux) != parameters.end())
+				continue;
+
+			//Look for the key in subscopes 
+			if(sub_scopes.find(aux) != sub_scopes.end())
+				continue;
+	
+			//Not found, so not recognised. Throw exception
+			ROFL_ERR(CONF_PLUGIN_ID "%s: ERROR, unknow parameter or scope '%s'.\n", setting.getPath().c_str(), aux.c_str());
+
+			throw eConfUnknownElement();
+	
+		}
+	}
+
 	//Call pre-hook
 	pre_validate(setting, dry_run);
 
+	
 	//Go through parameters and validate if mandatory
 	std::map<std::string, bool>::iterator param_iter;
 	for (param_iter = parameters.begin(); param_iter != parameters.end(); ++param_iter) {
@@ -59,19 +80,25 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 	}
 	
 	//Go through sub scopes
-	std::vector<scope*>::iterator scope_iter;
+	std::map<std::string, scope*>::iterator scope_iter;
+	scope* sc;
+
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
-		if(	(*scope_iter)->mandatory && 
-			(	! setting.exists((*scope_iter)->name) || 
-				! setting[(*scope_iter)->name].isGroup()
+
+		//Make it easy
+		sc = scope_iter->second;
+
+		if(	sc->mandatory && 
+			(	! setting.exists(sc->name) || 
+				! setting[sc->name].isGroup()
 			)
 		){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", setting.getPath().c_str(), (*scope_iter)->name.c_str());
+			ROFL_ERR(CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", setting.getPath().c_str(), sc->name.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
 		
-		if(setting.exists((*scope_iter)->name))
-			(*scope_iter)->execute(setting[(*scope_iter)->name], dry_run);
+		if(setting.exists(sc->name))
+			sc->execute(setting[sc->name], dry_run);
 	}
 
 	//Call post-hook
@@ -82,7 +109,7 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 
 	//Call pre-hook
 	pre_validate(config, dry_run);
-	
+
 	//Go through parameters and validate if mandatory
 	std::map<std::string, bool>::iterator param_iter;
 	for (param_iter = parameters.begin(); param_iter != parameters.end(); ++param_iter) {
@@ -93,19 +120,26 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 	}
 	
 	//Go through sub scopes
-	std::vector<scope*>::iterator scope_iter;
+	std::map<std::string, scope*>::iterator scope_iter;
+	scope* sc;
+	
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
-		if(	(*scope_iter)->mandatory && 
-			(	! config.exists((*scope_iter)->name) || 
-				! config.lookup((*scope_iter)->name).isGroup()
+
+		//Make it easy
+		sc = scope_iter->second;
+
+
+		if(	sc->mandatory && 
+			(	! config.exists(sc->name) || 
+				! config.lookup(sc->name).isGroup()
 			)
 		){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", name.c_str(), (*scope_iter)->name.c_str());
+			ROFL_ERR(CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", name.c_str(), sc->name.c_str());
 	
 			throw eConfMandatoryParameterNotPresent();
 		}
-		if(config.exists((*scope_iter)->name))
-			(*scope_iter)->execute(config.lookup((*scope_iter)->name), dry_run);
+		if(config.exists(sc->name))
+			sc->execute(config.lookup(sc->name), dry_run);
 	}
 
 	

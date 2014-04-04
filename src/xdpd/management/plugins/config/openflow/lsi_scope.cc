@@ -32,6 +32,9 @@ lsi_scope::lsi_scope(std::string name, bool mandatory):scope(name, mandatory){
 	//Register connections subscope
 	register_subscope(new lsi_connections_scope());	
 	
+	//Reconnect time
+	register_parameter(LSI_RECONNECT_TIME);
+	
 	//Number of tables and matching algorithms
 	register_parameter(LSI_NUM_OF_TABLES);
 	register_parameter(LSI_TABLES_MATCHING_ALGORITHM);
@@ -215,7 +218,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 	//Execute
 	if(!dry_run){
-		std::vector<lsi_connection> conns = static_cast<lsi_connections_scope*>(sub_scopes[0])->get_parsed_connections();
+		std::vector<lsi_connection> conns = static_cast<lsi_connections_scope*>(get_subscope(lsi_connections_scope::SCOPE_NAME))->get_parsed_connections();
 		openflow_switch* sw;
 
 		//Create switch with the initial connection (connection 0)

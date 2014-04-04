@@ -27,9 +27,10 @@ public:
 class lsi_connections_scope:public scope {
 	
 public:
-	lsi_connections_scope(std::string scope_name="controller-connections", bool mandatory=true);
+	lsi_connections_scope(std::string scope_name=SCOPE_NAME, bool mandatory=true);
 	std::vector<lsi_connection> get_parsed_connections(void){ return parsed_connections;};
-		
+
+	static const std::string SCOPE_NAME;
 protected:
 	std::vector<lsi_connection> parsed_connections;
 	

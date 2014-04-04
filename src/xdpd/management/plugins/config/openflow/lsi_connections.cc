@@ -18,6 +18,9 @@
 //namespace
 using namespace xdpd;
 
+//static elements
+const std::string lsi_connections_scope::SCOPE_NAME = "controller-connections";
+
 lsi_connections_scope::lsi_connections_scope(std::string name, bool mandatory):scope(name, mandatory){
 
 }

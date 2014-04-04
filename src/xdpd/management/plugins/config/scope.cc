@@ -15,9 +15,9 @@ scope::scope(std::string scope_name, bool mandatory){
 scope::~scope(){
 
 	//Destroy all subscopes
-	std::map<std::string, scope*>::iterator scope_iter;
+	std::vector<scope*>::iterator scope_iter;
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter)
-		delete scope_iter->second;
+		delete *scope_iter;
 	sub_scopes.clear();
 		
 }
@@ -25,11 +25,10 @@ scope::~scope(){
 void scope::register_subscope(std::string _name, scope* sc){
 
 	//Look for the key in subscopes 
-	if(sub_scopes.find(_name) != sub_scopes.end())
+	if(get_subscope(sc->name))
 		throw eConfDuplicatedScope();
-			
 
-	sub_scopes[_name] = sc;
+	sub_scopes.push_back(sc);
 }
 
 void scope::register_parameter(std::string _name, bool mandatory){
@@ -58,7 +57,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 				continue;
 
 			//Look for the key in subscopes 
-			if(sub_scopes.find(aux) != sub_scopes.end())
+			if(get_subscope(aux))
 				continue;
 	
 			//Not found, so not recognised. Throw exception
@@ -79,13 +78,13 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 	}
 	
 	//Go through sub scopes
-	std::map<std::string, scope*>::iterator scope_iter;
+	std::vector<scope*>::iterator scope_iter;
 	scope* sc;
 
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
 
 		//Make it easy
-		sc = scope_iter->second;
+		sc = *scope_iter;
 
 		if(	sc->mandatory && 
 			(	! setting.exists(sc->name) || 
@@ -119,14 +118,13 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 	}
 	
 	//Go through sub scopes
-	std::map<std::string, scope*>::iterator scope_iter;
+	std::vector<scope*>::iterator scope_iter;
 	scope* sc;
 	
 	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
 
 		//Make it easy
-		sc = scope_iter->second;
-
+		sc = *scope_iter;
 
 		if(	sc->mandatory && 
 			(	! config.exists(sc->name) || 

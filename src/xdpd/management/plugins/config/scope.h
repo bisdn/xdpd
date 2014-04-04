@@ -39,7 +39,7 @@ public:
 	std::string name;
 protected:
 	bool mandatory;
-	std::map<std::string, scope*> sub_scopes;
+	std::vector<scope*> sub_scopes;
 	std::map<std::string, bool> parameters;
 
 	//Register methods
@@ -49,10 +49,13 @@ protected:
 
 	//Geters
 	scope* get_subscope(std::string name){
-		if(sub_scopes.find(name) == sub_scopes.end())
-			return NULL;
-			
-		return sub_scopes[name]; 
+		std::vector<scope*>::iterator scope_iter;
+	
+		for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
+			if((*scope_iter)->name == name)
+				return *scope_iter;
+		}
+		return NULL;
 	}
 	
 	//Allow actions before and after parameter and scope validation	

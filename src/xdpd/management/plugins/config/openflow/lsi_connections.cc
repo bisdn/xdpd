@@ -21,6 +21,25 @@ using namespace xdpd;
 //static elements
 const std::string lsi_connections_scope::SCOPE_NAME = "controller-connections";
 
+//Connection
+lsi_connection_scope::lsi_connection_scope(std::string name):scope(name, false){
+
+	//Common stuff	
+	register_parameter(LSI_CONNECTION_CONTROLLER_HOSTNAME);
+	register_parameter(LSI_CONNECTION_CONTROLLER_PORT); 
+	register_parameter(LSI_CONNECTION_CONTROLLER_FAMILY);
+	register_parameter(LSI_CONNECTION_CONTROLLER_BIND_ADDRESS); 
+	register_parameter(LSI_CONNECTION_CONTROLLER_BIND_PORT); 
+
+	//SSL stuff
+	register_parameter(LSI_CONNECTION_SSL);
+	register_parameter(LSI_CONNECTION_SSL_CERTIFICATE_FILE);
+	register_parameter(LSI_CONNECTION_SSL_PRIVATE_KEY_FILE);
+	register_parameter(LSI_CONNECTION_SSL_CA_PATH_FILE);
+	register_parameter(LSI_CONNECTION_SSL_CA_FILE_FILE);
+}
+
+//Connections
 lsi_connections_scope::lsi_connections_scope(std::string name, bool mandatory):scope(name, mandatory){
 
 }
@@ -135,8 +154,11 @@ void lsi_connections_scope::pre_validate(libconfig::Setting& setting, bool dry_r
  	for(int i = 0; i<setting.getLength(); ++i){
 		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "Found controller connection named: %s\n", setting[i].getName());
 
-		//Parse and add to the list of connections
-		parsed_connections.push_back(parse_connection(setting[i]));	
+		//Pre-Parse and add to the list of connections
+		parsed_connections.push_back(parse_connection(setting[i]));
+		
+		//Register subscope	
+		register_subscope(std::string(setting[i].getName()), new lsi_connection_scope(setting[i].getName()));
 	}
 		
 }

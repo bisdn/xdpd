@@ -24,6 +24,12 @@ public:
 	rofl::cparams params;	
 };
 
+class lsi_connection_scope:public scope {
+
+public:
+	lsi_connection_scope(std::string scope_name);
+};
+
 class lsi_connections_scope:public scope {
 	
 public:

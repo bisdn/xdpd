@@ -22,7 +22,7 @@ openflow10_switch::openflow10_switch(uint64_t dpid,
 				int reconnect_start_timeout,
 				enum rofl::csocket::socket_type_t socket_type,
 				cparams const& socket_params) throw (eOfSmVersionNotSupported)
-		: openflow_switch(dpid, dpname, version, num_of_tables)
+		: openflow_switch(dpid, dpname, OF_VERSION_10, num_of_tables)
 {
 
 	if (hal_driver_create_switch((char*)dpname.c_str(),

@@ -95,7 +95,7 @@ rofl_result_t processing_init(void){
 	//Define available cores 
 	for(i=0; i < RTE_MAX_LCORE; ++i){
 		role = rte_eal_lcore_role(i);
-		if(role == ROLE_RTE && i != config->master_lcore){
+		if(role == ROLE_RTE){
 			processing_cores[i].available = true;
 			ROFL_DEBUG(DRIVER_NAME"[processing] Marking core %u as available\n",i);
 		}

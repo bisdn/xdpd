@@ -21,6 +21,7 @@
 #include <stdexcept>
 
 #include <rofl.h>
+#include <rofl/common/csocket.h>
 #include <rofl/common/caddress.h>
 #include <rofl/common/croflexception.h>
 
@@ -49,6 +50,7 @@ class eOfSmPipelineBadTableId		: public eOfSmBase {};
 class eOfSmPipelineTableFull		: public eOfSmBase {};
 class eOfSmPortModBadPort		: public eOfSmBase {};
 class eOfSmVersionNotSupported		: public eOfSmBase {};
+class eOfSmUnknownSocketType		: public eOfSmBase {};
 class eOfSmExperimentalNotSupported	: public eOfSmBase {};
 
 //Fwd declaration
@@ -71,7 +73,7 @@ public:
 	//
 
 	/**
-	 * @brief	static factory method for creating a logical switch (LS) 
+	 * @brief	static factory method for creating a logical switch (LS)
 	 *
 	 * This method creates a new Openflow Logical Switch instance with dpid and dpname.
 	 *
@@ -83,11 +85,9 @@ public:
 					std::string const& dpname,
 					unsigned int num_of_tables,
 					int* ma_list,
-					int reconnect_start_timeout = 2,
-					rofl::caddress const& controller_addr = switch_manager::controller_addr,
-					rofl::caddress const& binding_addr = switch_manager::binding_addr,
-					bool enable_ssl = false,
-					const std::string &cert_and_key_file = std::string("")) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
+					int reconnect_start_timeout,
+					enum rofl::csocket::socket_type_t socket_type,
+					rofl::cparams const& socket_params) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
 
 
 	/**
@@ -144,12 +144,12 @@ public:
 	/**
 	 * connect to controller
 	 */
-	static void rpc_connect_to_ctl(uint64_t dpid, rofl::caddress const& ra);
+	static void rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, rofl::cparams const& socket_params);
 
 	/**
 	 * disconnect from from controller
 	 */
-	static void rpc_disconnect_from_ctl(uint64_t dpid, rofl::caddress const& ra);
+	static void rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, rofl::cparams const& socket_params);
 
 	//
 	//CMM demux

@@ -3,10 +3,6 @@
 #include <rofl/datapath/hal/hal.h>
 #include <rofl/datapath/hal/cmm.h>
 #include <rofl/common/utils/c_logger.h>
-#ifdef HAVE_OPENSSL
-#include <rofl/common/ssl_lib.h>
-#endif
-
 #include "port_manager.h"
 
 //Add here the headers of the version-dependant Openflow switchs 
@@ -36,57 +32,56 @@ openflow_switch* switch_manager::create_switch(
 		unsigned int num_of_tables,
 		int* ma_list,
 		int reconnect_start_timeout,
-		caddress const& controller_addr,
-		caddress const& binding_addr,
-		bool enable_ssl,
-		const std::string &cert_and_key_file) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported){
+		enum rofl::csocket::socket_type_t socket_type,
+		cparams const& socket_params) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported){
 
 	openflow_switch* dp;
-	
+
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 
+	//
 	if(switch_manager::switchs.find(dpid) != switch_manager::switchs.end()){
 		pthread_rwlock_unlock(&switch_manager::rwlock);
 		throw eOfSmExists();
 	}
 
-#ifdef HAVE_OPENSSL
-	// setup ssl context
-	ssl_context *ctx = NULL;
-	if (enable_ssl)	{
-		ctx = ssl_lib::get_instance().create_ssl_context(ssl_context::SSL_client, cert_and_key_file);
+
+#if ! defined(EXPERIMENTAL)
+	if(socket_type == rofl::csocket::SOCKET_TYPE_OPENSSL){
+		ROFL_ERR("[xdpd][switch_manager] ERROR: SSL socket type support is currently marked as experimental. Compile xdpd enabling experimental code to test this feature. Don't forget to make clean\n"); 
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		eOfSmExperimentalNotSupported();	
 	}
-#else
-	assert(false == enable_ssl);
 #endif
+	//Check if ROFL supports SSL or any other socket type, so that we can send a nice exception
+	if(!rofl::csocket::supports_socket_type(socket_type)){
+		ROFL_ERR("[xdpd][switch_manager] ERROR Unsupported socket type by ROFL, specified in the first connection of switch with dpid: 0x%llx. Perhaps compiled ROFL without SSL support?\n", (long long unsigned int)dpid); 
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmUnknownSocketType();
+	}
 
 	switch(version){
 
 		case OF_VERSION_10:
-#ifdef HAVE_OPENSSL
-			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr, ctx);
-#else
-			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
-#endif
+			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
 
 			break;
 
 		case OF_VERSION_12:
-#ifdef HAVE_OPENSSL
-			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr, ctx);
-#else
-			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
-#endif
+			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
+
 			break;
 	
 		case OF_VERSION_13:
 #if ! defined(EXPERIMENTAL)
 			ROFL_ERR("[xdpd][switch_manager] ERROR: OF1.3 is experimental (i.e. alpha state). Compile xdpd enabling experimental code to test this feature. Don't forget to make clean\n"); 
+			pthread_rwlock_unlock(&switch_manager::rwlock);
 			throw eOfSmExperimentalNotSupported(); 
 #endif
-			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, controller_addr, binding_addr);
+			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
+
 			break;
-	
+
 		//Add more here...
 		
 		default:
@@ -104,6 +99,9 @@ openflow_switch* switch_manager::create_switch(
 
 	return dp; 
 }
+
+
+
 
 //static
 void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
@@ -282,7 +280,7 @@ uint64_t switch_manager::get_switch_dpid(std::string& name){
 
 
 void
-switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra){
+switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){
 
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
@@ -293,14 +291,14 @@ switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra){
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
-	dp->rpc_connect_to_ctl(ra);
+	dp->rpc_connect_to_ctl(socket_type, socket_params);
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 }
 
 
 
 void
-switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra){
+switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){
 
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
@@ -311,7 +309,7 @@ switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, caddress const& ra){
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
-	dp->rpc_disconnect_from_ctl(ra);
+	dp->rpc_disconnect_from_ctl(socket_type, socket_params);
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 }
 

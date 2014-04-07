@@ -13,8 +13,8 @@ using namespace xdpd;
 of13_endpoint::of13_endpoint(
 		openflow_switch* sw,
 		int reconnect_start_timeout,
-		caddress const& controller_addr,
-		caddress const& binding_addr)  throw (eOfSmErrorOnCreation) {
+		enum rofl::csocket::socket_type_t socket_type,
+		cparams const& socket_params)  throw (eOfSmErrorOnCreation) {
 
 	//Reference back to the sw
 	this->sw = sw;
@@ -23,9 +23,9 @@ of13_endpoint::of13_endpoint(
 	crofbase::get_versionbitmap().add_ofp_version(rofl::openflow13::OFP_VERSION);
 	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
 	versionbitmap.add_ofp_version(openflow13::OFP_VERSION);
-	
+
 	//Connect to controller
-	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr);
+	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, socket_type, socket_params);
 }
 
 /*

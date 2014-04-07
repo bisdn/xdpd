@@ -33,6 +33,7 @@ using namespace xdpd::gnu_linux_dpdk;
 
 //MBUF pool
 extern struct rte_mempool* pool_direct;
+extern struct rte_mempool* pool_indirect;
 
 /*
 * ROFL-Pipeline packet mangling platform API implementation
@@ -1038,11 +1039,13 @@ datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool hard_clone){
 	} else {
 		//only moving the pointer
 		//mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
-		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_direct); //soft-clone 
+		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_indirect); //soft-clone 
 		//NOTE here we could do ((datapacket_dpdk_t*)pkt->platform_state)->mbuf = NULL;
 		
 	}
 
+	//WARNING check whether mbuf!=0
+	
 	//Copy datapacket_t and datapacket_dpdk_t state
 	platform_packet_copy_contents(pkt, pkt_replica, mbuf);
 

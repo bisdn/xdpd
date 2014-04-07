@@ -249,7 +249,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		}
 		
 		of1x_match_t *match = of1x_init_vlan_vid_match(
-								htobe16(htobe16(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT)),
+								htobe16(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT),
 								htobe16(ofmatch.get_vlan_vid_mask()),
 								vlan_present);
 
@@ -466,6 +466,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
+	/* Extensions */
 	try {
 		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code oxm_pppoe_code(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_CODE));
@@ -517,6 +518,8 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		of1x_match_t *match = of1x_init_gtp_teid_match(htobe32(oxm_gtp_teid.get_u32value()),htobe32(oxm_gtp_teid.get_u32mask()));
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
+	
+	/* End of extensions */
 }
 
 
@@ -1237,12 +1240,16 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	case OF1X_AT_POP_MPLS: {
 		action = rofl::openflow::cofaction_pop_mpls(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
+	
+	/* Extensions */
 	case OF1X_AT_POP_PPPOE: {
 		action = rofl::openflow::cofaction_pop_pppoe(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
 	case OF1X_AT_PUSH_PPPOE: {
 		action = rofl::openflow::cofaction_push_pppoe(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
+	/* End of extensions */
+
 	case OF1X_AT_PUSH_MPLS: {
 		action = rofl::openflow::cofaction_push_mpls(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
 	} break;
@@ -1390,6 +1397,8 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	case OF1X_AT_SET_FIELD_MPLS_TC: {
 		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_tc((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
 	} break;
+
+	/* Extensions */
 	case OF1X_AT_SET_FIELD_PPPOE_CODE: {
 		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
 	} break;
@@ -1408,6 +1417,8 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	case OF1X_AT_SET_FIELD_GTP_TEID: {
 		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
 	} break;
+	/* End of extensions */
+
 	case OF1X_AT_GROUP: {
 		action = rofl::openflow::cofaction_group(rofl::openflow12::OFP_VERSION, (uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK));
 	} break;
@@ -1434,33 +1445,21 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->phy_port_in)
 		match.set_in_phy_port(packet_matches->phy_port_in);
 	if(packet_matches->metadata)
-		//match.set_metadata(packet_matches->metadata);
-		match.set_matches().set_match(rofl::openflow::OXM_TLV_BASIC_METADATA) =
-				rofl::openflow::coxmatch_ofb_metadata(packet_matches->metadata);
+		match.set_metadata(packet_matches->metadata);
 	if(packet_matches->eth_dst){
 		uint64_t mac = packet_matches->eth_dst;
 		BETOHMAC(mac);
-		uint64_t msk = 0x0000FFFFFFFFFFFFULL;
-		BETOHMAC(msk);
-		//match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
-		match.set_matches().set_match(rofl::openflow::OXM_TLV_BASIC_ETH_DST) =
-				rofl::openflow::coxmatch_ofb_eth_dst(cmacaddr(mac));
+		match.set_eth_dst( cmacaddr(mac) );
 	}
 	if(packet_matches->eth_src){
 		uint64_t mac = packet_matches->eth_src;
 		BETOHMAC(mac);
-		uint64_t msk = 0x0000FFFFFFFFFFFFULL;
-		BETOHMAC(msk);
-		//match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
-		match.set_matches().set_match(rofl::openflow::OXM_TLV_BASIC_ETH_SRC) =
-				rofl::openflow::coxmatch_ofb_eth_src(cmacaddr(mac));
+		match.set_eth_src( cmacaddr(mac) );
 	}
 	if(packet_matches->eth_type)
 		match.set_eth_type(be16toh(packet_matches->eth_type));
 	if(packet_matches->vlan_vid)
-		//match.set_vlan_vid(be16toh(packet_matches->vlan_vid));
-		match.set_matches().set_match(rofl::openflow::OXM_TLV_BASIC_VLAN_VID) =
-				rofl::openflow::coxmatch_ofb_vlan_vid(packet_matches->vlan_vid);
+		match.set_vlan_vid(be16toh(packet_matches->vlan_vid));
 	if(packet_matches->vlan_pcp)
 		match.set_vlan_pcp(packet_matches->vlan_pcp);
 	if(packet_matches->arp_opcode)
@@ -1560,6 +1559,8 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	}
 	if(packet_matches->mpls_tc)
 		match.set_mpls_tc(packet_matches->mpls_tc);
+
+	//Extensions
 	if(packet_matches->pppoe_code)
 		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(packet_matches->pppoe_code));
 	if(packet_matches->pppoe_type)

@@ -49,6 +49,7 @@ class eOfSmPipelineBadTableId		: public eOfSmBase {};
 class eOfSmPipelineTableFull		: public eOfSmBase {};
 class eOfSmPortModBadPort		: public eOfSmBase {};
 class eOfSmVersionNotSupported		: public eOfSmBase {};
+class eOfSmExperimentalNotSupported	: public eOfSmBase {};
 
 //Fwd declaration
 class openflow_switch;

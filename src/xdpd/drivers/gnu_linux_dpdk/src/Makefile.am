@@ -24,8 +24,8 @@ libxdpd_driver_gnu_linux_dpdk_src_la_LIBADD = \
 		-lrte_mempool\
 		-lrte_pmd_e1000\
 		-lrte_pmd_ixgbe\
-		-lrte_pmd_vmxnet3\
-		-lrte_pmd_virtio\
+		-lrte_pmd_vmxnet3_uio\
+		-lrte_pmd_virtio_uio\
 		-lrte_power\
 		-lrte_ring\
 		-lrte_timer\

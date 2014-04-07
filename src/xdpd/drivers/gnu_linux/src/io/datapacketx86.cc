@@ -1,9 +1,6 @@
 #include "datapacketx86.h"
 
 //Include here the classifier you want to use
-#ifndef C_PACKET_CLASSIFIER
-	#include "packet_classifiers/cpp_pktclassifier/static_pktclassifier.h"
-#endif
 
 using namespace xdpd::gnu_linux;
 

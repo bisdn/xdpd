@@ -27,11 +27,7 @@
 #include <rofl/common/protocols/fipv4frame.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "io/datapacketx86.h"
-#ifdef C_PACKET_CLASSIFIER
-	#include "io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"
-#else
-	#include "io/packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
-#endif
+#include "io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"
 
 #include "../../../openflow/endianness_translation_utils.h"
 

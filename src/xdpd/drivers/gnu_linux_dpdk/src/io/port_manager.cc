@@ -61,8 +61,8 @@ static switch_port_t* configure_port(unsigned int port_id){
 	//port_conf.rx_adv_conf.rss_conf.rss_hf = ETH_RSS_IPV4 | ETH_RSS_IPV6;
 	port_conf.txmode.mq_mode = ETH_MQ_TX_NONE;
 	if ((ret=rte_eth_dev_configure(port_id, 1, IO_IFACE_NUM_QUEUES, &port_conf)) < 0){
-		assert(0);
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure device: %s (%s)\n", port->name, rte_strerror(ret));
+		assert(0);
 		return NULL;
 	}
 
@@ -71,8 +71,8 @@ static switch_port_t* configure_port(unsigned int port_id){
 	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
 		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
 		if(switch_port_add_queue(port, i, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS){
-			assert(0);
 			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
+			assert(0);
 			return NULL;
 		}
 	}

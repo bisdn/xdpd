@@ -106,6 +106,8 @@ int process_timeouts(){
 						ROFL_DEBUG_VERBOSE(DRIVER_NAME"[bg] Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
 						ROFL_DEBUG_VERBOSE(DRIVER_NAME"[bg] Datapacket expired correctly %u\n", buffer_id);
+						//Return mbuf to the pool
+						rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 						//Return buffer to bufferpool
 						bufferpool::release_buffer(pkt);
 					}

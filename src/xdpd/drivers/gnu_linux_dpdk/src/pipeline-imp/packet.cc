@@ -1196,6 +1196,8 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 		sw = pkt->sw;	
 		
 		if(unlikely(!sw)){
+			// NOTE release here mbuf as well?
+			rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 			bufferpool::release_buffer(pkt);
 			return;
 		}
@@ -1224,6 +1226,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 #endif
 			
 		//discard the original packet always (has been replicated)
+		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 		bufferpool::release_buffer(pkt);
 	}else if(output_port == in_port_meta_port){
 		

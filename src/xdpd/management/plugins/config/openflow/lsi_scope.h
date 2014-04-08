@@ -3,6 +3,8 @@
 
 #include <rofl/common/caddress.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+#include <rofl/common/csocket.h>
+#include <rofl/common/cparams.h>
 #include "../scope.h"
 
 /**
@@ -25,10 +27,11 @@ protected:
 
 	//Parsing routines
 	void parse_version(libconfig::Setting& setting, of_version_t* version);
-	void parse_active_connections(libconfig::Setting& setting, rofl::caddress& master_controller, rofl::caddress& slave_controller, unsigned int* reconnect_time);
-	void parse_passive_connection(libconfig::Setting& setting, rofl::caddress& bind_address);
+	void parse_reconnect_time(libconfig::Setting& setting, unsigned int* reconnect_time);
+	void parse_active_connections(libconfig::Setting& setting, std::string& master_controller, int& master_controller_port, std::string& slave_controller, int& slave_controller_port);
 	void parse_matching_algorithms(libconfig::Setting& setting, of_version_t version, unsigned int num_of_tables, int* ma_list, bool dry_run);
 	void parse_ports(libconfig::Setting& setting, std::vector<std::string>& ports, bool dry_run);
+	enum rofl::csocket::socket_type_t parse_socket(libconfig::Setting& setting, rofl::cparams& socket_params);
 private:
 	void parse_ip(rofl::caddress& addr, std::string& ip, unsigned int port);
 };

@@ -17,7 +17,7 @@
 */
 
 enum gtpu_udp_port_t {
-	GTPU_UDP_PORT = 2152,
+	GTPU_UDP_PORT = 0x6808, // htobe16(2152)
 };
 
 enum gtpu_flag_t {

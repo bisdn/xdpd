@@ -23,11 +23,7 @@
 #include "../io/bufferpool.h"
 #include "../io/ports/ioport.h"
 
-#ifdef C_PACKET_CLASSIFIER
-	#include "../io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"
-#else
-	#include "../io/packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
-#endif
+#include "../io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"
 
 using namespace xdpd::gnu_linux;
 

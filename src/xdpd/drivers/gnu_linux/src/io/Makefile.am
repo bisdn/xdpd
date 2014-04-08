@@ -18,11 +18,8 @@ libxdpd_driver_gnu_linux_io_la_SOURCES = \
 	iomanager.cc \
 	iomanager.h
 
-if C_CLASSIFIER
+#Define classifier
 CLASSIFIER_LIB=packet_classifiers/c_pktclassifier/libxdpd_driver_gnu_linux_io_classifiers_c.la
-else
-CLASSIFIER_LIB=packet_classifiers/cpp_pktclassifier/libxdpd_driver_gnu_linux_io_classifiers_cpp.la
-endif
 
 libxdpd_driver_gnu_linux_io_la_LIBADD = \
 	$(CLASSIFIER_LIB)\

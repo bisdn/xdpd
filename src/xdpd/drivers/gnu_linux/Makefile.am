@@ -15,5 +15,3 @@ libxdpd_driver_gnu_linux_la_LIBADD = \
 maintainer-clean-local:
 	rm -rf $(top_srcdir)/m4
 	rm -rf $(top_srcdir)/build-aux
-
-ACLOCAL_AMFLAGS = -I m4

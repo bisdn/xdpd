@@ -5,10 +5,6 @@
 #include "of12_translation_utils.h"
 #include "../../management/system_manager.h"
 
-#ifdef HAVE_OPENSSL
-#include <rofl/common/ssl_lib.h>
-#endif
-
 using namespace xdpd;
 
 /*
@@ -17,9 +13,8 @@ using namespace xdpd;
 of12_endpoint::of12_endpoint(
 		openflow_switch* sw,
 		int reconnect_start_timeout,
-		caddress const& controller_addr,
-		caddress const& binding_addr,
-		ssl_context *ctx)  throw (eOfSmErrorOnCreation) {
+		enum rofl::csocket::socket_type_t socket_type,
+		cparams const& socket_params)  throw (eOfSmErrorOnCreation) {
 
 	//Reference back to the sw
 	this->sw = sw;
@@ -30,7 +25,7 @@ of12_endpoint::of12_endpoint(
 	versionbitmap.add_ofp_version(openflow12::OFP_VERSION);
 
 	//Connect to controller
-	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, controller_addr, PF_INET, SOCK_STREAM, IPPROTO_TCP, ctx);
+	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, socket_type, socket_params);
 }
 
 /*

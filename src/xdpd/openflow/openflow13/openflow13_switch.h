@@ -43,9 +43,8 @@ public:
 				unsigned int num_of_tables,
 				int* ma_list,
 				int reconnect_start_timeout,
-				caddress const& controller_addr = caddress(AF_INET, "127.0.0.1", 6633),
-				caddress const& binding_addr = caddress(AF_INET, "0.0.0.0", 0),
-				ssl_context *ctx = NULL) throw (eOfSmVersionNotSupported);
+				enum rofl::csocket::socket_type_t socket_type,
+				cparams const& socket_params) throw (eOfSmVersionNotSupported);
 
 
 	/**
@@ -67,23 +66,6 @@ public:
 					packet_matches_t* matches);
 	
 	virtual rofl_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry);
-
-	/*
-	* Port async notifications
-	*/
-	virtual rofl_result_t notify_port_attached(const switch_port_t* port);
-	
-	virtual rofl_result_t notify_port_detached(const switch_port_t* port);
-	
-	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
-
-	 /*
-	 * Connecting and disconnecting from a controller entity
-	 */
-	virtual void rpc_connect_to_ctl(caddress const& controller_addr);
-
-	virtual void rpc_disconnect_from_ctl(caddress const& controller_addr);
-
 };
 
 }// namespace rofl

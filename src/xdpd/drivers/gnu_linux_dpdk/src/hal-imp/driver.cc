@@ -258,8 +258,7 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	}	
 
 
-	//Make sure all buffered PKT_INs are dropped
-	wait_pktin_draining(sw);
+	//Note: There is no need to drain PKT_INs here. Will be done in the destroy hook of the pipeline
 
 	//Detach ports from switch. 
 	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)

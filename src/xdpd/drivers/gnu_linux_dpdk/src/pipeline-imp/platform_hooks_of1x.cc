@@ -70,6 +70,13 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 
 rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
+	ROFL_DEBUG(DRIVER_NAME"Draining remaining PKT_INs for switch 0x%llx(%p)\n", (long long unsigned int)sw->dpid, sw);
+	
+	//Drain packet_ins (if any)
+	wait_pktin_draining((of_switch_t*)sw);
+	
+	ROFL_DEBUG(DRIVER_NAME"Remaining PKT_INs for switch 0x%llx(%p) drained!\n", (long long unsigned int)sw->dpid, sw);
+
 	delete (datapacket_storage*)sw->platform_state;
 	return ROFL_SUCCESS;
 }

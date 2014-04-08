@@ -10,16 +10,21 @@
 using namespace xdpd::mgmt::protocol;
 
 cxmpclient::cxmpclient() :
-		socket(this, AF_INET, SOCK_DGRAM, IPPROTO_UDP, 10),
+		socket(NULL),
 		laddr(AF_INET, "0.0.0.0", 0),
 		raddr(AF_INET, "127.0.0.1", 8444)
 {
-	socket.connect(
-			raddr,
-			laddr,
-			AF_INET,
-			SOCK_DGRAM,
-			IPPROTO_UDP);
+	socket = rofl::csocket::csocket_factory(rofl::csocket::SOCKET_TYPE_PLAIN, this);
+
+	socket_params = rofl::csocket::get_default_params(rofl::csocket::SOCKET_TYPE_PLAIN);
+
+	socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string("127.0.0.1");
+	socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string("8444");
+	socket_params.set_param(rofl::csocket::PARAM_KEY_DOMAIN).set_string("inet");
+	socket_params.set_param(rofl::csocket::PARAM_KEY_TYPE).set_string("dgram");
+	socket_params.set_param(rofl::csocket::PARAM_KEY_PROTOCOL).set_string("udp");
+
+	socket->connect(socket_params);
 }
 
 
@@ -60,7 +65,7 @@ cxmpclient::port_attach(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send(mem, raddr);
+	socket->send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -82,7 +87,7 @@ cxmpclient::port_detach(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send(mem, raddr);
+	socket->send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -103,7 +108,7 @@ cxmpclient::port_enable(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send(mem, raddr);
+	socket->send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -124,7 +129,7 @@ cxmpclient::port_disable(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket.send(mem, raddr);
+	socket->send(mem, raddr);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }

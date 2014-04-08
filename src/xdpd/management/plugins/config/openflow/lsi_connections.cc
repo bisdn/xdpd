@@ -125,14 +125,14 @@ lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setti
 	if (setting.exists(LSI_CONNECTION_SSL)) {
 		con.type = rofl::csocket::SOCKET_TYPE_OPENSSL;
 		//Generate list of empty parameters for this socket
-		con.params = rofl::csocket::get_params(con.type);
+		con.params = rofl::csocket::get_default_params(con.type);
 
 		//Parse specific stuff for SSL
 		parse_ssl_connection_params(setting, con);
 	}else{
 		con.type = rofl::csocket::SOCKET_TYPE_PLAIN;
 		//Generate list of empty parameters for this socket
-		con.params = rofl::csocket::get_params(con.type);
+		con.params = rofl::csocket::get_default_params(con.type);
 	}
 
 	//Fill common parameters

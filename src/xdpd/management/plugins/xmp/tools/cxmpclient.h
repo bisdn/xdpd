@@ -29,7 +29,8 @@ class cxmpclient :
 	public rofl::ciosrv,
 	public rofl::csocket_owner
 {
-	rofl::csocket		socket;
+	rofl::csocket*		socket;
+	rofl::cparams		socket_params;
 	rofl::caddress		laddr;
 	rofl::caddress		raddr;
 
@@ -88,13 +89,22 @@ protected:
 protected:
 
 	virtual void
-	handle_accepted(rofl::csocket& socket, int newsd, rofl::caddress const& ra) {};
+	handle_listen(rofl::csocket& socket, int newsd) {};
+
+	virtual void
+	handle_accepted(rofl::csocket& socket) {};
+
+	virtual void
+	handle_accept_refused(rofl::csocket& socket) {};
 
 	virtual void
 	handle_connected(rofl::csocket& socket) {};
 
 	virtual void
 	handle_connect_refused(rofl::csocket& socket) {};
+
+	virtual void
+	handle_write(rofl::csocket& socket) {};
 
 	virtual void
 	handle_read(rofl::csocket& socket) {};

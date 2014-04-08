@@ -13,11 +13,17 @@ using namespace xdpd::mgmt::protocol;
 
 
 xmp::xmp() :
-		socket(this, AF_INET, SOCK_DGRAM, IPPROTO_UDP, 10),
-		udp_addr(MGMT_PORT_UDP_ADDR),
-		udp_port(MGMT_PORT_UDP_PORT)
+		socket(NULL)
 {
+	socket = rofl::csocket::csocket_factory(rofl::csocket::SOCKET_TYPE_PLAIN, this);
 
+	socket_params = rofl::csocket::get_default_params(rofl::csocket::SOCKET_TYPE_PLAIN);
+
+	socket_params.set_param(rofl::csocket::PARAM_KEY_LOCAL_HOSTNAME).set_string(MGMT_PORT_UDP_ADDR);
+	socket_params.set_param(rofl::csocket::PARAM_KEY_LOCAL_PORT).set_string(MGMT_PORT_UDP_PORT);
+	socket_params.set_param(rofl::csocket::PARAM_KEY_DOMAIN).set_string("inet");
+	socket_params.set_param(rofl::csocket::PARAM_KEY_TYPE).set_string("dgram");
+	socket_params.set_param(rofl::csocket::PARAM_KEY_PROTOCOL).set_string("udp");
 }
 
 
@@ -32,8 +38,7 @@ void
 xmp::init()
 {
 	rofl::logging::error << "[xdpd][xmp] initializing ..." << std::endl;
-	socket.listen(caddress(AF_INET, udp_addr.c_str(), udp_port), AF_INET, SOCK_DGRAM, IPPROTO_UDP, NULL, 10);
-	//register_filedesc_r(socket.getfd());
+	socket->listen(socket_params);
 }
 
 

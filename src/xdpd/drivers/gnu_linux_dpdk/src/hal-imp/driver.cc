@@ -252,9 +252,11 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	//Desechedule all ports. Do not feed more packets to the switch
 	for(i=0;i<sw->max_ports;i++){
 
-		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port)
-	
-			processing_deschedule_port(sw->logical_ports[i].port);
+		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
+			if(sw->logical_ports[i].port->type != PORT_TYPE_VIRTUAL)	
+				//Desechdule only non-virtual ports
+				processing_deschedule_port(sw->logical_ports[i].port);
+		}
 	}	
 
 
@@ -366,11 +368,21 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 			return HAL_FAILURE;
 		}
 	}
-
-	//Schedule the port in the I/O subsystem
-	if(processing_schedule_port(port) != ROFL_SUCCESS){
-		assert(0);
-		return HAL_FAILURE;
+	
+	if(port->type == PORT_TYPE_VIRTUAL){
+		/*
+		* Virtual link
+		*/
+		//Do nothing
+	}else{
+		/*
+		*  PHYSICAL
+		*/
+		//Schedule the port in the I/O subsystem
+		if(processing_schedule_port(port) != ROFL_SUCCESS){
+			assert(0);
+			return HAL_FAILURE;
+		}
 	}		
 
 	return HAL_SUCCESS;
@@ -386,8 +398,64 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 */
 hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, switch_port_snapshot_t** port2){
 
-	//TODO: implemented
-	return HAL_FAILURE; 
+	of_switch_t *lsw1, *lsw2;
+	switch_port_snapshot_t *port1_not, *port2_not;
+	switch_port_t *vport1, *vport2;
+	unsigned int port_num = 0; //We don't care about of the port
+
+	//Check existance of the dpid
+	lsw1 = physical_switch_get_logical_switch_by_dpid(dpid_lsi1);
+	lsw2 = physical_switch_get_logical_switch_by_dpid(dpid_lsi2);
+
+	if(!lsw1 || !lsw2){
+		assert(0);
+		return HAL_FAILURE;
+	}
+	
+	//Create virtual port pair
+	if(port_manager_create_virtual_port_pair(lsw1, &vport1, lsw2, &vport2) != ROFL_SUCCESS){
+		assert(0);
+		return HAL_FAILURE;
+	}
+
+	//Attach both ports
+	if(hal_driver_attach_port_to_switch(dpid_lsi1, vport1->name, &port_num) != HAL_SUCCESS){
+		assert(0);
+		return HAL_FAILURE;
+	}
+	port_num=0;
+	if(hal_driver_attach_port_to_switch(dpid_lsi2, vport2->name, &port_num) != HAL_SUCCESS){
+		assert(0);
+		return HAL_FAILURE;
+	}
+
+	//Notify port add as requested by the API
+	port1_not = physical_switch_get_port_snapshot(vport1->name);
+	port2_not = physical_switch_get_port_snapshot(vport2->name);
+	if(!port1_not || !port2_not){
+		assert(0);
+		return HAL_FAILURE;
+	}
+	
+	hal_cmm_notify_port_add(port1_not);
+	hal_cmm_notify_port_add(port2_not);
+
+
+	//Enable interfaces (start packet transmission)
+	if(hal_driver_bring_port_up(vport1->name) != HAL_SUCCESS || hal_driver_bring_port_up(vport2->name) != HAL_SUCCESS){
+		ROFL_ERR(DRIVER_NAME" ERROR: unable to bring up vlink ports.\n");
+		assert(0);
+		return HAL_FAILURE;
+	}
+
+	//Set switch ports and return
+	*port1 = physical_switch_get_port_snapshot(vport1->name);
+	*port2 = physical_switch_get_port_snapshot(vport2->name);
+	
+	assert(*port1 != NULL);
+	assert(*port2 != NULL);
+
+	return HAL_SUCCESS; 
 }
 
 /*
@@ -400,7 +468,7 @@ hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 */
 hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name){
 	of_switch_t* lsw;
-	switch_port_t* port;
+	switch_port_t *port, *port_pair;
 	switch_port_snapshot_t *port_snapshot=NULL, *port_pair_snapshot=NULL;
 	
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
@@ -416,20 +484,41 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	//Snapshoting the port *before* it is detached 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
 	
-	//TODO: vlink ports
-	//Deschedule port
-	processing_deschedule_port(port);
-	
+	if(port->type == PORT_TYPE_VIRTUAL){
+		/*
+		* Virtual link
+		*/
+		port_pair = (switch_port_t*)port->platform_port_state;
+		port_pair_snapshot = physical_switch_get_port_snapshot(port_pair->name); 
+		
+		//Detach pair port from the pipeline
+		if(physical_switch_detach_port_from_logical_switch(port_pair,port_pair->attached_sw) != ROFL_SUCCESS){
+			ROFL_ERR(DRIVER_NAME" Error detaching vlink port %s.\n",port_pair->name);
+			assert(0);
+			goto DRIVER_DETACH_ERROR;	
+		}
+
+		//Notify removal of both ports
+		hal_cmm_notify_port_delete(port_snapshot);
+		hal_cmm_notify_port_delete(port_pair_snapshot);
+	}else{
+		/*
+		*  PHYSICAL
+		*/
+		//Deschedule port from processing (phyiscal port)
+		processing_deschedule_port(port);
+	}
+
 	//Detach it
 	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS){
 		ROFL_ERR(DRIVER_NAME" Error detaching port %s.\n",port->name);
 		assert(0);
-		goto FWD_MODULE_DETACH_ERROR;	
+		goto DRIVER_DETACH_ERROR;	
 	}
 	
 	return HAL_SUCCESS; 
 
-FWD_MODULE_DETACH_ERROR:
+DRIVER_DETACH_ERROR:
 	if(port_snapshot)
 		switch_port_destroy_snapshot(port_snapshot);	
 	if(port_pair_snapshot)

@@ -1113,8 +1113,18 @@ static void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pack, swi
 #ifdef DEBUG
 		dump_packet_matches(&pkt->matches, false);
 #endif
-
-		tx_pkt(port, pack->output_queue, pkt);	
+		if(port->type == PORT_TYPE_VIRTUAL){
+			/*
+			* Virtual link
+			*/
+			//Reset port_in and reprocess
+			((datapacket_dpdk_t*)pkt->platform_state)->in_port = pkt->matches.port_in = ((switch_port_t*)port->platform_port_state)->of_port_num;
+	
+			tx_pkt_vlink(port, pkt);
+			return;
+		}else{
+			tx_pkt(port, pack->output_queue, pkt);
+		}
 	}else{
 		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 	}

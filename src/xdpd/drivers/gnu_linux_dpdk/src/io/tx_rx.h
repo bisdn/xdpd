@@ -159,6 +159,12 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	return;
 }
 
+inline void
+tx_pkt_vlink(switch_port_t* vlink, datapacket_t* pkt){
+	assert(vlink->type == PORT_TYPE_VIRTUAL);
+	of_process_packet_pipeline(((switch_port_t*)vlink->platform_port_state)->attached_sw, pkt);
+}
+
 }// namespace xdpd::gnu_linux_dpdk 
 }// namespace xdpd
 

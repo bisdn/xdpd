@@ -14,6 +14,8 @@ AC_PROG_LD
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+PKG_PROG_PKG_CONFIG
+
 AUTOCONF_ENV="SHELL=/bin/sh"
 LT_INIT
 link_all_deplibs=yes

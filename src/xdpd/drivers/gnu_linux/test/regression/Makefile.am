@@ -2,27 +2,8 @@ MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS = io 
 
-if C_CLASSIFIER
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/c_pktclassifier/c_pktclassifier.c \
 		$(top_srcdir)/src/io/packet_classifiers/packet_operations.cc
-else
-CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/packetclassifier.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/static_pktclassifier.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_ethernet.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_arpv4.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_icmpv4.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_icmpv6.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_ipv4.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_ipv6.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_gtpu.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_mpls.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_tcp.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_udp.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_ppp.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_pppoe.cc \
-		$(top_srcdir)/src/io/packet_classifiers/cpp_pktclassifier/cpp_headers/cpp_vlan.cc
-endif
 
 #Shared stuff
 SHARED_SRC=\

@@ -491,12 +491,17 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 		port_pair = (switch_port_t*)port->platform_port_state;
 		port_pair_snapshot = physical_switch_get_port_snapshot(port_pair->name); 
 		
+		//Make sure that pkts are not attempting to access the port_pair between 
+		//detachment of port_pair and port
+		port->platform_port_state = NULL;
+			
 		//Detach pair port from the pipeline
 		if(physical_switch_detach_port_from_logical_switch(port_pair,port_pair->attached_sw) != ROFL_SUCCESS){
 			ROFL_ERR(DRIVER_NAME" Error detaching vlink port %s.\n",port_pair->name);
 			assert(0);
 			goto DRIVER_DETACH_ERROR;	
 		}
+
 
 		//Notify removal of both ports
 		hal_cmm_notify_port_delete(port_snapshot);

@@ -137,6 +137,9 @@ PKT_IN_ERROR:
 	}
 
 	if(detached_pkt){
+		if(((datapacket_dpdk_t*)detached_pkt->platform_state)->mbuf)
+			rte_pktmbuf_free(((datapacket_dpdk_t*)detached_pkt->platform_state)->mbuf);
+		
 		bufferpool::release_buffer(detached_pkt);
 	}
 

@@ -185,6 +185,123 @@ rofl_result_t port_manager_discover_system_ports(void){
 }
 
 /*
+* Creates a virtual link port pair. TODO: this function is not thread safe
+*/
+rofl_result_t port_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_port_t **vport1, of_switch_t* lsw2, switch_port_t **vport2){
+
+	//Names are composed following vlinkX-Y
+	//Where X is the virtual link number (0... N-1)
+	//Y is the edge 0 (left) 1 (right) of the connectio
+	static unsigned int num_of_vlinks=0;
+	char port_name[PORT_QUEUE_MAX_LEN_NAME];
+	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
+	uint64_t port_capabilities=0x0;
+	uint16_t randnum = 0;
+	unsigned int i;
+
+	//Init the pipeline ports
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 0);
+
+	*vport1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 1);
+
+	*vport2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+	
+	if(*vport1 == NULL || *vport2 == NULL){
+		ROFL_ERR(DRIVER_NAME"[port_manager] Unable to allocate memory for virtual ports\n");
+		assert(0);
+		goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;
+	}
+
+	//Initalize port features(Marking as 1G)
+	port_capabilities |= PORT_FEATURE_1GB_FD;
+	switch_port_add_capabilities(&(*vport1)->curr, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&(*vport1)->advertised, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&(*vport1)->supported, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&(*vport1)->peer, (port_features_t)port_capabilities);	
+
+	randnum = (uint16_t)rand();
+	(*vport1)->hwaddr[0] = ((uint8_t*)&randnum)[0];
+	(*vport1)->hwaddr[1] = ((uint8_t*)&randnum)[1];
+	randnum = (uint16_t)rand();
+	(*vport1)->hwaddr[2] = ((uint8_t*)&randnum)[0];
+	(*vport1)->hwaddr[3] = ((uint8_t*)&randnum)[1];
+	randnum = (uint16_t)rand();
+	(*vport1)->hwaddr[4] = ((uint8_t*)&randnum)[0];
+	(*vport1)->hwaddr[5] = ((uint8_t*)&randnum)[1];
+	(*vport1)->hwaddr[0] &= 0xfe;
+
+	//Add queues
+	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
+		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
+		if(switch_port_add_queue((*vport1), i, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS){
+			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", (*vport1)->name);
+			assert(0);
+			goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;
+		}
+	}
+
+	switch_port_add_capabilities(&(*vport2)->curr, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&(*vport2)->advertised, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&(*vport2)->supported, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&(*vport2)->peer, (port_features_t)port_capabilities);	
+
+	randnum = (uint16_t)rand();
+	(*vport2)->hwaddr[0] = ((uint8_t*)&randnum)[0];
+	(*vport2)->hwaddr[1] = ((uint8_t*)&randnum)[1];
+	randnum = (uint16_t)rand();
+	(*vport2)->hwaddr[2] = ((uint8_t*)&randnum)[0];
+	(*vport2)->hwaddr[3] = ((uint8_t*)&randnum)[1];
+	randnum = (uint16_t)rand();
+	(*vport2)->hwaddr[4] = ((uint8_t*)&randnum)[0];
+	(*vport2)->hwaddr[5] = ((uint8_t*)&randnum)[1];
+	(*vport2)->hwaddr[0] &= 0xfe;
+	
+	//Add queues
+	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
+		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
+		if(switch_port_add_queue((*vport2), i, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS){
+			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", (*vport2)->name);
+			assert(0);
+			goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;
+		}
+	}
+
+	//Interlace them
+	(*vport2)->platform_port_state = *vport1;	
+	(*vport1)->platform_port_state = *vport2;	
+
+
+	//Add them to the physical switch
+	if( physical_switch_add_port(*vport1) != ROFL_SUCCESS ){
+		ROFL_ERR(DRIVER_NAME"[port_manager] Unable to allocate memory for virtual ports\n");
+		assert(0);
+		goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;	
+
+	}
+	if( physical_switch_add_port(*vport2) != ROFL_SUCCESS ){
+		ROFL_ERR(DRIVER_NAME"[port_manager] Unable to allocate memory for virtual ports\n");
+		assert(0);
+		goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;	
+
+	}
+
+	//Increment counter and return
+	num_of_vlinks++; 
+
+	return ROFL_SUCCESS;
+
+PORT_MANAGER_CREATE_VLINK_PAIR_ERROR:
+	if(*vport1)
+		switch_port_destroy(*vport1);
+	if(*vport2)
+		switch_port_destroy(*vport2);
+	return ROFL_FAILURE;
+}
+
+
+
+/*
 * Enable port 
 */
 rofl_result_t port_manager_enable(switch_port_t* port){
@@ -195,18 +312,36 @@ rofl_result_t port_manager_enable(switch_port_t* port){
 	if(unlikely(!port))
 		return ROFL_FAILURE;
 
-	port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
+	
+	if(port->type != PORT_TYPE_VIRTUAL){
+		/*
+		*  PHYSICAL
+		*/
+		port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 
-	//Start port in RTE
-	if(!port->up){
-		//Was down; simply start
-		if((ret=rte_eth_dev_start(port_id)) < 0){
-			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
-			assert(0);
-			return ROFL_FAILURE; 
+		//Start port in RTE
+		if(!port->up){
+			//Was down; simply start
+			if((ret=rte_eth_dev_start(port_id)) < 0){
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
+				assert(0);
+				return ROFL_FAILURE; 
+			}
+		}
+	}else{
+		/*
+		* Virtual link
+		*/
+		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
+		//Set link flag on both ports
+		if(port_pair->up){
+			port->state &= ~PORT_STATE_LINK_DOWN;
+			port_pair->state &= ~PORT_STATE_LINK_DOWN;
+		}else{
+			port->state |= PORT_STATE_LINK_DOWN;
+			port_pair->state |= PORT_STATE_LINK_DOWN;
 		}
 	}
-
 	//Mark the port as being up and return
 	port->up = true;
 		
@@ -222,17 +357,33 @@ rofl_result_t port_manager_disable(switch_port_t* port){
 	
 	if(unlikely(!port))
 		return ROFL_FAILURE;
+	
+	if(port->type != PORT_TYPE_VIRTUAL){
+		/*
+		*  PHYSICAL
+		*/
 
-	port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
+		port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 
-	//First mark the port as NOT up, so that cores don't issue
-	//RX/TX calls over the port
-	port->up = false;
+		//First mark the port as NOT up, so that cores don't issue
+		//RX/TX calls over the port
+		port->up = false;
 
-	//Stop port in RTE
-	if(port->up){
-		//Was  up; stop it
-		rte_eth_dev_stop(port_id);
+		//Stop port in RTE
+		if(port->up){
+			//Was  up; stop it
+			rte_eth_dev_stop(port_id);
+		}
+	}else{
+		/*
+		* Virtual link
+		*/
+		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
+		port->up = false;
+
+		//Set links as down	
+		port->state |= PORT_STATE_LINK_DOWN;
+		port_pair->state |= PORT_STATE_LINK_DOWN;
 	}
 
 	return ROFL_SUCCESS;

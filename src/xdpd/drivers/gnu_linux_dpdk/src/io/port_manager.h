@@ -40,6 +40,11 @@ ROFL_BEGIN_DECLS
 rofl_result_t port_manager_discover_system_ports(void);
 
 /**
+* Creates a virtual link port pair
+*/
+rofl_result_t port_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_port_t **vport1, of_switch_t* lsw2, switch_port_t **vport2);
+
+/**
 * Shutdown all ports in the system 
 */
 rofl_result_t port_manager_destroy(void);

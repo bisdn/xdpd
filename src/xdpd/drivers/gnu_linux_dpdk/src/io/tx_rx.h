@@ -160,6 +160,25 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	return;
 }
 
+inline void
+tx_pkt_vlink(switch_port_t* vlink, datapacket_t* pkt){
+	switch_port_t* vlink_pair = (switch_port_t*)vlink->platform_port_state;
+	of_switch_t* sw;
+
+	assert(vlink->type == PORT_TYPE_VIRTUAL);
+	
+	if( likely( vlink_pair!= NULL) ){
+		sw = vlink_pair->attached_sw;
+		if( likely(sw != NULL) ){	
+			of_process_packet_pipeline(sw, pkt);
+			return;
+		}
+	}
+
+	//The vlink is being destroyed; drop the packet
+	platform_packet_drop(pkt);
+}
+
 }// namespace xdpd::gnu_linux_dpdk 
 }// namespace xdpd
 

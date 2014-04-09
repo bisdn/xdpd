@@ -61,7 +61,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 				continue;
 	
 			//Not found, so not recognised. Throw exception
-			ROFL_ERR(CONF_PLUGIN_ID "%s: ERROR, unknow parameter or scope '%s'.\n", setting.getPath().c_str(), aux.c_str());
+			ROFL_ERR(CONF_PLUGIN_ID "%s: ERROR, unknow parameter or scope '%s'. Perhaps an old configuration file syntax?\n", setting.getPath().c_str(), aux.c_str());
 
 			throw eConfUnknownElement();
 	

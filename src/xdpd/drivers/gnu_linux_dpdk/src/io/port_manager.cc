@@ -61,7 +61,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	//port_conf.rx_adv_conf.rss_conf.rss_hf = ETH_RSS_IPV4 | ETH_RSS_IPV6;
 	port_conf.txmode.mq_mode = ETH_MQ_TX_NONE;
 	if ((ret=rte_eth_dev_configure(port_id, 1, IO_IFACE_NUM_QUEUES, &port_conf)) < 0){
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure device: %s (%s)\n", port->name, rte_strerror(ret));
+		ROFL_ERR(DRIVER_NAME"[port_manager][%s] Cannot configure device; %s(%d)\n", port->name, rte_strerror(ret), ret);
 		assert(0);
 		return NULL;
 	}

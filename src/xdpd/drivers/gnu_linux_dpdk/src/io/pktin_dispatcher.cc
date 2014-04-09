@@ -11,7 +11,7 @@ struct rte_ring* pkt_ins;
 bool keep_on_pktins;
 bool destroying_sw;
 static pthread_t pktin_thread;
-static pthread_mutex_t pktin_mutex=PTHREAD_MUTEX_INITIALIZER;
+static sem_t pktin_drained;
 static pthread_mutex_t drain_mutex=PTHREAD_MUTEX_INITIALIZER;
 
 using namespace xdpd::gnu_linux;
@@ -36,19 +36,6 @@ static void* process_packet_ins(void* param){
 
 	while(likely(keep_on_pktins)){
 
-		//Wait for incomming pkts
-		clock_gettime(CLOCK_REALTIME, &timeout);
-    		timeout.tv_sec += 1; 
-		if( sem_timedwait(&pktin_sem, &timeout)  == ETIMEDOUT )
-			continue;	
-
-		//Dequeue
-		if(rte_ring_sc_dequeue(pkt_ins, (void**)&pkt) != 0)
-			continue;
-	
-		if(drain_credits > 0)
-			drain_credits--;
-
 		if(destroying_sw == true){
 			if(drain_credits == -1){
 				//Recover the number of credits that need to be decremented.
@@ -62,9 +49,22 @@ static void* process_packet_ins(void* param){
 				destroying_sw = false;		
 	
 				//Wake up the caller of wait_pktin_draining() 
-				pthread_mutex_unlock(&pktin_mutex);
+				sem_post(&pktin_drained);
 			}
 		}
+		
+		//Wait for incomming pkts
+		clock_gettime(CLOCK_REALTIME, &timeout);
+    		timeout.tv_sec += 1; 
+		if( sem_timedwait(&pktin_sem, &timeout)  == ETIMEDOUT )
+			continue;	
+
+		//Dequeue
+		if(rte_ring_sc_dequeue(pkt_ins, (void**)&pkt) != 0)
+			continue;
+
+		if(drain_credits > 0)
+			drain_credits--;
 
 		//Recover platform state
 		pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
@@ -122,8 +122,8 @@ void wait_pktin_draining(of_switch_t* sw){
 	// until all the PKT_INs belonging to the LSI have been
 	// processed (dropped by the CMM)
 	//
-	// Note that *no more packets* will enqueued in the global
-	// PKT_IN queue, since ports shall be descheduled.
+	// Note that *no more packets* will be enqueued in the global
+	// PKT_IN queue, since ports shall be descheduled already.
 	//
 	// Strategy is just to make sure all current pending PKT_INs
 	// are processed and return
@@ -135,7 +135,7 @@ void wait_pktin_draining(of_switch_t* sw){
 	//Signal PKT_IN thread that should unblock us when all current credits
 	//have been drained 
 	destroying_sw = true;
-	pthread_mutex_lock(&pktin_mutex);
+	sem_wait(&pktin_drained);
 	
 	//Serialize calls to wait_pktin_draining
 	pthread_mutex_unlock(&drain_mutex);
@@ -146,9 +146,15 @@ rofl_result_t pktin_dispatcher_init(){
 
 	keep_on_pktins = true;
 
+	//Syncrhonization between I/O threads and PKT_IN thread
 	if(sem_init(&pktin_sem, 0,0) < 0){
 		return ROFL_FAILURE;
 	}	
+	
+	//Synchronization between PKT_IN thread and mgmt thread
+	if(sem_init(&pktin_drained, 0,0) < 0){
+		return ROFL_FAILURE;
+	}
 
 	//PKT_IN queue
 	pkt_ins = rte_ring_create("PKT_IN_RING", IO_PKT_IN_STORAGE_MAX_BUF, SOCKET_ID_ANY, 0x0);

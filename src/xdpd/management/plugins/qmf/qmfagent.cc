@@ -244,7 +244,7 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 
 		// TODO: add socket_type to AMQP/QMF communication
 		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
-		rofl::cparams socket_params = csocket::get_params(socket_type);
+		rofl::cparams socket_params = csocket::get_default_params(socket_type);
 
 		std::stringstream sctlport; sctlport << ctlport;
 		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
@@ -395,7 +395,7 @@ qmfagent::methodCtlConnect(qmf::AgentEvent& event)
 
 		// TODO: add socket_type to AMQP/QMF communication
 		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
-		rofl::cparams socket_params = csocket::get_params(socket_type);
+		rofl::cparams socket_params = csocket::get_default_params(socket_type);
 
 		std::stringstream sctlport; sctlport << ctlport;
 		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
@@ -434,7 +434,7 @@ qmfagent::methodCtlDisconnect(qmf::AgentEvent& event)
 
 		// TODO: add socket_type to AMQP/QMF communication
 		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
-		rofl::cparams socket_params = csocket::get_params(socket_type);
+		rofl::cparams socket_params = csocket::get_default_params(socket_type);
 
 		std::stringstream sctlport; sctlport << ctlport;
 		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);

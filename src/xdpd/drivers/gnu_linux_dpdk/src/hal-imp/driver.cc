@@ -64,12 +64,21 @@ hal_result_t hal_driver_init(const char* extra_params){
 	
 	ROFL_INFO(DRIVER_NAME" Initializing...\n");
 	
+	if( RTE_CORE_MASK&0x00000001 )
+		ROFL_WARN(DRIVER_NAME" WARNING: coremask attemps to set core 0 as I/O, but core 0 is reserved for management tasks. Ignoring...\n");
+		
         /* init EAL library */
 	optind=1;
 	ret = rte_eal_init(EAL_ARGS-1, (char**)argv_fake);
 	if (ret < 0)
 		rte_exit(EXIT_FAILURE, "rte_eal_init failed");
 	optind=1;
+
+	//Make sure lcore count > 2. Core 0 left for mgmt
+	if( rte_lcore_count() < 2 ){
+		ROFL_ERR(DRIVER_NAME"ERROR: the system must have at last 2 cores. Aborting\n");
+		return HAL_FAILURE;
+	}
 
 	/* create the mbuf pools */
 	pool_direct = rte_mempool_create("pool_direct", NB_MBUF,
@@ -249,8 +258,7 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	}	
 
 
-	//Make sure all buffered PKT_INs are dropped
-	wait_pktin_draining(sw);
+	//Note: There is no need to drain PKT_INs here. Will be done in the destroy hook of the pipeline
 
 	//Detach ports from switch. 
 	if(physical_switch_detach_all_ports_from_logical_switch(sw)!=ROFL_SUCCESS)

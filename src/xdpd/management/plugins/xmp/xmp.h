@@ -26,12 +26,11 @@ class xmp :
 		public rofl::csocket_owner,
 		public plugin
 {
-	rofl::csocket				socket;		// listening socket
-	std::string				udp_addr;	// binding address
-	uint16_t				udp_port;	// listening UDP port
+	rofl::csocket*			socket;			// listening socket
+	rofl::cparams			socket_params;
 
 #define MGMT_PORT_UDP_ADDR	"127.0.0.1"
-#define MGMT_PORT_UDP_PORT	8444
+#define MGMT_PORT_UDP_PORT	"8444"
 
 public:
 
@@ -62,13 +61,22 @@ protected:
 	 */
 
 	virtual void
-	handle_accepted(rofl::csocket& socket, int newsd, rofl::caddress const& ra) {};
+	handle_listen(rofl::csocket& socket, int newsd) {};
+
+	virtual void
+	handle_accepted(rofl::csocket& socket) {};
+
+	virtual void
+	handle_accept_refused(rofl::csocket& socket) {};
 
 	virtual void
 	handle_connected(rofl::csocket& socket) {};
 
 	virtual void
 	handle_connect_refused(rofl::csocket& socket) {};
+
+	virtual void
+	handle_write(rofl::csocket& socket) {};
 
 	virtual void
 	handle_read(rofl::csocket& socket);

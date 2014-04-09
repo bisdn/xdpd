@@ -136,6 +136,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	pkt_burst = &tasks->all_ports[port_id].tx_queues[queue_id];	
 	
 	if(unlikely(!pkt_burst)){
+		rte_pktmbuf_free(mbuf);
 		assert(0);
 		return;
 	}

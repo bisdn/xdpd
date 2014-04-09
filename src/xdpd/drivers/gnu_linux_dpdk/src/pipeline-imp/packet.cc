@@ -1116,6 +1116,8 @@ static void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pack, swi
 
 		tx_pkt(port, pack->output_queue, pkt);	
 	}else{
+		//Since tx_pkt is not called, we release the mbuf here
+		//pkt will be returned only in case it is in_bufferpool
 		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 	}
 

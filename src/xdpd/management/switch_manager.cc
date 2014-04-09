@@ -128,6 +128,9 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 		throw eOfSmGeneralError(); 
 	}
 
+	//Set the dpid under destruction
+	dpid_under_destruction = dpid;
+
 	for(i=0;i<sw_snapshot->max_ports;++i){
 		port = sw_snapshot->logical_ports[i].port;
 		if(!port || sw_snapshot->logical_ports[i].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
@@ -152,9 +155,6 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	switch_manager::switchs.erase(dpid);
 
 	ROFL_INFO("[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
-
-	//Set the dpid under destruction
-	dpid_under_destruction = dp->dpid;
 
 	//Destroy element
 	delete dp;	

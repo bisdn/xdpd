@@ -22,6 +22,14 @@
 #include "port_state.h"
 #include "port_manager.h"
 #include "../processing/processing.h"
+
+//Make sure pipeline-imp are BEFORE _pp.h
+//so that functions can be inlined
+#include "../pipeline-imp/rte_atomic_operations.h"
+#include "../pipeline-imp/pthread_lock.h"
+#include "../pipeline-imp/packet.h"
+
+//Now include pp headers
 #include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 
 namespace xdpd {

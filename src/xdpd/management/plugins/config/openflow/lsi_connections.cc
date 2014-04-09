@@ -12,8 +12,10 @@
 #define LSI_CONNECTION_SSL "ssl"
 #define LSI_CONNECTION_SSL_CERTIFICATE_FILE "ssl-certificate-file"
 #define LSI_CONNECTION_SSL_PRIVATE_KEY_FILE "ssl-key-file"
-#define LSI_CONNECTION_SSL_CA_PATH_FILE "ssl-ca-path"
+#define LSI_CONNECTION_SSL_PRIVATE_KEY_FILE_PASSWORD "ssl-key-file-password"
+#define LSI_CONNECTION_SSL_CA_PATH "ssl-ca-path"
 #define LSI_CONNECTION_SSL_CA_FILE_FILE "ssl-ca-file"
+#define LSI_CONNECTION_SSL_CIPHER "ssl-cipher"
 
 //namespace
 using namespace xdpd;
@@ -35,8 +37,10 @@ lsi_connection_scope::lsi_connection_scope(std::string name):scope(name, false){
 	register_parameter(LSI_CONNECTION_SSL);
 	register_parameter(LSI_CONNECTION_SSL_CERTIFICATE_FILE);
 	register_parameter(LSI_CONNECTION_SSL_PRIVATE_KEY_FILE);
-	register_parameter(LSI_CONNECTION_SSL_CA_PATH_FILE);
+	register_parameter(LSI_CONNECTION_SSL_PRIVATE_KEY_FILE_PASSWORD);
+	register_parameter(LSI_CONNECTION_SSL_CA_PATH);
 	register_parameter(LSI_CONNECTION_SSL_CA_FILE_FILE);
+	register_parameter(LSI_CONNECTION_SSL_CIPHER);
 }
 
 //Connections
@@ -100,22 +104,47 @@ void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting,
 
 void lsi_connections_scope::parse_ssl_connection_params(libconfig::Setting& setting, lsi_connection& con){
 	
-	//TODO
-	
-#if 0
-	//SSL specific
-	std::string cert_and_key_file("");
+	bool weak_ssl_config=true;
+	int mandatory_params_found=0;	
+	std::string tmp;
 
-	if (not setting.lookupValue(LSI_CONNECTION_SSL_CERTIFICATE_FILE, cert_and_key_file)) {
-		ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to recover certificate file path\n", setting.getPath().c_str());
-		throw eConfParseError();
+	//SSL specific
+	if (setting.lookupValue(LSI_CONNECTION_SSL_CERTIFICATE_FILE, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CERT) = tmp;
+		mandatory_params_found++; 
+	}
+	if (setting.lookupValue(LSI_CONNECTION_SSL_PRIVATE_KEY_FILE, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_PRIVATE_KEY) = tmp;
+		mandatory_params_found++; 
+	}
+	if (setting.lookupValue(LSI_CONNECTION_SSL_PRIVATE_KEY_FILE_PASSWORD, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_PRIVATE_KEY_PASSWORD) = tmp;
+	}
+	if (setting.lookupValue(LSI_CONNECTION_SSL_CA_FILE_FILE, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CA_FILE) = tmp;
+		mandatory_params_found++; 
+	}
+	if (setting.lookupValue(LSI_CONNECTION_SSL_CA_PATH, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CA_PATH) = tmp;
+		mandatory_params_found++; 
 	}
 
-	//Fill in
-	p.set_param(rofl::csocket::PARAM_SSL_KEY_CERT) = cert_and_key_file;
-
-	//TODO: add private-key, ca-path, ca-file
+	//TODO: add cipher
+#if 0 
+	if (setting.lookupValue(LSI_CONNECTION_SSL_CIPHER, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CIPHER) = tmp;
+	}
 #endif
+
+	//Issue warning
+	if(weak_ssl_config)
+		ROFL_ERR(CONF_PLUGIN_ID "%s: WARNING the connection only provide encryption but no authentication. \n", setting.getPath().c_str());
+	else{
+		if(mandatory_params_found != 3){
+			ROFL_ERR(CONF_PLUGIN_ID "%s: ERROR the connection does not provide the necessary SSL parameters. Required parameters are: %s, %s, (%s or %s). \n", setting.getPath().c_str(), LSI_CONNECTION_SSL_CERTIFICATE_FILE, LSI_CONNECTION_SSL_PRIVATE_KEY_FILE, LSI_CONNECTION_SSL_CA_PATH, LSI_CONNECTION_SSL_CA_FILE_FILE );
+			throw eConfParseError();
+		}
+	}		
 }
 
 lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setting){ 

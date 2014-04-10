@@ -13,11 +13,7 @@
 #include <rte_eal.h> 
 #include <rte_mbuf.h> 
 
-#ifdef C_PACKET_CLASSIFIER
-	#include "packet_classifiers/c_pktclassifier/c_pktclassifier.h"
-#else
-	#include "packet_classifiers/cpp_pktclassifier/cpp_pktclassifier.h"
-#endif
+#include "packet_classifiers/c_pktclassifier/c_pktclassifier.h"
 
 /**
 * @brief Datapacket abstraction for dpdk (GNU/Linux)

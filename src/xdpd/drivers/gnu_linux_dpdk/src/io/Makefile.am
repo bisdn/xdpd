@@ -15,14 +15,10 @@ libxdpd_driver_gnu_linux_dpdk_src_io_la_SOURCES = \
 					port_manager.cc\
 					pktin_dispatcher.h\
 					pktin_dispatcher.cc\
-					tx_rx.cc\
-					tx_rx.cc
+					tx.cc\
+					rx.cc
 
-if C_CLASSIFIER
 CLASSIFIER_LIB=packet_classifiers/c_pktclassifier/libxdpd_driver_gnu_linux_dpdk_io_classifiers_c.la
-else
-CLASSIFIER_LIB=packet_classifiers/cpp_pktclassifier/libxdpd_driver_gnu_linux_dpdk_io_classifiers_cpp.la
-endif
 					
 libxdpd_driver_gnu_linux_dpdk_src_io_la_LIBADD = \
 					$(CLASSIFIER_LIB)

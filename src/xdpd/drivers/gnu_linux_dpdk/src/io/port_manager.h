@@ -5,7 +5,6 @@
 #ifndef _PORT_MGMT_H_
 #define _PORT_MGMT_H_
 
-#define __STDC_LIMIT_MACROS
 #include <rofl.h>
 #include "../config.h"
 #include <rte_config.h> 
@@ -38,6 +37,11 @@ ROFL_BEGIN_DECLS
 * Discovers and initializes (including rofl-pipeline state) DPDK-enabled ports.
 */
 rofl_result_t port_manager_discover_system_ports(void);
+
+/**
+* Creates a virtual link port pair
+*/
+rofl_result_t port_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_port_t **vport1, of_switch_t* lsw2, switch_port_t **vport2);
 
 /**
 * Shutdown all ports in the system 

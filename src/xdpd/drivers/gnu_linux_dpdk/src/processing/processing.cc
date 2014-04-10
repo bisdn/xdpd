@@ -5,7 +5,8 @@
 
 #include "assert.h"
 #include "../util/compiler_assert.h"
-#include "../io/tx_rx.h"
+#include "../io/rx.h"
+#include "../io/tx.h"
 
 #include "../io/port_state.h"
 #include "../io/port_manager.h"

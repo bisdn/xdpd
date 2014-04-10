@@ -1,4 +1,3 @@
-#define __STDC_LIMIT_MACROS
 #include "bg_taskmanager.h"
 
 #include <assert.h>

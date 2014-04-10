@@ -1072,7 +1072,8 @@ PKT_REPLICATE_ERROR:
 /*
 * Detaches mbuf from stack allocated pkt and copies the content
 */
-inline datapacket_t* platform_packet_detach__(datapacket_t* pkt){
+STATIC_PACKET_INLINE__ 
+datapacket_t* platform_packet_detach__(datapacket_t* pkt){
 
 	struct rte_mbuf* mbuf_origin;
 	datapacket_t* pkt_detached = xdpd::gnu_linux::bufferpool::get_free_buffer(false);

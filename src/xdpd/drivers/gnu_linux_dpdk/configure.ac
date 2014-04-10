@@ -23,6 +23,7 @@ AC_SUBST(LIBTOOL)dnl
 CFLAGS="-Werror -Wall -Wl,-export-dynamic $CFLAGS"
 CXXFLAGS="-Werror -Wall -Wl,-export-dynamic $CXXFLAGS"
 AC_DEFINE(__STDC_FORMAT_MACROS)
+AC_DEFINE(__STDC_LIMIT_MACROS)
 
 #Debug
 m4_include([../../../../config/debug.m4])

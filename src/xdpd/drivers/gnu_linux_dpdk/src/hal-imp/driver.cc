@@ -64,9 +64,6 @@ hal_result_t hal_driver_init(const char* extra_params){
 	
 	ROFL_INFO(DRIVER_NAME" Initializing...\n");
 	
-	if( RTE_CORE_MASK&0x00000001 )
-		ROFL_WARN(DRIVER_NAME" WARNING: coremask attemps to set core 0 as I/O, but core 0 is reserved for management tasks. Ignoring...\n");
-		
         /* init EAL library */
 	optind=1;
 	ret = rte_eal_init(EAL_ARGS-1, (char**)argv_fake);

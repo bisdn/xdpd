@@ -8,9 +8,9 @@
 //Define inline or not depending if the pipeline was compiled with inlined functions
 #if !defined(ROFL_PIPELINE_INLINE_PP_PLATFORM_FUNCS)
 	#include <rofl/datapath/pipeline/platform/lock.h>
-	#define STATIC_LOCK_INLINE__ 
+	#define LOCK_INLINE__ 
 #else
-	#define STATIC_LOCK_INLINE__ inline 
+	#define LOCK_INLINE__ inline 
 	#include <rofl/datapath/pipeline/util/pp_guard.h> // Do not forget the guard 
 	#include <rofl/datapath/pipeline/platform/lock.h>
 	#include "pthread_lock.c" //Yes, nasty :)	

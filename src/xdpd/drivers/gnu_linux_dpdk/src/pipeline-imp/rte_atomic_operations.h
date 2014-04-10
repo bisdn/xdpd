@@ -2,8 +2,8 @@
 #ifndef ATOMIC_OPS_IMPL_INLINE
 #define ATOMIC_OPS_IMPL_INLINE
 
-#include <inttypes.h>
 #include <rofl.h> 
+#include <inttypes.h>
 
 //Define inline or not depending if the pipeline was compiled with inlined functions
 #if !defined(ROFL_PIPELINE_INLINE_PP_PLATFORM_FUNCS)

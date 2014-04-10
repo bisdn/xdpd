@@ -15,8 +15,8 @@ libxdpd_driver_gnu_linux_dpdk_src_io_la_SOURCES = \
 					port_manager.cc\
 					pktin_dispatcher.h\
 					pktin_dispatcher.cc\
-					tx_rx.cc\
-					tx_rx.cc
+					tx.cc\
+					rx.cc
 
 CLASSIFIER_LIB=packet_classifiers/c_pktclassifier/libxdpd_driver_gnu_linux_dpdk_io_classifiers_c.la
 					

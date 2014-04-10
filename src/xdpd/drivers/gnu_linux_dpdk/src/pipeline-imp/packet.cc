@@ -1,5 +1,3 @@
-#define __STDC_LIMIT_MACROS
-
 //Guards used only when inlining
 #ifndef PACKET_IMPL_INLINE__
 #define PACKET_IMPL_INLINE__
@@ -7,6 +5,7 @@
 //Must be the first one
 #include "packet.h"
 
+#include <rofl.h>
 #include <inttypes.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -31,12 +30,9 @@
 #include <rte_ring.h>
 #include <rte_errno.h>
 
+#include "../io/tx.h"
 #include "../io/bufferpool.h"
 #include "../io/dpdk_datapacket.h"
-#include "../io/tx_rx.h"
-
-using namespace xdpd::gnu_linux;
-using namespace xdpd::gnu_linux_dpdk;
 
 //MBUF pool
 extern struct rte_mempool* pool_direct;
@@ -969,13 +965,13 @@ platform_packet_drop(datapacket_t* pkt)
 	
 	if( state->packet_in_bufferpool ){
 		//Release buffer only if the packet is stored there
-		bufferpool::release_buffer(pkt);
+		xdpd::gnu_linux::bufferpool::release_buffer(pkt);
 	}
 	
 	return;
 }
 
-static inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t* pkt_copy, struct rte_mbuf* mbuf){
+inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t* pkt_copy, struct rte_mbuf* mbuf){
 
 	datapacket_dpdk_t* pkt_dpdk;
 	datapacket_dpdk_t* pkt_dpdk_copy;
@@ -1022,7 +1018,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 		return NULL;
 
 	//datapacket_t* pkt_replica;
-	pkt_replica = bufferpool::get_free_buffer(false);
+	pkt_replica = xdpd::gnu_linux::bufferpool::get_free_buffer(false);
 	
 	if(unlikely(!pkt_replica)){
 		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). No buffers left in bufferpool\n", pkt);
@@ -1063,7 +1059,7 @@ PKT_REPLICATE_ERROR:
 	
 	//Release packet
 	if(pkt_replica){
-		bufferpool::release_buffer(pkt_replica);
+		xdpd::gnu_linux::bufferpool::release_buffer(pkt_replica);
 
 		if(mbuf){
 			rte_pktmbuf_free(mbuf);
@@ -1073,14 +1069,13 @@ PKT_REPLICATE_ERROR:
 	return NULL;
 }
 
-
 /*
 * Detaches mbuf from stack allocated pkt and copies the content
 */
-STATIC_PACKET_INLINE__ datapacket_t* platform_packet_detach__(datapacket_t* pkt){
+inline datapacket_t* platform_packet_detach__(datapacket_t* pkt){
 
 	struct rte_mbuf* mbuf_origin;
-	datapacket_t* pkt_detached = bufferpool::get_free_buffer(false);
+	datapacket_t* pkt_detached = xdpd::gnu_linux::bufferpool::get_free_buffer(false);
 
 	if(unlikely( pkt_detached == NULL))
 		return NULL;
@@ -1127,10 +1122,10 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 			//Reset port_in and reprocess
 			((datapacket_dpdk_t*)pkt->platform_state)->in_port = pkt->matches.port_in = ((switch_port_t*)port->platform_port_state)->of_port_num;
 	
-			tx_pkt_vlink(port, pkt);
+			xdpd::gnu_linux_dpdk::tx_pkt_vlink(port, pkt);
 			return;
 		}else{
-			tx_pkt(port, pack->output_queue, pkt);
+			xdpd::gnu_linux_dpdk::tx_pkt(port, pack->output_queue, pkt);
 		}
 	}else{
 		//Since tx_pkt is not called, we release the mbuf here
@@ -1140,7 +1135,7 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 
 	if( ((datapacket_dpdk_t*)pkt->platform_state)->packet_in_bufferpool ){
 		//Release buffer only if the packet is stored there
-		bufferpool::release_buffer(pkt);
+		xdpd::gnu_linux::bufferpool::release_buffer(pkt);
 	}
 }
 
@@ -1217,7 +1212,7 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 		if(unlikely(!sw)){
 			// NOTE release here mbuf as well?
 			rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
-			bufferpool::release_buffer(pkt);
+			xdpd::gnu_linux::bufferpool::release_buffer(pkt);
 			return;
 		}
 	
@@ -1246,7 +1241,7 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 			
 		//discard the original packet always (has been replicated)
 		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
-		bufferpool::release_buffer(pkt);
+		xdpd::gnu_linux::bufferpool::release_buffer(pkt);
 	}else if(output_port == in_port_meta_port){
 		
 		//In port

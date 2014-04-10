@@ -1,4 +1,4 @@
-#define __STDC_LIMIT_MACROS
+#include <rofl.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <rofl/datapath/hal/driver.h>

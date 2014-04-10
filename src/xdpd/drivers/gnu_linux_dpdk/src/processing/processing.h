@@ -5,10 +5,8 @@
 #ifndef _PROCESSING_H_
 #define _PROCESSING_H_
 
-#include "../config.h"
-
-#define __STDC_LIMIT_MACROS
 #include <rofl.h>
+#include "../config.h"
 #include <rte_config.h> 
 #include <rte_common.h> 
 #include <rte_eal.h> 

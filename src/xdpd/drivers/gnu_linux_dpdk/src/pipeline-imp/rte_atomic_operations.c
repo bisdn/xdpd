@@ -3,8 +3,8 @@
 #define ATOMIC_OPS_IMPL_INLINE__
 
 //Must be the first one
+#include <rofl/datapath/pipeline/platform/lock.h>
 #include "rte_atomic_operations.h"
-#include "pthread_lock.h" 
 
 #include "../config.h"
 #include <rte_config.h>

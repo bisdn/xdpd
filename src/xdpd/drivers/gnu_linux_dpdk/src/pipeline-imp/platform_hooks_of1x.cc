@@ -1,10 +1,16 @@
+#include <rofl.h>
 #include <assert.h>
+
+//Never include these headers after other rofl ones 
+#include "packet.h"
+
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_async_events_hooks.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
 #include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/common/utils/c_logger.h>
+
 
 #include "../config.h"
 #include <rte_config.h>
@@ -21,14 +27,14 @@
 #include "../io/datapacket_storage.h"
 #include "../io/dpdk_datapacket.h"
 
-//fwd decl
-datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool copy_mbuf);
-datapacket_t* platform_packet_detach__(datapacket_t* origin);
 
 using namespace xdpd::gnu_linux;
 
 //MBUF pool
 extern struct rte_mempool* pool_direct;
+
+//fwd decl
+extern datapacket_t* platform_packet_detach__(datapacket_t* pkt);
 
 /*
 * Hooks for configuration of the switch

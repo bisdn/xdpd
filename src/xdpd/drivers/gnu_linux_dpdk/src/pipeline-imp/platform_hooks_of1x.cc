@@ -131,18 +131,12 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 PKT_IN_ERROR:
 	//assert(0); //Sometimes useful while debugging. In general should be disabled
 	
-	//Release packet
-	if(((datapacket_dpdk_t*)pkt->platform_state)->mbuf){
-		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
-	}
-
-	if(detached_pkt){
-		if(((datapacket_dpdk_t*)detached_pkt->platform_state)->mbuf)
-			rte_pktmbuf_free(((datapacket_dpdk_t*)detached_pkt->platform_state)->mbuf);
+	if(((datapacket_dpdk_t*)detached_pkt->platform_state)->mbuf)
+		rte_pktmbuf_free(((datapacket_dpdk_t*)detached_pkt->platform_state)->mbuf);
 		
+	if(((datapacket_dpdk_t*)detached_pkt->platform_state)->packet_in_bufferpool)
 		bufferpool::release_buffer(detached_pkt);
-	}
-
+	
 	return;
 
 }

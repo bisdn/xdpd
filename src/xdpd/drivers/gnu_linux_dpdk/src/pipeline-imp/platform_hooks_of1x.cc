@@ -110,6 +110,9 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		detached_pkt = platform_packet_detach__(pkt);
 	else
 		detached_pkt = pkt;
+
+	if(unlikely(detached_pkt == NULL))
+		return;
 	
 	dpkt = (datapacket_dpdk_t*)detached_pkt->platform_state;
 	

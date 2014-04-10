@@ -1011,7 +1011,7 @@ inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t* pkt_c
 STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool hard_clone){
 
 	datapacket_t* pkt_replica;
-	struct rte_mbuf* mbuf, *mbuf_origin;
+	struct rte_mbuf* mbuf=NULL, *mbuf_origin;
 	
 	//Protect
 	if(unlikely(!pkt))
@@ -1030,25 +1030,27 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 	if( hard_clone ){
 		mbuf = rte_pktmbuf_alloc(pool_direct);
 		
-		if(unlikely(!mbuf)){
-			ROFL_DEBUG("Replicate packet; could not clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
-			ROFL_DEBUG("errno %d - %s\n", rte_errno, rte_strerror(rte_errno));
+		if(unlikely(mbuf == NULL)){	
+			ROFL_DEBUG("Replicate packet; could not hard clone pkt(%p). rte_pktmbuf_clone failed. errno: %d - %s\n", pkt_replicate, rte_errno, rte_strerror(rte_errno));
 			goto PKT_REPLICATE_ERROR;
 		}
-		rte_pktmbuf_append(mbuf, rte_pktmbuf_pkt_len(mbuf_origin));
+		if(unlikely( rte_pktmbuf_append(mbuf, rte_pktmbuf_pkt_len(mbuf_origin)) == NULL)){
+			ROFL_DEBUG("Replicate packet(hard); could not perform rte_pktmbuf_append pkt(%p). rte_pktmbuf_clone failed\n", pkt_replicate);
+			goto PKT_REPLICATE_ERROR;
+		}
 		rte_memcpy(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_mtod(mbuf_origin, uint8_t*),  rte_pktmbuf_pkt_len(mbuf_origin));
 		assert( rte_pktmbuf_pkt_len(mbuf) == rte_pktmbuf_pkt_len(mbuf_origin) );
 
 	} else {
-		//only moving the pointer
-		//mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
-		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_indirect); //soft-clone 
-		//NOTE here we could do ((datapacket_dpdk_t*)pkt->platform_state)->mbuf = NULL;
+		//Soft clone
+		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_indirect);
 		
+		if(unlikely(mbuf == NULL)){	
+			ROFL_DEBUG("Replicate packet; could not hard clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
+			goto PKT_REPLICATE_ERROR;
+		}
 	}
 
-	//WARNING check whether mbuf!=0
-	
 	//Copy datapacket_t and datapacket_dpdk_t state
 	platform_packet_copy_contents(pkt, pkt_replica, mbuf);
 

@@ -4,7 +4,7 @@
 //so that functions can be inlined
 #include "../pipeline-imp/packet.h"
 #include "../pipeline-imp/rte_atomic_operations.h"
-#include "../pipeline-imp/pthread_lock.h"
+#include "../pipeline-imp/lock.h"
 
 //Now include pp headers
 #include <rofl/datapath/pipeline/openflow/of_switch_pp.h>

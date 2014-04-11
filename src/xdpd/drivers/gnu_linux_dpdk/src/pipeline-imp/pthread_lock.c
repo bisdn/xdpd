@@ -2,7 +2,8 @@
 #ifndef PTHREAD_LOCK_IMPL_INLINE__
 #define PTHREAD_LOCK_IMPL_INLINE__
 
-#include "pthread_lock.h"
+#include "lock.h"
+#include <pthread.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 
 /* MUTEX operations */

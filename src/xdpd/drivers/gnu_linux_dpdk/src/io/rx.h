@@ -25,7 +25,7 @@
 //Make sure pipeline-imp are BEFORE _pp.h
 //so that functions can be inlined
 #include "../pipeline-imp/rte_atomic_operations.h"
-#include "../pipeline-imp/pthread_lock.h"
+#include "../pipeline-imp/lock.h"
 #include "../pipeline-imp/packet.h"
 
 //Now include pp headers

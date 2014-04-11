@@ -81,6 +81,9 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 			rte_pktmbuf_free(mbuf);
 			continue;
 		}
+		
+		//Prefetch
+		rte_prefetch0(rte_pktmbuf_mtod(mbuf, void *));
 
 		//Init&classify	
 		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);

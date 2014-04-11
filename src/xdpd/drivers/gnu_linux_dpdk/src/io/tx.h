@@ -58,7 +58,7 @@ inline void
 flush_port_queue_tx_burst(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue, unsigned int queue_id){
 	unsigned ret;
 
-	if(unlikely((port->up == false)) || queue->len == 0){
+	if( queue->len == 0 || unlikely((port->up == false)) ){
 		return;
 	}
 
@@ -92,10 +92,12 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 	port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 
+#ifdef DEBUG
 	if(unlikely(!mbuf)){
 		assert(0);
 		return;
 	}
+#endif
 	
 	//Recover core task
 	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
@@ -117,7 +119,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	len++;
 
 	//If burst is full => trigger send
-	if (unlikely(len == IO_IFACE_MAX_PKT_BURST) || unlikely(!tasks->active)) { //If buffer is full or mgmt core
+	if ( unlikely(!tasks->active) || unlikely(len == IO_IFACE_MAX_PKT_BURST)) { //If buffer is full or mgmt core
 		pkt_burst->len = len;
 		flush_port_queue_tx_burst(port, port_id, pkt_burst, queue_id);
 		return;

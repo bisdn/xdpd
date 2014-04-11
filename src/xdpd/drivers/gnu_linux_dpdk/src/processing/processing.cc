@@ -132,15 +132,20 @@ rofl_result_t processing_destroy(void){
 
 int processing_core_process_packets(void* not_used){
 
-	unsigned int i, l, port_id;
+	unsigned int i, l, port_id, core_id;
 	int j;
+	bool own_port;
 	switch_port_t* port;
 	port_queues_t* port_queues;	
         uint64_t diff_tsc, prev_tsc;
 	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST]={0};
 	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
 
+	//Time to drain in tics	
 	const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * IO_BURST_TX_DRAIN_US;
+	
+	//Own core
+	core_id = rte_lcore_id();  
 
 	//Parsing and pipeline extra state
 	datapacket_t pkt;
@@ -164,22 +169,24 @@ int processing_core_process_packets(void* not_used){
 		//Drain TX if necessary	
 		if(unlikely(diff_tsc > drain_tsc)){
 			for(i=0, l=0; l<total_num_of_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
+				
 				if(!tasks->all_ports[i].present)
 					continue;
+					
 				l++;
+					
+				//Check whether is our port (we have to also transmit TX queues)				
+				own_port = (port_queues->core_id == core_id);
 
+				//make code readable
 				port_queues = &tasks->all_ports[i];
 
 				//Flush (enqueue them in the RX/TX port lcore)
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
 					flush_port_queue_tx_burst(port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
-				}
-				
-				//If it is our core
-				if(port_queues->core_id == rte_lcore_id()){
-					for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
+					
+					if(own_port)	
 						transmit_port_queue_tx_burst(i, j, pkt_burst);
-					}
 				}
 			}
 		}

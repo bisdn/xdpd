@@ -78,7 +78,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	}
 	
 	//Recover core task
-	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
+	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
 	
 	//Recover burst container
 	pkt_burst = &tasks->all_ports[port_id].tx_queues_burst[queue_id];	

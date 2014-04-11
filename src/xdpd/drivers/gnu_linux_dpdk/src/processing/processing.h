@@ -20,7 +20,7 @@
 
 #include "../io/dpdk_datapacket.h"
 
-#define PROCESSING_MAX_PORTS_PER_CORE 8
+#define PROCESSING_MAX_PORTS_PER_CORE 32
 #define PROCESSING_MAX_PORTS 128 
 
 //Burst definition(queue)
@@ -50,10 +50,14 @@ typedef struct core_tasks{
 }core_tasks_t;
 
 
-//Fwd delcaration of core_tasks array
-extern core_tasks_t processing_cores[RTE_MAX_LCORE];
+/**
+* Processig core tasks 
+*/
+extern core_tasks_t processing_core_tasks[RTE_MAX_LCORE];
 
-//Fwd declaration total number of ports (scheduled, so usable by the I/O)
+/**
+* Total number of ports (scheduled, so usable by the I/O)
+*/
 extern unsigned int total_num_of_ports;
 
 //C++ extern C

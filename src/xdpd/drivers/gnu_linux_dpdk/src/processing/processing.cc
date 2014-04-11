@@ -21,7 +21,7 @@ using namespace xdpd::gnu_linux_dpdk;
 static unsigned int current_core_index;
 static unsigned int max_cores;
 static rte_spinlock_t mutex;
-core_tasks_t processing_cores[RTE_MAX_LCORE];
+core_tasks_t processing_core_tasks[RTE_MAX_LCORE];
 unsigned int total_num_of_ports = 0;
 
 
@@ -83,7 +83,7 @@ rofl_result_t processing_init(void){
 	enum rte_lcore_role_t role;
 
 	//Cleanup
-	memset(processing_cores,0,sizeof(core_tasks_t)*RTE_MAX_LCORE);	
+	memset(processing_core_tasks,0,sizeof(core_tasks_t)*RTE_MAX_LCORE);	
 
 	//Init 
 	current_core_index = 0;
@@ -97,7 +97,7 @@ rofl_result_t processing_init(void){
 	for(i=0; i < RTE_MAX_LCORE; ++i){
 		role = rte_eal_lcore_role(i);
 		if(role == ROLE_RTE && i != config->master_lcore){
-			processing_cores[i].available = true;
+			processing_core_tasks[i].available = true;
 			ROFL_DEBUG(DRIVER_NAME"[processing] Marking core %u as available\n",i);
 		}
 	}
@@ -119,9 +119,9 @@ rofl_result_t processing_destroy(void){
 	
 	//Stop all cores and wait for them to complete execution tasks
 	for(i=0;i<RTE_MAX_LCORE;++i){
-		if(processing_cores[i].available && processing_cores[i].active){
+		if(processing_core_tasks[i].available && processing_core_tasks[i].active){
 			ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down active core %u\n",i);
-			processing_cores[i].active = false;
+			processing_core_tasks[i].active = false;
 			//Join core
 			rte_eal_wait_lcore(i);
 		}
@@ -138,7 +138,7 @@ int processing_core_process_packets(void* not_used){
 	port_queues_t* port_queues;	
         uint64_t diff_tsc, prev_tsc;
 	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST]={0};
-	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
+	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
 
 	const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * IO_BURST_TX_DRAIN_US;
 
@@ -222,7 +222,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	//Select core
 	for(current_core_index++, index=current_core_index;;){
-		if( processing_cores[current_core_index].available == true && processing_cores[current_core_index].num_of_rx_ports != PROCESSING_MAX_PORTS_PER_CORE )
+		if( processing_core_tasks[current_core_index].available == true && processing_core_tasks[current_core_index].num_of_rx_ports != PROCESSING_MAX_PORTS_PER_CORE )
 			break;
 
 		//Circular increment
@@ -243,10 +243,10 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	ROFL_DEBUG(DRIVER_NAME"[processing] Selected core %u for scheduling port %s(%p)\n", current_core_index, port->name, port); 
 
-	num_of_ports = &processing_cores[current_core_index].num_of_rx_ports;
+	num_of_ports = &processing_core_tasks[current_core_index].num_of_rx_ports;
 
 	//Assign port and exit
-	if(processing_cores[current_core_index].port_list[*num_of_ports] != NULL){
+	if(processing_core_tasks[current_core_index].port_list[*num_of_ports] != NULL){
 		ROFL_ERR(DRIVER_NAME"[processing] Corrupted state on the core task list\n");
 		assert(0);
 		rte_spinlock_unlock(&mutex);
@@ -264,14 +264,14 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	port_state->core_id = current_core_index; 
 	port_state->core_port_slot = *num_of_ports;
 	
-	processing_cores[current_core_index].port_list[*num_of_ports] = port;
+	processing_core_tasks[current_core_index].port_list[*num_of_ports] = port;
 	(*num_of_ports)++;
 	
 	index = current_core_index;
 
 	//Mark port as present (and scheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_cores[i].all_ports[port_state->port_id].present = true;
+		processing_core_tasks[i].all_ports[port_state->port_id].present = true;
 	}
 
 	//Increment total counter
@@ -279,7 +279,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	
 	rte_spinlock_unlock(&mutex);
 
-	if(!processing_cores[index].active){
+	if(!processing_core_tasks[index].active){
 		if(rte_eal_get_lcore_state(index) != WAIT){
 			assert(0);
 			rte_panic("Core status corrupted!");
@@ -306,7 +306,7 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 
 	unsigned int i;
 	dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;	
-	core_tasks_t* core_task = &processing_cores[port_state->core_id];
+	core_tasks_t* core_task = &processing_core_tasks[port_state->core_id];
 
 	if(port_state->scheduled == false){
 		ROFL_ERR(DRIVER_NAME"[processing] Tyring to descheduled an unscheduled port\n");
@@ -347,7 +347,7 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	
 	//Mark port as NOT present anymore (descheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_cores[i].all_ports[port_state->port_id].present = false;
+		processing_core_tasks[i].all_ports[port_state->port_id].present = false;
 	}
 
 	rte_spinlock_unlock(&mutex);	
@@ -366,7 +366,7 @@ void processing_dump_core_state(void){
 	core_tasks_t* core_task;
 	
 	for(i=0;i<max_cores;++i){
-		core_task = &processing_cores[i];
+		core_task = &processing_core_tasks[i];
 		if(!core_task->available)
 			continue;
 

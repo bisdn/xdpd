@@ -174,13 +174,13 @@ int processing_core_process_packets(void* not_used){
 					continue;
 					
 				l++;
-					
-				//Check whether is our port (we have to also transmit TX queues)				
-				own_port = (port_queues->core_id == core_id);
-
+	
 				//make code readable
 				port_queues = &tasks->all_ports[i];
-
+				
+				//Check whether is our port (we have to also transmit TX queues)				
+				own_port = (port_queues->core_id == core_id);
+			
 				//Flush (enqueue them in the RX/TX port lcore)
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
 					flush_port_queue_tx_burst(port_mapping[i], i, &port_queues->tx_queues_burst[j], j);

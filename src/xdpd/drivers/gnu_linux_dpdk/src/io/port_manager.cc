@@ -15,6 +15,7 @@
 
 extern struct rte_mempool *pool_direct;
 switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
+struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES] = {{NULL}};
 
 //Initializes the pipeline structure and launches the port 
 static switch_port_t* configure_port(unsigned int port_id){
@@ -69,9 +70,22 @@ static switch_port_t* configure_port(unsigned int port_id){
 	//Add TX queues to the pipeline
 	//Filling one-by-one the queues 
 	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
+		
+		//Create rofl-pipeline queue state
 		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
 		if(switch_port_add_queue(port, i, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS){
 			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
+			assert(0);
+			return NULL;
+		}
+		
+		//Add port_tx_lcore_queue
+		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%u-q%u", port_id, i);
+		port_tx_lcore_queue[port_id][i] = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
+	
+		
+		if(unlikely( port_tx_lcore_queue[port_id][i] == NULL )){
+			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
 			assert(0);
 			return NULL;
 		}
@@ -83,6 +97,8 @@ static switch_port_t* configure_port(unsigned int port_id){
 	port->platform_port_state = (platform_port_state_t*)ps;
 
 	ROFL_INFO(DRIVER_NAME"[port_manager] Discovered port %s [%u:%u:%u] id %u\n", port_name, dev_info.pci_dev->addr.domain, dev_info.pci_dev->addr.bus, dev_info.pci_dev->addr.devid, port_id);
+
+
 
 	//Set the port in the port_mapping
 	port_mapping[port_id] = port;

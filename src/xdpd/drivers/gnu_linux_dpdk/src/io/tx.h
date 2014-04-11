@@ -30,25 +30,46 @@ namespace gnu_linux_dpdk {
 // Packet processing
 //
 
+inline void
+transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id){
+	
+	unsigned int ret, len;
+	struct rte_mbuf* tmp[IO_IFACE_MAX_PKT_BURST];
+
+	//Dequeue a burst from the TX ring	
+	len = rte_ring_mc_dequeue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)tmp, IO_IFACE_MAX_PKT_BURST);      
+
+	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n", port_mapping[port_id]->name,  port_id, queue_id, len);
+
+	//Send burst
+	ret = rte_eth_tx_burst(port_id, queue_id, tmp, len);
+	//XXX port_statistics[port].tx += ret;
+	
+	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] +++ Transmited %u pkts, on queue_id %u\n", port_mapping[port_id]->name, port_id, ret, queue_id);
+
+	if (unlikely(ret < len)) {
+		//XXX port_statistics[port].dropped += (n - ret);
+		do {
+			rte_pktmbuf_free(tmp[ret]);
+		} while (++ret < len);
+	}
+}
 
 inline void
-process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue, unsigned int queue_id){
+flush_port_queue_tx_burst(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue, unsigned int queue_id){
 	unsigned ret;
 
 	if(unlikely((port->up == false)) || queue->len == 0){
-		//static int j=0;
-		//j++;
-		//if((j%1000000 == 0) && (queue_id == 0))
-		//	ROFL_DEBUG(DRIVER_NAME"[io] Auto purge to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
 		return;
 	}
 
-	ROFL_DEBUG(DRIVER_NAME"[io] Trying to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
-	//Send burst
-	ret = rte_eth_tx_burst(port_id, queue_id, queue->burst, queue->len);
+	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] Trying to flush burst(enqueue in lcore ring) on port queue_id %u of length: %u\n", port->name,  port_id, queue_id, queue->len);
+		
+	//Enqueue to the lcore (if it'd we us, we could probably call to transmit directly)
+	ret = rte_ring_mp_enqueue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)queue->burst, queue->len);
 	//XXX port_statistics[port].tx += ret;
 	
-	ROFL_DEBUG(DRIVER_NAME"[io] +++++++++++++++++++++++++++ Transmited %u pkts, on port %s(%u)\n", ret, port->name, port_id);
+	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
 
 	if (unlikely(ret < queue->len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -99,7 +120,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	//If burst is full => trigger send
 	if (unlikely(len == IO_IFACE_MAX_PKT_BURST) || unlikely(!tasks->active)) { //If buffer is full or mgmt core
 		pkt_burst->len = len;
-		process_port_queue_tx(port, port_id, pkt_burst, queue_id);
+		flush_port_queue_tx_burst(port, port_id, pkt_burst, queue_id);
 		return;
 	}
 

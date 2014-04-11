@@ -28,9 +28,16 @@
 #define PORT_MANAGER_MAX_PORTS PROCESSING_MAX_PORTS 
 
 /**
- *  Port mappings
+ *  Port mappings (port_id -> struct switch_port)
  */
 extern switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS];
+
+/**
+* TX ring per port queue. TX is served only by the port lcore. The other lcores shall enqueue packets in this queue when they need to be flushed.
+*/
+extern struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES];
+
+
 
 //C++ extern C
 ROFL_BEGIN_DECLS

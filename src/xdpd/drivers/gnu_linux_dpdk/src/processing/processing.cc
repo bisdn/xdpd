@@ -132,7 +132,7 @@ rofl_result_t processing_destroy(void){
 
 int processing_core_process_packets(void* not_used){
 
-	unsigned int i, port_id;
+	unsigned int i, l, port_id;
 	int j;
 	switch_port_t* port;
 	port_queues_t* port_queues;	
@@ -163,23 +163,27 @@ int processing_core_process_packets(void* not_used){
 
 		//Drain TX if necessary	
 		if(unlikely(diff_tsc > drain_tsc)){
-
-			for(i=0; i<PROCESSING_MAX_PORTS; ++i){
-				if(likely(!tasks->all_ports[i].present))
+			for(i=0, l=0; l<total_num_of_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
+				if(!tasks->all_ports[i].present)
 					continue;
+				l++;
+
 				port_queues = &tasks->all_ports[i];
-				port = port_mapping[i];
-
-				if(unlikely(!port))
-					continue;
 
 				//Process TX
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
-					process_port_queue_tx(port, i, &port_queues->tx_queues_burst[j], j);
+					flush_port_queue_tx_burst(port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
+				}
+				
+				//If it is our core
+				if(port_queues->core_id == rte_lcore_id()){
+					for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
+						transmit_port_queue_tx_burst(i, j);
+					}
 				}
 			}
 		}
-
+		
 		//Process RX
 		for(i=0;i<tasks->num_of_rx_ports;++i){
 			port = tasks->port_list[i];
@@ -272,6 +276,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	//Mark port as present (and scheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
 		processing_core_tasks[i].all_ports[port_state->port_id].present = true;
+		processing_core_tasks[i].all_ports[port_state->port_id].core_id = index;
 	}
 
 	//Increment total counter
@@ -348,6 +353,7 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	//Mark port as NOT present anymore (descheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
 		processing_core_tasks[i].all_ports[port_state->port_id].present = false;
+		processing_core_tasks[i].all_ports[port_state->port_id].core_id = 0xFFFFFFFF;
 	}
 
 	rte_spinlock_unlock(&mutex);	

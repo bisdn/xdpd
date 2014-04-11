@@ -31,18 +31,17 @@ namespace gnu_linux_dpdk {
 //
 
 inline void
-transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id){
+transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct rte_mbuf** burst){
 	
 	unsigned int ret, len;
-	struct rte_mbuf* tmp[IO_IFACE_MAX_PKT_BURST];
 
 	//Dequeue a burst from the TX ring	
-	len = rte_ring_mc_dequeue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)tmp, IO_IFACE_MAX_PKT_BURST);      
+	len = rte_ring_mc_dequeue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);      
 
 	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n", port_mapping[port_id]->name,  port_id, queue_id, len);
 
 	//Send burst
-	ret = rte_eth_tx_burst(port_id, queue_id, tmp, len);
+	ret = rte_eth_tx_burst(port_id, queue_id, burst, len);
 	//XXX port_statistics[port].tx += ret;
 	
 	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] +++ Transmited %u pkts, on queue_id %u\n", port_mapping[port_id]->name, port_id, ret, queue_id);
@@ -50,7 +49,7 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id){
 	if (unlikely(ret < len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
 		do {
-			rte_pktmbuf_free(tmp[ret]);
+			rte_pktmbuf_free(burst[ret]);
 		} while (++ret < len);
 	}
 }
@@ -101,7 +100,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	//Recover core task
 	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
 	
-	//Recover burst container
+	//Recover burst container (cache)
 	pkt_burst = &tasks->all_ports[port_id].tx_queues_burst[queue_id];	
 	
 	if(unlikely(!pkt_burst)){

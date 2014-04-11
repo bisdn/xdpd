@@ -170,7 +170,7 @@ int processing_core_process_packets(void* not_used){
 
 				port_queues = &tasks->all_ports[i];
 
-				//Process TX
+				//Flush (enqueue them in the RX/TX port lcore)
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
 					flush_port_queue_tx_burst(port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
 				}
@@ -178,7 +178,7 @@ int processing_core_process_packets(void* not_used){
 				//If it is our core
 				if(port_queues->core_id == rte_lcore_id()){
 					for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
-						transmit_port_queue_tx_burst(i, j);
+						transmit_port_queue_tx_burst(i, j, pkt_burst);
 					}
 				}
 			}

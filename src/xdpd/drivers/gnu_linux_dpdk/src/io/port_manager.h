@@ -22,8 +22,10 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 #include "port_state.h"
+#include "../processing/processing.h"
 
-#define PORT_MANAGER_MAX_PORTS 128
+//Maximum number of ports (preallocation of port_mapping)
+#define PORT_MANAGER_MAX_PORTS PROCESSING_MAX_PORTS 
 
 /**
  *  Port mappings

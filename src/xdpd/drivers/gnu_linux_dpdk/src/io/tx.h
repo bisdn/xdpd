@@ -32,7 +32,7 @@ namespace gnu_linux_dpdk {
 
 
 inline void
-process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_table* queue, unsigned int queue_id){
+process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue, unsigned int queue_id){
 	unsigned ret;
 
 	if(unlikely((port->up == false)) || queue->len == 0){
@@ -45,7 +45,7 @@ process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_tab
 
 	ROFL_DEBUG(DRIVER_NAME"[io] Trying to send burst on port %s(%u) queue %p (queue_id: %u) of length: %u\n", port->name,  port_id, queue, queue_id, queue->len);
 	//Send burst
-	ret = rte_eth_tx_burst(port_id, queue_id, queue->m_table, queue->len);
+	ret = rte_eth_tx_burst(port_id, queue_id, queue->burst, queue->len);
 	//XXX port_statistics[port].tx += ret;
 	
 	ROFL_DEBUG(DRIVER_NAME"[io] +++++++++++++++++++++++++++ Transmited %u pkts, on port %s(%u)\n", ret, port->name, port_id);
@@ -53,7 +53,7 @@ process_port_queue_tx(switch_port_t* port, unsigned int port_id, struct mbuf_tab
 	if (unlikely(ret < queue->len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
 		do {
-			rte_pktmbuf_free(queue->m_table[ret]);
+			rte_pktmbuf_free(queue->burst[ret]);
 		} while (++ret < queue->len);
 	}
 
@@ -65,7 +65,7 @@ inline void
 tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 
 	struct rte_mbuf* mbuf;
-	struct mbuf_table* pkt_burst;
+	struct mbuf_burst* pkt_burst;
 	unsigned int port_id, len;
 
 	//Get mbuf pointer
@@ -81,7 +81,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	core_tasks_t* tasks = &processing_cores[rte_lcore_id()];
 	
 	//Recover burst container
-	pkt_burst = &tasks->all_ports[port_id].tx_queues[queue_id];	
+	pkt_burst = &tasks->all_ports[port_id].tx_queues_burst[queue_id];	
 	
 	if(unlikely(!pkt_burst)){
 		rte_pktmbuf_free(mbuf);
@@ -93,7 +93,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 
 	//Enqueue
 	len = pkt_burst->len; 
-	pkt_burst->m_table[len] = mbuf;
+	pkt_burst->burst[len] = mbuf;
 	len++;
 
 	//If burst is full => trigger send

@@ -164,7 +164,7 @@ int processing_core_process_packets(void* not_used){
 		//Drain TX if necessary	
 		if(unlikely(diff_tsc > drain_tsc)){
 
-			for(i=0; i<MAX_PORTS; ++i){
+			for(i=0; i<PROCESSING_MAX_PORTS; ++i){
 				if(likely(!tasks->all_ports[i].present))
 					continue;
 				port_queues = &tasks->all_ports[i];
@@ -175,7 +175,7 @@ int processing_core_process_packets(void* not_used){
 
 				//Process TX
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
-					process_port_queue_tx(port, i, &port_queues->tx_queues[j], j);
+					process_port_queue_tx(port, i, &port_queues->tx_queues_burst[j], j);
 				}
 			}
 		}
@@ -214,15 +214,15 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	rte_spinlock_lock(&mutex);
 
-	if(total_num_of_ports == MAX_PORTS){
-		ROFL_ERR(DRIVER_NAME"[processing] Already MAX_PORTSAll cores are full. No available port slots\n");
+	if(total_num_of_ports == PROCESSING_MAX_PORTS){
+		ROFL_ERR(DRIVER_NAME"[processing] Reached already PROCESSING_MAX_PORTS(%u). All cores are full. No available port slots\n", PROCESSING_MAX_PORTS);
 		rte_spinlock_unlock(&mutex);
 		return ROFL_FAILURE;
 	}
 
 	//Select core
 	for(current_core_index++, index=current_core_index;;){
-		if( processing_cores[current_core_index].available == true && processing_cores[current_core_index].num_of_rx_ports != MAX_PORTS_PER_CORE )
+		if( processing_cores[current_core_index].available == true && processing_cores[current_core_index].num_of_rx_ports != PROCESSING_MAX_PORTS_PER_CORE )
 			break;
 
 		//Circular increment

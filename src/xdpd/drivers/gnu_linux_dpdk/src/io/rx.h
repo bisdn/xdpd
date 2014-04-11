@@ -60,23 +60,25 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 
 	//ROFL_DEBUG(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 
+	//Prefetch
+	if( burst_len )
+		rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[0], void *));
+
+
 	//Process them 
 	for(i=0;i<burst_len;++i){
 		mbuf = pkts_burst[i];		
-
+	
 		if(unlikely(sw == NULL)){
 			rte_pktmbuf_free(mbuf);
 			continue;
 		}
-	
-		//Prefetch
-		rte_prefetch0(rte_pktmbuf_mtod(mbuf, void *));
 
 		//set mbuf pointer in the state so that it can be recovered afterwards when going
 		//out from the pipeline
 		pkt_state->mbuf = mbuf;
 
-		//XXX: delete from here
+		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
 		assert(mbuf->pkt.nb_segs == 1);
 
 		if(unlikely(!port_mapping[mbuf->pkt.in_port])){
@@ -86,6 +88,10 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 		}
 		//Init&classify	
 		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
+	
+		//Prefetch next pkt
+		if( (i+1) < burst_len )
+			rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[i+1], void *));
 
 		//Send to process
 		of_process_packet_pipeline(sw, pkt);

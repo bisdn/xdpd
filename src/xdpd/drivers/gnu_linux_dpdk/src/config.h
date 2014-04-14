@@ -39,6 +39,10 @@
 //Bufferpool reservoir(PKT_INs); ideally at least X*max_num_lsis
 #define IO_BUFFERPOOL_RESERVOIR 2048
 
+ 
+//TX queue (rte_ring) size
+#define IO_TX_LCORE_QUEUE_SLOTS 2<<11 //2048
+
 //Drain timing
 #define IO_BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
 

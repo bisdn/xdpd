@@ -455,7 +455,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch(...) {}
 	try {
 		uint32_t label = ofmatch.get_mpls_label();
-		LABELTOBE(label);
+		MPLABELTOBE(label);
 		of1x_match_t *match = of1x_init_mpls_label_match(label);
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
@@ -698,7 +698,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				case rofl::openflow12::OFPXMT_OFB_MPLS_LABEL:
 				{
 					field.u32 = oxm.get_u32value();
-					LABELTOBE(field.u32);
+					MPLABELTOBE(field.u32);
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_LABEL, field, 0x0);
 				}
 					break;
@@ -1069,7 +1069,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			}break;
 		case OF1X_MATCH_MPLS_LABEL:	{
 			uint32_t label = m->value->value.u32;
-			BETOHLABEL(label);
+			BETOHMPLABEL(label);
 			match.set_mpls_label(label);
 			}break;
 		case OF1X_MATCH_MPLS_TC:
@@ -1391,7 +1391,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 	} break;
 	case OF1X_AT_SET_FIELD_MPLS_LABEL: {
 		uint32_t label = of1x_action->field.u32;
-		BETOHLABEL(label);
+		BETOHMPLABEL(label);
 		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_label(label & OF1X_4_BYTE_MASK));
 	} break;
 	case OF1X_AT_SET_FIELD_MPLS_TC: {
@@ -1554,7 +1554,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		
 	if(packet_matches->mpls_label){
 		uint32_t label = packet_matches->mpls_label;
-		BETOHLABEL(label);
+		BETOHMPLABEL(label);
 		match.set_mpls_label(label);
 	}
 	if(packet_matches->mpls_tc)

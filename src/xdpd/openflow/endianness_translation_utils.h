@@ -21,8 +21,13 @@
 		x>>=16; \
 		}while(0)
 
-	#define LABELTOBE(x) do{ \
+	#define MPLABELTOBE(x) do{ \
 		x<<=12; \
+		x=__bswap_32(x); \
+		}while(0)
+		
+	#define FLABELTOBE(x) do{ \
+		x<<8; \
 		x=__bswap_32(x); \
 		}while(0)
 		
@@ -31,13 +36,26 @@
 		x=__bswap_32(x); \
 		}while(0)
 #else
-	#define MACTOBE(x) 
-	#define LABELTOBE(x) 
-	#define H24BITTOBE(x) 
+	#define MACTOBE(x) do{ \
+		x>>=16; \
+		}while(0)
+		
+	#define MPLABELTOBE(x) do{ \
+		x<<=12; \
+		}while(0)
+		
+	#define FLABELTOBE(x) do{ \
+		x<<8; \
+		}while(0)
+		
+	#define H24BITTOBE(x) do{ \
+		x<<=8; \
+		}while(0)
 #endif
 
 #define BETOHMAC(x) MACTOBE(x)
-#define BETOHLABEL(x) LABELTOBE(x)
+#define BETOHMPLABEL(x) MPLABELTOBE(x)
+#define BETOHFLABEL(x) FLABELTOBE(x)
 #define BETOH24BIT(x) H24BITTOBE(x)
 
 #endif //_ENDIANNESS_TRANSLATION_UTILS_H_

@@ -7,12 +7,9 @@
 #include <rofl/common/utils/c_logger.h>
 
 
-
-
-
 bool check_mac_mask(netfpga_align_mac_addr_t* mac){	
 	int i=0	;
-//	ROFL_DEBUG("MAC ADDRESS MASK: ");
+	ROFL_DEBUG("MAC ADDRESS MASK: ");
 	for (i=0; i<6;i++ ){
 		ROFL_DEBUG("%x:",mac->addr[i]);
 	}
@@ -25,7 +22,7 @@ bool check_mac_mask(netfpga_align_mac_addr_t* mac){
 
 void fill_up_mac(netfpga_align_mac_addr_t* mac){	
 	int i=0	;
-//	ROFL_DEBUG("MAC ADDRESS before filling up: ");
+	ROFL_DEBUG("MAC ADDRESS before filling up: ");
 	for (i=0; i<6;i++ ){
 		ROFL_DEBUG("%x:",mac->addr[i]);
 	}
@@ -38,7 +35,7 @@ void fill_up_mac(netfpga_align_mac_addr_t* mac){
 		for (i=0; i<6;i++ ){
 			mac->addr[i]=0xFF;
 		}
-//		ROFL_DEBUG("MAC ADDRESS filled up ");
+		ROFL_DEBUG("MAC ADDRESS filled up ");
 	}
 }
 
@@ -85,7 +82,7 @@ netfpga_flow_entry_t* netfpga_init_flow_entry(){
 	memset(entry->masks, 0, sizeof(*(entry->masks)));
 	memset(entry->actions, 0, sizeof(*(entry->actions)));
 
-//	ROFL_DEBUG("size of entry: %d",sizeof(entry));
+	ROFL_DEBUG("size of entry: %d",sizeof(entry));
 	
 	return entry;
 }
@@ -113,48 +110,33 @@ void netfpga_destroy_flow_entry(netfpga_flow_entry_t* entry){
 #define TOS_DSCP_BITMASK 0xFC
 #define TOS_DSCP_SHIFT_BITS 2 
 
-
-void netfpga_fillup_match(netfpga_flow_entry_matches_t* matches){//fill up entry exact matches with FFFF except those already filled with values
-if((matches->transp_dst)==0)	memset(&(matches->transp_dst),0xFFFF,sizeof(matches->transp_dst)); // matches->transp_dst=0xFFFF; 	//uint16_t transp_dst;	
-if((matches->transp_src)==0)	memset(&(matches->transp_src),0xFFFF,sizeof(matches->transp_src)); //matches->transp_src=0xFFFF;	//uint16_t transp_src;
-if((matches->ip_proto)==0)	memset(&(matches->ip_proto),0xFF,sizeof(matches->ip_proto)); //matches->ip_proto=0xFF;		//uint8_t ip_proto;
-if((matches->ip_dst)==0)	memset(&(matches->ip_dst),0xFFFFFFFF,sizeof(matches->ip_dst)); //matches->ip_dst=0xFFFFFFFF;	//uint32_t ip_dst;
-if((matches->ip_src)==0)	memset(&(matches->ip_src),0xFFFFFFFF,sizeof(matches->ip_src)); //matches->ip_src=0xFFFFFFFF;	//uint32_t ip_src;
-if((matches->eth_type)==0)	memset(&(matches->eth_type),0xFFFF,sizeof(matches->eth_type));//matches->eth_type=0xFFFF;	//uint16_t eth_type;
-fill_up_mac(&(matches->eth_dst));					//netfpga_align_mac_addr_t eth_dst;
-fill_up_mac(&(matches->eth_src));					//netfpga_align_mac_addr_t eth_src;
-if((matches->src_port)==0)	memset(&(matches->src_port),0xFF,sizeof(matches->src_port)); //matches->src_port=0xFF;		//uint8_t src_port;
-if((matches->ip_tos)==0)	memset(&(matches->ip_tos),0xFF,sizeof(matches->ip_tos)); //matches->ip_tos=0xFF;		//uint8_t ip_tos;
-if((matches->vlan_id)==0)	memset(&(matches->vlan_id),0xFFFF,sizeof(matches->vlan_id)); //matches->vlan_id=0xFFFF;	//uint16_t vlan_id;
-if((matches->pad)==0)		memset(&(matches->pad),0xFF,sizeof(matches->pad)); //matches->padxFF;		//uint8_t pad;
-
-}
-
-
+#define MAX_NUM_OF_MATCHES 12
 
 static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry, of1x_flow_entry_t* of1x_entry){
 	
 	of1x_match_t* match;
+	int i;
 	netfpga_flow_entry_matches_t* matches = entry->matches;
 	netfpga_flow_entry_matches_mask_t* masks = entry->masks;
 	netfpga_align_mac_addr_t *tmp, *tmp_mask;
-	int i;
+	uint32_t tmp_ipv4_mask;
+	int num_of_matches = 0;
 
 	memset(masks, 0xFF, sizeof(*(masks)));
 
-//	ROFL_DEBUG("%s  %d num_of_matches: %x",__FILE__, __LINE__,of1x_entry->matches.num_elements);
+	ROFL_DEBUG("%s  %d num_of_matches: %x",__FILE__, __LINE__,of1x_entry->matches.num_elements);
 
 	//Go through all the matches and set entry matches
 	for(match = of1x_entry->matches.head; match;match = match->next){
-		//ROFL_DEBUG("%s  %d  of1x_entry->type : %x, ",__FILE__, __LINE__, match->type);
+		ROFL_DEBUG("%s  %d  of1x_entry->type : %x, ",__FILE__, __LINE__, match->type);
 		switch(match->type){
 
 			case OF1X_MATCH_IN_PORT:
 				matches->src_port = 0x1 << (/*htons*/( (match->value->value.u32) - NETFPGA_PORT_BASE) *2);
 				masks->src_port = 0x00; //Exact
+				num_of_matches++;
 				break;
  			case OF1X_MATCH_ETH_DST:
-
 				tmp = (netfpga_align_mac_addr_t*) &(match->value->value.u64);
 				tmp_mask = (netfpga_align_mac_addr_t*) &(match->value->value.u64);
 
@@ -166,109 +148,99 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				
 				if(check_mac_mask(tmp_mask)){
 					//Is wildcarded
-					entry->type = NETFPGA_FE_WILDCARDED;
 					memset(&(masks->eth_dst),0x00,sizeof(masks->eth_dst));  				
 					
-				}
+				}else
+					num_of_matches++;
 				
 				//TODO: add mask...
 				break;
  			case OF1X_MATCH_ETH_SRC:
-		#if 0
-				//ROFL_DEBUG(": ETH SRC ");
-				//Does not require byte moving. 6 bytes are in the lower bytes of the uint64_t
-				aux = (uint8_t*) &(match->value->value.u64);
-				matches->eth_src = *( (netfpga_align_mac_addr_t*)(aux) ); //This is nasty, I know and apologize...
+				tmp = (netfpga_align_mac_addr_t*) &(match->value->value.u64);
+				tmp_mask = (netfpga_align_mac_addr_t*) &(match->value->value.u64);
 
-				
-				aux_mask =(uint8_t*) &(match->value->mask.u64);
-				tmp_mac=*( (netfpga_align_mac_addr_t*)(aux_mask));
-				//masks->eth_dst = *( (netfpga_align_mac_addr_t*)(aux_mask));
-	
-				//tmp_mask = /*htonl*/( ((utern32_t*)match->value)->mask );
-				if(check_mac_mask(tmp_mac)){
-					//Is wildcarded
-					entry->type = NETFPGA_FE_WILDCARDED;
-					memset(&masks->eth_src,0x00,sizeof(masks->eth_src)); 
+				//inversion
+				for (i=0;i<6;i++){
+					matches->eth_src.addr[i]=tmp->addr[5-i];
+					masks->eth_src.addr[i]=tmp_mask->addr[5-i];
 				}
-				//netfpga_fillup_match(matches);
-				//changed from aux+2 
-				//memset(&masks->eth_src,0xFF,sizeof(masks->eth_dst)); //TODO: add mask...
-				//
-		#endif
+				
+				if(check_mac_mask(tmp_mask)){
+					//Is wildcarded
+					memset(&(masks->eth_src),0x00,sizeof(masks->eth_src));
+				}else
+					num_of_matches++;
+
 				break;
  			case OF1X_MATCH_ETH_TYPE:
 				matches->eth_type = htobe16( match->value->value.u16 );	
 				if(  (match->value->mask.u16)==0xFFFF ){
 					//Is wildcarded
-					entry->type = NETFPGA_FE_WILDCARDED;
 					memset(&masks->eth_type,0x00,sizeof(masks->eth_type)); 
 				}
 				
+				num_of_matches++;
 				break;
  			case OF1X_MATCH_VLAN_PCP:
-				matches->vlan_id |=  (match->value->value.u8 << VID_PCP_SHIFT_BITS) &VID_PCP_BITMASK;
+				matches->vlan_id = (match->value->value.u8 << VID_PCP_SHIFT_BITS) &VID_PCP_BITMASK;
 				masks->vlan_id |= 0x7<< VID_PCP_SHIFT_BITS;
+				num_of_matches++;
  				break;	
 			case OF1X_MATCH_VLAN_VID:
-				matches->vlan_id |= (match->value->value.u8) & VID_BITMASK;	 //FIXME: NBO
+				matches->vlan_id = htobe16(match->value->value.u16);
 				masks->vlan_id |= VID_BITMASK; //Exact
+				num_of_matches++;
 				break;
  			case OF1X_MATCH_IP_DSCP:
-				matches->ip_tos |=  ((match->value->value.u8)<<TOS_DSCP_SHIFT_BITS ) & TOS_DSCP_BITMASK;
+				matches->ip_tos =  ((match->value->value.u8)<<TOS_DSCP_SHIFT_BITS ) & TOS_DSCP_BITMASK;
 				masks->ip_tos |= TOS_DSCP_BITMASK;  
+				num_of_matches++;
 				break;
- 			case OF1X_MATCH_IP_ECN:
-				matches->ip_tos |=  (match->value->value.u8) & TOS_ECN_BITMASK;
-				masks->ip_tos |= TOS_ECN_BITMASK;  
-				break;
- 			case OF1X_MATCH_IP_PROTO:
-				entry->type = NETFPGA_FE_WILDCARDED;
+ 			case OF1X_MATCH_NW_PROTO:
 				matches->ip_proto = match->value->value.u8;	
 				masks->ip_proto = 0xFF;
+				num_of_matches++;
 				break;
- 			case OF1X_MATCH_IPV4_SRC:
-				//ROFL_DEBUG("of1x_entry src_ip: %d ", match->value->value.u32);
+ 			case OF1X_MATCH_NW_SRC:
+				ROFL_DEBUG("of1x_entry src_ip: %d ", match->value->value.u32);
 				
-
 				matches->ip_src = htobe32( match->value->value.u32 );
-				uint32_t tmp_mask = htobe32( match->value->mask.u32 );
-				entry->type = NETFPGA_FE_WILDCARDED;
+				tmp_ipv4_mask = htobe32( match->value->mask.u32 );
+				
 				memset(&masks->ip_src,0x00,sizeof(masks->ip_src));
-				if(tmp_mask != 0xFFFF && tmp_mask != 0x0){
+				if(tmp_ipv4_mask != 0xFFFF && tmp_ipv4_mask != 0x0){
 					//Is wildcarded
-					masks->ip_src = tmp_mask;					 
-  				}
+					masks->ip_src = tmp_ipv4_mask;					 
+  				}else
+					num_of_matches++;
 				
 				break;
- 			case OF1X_MATCH_IPV4_DST:
+ 			case OF1X_MATCH_NW_DST:
 
-				//ROFL_DEBUG("of1x_entry dst_ip: %d ",match->value->value.u32);
-
-				matches->ip_dst = htobe32( match->value->value.u32 );
+				ROFL_DEBUG("of1x_entry dst_ip: %d ",match->value->value.u32);
 				
-				tmp_mask = htobe32( match->value->mask.u32 );
+				matches->ip_dst = htobe32( match->value->value.u32 );
+				tmp_ipv4_mask = htobe32( match->value->mask.u32 );
+				
 				memset(&masks->ip_dst,0x00,sizeof(masks->ip_dst));
-				entry->type = NETFPGA_FE_WILDCARDED;
-				if(tmp_mask != 0xFFFF && tmp_mask != 0x0){
+				if(tmp_ipv4_mask != 0xFFFF && tmp_ipv4_mask != 0x0){
 					//Is wildcarded
-					masks->ip_dst = tmp_mask;
+					masks->ip_dst = tmp_ipv4_mask;
 					
- 				}
+ 				}else
+					num_of_matches++;
 				
 				break;
  			
-			case OF1X_MATCH_TCP_SRC:
- 			case OF1X_MATCH_UDP_SRC:
+			case OF1X_MATCH_TP_SRC:
 				matches->transp_src = htobe16( match->value->value.u16 );
 				masks->transp_src = 0xFFFF;
-				entry->type = NETFPGA_FE_WILDCARDED;
+				num_of_matches++;
 				break;
- 			case OF1X_MATCH_TCP_DST:
- 			case OF1X_MATCH_UDP_DST:
+ 			case OF1X_MATCH_TP_DST:
 				matches->transp_dst = htobe16( match->value->value.u16 );	
 				masks->transp_dst = 0xFFFF;
-				entry->type = NETFPGA_FE_WILDCARDED;
+				num_of_matches++;
 				break;
 			
 			default: //Skip
@@ -277,6 +249,10 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 		}	
 	}
 
+	if(num_of_matches == MAX_NUM_OF_MATCHES) 
+		entry->type = NETFPGA_FE_FIXED;
+	else
+		entry->type = NETFPGA_FE_WILDCARDED;
 	
 	return ROFL_SUCCESS;
 }
@@ -286,21 +262,21 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 	unsigned int i;
 	uint16_t port;
 	void* indirect;
-	of1x_packet_action_t* action;//MARC UPIERDOLE ZA TE NAZWY!!!!
+	of1x_packet_action_t* action;
 	netfpga_flow_entry_actions_t* actions = entry->actions;
+	netfpga_align_mac_addr_t *aux;
 
 	//If entry has not actions we are done (should we really install it down there?)
-	if(!of1x_entry->inst_grp.instructions[OF1X_IT_APPLY_ACTIONS-1].apply_actions)
+	if(!of1x_entry->inst_grp.instructions[OF1X_IT_APPLY_ACTIONS].apply_actions)
 		return ROFL_SUCCESS;
 
-	action = of1x_entry->inst_grp.instructions[OF1X_IT_APPLY_ACTIONS-1].apply_actions->head;
+	action = of1x_entry->inst_grp.instructions[OF1X_IT_APPLY_ACTIONS].apply_actions->head;
 	
 	if(!action){
 		assert(0);
 		return ROFL_FAILURE;
 	}
-
-
+	
 	//Loop over apply actions only
 	for(; action; action = action->next){
 	
@@ -310,16 +286,29 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 		switch(action->type){
 
 			case OF1X_AT_SET_FIELD_ETH_DST:
-				actions->eth_dst = *( (netfpga_align_mac_addr_t*) (((uint8_t*) indirect)) ); //This is nasty, I know and apologize... //FIXME: NBO
+				//Set auxiliary pointer
+				aux = (netfpga_align_mac_addr_t*) indirect; 
+				
+				//inversion
+				for (i=0;i<6;i++){
+					actions->eth_dst.addr[i]=aux->addr[5-i];
+				}
 				actions->action_flags |= (1 << NETFPGA_AT_SET_DL_DST);	
 				break;
+
 			case OF1X_AT_SET_FIELD_ETH_SRC:
-				actions->eth_src = *( (netfpga_align_mac_addr_t*) (((uint8_t*) indirect)) ); //This is nasty, I know and apologize... //FIXME: NBO
+				//Set auxiliary pointer
+				aux = (netfpga_align_mac_addr_t*) indirect; 
+				
+				//inversion
+				for (i=0;i<6;i++){
+					actions->eth_src.addr[i]=aux->addr[5-i];
+				}
 				actions->action_flags |= (1 << NETFPGA_AT_SET_DL_SRC);	
 				break;
 
 			case OF1X_AT_SET_FIELD_VLAN_VID:
-				actions->vlan_id |= (*(((uint8_t*)indirect))) & VID_BITMASK; //FIXME: NBO	
+				actions->vlan_id = htobe16((*(((uint8_t*)indirect))));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_VLAN_VID);	
 				break;
 			case OF1X_AT_SET_FIELD_VLAN_PCP:
@@ -327,20 +316,15 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 				actions->action_flags |= (1 << NETFPGA_AT_SET_VLAN_PCP);	
 				break;
 			case OF1X_AT_SET_FIELD_IP_DSCP:
-				actions->ip_tos |= ( (*(((uint8_t*)indirect)))<<TOS_DSCP_SHIFT_BITS ) & TOS_DSCP_BITMASK;
-				actions->action_flags |= (1 << NETFPGA_AT_SET_NW_TOS);	
-				break;
-			case OF1X_AT_SET_FIELD_IP_ECN:
-				actions->ip_tos |= (*(((uint8_t*)indirect))) & TOS_ECN_BITMASK;
+				actions->ip_tos = ( (*(((uint8_t*)indirect)))<<TOS_DSCP_SHIFT_BITS ) & TOS_DSCP_BITMASK;
 				actions->action_flags |= (1 << NETFPGA_AT_SET_NW_TOS);	
 				break;
 
-
-			case OF1X_AT_SET_FIELD_IPV4_SRC:
+			case OF1X_AT_SET_FIELD_NW_SRC:
 				actions->ip_src = htobe32(*(((uint32_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_SRC);	
 				break;
-			case OF1X_AT_SET_FIELD_IPV4_DST:
+			case OF1X_AT_SET_FIELD_NW_DST:
 				actions->ip_dst = htobe32(*(((uint32_t*)indirect) ));
 				actions->action_flags |= (1 << NETFPGA_AT_SET_TP_DST);	
 				break;
@@ -355,7 +339,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 			case OF1X_AT_OUTPUT:
 				port = *(((uint16_t*)indirect) )&0xFFFF;
 				entry->actions->action_flags=0;//added
-				//ROFL_DEBUG(" netfpga_flow_entry_map_actions   ENTRY port %d ",port);
+				ROFL_DEBUG(" netfpga_flow_entry_map_actions   ENTRY port %d ",port);
 				memset(&(actions->forward_bitmask),0x00,(actions->forward_bitmask));// clearing 
 
 				if ((port >= NETFPGA_FIRST_PORT) && (port <= NETFPGA_LAST_PORT)) {
@@ -364,11 +348,11 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 				}else if (port == NETFPGA_IN_PORT) {
 					//Send back to in-port	
 
-				//	ROFL_DEBUG(" \n SEND BACK TO PORT %x ",entry->matches->src_port);
+					ROFL_DEBUG(" \n SEND BACK TO PORT %x ",entry->matches->src_port);
 					
 					actions->forward_bitmask |= (entry->matches->src_port);
 				}else if(port == NETFPGA_ALL_PORTS || port == NETFPGA_FLOOD_PORT) {
-				//	ROFL_DEBUG(" \n FLOOD PORT %x ",entry->matches->src_port);
+					ROFL_DEBUG(" \n FLOOD PORT %x ",entry->matches->src_port);
 					//Send to all ports except in-port	
 					for(i = NETFPGA_FIRST_PORT; i <= NETFPGA_LAST_PORT; ++i) {
 						if(entry->matches->src_port != (0x1 << ((i-1) * 2))) {

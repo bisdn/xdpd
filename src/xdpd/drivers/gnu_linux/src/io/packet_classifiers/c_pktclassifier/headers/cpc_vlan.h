@@ -67,7 +67,7 @@ inline static
 uint16_t get_vlan_pcp(void* hdr){
 	return (((cpc_vlan_hdr_t*)hdr)->byte0 & 0xe0) >> 5;
 }
-
+#if 0
 inline static
 void set_vlan_cfi(void* hdr, bool cfi){
 	((cpc_vlan_hdr_t*)hdr)->byte0 &= 0xef;
@@ -85,7 +85,7 @@ inline static
 bool get_vlan_cfi(void* hdr){
 	return (((cpc_vlan_hdr_t*)hdr)->byte0 & 0x10) >> 4;
 }
-
+#endif
 inline static
 void set_vlan_type(void* hdr, uint16_t dl_type){
 	((cpc_vlan_hdr_t*)hdr)->dl_type = CPC_HTOBE16(dl_type);

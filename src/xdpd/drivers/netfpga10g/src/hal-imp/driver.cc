@@ -165,7 +165,7 @@ hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of
 	}
 	
 	switch(of_version){
-		case OF_VERSION_12: 
+		case OF_VERSION_10: 
 			sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 			break;
 

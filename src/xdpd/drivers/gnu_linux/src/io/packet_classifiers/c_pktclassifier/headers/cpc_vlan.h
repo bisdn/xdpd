@@ -60,12 +60,12 @@ uint16_t get_vlan_id(void* hdr){
 
 inline static
 void set_vlan_pcp(void* hdr, uint8_t pcp){
-	((cpc_vlan_hdr_t*)hdr)->byte0 = ((pcp & 0x07) << 5) + (((cpc_vlan_hdr_t*)hdr)->byte0 & 0x1f);
+	((cpc_vlan_hdr_t*)hdr)->byte0 = (pcp & 0xe0) + (((cpc_vlan_hdr_t*)hdr)->byte0 & 0x1f);
 }
 
 inline static
 uint16_t get_vlan_pcp(void* hdr){
-	return (((cpc_vlan_hdr_t*)hdr)->byte0 & 0xe0) >> 5;
+	return ((cpc_vlan_hdr_t*)hdr)->byte0 & 0xe0;
 }
 #if 0
 inline static

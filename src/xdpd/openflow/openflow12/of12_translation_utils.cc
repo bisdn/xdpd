@@ -454,14 +454,13 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry,match);
 	} catch(...) {}
 	try {
-		uint32_t label = ofmatch.get_mpls_label();
-		MPLABELTOBE(label);
+		uint32_t label = HTONB32(OF1X_MPLS_LABEL_ALIGN(ofmatch.get_mpls_label()));
 		of1x_match_t *match = of1x_init_mpls_label_match(label);
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_mpls_tc_match(ofmatch.get_mpls_tc());
+		of1x_match_t *match = of1x_init_mpls_tc_match(OF1X_MPLS_TC_ALIGN(ofmatch.get_mpls_tc()));
 
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
@@ -697,14 +696,13 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					break;
 				case rofl::openflow12::OFPXMT_OFB_MPLS_LABEL:
 				{
-					field.u32 = oxm.get_u32value();
-					MPLABELTOBE(field.u32);
+					field.u32 = HTONB32(OF1X_MPLS_LABEL_ALIGN(oxm.get_u32value()));
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_LABEL, field, 0x0);
 				}
 					break;
 				case rofl::openflow12::OFPXMT_OFB_MPLS_TC:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = OF1X_MPLS_TC_ALIGN(oxm.get_u8value());
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_TC, field, 0x0);
 				}
 					break;
@@ -1068,12 +1066,11 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			match.set_ipv6_nd_tll(cmacaddr(mac));
 			}break;
 		case OF1X_MATCH_MPLS_LABEL:	{
-			uint32_t label = m->value->value.u32;
-			BETOHMPLABEL(label);
+			uint32_t label = OF1X_MPLS_LABEL_VALUE(NTOHB32(m->value->value.u32));
 			match.set_mpls_label(label);
 			}break;
 		case OF1X_MATCH_MPLS_TC:
-			match.set_mpls_tc(m->value->value.u8);
+			match.set_mpls_tc(OF1X_MPLS_TC_VALUE(m->value->value.u8));
 			break;
 		case OF1X_MATCH_PPPOE_CODE:
 			match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(m->value->value.u8));
@@ -1391,12 +1388,12 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv6_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
 	} break;
 	case OF1X_AT_SET_FIELD_MPLS_LABEL: {
-		uint32_t label = of1x_action->field.u32;
-		BETOHMPLABEL(label);
+		uint32_t label = OF1X_MPLS_LABEL_VALUE(NTOHB32(of1x_action->field.u32));
 		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_label(label & OF1X_4_BYTE_MASK));
 	} break;
 	case OF1X_AT_SET_FIELD_MPLS_TC: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_tc((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		uint8_t tc = OF1X_MPLS_TC_VALUE((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
+		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_tc(tc));
 	} break;
 
 	/* Extensions */
@@ -1554,12 +1551,11 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		match.set_icmpv6_code(packet_matches->icmpv6_code);
 		
 	if(packet_matches->mpls_label){
-		uint32_t label = packet_matches->mpls_label;
-		BETOHMPLABEL(label);
+		uint32_t label = OF1X_MPLS_LABEL_VALUE(NTOHB32(packet_matches->mpls_label));
 		match.set_mpls_label(label);
 	}
 	if(packet_matches->mpls_tc)
-		match.set_mpls_tc(packet_matches->mpls_tc);
+		match.set_mpls_tc(OF1X_MPLS_TC_VALUE(packet_matches->mpls_tc));
 
 	//Extensions
 	if(packet_matches->pppoe_code)

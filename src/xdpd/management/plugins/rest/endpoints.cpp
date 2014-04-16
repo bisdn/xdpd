@@ -37,6 +37,8 @@ namespace endpoints
 
   void list_ports (const http::server::request &req, http::server::reply &rep)
     {
+	  json_spirit::Value tbd(std::string("tdb"));
+	  rep.content = json_spirit::write_string(tbd);
     }
 
   void list_datapaths (const http::server::request &req, http::server::reply &rep)

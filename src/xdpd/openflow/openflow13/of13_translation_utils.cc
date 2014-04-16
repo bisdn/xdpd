@@ -256,7 +256,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_vlan_pcp_match(OF1X_PCP_ALIGN(ofmatch.get_vlan_pcp()));
+		of1x_match_t *match = of1x_init_vlan_pcp_match(OF1X_VLAN_PCP_ALIGN(ofmatch.get_vlan_pcp()));
 		of1x_add_match_to_entry(entry, match);
 	} catch (...) {}
 
@@ -761,7 +761,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					break;
 				case rofl::openflow13::OFPXMT_OFB_VLAN_PCP:
 				{
-					field.u8 = OF1X_PCP_ALIGN(oxm.get_u8value());
+					field.u8 = OF1X_VLAN_PCP_ALIGN(oxm.get_u8value());
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, 0x0);
 				}
 					break;
@@ -1001,7 +1001,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			}
 			break;
 		case OF1X_MATCH_VLAN_PCP:
-			match.set_vlan_pcp(OF1X_PCP_VALUE(m->value->value.u8));
+			match.set_vlan_pcp(OF1X_VLAN_PCP_VALUE(m->value->value.u8));
 			break;
 		case OF1X_MATCH_ARP_OP:
 			match.set_arp_opcode(be16toh(m->value->value.u16));
@@ -1389,7 +1389,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		action = rofl::openflow::cofaction_set_field(rofl::openflow13::OFP_VERSION, rofl::openflow::coxmatch_ofb_vlan_vid(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_PCP: {
-		uint8_t pcp = OF1X_PCP_VALUE((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
+		uint8_t pcp = OF1X_VLAN_PCP_VALUE((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
 		action = rofl::openflow::cofaction_set_field(rofl::openflow13::OFP_VERSION, rofl::openflow::coxmatch_ofb_vlan_pcp(pcp));
 	} break;
 	case OF1X_AT_SET_FIELD_ARP_OPCODE: {
@@ -1574,7 +1574,7 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches->vlan_vid)
 		match.set_vlan_vid(be16toh(packet_matches->vlan_vid));
 	if(packet_matches->vlan_pcp)
-		match.set_vlan_pcp(OF1X_PCP_VALUE(packet_matches->vlan_pcp));
+		match.set_vlan_pcp(OF1X_VLAN_PCP_VALUE(packet_matches->vlan_pcp));
 	if(packet_matches->arp_opcode)
 		match.set_arp_opcode(be16toh(packet_matches->arp_opcode));
 	if(packet_matches->arp_sha){

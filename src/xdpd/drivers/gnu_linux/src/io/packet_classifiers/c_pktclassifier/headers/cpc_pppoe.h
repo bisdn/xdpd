@@ -25,17 +25,6 @@ enum pppoe_type_t {
 	PPPOE_TYPE = 0x01,	// PPPoE type
 };
 
-// PPPoE ethernet types
-enum pppoe_ether_t {
-#ifdef CPC_IN_HOSTBYTEORDER
-	PPPOE_ETHER_DISCOVERY = 0x8863,
-	PPPOE_ETHER_SESSION = 0x8864,
-#else
-	PPPOE_ETHER_DISCOVERY = 0x6388,
-	PPPOE_ETHER_SESSION = 0x6488,
-#endif
-};
-
 // PPPoE codes
 enum pppoe_code_t {
 	PPPOE_CODE_SESSION_DATA = 0x00,
@@ -78,22 +67,22 @@ struct cpc_pppoe_tag_hdr_t {
 
 inline static
 uint8_t get_pppoe_vers(void *hdr){
-	return (( ((cpc_pppoe_hdr_t*)hdr)->verstype & 0xf0 ) >>4 );
+	return ((cpc_pppoe_hdr_t*)hdr)->verstype & OF1X_4MSBITS_MASK;
 }
 
 inline static
 void set_pppoe_vers(void *hdr, uint8_t version){
-	((cpc_pppoe_hdr_t*)hdr)->verstype = (((cpc_pppoe_hdr_t*)hdr)->verstype & 0x0f) + ((version & 0x0f) << 4);
+	((cpc_pppoe_hdr_t*)hdr)->verstype = (((cpc_pppoe_hdr_t*)hdr)->verstype & ~OF1X_4MSBITS_MASK) + (version & OF1X_4MSBITS_MASK);
 }
 
 inline static
 uint8_t get_pppoe_type(void *hdr){
-	return (((cpc_pppoe_hdr_t*)hdr)->verstype & 0x0f);
+	return (((cpc_pppoe_hdr_t*)hdr)->verstype & OF1X_4LSBITS_MASK);
 }
 
 inline static
 void set_pppoe_type(void *hdr, uint8_t type){
-	((cpc_pppoe_hdr_t*)hdr)->verstype = (((cpc_pppoe_hdr_t*)hdr)->verstype & 0xf0) + (type & 0x0f);
+	((cpc_pppoe_hdr_t*)hdr)->verstype = (((cpc_pppoe_hdr_t*)hdr)->verstype & ~OF1X_4LSBITS_MASK) + (type & OF1X_4LSBITS_MASK);
 }
 
 inline static
@@ -109,22 +98,22 @@ void set_pppoe_code(void *hdr, uint8_t code){
 
 inline static
 uint16_t get_pppoe_sessid(void *hdr){
-	return CPC_BE16TOH(((cpc_pppoe_hdr_t*)hdr)->sessid);
+	return ((cpc_pppoe_hdr_t*)hdr)->sessid;
 }
 
 inline static
 void set_pppoe_sessid(void *hdr, uint16_t sessid){
-	((cpc_pppoe_hdr_t*)hdr)->sessid = CPC_HTOBE16(sessid);
+	((cpc_pppoe_hdr_t*)hdr)->sessid = sessid;
 }
 
 inline static
 uint16_t get_pppoe_length(void *hdr){
-	return CPC_BE16TOH(((cpc_pppoe_hdr_t*)hdr)->length);
+	return ((cpc_pppoe_hdr_t*)hdr)->length;
 }
 
 inline static
 void set_pppoe_length(void *hdr, uint16_t length){
-	((cpc_pppoe_hdr_t*)hdr)->length = CPC_HTOBE16(length);
+	((cpc_pppoe_hdr_t*)hdr)->length = length;
 }
 
 #endif //_CPC_PPPOE_H_

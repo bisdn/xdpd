@@ -196,7 +196,6 @@ uint128__t get_icmpv6_neighbor_taddr(void *hdr){
 			//TODO LOG ERROR
 			break;
 	}
-	CPC_SWAP_U128(addr); //be128toh
 	return addr;
 };
 
@@ -218,7 +217,6 @@ void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 			return;
 			break;
 	}
-	CPC_SWAP_U128(taddr); //htobe128
 	*ptr = taddr;
 };
 

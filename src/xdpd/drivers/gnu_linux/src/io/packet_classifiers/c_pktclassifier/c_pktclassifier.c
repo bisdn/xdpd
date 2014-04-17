@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <rofl/common/utils/c_logger.h>
+#include <rofl/datapath/pipeline/common/protocol_constants.h>
 #include "../packet_operations.h"
 #include "../../../config.h"
 
@@ -95,29 +96,29 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 				parse_vlan(clas_state, data, datalen);
 			}
 			break;
-		case MPLS_ETHER:
-		case MPLS_ETHER_UPSTREAM:
+		case ETH_TYPE_MPLS_UNICAST:
+		case ETH_TYPE_MPLS_MULTICAST:
 			{
 				parse_mpls(clas_state, data, datalen);
 			}
 			break;
-		case PPPOE_ETHER_DISCOVERY:
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_DISCOVERY:
+		case ETH_TYPE_PPPOE_SESSION:
 			{
 				parse_pppoe(clas_state, data, datalen);
 			}
 			break;
-		case ARPV4_ETHER:
+		case ETH_TYPE_ARP:
 			{
 				parse_arpv4(clas_state, data, datalen);
 			}
 			break;
-		case IPV4_ETHER:
+		case ETH_TYPE_IPV4:
 			{
 				parse_ipv4(clas_state, data, datalen);
 			}
 			break;
-		case IPV6_ETHER:
+		case ETH_TYPE_IPV6:
 			{
 				parse_ipv6(clas_state, data,datalen);
 			}
@@ -160,24 +161,24 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 				parse_vlan(clas_state, data, datalen);
 			}
 			break;
-		case MPLS_ETHER:
-		case MPLS_ETHER_UPSTREAM:
+		case ETH_TYPE_MPLS_UNICAST:
+		case ETH_TYPE_MPLS_MULTICAST:
 			{
 				parse_mpls(clas_state, data, datalen);
 			}
 			break;
-		case PPPOE_ETHER_DISCOVERY:
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_DISCOVERY:
+		case ETH_TYPE_PPPOE_SESSION:
 			{
 				parse_pppoe(clas_state, data, datalen);
 			}
 			break;
-		case ARPV4_ETHER:
+		case ETH_TYPE_ARP:
 			{
 				parse_arpv4(clas_state, data, datalen);
 			}
 			break;
-		case IPV4_ETHER:
+		case ETH_TYPE_IPV4:
 			{
 				parse_ipv4(clas_state, data, datalen);
 			}
@@ -241,7 +242,7 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	clas_state->num_of_headers[HEADER_TYPE_PPPOE] = num_of_pppoe+1;
 	
 	switch (clas_state->eth_type) {
-		case PPPOE_ETHER_DISCOVERY:
+		case ETH_TYPE_PPPOE_DISCOVERY:
 			{
 				datalen -= sizeof(cpc_pppoe_hdr_t);
 #if 0
@@ -264,7 +265,7 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 #endif
 			}
 			break;
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_SESSION:
 			{
 				//Increment pointers and decrement remaining payload size
 				data += sizeof(cpc_pppoe_hdr_t);
@@ -675,7 +676,7 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	if (datalen > 0){
 		switch (get_udp_dport(udp)) {
-		case GTPU_UDP_PORT: {
+		case UDP_DST_PORT_GTPU: {
 			parse_gtp(clas_state, data, datalen);
 		} break;
 		default: {
@@ -813,7 +814,7 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 	ether_header = get_ether_hdr(clas_state,0);
 
 	switch (get_ether_type(ether_header)) {
-		case PPPOE_ETHER_DISCOVERY:
+		case ETH_TYPE_PPPOE_DISCOVERY:
 		{
 			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_pppoe_hdr_t));
 			if (get_pppoe_hdr(clas_state, 0)) {
@@ -826,7 +827,7 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 		}
 			break;
 
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_SESSION:
 		{
 			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t),sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t));
 			if (get_pppoe_hdr(clas_state, 0)) {
@@ -1063,7 +1064,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 	cpc_ppp_hdr_t *n_ppp = NULL; 
 
 	switch (ether_type) {
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_SESSION:
 		{
 			unsigned int bytes_to_insert = sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t);
 
@@ -1080,7 +1081,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			 */
 			shift_ether(clas_state, 0, 0-bytes_to_insert); // shift left
 			ether_header-=sizeof(cpc_mpls_hdr_t); //We change also the local pointer
-			set_ether_type(ether_header, PPPOE_ETHER_SESSION);
+			set_ether_type(ether_header, ETH_TYPE_PPPOE_SESSION);
 
 			/*
 			 * append the new fpppoeframe instance to ether(0)
@@ -1108,7 +1109,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 		}
 			break;
 
-		case PPPOE_ETHER_DISCOVERY:
+		case ETH_TYPE_PPPOE_DISCOVERY:
 		{
 			unsigned int bytes_to_insert = sizeof(cpc_pppoe_hdr_t);
 
@@ -1125,7 +1126,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			 */
 			shift_ether(clas_state, 0, 0-bytes_to_insert);//shift left
 			ether_header-=sizeof(cpc_mpls_hdr_t); //We change also the local pointer
-			set_ether_type(get_ether_hdr(clas_state, 0), PPPOE_ETHER_DISCOVERY);
+			set_ether_type(get_ether_hdr(clas_state, 0), ETH_TYPE_PPPOE_DISCOVERY);
 
 			/*
 			 * append the new fpppoeframe instance to ether(0)

@@ -16,10 +16,6 @@
 * @brief Structure definitions and inline getters and setters for GTP
 */
 
-enum gtpu_udp_port_t {
-	GTPU_UDP_PORT = 0x6808, // htobe16(2152)
-};
-
 enum gtpu_flag_t {
 	GTPU_PT_FLAG = (1 << 4),
 	GTPU_E_FLAG  = (1 << 2),
@@ -82,12 +78,12 @@ typedef union cpc_gtphu{
 
 inline static
 uint8_t get_gtpu_version(void *hdr){
-	return (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & 0xe0) >> 5;
+	return ((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & OF1X_3MSBITS_MASK;
 };
 
 inline static
 void set_gtpu_version(void *hdr, uint8_t version){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & 0x1f) | ((version & 0x03) << 5);
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_3MSBITS_MASK) | (version & OF1X_3MSBITS_MASK);
 };
 
 inline static
@@ -154,22 +150,22 @@ void set_gtpu_msg_type(void *hdr, uint8_t msgtype){
 
 inline static
 uint16_t get_gtpu_length(void *hdr){
-	return CPC_BE16TOH(((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr.len);
+	return ((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr.len;
 };
 
 inline static
 void set_gtpu_length(void *hdr, uint16_t length){
-	((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr.len = CPC_HTOBE16(length);
+	((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr.len = length;
 };
 
 inline static
 uint32_t get_gtpu_teid(void *hdr){
-	return CPC_BE32TOH(((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.teid);
+	return ((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.teid;
 };
 
 inline static
 void set_gtpu_teid(void *hdr, uint32_t teid){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.teid = CPC_HTOBE32(teid);
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.teid = teid;
 };
 
 inline static
@@ -178,7 +174,7 @@ uint16_t get_gtpu_seq_no(void *hdr){
 		assert(0);
 		return 0;
 	}
-	return CPC_BE16TOH(((cpc_gtphu_t *)hdr)->cpc_gtpu_s_hdr.seqno);
+	return ((cpc_gtphu_t *)hdr)->cpc_gtpu_s_hdr.seqno;
 };
 
 inline static
@@ -187,7 +183,7 @@ void set_gtpu_seq_no(void *hdr, uint16_t seqno){
 		assert(0);
 		return;
 	}
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_s_hdr.seqno = CPC_HTOBE16(seqno);
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_s_hdr.seqno = seqno;
 };
 
 inline static

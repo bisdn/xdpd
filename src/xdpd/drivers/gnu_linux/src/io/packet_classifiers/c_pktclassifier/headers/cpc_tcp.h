@@ -69,12 +69,10 @@ void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 	/*
 	* part -I- (IPv4 pseudo header)
 	*/
-	ip_src = CPC_BE32TOH(ip_src);
 	word16 = (uint16_t*)(void*)&ip_src;
 	sum += *(word16+1);
 	sum += *(word16);
 	
-	ip_dst = CPC_BE32TOH(ip_dst);
 	word16 = (uint16_t*)(void*)&ip_dst;
 	sum += *(word16+1);
 	sum += *(word16);
@@ -111,22 +109,22 @@ void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 
 inline static
 uint16_t get_tcp_sport(void *hdr){
-	return CPC_BE16TOH(((cpc_tcp_hdr_t*)hdr)->sport);
+	return ((cpc_tcp_hdr_t*)hdr)->sport;
 }
 
 inline static
 void set_tcp_sport(void *hdr, uint16_t port){
-	((cpc_tcp_hdr_t*)hdr)->sport = CPC_HTOBE16(port);
+	((cpc_tcp_hdr_t*)hdr)->sport = port;
 }
 
 inline static
 uint16_t get_tcp_dport(void *hdr){
-	return CPC_BE16TOH(((cpc_tcp_hdr_t*)hdr)->dport);
+	return ((cpc_tcp_hdr_t*)hdr)->dport;
 }
 
 inline static
 void set_tcp_dport(void *hdr, uint16_t port){
-	((cpc_tcp_hdr_t*)hdr)->dport = CPC_HTOBE16(port);
+	((cpc_tcp_hdr_t*)hdr)->dport = port;
 }
 
 

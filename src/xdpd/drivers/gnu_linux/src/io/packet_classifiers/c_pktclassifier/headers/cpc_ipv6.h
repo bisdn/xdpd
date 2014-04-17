@@ -22,15 +22,6 @@ struct cpc_ipv6_ext_hdr_t {
 } __attribute__((packed));
 
 /* ipv6 constants and definitions */
-// ipv6 ethernet types
-enum ipv6_ether_t {
-#ifdef CPC_IN_HOSTBYTEORDER
-	IPV6_ETHER = 0x86dd,
-#else
-	IPV6_ETHER = 0xdd86,
-#endif
-};
-
 enum ipv6_ext_t {
 	IPV6_IPPROTO_HOPOPT 		= 0,
 	IPV6_IPPROTO_ICMPV4 		= 1,
@@ -68,66 +59,68 @@ void ipv6_calc_checksum(void *hdr, uint16_t length){
 
 inline static
 void set_ipv6_version(void *hdr, uint8_t version){
-	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0x0F) + ((version & 0x0F) << 4);
+	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & ~OF1X_4MSBITS_MASK) + (version & OF1X_4MSBITS_MASK);
 };
 
 inline static
 uint8_t get_ipv6_version(void *hdr){
-	return (uint8_t)((((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0xF0) >> 4);
+	return (uint8_t)(((cpc_ipv6_hdr_t*)hdr)->bytes[0] & OF1X_4MSBITS_MASK);
 };
 
 inline static
-void set_ipv6_traffic_class(void *hdr, uint8_t tc){
-	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0xF0) + ((tc & 0xF0) >> 4);
-	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x0F) + ((tc & 0x0F) << 4);
+void set_ipv6_traffic_class(void *hdr, uint16_t tc){
+	uint16_t *ptr = (uint16_t*)(((cpc_ipv6_hdr_t*)hdr)->bytes);
+	*ptr = (tc & OF1X_8MIDDLE_BITS_MASK) | (*ptr & ~OF1X_8MIDDLE_BITS_MASK);
 }
 
 inline static
-uint8_t get_ipv6_traffic_class(void *hdr){
-	return (uint8_t)(((((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0x0F) << 4) + ((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xF0) >> 4));
+uint16_t get_ipv6_traffic_class(void *hdr){
+	uint16_t *ptr = (uint16_t*)(((cpc_ipv6_hdr_t*)hdr)->bytes);
+	return (*ptr) & OF1X_8MIDDLE_BITS_MASK;
 };
 
 inline static
-void set_ipv6_dscp(void *hdr, uint8_t dscp){
-	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0xF0) + ((dscp & 0x3C) >> 2);
-	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x3F) + ((dscp & 0x03) << 6);
+void set_ipv6_dscp(void *hdr, uint16_t dscp){
+	uint16_t *ptr = (uint16_t*)(((cpc_ipv6_hdr_t*)hdr)->bytes);
+	*ptr = (dscp & OF1X_6MIDDLE_BITS_MASK) | (*ptr & ~OF1X_6MIDDLE_BITS_MASK);
 }
 
 inline static
 uint8_t get_ipv6_dscp(void *hdr){
-	return (uint8_t)(((((cpc_ipv6_hdr_t*)hdr)->bytes[0] & 0x0F) << 2) + ((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xC0) >> 6));
+	uint16_t *ptr = (uint16_t*)(((cpc_ipv6_hdr_t*)hdr)->bytes);
+	return (*ptr) & OF1X_6MIDDLE_BITS_MASK;
 };
 
 inline static
 void set_ipv6_ecn(void *hdr, uint8_t ecn){
-	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xCF) + ((ecn & 0x03) << 4);
+	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & ~OF1X_BITS_4AND5_MASK) | (ecn & OF1X_BITS_4AND5_MASK);
 }
 
 inline static
 uint8_t get_ipv6_ecn(void *hdr){
-	return (uint8_t)((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x30) >> 4);
+	return (uint8_t)(((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_BITS_4AND5_MASK);
 };
 
 inline static
 void set_ipv6_flow_label(void *hdr, uint32_t flabel){
-	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0xF0) + ((flabel & 0x000f0000) >> 16);
-	((cpc_ipv6_hdr_t*)hdr)->bytes[2] = (flabel & 0x0000ff00) >> 8;
-	((cpc_ipv6_hdr_t*)hdr)->bytes[3] = (flabel & 0x000000ff) >> 0;
+	uint32_t *ptr = (uint32_t*)&((cpc_ipv6_hdr_t*)hdr)->bytes[1];
+	*ptr = (flabel & OF1X_20_BITS_IPV6_FLABEL_MASK) | (*ptr & ~OF1X_20_BITS_IPV6_FLABEL_MASK);
 }
 
 inline static
 uint32_t get_ipv6_flow_label(void *hdr){
-	return (uint32_t)(((((cpc_ipv6_hdr_t*)hdr)->bytes[1] & 0x0F) << 16) + (((cpc_ipv6_hdr_t*)hdr)->bytes[2] << 8) + (((cpc_ipv6_hdr_t*)hdr)->bytes[3] << 0));
+	uint32_t *ptr = (uint32_t*)&((cpc_ipv6_hdr_t*)hdr)->bytes[1];
+	return (*ptr) & OF1X_20_BITS_IPV6_FLABEL_MASK;
 };
 
 inline static
 void set_ipv6_payload_length(void *hdr, uint16_t len){
-	((cpc_ipv6_hdr_t*)hdr)->payloadlen = CPC_HTOBE16(len);
+	((cpc_ipv6_hdr_t*)hdr)->payloadlen = len;
 }
 
 inline static
 uint16_t get_ipv6_payload_length(void *hdr){
-	return CPC_BE16TOH(((cpc_ipv6_hdr_t*)hdr)->payloadlen);
+	return ((cpc_ipv6_hdr_t*)hdr)->payloadlen;
 };
 
 inline static
@@ -158,7 +151,6 @@ void dec_ipv6_hop_limit(void *hdr){
 inline static
 void set_ipv6_src(void *hdr, uint128__t src){
 	uint128__t *ptr=(uint128__t*)&(((cpc_ipv6_hdr_t*)hdr)->src);
-	CPC_SWAP_U128(src);//htobe128
 	*ptr = src;
 };
 
@@ -166,14 +158,12 @@ inline static
 uint128__t get_ipv6_src(void *hdr){
 	void* tmp = (void*)(((cpc_ipv6_hdr_t*)hdr)->src);
 	uint128__t src=*(uint128__t*)tmp;
-	CPC_SWAP_U128(src);//htobe128
 	return src;
 };
 
 inline static
 void set_ipv6_dst(void *hdr, uint128__t dst){
 	uint128__t *ptr=(uint128__t*)&(((cpc_ipv6_hdr_t*)hdr)->dst);
-	CPC_SWAP_U128(dst);//htobe128
 	*ptr = dst;
 };
 
@@ -181,7 +171,6 @@ inline static
 uint128__t get_ipv6_dst(void *hdr){
 	void * tmp = (((cpc_ipv6_hdr_t*)hdr)->dst);
 	uint128__t dst=*(uint128__t*)tmp;
-	CPC_SWAP_U128(dst);//htobe128
 	return dst;
 };
 

@@ -16,23 +16,8 @@
 */
 
 /* IPv4 constants and definitions */
-// IPv4 ethernet types
-enum ipv4_ether_t {
-#ifdef CPC_IN_HOSTBYTEORDER
-	IPV4_ETHER = 0x0800,
-#else
-	IPV4_ETHER = 0x0008,
-#endif
-};
-
 enum ipv4_ip_proto_t {
 	IPV4_IP_PROTO = 4,
-};
-
-enum ipv4_flag_t {
-	bit_reserved 		= (1 << 0),
-	bit_dont_fragment 	= (1 << 1),
-	bit_more_fragments	= (1 << 2),
 };
 
 // IPv4 header
@@ -42,7 +27,7 @@ typedef struct cpc_ipv4_hdr {
 	uint8_t tos;
 	uint16_t length;
 	uint16_t ident;
-	uint16_t offset_flags;
+	uint8_t offset_flags[2];
 	uint8_t ttl;
 	uint8_t proto;
 	uint16_t checksum;
@@ -59,7 +44,7 @@ void ipv4_calc_checksum(void *hdr){
 	size_t datalen = sizeof(cpc_ipv4_hdr_t);
 
 	// force header checksum to 0x0000
-	((cpc_ipv4_hdr_t*)hdr)->checksum = 0;//CPC_HTOBE16(0x0000);
+	((cpc_ipv4_hdr_t*)hdr)->checksum = 0;
 
 	// pointer on 16bit words
 	uint16_t *word16 = (uint16_t*)hdr;
@@ -70,7 +55,7 @@ void ipv4_calc_checksum(void *hdr){
 
 	for (i = 0; i < wnum; i++)
 	{
-		uint32_t tmp = (uint32_t)(CPC_BE16TOH(word16[i]));
+		uint32_t tmp = (uint32_t)(word16[i]);
 		sum += tmp;
 		//fprintf(stderr, "word16[%d]=0x%08x sum()=0x%08x\n", i, tmp, sum);
 	}
@@ -80,49 +65,49 @@ void ipv4_calc_checksum(void *hdr){
 
 	//fprintf(stderr, " res16(1)=0x%x\n", res16);
 
-	((cpc_ipv4_hdr_t*)hdr)->checksum = CPC_HTOBE16(~res16);
+	((cpc_ipv4_hdr_t*)hdr)->checksum = ~res16;
 
-	//fprintf(stderr, "~res16(1)=0x%x\n", CPC_BE16TOH(ipv4_hdr->checksum));
+	//fprintf(stderr, "~res16(1)=0x%x\n", ipv4_hdr->checksum);
 };
 
 inline static
 void set_ipv4_src(void *hdr, uint32_t src){
-	((cpc_ipv4_hdr_t*)hdr)->src = CPC_HTOBE32(src);
+	((cpc_ipv4_hdr_t*)hdr)->src = src;
 };
 
 inline static
 uint32_t get_ipv4_src(void *hdr){
-	return CPC_BE32TOH(((cpc_ipv4_hdr_t*)hdr)->src);
+	return ((cpc_ipv4_hdr_t*)hdr)->src;
 };
 
 inline static
 void set_ipv4_dst(void *hdr, uint32_t dst){
-	((cpc_ipv4_hdr_t*)hdr)->dst = CPC_HTOBE32(dst);
+	((cpc_ipv4_hdr_t*)hdr)->dst = dst;
 };
 
 inline static
 uint32_t get_ipv4_dst(void *hdr){
-	return CPC_BE32TOH(((cpc_ipv4_hdr_t*)hdr)->dst);
+	return ((cpc_ipv4_hdr_t*)hdr)->dst;
 };
 
 inline static
 void set_ipv4_dscp(void *hdr, uint8_t dscp){
-	((cpc_ipv4_hdr_t*)hdr)->tos = ((dscp & 0x3f) << 2) | (((cpc_ipv4_hdr_t*)hdr)->tos & 0x03);
+	((cpc_ipv4_hdr_t*)hdr)->tos = (dscp & OF1X_6MSBITS_MASK) | (((cpc_ipv4_hdr_t*)hdr)->tos & ~OF1X_6MSBITS_MASK);
 };
 
 inline static
 uint8_t get_ipv4_dscp(void *hdr){
-	return (((cpc_ipv4_hdr_t*)hdr)->tos >> 2);
+	return (((cpc_ipv4_hdr_t*)hdr)->tos & OF1X_6MSBITS_MASK);
 };
 
 inline static
 void set_ipv4_ecn(void *hdr, uint8_t ecn){
-	((cpc_ipv4_hdr_t*)hdr)->tos = (((cpc_ipv4_hdr_t*)hdr)->tos & 0xfc) | (ecn & 0x03);
+	((cpc_ipv4_hdr_t*)hdr)->tos = (((cpc_ipv4_hdr_t*)hdr)->tos & ~OF1X_2LSBITS_MASK) | (ecn & OF1X_2LSBITS_MASK);
 };
 
 inline static
 uint8_t get_ipv4_ecn(void *hdr){
-	return (((cpc_ipv4_hdr_t*)hdr)->tos & 0x03);
+	return (((cpc_ipv4_hdr_t*)hdr)->tos & OF1X_2LSBITS_MASK);
 };
 
 inline static
@@ -152,62 +137,62 @@ uint8_t get_ipv4_proto(void *hdr){
 
 inline static
 void set_ipv4_ihl(void *hdr, uint8_t ihl){
-	((cpc_ipv4_hdr_t*)hdr)->ihlvers = (((cpc_ipv4_hdr_t*)hdr)->ihlvers & 0xf0) + (ihl & 0x0f);
+	((cpc_ipv4_hdr_t*)hdr)->ihlvers = (((cpc_ipv4_hdr_t*)hdr)->ihlvers & ~OF1X_4LSBITS_MASK) + (ihl & OF1X_4LSBITS_MASK);
 };
 
 inline static
 uint8_t get_ipv4_ihl(void *hdr){
-	return ((((cpc_ipv4_hdr_t*)hdr)->ihlvers & 0x0f));
+	return ((cpc_ipv4_hdr_t*)hdr)->ihlvers & OF1X_4LSBITS_MASK;
 };
 
 inline static
 void set_ipv4_version(void *hdr, uint8_t version){
-	((cpc_ipv4_hdr_t*)hdr)->ihlvers = (((cpc_ipv4_hdr_t*)hdr)->ihlvers & 0x0f) + ((version & 0x0f) << 4);
+	((cpc_ipv4_hdr_t*)hdr)->ihlvers = (((cpc_ipv4_hdr_t*)hdr)->ihlvers & ~OF1X_4MSBITS_MASK) | (version & OF1X_4MSBITS_MASK);
 };
 
 inline static
 uint8_t get_ipv4_version(void *hdr){
-	return ((((cpc_ipv4_hdr_t*)hdr)->ihlvers & 0xf0) >> 4);
+	return ((cpc_ipv4_hdr_t*)hdr)->ihlvers & OF1X_4MSBITS_MASK;
 };
 
 inline static
 void set_ipv4_length(void *hdr, uint16_t length){
-	((cpc_ipv4_hdr_t*)hdr)->length = CPC_HTOBE16(length);
+	((cpc_ipv4_hdr_t*)hdr)->length = length;
 };
 
 inline static
 uint32_t get_ipv4_length(void *hdr){
-	return CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->length);
+	return ((cpc_ipv4_hdr_t*)hdr)->length;
 };
 
 inline static
 void set_ipv4_DF_bit(void *hdr){
-	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) | (bit_dont_fragment << 13) );
+	((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] =  ((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] | OF1X_BIT6_MASK;
 };
 
 inline static
 bool has_ipv4_DF_bit_set(void *hdr){
-	return (bool)((CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) >> 13)  & bit_dont_fragment);
+	return (bool)(((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] & OF1X_BIT6_MASK);
 };
 
 inline static
 void clear_ipv4_DF_bit(void *hdr){
-	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_dont_fragment << 13) );
+	((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] = ((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] & ~OF1X_BIT6_MASK;
 };
 
 inline static
 void set_ipv4_MF_bit(void *hdr){
-	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) | (bit_more_fragments << 13) );
+	((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] = ((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] | OF1X_BIT5_MASK;
 };
 
 inline static
 bool has_ipv4_MF_bit_set(void *hdr){
-	return (bool)((CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) >> 13)  & bit_more_fragments);
+	return (bool)(((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] & OF1X_BIT5_MASK);
 };
 
 inline static
 void clear_ipv4_MF_bit(void *hdr){
-	((cpc_ipv4_hdr_t*)hdr)->offset_flags = CPC_HTOBE16( CPC_BE16TOH(((cpc_ipv4_hdr_t*)hdr)->offset_flags) & ~(bit_more_fragments << 13) );
+	((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] = ((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] & ~OF1X_BIT5_MASK;
 };
 
 #endif //_CPC_IPV4_H_

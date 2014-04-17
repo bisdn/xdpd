@@ -48,7 +48,7 @@ void set_icmpv4_code(void *hdr, uint8_t code){
 
 inline static
 uint16_t get_icmpv4_checksum(void *hdr){
-	return CPC_BE16TOH(((cpc_icmpv4_hdr_t*)hdr)->checksum);
+	return ((cpc_icmpv4_hdr_t*)hdr)->checksum;
 };
 
 inline static
@@ -71,7 +71,7 @@ void icmpv4_calc_checksum(void * hdr,uint16_t length){
 	// header loop
 	for (i = 0; i < wnum; i++)
 	{
-		uint32_t tmp = (uint32_t)(CPC_BE16TOH(word16[i]));
+		uint32_t tmp = (uint32_t)(word16[i]);
 		sum += tmp;
 		//fprintf(stderr, "word16[%d]=0x%08x sum()=0x%08x\n", i, tmp, sum);
 	}
@@ -80,7 +80,7 @@ void icmpv4_calc_checksum(void * hdr,uint16_t length){
 	uint16_t res16 = (sum & 0x0000ffff) + ((sum & 0xffff0000) >> 16);
 	//fprintf(stderr, " res16(1)=0x%x\n", res16);
 
-	((cpc_icmpv4_hdr_t *)hdr)->checksum = CPC_HTOBE16(~res16);
+	((cpc_icmpv4_hdr_t *)hdr)->checksum = ~res16;
 	//fprintf(stderr, "~res16(1)=0x%x\n", be16toh(udp_hdr->checksum));
 };
 

@@ -18,7 +18,7 @@ using namespace rofl;
 const std::string qmfagent::QMF_BROKER_URL_OPT("qmf-addr");
 const std::string qmfagent::QMF_XDPD_ID_OPT("qmf-xdpd-id");
 const std::string qmfagent::QMF_SSL_CA_FILE_OPT("qmf-ssl-ca-file");
-const std::string qmfagent::QMF_SSL_CERT_OPT("qmf-ssl-cert");
+const std::string qmfagent::QMF_SSL_CERT_OPT("qmf-ssl-certificate");
 const std::string qmfagent::QMF_SSL_PRIVATEKEY_OPT("qmf-ssl-private-key");
 const std::string qmfagent::QMF_SSL_PSWDFILE_OPT("qmf-ssl-pswdfile");
 const std::string qmfagent::QMF_SSL_VERIFY_MODE("qmf-ssl-verify-mode");

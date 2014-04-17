@@ -45,14 +45,6 @@ openflow_switch* switch_manager::create_switch(
 		throw eOfSmExists();
 	}
 
-
-#if ! defined(EXPERIMENTAL)
-	if(socket_type == rofl::csocket::SOCKET_TYPE_OPENSSL){
-		ROFL_ERR("[xdpd][switch_manager] ERROR: SSL socket type support is currently marked as experimental. Compile xdpd enabling experimental code to test this feature. Don't forget to make clean\n"); 
-		pthread_rwlock_unlock(&switch_manager::rwlock);
-		eOfSmExperimentalNotSupported();	
-	}
-#endif
 	//Check if ROFL supports SSL or any other socket type, so that we can send a nice exception
 	if(!rofl::csocket::supports_socket_type(socket_type)){
 		ROFL_ERR("[xdpd][switch_manager] ERROR Unsupported socket type by ROFL, specified in the first connection of switch with dpid: 0x%llx. Perhaps compiled ROFL without SSL support?\n", (long long unsigned int)dpid); 
@@ -128,6 +120,9 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 		throw eOfSmGeneralError(); 
 	}
 
+	//Set the dpid under destruction
+	dpid_under_destruction = dpid;
+
 	for(i=0;i<sw_snapshot->max_ports;++i){
 		port = sw_snapshot->logical_ports[i].port;
 		if(!port || sw_snapshot->logical_ports[i].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
@@ -152,9 +147,6 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	switch_manager::switchs.erase(dpid);
 
 	ROFL_INFO("[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
-
-	//Set the dpid under destruction
-	dpid_under_destruction = dp->dpid;
 
 	//Destroy element
 	delete dp;	

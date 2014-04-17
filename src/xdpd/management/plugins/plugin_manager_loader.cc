@@ -31,7 +31,7 @@ using namespace xdpd;
 	#include "example/example.h"
 #endif
 #ifdef WITH_MGMT_REST
-	#include "plugins/rest/rest.h"
+	#include "rest/rest.h"
 #endif
 //Add more here [+]...
 

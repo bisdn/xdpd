@@ -42,10 +42,10 @@ How to build
 
 Install the dependencies and run:
 
-sh# ./autogen.sh
-sh# cd build
-sh# ../configure
-sh# make
+sh# ./autogen.sh  
+sh# cd build  
+sh# ../configure  
+sh# make  
 sh# make install
 
 Optionally you can 'make check' for consistency checks.
@@ -55,8 +55,8 @@ How to run it
 
 Copy the example.cfg: 
 
-sh# cd build/src/xdpd
-sh# cp src/xdpd/management/plugins/config/example.cfg .
+sh# cd build/src/xdpd  
+sh# cp src/xdpd/management/plugins/config/example.cfg .  
 
 Now edit the configuration. Make sure ports attached to the Logical Switch Instance (LSI) exist in the system.
 
@@ -69,10 +69,10 @@ sh# ./xdpd -c example.cfg
 Optional ../configure parameters
 ================================
 
---with-hw-support=platform-name: Compiles support for the platform-name (forwarding module). Default is gnu-linux.
---with-plugins="plugin1...pluginN": Compile with plugin1..pluginN enabled. Default is --with-plugins="config" plugin
---enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).
---disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)
+--with-hw-support=platform-name: Compiles support for the platform-name (forwarding module). Default is gnu-linux.  
+--with-plugins="plugin1...pluginN": Compile with plugin1..pluginN enabled. Default is --with-plugins="config" plugin.
+--enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).  
+--disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)  
 
 Doxygen documentation
 ================================
@@ -90,11 +90,10 @@ Authorship
 
 (c) Copyright BISDN GmbH 2013
 
-Marc Sune<marc.sune (at) bisdn.de>
-Andreas Koepsel<andreas.koepsel (at) bisdn.de>
-Victor Alvarez<victor.alvarez (at) bisdn.de>
-Tobias Jungel<tobias.jungel (at) bisdn.de>
+Marc Sune<marc.sune (at) bisdn.de>  
+Andreas Koepsel<andreas.koepsel (at) bisdn.de>  
+Victor Alvarez<victor.alvarez (at) bisdn.de>  
+Tobias Jungel<tobias.jungel (at) bisdn.de>  
 
 And others
-
 

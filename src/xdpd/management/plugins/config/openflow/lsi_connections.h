@@ -43,8 +43,8 @@ protected:
 	virtual void pre_validate(libconfig::Setting& setting, bool dry_run);
 	void get_connection_values(libconfig::Setting& setting, std::string& hostname);
 	void parse_connection_params(libconfig::Setting& setting, lsi_connection& con);
-	void parse_ssl_connection_params(libconfig::Setting& setting, lsi_connection& con);
-	lsi_connection parse_connection(libconfig::Setting& setting);
+	void parse_ssl_connection_params(libconfig::Setting& setting, lsi_connection& con, bool dry_run);
+	lsi_connection parse_connection(libconfig::Setting& setting, bool dry_run);
 };
 
 }// namespace xdpd 

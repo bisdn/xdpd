@@ -8,6 +8,12 @@ Legend:
 Change log
 ==========
 
+v0.4RC2
+
+[+][plugins][config] Now plugin checks for unrecognized elements and aborts if any are found 
+[+] Marked SSL socket support as stable. Added example_ssl.cfg
+[B] Fixed deadlock during LSI destruction (port delete notification)
+
 v0.4RC1
 
 [+] Change in the build system: documentation is now compiled via `make doc`.

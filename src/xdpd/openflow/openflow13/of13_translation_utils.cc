@@ -189,6 +189,8 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		openflow_switch* sw, 
 		of1x_flow_entry *entry)
 {
+
+#if 0
 	try {
 		of1x_match_t *match = of1x_init_port_in_match(ofmatch.get_in_port());
 
@@ -559,6 +561,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
+#endif
 }
 
 
@@ -574,6 +577,8 @@ of13_translation_utils::of13_map_flow_entry_actions(
 		of1x_action_group_t *apply_actions,
 		of1x_write_actions_t *write_actions)
 {
+
+#if 0
 	for (std::list<rofl::openflow::cofaction*>::iterator
 			jt = actions.begin(); jt != actions.end(); ++jt)
 	{
@@ -942,7 +947,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 			of1x_set_packet_action_on_write_actions(write_actions, action);
 		}
 	}
-
+#endif
 }
 
 
@@ -955,6 +960,8 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 		of1x_match_t* m,
 		rofl::openflow::cofmatch& match)
 {
+
+#if 0
 	while (NULL != m)
 	{
 		switch (m->type) {
@@ -1193,6 +1200,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 
 		m = m->next;
 	}
+#endif
 }
 
 /**
@@ -1317,6 +1325,8 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		of1x_packet_action_t* of1x_action,
 		rofl::openflow::cofaction& action)
 {
+
+#if 0
 	/*
 	 * FIXME: add masks for those fields defining masked values in the specification
 	 */
@@ -1543,6 +1553,8 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		// do nothing
 	} break;
 	}
+
+#endif
 }
 
 
@@ -1551,6 +1563,8 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 */
 
 void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* packet_matches, rofl::openflow::cofmatch& match){
+
+#if 0
 	if(packet_matches->port_in)
 		match.set_in_port(packet_matches->port_in);
 	if(packet_matches->phy_port_in)
@@ -1696,6 +1710,8 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(packet_matches->gtp_msg_type));
 	if(packet_matches->gtp_teid)
 		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(be32toh(packet_matches->gtp_teid)));
+
+#endif
 }
 
 /*

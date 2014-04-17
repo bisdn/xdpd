@@ -5,7 +5,6 @@
 #ifndef _CPC_GTPU_H_
 #define _CPC_GTPU_H_
 
-#include "../cpc_utils.h"
 #include "../../../../util/likely.h"
 #include "../../../../util/compiler_assert.h"
 

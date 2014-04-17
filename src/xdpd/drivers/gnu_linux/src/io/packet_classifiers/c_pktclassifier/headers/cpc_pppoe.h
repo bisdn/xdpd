@@ -5,8 +5,6 @@
 #ifndef _CPC_PPPOE_H_
 #define _CPC_PPPOE_H_
 
-#include "../cpc_utils.h"
-
 /**
 * @file cpc_pppoe.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>

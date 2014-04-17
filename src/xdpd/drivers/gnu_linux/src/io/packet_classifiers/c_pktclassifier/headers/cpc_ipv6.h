@@ -5,8 +5,6 @@
 #ifndef _CPC_IPV6_H_
 #define _CPC_IPV6_H_
 
-#include "../cpc_utils.h"
-
 /**
 * @file cpc_ipv6.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>

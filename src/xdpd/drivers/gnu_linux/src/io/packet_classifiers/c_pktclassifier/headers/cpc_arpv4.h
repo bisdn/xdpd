@@ -5,7 +5,6 @@
 #ifndef _CPC_ARPV4_H_
 #define _CPC_ARPV4_H_
 
-#include "../cpc_utils.h"
 #include "cpc_ethernet.h"
 
 /**

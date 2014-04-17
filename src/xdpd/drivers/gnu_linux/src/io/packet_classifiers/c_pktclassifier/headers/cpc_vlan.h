@@ -5,8 +5,6 @@
 #ifndef _CPC_VLAN_H_
 #define _CPC_VLAN_H_
 
-#include "../cpc_utils.h"
-
 /**
 * @file cpc_vlan.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>

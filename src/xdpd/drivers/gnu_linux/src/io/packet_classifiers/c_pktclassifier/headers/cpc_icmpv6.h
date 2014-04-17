@@ -6,7 +6,6 @@
 #define _CPC_ICMPV6_H_
 
 #include <rofl/datapath/pipeline/common/large_types.h>
-#include "../cpc_utils.h"
 #include "cpc_ethernet.h"
 #include "../../../../util/likely.h"
 #include "../../../../util/compiler_assert.h"

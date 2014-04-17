@@ -5,9 +5,7 @@
 #ifndef _CPC_ETERNET_H_
 #define _CPC_ETERNET_H_
 
-#include <string.h>
 #include <rofl/datapath/pipeline/common/protocol_constants.h>
-#include "../cpc_utils.h"
 
 /**
 * @file cpc_ethernet.h

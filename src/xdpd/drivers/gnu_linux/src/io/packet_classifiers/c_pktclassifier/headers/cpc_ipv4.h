@@ -5,9 +5,6 @@
 #ifndef _CPC_IPV4_H_
 #define _CPC_IPV4_H_
 
-#include <stddef.h>
-#include "../cpc_utils.h"
-
 /**
 * @file cpc_ipv4.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>

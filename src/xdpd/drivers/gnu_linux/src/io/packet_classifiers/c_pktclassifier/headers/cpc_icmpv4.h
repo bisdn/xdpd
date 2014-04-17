@@ -5,8 +5,6 @@
 #ifndef _CPC_ICMPV4_H_
 #define _CPC_ICMPV4_H_
 
-#include "../cpc_utils.h"
-
 /**
 * @file cpc_icmpv4.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>

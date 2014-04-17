@@ -15,8 +15,15 @@
 using namespace xdpd;
 using namespace rofl;
 
-const std::string qmfagent::QMF_BROKER_URL_OPT="qmfaddr";
-const std::string qmfagent::QMF_XDPD_ID_OPT="qmfXdpdID";
+const std::string qmfagent::QMF_BROKER_URL_OPT("qmf-addr");
+const std::string qmfagent::QMF_XDPD_ID_OPT("qmf-xdpd-id");
+const std::string qmfagent::QMF_SSL_CA_FILE_OPT("qmf-ssl-ca-file");
+const std::string qmfagent::QMF_SSL_CERT_OPT("qmf-ssl-cert");
+const std::string qmfagent::QMF_SSL_PRIVATEKEY_OPT("qmf-ssl-private-key");
+const std::string qmfagent::QMF_SSL_PSWDFILE_OPT("qmf-ssl-pswdfile");
+const std::string qmfagent::QMF_SSL_VERIFY_MODE("qmf-ssl-verify-mode");
+const std::string qmfagent::QMF_SSL_VERIFY_DEPTH("qmf-ssl-verify-depth");
+const std::string qmfagent::QMF_SSL_CIPHERS("qmf-ssl-ciphers");
 
 qmfagent::qmfagent():qmf_package("de.bisdn.xdpd")
 {
@@ -27,8 +34,16 @@ qmfagent::qmfagent():qmf_package("de.bisdn.xdpd")
 void qmfagent::init()
 {
 	//Recover option values
-	broker_url = system_manager::get_option_value(QMF_BROKER_URL_OPT);
-	xdpd_id = system_manager::get_option_value(QMF_XDPD_ID_OPT);
+	broker_url 		= system_manager::get_option_value(qmfagent::QMF_BROKER_URL_OPT);
+	xdpd_id 		= system_manager::get_option_value(qmfagent::QMF_XDPD_ID_OPT);
+	s_cafile 		= system_manager::get_option_value(qmfagent::QMF_SSL_CA_FILE_OPT);
+	s_certificate	= system_manager::get_option_value(qmfagent::QMF_SSL_CERT_OPT);
+	s_private_key	= system_manager::get_option_value(qmfagent::QMF_SSL_PRIVATEKEY_OPT);
+	s_pswdfile		= system_manager::get_option_value(qmfagent::QMF_SSL_PSWDFILE_OPT);
+	s_verify_mode	= system_manager::get_option_value(qmfagent::QMF_SSL_VERIFY_MODE);
+	s_verify_depth	= system_manager::get_option_value(qmfagent::QMF_SSL_VERIFY_DEPTH);
+	s_ciphers		= system_manager::get_option_value(qmfagent::QMF_SSL_CIPHERS);
+
 
 	connection = qpid::messaging::Connection(broker_url, "{reconnect:True}");
 	connection.open();
@@ -117,6 +132,7 @@ qmfagent::set_qmf_schema()
     lsiCreateMethod.addArgument(qmf::SchemaProperty("ctladdr", 	qmf::SCHEMA_DATA_STRING, 	"{dir:IN}"));
     lsiCreateMethod.addArgument(qmf::SchemaProperty("ctlport", 	qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
     lsiCreateMethod.addArgument(qmf::SchemaProperty("reconnect",qmf::SCHEMA_DATA_INT, 		"{dir:IN}"));
+    lsiCreateMethod.addArgument(qmf::SchemaProperty("ssl",		qmf::SCHEMA_DATA_BOOL, 		"{dir:IN}"));
     sch_xdpd.addMethod(lsiCreateMethod);
 
     qmf::SchemaMethod lsiDestroyMethod("lsiDestroy", "{desc:'destroy LSI'}");
@@ -143,6 +159,7 @@ qmfagent::set_qmf_schema()
     sch_lsi.addProperty(qmf::SchemaProperty("ctladdr", 	qmf::SCHEMA_DATA_STRING));
     sch_lsi.addProperty(qmf::SchemaProperty("ctlport", 	qmf::SCHEMA_DATA_INT));
     sch_lsi.addProperty(qmf::SchemaProperty("reconnect",qmf::SCHEMA_DATA_INT));
+    sch_lsi.addProperty(qmf::SchemaProperty("ssl",		qmf::SCHEMA_DATA_BOOL));
 
     qmf::SchemaMethod portAttachMethod("portAttach", "{desc:'attach port'}");
     portAttachMethod.addArgument(qmf::SchemaProperty("dpid", 	qmf::SCHEMA_DATA_INT, 		"{dir:INOUT}"));
@@ -236,19 +253,34 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 		std::string ctladdr 	= event.getArguments()["ctladdr"].asString();
 		unsigned short ctlport	= event.getArguments()["ctlport"].asUint16();
 		unsigned int reconnect  = event.getArguments()["reconnect"].asUint32();
+		bool enable_ssl 	 	= event.getArguments()["ssl"].asBool();
 
 		event.addReturnArgument("dpid", dpid);
 
 		int ma_list[256] = { 0 };
 		rofl::caddress caddr(ctlaf, ctladdr.c_str(), ctlport);
 
-		// TODO: add socket_type to AMQP/QMF communication
-		enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
-		rofl::cparams socket_params = csocket::get_default_params(socket_type);
+		enum rofl::csocket::socket_type_t socket_type;
+		if (enable_ssl) {
+			socket_type = rofl::csocket::SOCKET_TYPE_OPENSSL;
+		} else {
+			socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
+		}
 
+		rofl::cparams socket_params = csocket::get_default_params(socket_type);
 		std::stringstream sctlport; sctlport << ctlport;
 		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME).set_string(ctladdr);
 		socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT).set_string(sctlport.str());
+
+		if (enable_ssl) {
+			socket_params.set_param(rofl::csocket::PARAM_SSL_KEY_CA_FILE).set_string(s_cafile);
+			socket_params.set_param(rofl::csocket::PARAM_SSL_KEY_CERT).set_string(s_certificate);
+			socket_params.set_param(rofl::csocket::PARAM_SSL_KEY_PRIVATE_KEY).set_string(s_private_key);
+			socket_params.set_param(rofl::csocket::PARAM_SSL_KEY_PRIVATE_KEY_PASSWORD).set_string(s_pswdfile);
+			socket_params.set_param(rofl::csocket::PARAM_SSL_KEY_VERIFY_MODE).set_string(s_verify_mode);
+			socket_params.set_param(rofl::csocket::PARAM_SSL_KEY_VERIFY_DEPTH).set_string(s_verify_depth);
+			socket_params.set_param(rofl::csocket::PARAM_SSL_KEY_CIPHERS).set_string(s_ciphers);
+		}
 
 		xdpd::switch_manager::create_switch((of_version_t)of_version, dpid, dpname, ntables, ma_list, reconnect, socket_type, socket_params);
 
@@ -262,6 +294,7 @@ qmfagent::methodLsiCreate(qmf::AgentEvent& event)
 		qLSIs[dpid].data.setProperty("ctladdr", ctladdr);
 		qLSIs[dpid].data.setProperty("ctlport", ctlport);
 		qLSIs[dpid].data.setProperty("reconnect", reconnect);
+		qLSIs[dpid].data.setProperty("ssl", enable_ssl);
 
 		std::stringstream name("lsi-"); name << xdpd_id << "-" << dpid;
 		qLSIs[dpid].addr = session.addData(qLSIs[dpid].data, name.str());

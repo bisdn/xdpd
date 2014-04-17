@@ -66,6 +66,9 @@ ADD_PLUGIN(xmp)
 #REST
 ADD_PLUGIN(rest)
 
+#run_pex
+ADD_PLUGIN(run_pex)
+
 #Example
 ADD_PLUGIN(example)
 

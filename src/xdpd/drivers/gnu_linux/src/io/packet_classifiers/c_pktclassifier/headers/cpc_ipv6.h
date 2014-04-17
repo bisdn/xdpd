@@ -78,25 +78,28 @@ uint16_t get_ipv6_traffic_class(void *hdr){
 };
 
 inline static
-void set_ipv6_dscp(void *hdr, uint16_t dscp){
-	uint16_t *ptr = (uint16_t*)(((cpc_ipv6_hdr_t*)hdr)->bytes);
-	*ptr = (dscp & OF1X_6MIDDLE_BITS_MASK) | (*ptr & ~OF1X_6MIDDLE_BITS_MASK);
+void set_ipv6_dscp(void *hdr, uint8_t dscp){
+	//NOTE We are aligning this value to fit IPv4 alignment of DSCP
+	((cpc_ipv6_hdr_t*)hdr)->bytes[0] = (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & OF1X_4MSBITS_MASK) | ((dscp & OF1X_4MSBITS_MASK) >> 4);
+	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_6LSBITS_MASK) | ((dscp & OF1X_BITS_2AND3_MASK) << 4);
 }
 
 inline static
 uint8_t get_ipv6_dscp(void *hdr){
-	uint16_t *ptr = (uint16_t*)(((cpc_ipv6_hdr_t*)hdr)->bytes);
-	return (*ptr) & OF1X_6MIDDLE_BITS_MASK;
+	//NOTE We are aligning this value to fit IPv4 alignment of DSCP
+	return ( (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & OF1X_4LSBITS_MASK) << 4 ) | ( (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_2MSBITS_MASK) >> 4 );
 };
 
 inline static
 void set_ipv6_ecn(void *hdr, uint8_t ecn){
-	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & ~OF1X_BITS_4AND5_MASK) | (ecn & OF1X_BITS_4AND5_MASK);
+	//NOTE We are aligning this value to fit IPv4 alignment of ECN
+	((cpc_ipv6_hdr_t*)hdr)->bytes[1] = (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & ~OF1X_BITS_4AND5_MASK) | ((ecn<<4) & OF1X_BITS_4AND5_MASK);
 }
 
 inline static
 uint8_t get_ipv6_ecn(void *hdr){
-	return (uint8_t)(((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_BITS_4AND5_MASK);
+	//NOTE We are aligning this value to fit IPv4 alignment of ECN
+	return (uint8_t)(((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_BITS_4AND5_MASK) >> 4;
 };
 
 inline static

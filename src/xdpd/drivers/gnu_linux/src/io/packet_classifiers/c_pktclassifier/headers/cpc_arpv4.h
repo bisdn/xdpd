@@ -89,15 +89,14 @@ void set_arpv4_opcode(void *hdr, uint16_t opcode){
 
 inline static
 uint64_t get_arpv4_dl_dst(void *hdr){
-	uint64_t ret = mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_dst);
-	CPC_SWAP_MAC(ret);
-	return ret;
+	uint64_t *ret = (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_dst;
+	return (*ret) & OF1X_6_BYTE_MASK;
 };
 
 inline static
 void set_arpv4_dl_dst(void* hdr, uint64_t dl_dst){
-	CPC_SWAP_MAC(dl_dst);
-	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_dst, dl_dst);
+	uint64_t *ptr = (uint64_t *) &((cpc_arpv4_hdr_t*)hdr)->dl_dst;
+	*ptr = (dl_dst & OF1X_6_BYTE_MASK) | (*ptr & ~OF1X_6_BYTE_MASK);
 };
 
 inline static

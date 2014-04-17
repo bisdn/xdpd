@@ -102,7 +102,7 @@ public:
 		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'x', QMF_XDPD_ID_OPT, "qmf xdpd ID", std::string("xdpd-0")));
 
 		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'a', QMF_SSL_CA_FILE_OPT, "QMF ssl-ca-file", std::string("./ca.pem")));
-		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'c', QMF_SSL_CERT_OPT, "QMF ssl-certificate (PEM encoded)", std::string("./cert.pem")));
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'r', QMF_SSL_CERT_OPT, "QMF ssl-certificate (PEM encoded)", std::string("./cert.pem")));
 		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'k', QMF_SSL_PRIVATEKEY_OPT, "QMF ssl-private-key (PEM encoded)", std::string("./key.pem")));
 		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'w', QMF_SSL_PSWDFILE_OPT, "QMF ssl-password-file", std::string("./password.txt")));
 		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'm', QMF_SSL_VERIFY_MODE, "QMF ssl-verify-mode (PEER|NONE)", std::string("NONE")));

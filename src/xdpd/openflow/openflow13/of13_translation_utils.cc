@@ -1,4 +1,3 @@
-#define __STDC_CONSTANT_MACROS 1 // todo enable globally
 #include "of13_translation_utils.h"
 
 #include <stdlib.h>
@@ -7,7 +6,6 @@
 #include <stdint.h>
 
 #include <rofl/common/utils/c_logger.h>
-#include "../endianness_translation_utils.h"
 
 using namespace xdpd;
 

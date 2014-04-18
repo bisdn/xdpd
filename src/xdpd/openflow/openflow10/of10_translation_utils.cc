@@ -5,13 +5,9 @@
  *      Author: andreas
  */
 
-
-#define __STDC_CONSTANT_MACROS 1 // todo enable globally
 #include "of10_translation_utils.h"
 #include <stdint.h>
 #include <inttypes.h>
-
-#include "../endianness_translation_utils.h"
 
 using namespace xdpd;
 

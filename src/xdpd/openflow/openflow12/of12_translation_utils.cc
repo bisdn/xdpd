@@ -1,4 +1,3 @@
-#define __STDC_CONSTANT_MACROS 1 // todo enable globally
 #include "of12_translation_utils.h"
 
 #include <stdlib.h>
@@ -7,7 +6,6 @@
 #include <stdint.h>
 
 #include <rofl/common/utils/c_logger.h>
-#include "../endianness_translation_utils.h"
 
 using namespace xdpd;
 
@@ -333,20 +331,14 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		caddress value(ofmatch.get_arp_spa_value());
 		caddress mask(ofmatch.get_arp_spa_mask());
 
-		match = of1x_init_arp_spa_match(
-			value.ca_s4addr->sin_addr.s_addr, //NOTE stored in NBO?
-			mask.ca_s4addr->sin_addr.s_addr);
+		match = of1x_init_arp_spa_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_arp_tha_addr().get_mac();
-		MACTOBE(maddr);
 		uint64_t mmask = ofmatch.get_arp_tha_mask().get_mac();
-		MACTOBE(mmask);
-
 		match = of1x_init_arp_tha_match(maddr, mmask);
-
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
@@ -1347,142 +1339,137 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 * Maps packet actions to cofmatches
 */
 
-void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* packet_matches, rofl::openflow::cofmatch& match){
+void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* pm, rofl::openflow::cofmatch& match){
 
-#if 0
-	if(packet_matches->port_in)
-		match.set_in_port(packet_matches->port_in);
-	if(packet_matches->phy_port_in)
-		match.set_in_phy_port(packet_matches->phy_port_in);
-	if(packet_matches->metadata)
-		match.set_metadata(packet_matches->metadata);
-	if(packet_matches->eth_dst){
-		uint64_t mac = packet_matches->eth_dst;
-		BETOHMAC(mac);
+	uint128__t tmp;
+
+	if(packet_matches_get_port_in_value(pm))
+		match.set_in_port(packet_matches_get_port_in_value(pm));
+	if(packet_matches_get_phy_port_in_value(pm))
+		match.set_in_phy_port(packet_matches_get_phy_port_in_value(pm));
+	if(packet_matches_get_metadata_value(pm))
+		match.set_metadata(packet_matches_get_metadata_value(pm));
+	if(packet_matches_get_eth_dst_value(pm)){
+		uint64_t mac = packet_matches_get_eth_dst_value(pm); 
 		match.set_eth_dst( cmacaddr(mac) );
 	}
-	if(packet_matches->eth_src){
-		uint64_t mac = packet_matches->eth_src;
-		BETOHMAC(mac);
+	if(packet_matches_get_eth_src_value(pm)){
+		uint64_t mac = packet_matches_get_eth_src_value(pm); 
 		match.set_eth_src( cmacaddr(mac) );
 	}
-	if(packet_matches->eth_type)
-		match.set_eth_type(be16toh(packet_matches->eth_type));
-	if(packet_matches->vlan_vid)
-		match.set_vlan_vid(be16toh(packet_matches->vlan_vid));
-	if(packet_matches->vlan_pcp)
-		match.set_vlan_pcp(OF1X_VLAN_PCP_VALUE(packet_matches->vlan_pcp));
-	if(packet_matches->arp_opcode)
-		match.set_arp_opcode(be16toh(packet_matches->arp_opcode));
-	if(packet_matches->arp_sha){
-		uint64_t mac = packet_matches->arp_sha;
-		BETOHMAC(mac);
+	if(packet_matches_get_eth_type_value(pm))
+		match.set_eth_type(packet_matches_get_eth_type_value(pm));
+	if(packet_matches_get_vlan_vid_value(pm))
+		match.set_vlan_vid(packet_matches_get_vlan_vid_value(pm));
+	if(packet_matches_get_vlan_pcp_value(pm))
+		match.set_vlan_pcp(packet_matches_get_vlan_pcp_value(pm));
+	if(packet_matches_get_arp_opcode_value(pm))
+		match.set_arp_opcode(packet_matches_get_arp_opcode_value(pm));
+	if(packet_matches_get_arp_sha_value(pm)){
+		uint64_t mac = packet_matches_get_arp_sha_value(pm);
 		match.set_arp_sha( cmacaddr(mac) );
 	}
-	if(packet_matches->arp_spa) {
+	if(packet_matches_get_arp_spa_value(pm)); {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = packet_matches->arp_spa;
+		addr.set_ipv4_addr(packet_matches_get_arp_spa_value(pm));
 		match.set_arp_spa(addr);
 	}
-	if(packet_matches->arp_tha){
-		uint64_t mac = packet_matches->arp_tha;
-		BETOHMAC(mac);
+	if(packet_matches_get_arp_tha_value(pm)){
+		uint64_t mac = packet_matches_get_arp_tha_value(pm);
 		match.set_arp_tha(cmacaddr(mac));
 	}
-	if(packet_matches->arp_tpa) {
+	if(packet_matches_get_arp_tpa_value(pm)); {
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = packet_matches->arp_tpa;
+		addr.set_ipv4_addr(packet_matches_get_arp_tpa_value(pm));
 		match.set_arp_tpa(addr);
 	}
-	if(packet_matches->ip_dscp)
-		match.set_ip_dscp(packet_matches->ip_dscp);
-	if(packet_matches->ip_ecn)
-		match.set_ip_ecn(packet_matches->ip_ecn);
-	if(packet_matches->ip_proto)
-		match.set_ip_proto(packet_matches->ip_proto);
-	if(packet_matches->ipv4_src){
+	if(packet_matches_get_ip_dscp_value(pm))
+		match.set_ip_dscp(packet_matches_get_ip_dscp_value(pm));
+	if(packet_matches_get_ip_ecn_value(pm))
+		match.set_ip_ecn(packet_matches_get_ip_ecn_value(pm));
+	if(packet_matches_get_ip_proto_value(pm))
+		match.set_ip_proto(packet_matches_get_ip_proto_value(pm));
+	if(packet_matches_get_ipv4_src_value(pm)){
 			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = packet_matches->ipv4_src;
+			addr.set_ipv4_addr(packet_matches_get_ipv4_src_value(pm));
 			match.set_ipv4_src(addr);
 
 	}
-	if(packet_matches->ipv4_dst){
+	if(packet_matches_get_ipv4_dst_value(pm)){
 		caddress addr(AF_INET, "0.0.0.0");
-		addr.ca_s4addr->sin_addr.s_addr = packet_matches->ipv4_dst;
+		addr.set_ipv4_addr(packet_matches_get_ipv4_dst_value(pm));
 		match.set_ipv4_dst(addr);
 	}
-	if(packet_matches->tcp_src)
-		match.set_tcp_src(be16toh(packet_matches->tcp_src));
-	if(packet_matches->tcp_dst)
-		match.set_tcp_dst(be16toh(packet_matches->tcp_dst));
-	if(packet_matches->udp_src)
-		match.set_udp_src(be16toh(packet_matches->udp_src));
-	if(packet_matches->udp_dst)
-		match.set_udp_dst(be16toh(packet_matches->udp_dst));
-	if(packet_matches->icmpv4_type)
-		match.set_icmpv4_type(packet_matches->icmpv4_type);
-	if(packet_matches->icmpv4_code)
-		match.set_icmpv4_code(packet_matches->icmpv4_code);
-		
-	if( UINT128__T_HI(packet_matches->ipv6_src) || UINT128__T_LO(packet_matches->ipv6_src) ){
+	if(packet_matches_get_tcp_src_value(pm))
+		match.set_tcp_src(packet_matches_get_tcp_src_value(pm));
+	if(packet_matches_get_tcp_dst_value(pm))
+		match.set_tcp_dst(packet_matches_get_tcp_dst_value(pm));
+	if(packet_matches_get_udp_src_value(pm))
+		match.set_udp_src(packet_matches_get_udp_src_value(pm));
+	if(packet_matches_get_udp_dst_value(pm))
+		match.set_udp_dst(packet_matches_get_udp_dst_value(pm));
+	if(packet_matches_get_icmpv4_type_value(pm))
+		match.set_icmpv4_type(packet_matches_get_icmpv4_type_value(pm));
+	if(packet_matches_get_icmpv4_code_value(pm))
+		match.set_icmpv4_code(packet_matches_get_icmpv4_code_value(pm));
+	
+	tmp = packet_matches_get_ipv6_src_value(pm);	
+	if( UINT128__T_IS_NOT_ZERO(tmp) ){
 		caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
-		uint128__t addru128 = packet_matches->ipv6_src;
-		NTOHB128(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_src_value(pm);
 		addr.set_ipv6_addr(addru128);
 		match.set_ipv6_src(addr);
 	}
-	if( UINT128__T_HI(packet_matches->ipv6_dst) || UINT128__T_LO(packet_matches->ipv6_dst) ){
+	
+	tmp = packet_matches_get_ipv6_dst_value(pm);
+	if( UINT128__T_IS_NOT_ZERO(tmp) ){
 		caddress addr(AF_INET6,"0:0:0:0");
-		uint128__t addru128 = packet_matches->ipv6_dst;
-		NTOHB128(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_dst_value(pm);
 		addr.set_ipv6_addr(addru128);
 		match.set_ipv6_dst(addr);
 	}
-	if(packet_matches->ipv6_flabel)
-		match.set_ipv6_flabel(be32toh((uint32_t)packet_matches->ipv6_flabel)); // FIXME: check required => u64 vs. u32
-	if( UINT128__T_HI(packet_matches->ipv6_nd_target) || UINT128__T_LO(packet_matches->ipv6_nd_target) ){
+	if(packet_matches_get_ipv6_flabel_value(pm))
+		match.set_ipv6_flabel(packet_matches_get_ipv6_flabel_value(pm));
+
+	tmp = packet_matches_get_ipv6_nd_target_value(pm);
+	if( UINT128__T_IS_NOT_ZERO(tmp) ){
 		caddress addr(AF_INET6,"0:0:0:0");
-		uint128__t addru128 = packet_matches->ipv6_nd_target;
-		NTOHB128(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_nd_target_value(pm);
 		addr.set_ipv6_addr(addru128);
 		match.set_ipv6_nd_target(addr);
 	}
-	if(packet_matches->ipv6_nd_sll){
-		uint64_t mac = packet_matches->ipv6_nd_sll;
-		BETOHMAC(mac);
+	if(packet_matches_get_ipv6_nd_sll_value(pm)){
+		uint64_t mac = packet_matches_get_ipv6_nd_sll_value(pm);
 		match.set_ipv6_nd_sll(cmacaddr(mac));
 	}
-	if(packet_matches->ipv6_nd_tll){
-		uint64_t mac = packet_matches->ipv6_nd_tll;
-		BETOHMAC(mac);
+	if(packet_matches_get_ipv6_nd_tll_value(pm)){
+		uint64_t mac = packet_matches_get_ipv6_nd_tll_value(pm);
 		match.set_ipv6_nd_tll(cmacaddr(mac));
 	}
-	if(packet_matches->icmpv6_type)
-		match.set_icmpv6_type(packet_matches->icmpv6_type);
-	if(packet_matches->icmpv6_code)
-		match.set_icmpv6_code(packet_matches->icmpv6_code);
+	if(packet_matches_get_icmpv6_type_value(pm))
+		match.set_icmpv6_type(packet_matches_get_icmpv6_type_value(pm));
+	if(packet_matches_get_icmpv6_code_value(pm))
+		match.set_icmpv6_code(packet_matches_get_icmpv6_code_value(pm));
 		
-	if(packet_matches->mpls_label){
-		uint32_t label = OF1X_MPLS_LABEL_VALUE(NTOHB32(packet_matches->mpls_label));
-		match.set_mpls_label(label);
+	if(packet_matches_get_mpls_label_value(pm)){
+		match.set_mpls_label(packet_matches_get_mpls_label_value(pm));
 	}
-	if(packet_matches->mpls_tc)
-		match.set_mpls_tc(OF1X_MPLS_TC_VALUE(packet_matches->mpls_tc));
+	if(packet_matches_get_mpls_tc_value(pm))
+		match.set_mpls_tc(packet_matches_get_mpls_tc_value(pm));
 
 	//Extensions
-	if(packet_matches->pppoe_code)
-		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(packet_matches->pppoe_code));
-	if(packet_matches->pppoe_type)
-		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type(packet_matches->pppoe_type));
-	if(packet_matches->pppoe_sid)
-		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid(be16toh(packet_matches->pppoe_sid)));
-	if(packet_matches->ppp_proto)
-		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(be16toh(packet_matches->ppp_proto)));
-	if(packet_matches->gtp_msg_type)
-		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(packet_matches->gtp_msg_type));
-	if(packet_matches->gtp_teid)
-		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(be32toh(packet_matches->gtp_teid)));
-#endif
+	if(packet_matches_get_pppoe_code_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(packet_matches_get_pppoe_code_value(pm)));
+	if(packet_matches_get_pppoe_type_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type(packet_matches_get_pppoe_type_value(pm)));
+	if(packet_matches_get_pppoe_sid_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid(packet_matches_get_pppoe_sid_value(pm)));
+	if(packet_matches_get_ppp_proto_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(packet_matches_get_ppp_proto_value(pm)));
+	if(packet_matches_get_gtp_msg_type_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(packet_matches_get_gtp_msg_type_value(pm)));
+	if(packet_matches_get_gtp_teid_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(packet_matches_get_gtp_teid_value(pm)));
 }
 
 /*

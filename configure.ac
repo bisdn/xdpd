@@ -29,6 +29,7 @@ AC_SUBST(LIBTOOL)dnl
 CFLAGS="-Werror -Wall -Wl,--as-needed -Wl,-export-dynamic $CFLAGS"
 CXXFLAGS="-Werror -Wall -Wl,--as-needed -Wl,-export-dynamic $CXXFLAGS"
 AC_DEFINE(__STDC_FORMAT_MACROS)
+AC_DEFINE(__STDC_CONSTANT_MACROS)
 
 #Check libs used
 AC_CHECK_LIB(pthread, pthread_kill,,AC_MSG_ERROR([pthread library not found])) 

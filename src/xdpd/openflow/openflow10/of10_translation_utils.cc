@@ -101,9 +101,10 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		openflow_switch* sw,
 		of1x_flow_entry *entry)
 {
-	try {
-		of1x_match_t *match = of1x_init_port_in_match(ofmatch.get_in_port());
+	of1x_match_t *match;	
 
+	try {
+		match = of1x_init_port_in_match(ofmatch.get_in_port());
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
@@ -112,22 +113,19 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	try {
 		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();
 		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
-		of1x_match_t *match = of1x_init_eth_dst_match(maddr,mmask);
-
+		match = of1x_init_eth_dst_match(maddr,mmask);
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
 		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
-		of1x_match_t *match = of1x_init_eth_src_match(maddr,mmask);
-
+		match = of1x_init_eth_src_match(maddr,mmask);
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
-		of1x_match_t *match = of1x_init_eth_type_match(ofmatch.get_eth_type());
-
+		match = of1x_init_eth_type_match(ofmatch.get_eth_type());
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
@@ -142,34 +140,29 @@ of10_translation_utils::of10_map_flow_entry_matches(
 			vlan_present = OF1X_MATCH_VLAN_NONE;
 		else
 			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
-		of1x_match_t *match = of1x_init_vlan_vid_match(value & ~openflow::OFPVID_PRESENT, OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
-
+		match = of1x_init_vlan_vid_match(value & ~openflow::OFPVID_PRESENT, OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
-		of1x_match_t *match = of1x_init_vlan_pcp_match(ofmatch.get_vlan_pcp());
-
+		match = of1x_init_vlan_pcp_match(ofmatch.get_vlan_pcp());
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW TOS
 	try {
-		of1x_match_t *match = of1x_init_ip_dscp_match(ofmatch.get_nw_tos());
-
+		match = of1x_init_ip_dscp_match(ofmatch.get_nw_tos());
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW PROTO 
 	try {
-		of1x_match_t *match = of1x_init_nw_proto_match(ofmatch.get_nw_proto());
+		match = of1x_init_nw_proto_match(ofmatch.get_nw_proto());
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//NW SRC
 	try {
-
-		of1x_match_t *match = NULL; 
 		uint32_t value = ofmatch.get_nw_src_value().get_ipv4_addr();
 		uint32_t mask = ofmatch.get_nw_src_mask().get_ipv4_addr();
 		if(value != 0x0){
@@ -180,8 +173,6 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	//NW DST 
 	try {
-
-		of1x_match_t *match = NULL; 
 		uint32_t value = ofmatch.get_nw_dst_value().get_ipv4_addr();
 		uint32_t mask = ofmatch.get_nw_dst_mask().get_ipv4_addr();
 		if(value != 0x0){
@@ -192,13 +183,13 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	//TP SRC
 	try {
-		of1x_match_t *match = of1x_init_tp_src_match(ofmatch.get_tp_src());
+		match = of1x_init_tp_src_match(ofmatch.get_tp_src());
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	//TP DST
 	try {
-		of1x_match_t *match = of1x_init_tp_dst_match(ofmatch.get_tp_dst());
+		match = of1x_init_tp_dst_match(ofmatch.get_tp_dst());
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 

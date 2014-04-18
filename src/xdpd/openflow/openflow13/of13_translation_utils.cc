@@ -866,247 +866,218 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 		of1x_match_t* m,
 		rofl::openflow::cofmatch& match)
 {
-
-#if 0
 	while (NULL != m)
 	{
 		switch (m->type) {
-		case OF1X_MATCH_IN_PORT:
-			match.set_in_port(m->value->value.u32);
-			break;
-		case OF1X_MATCH_IN_PHY_PORT:
-			match.set_in_phy_port(m->value->value.u32);
-			break;
-		case OF1X_MATCH_METADATA:
-			match.set_metadata(m->value->value.u64, m->value->mask.u64);
-			break;
-		case OF1X_MATCH_ETH_DST:
-		{
-			uint64_t mac = m->value->value.u64;
-			BETOHMAC(mac);
-			uint64_t msk = m->value->mask.u64;
-			BETOHMAC(msk);
-			match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
-		}
-			break;
-		case OF1X_MATCH_ETH_SRC:
-		{
-			uint64_t mac = m->value->value.u64;
-			BETOHMAC(mac);
-			uint64_t msk = m->value->mask.u64;
-			BETOHMAC(msk);
-			match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
-		}
-			break;
-		case OF1X_MATCH_ETH_TYPE:
-			match.set_eth_type(be16toh(m->value->value.u16));
-			break;
-		case OF1X_MATCH_VLAN_VID:
-			if(m->vlan_present == OF1X_MATCH_VLAN_SPECIFIC) {
-				match.set_vlan_vid(be16toh(m->value->value.u16), be16toh(m->value->mask.u16));
+			case OF1X_MATCH_IN_PORT:
+				match.set_in_port(of1x_get_match_value32(m));
+				break;
+			case OF1X_MATCH_IN_PHY_PORT:
+				match.set_in_phy_port(of1x_get_match_value32(m));
+				break;
+			case OF1X_MATCH_METADATA:
+				match.set_metadata(of1x_get_match_value64(m), of1x_get_match_mask64(m));
+				break;
+			case OF1X_MATCH_ETH_DST:
+			{
+				uint64_t mac = of1x_get_match_value64(m);
+				uint64_t msk = of1x_get_match_mask64(m);
+				match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
 			}
-			if(m->vlan_present == OF1X_MATCH_VLAN_NONE) {
-				match.set_vlan_vid(rofl::openflow13::OFPVID_NONE);
+				break;
+			case OF1X_MATCH_ETH_SRC:
+			{
+				uint64_t mac = of1x_get_match_value64(m);
+				uint64_t msk = of1x_get_match_mask64(m);
+				match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
 			}
-			if(m->vlan_present == OF1X_MATCH_VLAN_ANY) {
-				match.set_vlan_vid(rofl::openflow13::OFPVID_PRESENT, rofl::openflow13::OFPVID_PRESENT);
+				break;
+			case OF1X_MATCH_ETH_TYPE:
+				match.set_eth_type(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_VLAN_VID:
+				if(m->vlan_present == OF1X_MATCH_VLAN_SPECIFIC) {
+					match.set_vlan_vid(of1x_get_match_value16(m), of1x_get_match_mask16(m));
+				}
+				if(m->vlan_present == OF1X_MATCH_VLAN_NONE) {
+					match.set_vlan_vid(rofl::openflow12::OFPVID_NONE);
+				}
+				if(m->vlan_present == OF1X_MATCH_VLAN_ANY) {
+					match.set_vlan_vid(rofl::openflow12::OFPVID_PRESENT, rofl::openflow12::OFPVID_PRESENT);
+				}
+				break;
+			case OF1X_MATCH_VLAN_PCP:
+				match.set_vlan_pcp(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_ARP_OP:
+				match.set_arp_opcode(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_ARP_SHA:
+			{
+				uint64_t mac = of1x_get_match_value64(m);
+				uint64_t msk = of1x_get_match_mask64(m);
+				match.set_arp_sha(cmacaddr(mac), cmacaddr(msk));
 			}
-			break;
-		case OF1X_MATCH_VLAN_PCP:
-			match.set_vlan_pcp(OF1X_VLAN_PCP_VALUE(m->value->value.u8));
-			break;
-		case OF1X_MATCH_ARP_OP:
-			match.set_arp_opcode(be16toh(m->value->value.u16));
-			break;
-		case OF1X_MATCH_ARP_SHA:
-		{
-			uint64_t mac = m->value->value.u64;
-			BETOHMAC(mac);
-			uint64_t msk = m->value->mask.u64;
-			BETOHMAC(msk);
-			match.set_arp_sha(cmacaddr(mac), cmacaddr(msk));
-		}
-			break;
-		case OF1X_MATCH_ARP_SPA:
-		{
-			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = m->value->value.u32;
-			caddress mask(AF_INET, "0.0.0.0");
-			mask.ca_s4addr->sin_addr.s_addr = m->value->mask.u32;
-			match.set_arp_spa(addr, mask);
-		}
-			break;
-		case OF1X_MATCH_ARP_THA:
-		{
-			uint64_t mac = m->value->value.u64;
-			BETOHMAC(mac);
-			uint64_t msk = m->value->mask.u64;
-			BETOHMAC(msk);
-			match.set_arp_tha(cmacaddr(mac), cmacaddr(msk));
-		}
-			break;
-		case OF1X_MATCH_ARP_TPA:
-		{
-			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = m->value->value.u32;
-			caddress mask(AF_INET, "0.0.0.0");
-			mask.ca_s4addr->sin_addr.s_addr = m->value->mask.u32;
-			match.set_arp_tpa(addr, mask);
-		}
-			break;
-		case OF1X_MATCH_IP_DSCP:
-			match.set_ip_dscp(m->value->value.u8);
-			break;
-		case OF1X_MATCH_IP_ECN:
-			match.set_ip_ecn(m->value->value.u8);
-			break;
-		case OF1X_MATCH_IP_PROTO:
-			match.set_ip_proto(m->value->value.u8);
-			break;
-		case OF1X_MATCH_IPV4_SRC:
-		{
-			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = m->value->value.u32;
-			caddress mask(AF_INET, "0.0.0.0");
-			mask.ca_s4addr->sin_addr.s_addr = m->value->mask.u32;
-			match.set_ipv4_src(addr, mask);
-		}
-			break;
-		case OF1X_MATCH_IPV4_DST:
-		{
-			caddress addr(AF_INET, "0.0.0.0");
-			addr.ca_s4addr->sin_addr.s_addr = m->value->value.u32;
-			caddress mask(AF_INET, "0.0.0.0");
-			mask.ca_s4addr->sin_addr.s_addr = m->value->mask.u32;
-			match.set_ipv4_dst(addr, mask);
-		}
-			break;
-		case OF1X_MATCH_TCP_SRC:
-			match.set_tcp_src(be16toh(m->value->value.u16));
-			break;
-		case OF1X_MATCH_TCP_DST:
-			match.set_tcp_dst(be16toh(m->value->value.u16));
-			break;
-		case OF1X_MATCH_UDP_SRC:
-			match.set_udp_src(be16toh(m->value->value.u16));
-			break;
-		case OF1X_MATCH_UDP_DST:
-			match.set_udp_dst(be16toh(m->value->value.u16));
-			break;
-		case OF1X_MATCH_SCTP_SRC:
-			match.set_sctp_src(be16toh(m->value->value.u16));
-			break;
-		case OF1X_MATCH_SCTP_DST:
-			match.set_sctp_dst(be16toh(m->value->value.u16));
-			break;
-		case OF1X_MATCH_ICMPV4_TYPE:
-			match.set_icmpv4_type(m->value->value.u8);
-			break;
-		case OF1X_MATCH_ICMPV4_CODE:
-			match.set_icmpv4_code(m->value->value.u8);
-			break;
-		case OF1X_MATCH_IPV6_SRC: {
-			/*TODO deal with endianess??*/
-			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
-			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val), sizeof(uint128__t));
-			NTOHB128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
-			caddress mask(AF_INET6,"0:0:0:0:0:0:0:0");
-			memcpy(&(mask.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->mask.u128.val), sizeof(uint128__t));
-			NTOHB128(mask.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
-			match.set_ipv6_src(addr, mask);
-			}break;
-		case OF1X_MATCH_IPV6_DST:{
-			/*TODO deal with endianess??*/
-			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
-			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val), sizeof(uint128__t));
-			NTOHB128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
-			caddress mask(AF_INET6,"0:0:0:0:0:0:0:0");
-			memcpy(&(mask.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->mask.u128.val), sizeof(uint128__t));
-			NTOHB128(mask.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
-			match.set_ipv6_dst(addr, mask);
-			}break;
-		case OF1X_MATCH_IPV6_FLABEL:
-			//match.set_ipv6_flabel(be64toh(m->value->value.u64)); // FIXME: check required
-			match.set_ipv6_flabel(be32toh(m->value->value.u32));
-			break;
-		case OF1X_MATCH_ICMPV6_TYPE:
-			//match.set_icmpv6_type(be64toh(m->value->value.u64)); // FIXME: check required
-			match.set_icmpv6_type(m->value->value.u8);
-			break;
-		case OF1X_MATCH_ICMPV6_CODE:
-			//match.set_icmpv6_code(be64toh(m->value->value.u64)); // FIXME: check required
-			match.set_icmpv6_code(m->value->value.u8);
-			break;
-		case OF1X_MATCH_IPV6_ND_TARGET:{
-			caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
-			/*TODO deal with endianess??*/
-			memcpy(&(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8), &(m->value->value.u128.val),sizeof(uint128__t));
-			NTOHB128(addr.ca_s6addr->sin6_addr.__in6_u.__u6_addr8);
-			match.set_ipv6_nd_target(addr);
-			}break;
-		case OF1X_MATCH_IPV6_ND_SLL:{
-			//match.set_ipv6_nd_sll(be64toh(m->value->value.u64)); // FIXME: check required
-			uint64_t mac = m->value->value.u64;
-			BETOHMAC(mac);
-			match.set_ipv6_nd_sll(cmacaddr(mac));
-			}break;
-		case OF1X_MATCH_IPV6_ND_TLL:{
-			//match.set_ipv6_nd_tll(be64toh(m->value->value.u64)); // FIXME: check required
-			uint64_t mac = m->value->value.u64;
-			BETOHMAC(mac);
-			match.set_ipv6_nd_tll(cmacaddr(mac));
-			}break;
-		case OF1X_MATCH_MPLS_LABEL:{
-			uint32_t label = OF1X_MPLS_LABEL_VALUE(NTOHB32(m->value->value.u32));
-			match.set_mpls_label(label);
-			}break;
-		case OF1X_MATCH_MPLS_TC:
-			match.set_mpls_tc(OF1X_MPLS_TC_VALUE(m->value->value.u8));
-			break;
-		case OF1X_MATCH_MPLS_BOS:
-			match.set_mpls_bos(m->value->value.u8);
-			break;
-		case OF1X_MATCH_TUNNEL_ID:
-			match.set_tunnel_id(be64toh(m->value->value.u64), be64toh(m->value->mask.u64));
-			break;
-		case OF1X_MATCH_PBB_ISID:{
-			uint32_t value = m->value->value.u32;
-			BETOH24BIT(value);
-			uint32_t mask = m->value->mask.u32;
-			BETOH24BIT(mask);
-			match.set_pbb_isid(value, mask);
-			}break;
-		case OF1X_MATCH_IPV6_EXTHDR:
-			match.set_ipv6_exthdr(be16toh(m->value->value.u16), be16toh(m->value->mask.u16));
-			break;
-				
-		/* Experimental */
-		case OF1X_MATCH_PPPOE_CODE:
-			match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(m->value->value.u8));
-			break;
-		case OF1X_MATCH_PPPOE_TYPE:
-			match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type(m->value->value.u8));
-			break;
-		case OF1X_MATCH_PPPOE_SID:
-			match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid(be16toh(m->value->value.u16)));
-			break;
-		case OF1X_MATCH_PPP_PROT:
-			match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(be16toh(m->value->value.u16)));
-			break;
-		case OF1X_MATCH_GTP_MSG_TYPE:
-			match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(m->value->value.u8));
-			break;
-		case OF1X_MATCH_GTP_TEID:
-			match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(be32toh(m->value->value.u32)));
-			break;
-		default:
-			break;
-		}
+				break;
+			case OF1X_MATCH_ARP_SPA:
+			{
+				caddress addr(AF_INET, "0.0.0.0");
+				caddress mask(AF_INET, "0.0.0.0");
+				addr.set_ipv4_addr(of1x_get_match_value32(m));
+				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				match.set_arp_spa(addr);
+			}
+				break;
+			case OF1X_MATCH_ARP_THA:
+			{
+				uint64_t mac = of1x_get_match_value64(m);
+				uint64_t msk = of1x_get_match_mask64(m);
+				match.set_arp_tha(cmacaddr(mac), cmacaddr(msk));
+			}
+				break;
+			case OF1X_MATCH_ARP_TPA:
+			{
+				caddress addr(AF_INET, "0.0.0.0");
+				caddress mask(AF_INET, "0.0.0.0");
+				addr.set_ipv4_addr(of1x_get_match_value32(m));
+				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				match.set_arp_tpa(addr, mask);
+			}
+				break;
+			case OF1X_MATCH_IP_DSCP:
+				match.set_ip_dscp(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_IP_ECN:
+				match.set_ip_ecn(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_IP_PROTO:
+				match.set_ip_proto(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_IPV4_SRC:
+			{
+				caddress addr(AF_INET, "0.0.0.0");
+				caddress mask(AF_INET, "0.0.0.0");
+				addr.set_ipv4_addr(of1x_get_match_value32(m));
+				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				match.set_ipv4_src(addr, mask);
+			}
+				break;
+			case OF1X_MATCH_IPV4_DST:
+			{
+				caddress addr(AF_INET, "0.0.0.0");
+				caddress mask(AF_INET, "0.0.0.0");
+				addr.set_ipv4_addr(of1x_get_match_value32(m));
+				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				match.set_ipv4_dst(addr, mask);
+			}
+				break;
+			case OF1X_MATCH_TCP_SRC:
+				match.set_tcp_src(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_TCP_DST:
+				match.set_tcp_dst(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_UDP_SRC:
+				match.set_udp_src(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_UDP_DST:
+				match.set_udp_dst(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_SCTP_SRC:
+				match.set_sctp_src(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_SCTP_DST:
+				match.set_sctp_dst(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_ICMPV4_TYPE:
+				match.set_icmpv4_type(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_ICMPV4_CODE:
+				match.set_icmpv4_code(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_IPV6_SRC: {
+				caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+				caddress mask(AF_INET6,"0:0:0:0:0:0:0:0");
+				addr.set_ipv6_addr(of1x_get_match_value128(m));
+				addr.set_ipv6_addr(of1x_get_match_mask128(m));
+				match.set_ipv6_src(addr,mask);
+				}break;
+			case OF1X_MATCH_IPV6_DST:{
+				caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+				caddress mask(AF_INET6,"0:0:0:0:0:0:0:0");
+				addr.set_ipv6_addr(of1x_get_match_value128(m));
+				mask.set_ipv6_addr(of1x_get_match_mask128(m));
+				match.set_ipv6_dst(addr, mask);
+				}break;
+			case OF1X_MATCH_IPV6_FLABEL:
+				match.set_ipv6_flabel(of1x_get_match_value32(m));
+				break;
+			case OF1X_MATCH_ICMPV6_TYPE:
+				match.set_icmpv6_type(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_ICMPV6_CODE:
+				match.set_icmpv6_code(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_IPV6_ND_TARGET:{
+				caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+				addr.set_ipv6_addr(of1x_get_match_value128(m));
+				match.set_ipv6_nd_target(addr);
+				}break;
+			case OF1X_MATCH_IPV6_ND_SLL:{
+				uint64_t mac = of1x_get_match_value64(m);
+				match.set_ipv6_nd_sll(cmacaddr(mac));
+				}break;
+			case OF1X_MATCH_IPV6_ND_TLL:{
+				uint64_t mac = of1x_get_match_value64(m);
+				match.set_ipv6_nd_tll(cmacaddr(mac));
+				}break;
+			case OF1X_MATCH_MPLS_LABEL:
+				match.set_mpls_label(of1x_get_match_value32(m));
+				break;
+			case OF1X_MATCH_MPLS_TC:
+				match.set_mpls_tc(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_MPLS_BOS:
+				match.set_mpls_bos(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_TUNNEL_ID:
+				match.set_tunnel_id(of1x_get_match_value64(m));
+				break;
+			case OF1X_MATCH_PBB_ISID:{
+				uint32_t value = of1x_get_match_value32(m);
+				uint32_t mask = of1x_get_match_mask32(m);
+				match.set_pbb_isid(value, mask);
+				}break;
+			case OF1X_MATCH_IPV6_EXTHDR:
+				match.set_ipv6_exthdr(of1x_get_match_value16(m));
+				break;
 
+			/* Experimental */
+			case OF1X_MATCH_PPPOE_CODE:
+				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(of1x_get_match_value8(m)));
+				break;
+			case OF1X_MATCH_PPPOE_TYPE:
+				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type(of1x_get_match_value8(m)));
+				break;
+			case OF1X_MATCH_PPPOE_SID:
+				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid(of1x_get_match_value16(m)));
+				break;
+			case OF1X_MATCH_PPP_PROT:
+				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(of1x_get_match_value16(m)));
+				break;
+			case OF1X_MATCH_GTP_MSG_TYPE:
+				match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(of1x_get_match_value8(m)));
+				break;
+			case OF1X_MATCH_GTP_TEID:
+				match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(of1x_get_match_value32(m), of1x_get_match_mask32(m)));
+				break;
+			default:
+				break;
+		}
 
 		m = m->next;
 	}
-#endif
+
 }
 
 /**

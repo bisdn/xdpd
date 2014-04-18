@@ -778,12 +778,12 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					switch (acttype) {
 						case rofl::openflow::cofaction_push_pppoe::OFXAT_PUSH_PPPOE: {
 							rofl::openflow::cofaction_push_pppoe paction(eaction);
-							field.u16 = paction.eoac_push_pppoe->expbody.ethertype;
+							field.u16 = NTOHB16(paction.eoac_push_pppoe->expbody.ethertype);
 							action = of1x_init_packet_action( OF1X_AT_PUSH_PPPOE, field, 0x0);
 						} break;
 						case rofl::openflow::cofaction_pop_pppoe::OFXAT_POP_PPPOE: {
 							rofl::openflow::cofaction_pop_pppoe paction(eaction);
-							field.u16 = paction.eoac_pop_pppoe->expbody.ethertype;
+							field.u16 = NTOHB16(paction.eoac_pop_pppoe->expbody.ethertype);
 							action = of1x_init_packet_action( OF1X_AT_POP_PPPOE, field, 0x0);
 						} break;
 					}

@@ -188,52 +188,41 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		of1x_flow_entry *entry)
 {
 
-#if 0
-	try {
-		of1x_match_t *match = of1x_init_port_in_match(ofmatch.get_in_port());
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	of1x_match_t *match;
 
 	try {
-		of1x_match_t *match = of1x_init_port_in_phy_match(ofmatch.get_in_phy_port());
-
+		match = of1x_init_port_in_match(ofmatch.get_in_port());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
-	// metadata not implemented
 	try {
-		uint64_t value = ofmatch.get_metadata_value();
-		uint64_t mask = ofmatch.get_metadata_mask();
-		of1x_match_t *match = of1x_init_metadata_match(value, mask);
-
+		match = of1x_init_port_in_phy_match(ofmatch.get_in_phy_port());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
+
+	try {
+		match = of1x_init_metadata_match(ofmatch.get_metadata(), ofmatch.get_metadata_mask());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();
-		MACTOBE(maddr);
 		uint64_t mmask = ofmatch.get_eth_dst_mask().get_mac();
-		MACTOBE(mmask);
-
-		of1x_match_t *match = of1x_init_eth_dst_match(maddr, mmask);
+		match = of1x_init_eth_dst_match(maddr, mmask);
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
-		MACTOBE(maddr);
 		uint64_t mmask = ofmatch.get_eth_src_mask().get_mac();
-		MACTOBE(mmask);
-
-		of1x_match_t *match = of1x_init_eth_src_match(maddr, mmask);
+		match = of1x_init_eth_src_match(maddr, mmask);
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_eth_type_match(htobe16(ofmatch.get_eth_type()));
+		match = of1x_init_eth_type_match(ofmatch.get_eth_type());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		uint16_t value = ofmatch.get_vlan_vid_value();
@@ -247,215 +236,176 @@ of13_translation_utils::of13_map_flow_entry_matches(
 			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
 		}
 		
-		of1x_match_t *match = of1x_init_vlan_vid_match(
-								htobe16(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT),
-								htobe16(ofmatch.get_vlan_vid_mask()),
-								vlan_present);
-
+		match = of1x_init_vlan_vid_match(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT,
+							ofmatch.get_vlan_vid_mask(),
+							vlan_present);
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_vlan_pcp_match(OF1X_VLAN_PCP_ALIGN(ofmatch.get_vlan_pcp()));
+		match = of1x_init_vlan_pcp_match(ofmatch.get_vlan_pcp());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_ip_dscp_match(ofmatch.get_ip_dscp());
+		match = of1x_init_ip_dscp_match(ofmatch.get_ip_dscp());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_ip_ecn_match(ofmatch.get_ip_ecn());
+		match = of1x_init_ip_ecn_match(ofmatch.get_ip_ecn());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_ip_proto_match(ofmatch.get_ip_proto());
+		match = of1x_init_ip_proto_match(ofmatch.get_ip_proto());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		caddress value(ofmatch.get_ipv4_src_value());
 		caddress mask (ofmatch.get_ipv4_src_mask());
-
-		of1x_match_t *match = of1x_init_ip4_src_match(
-			htobe32(value.get_ipv4_addr()), 
-			htobe32(mask.get_ipv4_addr()));
-		
+		match = of1x_init_ip4_src_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		caddress value(ofmatch.get_ipv4_dst_value());
 		caddress mask (ofmatch.get_ipv4_dst_mask());
-
-		of1x_match_t *match = of1x_init_ip4_dst_match(
-			htobe32(value.get_ipv4_addr()),
-			htobe32(mask.get_ipv4_addr()));
-		
+		match = of1x_init_ip4_dst_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_tcp_src_match(htobe16(ofmatch.get_tcp_src()));
-
+		match = of1x_init_tcp_src_match(ofmatch.get_tcp_src());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_tcp_dst_match(htobe16(ofmatch.get_tcp_dst()));
-
+		match = of1x_init_tcp_dst_match(ofmatch.get_tcp_dst());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_udp_src_match(htobe16(ofmatch.get_udp_src()));
-
+		match = of1x_init_udp_src_match(ofmatch.get_udp_src());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_udp_dst_match(htobe16(ofmatch.get_udp_dst()));
-
+		match = of1x_init_udp_dst_match(ofmatch.get_udp_dst());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		ofmatch.get_sctp_src();
-
-		throw eNotImplemented(std::string("of13_translation_utils::flow_mod_add() rofl::openflow13::OFPXMT_OFB_SCTP_SRC is missing")); // TODO
-	} catch (...) {}
+		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() openflow12::OFPXMT_OFB_SCTP_SRC is missing")); // TODO
+	} catch(...) {}
 
 	try {
 		ofmatch.get_sctp_dst();
-
-		throw eNotImplemented(std::string("of13_translation_utils::flow_mod_add() rofl::openflow13::OFPXMT_OFB_SCTP_DST is missing")); // TODO
-	} catch (...) {}
-
-	try {
-		of1x_match_t *match = of1x_init_icmpv4_type_match(ofmatch.get_icmpv4_type());
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+		throw eNotImplemented(std::string("of12_translation_utils::flow_mod_add() openflow12::OFPXMT_OFB_SCTP_DST is missing")); // TODO
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_icmpv4_code_match(ofmatch.get_icmpv4_code());
-
+		match = of1x_init_icmpv4_type_match(ofmatch.get_icmpv4_type());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_arp_opcode_match(htobe16(ofmatch.get_arp_opcode()));
-
+		match = of1x_init_icmpv4_code_match(ofmatch.get_icmpv4_code());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
+
+	try {
+		match = of1x_init_arp_opcode_match(ofmatch.get_arp_opcode());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_arp_sha_addr().get_mac();
-		MACTOBE(maddr);
 		uint64_t mmask = ofmatch.get_arp_sha_mask().get_mac();
-		MACTOBE(mmask);
-
-		of1x_match_t *match = of1x_init_arp_sha_match(maddr, mmask);
+		match = of1x_init_arp_sha_match(maddr, mmask);
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		caddress value(ofmatch.get_arp_spa_value());
-		caddress mask (ofmatch.get_arp_spa_mask());
+		caddress mask(ofmatch.get_arp_spa_mask());
 
-		of1x_match_t *match = of1x_init_arp_spa_match(
-			value.ca_s4addr->sin_addr.s_addr,
-			mask.ca_s4addr->sin_addr.s_addr);
+		match = of1x_init_arp_spa_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		uint64_t maddr = ofmatch.get_arp_tha_addr().get_mac();
-		MACTOBE(maddr);
 		uint64_t mmask = ofmatch.get_arp_tha_mask().get_mac();
-		MACTOBE(mmask);
-
-		of1x_match_t *match = of1x_init_arp_tha_match(maddr, mmask);
+		match = of1x_init_arp_tha_match(maddr, mmask);
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		caddress value(ofmatch.get_arp_tpa_value());
 		caddress mask (ofmatch.get_arp_tpa_mask());
-
-		of1x_match_t *match = of1x_init_arp_tpa_match(
-			value.ca_s4addr->sin_addr.s_addr,
-			mask.ca_s4addr->sin_addr.s_addr);
+		match = of1x_init_arp_tpa_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
 		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		caddress value(ofmatch.get_ipv6_src_value());
 		uint128__t val = value.get_ipv6_addr();
-		HTONB128(val);
 		caddress mask (ofmatch.get_ipv6_src_mask());
 		uint128__t msk = mask.get_ipv6_addr();
-		HTONB128(msk);
-		
-		of1x_match_t *match = of1x_init_ip6_src_match(val, msk);
+		match = of1x_init_ip6_src_match(val, msk);
 		of1x_add_match_to_entry(entry,match);
-	} catch (...) {}
+	} catch(...) {}
 	
 	try {
 		caddress value(ofmatch.get_ipv6_dst_value());
 		uint128__t val = value.get_ipv6_addr();
-		HTONB128(val);
 		caddress mask (ofmatch.get_ipv6_dst_mask());
 		uint128__t msk = mask.get_ipv6_addr();
-		HTONB128(msk);
-		
-		of1x_match_t *match = of1x_init_ip6_dst_match(val, msk);
+		match = of1x_init_ip6_dst_match(val, msk);
 		of1x_add_match_to_entry(entry,match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_ip6_flabel_match(htobe32(ofmatch.get_ipv6_flabel()));
+		match = of1x_init_ip6_flabel_match(ofmatch.get_ipv6_flabel());
 		of1x_add_match_to_entry(entry,match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_icmpv6_type_match(ofmatch.get_icmpv6_type());
+		match = of1x_init_icmpv6_type_match(ofmatch.get_icmpv6_type());
 		of1x_add_match_to_entry(entry,match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_icmpv6_code_match(ofmatch.get_icmpv6_code());
+		match = of1x_init_icmpv6_code_match(ofmatch.get_icmpv6_code());
 		of1x_add_match_to_entry(entry,match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		caddress value(ofmatch.get_ipv6_nd_target());
 		uint128__t val = value.get_ipv6_addr();
-		HTONB128(val);
-		of1x_match_t *match = of1x_init_ip6_nd_target_match(val);
+		match = of1x_init_ip6_nd_target_match(val);
 		of1x_add_match_to_entry(entry,match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		uint64_t mac = ofmatch.get_ipv6_nd_sll().get_mac();
-		MACTOBE(mac);
-		of1x_match_t *match = of1x_init_ip6_nd_sll_match(mac);
+		match = of1x_init_ip6_nd_sll_match(mac);
 		of1x_add_match_to_entry(entry,match);
-	} catch (...) {}
+	} catch(...) {}
 
 	try {
 		uint64_t mac = ofmatch.get_ipv6_nd_tll().get_mac();
-		MACTOBE(mac);
-		of1x_match_t *match = of1x_init_ip6_nd_tll_match(mac);
+		match = of1x_init_ip6_nd_tll_match(mac);
 		of1x_add_match_to_entry(entry,match);
-	} catch (...) {}
+	} catch(...) {}
+	
 #if 0	
 	try{
-
 		/*TODO IPV6_EXTHDR*/
-		of1x_match_t *match = of1x_init_ip6_exthdr_match(ofmatch.get_ipv6_exthdr());
+		match = of1x_init_ip6_exthdr_match(ofmatch.get_ipv6_exthdr());
 		of1x_add_match_to_entry(entry,match);
 
 		throw eNotImplemented(std::string("of13_translation_utils::flow_mod_add() rofl::openflow13::OFPXMT_OFB_IPV6_EXTHDR is missing")); // TODO
@@ -463,103 +413,80 @@ of13_translation_utils::of13_map_flow_entry_matches(
 #endif	
 
 	try {
-		uint32_t label = HTONB32(OF1X_MPLS_LABEL_ALIGN(ofmatch.get_mpls_label()));
-		MPLABELTOBE(label);
-		of1x_match_t *match = of1x_init_mpls_label_match(label);
+		uint32_t label = ofmatch.get_mpls_label();
+		match = of1x_init_mpls_label_match(label);
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
+	try {
+		match = of1x_init_mpls_tc_match(ofmatch.get_mpls_tc());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
+	try {
+		match = of1x_init_mpls_bos_match(ofmatch.get_mpls_bos());
 		of1x_add_match_to_entry(entry, match);
 	} catch (...) {}
 
 	try {
-		of1x_match_t *match = of1x_init_mpls_tc_match(OF1X_MPLS_TC_ALIGN(ofmatch.get_mpls_tc()));
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
-
-	try {
-		of1x_match_t *match = of1x_init_mpls_bos_match(ofmatch.get_mpls_bos());
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (...) {}
-
-	try {
-		uint64_t tunnel_id = htobe64(ofmatch.get_tunnel_id_value());
-		uint64_t mask = htobe64(ofmatch.get_tunnel_id_mask());
-		of1x_match_t *match = of1x_init_tunnel_id_match(tunnel_id, mask);
-
+		uint64_t tunnel_id = ofmatch.get_tunnel_id_value();
+		uint64_t mask = ofmatch.get_tunnel_id_mask();
+		match = of1x_init_tunnel_id_match(tunnel_id, mask);
 		of1x_add_match_to_entry(entry, match);
 	} catch (...) {}
 
 	try {
 		uint32_t pbb_isid = ofmatch.get_pbb_isid_value();
-		H24BITTOBE(pbb_isid);
 		uint32_t mask = ofmatch.get_pbb_isid_mask();
-		H24BITTOBE(mask);
-		of1x_match_t *match = of1x_init_pbb_isid_match(pbb_isid, mask);
-
+		match = of1x_init_pbb_isid_match(pbb_isid, mask);
 		of1x_add_match_to_entry(entry, match);
 	} catch (...) {}
 
-#if 0
-	try {
-		/*TODO IPV6_EXTHDR*/
-		uint16_t ipv6_exthdr = ofmatch.get_ipv6_exthdr_value();
-		uint16_t mask = ofmatch.get_ipv6_exthdr_mask();
-		of1x_match_t *match = of1x_init_ipv6_exthdr(ipv6_exthdr, mask);
-
-		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOFmatchNotFound& e) {}
-#endif
-
-	/* Experimental */
+	/* Extensions */
 	try {
 		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code oxm_pppoe_code(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_CODE));
 
-		of1x_match_t *match = of1x_init_pppoe_code_match(oxm_pppoe_code.get_u8value());
+		match = of1x_init_pppoe_code_match(oxm_pppoe_code.get_u8value());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
 		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type oxm_pppoe_type(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_TYPE));
-
-		of1x_match_t *match = of1x_init_pppoe_type_match(oxm_pppoe_type.get_u8value());
+		match = of1x_init_pppoe_type_match(oxm_pppoe_type.get_u8value());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
 		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid oxm_pppoe_sid(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_SID));
-
-		of1x_match_t *match = of1x_init_pppoe_session_match(htobe16(oxm_pppoe_sid.get_u16value()));
+		match = of1x_init_pppoe_session_match(oxm_pppoe_sid.get_u16value());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
 		rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot oxm_ppp_prot(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPP_PROT));
-
-		of1x_match_t *match = of1x_init_ppp_prot_match(htobe16(oxm_ppp_prot.get_u16value()));
+		match = of1x_init_ppp_prot_match(oxm_ppp_prot.get_u16value());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
 		rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type oxm_gtp_msg_type(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_MSGTYPE));
-
-		of1x_match_t *match = of1x_init_gtp_msg_type_match(oxm_gtp_msg_type.get_u8value());
+		match = of1x_init_gtp_msg_type_match(oxm_gtp_msg_type.get_u8value());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
 		rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid oxm_gtp_teid(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_TEID));
-
-		of1x_match_t *match = of1x_init_gtp_teid_match(htobe32(oxm_gtp_teid.get_u32value()),htobe32(oxm_gtp_teid.get_u32mask()));
-
+		match = of1x_init_gtp_teid_match(oxm_gtp_teid.get_u32value(),oxm_gtp_teid.get_u32mask());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
-#endif
+	
+	/* End of extensions */
 }
 
 

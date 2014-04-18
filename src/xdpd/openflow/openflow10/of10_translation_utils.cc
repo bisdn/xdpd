@@ -330,15 +330,19 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		case OF1X_MATCH_ARP_SPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
+			caddress mask(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(of1x_get_match_value32(m));
-			match.set_nw_src(addr);
+			mask.set_ipv4_addr(of1x_get_match_mask32(m));
+			match.set_nw_src(addr, mask);
 		}
 			break;
 		case OF1X_MATCH_ARP_TPA:
 		{
 			caddress addr(AF_INET, "0.0.0.0");
+			caddress mask(AF_INET, "0.0.0.0");
 			addr.set_ipv4_addr(of1x_get_match_value32(m));
-			match.set_nw_dst(addr);
+			mask.set_ipv4_addr(of1x_get_match_mask32(m));
+			match.set_nw_dst(addr, mask);
 		}
 			break;
 		case OF1X_MATCH_IP_DSCP:

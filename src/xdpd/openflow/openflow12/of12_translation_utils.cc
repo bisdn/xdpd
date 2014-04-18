@@ -837,7 +837,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 				match.set_in_phy_port(of1x_get_match_value32(m));
 				break;
 			case OF1X_MATCH_METADATA:
-				match.set_metadata(of1x_get_match_value64(m));
+				match.set_metadata(of1x_get_match_value64(m), of1x_get_match_mask64(m));
 				break;
 			case OF1X_MATCH_ETH_DST:
 			{
@@ -883,7 +883,9 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_ARP_SPA:
 			{
 				caddress addr(AF_INET, "0.0.0.0");
+				caddress mask(AF_INET, "0.0.0.0");
 				addr.set_ipv4_addr(of1x_get_match_value32(m));
+				mask.set_ipv4_addr(of1x_get_match_mask32(m));
 				match.set_arp_spa(addr);
 			}
 				break;
@@ -897,8 +899,10 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_ARP_TPA:
 			{
 				caddress addr(AF_INET, "0.0.0.0");
+				caddress mask(AF_INET, "0.0.0.0");
 				addr.set_ipv4_addr(of1x_get_match_value32(m));
-				match.set_arp_tpa(addr);
+				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				match.set_arp_tpa(addr, mask);
 			}
 				break;
 			case OF1X_MATCH_IP_DSCP:
@@ -913,15 +917,19 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_IPV4_SRC:
 			{
 				caddress addr(AF_INET, "0.0.0.0");
+				caddress mask(AF_INET, "0.0.0.0");
 				addr.set_ipv4_addr(of1x_get_match_value32(m));
-				match.set_ipv4_src(addr);
+				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				match.set_ipv4_src(addr, mask);
 			}
 				break;
 			case OF1X_MATCH_IPV4_DST:
 			{
 				caddress addr(AF_INET, "0.0.0.0");
+				caddress mask(AF_INET, "0.0.0.0");
 				addr.set_ipv4_addr(of1x_get_match_value32(m));
-				match.set_ipv4_dst(addr);
+				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				match.set_ipv4_dst(addr, mask);
 			}
 				break;
 			case OF1X_MATCH_TCP_SRC:
@@ -950,13 +958,17 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 				break;
 			case OF1X_MATCH_IPV6_SRC: {
 				caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+				caddress mask(AF_INET6,"0:0:0:0:0:0:0:0");
 				addr.set_ipv6_addr(of1x_get_match_value128(m));
-				match.set_ipv6_src(addr);
+				addr.set_ipv6_addr(of1x_get_match_mask128(m));
+				match.set_ipv6_src(addr,mask);
 				}break;
 			case OF1X_MATCH_IPV6_DST:{
 				caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
+				caddress mask(AF_INET6,"0:0:0:0:0:0:0:0");
 				addr.set_ipv6_addr(of1x_get_match_value128(m));
-				match.set_ipv6_dst(addr);
+				mask.set_ipv6_addr(of1x_get_match_mask128(m));
+				match.set_ipv6_dst(addr, mask);
 				}break;
 			case OF1X_MATCH_IPV6_FLABEL:
 				match.set_ipv6_flabel(of1x_get_match_value32(m));
@@ -1002,7 +1014,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 				match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(of1x_get_match_value8(m)));
 				break;
 			case OF1X_MATCH_GTP_TEID:
-				match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(of1x_get_match_value32(m)));
+				match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(of1x_get_match_value32(m), of1x_get_match_mask32(m)));
 				break;
 			default:
 				break;
@@ -1132,218 +1144,212 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		of1x_packet_action_t* of1x_action,
 		rofl::openflow::cofaction& action)
 {
-
 #if 0
-	/*
-	 * FIXME: add masks for those fields defining masked values in the specification
-	 */
-
-
 	switch (of1x_action->type) {
-	case OF1X_AT_NO_ACTION: {
-		// do nothing
-	} break;
-	case OF1X_AT_COPY_TTL_IN: {
-		action = rofl::openflow::cofaction_copy_ttl_in(rofl::openflow12::OFP_VERSION);
-	} break;
-	case OF1X_AT_POP_VLAN: {
-		action = rofl::openflow::cofaction_pop_vlan(rofl::openflow12::OFP_VERSION);
-	} break;
-	case OF1X_AT_POP_MPLS: {
-		action = rofl::openflow::cofaction_pop_mpls(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
-	} break;
-	
-	/* Extensions */
-	case OF1X_AT_POP_PPPOE: {
-		action = rofl::openflow::cofaction_pop_pppoe(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_PUSH_PPPOE: {
-		action = rofl::openflow::cofaction_push_pppoe(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
-	} break;
-	/* End of extensions */
+		case OF1X_AT_NO_ACTION: {
+			// do nothing
+		} break;
+		case OF1X_AT_COPY_TTL_IN: {
+			action = rofl::openflow::cofaction_copy_ttl_in(rofl::openflow12::OFP_VERSION);
+		} break;
+		case OF1X_AT_POP_VLAN: {
+			action = rofl::openflow::cofaction_pop_vlan(rofl::openflow12::OFP_VERSION);
+		} break;
+		case OF1X_AT_POP_MPLS: {
+			action = rofl::openflow::cofaction_pop_mpls(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
+		} break;
+		
+		/* Extensions */
+		case OF1X_AT_POP_PPPOE: {
+			action = rofl::openflow::cofaction_pop_pppoe(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
+		} break;
+		case OF1X_AT_PUSH_PPPOE: {
+			action = rofl::openflow::cofaction_push_pppoe(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
+		} break;
+		/* End of extensions */
 
-	case OF1X_AT_PUSH_MPLS: {
-		action = rofl::openflow::cofaction_push_mpls(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_PUSH_VLAN: {
-		action = rofl::openflow::cofaction_push_vlan(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
-	} break;
-	case OF1X_AT_COPY_TTL_OUT: {
-		action = rofl::openflow::cofaction_copy_ttl_out(rofl::openflow12::OFP_VERSION);
-	} break;
-	case OF1X_AT_DEC_NW_TTL: {
-		action = rofl::openflow::cofaction_dec_nw_ttl(rofl::openflow12::OFP_VERSION);
-	} break;
-	case OF1X_AT_DEC_MPLS_TTL: {
-		action = rofl::openflow::cofaction_dec_mpls_ttl(rofl::openflow12::OFP_VERSION);
-	} break;
-	case OF1X_AT_SET_MPLS_TTL: {
-		action = rofl::openflow::cofaction_set_mpls_ttl(rofl::openflow12::OFP_VERSION, (uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
-	} break;
-	case OF1X_AT_SET_NW_TTL: {
-		action = rofl::openflow::cofaction_set_nw_ttl(rofl::openflow12::OFP_VERSION, (uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
-	} break;
-	case OF1X_AT_SET_QUEUE: {
-		action = rofl::openflow::cofaction_set_queue(rofl::openflow12::OFP_VERSION, (uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
-	} break;
-	//case OF1X_AT_SET_FIELD_METADATA:
-	case OF1X_AT_SET_FIELD_ETH_DST: {
-		uint64_t mac = of1x_action->field.u64;
-		BETOHMAC(mac);
-		cmacaddr maddr(mac);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_eth_dst(maddr));
-	} break;
-	case OF1X_AT_SET_FIELD_ETH_SRC: {
-		uint64_t mac = of1x_action->field.u64;
-		BETOHMAC(mac);
-		cmacaddr maddr(mac);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_eth_src(maddr));
-	} break;
-	case OF1X_AT_SET_FIELD_ETH_TYPE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_eth_type(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_VLAN_VID: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_vlan_vid(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_VLAN_PCP: {
-		uint8_t pcp = OF1X_VLAN_PCP_VALUE((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_vlan_pcp(pcp));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_OPCODE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_opcode(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_SHA: {
-		uint64_t mac = of1x_action->field.u64;
-		BETOHMAC(mac);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_sha(cmacaddr(mac)));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_SPA: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_spa(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_THA: {
-		uint64_t mac = of1x_action->field.u64;
-		BETOHMAC(mac);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_tha(cmacaddr(mac)));
-	} break;
-	case OF1X_AT_SET_FIELD_ARP_TPA: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_tpa(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_IP_DSCP: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ip_dscp((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_IP_ECN: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ip_ecn((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_IP_PROTO: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ip_proto((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_IPV4_SRC: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv4_src(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_IPV4_DST: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv4_dst(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_TCP_SRC: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_tcp_src(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_TCP_DST: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_tcp_dst(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_UDP_SRC: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_udp_src(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_UDP_DST: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_udp_dst(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_ICMPV4_TYPE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv4_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_ICMPV4_CODE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv4_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	
-	case OF1X_AT_SET_FIELD_IPV6_SRC: {
-		uint128__t value = of1x_action->field.u128;
-		NTOHB128(value);
-		rofl::caddress addr(AF_INET6);
-		memcpy(addr.ca_s6addr->sin6_addr.s6_addr, (uint8_t*)(value.val), 16);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_src(addr));
-	} break;
-	case OF1X_AT_SET_FIELD_IPV6_DST: {
-		uint128__t value = of1x_action->field.u128;
-		NTOHB128(value);
-		rofl::caddress addr(AF_INET6);
-		memcpy(addr.ca_s6addr->sin6_addr.s6_addr, (uint8_t*)(value.val), 16);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_dst(addr));
-	} break;
-	case OF1X_AT_SET_FIELD_IPV6_FLABEL: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_flabel(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_IPV6_ND_TARGET: {
-		uint128__t value = of1x_action->field.u128;
-		NTOHB128(value);
-		rofl::caddress addr(AF_INET6);
-		memcpy(addr.ca_s6addr->sin6_addr.s6_addr, (uint8_t*)(value.val), 16);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_nd_target(addr));
-	} break;
-	case OF1X_AT_SET_FIELD_IPV6_ND_SLL: {
-		uint64_t mac = of1x_action->field.u64;
-		BETOHMAC(mac);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_nd_sll(cmacaddr(mac)));
-	} break;
-	case OF1X_AT_SET_FIELD_IPV6_ND_TLL: {
-		uint64_t mac = of1x_action->field.u64;
-		BETOHMAC(mac);
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_nd_tll(cmacaddr(mac)));
-	} break;
-	case OF1X_AT_SET_FIELD_ICMPV6_TYPE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv6_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_ICMPV6_CODE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv6_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_MPLS_LABEL: {
-		uint32_t label = OF1X_MPLS_LABEL_VALUE(NTOHB32(of1x_action->field.u32));
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_label(label & OF1X_4_BYTE_MASK));
-	} break;
-	case OF1X_AT_SET_FIELD_MPLS_TC: {
-		uint8_t tc = OF1X_MPLS_TC_VALUE((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_tc(tc));
-	} break;
+		case OF1X_AT_PUSH_MPLS: {
+			action = rofl::openflow::cofaction_push_mpls(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
+		} break;
+		case OF1X_AT_PUSH_VLAN: {
+			action = rofl::openflow::cofaction_push_vlan(rofl::openflow12::OFP_VERSION, be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK)));
+		} break;
+		case OF1X_AT_COPY_TTL_OUT: {
+			action = rofl::openflow::cofaction_copy_ttl_out(rofl::openflow12::OFP_VERSION);
+		} break;
+		case OF1X_AT_DEC_NW_TTL: {
+			action = rofl::openflow::cofaction_dec_nw_ttl(rofl::openflow12::OFP_VERSION);
+		} break;
+		case OF1X_AT_DEC_MPLS_TTL: {
+			action = rofl::openflow::cofaction_dec_mpls_ttl(rofl::openflow12::OFP_VERSION);
+		} break;
+		case OF1X_AT_SET_MPLS_TTL: {
+			action = rofl::openflow::cofaction_set_mpls_ttl(rofl::openflow12::OFP_VERSION, (uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
+		} break;
+		case OF1X_AT_SET_NW_TTL: {
+			action = rofl::openflow::cofaction_set_nw_ttl(rofl::openflow12::OFP_VERSION, (uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
+		} break;
+		case OF1X_AT_SET_QUEUE: {
+			action = rofl::openflow::cofaction_set_queue(rofl::openflow12::OFP_VERSION, (uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
+		} break;
+		//case OF1X_AT_SET_FIELD_METADATA:
+		case OF1X_AT_SET_FIELD_ETH_DST: {
+			uint64_t mac = of1x_action->field.u64;
+			BETOHMAC(mac);
+			cmacaddr maddr(mac);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_eth_dst(maddr));
+		} break;
+		case OF1X_AT_SET_FIELD_ETH_SRC: {
+			uint64_t mac = of1x_action->field.u64;
+			BETOHMAC(mac);
+			cmacaddr maddr(mac);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_eth_src(maddr));
+		} break;
+		case OF1X_AT_SET_FIELD_ETH_TYPE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_eth_type(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_VLAN_VID: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_vlan_vid(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_VLAN_PCP: {
+			uint8_t pcp = OF1X_VLAN_PCP_VALUE((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_vlan_pcp(pcp));
+		} break;
+		case OF1X_AT_SET_FIELD_ARP_OPCODE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_opcode(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_ARP_SHA: {
+			uint64_t mac = of1x_action->field.u64;
+			BETOHMAC(mac);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_sha(cmacaddr(mac)));
+		} break;
+		case OF1X_AT_SET_FIELD_ARP_SPA: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_spa(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_ARP_THA: {
+			uint64_t mac = of1x_action->field.u64;
+			BETOHMAC(mac);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_tha(cmacaddr(mac)));
+		} break;
+		case OF1X_AT_SET_FIELD_ARP_TPA: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_arp_tpa(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_IP_DSCP: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ip_dscp((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_IP_ECN: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ip_ecn((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_IP_PROTO: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ip_proto((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_IPV4_SRC: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv4_src(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_IPV4_DST: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv4_dst(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_TCP_SRC: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_tcp_src(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_TCP_DST: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_tcp_dst(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_UDP_SRC: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_udp_src(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_UDP_DST: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_udp_dst(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_ICMPV4_TYPE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv4_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_ICMPV4_CODE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv4_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		
+		case OF1X_AT_SET_FIELD_IPV6_SRC: {
+			uint128__t value = of1x_action->field.u128;
+			NTOHB128(value);
+			rofl::caddress addr(AF_INET6);
+			memcpy(addr.ca_s6addr->sin6_addr.s6_addr, (uint8_t*)(value.val), 16);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_src(addr));
+		} break;
+		case OF1X_AT_SET_FIELD_IPV6_DST: {
+			uint128__t value = of1x_action->field.u128;
+			NTOHB128(value);
+			rofl::caddress addr(AF_INET6);
+			memcpy(addr.ca_s6addr->sin6_addr.s6_addr, (uint8_t*)(value.val), 16);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_dst(addr));
+		} break;
+		case OF1X_AT_SET_FIELD_IPV6_FLABEL: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_flabel(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_IPV6_ND_TARGET: {
+			uint128__t value = of1x_action->field.u128;
+			NTOHB128(value);
+			rofl::caddress addr(AF_INET6);
+			memcpy(addr.ca_s6addr->sin6_addr.s6_addr, (uint8_t*)(value.val), 16);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_nd_target(addr));
+		} break;
+		case OF1X_AT_SET_FIELD_IPV6_ND_SLL: {
+			uint64_t mac = of1x_action->field.u64;
+			BETOHMAC(mac);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_nd_sll(cmacaddr(mac)));
+		} break;
+		case OF1X_AT_SET_FIELD_IPV6_ND_TLL: {
+			uint64_t mac = of1x_action->field.u64;
+			BETOHMAC(mac);
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_ipv6_nd_tll(cmacaddr(mac)));
+		} break;
+		case OF1X_AT_SET_FIELD_ICMPV6_TYPE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv6_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_ICMPV6_CODE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_icmpv6_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_MPLS_LABEL: {
+			uint32_t label = OF1X_MPLS_LABEL_VALUE(NTOHB32(of1x_action->field.u32));
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_label(label & OF1X_4_BYTE_MASK));
+		} break;
+		case OF1X_AT_SET_FIELD_MPLS_TC: {
+			uint8_t tc = OF1X_MPLS_TC_VALUE((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK));
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::coxmatch_ofb_mpls_tc(tc));
+		} break;
 
-	/* Extensions */
-	case OF1X_AT_SET_FIELD_PPPOE_CODE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_PPPOE_TYPE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_PPPOE_SID: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_PPP_PROT: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
-	} break;
-	case OF1X_AT_SET_FIELD_GTP_MSG_TYPE: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
-	} break;
-	case OF1X_AT_SET_FIELD_GTP_TEID: {
-		action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
-	} break;
-	/* End of extensions */
+		/* Extensions */
+		case OF1X_AT_SET_FIELD_PPPOE_CODE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_PPPOE_TYPE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_PPPOE_SID: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_PPP_PROT: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(be16toh((uint16_t)(of1x_action->field.u16 & OF1X_2_BYTE_MASK))));
+		} break;
+		case OF1X_AT_SET_FIELD_GTP_MSG_TYPE: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type((uint8_t)(of1x_action->field.u8 & OF1X_1_BYTE_MASK)));
+		} break;
+		case OF1X_AT_SET_FIELD_GTP_TEID: {
+			action = rofl::openflow::cofaction_set_field(rofl::openflow12::OFP_VERSION, rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(be32toh((uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK))));
+		} break;
+		/* End of extensions */
 
-	case OF1X_AT_GROUP: {
-		action = rofl::openflow::cofaction_group(rofl::openflow12::OFP_VERSION, (uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK));
-	} break;
-	case OF1X_AT_EXPERIMENTER: {
-		// TODO
-	} break;
-	case OF1X_AT_OUTPUT: {
-		action = rofl::openflow::cofaction_output(rofl::openflow12::OFP_VERSION, (uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK), of1x_action->send_len);
-	} break;
-	default: {
-		// do nothing
-	} break;
+		case OF1X_AT_GROUP: {
+			action = rofl::openflow::cofaction_group(rofl::openflow12::OFP_VERSION, (uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK));
+		} break;
+		case OF1X_AT_EXPERIMENTER: {
+			// TODO
+		} break;
+		case OF1X_AT_OUTPUT: {
+			action = rofl::openflow::cofaction_output(rofl::openflow12::OFP_VERSION, (uint32_t)(of1x_action->field.u32 & OF1X_4_BYTE_MASK), of1x_action->send_len);
+		} break;
+		default: {
+			// do nothing
+		} break;
 	}
 #endif
 }

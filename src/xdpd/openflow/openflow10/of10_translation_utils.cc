@@ -217,7 +217,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		switch (raction.get_type()) {
 			case rofl::openflow10::OFPAT_OUTPUT:
 				//Translate special values to of1x
-				field.u32 = get_out_port(raction.oac_10output->port);
+				field.u32 = get_out_port(NTOHB16(raction.oac_10output->port));
 				action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, NTOHB16(raction.oac_10output->max_len));
 				break;
 			case rofl::openflow10::OFPAT_SET_VLAN_VID:

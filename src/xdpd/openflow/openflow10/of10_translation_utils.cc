@@ -136,7 +136,7 @@ of10_translation_utils::of10_map_flow_entry_matches(
 			vlan_present = OF1X_MATCH_VLAN_NONE;
 		else
 			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
-		match = of1x_init_vlan_vid_match(value & ~openflow::OFPVID_PRESENT, OF1X_VLAN_ID_MASK, vlan_present); // no mask in OF1.0
+		match = of1x_init_vlan_vid_match(value & ~openflow::OFPVID_PRESENT, NTOHB16(OF1X_VLAN_ID_MASK), vlan_present); // no mask in OF1.0
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 

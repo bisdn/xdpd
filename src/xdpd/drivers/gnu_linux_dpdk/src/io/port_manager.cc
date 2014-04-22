@@ -13,6 +13,8 @@
 #include <rte_malloc.h> 
 #include <rte_errno.h> 
 
+#include <fcntl.h>  
+
 extern struct rte_mempool *pool_direct;
 switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES] = {{NULL}};
@@ -328,8 +330,26 @@ rofl_result_t port_manager_enable(switch_port_t* port){
 	if(unlikely(!port))
 		return ROFL_FAILURE;
 
-	
-	if(port->type != PORT_TYPE_VIRTUAL){
+	if(port->type == PORT_TYPE_VIRTUAL)
+	{
+		/*
+		* Virtual link
+		*/
+		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
+		//Set link flag on both ports
+		if(port_pair->up){
+			port->state &= ~PORT_STATE_LINK_DOWN;
+			port_pair->state &= ~PORT_STATE_LINK_DOWN;
+		}else{
+			port->state |= PORT_STATE_LINK_DOWN;
+			port_pair->state |= PORT_STATE_LINK_DOWN;
+		}
+	}
+	else if(port->type == PORT_TYPE_PEX)
+	{
+		//IVANO - FIXME: nothing to do here?
+	}
+	else{
 		/*
 		*  PHYSICAL
 		*/
@@ -344,20 +364,8 @@ rofl_result_t port_manager_enable(switch_port_t* port){
 				return ROFL_FAILURE; 
 			}
 		}
-	}else{
-		/*
-		* Virtual link
-		*/
-		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
-		//Set link flag on both ports
-		if(port_pair->up){
-			port->state &= ~PORT_STATE_LINK_DOWN;
-			port_pair->state &= ~PORT_STATE_LINK_DOWN;
-		}else{
-			port->state |= PORT_STATE_LINK_DOWN;
-			port_pair->state |= PORT_STATE_LINK_DOWN;
-		}
 	}
+		
 	//Mark the port as being up and return
 	port->up = true;
 		
@@ -374,7 +382,28 @@ rofl_result_t port_manager_disable(switch_port_t* port){
 	if(unlikely(!port))
 		return ROFL_FAILURE;
 	
-	if(port->type != PORT_TYPE_VIRTUAL){
+	if(port->type == PORT_TYPE_VIRTUAL)
+	{
+		/*
+		* Virtual link
+		*/
+		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
+		port->up = false;
+
+		//Set links as down	
+		port->state |= PORT_STATE_LINK_DOWN;
+		port_pair->state |= PORT_STATE_LINK_DOWN;
+	}
+	else if(port->type == PORT_TYPE_PEX)
+	{
+		/*
+		* PEX port
+		*/
+		//IVANO FIXME: other to do?
+		port->up = false;
+	}
+	else
+	{
 		/*
 		*  PHYSICAL
 		*/
@@ -390,16 +419,6 @@ rofl_result_t port_manager_disable(switch_port_t* port){
 			//Was  up; stop it
 			rte_eth_dev_stop(port_id);
 		}
-	}else{
-		/*
-		* Virtual link
-		*/
-		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
-		port->up = false;
-
-		//Set links as down	
-		port->state |= PORT_STATE_LINK_DOWN;
-		port_pair->state |= PORT_STATE_LINK_DOWN;
 	}
 
 	return ROFL_SUCCESS;
@@ -501,3 +520,130 @@ void port_manager_update_stats(){
 	}
 
 }
+
+
+/****************************************************************************
+*						Funtions specific for PEX ports						*
+*****************************************************************************/
+
+#define PPID	100 //TODO: this is shit.. define a real identifier 
+
+int pex_port_id = PPID;
+
+//Initializes the pipeline structure and launches the PEX port 
+static switch_port_t* configure_pex_port(const char *pex_port)
+{
+	//FIXME: tmp shit
+	pex_port_id++;
+
+	switch_port_t* port;
+	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
+	
+	//Initialize pipeline port
+	port = switch_port_init((char*)pex_port, false, PORT_TYPE_PEX, PORT_STATE_NONE);
+	if(!port)
+		return NULL; 
+
+	//Generate port state
+	pex_port_state_t* ps = (pex_port_state_t*)rte_malloc(NULL,sizeof(pex_port_state_t),0);
+	
+	if(!ps)
+	{
+		switch_port_destroy(port);
+		return NULL;
+	}
+
+	//Add TX queues to the pipeline - now, PEX ports are implemented with a single queue
+		
+	//Create rofl-pipeline queue state
+	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-%s", "queue",pex_port);
+	if(switch_port_add_queue(port, 0, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
+	{
+		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
+		assert(0);
+		return NULL;
+	}
+	
+	//Add port_tx_lcore_queue
+	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%u-q%u", pex_port_id, 0);
+	port_tx_lcore_queue[pex_port_id][0] = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
+
+	if(unlikely( port_tx_lcore_queue[pex_port_id][0] == NULL ))
+	{
+		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
+		assert(0);
+		return NULL;
+	}
+
+	// Create the state of the PEX port
+	
+	//IVANO - FIXME: the flags of the rte_ring_create are correct?
+	
+	//queue xDPD -> PEX
+	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-up", pex_port);
+	ps->up_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
+	if(unlikely( ps->up_queue == NULL ))
+	{
+		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name,pex_port);
+		assert(0);
+		return NULL;
+	}
+	
+	//queue PEX -> xDPD
+	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-down", pex_port);
+	ps->down_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
+	if(unlikely( ps->down_queue == NULL ))
+	{
+		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name, pex_port);
+		assert(0);
+		return NULL;
+	}
+
+	//semaphore	
+	ps->semaphore = sem_open(pex_port, O_CREAT, 0644, 0);
+	if(ps->semaphore == SEM_FAILED)
+	{
+		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create semaphore '%s' for queue in port: %s\n", pex_port, pex_port);
+		assert(0);
+		return NULL;
+	}
+
+	ps->last_flush_time = 0;
+	ps->counter_from_last_flush = 0;
+
+	ps->scheduled = false;
+	ps->port_id = pex_port_id;
+	port->platform_port_state = (platform_port_state_t*)ps;
+
+	ROFL_INFO(DRIVER_NAME"[port_manager] Created (PEX) port %s, id %u\n", pex_port, pex_port_id);
+
+	//Set the port in the port_mapping
+	port_mapping[pex_port_id] = port;
+
+	return port;
+}
+
+
+rofl_result_t port_manager_create_pex_port(const char *pex_port)
+{
+	switch_port_t* port;
+	
+	ROFL_INFO(DRIVER_NAME"[port_manager] Creating a PEX port named '%s'\n",pex_port);
+	
+	if(! ( port = configure_pex_port(pex_port) ) )
+	{
+		ROFL_ERR(DRIVER_NAME"[port_manager] Unable to initialize PEX port %s\n", pex_port);
+		return ROFL_FAILURE;
+	}
+
+	//Add port to the pipeline
+	if( physical_switch_add_port(port) != ROFL_SUCCESS )
+	{
+		ROFL_ERR(DRIVER_NAME"[port_manager] Unable to add the switch (PEX) port to physical switch; perhaps there are no more physical port slots available?\n");
+		return ROFL_FAILURE;
+	}
+
+	return ROFL_SUCCESS;
+}
+
+

@@ -359,7 +359,6 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 			return HAL_FAILURE;
 		}
 	}else{
-
 		if(physical_switch_attach_port_to_logical_switch_at_port_num(port,lsw,*of_port_num) == ROFL_FAILURE){
 			assert(0);
 			return HAL_FAILURE;
@@ -371,7 +370,20 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 		* Virtual link
 		*/
 		//Do nothing
-	}else{
+	}else if (port->type == PORT_TYPE_PEX)
+	{
+		/*
+		*	Port connected to a PEX
+		*/
+		//Schedule the port in the I/O subsystem
+		if(processing_schedule_pex_port(port) != ROFL_SUCCESS)
+		{
+			assert(0);
+			return HAL_FAILURE;
+		}
+	}
+	else
+	{
 		/*
 		*  PHYSICAL
 		*/

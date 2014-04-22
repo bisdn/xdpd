@@ -76,9 +76,15 @@ rofl_result_t processing_init(void);
 rofl_result_t processing_destroy(void);
 
 /**
-* Schedule port to a core 
+* Schedule (physical) port to a core 
 */
 rofl_result_t processing_schedule_port(switch_port_t* port);
+
+/**
+* Schedule PEX port to a core 
+*/
+rofl_result_t processing_schedule_pex_port(switch_port_t* port);
+
 
 /**
 * Deschedule port to a core 

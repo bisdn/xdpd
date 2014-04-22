@@ -52,6 +52,9 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 
 	if(unlikely(port->drop_received)) //Ignore if port is marked as "drop received"
 		return;
+		
+	if(port->type == PORT_TYPE_PEX)
+		return;	
 
 	//Read a burst
 	burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);

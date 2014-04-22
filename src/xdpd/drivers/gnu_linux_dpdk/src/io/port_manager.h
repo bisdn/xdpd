@@ -82,6 +82,25 @@ void port_manager_update_links(void);
 */
 void port_manager_update_stats(void);
 
+/****************************************************************************
+*						Funtions specific for PEX ports						*
+*****************************************************************************/
+
+/**
+* @file port_manager.h
+* @author Ivano Cerrato<ivano.cerrato (at) polito.it>
+*
+* @brief Functions related to PEX ports.
+*/
+
+/**
+ * @name port_manager_create_pex_port
+ * @brief Create and initializes (including rofl-pipeline state) a PEX port
+ * 
+ * @param port_name		Name of the port to be created
+ */
+rofl_result_t port_manager_create_pex_port(const char *port_name);
+
 
 //C++ extern C
 ROFL_END_DECLS

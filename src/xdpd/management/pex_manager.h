@@ -7,6 +7,11 @@
 
 #include <string>
 #include <list>
+#include <pthread.h>
+
+#include <rofl/common/croflexception.h>
+#include <rofl/common/utils/c_logger.h>
+#include <rofl/datapath/hal/pex/pex_driver.h>
 
 /**
 * @file pex_manager.h
@@ -16,6 +21,11 @@
 */
 
 namespace xdpd {
+
+class ePexmBase			: public rofl::RoflException {};
+class ePexmInvalidPEX	: public ePexmBase {};
+class ePexmUnknownError : public ePexmBase {};
+
 
 /**
 * @brief Port management API.
@@ -37,14 +47,18 @@ public:
 	//
 
  	/**
+ 	 * @name pex_exists
 	 * @brief Check if the PEX named pex_name already exists
+	 * 
+	 * @param pex_name	Name of the PEX to be checked
 	 */
 	static bool pex_exists(std::string& pex_name);
 
 	/**
-	* @brief List the names of the PEX available. 
+	* @name list_available_PEX_names
+	* @brief List the names of the PEX available
 	*/
-	static std::list<std::string> list_available_PEX_names(void);
+	static std::list<std::string> list_available_pex_names(void);
 
 
 	//
@@ -52,17 +66,30 @@ public:
 	//
 	
 	/**
+	* @name create_pex
 	* @brief Create a PEX named pex_name
+	*
+	* @param pex_name				Name of the PEX to be created
+	* @param core_mask				Core to which the PEX must be bound
+	* @param num_memory_channels	Number of memory channels used by the PEX
 	*/
-	static bool create_pex(std::string& pex_name);
+	static void create_pex(std::string& pex_name, uint32_t core_mask, uint32_t num_memory_channels);
 	
 	/**
+	* @name destroy_pex
 	* @brief Destroy a PEX named pex_name
+	*
+	* @param pex_name	Name of the PEX to be destroyed
 	*/
-	static bool destroy_pex(std::string& pex_name);
+	static void destroy_pex(std::string& pex_name);
 
 	//TODO: reconfigure a PEX
-
+	
+	// [+] Add more here..
+	
+private:
+	static pthread_mutex_t mutex;	
+	
 };
 
 }// namespace xdpd 

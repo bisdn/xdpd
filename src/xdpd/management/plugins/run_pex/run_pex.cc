@@ -1,58 +1,111 @@
 #include "run_pex.h"
 #include <rofl/common/utils/c_logger.h>
+#include <rofl/common/croflexception.h>
+#include <string>
+#include <inttypes.h>
 #include "../../plugin_manager.h"
+#include "../../port_manager.h"
+#include "../../switch_manager.h"
+#include "../../pex_manager.h"
 
 using namespace xdpd;
+using namespace rofl;
 
 #define PLUGIN_NAME "RunPEX_plugin" 
 
-void runPEX::init(){
-	//DO something
+void runPEX::init()
+{
 	ROFL_INFO("\n\n[xdpd]["PLUGIN_NAME"] **************************\n");	
-	ROFL_INFO("[xdpd]["PLUGIN_NAME"] This plugin instantiate some PEX, whose description is embedded into the code.\n");
+	ROFL_INFO("[xdpd]["PLUGIN_NAME"] This plugin instantiates some PEX, whose description is embedded into the code.\n");
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] **************************\n\n");	
+	
+	std::string pexName1 = "pex25";
+	std::string pexName2 = "pex11";
+	
+	//Create two PEX
+	try
+	{
+		pex_manager::create_pex(pexName1,0x1,2);
+	}catch(...)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create %s\n",pexName1.c_str());
+		return;
+	}
 
-	if(plugin_manager::get_plugins().size() == 1){
+	try{
+		pex_manager::create_pex(pexName2,0x2,2);
+	}catch(...)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME" Unable to create %s",pexName2.c_str());
+		return;
+	}
+
+/*	try{	
+		ROFL_INFO("[xdpd]["PLUGIN_NAME"]Existing PEX:\n");
+		std::list<std::string> available_pex = pex_manager::list_available_pex_names();	
+		for(std::list<std::string>::iterator it = available_pex.begin(); it != available_pex.end(); it++)
+		{
+			ROFL_INFO("[xdpd]["PLUGIN_NAME"]\t%s\n",(*it).c_str());
+		}
+	}catch(...)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME" No PEX exists\n");
+		return;
+	}
+*/	
+
+
+	if(plugin_manager::get_plugins().size() == 1)
+	{
 
 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] You have compiled xdpd with this plugin only. This xdpd execution is pretty useless, since no Logical Switch Instances will be created and there will be no way (RPC) to create them...\n\n");	
 		ROFL_INFO("[xdpd]["PLUGIN_NAME"]You may now press Ctrl+C to finish xdpd execution.\n");
 	}
-};
-
-/*
-//Events; print nice traces
-void runPEX::notify_port_added(const switch_port_snapshot_t* port_snapshot){
-		if(port_snapshot->is_attached_to_sw)
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] The port %s has been ADDED to the system and attached to the switch with DPID: 0x%"PRIx64":%u. Administrative status: %s, link detected: %s\n", port_snapshot->name, port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, (port_snapshot->up)? "UP":"DOWN", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "NO":"YES");
-		else
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] The port %s has been ADDED to the system. Administrative status: %s, link detected: %s\n", port_snapshot->name, (port_snapshot->up)? "UP":"DOWN", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "NO":"YES");
-}
+	else
+	{
+		/*
+		*	If at least an LSI exists, the PEX ports are connected to the first LSI of the list.
+		*/
+		std::list<std::string> LSIs =  switch_manager::list_sw_names();
+		if(LSIs.size() != 0)
+		{
+			std::list<std::string>::iterator LSI = LSIs.begin();
+			uint64_t dpid = switch_manager::get_switch_dpid(*LSI);
+			
+			try
+			{
+				//Attach
+				unsigned int port_number = 0;
+				ROFL_INFO("[xdpd]["PLUGIN_NAME"] Attaching PEX port '%s' to LSI '%x'\n",pexName1.c_str(),dpid);	
+				port_manager::attach_port_to_switch(dpid, pexName1, &port_number);
+			}catch(...)
+			{	
+				ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to attach port '%s' to LSI '%s'. Unknown error.\n", pexName1.c_str(),dpid);
+				return;
+			}
+			//Bring up
+			port_manager::bring_up(pexName1);
 	
-void runPEX::notify_port_attached(const switch_port_snapshot_t* port_snapshot){
-	ROFL_INFO("[xdpd]["PLUGIN_NAME"] The port %s has been ATTACHED to the switch with DPID: 0x%"PRIx64":%u.\n", port_snapshot->name, port_snapshot->attached_sw_dpid, port_snapshot->of_port_num);
-}	
-
-void runPEX::notify_port_status_changed(const switch_port_snapshot_t* port_snapshot){
-		if(port_snapshot->is_attached_to_sw)
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] The port %s attached to the switch with DPID: 0x%"PRIx64":%u has CHANGED ITS STATUS. Administrative status: %s, link detected: %s\n", port_snapshot->name, port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, (port_snapshot->up)? "UP":"DOWN", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "NO":"YES");
-		else
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] The port %s has CHANGED ITS STATUS. Administrative status: %s, link detected: %s\n", port_snapshot->name, (port_snapshot->up)? "UP":"DOWN", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "NO":"YES");
-}
+			try
+			{
+				//Attach
+				unsigned int port_number = 0;
+				ROFL_INFO("[xdpd]["PLUGIN_NAME"] Attaching PEX port '%s' to LSI '%x'\n",pexName2.c_str(),dpid);	
+				port_manager::attach_port_to_switch(dpid, pexName2, &port_number);
+			}catch(...)
+			{	
+				ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to attach port '%s' to LSI '%s'. Unknown error.\n", pexName2.c_str(),dpid);
+				return;
+			}
+			//Bring up
+			port_manager::bring_up(pexName2);
+	
+			ROFL_INFO("[xdpd]["PLUGIN_NAME"] All the PEX have been created, and connected to an LSI.\n\n");
+		}
+	}
 		
-void runPEX::notify_port_detached(const switch_port_snapshot_t* port_snapshot){
-	ROFL_INFO("[xdpd]["PLUGIN_NAME"] The port %s has been DETACHED from the switch with DPID: 0x%"PRIx64":%u.\n", port_snapshot->name, port_snapshot->attached_sw_dpid, port_snapshot->of_port_num);
-}	
-
-void runPEX::notify_port_deleted(const switch_port_snapshot_t* port_snapshot){
-		if(port_snapshot->is_attached_to_sw)
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] The port %s has been REMOVED from the system and detached from the switch with DPID: 0x%"PRIx64":%u.\n", port_snapshot->name, port_snapshot->attached_sw_dpid, port_snapshot->of_port_num);
-		else
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] The port %s has been REMOVED from the system.\n", port_snapshot->name);
+	//Destroy the PEX previously created
+	pex_manager::destroy_pex(pexName1);
+	pex_manager::destroy_pex(pexName2);
 }
-	
-void runPEX::notify_monitoring_state_changed(const monitoring_snapshot_state_t* monitoring_snapshot){
-	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Got an event of MONITORING STATE CHANGE\n");
-}
-*/
-
 

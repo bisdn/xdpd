@@ -181,6 +181,9 @@ int processing_core_process_packets(void* not_used){
 				//Check whether is our port (we have to also transmit TX queues)				
 				own_port = (port_queues->core_id == core_id);
 			
+				if(tasks->port_list[i]->type == PORT_TYPE_PEX)
+					int i = 25;
+			
 				//Flush (enqueue them in the RX/TX port lcore)
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
 					flush_port_queue_tx_burst(port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
@@ -264,12 +267,12 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		return ROFL_FAILURE;
 	}
 
+
 	//FIXME: check if already scheduled
 	if( port_manager_set_queues(current_core_index, port_state->port_id) != ROFL_SUCCESS){
 		assert(0);
 		return ROFL_FAILURE;
 	}
-
 
 	//Store attachment info (back reference)
 	port_state->core_id = current_core_index; 
@@ -310,6 +313,100 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		
 	return ROFL_SUCCESS;
 }
+
+/*
+* Schedule PEX port. Shedule PEX port to an available core (RR)
+* FIXME: this function is very similar to the one above.. But it works
+* on a different port state
+*/
+rofl_result_t processing_schedule_pex_port(switch_port_t* port)
+{
+
+	unsigned int i, index, *num_of_ports;
+	pex_port_state_t* port_state = (pex_port_state_t*)port->platform_port_state;	
+
+	rte_spinlock_lock(&mutex);
+
+	if(total_num_of_ports == PROCESSING_MAX_PORTS)
+	{
+		ROFL_ERR(DRIVER_NAME"[processing] Reached already PROCESSING_MAX_PORTS(%u). All cores are full. No available port slots\n", PROCESSING_MAX_PORTS);
+		rte_spinlock_unlock(&mutex);
+		return ROFL_FAILURE;
+	}
+
+	//Select core
+	for(current_core_index++, index=current_core_index;;){
+		if( processing_core_tasks[current_core_index].available == true && processing_core_tasks[current_core_index].num_of_rx_ports != PROCESSING_MAX_PORTS_PER_CORE )
+			break;
+
+		//Circular increment
+		if(current_core_index+1 == RTE_MAX_LCORE)
+			current_core_index=0; 
+		else
+			current_core_index++;
+	
+		//We've already checked all positions. No core free. Return
+		if(current_core_index == index){
+			//All full 
+			ROFL_ERR(DRIVER_NAME"[processing] All cores are full. No available port slots\n");
+			assert(0);		
+			rte_spinlock_unlock(&mutex);
+			return ROFL_FAILURE;
+		}
+	}
+
+	ROFL_DEBUG(DRIVER_NAME"[processing] Selected core %u for scheduling port %s(%p)\n", current_core_index, port->name, port); 
+
+	num_of_ports = &processing_core_tasks[current_core_index].num_of_rx_ports;
+
+	//Assign port and exit
+	if(processing_core_tasks[current_core_index].port_list[*num_of_ports] != NULL){
+		ROFL_ERR(DRIVER_NAME"[processing] Corrupted state on the core task list\n");
+		assert(0);
+		rte_spinlock_unlock(&mutex);
+		return ROFL_FAILURE;
+	}
+
+	//Store attachment info (back reference)
+	port_state->core_id = current_core_index; 
+	port_state->core_port_slot = *num_of_ports;
+	
+	processing_core_tasks[current_core_index].port_list[*num_of_ports] = port;
+	(*num_of_ports)++;
+	
+	index = current_core_index;
+
+	//Mark port as present (and scheduled) on all cores (TX)
+	for(i=0;i<RTE_MAX_LCORE;++i){
+		processing_core_tasks[i].all_ports[port_state->port_id].present = true;
+		processing_core_tasks[i].all_ports[port_state->port_id].core_id = index;
+	}
+
+	//Increment total counter
+	total_num_of_ports++;
+	
+	rte_spinlock_unlock(&mutex);
+
+	if(!processing_core_tasks[index].active){
+		if(rte_eal_get_lcore_state(index) != WAIT){
+			assert(0);
+			rte_panic("Core status corrupted!");
+		}
+		
+		ROFL_DEBUG(DRIVER_NAME"[processing] Launching core %u due to scheduling action of port %p\n", index, port);
+
+		//Launch
+		ROFL_DEBUG_VERBOSE("Pre-launching core %u due to scheduling action of port %p\n", index, port);
+		if( rte_eal_remote_launch(processing_core_process_packets, NULL, index) < 0)
+			rte_panic("Unable to launch core %u! Status was NOT wait (race-condition?)", index);
+		ROFL_DEBUG_VERBOSE("Post-launching core %u due to scheduling action of port %p\n", index, port);
+	}
+	
+	port_state->scheduled = true;
+	
+	return ROFL_SUCCESS;
+}
+
 
 /*
 * Deschedule port to a core 

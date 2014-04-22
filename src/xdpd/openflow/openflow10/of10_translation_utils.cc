@@ -147,7 +147,8 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	//NW TOS
 	try {
-		match = of1x_init_ip_dscp_match(ofmatch.get_nw_tos());
+		uint8_t dscp = OF1X_IP_DSCP_VALUE(ofmatch.get_nw_tos()); //Align to get DSCP value from TOS
+		match = of1x_init_ip_dscp_match(dscp);
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
@@ -250,7 +251,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0);
 				break;
 			case rofl::openflow10::OFPAT_SET_NW_TOS:
-				field.u8 = raction.oac_10nwtos->nw_tos;
+				field.u8 = OF1X_IP_DSCP_VALUE(raction.oac_10nwtos->nw_tos); //Align to get DSCP value from TOS
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, 0x0);
 				break;
 			case rofl::openflow10::OFPAT_SET_TP_SRC:
@@ -342,7 +343,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 		}
 			break;
 		case OF1X_MATCH_IP_DSCP:
-			match.set_nw_tos(of1x_get_match_value8(m));
+			match.set_nw_tos(OF1X_IP_DSCP_ALIGN(of1x_get_match_value8(m))); //getting TOS value from DSCP
 			break;
 		case OF1X_MATCH_NW_PROTO:
 			match.set_nw_proto(of1x_get_match_value8(m));
@@ -463,7 +464,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		action = rofl::openflow::cofaction_set_vlan_pcp(OFP10_VERSION, of1x_get_packet_action_field8(of1x_action));
 	} break;
 	case OF1X_AT_SET_FIELD_IP_DSCP: {
-		action = rofl::openflow::cofaction_set_nw_tos(OFP10_VERSION, of1x_get_packet_action_field8(of1x_action));
+		action = rofl::openflow::cofaction_set_nw_tos(OFP10_VERSION, OF1X_IP_DSCP_ALIGN(of1x_get_packet_action_field8(of1x_action))); //We need to get the TOS value from the DSCP
 	} break;
 	case OF1X_AT_SET_FIELD_NW_SRC: {
 		caddress addr(AF_INET, "0.0.0.0");
@@ -539,7 +540,7 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches_get_ip_dscp_value(pm))
-		match.set_nw_tos(packet_matches_get_ip_dscp_value(pm));
+		match.set_nw_tos(OF1X_IP_DSCP_ALIGN(packet_matches_get_ip_dscp_value(pm))); //We need to get the TOS value from the DSCP
 	if(packet_matches_get_ip_proto_value(pm))
 		match.set_ip_proto(packet_matches_get_ip_proto_value(pm));
 	if(packet_matches_get_ipv4_src_value(pm)){

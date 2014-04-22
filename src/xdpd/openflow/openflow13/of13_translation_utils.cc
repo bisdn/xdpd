@@ -206,16 +206,16 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();
-		uint64_t mmask = ofmatch.get_eth_dst_mask().get_mac();
-		match = of1x_init_eth_dst_match(maddr, mmask);
+		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
+		uint64_t mmask = ofmatch.get_eth_src_mask().get_mac();
+		match = of1x_init_eth_src_match(maddr, mmask);
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
-		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
-		uint64_t mmask = ofmatch.get_eth_src_mask().get_mac();
-		match = of1x_init_eth_src_match(maddr, mmask);
+		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();
+		uint64_t mmask = ofmatch.get_eth_dst_mask().get_mac();
+		match = of1x_init_eth_dst_match(maddr, mmask);
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 

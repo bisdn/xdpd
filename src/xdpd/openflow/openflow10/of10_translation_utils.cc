@@ -105,7 +105,13 @@ of10_translation_utils::of10_map_flow_entry_matches(
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	// no in_phy_port in OF1.0
-
+	try {
+		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
+		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
+		match = of1x_init_eth_src_match(maddr,mmask);
+		of1x_add_match_to_entry(entry, match);
+	} catch (rofl::openflow::eOxmNotFound& e) {}
+	
 	try {
 		uint64_t maddr = ofmatch.get_eth_dst_addr().get_mac();
 		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
@@ -113,12 +119,6 @@ of10_translation_utils::of10_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch (rofl::openflow::eOxmNotFound& e) {}
 
-	try {
-		uint64_t maddr = ofmatch.get_eth_src_addr().get_mac();
-		uint64_t mmask = rofl::cmacaddr("FF:FF:FF:FF:FF:FF").get_mac(); // no mask in OF1.0
-		match = of1x_init_eth_src_match(maddr,mmask);
-		of1x_add_match_to_entry(entry, match);
-	} catch (rofl::openflow::eOxmNotFound& e) {}
 
 	try {
 		match = of1x_init_eth_type_match(ofmatch.get_eth_type());

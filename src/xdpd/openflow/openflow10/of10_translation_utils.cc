@@ -265,7 +265,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 				field.u32 = NTOHB32(raction.oac_10enqueue->queue_id);
 				action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, 0x0);
 				if (NULL != apply_actions) of1x_push_packet_action_to_group(apply_actions, action);
-				field.u64 = get_out_port(NTOHB32(raction.oac_10enqueue->port));
+				field.u64 = get_out_port(NTOHB16(raction.oac_10enqueue->port));
 				action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, 0x0);
 				break;
 			}

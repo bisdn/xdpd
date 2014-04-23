@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 #include "init.h"
 
 void sig_handler(int received_signal);
@@ -42,9 +46,7 @@ static void init_shared_resources(void)
 	    exit(1);
 	}
 
-    pex_params.send_ring_size = APP_DEFAULT_BURST_SIZE; //TODO: togliere e mettere costante
 }
-
 
 
 //TODO: complete this method
@@ -58,9 +60,14 @@ void sig_handler(int received_signal)
 
 void init(void)
 {
+//	ROFL_INFO("["MODULE_NAME"] **************************\n");	
+//	ROFL_INFO("["MODULE_NAME"] This is the init function of the example PEX. This will just send to xDPD those packets received from xDPD.\n");
+//	ROFL_INFO("["MODULE_NAME"] **************************\n\n");
+
     init_shared_resources();
+
 	/*
 	* Set the signal handler and global variables for termination
 	*/
-	signal(SIGINT, sig_handler); //Console -> kill -2 pid
+	signal(SIGINT, sig_handler);
 }

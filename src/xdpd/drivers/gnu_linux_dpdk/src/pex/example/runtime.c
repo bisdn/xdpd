@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /**
 * @file runtime.c
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
@@ -13,7 +17,10 @@
 int do_pex(void *useless)
 {
 	mbuf_array_t pkts_received, pkts_to_send;
-
+	
+	//FIXME: the next two lines are just for the compiler
+	if(useless != NULL)
+		return -1;
 	
 //	ROFL_ERR("["MODULE_NAME"] %s is started!\n", pex_params.pex_name);
 	
@@ -26,10 +33,9 @@ int do_pex(void *useless)
 		
         pkts_received.n_mbufs = rte_ring_sc_dequeue_burst(pex_params.up_queue,(void **)&pkts_received.array[0],PKT_TO_PEX_THRESHOLD);
 
-		if(pkts_received.n_mbufs)
+		if(likely(pkts_received.n_mbufs))
 		{
-
-			uint i;
+			int i;
 			for (i=0;i < pkts_received.n_mbufs;i++)
 			{
 				pkts_to_send.n_mbufs = 0;
@@ -50,41 +56,34 @@ int do_pex(void *useless)
 			    {
 			    	/*3) Send the processed packet */
 			    
-			        int ret = rte_ring_sp_enqueue_bulk(pex_params.down_queue,(void *const*)pkts_to_send.array,(unsigned)pkts_to_send.n_mbufs);
+			        int ret = rte_ring_sp_enqueue_burst(pex_params.down_queue,(void *const*)pkts_to_send.array,(unsigned)pkts_to_send.n_mbufs);
 			        
-			        if (unlikely(ret == -ENOBUFS))
+			        if (unlikely(ret < pkts_to_send.n_mbufs)) 
 			        {
-			        	//FIXME: what is this? is it necessary?
-			      //  	ROFL_INFO("["MODULE_NAME"] Not enough room in the ring towards xDPD to enqueue; the packet will be dropped.\n");
-			           
-			            uint32_t k;
-			            for (k = 0; k < pkts_to_send.n_mbufs; k ++)
-			            {
-			                struct rte_mbuf *pkt_to_free = pkts_to_send.array[k];
-			                rte_pktmbuf_free(pkt_to_free);
-			            }
-		    	    }
+			        	//  	ROFL_INFO("["MODULE_NAME"] Not enough room in the ring towards xDPD to enqueue; the packet will be dropped.\n");
+						do {
+							struct rte_mbuf *pkt_to_free = pkts_to_send.array[ret];
+							rte_pktmbuf_free(pkt_to_free);
+						} while (++ret < pkts_to_send.n_mbufs);
+					}
+			        
 		    		pkts_to_send.n_mbufs = 0;
 		    	}	
 			}
 			
 			/*3) Send the processed packet */
-			if(pkts_to_send.n_mbufs > 0)
+			if(likely(pkts_to_send.n_mbufs > 0))
 			{
-				int ret = rte_ring_sp_enqueue_bulk(pex_params.down_queue,(void *const*)pkts_to_send.array,(unsigned)pkts_to_send.n_mbufs);
+				int ret = rte_ring_sp_enqueue_burst(pex_params.down_queue,(void *const*)pkts_to_send.array,(unsigned)pkts_to_send.n_mbufs);
 			        
-		        if (unlikely(ret == -ENOBUFS))
+	        	if (unlikely(ret < pkts_to_send.n_mbufs)) 
 		        {
-		        	//FIXME: what is this? is it necessary?
-		      //  	ROFL_INFO("["MODULE_NAME"] Not enough room in the ring towards xDPD to enqueue; the packet will be dropped.\n");
-		           
-		            uint32_t k;
-		            for (k = 0; k < pkts_to_send.n_mbufs; k ++)
-		            {
-		                struct rte_mbuf *pkt_to_free = pkts_to_send.array[k];
-		                rte_pktmbuf_free(pkt_to_free);
-		            }
-	    	    }
+		        	//  	ROFL_INFO("["MODULE_NAME"] Not enough room in the ring towards xDPD to enqueue; the packet will be dropped.\n");
+					do {
+						struct rte_mbuf *pkt_to_free = pkts_to_send.array[ret];
+						rte_pktmbuf_free(pkt_to_free);
+					} while (++ret < pkts_to_send.n_mbufs);
+				}
 			
 			}
 

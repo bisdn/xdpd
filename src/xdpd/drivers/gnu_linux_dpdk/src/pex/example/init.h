@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /**
 * @file init.h
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
@@ -7,10 +11,6 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
 #include <signal.h>
 
 #include <rte_memcpy.h>
@@ -18,4 +18,4 @@
 
 #include "main.h"
 
-void pex_init(void);
+void init(void);

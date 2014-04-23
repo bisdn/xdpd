@@ -12,10 +12,11 @@
 #pragma once
 
 #include <signal.h>
+#include <getopt.h>
 
 #include <rte_memcpy.h>
 #include <rte_mbuf.h>
 
 #include "main.h"
 
-void init(void);
+int init(int argc, char *argv[]);

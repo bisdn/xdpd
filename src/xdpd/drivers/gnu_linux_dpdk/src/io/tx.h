@@ -145,7 +145,7 @@ tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 
 	ret = rte_ring_mp_enqueue(port_state->up_queue, (void *) mbuf);
-	if( (ret == 0) || (ret == -EDQUOT) )
+	if( likely((ret == 0) || (ret == -EDQUOT)) )
 	{
 		//The packet has been enqueued
 		

@@ -15,6 +15,8 @@
 #define LSI_CONNECTION_SSL_PRIVATE_KEY_FILE_PASSWORD "ssl-key-file-password"
 #define LSI_CONNECTION_SSL_CA_PATH "ssl-ca-path"
 #define LSI_CONNECTION_SSL_CA_FILE_FILE "ssl-ca-file"
+#define LSI_CONNECTION_SSL_VERIFY_MODE "ssl-verify-mode"
+#define LSI_CONNECTION_SSL_VERIFY_DEPTH "ssl-verify-depth"
 #define LSI_CONNECTION_SSL_CIPHER "ssl-cipher"
 
 //namespace
@@ -40,6 +42,8 @@ lsi_connection_scope::lsi_connection_scope(std::string name):scope(name, false){
 	register_parameter(LSI_CONNECTION_SSL_PRIVATE_KEY_FILE_PASSWORD);
 	register_parameter(LSI_CONNECTION_SSL_CA_PATH);
 	register_parameter(LSI_CONNECTION_SSL_CA_FILE_FILE);
+	register_parameter(LSI_CONNECTION_SSL_VERIFY_MODE);
+	register_parameter(LSI_CONNECTION_SSL_VERIFY_DEPTH);
 	register_parameter(LSI_CONNECTION_SSL_CIPHER);
 }
 
@@ -128,13 +132,16 @@ void lsi_connections_scope::parse_ssl_connection_params(libconfig::Setting& sett
 		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CA_PATH) = tmp;
 		mandatory_params_found++; 
 	}
-
-	//TODO: add cipher
-#if 0 
-	if (setting.lookupValue(LSI_CONNECTION_SSL_CIPHER, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CIPHER) = tmp;
+	if (setting.lookupValue(LSI_CONNECTION_SSL_VERIFY_MODE, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_VERIFY_MODE) = tmp;
 	}
-#endif
+	if (setting.lookupValue(LSI_CONNECTION_SSL_VERIFY_DEPTH, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_VERIFY_DEPTH) = tmp;
+	}
+	if (setting.lookupValue(LSI_CONNECTION_SSL_CIPHER, tmp)) {
+		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CIPHERS) = tmp;
+	}
+
 
 	//Issue warning
 	if(weak_ssl_config){

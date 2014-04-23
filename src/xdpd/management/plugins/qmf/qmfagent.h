@@ -101,6 +101,14 @@ public:
 		
 		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'x', QMF_XDPD_ID_OPT, "qmf xdpd ID", std::string("xdpd-0")));
 
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'a', QMF_SSL_CA_FILE_OPT, "QMF ssl-ca-file", std::string("./ca.pem")));
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'r', QMF_SSL_CERT_OPT, "QMF ssl-certificate (PEM encoded)", std::string("./cert.pem")));
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'k', QMF_SSL_PRIVATEKEY_OPT, "QMF ssl-private-key (PEM encoded)", std::string("./key.pem")));
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'w', QMF_SSL_PSWDFILE_OPT, "QMF ssl-password-file", std::string("./password.txt")));
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'm', QMF_SSL_VERIFY_MODE, "QMF ssl-verify-mode (PEER|NONE)", std::string("NONE")));
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'y', QMF_SSL_VERIFY_DEPTH, "QMF ssl-verify-depth", std::string("1")));
+		vec.push_back(coption(true, REQUIRED_ARGUMENT, 'i', QMF_SSL_CIPHERS, "QMF ssl-ciphers", std::string("EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA256 EECDH+aRSA+RC4 EDH+aRSA EECDH RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS")));
+
 		return vec;
 	};
 
@@ -126,6 +134,21 @@ private:
 
 	static const std::string QMF_BROKER_URL_OPT;
 	static const std::string QMF_XDPD_ID_OPT;
+	static const std::string QMF_SSL_CA_FILE_OPT;
+	static const std::string QMF_SSL_CERT_OPT;
+	static const std::string QMF_SSL_PRIVATEKEY_OPT;
+	static const std::string QMF_SSL_PSWDFILE_OPT;
+	static const std::string QMF_SSL_VERIFY_MODE;
+	static const std::string QMF_SSL_VERIFY_DEPTH;
+	static const std::string QMF_SSL_CIPHERS;
+
+	std::string s_cafile;
+	std::string s_certificate;
+	std::string s_private_key;
+	std::string s_pswdfile;
+	std::string s_verify_mode;
+	std::string s_verify_depth;
+	std::string s_ciphers;
 
 	/**
 	 *

@@ -101,6 +101,13 @@ void port_manager_update_stats(void);
  */
 rofl_result_t port_manager_create_pex_port(const char *port_name);
 
+/**
+ * @name port_manager_destroy_pex_port
+ * @brief Destroy a PEX port, and its rofl-pipeline state
+ * 
+ * @param port_name		Name of the port to be destroyed
+ */
+rofl_result_t port_manager_destroy_pex_port(const char *port_name);
 
 //C++ extern C
 ROFL_END_DECLS

@@ -15,6 +15,8 @@ using namespace rofl;
 
 void runPEX::init()
 {
+	uint64_t dpid;
+
 	ROFL_INFO("\n\n[xdpd]["PLUGIN_NAME"] **************************\n");	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] This plugin instantiates some PEX, whose description is embedded into the code.\n");
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] **************************\n\n");	
@@ -55,13 +57,7 @@ void runPEX::init()
 */	
 
 
-	if(plugin_manager::get_plugins().size() == 1)
-	{
-
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"] You have compiled xdpd with this plugin only. This xdpd execution is pretty useless, since no Logical Switch Instances will be created and there will be no way (RPC) to create them...\n\n");	
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"]You may now press Ctrl+C to finish xdpd execution.\n");
-	}
-	else
+	if(plugin_manager::get_plugins().size() != 1)
 	{
 		/*
 		*	If at least an LSI exists, the PEX ports are connected to the first LSI of the list.
@@ -70,7 +66,7 @@ void runPEX::init()
 		if(LSIs.size() != 0)
 		{
 			std::list<std::string>::iterator LSI = LSIs.begin();
-			uint64_t dpid = switch_manager::get_switch_dpid(*LSI);
+			dpid = switch_manager::get_switch_dpid(*LSI);
 			
 			try
 			{
@@ -100,12 +96,54 @@ void runPEX::init()
 			//Bring up
 			port_manager::bring_up(pexName2);
 	
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] All the PEX have been created, and connected to an LSI.\n\n");
+			ROFL_INFO("[xdpd]["PLUGIN_NAME"] All the PEX have been created, and connected to an LSI.\n\n");			
 		}
 	}
+
+	//Sleep some seconds, before destroying the PEX		
+	sleep(2);	
 		
-	//Destroy the PEX previously created
-	pex_manager::destroy_pex(pexName1);
-	pex_manager::destroy_pex(pexName2);
+	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Destroying all the PEX just created\n");	
+	
+	if(plugin_manager::get_plugins().size() != 1)
+	{
+		//Bring down the port
+		port_manager::bring_down(pexName1);
+		try
+		{
+			//Detatch
+			port_manager::detach_port_from_switch(dpid, pexName1);
+		}catch(...)
+		{	
+			ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", pexName2.c_str(),dpid);
+		}
+		
+		//Bring down the port
+		port_manager::bring_down(pexName2);
+		try
+		{
+			//Detatch
+			port_manager::detach_port_from_switch(dpid, pexName2);
+		}catch(...)
+		{	
+			ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", pexName2.c_str(),dpid);
+		}
+	}
+
+	try
+	{
+		pex_manager::destroy_pex(pexName1);
+	}catch(...){}
+	try
+	{
+		pex_manager::destroy_pex(pexName2);
+	}catch(...){}
+	
+	if(plugin_manager::get_plugins().size() == 1)
+	{	
+		ROFL_INFO("[xdpd]["PLUGIN_NAME"] You have compiled xdpd with this plugin only. This xdpd execution is pretty useless, since no Logical Switch Instances will be created and there will be no way (RPC) to create them...\n\n");	
+		ROFL_INFO("[xdpd]["PLUGIN_NAME"]You may now press Ctrl+C to finish xdpd execution.\n");
+	}
+
 }
 

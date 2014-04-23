@@ -376,6 +376,7 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 		*	Port connected to a PEX
 		*/
 		//Schedule the port in the I/O subsystem
+		//IVANO - FIXME: not sure if I need it
 		if(processing_schedule_pex_port(port) != ROFL_SUCCESS)
 		{
 			assert(0);
@@ -515,7 +516,12 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 		//Notify removal of both ports
 		hal_cmm_notify_port_delete(port_snapshot);
 		hal_cmm_notify_port_delete(port_pair_snapshot);
-	}else{
+	}
+	else if(port->type == PORT_TYPE_PEX)
+	{
+		//IVANO - TODO: what should I do here?
+	}
+	else{
 		/*
 		*  PHYSICAL
 		*/

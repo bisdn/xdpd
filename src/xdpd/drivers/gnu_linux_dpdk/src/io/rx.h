@@ -43,7 +43,7 @@ namespace gnu_linux_dpdk {
 * Processes RX in a specific port. The function will process up to MAX_BURST_SIZE 
 */
 inline void
-process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkts_burst, datapacket_t* pkt, datapacket_dpdk_t* pkt_state){
+process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t* pkt, datapacket_dpdk_t* pkt_state){
 	
 	unsigned int i, burst_len;
 	of_switch_t* sw = port->attached_sw;
@@ -53,11 +53,19 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 	if(unlikely(port->drop_received)) //Ignore if port is marked as "drop received"
 		return;
 		
-	if(port->type == PORT_TYPE_PEX)
-		return;	
-
 	//Read a burst
-	burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
+	if(port->type == PORT_TYPE_PEX)
+	{
+		//PEX port - pkts received through an rte_ring
+		pex_port_state *port_state = (pex_port_state_t*)port->platform_port_state;
+		burst_len = rte_ring_mc_dequeue_burst(port_state->down_queue, (void **)pkts_burst, IO_IFACE_MAX_PKT_BURST);
+	}
+	else
+	{
+		//Physical port - pkts received through an ethernet port
+		unsigned int port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
+		burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
+	}
 
 	//XXX: statistics
 

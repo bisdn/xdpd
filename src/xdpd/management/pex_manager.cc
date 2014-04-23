@@ -68,8 +68,32 @@ void pex_manager::create_pex(std::string& pex_name, uint32_t core_mask, uint32_t
 	pthread_mutex_unlock(&pex_manager::mutex);
 }
 
-//TODO: complete this method
 void pex_manager::destroy_pex(std::string& pex_name)
 {
+	// Serialize
+	pthread_mutex_lock(&pex_manager::mutex);
+	
+	// The PEX must exist
+	if(!pex_exists(pex_name))
+	{
+		pthread_mutex_unlock(&pex_manager::mutex);
+		ROFL_ERR("%s ERROR: Attempting to destroy a non-existent PEX %s\n", MODULE_NAME, pex_name.c_str());
+		throw ePexmInvalidPEX();
+	}
+	
+	if(hal_driver_pex_destroy_pex(pex_name.c_str()) != HAL_SUCCESS)
+	{
+		pthread_mutex_unlock(&pex_manager::mutex);
+		assert(0);
+		ROFL_ERR("%s ERROR: Driver was unable to destroy the PEX\n", MODULE_NAME, pex_name.c_str());
+		throw ePexmUnknownError(); 
+	}
+	
+	ROFL_INFO("%s PEX %s destroyed\n", MODULE_NAME, pex_name.c_str());
 
+	//TODO: notify the destruction to the plugins?
+
+	//Release mutex	
+	pthread_mutex_unlock(&pex_manager::mutex);
 }
+

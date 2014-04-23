@@ -30,11 +30,10 @@ hal_result_t hal_driver_pex_create_pex(const char *pex_name, uint32_t core_mask,
 	}
 	
 	//create secondary process
-	//add port to physical switch NO- done in port_manager_create_pex_port
 	
-	int ret = system("~/Desktop/prova.sh");
+	//int ret = system("~/Desktop/prova.sh");
 
-	std::cout << "----> " << ret << std::endl;	
+	//std::cout << "----> " << ret << std::endl;	
 
 	return HAL_SUCCESS;
 }
@@ -42,6 +41,14 @@ hal_result_t hal_driver_pex_create_pex(const char *pex_name, uint32_t core_mask,
 //TODO: complete this method
 hal_result_t hal_driver_pex_destroy_pex(const char *pex_name)
 {
+	//create the port and initialize the structure for the pipeline
+	if(port_manager_destroy_pex_port(pex_name) != ROFL_SUCCESS)
+	{
+		return HAL_FAILURE;
+	}
+	
+	// destroy secondary process
+
 	return HAL_SUCCESS;
 }
 

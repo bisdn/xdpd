@@ -436,6 +436,7 @@ rofl_result_t port_manager_destroy(void){
 	for(i=0;i<num_of_ports;++i){
 		rte_eth_dev_stop(i);
 		rte_eth_dev_close(i);
+		//IVANO - TODO: destroy also PEX ports
 	}	
 
 	return ROFL_SUCCESS;
@@ -526,16 +527,9 @@ void port_manager_update_stats(){
 *						Funtions specific for PEX ports						*
 *****************************************************************************/
 
-#define PPID	100 //TODO: this is shit.. define a real identifier 
-
-int pex_port_id = PPID;
-
 //Initializes the pipeline structure and launches the PEX port 
 static switch_port_t* configure_pex_port(const char *pex_port)
 {
-	//FIXME: tmp shit
-	pex_port_id++;
-
 	switch_port_t* port;
 	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
 	
@@ -552,25 +546,12 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 		switch_port_destroy(port);
 		return NULL;
 	}
-
-	//Add TX queues to the pipeline - now, PEX ports are implemented with a single queue
 		
 	//Create rofl-pipeline queue state
 	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-%s", "queue",pex_port);
 	if(switch_port_add_queue(port, 0, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
-		assert(0);
-		return NULL;
-	}
-	
-	//Add port_tx_lcore_queue
-	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%u-q%u", pex_port_id, 0);
-	port_tx_lcore_queue[pex_port_id][0] = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
-
-	if(unlikely( port_tx_lcore_queue[pex_port_id][0] == NULL ))
-	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
 		assert(0);
 		return NULL;
 	}
@@ -600,7 +581,7 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 	}
 
 	//semaphore	
-	ps->semaphore = sem_open(pex_port, O_CREAT, 0644, 0);
+	ps->semaphore = sem_open(pex_port, O_CREAT | O_EXCL, 0644, 0);
 	if(ps->semaphore == SEM_FAILED)
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create semaphore '%s' for queue in port: %s\n", pex_port, pex_port);
@@ -612,13 +593,9 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 	ps->counter_from_last_flush = 0;
 
 	ps->scheduled = false;
-	ps->port_id = pex_port_id;
 	port->platform_port_state = (platform_port_state_t*)ps;
 
-	ROFL_INFO(DRIVER_NAME"[port_manager] Created (PEX) port %s, id %u\n", pex_port, pex_port_id);
-
-	//Set the port in the port_mapping
-	port_mapping[pex_port_id] = port;
+	ROFL_INFO(DRIVER_NAME"[port_manager] Created (PEX) port '%s'\n", pex_port);
 
 	return port;
 }
@@ -646,4 +623,24 @@ rofl_result_t port_manager_create_pex_port(const char *pex_port)
 	return ROFL_SUCCESS;
 }
 
+rofl_result_t port_manager_destroy_pex_port(const char *port_name)
+{
+	switch_port_t *port = physical_switch_get_port_by_name(port_name);
+	
+	pex_port_state *port_state = (pex_port_state_t*)port->platform_port_state;
 
+	//According to http://dpdk.info/ml/archives/dev/2014-January/001120.html,
+	//rte_rings connot be destroyed
+	sem_close(port_state->semaphore);
+
+	if(physical_switch_remove_port(port_name) != ROFL_SUCCESS)
+	{
+		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot remve PEX port '%s' from the physical switch\n", port->name);
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	rte_free(port_state);
+		
+	return ROFL_SUCCESS;
+}

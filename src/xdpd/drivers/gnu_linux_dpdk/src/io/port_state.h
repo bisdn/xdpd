@@ -11,6 +11,11 @@
 
 #include "../config.h"
 
+//IVANO - FIXME: move into config.h
+//IVANO - FIXME: write meaningfull values
+#define PKT_TO_PEX_THRESHOLD 	200
+#define TIME_THRESHOLD 			2000
+
 struct dpdk_port_state{
 	//Core attachement state
 	bool scheduled;
@@ -61,11 +66,6 @@ struct pex_port_state
 	bool scheduled;
 	unsigned int core_id;
 	unsigned int core_port_slot;
-
-	/**
-	* @brief Port identifier
-	*/
-	unsigned int port_id;
 	
 }__rte_cache_aligned;
 

@@ -130,6 +130,51 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	return;
 }
 
+inline void
+tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
+{
+	assert(port->type == PORT_TYPE_PEX);
+
+	int ret;
+	uint32_t tmp, next_tmp;
+	uint64_t local_flush_time, cache_last_flush_time;
+	pex_port_state *port_state = (pex_port_state_t*)port->platform_port_state;
+	
+	ret = rte_ring_mp_enqueue(port_state->up_queue, (void *) pkt);
+	if( (ret == 0) || (ret == -EDQUOT) )
+	{
+		//The packet has been enqueued
+		
+		//XXX port_statistics[port].tx++;
+		
+		//Increment the variable containing the number of pkts inserted
+		//from the last sem_post
+		do{
+			tmp = port_state->counter_from_last_flush;
+			if(tmp == (PKT_TO_PEX_THRESHOLD - 1))
+				//Reset the counter
+				next_tmp = 0;
+			else
+				next_tmp = tmp + 1;
+		}while(__sync_bool_compare_and_swap(&(port_state->counter_from_last_flush),tmp,next_tmp) != false);
+		
+		if(tmp == (PKT_TO_PEX_THRESHOLD - 1))
+		{
+			//Notify that pkts are available
+			sem_post(port_state->semaphore);
+	
+			//Store the current time
+			local_flush_time = rte_rdtsc();
+
+			do{
+				cache_last_flush_time = port_state->last_flush_time; 
+				if(port_state->last_flush_time > local_flush_time)
+					break;
+			}while(__sync_bool_compare_and_swap(&(port_state->last_flush_time),cache_last_flush_time,local_flush_time) != false);
+		}
+	}
+}
+
 void tx_pkt_vlink(switch_port_t* vlink, datapacket_t* pkt);
 
 }// namespace xdpd::gnu_linux_dpdk 

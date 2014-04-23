@@ -7,6 +7,7 @@
 #include "../util/compiler_assert.h"
 #include "../io/rx.h"
 #include "../io/tx.h"
+#include "../io/timeout.h"
 
 #include "../io/port_state.h"
 #include "../io/port_manager.h"
@@ -132,7 +133,7 @@ rofl_result_t processing_destroy(void){
 
 int processing_core_process_packets(void* not_used){
 
-	unsigned int i, l, port_id, core_id;
+	unsigned int i, l, core_id;
 	int j;
 	bool own_port;
 	switch_port_t* port;
@@ -180,10 +181,7 @@ int processing_core_process_packets(void* not_used){
 				
 				//Check whether is our port (we have to also transmit TX queues)				
 				own_port = (port_queues->core_id == core_id);
-			
-				if(tasks->port_list[i]->type == PORT_TYPE_PEX)
-					int i = 25;
-			
+						
 				//Flush (enqueue them in the RX/TX port lcore)
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
 					flush_port_queue_tx_burst(port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
@@ -198,13 +196,20 @@ int processing_core_process_packets(void* not_used){
 		for(i=0;i<tasks->num_of_rx_ports;++i){
 			port = tasks->port_list[i];
 			if(likely(port != NULL) && likely(port->up)){ //This CAN happen while deschedulings
-
-				port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
-
 				//Process RX&pipeline 
-				process_port_rx(port, port_id, pkt_burst, &pkt, pkt_state);
+				process_port_rx(port, pkt_burst, &pkt, pkt_state);
 			}
 		}
+		
+		//IVANO - FIXME: not sure that this is the right place for the timeout
+		//Timeout for PEX ports
+		for(i=0;i<tasks->num_of_rx_ports;++i){
+			port = tasks->port_list[i];
+			if(likely(port != NULL) && likely(port->up)){ //This CAN happen while deschedulings
+				port_timeout(port);
+			}
+		}
+		
 	}
 	
 	tasks->active = false;
@@ -322,7 +327,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 {
 
-	unsigned int i, index, *num_of_ports;
+	unsigned int /*i,*/ index, *num_of_ports;
 	pex_port_state_t* port_state = (pex_port_state_t*)port->platform_port_state;	
 
 	rte_spinlock_lock(&mutex);
@@ -377,10 +382,11 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 	index = current_core_index;
 
 	//Mark port as present (and scheduled) on all cores (TX)
-	for(i=0;i<RTE_MAX_LCORE;++i){
+	//IVANO - FIXME: are necessary the following rows?
+/*	for(i=0;i<RTE_MAX_LCORE;++i){
 		processing_core_tasks[i].all_ports[port_state->port_id].present = true;
 		processing_core_tasks[i].all_ports[port_state->port_id].core_id = index;
-	}
+	}*/
 
 	//Increment total counter
 	total_num_of_ports++;

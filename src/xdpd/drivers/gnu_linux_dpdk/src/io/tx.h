@@ -139,8 +139,12 @@ tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
 	uint32_t tmp, next_tmp;
 	uint64_t local_flush_time, cache_last_flush_time;
 	pex_port_state *port_state = (pex_port_state_t*)port->platform_port_state;
+	struct rte_mbuf* mbuf;
 	
-	ret = rte_ring_mp_enqueue(port_state->up_queue, (void *) pkt);
+	//Get mbuf pointer
+	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
+
+	ret = rte_ring_mp_enqueue(port_state->up_queue, (void *) mbuf);
 	if( (ret == 0) || (ret == -EDQUOT) )
 	{
 		//The packet has been enqueued
@@ -172,6 +176,14 @@ tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
 					break;
 			}while(__sync_bool_compare_and_swap(&(port_state->last_flush_time),cache_last_flush_time,local_flush_time) != false);
 		}
+	}
+	else
+	{
+		//The queue is full, and the pkt must be dropped
+		
+		//XXX port_statistics[port].dropped++
+		
+		rte_pktmbuf_free(mbuf);
 	}
 }
 

@@ -13,17 +13,6 @@
 #include <rofl/common/utils/c_logger.h>
 #include "../../config.h"
 
-/* Bursts */
-
-#ifndef APP_MBUF_ARRAY_SIZE
-#define APP_MBUF_ARRAY_SIZE   256
-#endif
-
-#ifndef APP_DEFAULT_BURST_SIZE
-#define APP_DEFAULT_BURST_SIZE  144//144
-#endif
-
-
 #define NAME_LENGTH		20
 
 #define MODULE_NAME "PEX"

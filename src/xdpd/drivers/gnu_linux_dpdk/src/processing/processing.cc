@@ -7,7 +7,6 @@
 #include "../util/compiler_assert.h"
 #include "../io/rx.h"
 #include "../io/tx.h"
-#include "../io/timeout.h"
 
 #include "../io/port_state.h"
 #include "../io/port_manager.h"
@@ -23,8 +22,8 @@ static unsigned int current_core_index;
 static unsigned int max_cores;
 static rte_spinlock_t mutex;
 core_tasks_t processing_core_tasks[RTE_MAX_LCORE];
-unsigned int total_num_of_ports = 0;
-
+unsigned int total_num_of_phy_ports = 0;
+unsigned int total_num_of_pex_ports = 0;
 
 static void processing_dump_cores_state(void){
 
@@ -169,27 +168,41 @@ int processing_core_process_packets(void* not_used){
 
 		//Drain TX if necessary	
 		if(unlikely(diff_tsc > drain_tsc)){
-			for(i=0, l=0; l<total_num_of_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
+		
+			//Handle physical ports
+			for(i=0, l=0; l<total_num_of_phy_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
 				
-				if(!tasks->all_ports[i].present)
+				if(!tasks->phy_ports[i].present)
 					continue;
 					
 				l++;
 	
 				//make code readable
-				port_queues = &tasks->all_ports[i];
+				port_queues = &tasks->phy_ports[i];
 				
 				//Check whether is our port (we have to also transmit TX queues)				
 				own_port = (port_queues->core_id == core_id);
 						
 				//Flush (enqueue them in the RX/TX port lcore)
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
-					flush_port_queue_tx_burst(port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
+					flush_port_queue_tx_burst(phy_port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
 					
 					if(own_port)	
 						transmit_port_queue_tx_burst(i, j, pkt_burst);
 				}
 			}
+
+#ifdef GNU_LINUX_DPDK_ENABLE_PEX			
+			//handle PEX ports
+			for(i=0, l=0; l<total_num_of_pex_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
+				
+				if(!tasks->pex_ports[i].present)
+					continue;
+					
+				l++;
+				flush_pex_port(pex_port_mapping[i]);
+			}
+#endif
 		}
 		
 		//Process RX
@@ -200,16 +213,6 @@ int processing_core_process_packets(void* not_used){
 				process_port_rx(port, pkt_burst, &pkt, pkt_state);
 			}
 		}
-		
-		//IVANO - FIXME: not sure that this is the right place for the timeout
-		//Timeout for PEX ports
-		for(i=0;i<tasks->num_of_rx_ports;++i){
-			port = tasks->port_list[i];
-			if(likely(port != NULL) && likely(port->up)){ //This CAN happen while deschedulings
-				port_timeout(port);
-			}
-		}
-		
 	}
 	
 	tasks->active = false;
@@ -233,7 +236,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	rte_spinlock_lock(&mutex);
 
-	if(total_num_of_ports == PROCESSING_MAX_PORTS){
+	if(total_num_of_phy_ports == PROCESSING_MAX_PORTS){
 		ROFL_ERR(DRIVER_NAME"[processing] Reached already PROCESSING_MAX_PORTS(%u). All cores are full. No available port slots\n", PROCESSING_MAX_PORTS);
 		rte_spinlock_unlock(&mutex);
 		return ROFL_FAILURE;
@@ -290,12 +293,12 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	//Mark port as present (and scheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_core_tasks[i].all_ports[port_state->port_id].present = true;
-		processing_core_tasks[i].all_ports[port_state->port_id].core_id = index;
+		processing_core_tasks[i].phy_ports[port_state->port_id].present = true;
+		processing_core_tasks[i].phy_ports[port_state->port_id].core_id = index;
 	}
 
 	//Increment total counter
-	total_num_of_ports++;
+	total_num_of_phy_ports++;
 	
 	rte_spinlock_unlock(&mutex);
 
@@ -321,18 +324,16 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 /*
 * Schedule PEX port. Shedule PEX port to an available core (RR)
-* FIXME: this function is very similar to the one above.. But it works
-* on a different port state
 */
 rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 {
 
-	unsigned int /*i,*/ index, *num_of_ports;
+	unsigned int i, index, *num_of_ports;
 	pex_port_state_t* port_state = (pex_port_state_t*)port->platform_port_state;	
 
 	rte_spinlock_lock(&mutex);
 
-	if(total_num_of_ports == PROCESSING_MAX_PORTS)
+	if(total_num_of_pex_ports == PROCESSING_MAX_PORTS)
 	{
 		ROFL_ERR(DRIVER_NAME"[processing] Reached already PROCESSING_MAX_PORTS(%u). All cores are full. No available port slots\n", PROCESSING_MAX_PORTS);
 		rte_spinlock_unlock(&mutex);
@@ -376,20 +377,21 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 	port_state->core_id = current_core_index; 
 	port_state->core_port_slot = *num_of_ports;
 	
+	assert(port != NULL);
+	
 	processing_core_tasks[current_core_index].port_list[*num_of_ports] = port;
 	(*num_of_ports)++;
 	
 	index = current_core_index;
 
 	//Mark port as present (and scheduled) on all cores (TX)
-	//IVANO - FIXME: are necessary the following rows?
-/*	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_core_tasks[i].all_ports[port_state->port_id].present = true;
-		processing_core_tasks[i].all_ports[port_state->port_id].core_id = index;
-	}*/
+	for(i=0;i<RTE_MAX_LCORE;++i){
+		processing_core_tasks[i].pex_ports[port_state->pex_id].present = true;
+		processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = index;
+	}
 
 	//Increment total counter
-	total_num_of_ports++;
+	total_num_of_pex_ports++;
 	
 	rte_spinlock_unlock(&mutex);
 
@@ -458,12 +460,12 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	}
 	
 	//Decrement total counter
-	total_num_of_ports--;
+	total_num_of_phy_ports--;
 	
 	//Mark port as NOT present anymore (descheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_core_tasks[i].all_ports[port_state->port_id].present = false;
-		processing_core_tasks[i].all_ports[port_state->port_id].core_id = 0xFFFFFFFF;
+		processing_core_tasks[i].phy_ports[port_state->port_id].present = false;
+		processing_core_tasks[i].phy_ports[port_state->port_id].core_id = 0xFFFFFFFF;
 	}
 
 	rte_spinlock_unlock(&mutex);	
@@ -472,6 +474,70 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 
 	return ROFL_SUCCESS;
 }
+
+/*
+* Deschedule PEX port to a core 
+*/
+rofl_result_t processing_deschedule_pex_port(switch_port_t* port)
+{
+	unsigned int i;
+	pex_port_state_t* port_state = (pex_port_state_t*)port->platform_port_state;	
+	core_tasks_t* core_task = &processing_core_tasks[port_state->core_id];
+
+	assert(port->type == PORT_TYPE_PEX);
+
+	if(port_state->scheduled == false){
+		ROFL_ERR(DRIVER_NAME"[processing] Tyring to descheduled an unscheduled PEX port\n");
+		assert(0);
+		return ROFL_FAILURE;
+	}
+
+	rte_spinlock_lock(&mutex);
+
+	//This loop copies from descheduled port, all the rest of the ports
+	//one up, so that list of ports is contiguous (0...N-1)
+
+	assert(core_task->num_of_rx_ports != 0);
+
+	for(i=(core_task->num_of_rx_ports-1); i > port_state->core_port_slot; i--)
+		core_task->port_list[i-1] = core_task->port_list[i];	
+	
+	//Cleanup the last position
+	core_task->num_of_rx_ports--;
+	core_task->port_list[core_task->num_of_rx_ports] = NULL;
+
+	//There are no more ports, so simply stop core
+	if(core_task->num_of_rx_ports == 0){
+		if(rte_eal_get_lcore_state(port_state->core_id) != RUNNING){
+			ROFL_ERR(DRIVER_NAME"[processing] Corrupted state; port was marked as active, but EAL informs it was not running..\n");
+			assert(0);
+			
+		}
+		
+		ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down core %u, since port list is empty\n",i);
+		
+		core_task->active = false;
+		
+		//Wait for core to stop
+		rte_eal_wait_lcore(port_state->core_id);
+	}
+	
+	//Decrement total counter
+	total_num_of_pex_ports--;
+	
+	//Mark PEX port as NOT present anymore (descheduled) on all cores (TX)
+	for(i=0;i<RTE_MAX_LCORE;++i){
+		processing_core_tasks[i].pex_ports[port_state->pex_id].present = false;
+		processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = 0xFFFFFFFF;
+	}
+
+	rte_spinlock_unlock(&mutex);	
+	
+	port_state->scheduled = false;
+
+	return ROFL_SUCCESS;
+}
+
 
 /*
 * Dump core state

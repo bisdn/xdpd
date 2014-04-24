@@ -19,4 +19,7 @@
 
 #include "main.h"
 
+/**
+*	@brief Initialize the PEX
+*/
 int init(int argc, char *argv[]);

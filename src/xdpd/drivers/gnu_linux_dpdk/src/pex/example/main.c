@@ -5,14 +5,6 @@
 #include "main.h"
 #include "init.h"
 
-/**
-*	Command line:
-*
-*		sudo ./pex -c 0x1 -n 2 --proc-type=secondary -- -p pexName [PEX specific parameters]
-
-*
-*/
-
 int main(int argc, char *argv[])
 {
 	uint32_t lcore;
@@ -25,8 +17,8 @@ int main(int argc, char *argv[])
 	argc -= ret;
 	argv += ret;
 
-	init(argc, argv);
-
+	if(init(argc, argv) < 0)
+		return -1;
 
 	rte_eal_mp_remote_launch(do_pex, NULL, CALL_MASTER);
 	

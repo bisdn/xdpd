@@ -12,9 +12,8 @@
 #include "../config.h"
 
 //IVANO - FIXME: move into config.h
-//IVANO - FIXME: write meaningfull values
+//IVANO - FIXME: write a meaningfull value
 #define PKT_TO_PEX_THRESHOLD 	200
-#define TIME_THRESHOLD 			2000
 
 struct dpdk_port_state{
 	//Core attachement state
@@ -38,12 +37,12 @@ struct pex_port_state
 	/**
 	* @brief queue used to send packets to a PEX
 	*/
-	struct rte_ring *up_queue;
+	struct rte_ring *to_pex_queue;
 	
 	/**
 	* @brief queue used to receive packets from a PEX
 	*/
-	struct rte_ring *down_queue;
+	struct rte_ring *to_xdpd_queue;
 	
 	/**
 	* @brief POSIX named semaphore used to implement batching towards the PEX
@@ -66,6 +65,11 @@ struct pex_port_state
 	bool scheduled;
 	unsigned int core_id;
 	unsigned int core_port_slot;
+	
+	/**
+	* @brief Identifier of the PEX port
+	*/
+	unsigned int pex_id;
 	
 }__rte_cache_aligned;
 

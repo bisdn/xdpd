@@ -11,6 +11,7 @@ int parse_command_line(int argc, char *argv[]);
 void init_shared_resources(void);
 void sig_handler(int received_signal);
 
+
 // Functions
 
 void usage(void)
@@ -18,7 +19,8 @@ void usage(void)
 	char message[]=	\
 
 	"Usage:                                                                                   \n" \
-	"  sudo ./pex -c core_mask -n memory_channels --proc-type=secondary -- -p name [-h]       \n" \
+	"  sudo ./pex -c core_mask -n memory_channels --proc-type=secondary --                    \n" \
+	"             --l lcore_id --p name [--h]                                                 \n" \
 	"                                                                                         \n" \
 	"Parameters:                                                                              \n" \
 	"  -c core_mask                                                                           \n" \
@@ -28,17 +30,19 @@ void usage(void)
 	"        Number of channels used by the PEX to access to the memory.                      \n" \
 	"  --proc-type=secondary                                                                  \n" \
 	"        The PEX must be executed as a DPDK secondary process.                            \n" \
+	"  -l lcore_id                                                                            \n" \
+	"        Identifier needed to support multiple PEX on the same core. It must be unique.   \n" \
 	"  -p name                                                                                \n" \
-	"        Name of the PEX                                                                  \n" \
+	"        Name of the PEX. It must be unique.                                              \n" \
 	"                                                                                         \n" \
 	"Options:                                                                                 \n" \
 	"  -h                                                                                     \n" \
 	"        Print this help.                                                                 \n" \
 	"                                                                                         \n" \
 	"Example:                                                                                 \n" \
-	"  sudo ./pex -c 1 -n 2 --proc-type=secondary -- -p pex25                                 \n\n";
+	"  sudo ./pex -c 1 -n 2 --proc-type=secondary -- --l 1 --p pex25                          \n\n";
 
-//	ROFL_INFO("["MODULE_NAME"] %s\n",message);
+	fprintf(stderr,"\n\n[%s] %s\n",MODULE_NAME,message);
 }
 
 /**
@@ -56,10 +60,12 @@ int parse_command_line(int argc, char *argv[])
 	char *prgname = argv[0];
 	static struct option lgopts[] = {
 		{"p", 1, 0, 0},
+		{"l", 1, 0, 0},
+		{"h", 0, 0, 0},
 		{NULL, 0, 0, 0}
 	};
 
-	uint32_t arg_p = 0;
+	uint32_t arg_p = 0, arg_l = 0;
 
 	argvopt = argv;
 
@@ -75,30 +81,24 @@ int parse_command_line(int argc, char *argv[])
                 arg_p = 1;
                 strcpy(pex_params.pex_name,optarg);
    			}
-   			else if (!strcmp(lgopts[option_index].name, "h"))/* help */
-   			{
-   				usage();
-   				return -1;
-   			}
- /*            
-   			if (!strcmp(lgopts[option_index].name, "l"))*//* lcore_id */
-/*			{
-			    unsigned int temp_lcore_id;
-				char temp_lcore_id_string[20];
+   			else if (!strcmp(lgopts[option_index].name, "l"))/* lcore_id */
+			{
+			    unsigned int lcore_id;
+				char lcore_id_string[NAME_LENGTH];
                 arg_l = 1;
-				froglogger(FROG_DEBUG, MODULE_NAME, __FILE__, __LINE__,"--l\n");
-                strncpy(temp_lcore_id_string,optarg,strlen(optarg));
-                sscanf(temp_lcore_id_string,"%u",&temp_lcore_id);
-				froglogger(FROG_DEBUG, MODULE_NAME, __FILE__, __LINE__,"--l = %u\n",temp_lcore_id);
-                if(temp_lcore_id >= RTE_MAX_LCORE)
+                strncpy(lcore_id_string,optarg,strlen(optarg));
+                sscanf(lcore_id_string,"%u",&lcore_id);
+                if(lcore_id >= RTE_MAX_LCORE)
                 {
-                    froglogger(FROG_ERROR, MODULE_NAME, __FILE__, __LINE__,"Incorrect value for --l argument\n");
+                    fprintf(stderr,"[%s] Incorrect value for --l argument\n", MODULE_NAME);
 					return -1;
 				}
-				RTE_PER_LCORE(_lcore_id) = temp_lcore_id;
-				froglogger(FROG_DEBUG, MODULE_NAME, __FILE__, __LINE__,"_lcore_id = %u\n",RTE_PER_LCORE(_lcore_id));
+				RTE_PER_LCORE(_lcore_id) = lcore_id;
 			}
-*/
+			else if (!strcmp(lgopts[option_index].name, "h"))/* help */
+   			{
+   				return -1;
+   			}
 			break;
 
 		default:
@@ -107,9 +107,9 @@ int parse_command_line(int argc, char *argv[])
 	}
 
 	/* Check that all mandatory arguments are provided */
-	if (arg_p == 0)
+	if (arg_p == 0 || arg_l == 0)
 	{
-		//ROFL_ERR("["MODULE_NAME"] Not all mandatory arguments are present in the command line\n");
+		fprintf(stderr,"[%s] Not all mandatory arguments are present in the command line\n",MODULE_NAME);
 		return -1;
 	}
 
@@ -132,56 +132,54 @@ void init_shared_resources(void)
 	/*
 	*	Connect to the rte_rings
 	*/
-	snprintf(queue_name, NAME_LENGTH, "%s-up", pex_params.pex_name);
-	pex_params.up_queue = rte_ring_lookup(queue_name);
-	if (pex_params.up_queue == NULL)
+	snprintf(queue_name, NAME_LENGTH, "%s-to-pex", pex_params.pex_name);
+	pex_params.to_pex_queue = rte_ring_lookup(queue_name);
+	if (pex_params.to_pex_queue == NULL)
 	{
-		//ROFL_ERR("["MODULE_NAME"] Cannot get rte_ring '%s'\n", queue_name);
+		fprintf(stderr,"[%s] Cannot get rte_ring '%s'\n", MODULE_NAME,queue_name);
 	    exit(1);
 	}
 	
-	snprintf(queue_name, NAME_LENGTH, "%s-down", pex_params.pex_name);
-	pex_params.down_queue = rte_ring_lookup(queue_name);
-	if (pex_params.down_queue == NULL)
+	snprintf(queue_name, NAME_LENGTH, "%s-to-xdpd", pex_params.pex_name);
+	pex_params.to_xdpd_queue = rte_ring_lookup(queue_name);
+	if (pex_params.to_xdpd_queue == NULL)
 	{
-	//	ROFL_ERR("["MODULE_NAME"] Cannot get rte_ring '%s'\n", queue_name);
+		fprintf(stderr,"[%s] Cannot get rte_ring '%s'\n",MODULE_NAME, queue_name);
 	    exit(1);
 	}
 
 	/*
 	*	Connect to the POSIX named semaphore
 	*/
-	//TODO: is the flag correct?
 	pex_params.semaphore = sem_open(pex_params.pex_name, O_CREAT, 0644, 0);
 	if(pex_params.semaphore == SEM_FAILED)
 	{
-		//ROFL_ERR("["MODULE_NAME"] Cannot get the semaphore '%s'\n", pex_params.pex_name);
+		fprintf(stderr,"[%s] Cannot get the semaphore '%s'\n",MODULE_NAME, pex_params.pex_name);
 	    exit(1);
 	}
 
 }
 
-
-//TODO: complete this method
 void sig_handler(int received_signal)
 {
     if (received_signal == SIGINT)
     {
-           exit(0);
+    	sem_unlink(pex_params.pex_name);
+        exit(0);
     }
 }
 
 int init(int argc, char *argv[])
 {
-//	ROFL_INFO("["MODULE_NAME"] **************************\n");	
-//	ROFL_INFO("["MODULE_NAME"] This is the init function of the example PEX. This will just send to xDPD those packets received from xDPD.\n");
-//	ROFL_INFO("["MODULE_NAME"] **************************\n\n");
-
 	if(parse_command_line(argc, argv) < 0)
 	{
 		usage();
 		return -1;
 	}
+	
+	fprintf(stdout,"[%s] **************************\n",MODULE_NAME);	
+	fprintf(stdout,"[%s] This is the init function of the example PEX. This will just send to xDPD those packets received from xDPD.\n",MODULE_NAME);
+	fprintf(stdout,"[%s] **************************\n\n",MODULE_NAME);
 	
     init_shared_resources();
 

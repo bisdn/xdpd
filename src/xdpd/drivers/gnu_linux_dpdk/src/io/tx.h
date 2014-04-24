@@ -38,13 +38,13 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct
 	//Dequeue a burst from the TX ring	
 	len = rte_ring_mc_dequeue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);      
 
-	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n", port_mapping[port_id]->name,  port_id, queue_id, len);
+	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n",phy_port_mapping[port_id]->name,  port_id, queue_id, len);
 
 	//Send burst
 	ret = rte_eth_tx_burst(port_id, queue_id, burst, len);
 	//XXX port_statistics[port].tx += ret;
 	
-	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] +++ Transmited %u pkts, on queue_id %u\n", port_mapping[port_id]->name, port_id, ret, queue_id);
+	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] +++ Transmited %u pkts, on queue_id %u\n", phy_port_mapping[port_id]->name, port_id, ret, queue_id);
 
 	if (unlikely(ret < len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -103,7 +103,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
 	
 	//Recover burst container (cache)
-	pkt_burst = &tasks->all_ports[port_id].tx_queues_burst[queue_id];	
+	pkt_burst = &tasks->phy_ports[port_id].tx_queues_burst[queue_id];	
 	
 	if(unlikely(!pkt_burst)){
 		rte_pktmbuf_free(mbuf);
@@ -130,6 +130,10 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	return;
 }
 
+/****************************************************************************
+*						Funtions specific for PEX ports						*
+*****************************************************************************/
+
 inline void
 tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
 {
@@ -144,7 +148,7 @@ tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
 	//Get mbuf pointer
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 
-	ret = rte_ring_mp_enqueue(port_state->up_queue, (void *) mbuf);
+	ret = rte_ring_mp_enqueue(port_state->to_pex_queue, (void *) mbuf);
 	if( likely((ret == 0) || (ret == -EDQUOT)) )
 	{
 		//The packet has been enqueued
@@ -186,6 +190,37 @@ tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
 		rte_pktmbuf_free(mbuf);
 	}
 }
+
+void inline
+flush_pex_port(switch_port_t *port)
+{
+	//IVANO - FIXME: this function is probably wrong
+
+	uint64_t tmp_time;
+	uint32_t tmp_counter_from_last_flush;
+	
+	assert(port != NULL);
+
+	pex_port_state *port_state = (pex_port_state_t*)port->platform_port_state;
+
+	//If there are pkts into the rte_ring, check if the timeout is expired
+	tmp_time = port_state->last_flush_time;
+	tmp_counter_from_last_flush = port_state->counter_from_last_flush;
+	while( (tmp_counter_from_last_flush > 0) /* && ((rte_rdtsc() - tmp_time) > TIME_THRESHOLD) */)
+	{
+		if(__sync_bool_compare_and_swap(&(port_state->last_flush_time),tmp_time,rte_rdtsc()) == true)
+		{
+			sem_post(port_state->semaphore);
+			break;
+		}
+		tmp_time = port_state->last_flush_time;
+		tmp_counter_from_last_flush = port_state->counter_from_last_flush;
+	}
+}
+
+/****************************************************************************
+*						Funtions specific for vlinks						*
+*****************************************************************************/
 
 void tx_pkt_vlink(switch_port_t* vlink, datapacket_t* pkt);
 

@@ -250,9 +250,13 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	for(i=0;i<sw->max_ports;i++){
 
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
-			if(sw->logical_ports[i].port->type != PORT_TYPE_VIRTUAL)	
-				//Desechdule only non-virtual ports
+			if(sw->logical_ports[i].port->type == PORT_TYPE_PEX)
+				//Deschedule a PEX port
+				processing_deschedule_pex_port(sw->logical_ports[i].port);
+			else if(sw->logical_ports[i].port->type != PORT_TYPE_VIRTUAL)	
+				//Deschedule a physical port
 				processing_deschedule_port(sw->logical_ports[i].port);
+			//Do not deschedule virtual ports
 		}
 	}	
 
@@ -375,8 +379,6 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 		/*
 		*	Port connected to a PEX
 		*/
-		//Schedule the port in the I/O subsystem
-		//IVANO - FIXME: not sure if I need it
 		if(processing_schedule_pex_port(port) != ROFL_SUCCESS)
 		{
 			assert(0);
@@ -519,7 +521,8 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	}
 	else if(port->type == PORT_TYPE_PEX)
 	{
-		//IVANO - TODO: what should I do here?
+		//Deschedule port from processing (PEX port)
+		processing_deschedule_pex_port(port);
 	}
 	else{
 		/*

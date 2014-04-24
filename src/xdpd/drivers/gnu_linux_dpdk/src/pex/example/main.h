@@ -14,7 +14,6 @@
 
 #include <semaphore.h>
 #include <fcntl.h>
-#include <rofl/common/utils/c_logger.h>
 #include "../../config.h"
 
 #define NAME_LENGTH		20
@@ -34,8 +33,8 @@ struct pex_params_t
 	char pex_name[NAME_LENGTH];
 	
 	/* Rings */
-	struct rte_ring *up_queue;
-	struct rte_ring *down_queue;
+	struct rte_ring *to_pex_queue;
+	struct rte_ring *to_xdpd_queue;
 
 	/* Semaphore */
 	sem_t *semaphore;

@@ -47,7 +47,12 @@ typedef struct core_tasks{
 	switch_port_t* port_list[PROCESSING_MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
 	
 	//This are the TX-queues for ALL ports in the system; index is port_id
-	port_queues_t all_ports[PROCESSING_MAX_PORTS];
+	port_queues_t phy_ports[PROCESSING_MAX_PORTS];
+	
+#ifdef GNU_LINUX_DPDK_ENABLE_PEX
+	//Only for PEXs
+	port_queues_t pex_ports[PROCESSING_MAX_PORTS];
+#endif	
 }core_tasks_t;
 
 
@@ -58,9 +63,14 @@ extern core_tasks_t processing_core_tasks[RTE_MAX_LCORE];
 
 
 /**
-* Total number of ports (scheduled, so usable by the I/O)
+* Total number of physical ports (scheduled, so usable by the I/O)
 */
-extern unsigned int total_num_of_ports;
+extern unsigned int total_num_of_phy_ports;
+
+/**
+* Total number of PEX ports (scheduled, so usable by the I/O)
+*/
+extern unsigned int total_num_of_pex_ports;
 
 //C++ extern C
 ROFL_BEGIN_DECLS
@@ -90,6 +100,11 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port);
 * Deschedule port to a core 
 */
 rofl_result_t processing_deschedule_port(switch_port_t* port);
+
+/**
+* Deschedule PEX port to a core 
+*/
+rofl_result_t processing_deschedule_pex_port(switch_port_t* port);
 
 
 /**

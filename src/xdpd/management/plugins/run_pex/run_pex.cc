@@ -22,26 +22,28 @@ void runPEX::init()
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] **************************\n\n");	
 	
 	std::string pexName1 = "pex25";
-	std::string pexName2 = "pex11";
+//	std::string pexName2 = "pex11";
+	
+	std::string scriptPath = "/home/ivano/Desktop/pex";
 	
 	//Create two PEX
 	try
 	{
-		pex_manager::create_pex(pexName1,0x1,2);
+		pex_manager::create_pex(pexName1,scriptPath,0x1,2,1);
 	}catch(...)
 	{
 		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create %s\n",pexName1.c_str());
 		return;
 	}
 
-	try{
-		pex_manager::create_pex(pexName2,0x2,2);
+/*	try{
+		pex_manager::create_pex(pexName2,scriptPath,0x2,2,2);
 	}catch(...)
 	{
 		ROFL_ERR("[xdpd]["PLUGIN_NAME" Unable to create %s",pexName2.c_str());
 		return;
 	}
-
+*/
 /*	try{	
 		ROFL_INFO("[xdpd]["PLUGIN_NAME"]Existing PEX:\n");
 		std::list<std::string> available_pex = pex_manager::list_available_pex_names();	
@@ -82,7 +84,7 @@ void runPEX::init()
 			//Bring up
 			port_manager::bring_up(pexName1);
 	
-			try
+/*			try
 			{
 				//Attach
 				unsigned int port_number = 0;
@@ -97,11 +99,11 @@ void runPEX::init()
 			port_manager::bring_up(pexName2);
 	
 			ROFL_INFO("[xdpd]["PLUGIN_NAME"] All the PEX have been created, and connected to an LSI.\n\n");			
-		}
+*/		}
 	}
 
 	//Sleep some seconds, before destroying the PEX		
-	sleep(2);	
+	sleep(10);	
 		
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Destroying all the PEX just created\n");	
 	
@@ -115,11 +117,11 @@ void runPEX::init()
 			port_manager::detach_port_from_switch(dpid, pexName1);
 		}catch(...)
 		{	
-			ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", pexName2.c_str(),dpid);
+			ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", pexName1.c_str(),dpid);
 		}
 		
 		//Bring down the port
-		port_manager::bring_down(pexName2);
+/*		port_manager::bring_down(pexName2);
 		try
 		{
 			//Detatch
@@ -127,18 +129,18 @@ void runPEX::init()
 		}catch(...)
 		{	
 			ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", pexName2.c_str(),dpid);
-		}
+		}*/
 	}
 
 	try
 	{
 		pex_manager::destroy_pex(pexName1);
 	}catch(...){}
-	try
+/*	try
 	{
 		pex_manager::destroy_pex(pexName2);
 	}catch(...){}
-	
+	*/
 	if(plugin_manager::get_plugins().size() == 1)
 	{	
 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] You have compiled xdpd with this plugin only. This xdpd execution is pretty useless, since no Logical Switch Instances will be created and there will be no way (RPC) to create them...\n\n");	

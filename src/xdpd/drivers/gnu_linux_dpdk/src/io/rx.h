@@ -54,18 +54,19 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		return;
 		
 	//Read a burst
-	if(port->type == PORT_TYPE_PEX)
-	{
+#ifdef GNU_LINUX_DPDK_ENABLE_PEX	
+	if(port->type == PORT_TYPE_PEX) {
 		//PEX port - pkts received through an rte_ring
 		pex_port_state *port_state = (pex_port_state_t*)port->platform_port_state;
-		burst_len = rte_ring_mc_dequeue_burst(port_state->down_queue, (void **)pkts_burst, IO_IFACE_MAX_PKT_BURST);
-	}
-	else
-	{
+		burst_len = rte_ring_mc_dequeue_burst(port_state->to_xdpd_queue, (void **)pkts_burst, IO_IFACE_MAX_PKT_BURST);
+	}else{
+#endif
 		//Physical port - pkts received through an ethernet port
 		unsigned int port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 		burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
+#ifdef GNU_LINUX_DPDK_ENABLE_PEX	
 	}
+#endif
 
 	//XXX: statistics
 
@@ -92,13 +93,27 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
 		assert(mbuf->pkt.nb_segs == 1);
 
-		if(unlikely(!port_mapping[mbuf->pkt.in_port])){
+		//tmp_port is used to avoid to repeat code for both kinds of port
+		//(note that the port_mapping used is different
+		switch_port_t *tmp_port;
+#ifdef GNU_LINUX_DPDK_ENABLE_PEX	
+		if(port->type == PORT_TYPE_PEX)
+		{
+			tmp_port = pex_port_mapping[mbuf->pkt.in_port];
+		}else{
+#endif
+			tmp_port = phy_port_mapping[mbuf->pkt.in_port];
+#ifdef GNU_LINUX_DPDK_ENABLE_PEX
+		}
+#endif
+
+		if(unlikely(!tmp_port)){
 			//Not attached	
 			rte_pktmbuf_free(mbuf);
 			continue;
 		}
 		//Init&classify	
-		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
+		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, tmp_port->of_port_num, 0, true, false);
 	
 		//Prefetch next pkt
 		if( (i+1) < burst_len )

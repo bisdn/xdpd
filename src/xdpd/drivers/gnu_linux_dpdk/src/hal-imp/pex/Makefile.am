@@ -1,4 +1,4 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 noinst_LTLIBRARIES = libxdpd_driver_gnu_linux_dpdk_hal_imp_pex.la
-libxdpd_driver_gnu_linux_dpdk_hal_imp_pex_la_SOURCES = pex_driver.cc
+libxdpd_driver_gnu_linux_dpdk_hal_imp_pex_la_SOURCES = pex_driver.cc pex_t.h

@@ -28,9 +28,15 @@
 #define PORT_MANAGER_MAX_PORTS PROCESSING_MAX_PORTS 
 
 /**
+ *	Identifier of PEX ports
+ */
+ extern unsigned int pex_id;
+
+/**
  *  Port mappings (port_id -> struct switch_port)
  */
-extern switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS];
+extern switch_port_t* phy_port_mapping[PORT_MANAGER_MAX_PORTS];
+extern switch_port_t* pex_port_mapping[PORT_MANAGER_MAX_PORTS];
 
 /**
 * TX ring per port queue. TX is served only by the port lcore. The other lcores shall enqueue packets in this queue when they need to be flushed.

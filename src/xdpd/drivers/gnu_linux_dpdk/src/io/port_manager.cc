@@ -1,5 +1,6 @@
 #include "port_manager.h"
 #include <rofl/datapath/hal/cmm.h>
+#include <rofl/datapath/hal/pex/pex_driver.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -8,6 +9,7 @@
 #include "port_state.h"
 
 #include "../config.h"
+
 #include <assert.h> 
 #include <rte_common.h> 
 #include <rte_malloc.h> 
@@ -16,8 +18,10 @@
 #include <fcntl.h>  
 
 extern struct rte_mempool *pool_direct;
-switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
+switch_port_t* phy_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
+switch_port_t* pex_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES] = {{NULL}};
+unsigned int pex_id = 0;
 
 //Initializes the pipeline structure and launches the port 
 static switch_port_t* configure_port(unsigned int port_id){
@@ -102,8 +106,8 @@ static switch_port_t* configure_port(unsigned int port_id){
 
 
 
-	//Set the port in the port_mapping
-	port_mapping[port_id] = port;
+	//Set the port in the phy_port_mapping
+	phy_port_mapping[port_id] = port;
 
 	return port;
 }
@@ -158,8 +162,8 @@ rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id
 	}
 
 	//Set pipeline state to UP
-	if(likely(port_mapping[port_id]!=NULL)){
-		port_mapping[port_id]->up = true;
+	if(likely(phy_port_mapping[port_id]!=NULL)){
+		phy_port_mapping[port_id]->up = true;
 	}
 
 	//Set promiscuous mode
@@ -347,7 +351,22 @@ rofl_result_t port_manager_enable(switch_port_t* port){
 	}
 	else if(port->type == PORT_TYPE_PEX)
 	{
-		//IVANO - FIXME: nothing to do here?
+		/*
+		*  PEX
+		*/
+		
+		//Start the PEX
+		if(!port->up)
+		{
+			//Was down; run the corresponding PEX
+			port_id = ((pex_port_state_t*)port->platform_port_state)->pex_id;
+			if(hal_driver_pex_start_pex(port_id) != HAL_SUCCESS)
+			{
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start PEX\n");
+				assert(0);
+				return ROFL_FAILURE; 
+			}
+		}
 	}
 	else{
 		/*
@@ -399,7 +418,17 @@ rofl_result_t port_manager_disable(switch_port_t* port){
 		/*
 		* PEX port
 		*/
-		//IVANO FIXME: other to do?
+		
+		if(port->up)
+		{
+			port_id = ((pex_port_state_t*)port->platform_port_state)->pex_id;
+			if(hal_driver_pex_stop_pex(port_id) != HAL_SUCCESS)
+			{
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start PEX\n");
+				assert(0);
+				return ROFL_FAILURE; 
+			}
+		}		
 		port->up = false;
 	}
 	else
@@ -455,7 +484,7 @@ void port_manager_update_links(){
 	
 	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
 		
-		port = port_mapping[i];
+		port = phy_port_mapping[i];
 		
 		if(unlikely(port != NULL)){
 			rte_eth_link_get_nowait(i,&link);
@@ -493,7 +522,7 @@ void port_manager_update_stats(){
 	switch_port_t* port;
 	
 	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
-		port = port_mapping[i];
+		port = phy_port_mapping[i];
 		if(unlikely(port != NULL)){
 
 			//Retrieve stats
@@ -558,12 +587,10 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 
 	// Create the state of the PEX port
 	
-	//IVANO - FIXME: the flags of the rte_ring_create are correct?
-	
 	//queue xDPD -> PEX
-	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-up", pex_port);
-	ps->up_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
-	if(unlikely( ps->up_queue == NULL ))
+	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-to-pex", pex_port);
+	ps->to_pex_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
+	if(unlikely( ps->to_pex_queue == NULL ))
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name,pex_port);
 		assert(0);
@@ -571,9 +598,9 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 	}
 	
 	//queue PEX -> xDPD
-	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-down", pex_port);
-	ps->down_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
-	if(unlikely( ps->down_queue == NULL ))
+	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-to-xdpd", pex_port);
+	ps->to_xdpd_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SP_ENQ);
+	if(unlikely( ps->to_xdpd_queue == NULL ))
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name, pex_port);
 		assert(0);
@@ -591,10 +618,16 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 
 	ps->last_flush_time = 0;
 	ps->counter_from_last_flush = 0;
+	ps->pex_id = pex_id;
 
 	ps->scheduled = false;
 	port->platform_port_state = (platform_port_state_t*)ps;
-
+	
+	//Set the port in the pex_port_mapping
+	pex_port_mapping[pex_id] = port;
+	
+	pex_id++;
+	
 	ROFL_INFO(DRIVER_NAME"[port_manager] Created (PEX) port '%s'\n", pex_port);
 
 	return port;
@@ -631,6 +664,8 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 
 	//According to http://dpdk.info/ml/archives/dev/2014-January/001120.html,
 	//rte_rings connot be destroyed
+	
+	sem_unlink(port_name);
 	sem_close(port_state->semaphore);
 
 	if(physical_switch_remove_port(port_name) != ROFL_SUCCESS)

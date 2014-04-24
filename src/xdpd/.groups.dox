@@ -55,22 +55,22 @@
 //IO
 /**
 * @defgroup driver_gnu_linux_io GNU/Linux I/O subsystem
-* @ingroup drivers_gnu_linux
+* @ingroup driver_gnu_linux
 */
 
 //IO-ports
 /**
 * @defgroup driver_gnu_linux_io_ports GNU/Linux I/O ports
-* @ingroup drivers_gnu_linux_io
+* @ingroup driver_gnu_linux_io
 */
 //IO-schedulers
 /**
 * @defgroup driver_gnu_linux_io_schedulers GNU/Linux I/O schedulers
-* @ingroup drivers_gnu_linux_io
+* @ingroup driver_gnu_linux_io
 */
 
 //Processing
 /**
 * @defgroup driver_gnu_linux_processing GNU/Linux processing subsystem 
-* @ingroup drivers_gnu_linux
+* @ingroup driver_gnu_linux
 */

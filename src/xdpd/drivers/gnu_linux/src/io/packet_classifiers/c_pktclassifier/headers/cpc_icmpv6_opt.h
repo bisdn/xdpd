@@ -97,35 +97,7 @@ typedef union cpc_icmpv6optu{
 	struct cpc_icmpv6_redirected_hdr	optu_rdr;
 	struct cpc_icmpv6_mtu				optu_mtu;
 } cpc_icmpv6optu_t;
-/*
-inline static
-cpc_icmpv6optu_t *get_icmpv6_option(void *hdr){
 
-	//TODO ... return the option of the specified type
-	switch(((cpc_icmpv6_hdr_t*)hdr)->type){
-		case ICMPV6_TYPE_ROUTER_SOLICATION:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_router_solicitation_hdr*)hdr)->options;
-			break;
-		case ICMPV6_TYPE_ROUTER_ADVERTISEMENT:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_router_advertisement_hdr*)hdr)->options;
-			break;
-		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_neighbor_solicitation_hdr*)hdr)->options;
-			break;
-		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_neighbor_advertisement_hdr*)hdr)->options;
-			break;
-		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			return (cpc_icmpv6optu_t *)((struct cpc_icmpv6_redirect_hdr*)hdr)->options;
-			break;
-		default:
-			return NULL;
-			break;
-	}
-
-	return 0;
-};
-*/
 inline static
 uint8_t get_icmpv6_opt_type(void *hdr){
 	return ((cpc_icmpv6optu_t*)hdr)->optu.type;
@@ -138,56 +110,50 @@ void set_icmpv6_opt_type(void *hdr, uint8_t type){
 
 inline static
 uint64_t get_icmpv6_ll_taddr(void *hdr){
-	// we asume that the header exists
-	uint64_t ret =mac_addr_to_u64(((cpc_icmpv6_lla_option_t *)hdr)->addr);
-	CPC_SWAP_MAC(ret);
-	return ret;
+	uint64_t *ret = (uint64_t*) &((cpc_icmpv6_lla_option_t*)hdr)->addr;
+	return (*ret) & OF1X_6_BYTE_MASK;
 };
 
 inline static
 void set_icmpv6_ll_taddr(void *hdr, uint64_t taddr){
-	// we asume that the header exists
-	CPC_SWAP_MAC(taddr);
-	u64_to_mac_ptr((((cpc_icmpv6_lla_option_t *)hdr)->addr),taddr);
+	uint64_t *ptr = (uint64_t *) &((cpc_icmpv6_lla_option_t*)hdr)->addr;
+	*ptr = (taddr & OF1X_6_BYTE_MASK) | (*ptr & ~OF1X_6_BYTE_MASK);
 };
 
 inline static
 uint64_t get_icmpv6_ll_saddr(void *hdr){
-	// we asume that the header exists
-	uint64_t ret =mac_addr_to_u64(((cpc_icmpv6_lla_option_t *)hdr)->addr);
-	CPC_SWAP_MAC(ret);
-	return ret;
+	uint64_t *ret = (uint64_t*) &((cpc_icmpv6_lla_option_t*)hdr)->addr;
+	return (*ret) & OF1X_6_BYTE_MASK;
 };
 
 inline static
 void set_icmpv6_ll_saddr(void *hdr, uint64_t saddr){
-	// we asume that the header exists
-	CPC_SWAP_MAC(saddr);
-	u64_to_mac_ptr(((cpc_icmpv6_lla_option_t *)hdr)->addr,saddr);
+	uint64_t *ptr = (uint64_t *) &((cpc_icmpv6_lla_option_t*)hdr)->addr;
+	*ptr = (saddr & OF1X_6_BYTE_MASK) | (*ptr & ~OF1X_6_BYTE_MASK);
 };
 
 inline static
 uint8_t get_icmpv6_pfx_on_link_flag(void *hdr){
 	// we asume that the header exists
-	return ( (((cpc_icmpv6_prefix_info_t *)hdr)->flags & 0x80) >> 7 );
+	return (((cpc_icmpv6_prefix_info_t *)hdr)->flags & OF1X_BIT7_MASK);
 };
 
 inline static
 void set_icmpv6_pfx_on_link_flag(void *hdr, uint8_t flag){
 	// we asume that the header exists
-	((cpc_icmpv6_prefix_info_t *)hdr)->flags = (((cpc_icmpv6_prefix_info_t *)hdr)->flags & 0x7F) | ((flag & 0x01) << 7);
+	((cpc_icmpv6_prefix_info_t *)hdr)->flags = (((cpc_icmpv6_prefix_info_t *)hdr)->flags & ~OF1X_BIT7_MASK) | (flag & OF1X_BIT7_MASK);
 };
 
 inline static
 uint8_t get_icmpv6_pfx_aac_flag(void *hdr){
 	// we asume that the header exists
-	return ((((cpc_icmpv6_prefix_info_t *)hdr)->flags & 0x40) >> 6);
+	return (((cpc_icmpv6_prefix_info_t *)hdr)->flags & OF1X_BIT6_MASK);
 };
 
 inline static
 void set_icmpv6_pfx_aac_flag(void *hdr, uint8_t flag){
 	// we asume that the header exists
-	((cpc_icmpv6_prefix_info_t *)hdr)->flags = (((cpc_icmpv6_prefix_info_t *)hdr)->flags & 0xBF) | ((flag & 0x01) << 6);
+	((cpc_icmpv6_prefix_info_t *)hdr)->flags = (((cpc_icmpv6_prefix_info_t *)hdr)->flags & ~OF1X_BIT6_MASK) | (flag & OF1X_BIT6_MASK);
 };
 
 

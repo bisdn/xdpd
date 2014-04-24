@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <rofl/common/utils/c_logger.h>
+#include <rofl/datapath/pipeline/common/protocol_constants.h>
 #include "../packet_operations.h"
 #include "../../../config.h"
 
@@ -42,9 +43,9 @@ void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, ui
 	clas_state->is_classified = true;
 	
 	//Fill in the matches
-	clas_state->matches->pkt_size_bytes = len;
-	clas_state->matches->port_in = port_in;
-	clas_state->matches->phy_port_in = phy_port_in;
+	clas_state->matches->__pkt_size_bytes = len;
+	clas_state->matches->__port_in = port_in;
+	clas_state->matches->__phy_port_in = phy_port_in;
 }
 
 void reset_classifier(classify_state_t* clas_state){
@@ -83,9 +84,9 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 	clas_state->eth_type = get_ether_type(ether);
 
 	//Initialize eth packet matches
-	clas_state->matches->eth_type = get_ether_type(ether); //This MUST be here
-	clas_state->matches->eth_src = get_ether_dl_src(ether);
-	clas_state->matches->eth_dst = get_ether_dl_dst(ether);
+	clas_state->matches->__eth_type = get_ether_type(ether); //This MUST be here
+	clas_state->matches->__eth_src = get_ether_dl_src(ether);
+	clas_state->matches->__eth_dst = get_ether_dl_dst(ether);
 
 	switch (clas_state->eth_type) {
 		case VLAN_CTAG_ETHER:
@@ -95,29 +96,29 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 				parse_vlan(clas_state, data, datalen);
 			}
 			break;
-		case MPLS_ETHER:
-		case MPLS_ETHER_UPSTREAM:
+		case ETH_TYPE_MPLS_UNICAST:
+		case ETH_TYPE_MPLS_MULTICAST:
 			{
 				parse_mpls(clas_state, data, datalen);
 			}
 			break;
-		case PPPOE_ETHER_DISCOVERY:
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_DISCOVERY:
+		case ETH_TYPE_PPPOE_SESSION:
 			{
 				parse_pppoe(clas_state, data, datalen);
 			}
 			break;
-		case ARPV4_ETHER:
+		case ETH_TYPE_ARP:
 			{
 				parse_arpv4(clas_state, data, datalen);
 			}
 			break;
-		case IPV4_ETHER:
+		case ETH_TYPE_IPV4:
 			{
 				parse_ipv4(clas_state, data, datalen);
 			}
 			break;
-		case IPV6_ETHER:
+		case ETH_TYPE_IPV6:
 			{
 				parse_ipv6(clas_state, data,datalen);
 			}
@@ -160,24 +161,24 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 				parse_vlan(clas_state, data, datalen);
 			}
 			break;
-		case MPLS_ETHER:
-		case MPLS_ETHER_UPSTREAM:
+		case ETH_TYPE_MPLS_UNICAST:
+		case ETH_TYPE_MPLS_MULTICAST:
 			{
 				parse_mpls(clas_state, data, datalen);
 			}
 			break;
-		case PPPOE_ETHER_DISCOVERY:
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_DISCOVERY:
+		case ETH_TYPE_PPPOE_SESSION:
 			{
 				parse_pppoe(clas_state, data, datalen);
 			}
 			break;
-		case ARPV4_ETHER:
+		case ETH_TYPE_ARP:
 			{
 				parse_arpv4(clas_state, data, datalen);
 			}
 			break;
-		case IPV4_ETHER:
+		case ETH_TYPE_IPV4:
 			{
 				parse_ipv4(clas_state, data, datalen);
 			}
@@ -190,10 +191,10 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize vlan packet matches
-	clas_state->matches->has_vlan = true;
-	clas_state->matches->eth_type = get_vlan_type(vlan);
-	clas_state->matches->vlan_vid = get_vlan_id(vlan);
-	clas_state->matches->vlan_pcp = get_vlan_pcp(vlan);
+	clas_state->matches->__has_vlan = true;
+	clas_state->matches->__eth_type = get_vlan_type(vlan);
+	clas_state->matches->__vlan_vid = get_vlan_id(vlan);
+	clas_state->matches->__vlan_pcp = get_vlan_pcp(vlan);
 }
 
 void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -223,9 +224,9 @@ void parse_mpls(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize mpls packet matches
-	clas_state->matches->mpls_bos = get_mpls_bos(mpls);
-	clas_state->matches->mpls_label = get_mpls_label(mpls); 
-	clas_state->matches->mpls_tc = get_mpls_tc(mpls); 
+	clas_state->matches->__mpls_bos = get_mpls_bos(mpls);
+	clas_state->matches->__mpls_label = get_mpls_label(mpls); 
+	clas_state->matches->__mpls_tc = get_mpls_tc(mpls); 
 }
 void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
@@ -241,7 +242,7 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	clas_state->num_of_headers[HEADER_TYPE_PPPOE] = num_of_pppoe+1;
 	
 	switch (clas_state->eth_type) {
-		case PPPOE_ETHER_DISCOVERY:
+		case ETH_TYPE_PPPOE_DISCOVERY:
 			{
 				datalen -= sizeof(cpc_pppoe_hdr_t);
 #if 0
@@ -264,7 +265,7 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 #endif
 			}
 			break;
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_SESSION:
 			{
 				//Increment pointers and decrement remaining payload size
 				data += sizeof(cpc_pppoe_hdr_t);
@@ -281,9 +282,9 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize pppoe packet matches
-	clas_state->matches->pppoe_code = get_pppoe_code(pppoe);
-	clas_state->matches->pppoe_type = get_pppoe_type(pppoe);
-	clas_state->matches->pppoe_sid = get_pppoe_sessid(pppoe);
+	clas_state->matches->__pppoe_code = get_pppoe_code(pppoe);
+	clas_state->matches->__pppoe_type = get_pppoe_type(pppoe);
+	clas_state->matches->__pppoe_sid = get_pppoe_sessid(pppoe);
 }
 
 void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -318,7 +319,7 @@ void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize ppp packet matches
-	clas_state->matches->ppp_proto = get_ppp_prot(ppp);
+	clas_state->matches->__ppp_proto = get_ppp_prot(ppp);
 }
 
 void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -343,11 +344,11 @@ void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize arpv4 packet matches
-	clas_state->matches->arp_opcode = get_arpv4_opcode(arpv4);
-	clas_state->matches->arp_sha =  get_arpv4_dl_src(arpv4);
-	clas_state->matches->arp_spa =  get_arpv4_ip_src(arpv4);
-	clas_state->matches->arp_tha =  get_arpv4_dl_dst(arpv4);
-	clas_state->matches->arp_tpa =  get_arpv4_ip_dst(arpv4);
+	clas_state->matches->__arp_opcode = get_arpv4_opcode(arpv4);
+	clas_state->matches->__arp_sha =  get_arpv4_dl_src(arpv4);
+	clas_state->matches->__arp_spa =  get_arpv4_ip_src(arpv4);
+	clas_state->matches->__arp_tha =  get_arpv4_dl_dst(arpv4);
+	clas_state->matches->__arp_tpa =  get_arpv4_ip_dst(arpv4);
 }
 
 void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -412,11 +413,11 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize ipv4 packet matches
-	clas_state->matches->ip_proto = get_ipv4_proto(ipv4);
-	clas_state->matches->ip_dscp = get_ipv4_dscp(ipv4);
-	clas_state->matches->ip_ecn = get_ipv4_ecn(ipv4);
-	clas_state->matches->ipv4_src = get_ipv4_src(ipv4);
-	clas_state->matches->ipv4_dst = get_ipv4_dst(ipv4);
+	clas_state->matches->__ip_proto = get_ipv4_proto(ipv4);
+	clas_state->matches->__ip_dscp = get_ipv4_dscp(ipv4);
+	clas_state->matches->__ip_ecn = get_ipv4_ecn(ipv4);
+	clas_state->matches->__ipv4_src = get_ipv4_src(ipv4);
+	clas_state->matches->__ipv4_dst = get_ipv4_dst(ipv4);
 }
 
 void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -445,8 +446,8 @@ void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize ipv4 packet matches
-	clas_state->matches->icmpv4_code = get_icmpv4_code(icmpv4);
-	clas_state->matches->icmpv4_type = get_icmpv4_type(icmpv4);
+	clas_state->matches->__icmpv4_code = get_icmpv4_code(icmpv4);
+	clas_state->matches->__icmpv4_type = get_icmpv4_type(icmpv4);
 }
 
 void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -515,12 +516,12 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize ipv6 packet matches
-	clas_state->matches->ip_proto = get_ipv6_next_header(ipv6);
-	clas_state->matches->ip_dscp = get_ipv6_dscp(ipv6);
-	clas_state->matches->ip_ecn = get_ipv6_ecn(ipv6);
-	clas_state->matches->ipv6_src = get_ipv6_src(ipv6);
-	clas_state->matches->ipv6_dst = get_ipv6_dst(ipv6);
-	clas_state->matches->ipv6_flabel = get_ipv6_flow_label(ipv6);
+	clas_state->matches->__ip_proto = get_ipv6_next_header(ipv6);
+	clas_state->matches->__ip_dscp = get_ipv6_dscp(ipv6);
+	clas_state->matches->__ip_ecn = get_ipv6_ecn(ipv6);
+	clas_state->matches->__ipv6_src = get_ipv6_src(ipv6);
+	clas_state->matches->__ipv6_dst = get_ipv6_dst(ipv6);
+	clas_state->matches->__ipv6_flabel = get_ipv6_flow_label(ipv6);
 }
 
 void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -541,7 +542,7 @@ void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datal
 			data += sizeof(struct cpc_icmpv6_lla_option);		//update data pointer
 			datalen -= sizeof(struct cpc_icmpv6_lla_option);	//decrement data length
 			
-			clas_state->matches->ipv6_nd_sll = get_icmpv6_ll_saddr( (struct cpc_icmpv6_lla_option *)icmpv6_opt ); //init matches
+			clas_state->matches->__ipv6_nd_sll = get_icmpv6_ll_saddr( (struct cpc_icmpv6_lla_option *)icmpv6_opt ); //init matches
 
 			break;
 		case ICMPV6_OPT_LLADDR_TARGET:
@@ -552,7 +553,7 @@ void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datal
 			data += sizeof(struct cpc_icmpv6_lla_option);		 //update pointers
 			datalen -= sizeof(struct cpc_icmpv6_lla_option);	//decrement data length
 			
-			clas_state->matches->ipv6_nd_tll = get_icmpv6_ll_taddr( (struct cpc_icmpv6_lla_option *)icmpv6_opt ); //init matches
+			clas_state->matches->__ipv6_nd_tll = get_icmpv6_ll_taddr( (struct cpc_icmpv6_lla_option *)icmpv6_opt ); //init matches
 
 			break;
 		case ICMPV6_OPT_PREFIX_INFO:
@@ -589,12 +590,12 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	clas_state->num_of_headers[HEADER_TYPE_ICMPV6] = num_of_icmpv6+1;
 
 	//Initialize icmpv6 packet matches
-	clas_state->matches->icmpv6_code = get_icmpv6_code(icmpv6);
-	clas_state->matches->icmpv6_type = get_icmpv6_type(icmpv6);
-	clas_state->matches->ipv6_nd_target = get_icmpv6_neighbor_taddr(icmpv6);
+	clas_state->matches->__icmpv6_code = get_icmpv6_code(icmpv6);
+	clas_state->matches->__icmpv6_type = get_icmpv6_type(icmpv6);
+	clas_state->matches->__ipv6_nd_target = get_icmpv6_neighbor_taddr(icmpv6);
 	
 	//Increment pointers and decrement remaining payload size (depending on type)
-	switch(clas_state->matches->icmpv6_type){
+	switch(clas_state->matches->__icmpv6_type){
 		case ICMPV6_TYPE_ROUTER_SOLICATION:
 			data += sizeof(struct cpc_icmpv6_router_solicitation_hdr);
 			datalen -= sizeof(struct cpc_icmpv6_router_solicitation_hdr);
@@ -650,8 +651,8 @@ void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 	
 	//Initialize tcp packet matches
-	clas_state->matches->tcp_src = get_tcp_sport(tcp);
-	clas_state->matches->tcp_dst = get_tcp_dport(tcp);
+	clas_state->matches->__tcp_src = get_tcp_sport(tcp);
+	clas_state->matches->__tcp_dst = get_tcp_dport(tcp);
 }
 
 void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -675,7 +676,7 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	if (datalen > 0){
 		switch (get_udp_dport(udp)) {
-		case GTPU_UDP_PORT: {
+		case UDP_DST_PORT_GTPU: {
 			parse_gtp(clas_state, data, datalen);
 		} break;
 		default: {
@@ -685,8 +686,8 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize udp packet matches
-	clas_state->matches->udp_src = get_udp_sport(udp);
-	clas_state->matches->udp_dst = get_udp_dport(udp);
+	clas_state->matches->__udp_src = get_udp_sport(udp);
+	clas_state->matches->__udp_dst = get_udp_dport(udp);
 }
 
 void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -711,8 +712,8 @@ void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	//Initialize udp packet matches
-	clas_state->matches->gtp_msg_type = get_gtpu_msg_type(gtp);
-	clas_state->matches->gtp_teid = get_gtpu_teid(gtp);
+	clas_state->matches->__gtp_msg_type = get_gtpu_msg_type(gtp);
+	clas_state->matches->__gtp_teid = get_gtpu_teid(gtp);
 }
 
 
@@ -813,7 +814,7 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 	ether_header = get_ether_hdr(clas_state,0);
 
 	switch (get_ether_type(ether_header)) {
-		case PPPOE_ETHER_DISCOVERY:
+		case ETH_TYPE_PPPOE_DISCOVERY:
 		{
 			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_pppoe_hdr_t));
 			if (get_pppoe_hdr(clas_state, 0)) {
@@ -826,7 +827,7 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 		}
 			break;
 
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_SESSION:
 		{
 			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t),sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t));
 			if (get_pppoe_hdr(clas_state, 0)) {
@@ -1063,7 +1064,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 	cpc_ppp_hdr_t *n_ppp = NULL; 
 
 	switch (ether_type) {
-		case PPPOE_ETHER_SESSION:
+		case ETH_TYPE_PPPOE_SESSION:
 		{
 			unsigned int bytes_to_insert = sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t);
 
@@ -1080,7 +1081,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			 */
 			shift_ether(clas_state, 0, 0-bytes_to_insert); // shift left
 			ether_header-=sizeof(cpc_mpls_hdr_t); //We change also the local pointer
-			set_ether_type(ether_header, PPPOE_ETHER_SESSION);
+			set_ether_type(ether_header, ETH_TYPE_PPPOE_SESSION);
 
 			/*
 			 * append the new fpppoeframe instance to ether(0)
@@ -1108,7 +1109,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 		}
 			break;
 
-		case PPPOE_ETHER_DISCOVERY:
+		case ETH_TYPE_PPPOE_DISCOVERY:
 		{
 			unsigned int bytes_to_insert = sizeof(cpc_pppoe_hdr_t);
 
@@ -1125,7 +1126,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			 */
 			shift_ether(clas_state, 0, 0-bytes_to_insert);//shift left
 			ether_header-=sizeof(cpc_mpls_hdr_t); //We change also the local pointer
-			set_ether_type(get_ether_hdr(clas_state, 0), PPPOE_ETHER_DISCOVERY);
+			set_ether_type(get_ether_hdr(clas_state, 0), ETH_TYPE_PPPOE_DISCOVERY);
 
 			/*
 			 * append the new fpppoeframe instance to ether(0)

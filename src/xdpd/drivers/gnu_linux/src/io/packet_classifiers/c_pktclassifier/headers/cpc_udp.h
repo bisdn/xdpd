@@ -5,8 +5,6 @@
 #ifndef _CPC_UDP_H_
 #define _CPC_UDP_H_
 
-#include "../cpc_utils.h"
-
 /**
 * @file cpc_udp.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
@@ -41,12 +39,10 @@ void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 	* part -I- (IPv4 pseudo header)
 	*/
 	
-	ip_src = CPC_BE32TOH(ip_src);
 	word16 = (uint16_t*)(void*)&ip_src;
 	sum += *(word16+1);
 	sum += *(word16);
 
-	ip_dst = CPC_BE32TOH(ip_dst);
 	word16 = (uint16_t*)(void*)&ip_dst;
 	sum += *(word16+1);
 	sum += *(word16);
@@ -82,32 +78,32 @@ void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 
 inline static
 uint16_t get_udp_sport(void *hdr){
-	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->sport);
+	return ((cpc_udp_hdr_t*)hdr)->sport;
 }
 
 inline static
 void set_udp_sport(void *hdr, uint16_t port){
-	((cpc_udp_hdr_t*)hdr)->sport = CPC_HTOBE16(port);
+	((cpc_udp_hdr_t*)hdr)->sport = port;
 }
 
 inline static
 uint16_t get_udp_dport(void *hdr){
-	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->dport);
+	return ((cpc_udp_hdr_t*)hdr)->dport;
 }
 
 inline static
 void set_udp_dport(void *hdr, uint16_t port){
-	((cpc_udp_hdr_t*)hdr)->dport = CPC_HTOBE16(port);
+	((cpc_udp_hdr_t*)hdr)->dport = port;
 }
 
 inline static
 uint16_t get_udp_length(void *hdr){
-	return CPC_BE16TOH(((cpc_udp_hdr_t*)hdr)->length);
+	return ((cpc_udp_hdr_t*)hdr)->length;
 }
 
 inline static
 void set_udp_length(void *hdr, uint16_t length){
-	((cpc_udp_hdr_t*)hdr)->length = CPC_HTOBE16(length);
+	((cpc_udp_hdr_t*)hdr)->length = length;
 }
 
 

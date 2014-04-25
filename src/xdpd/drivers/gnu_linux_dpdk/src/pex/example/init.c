@@ -42,7 +42,7 @@ void usage(void)
 	"Example:                                                                                 \n" \
 	"  sudo ./pex -c 1 -n 2 --proc-type=secondary -- --l 1 --p pex25                          \n\n";
 
-	fprintf(stderr,"\n\n[%s] %s\n",MODULE_NAME,message);
+	fprintf(stderr,"\n\n[%s] %s\n",GENERAL_NAME,message);
 }
 
 /**
@@ -80,6 +80,7 @@ int parse_command_line(int argc, char *argv[])
 			{
                 arg_p = 1;
                 strcpy(pex_params.pex_name,optarg);
+                sprintf(module_name,"[%s][%s]",GENERAL_NAME,pex_params.pex_name);
    			}
    			else if (!strcmp(lgopts[option_index].name, "l"))/* lcore_id */
 			{
@@ -90,7 +91,7 @@ int parse_command_line(int argc, char *argv[])
                 sscanf(lcore_id_string,"%u",&lcore_id);
                 if(lcore_id >= RTE_MAX_LCORE)
                 {
-                    fprintf(stderr,"[%s] Incorrect value for --l argument\n", MODULE_NAME);
+                    fprintf(stderr,"[%s] Incorrect value for --l argument\n",GENERAL_NAME);
 					return -1;
 				}
 				RTE_PER_LCORE(_lcore_id) = lcore_id;
@@ -109,7 +110,7 @@ int parse_command_line(int argc, char *argv[])
 	/* Check that all mandatory arguments are provided */
 	if (arg_p == 0 || arg_l == 0)
 	{
-		fprintf(stderr,"[%s] Not all mandatory arguments are present in the command line\n",MODULE_NAME);
+		fprintf(stderr,"[%s] Not all mandatory arguments are present in the command line\n",GENERAL_NAME);
 		return -1;
 	}
 
@@ -136,7 +137,7 @@ void init_shared_resources(void)
 	pex_params.to_pex_queue = rte_ring_lookup(queue_name);
 	if (pex_params.to_pex_queue == NULL)
 	{
-		fprintf(stderr,"[%s] Cannot get rte_ring '%s'\n", MODULE_NAME,queue_name);
+		fprintf(stderr,"%s Cannot get rte_ring '%s'\n", module_name,queue_name);
 	    exit(1);
 	}
 	
@@ -144,7 +145,7 @@ void init_shared_resources(void)
 	pex_params.to_xdpd_queue = rte_ring_lookup(queue_name);
 	if (pex_params.to_xdpd_queue == NULL)
 	{
-		fprintf(stderr,"[%s] Cannot get rte_ring '%s'\n",MODULE_NAME, queue_name);
+		fprintf(stderr,"%s Cannot get rte_ring '%s'\n",module_name, queue_name);
 	    exit(1);
 	}
 
@@ -154,7 +155,7 @@ void init_shared_resources(void)
 	pex_params.semaphore = sem_open(pex_params.pex_name, O_CREAT, 0644, 0);
 	if(pex_params.semaphore == SEM_FAILED)
 	{
-		fprintf(stderr,"[%s] Cannot get the semaphore '%s'\n",MODULE_NAME, pex_params.pex_name);
+		fprintf(stderr,"%s Cannot get the semaphore '%s'\n",module_name, pex_params.pex_name);
 	    exit(1);
 	}
 
@@ -177,9 +178,9 @@ int init(int argc, char *argv[])
 		return -1;
 	}
 	
-	fprintf(stdout,"[%s] **************************\n",MODULE_NAME);	
-	fprintf(stdout,"[%s] This is the init function of the example PEX. This will just send to xDPD those packets received from xDPD.\n",MODULE_NAME);
-	fprintf(stdout,"[%s] **************************\n\n",MODULE_NAME);
+	fprintf(stdout,"%s **************************\n",module_name);	
+	fprintf(stdout,"%s This is the init function of the example PEX. This will just send to xDPD those packets received from xDPD.\n",module_name);
+	fprintf(stdout,"%s **************************\n\n",module_name);
 	
     init_shared_resources();
 

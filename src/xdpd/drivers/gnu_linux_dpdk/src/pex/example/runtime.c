@@ -22,8 +22,8 @@ int do_pex(void *useless)
 	if(useless != NULL)
 		return -1;
 	
-	fprintf(stdout,"[%s] %s is started!\n", MODULE_NAME, pex_params.pex_name);
-	
+	fprintf(stdout,"%s is started!\n", module_name);
+	fflush(stdout);
 
 	while(1)
 	{
@@ -36,14 +36,17 @@ int do_pex(void *useless)
 		
         pkts_received.n_mbufs = rte_ring_sc_dequeue_burst(pex_params.to_pex_queue,(void **)&pkts_received.array[0],PKT_TO_PEX_THRESHOLD);
 
-		if(likely(pkts_received.n_mbufs))
+		if(likely(pkts_received.n_mbufs > 0))
 		{
+			fprintf(stdout,"%s Received %d pkts from xDPD!\n", module_name, pkts_received.n_mbufs);
+		
+			pkts_to_send.n_mbufs = 0;
 			int i;
 			for (i=0;i < pkts_received.n_mbufs;i++)
 			{
-				pkts_to_send.n_mbufs = 0;
-
 				/*2) Operate on the packet */
+			
+				//TODO: write here the logic of the NF
 			
 				pkts_to_send.array[pkts_to_send.n_mbufs] = pkts_received.array[i];
 		    	pkts_to_send.n_mbufs++;
@@ -56,11 +59,13 @@ int do_pex(void *useless)
 			    {
 			    	/*3) Send the processed packet */
 			    
+			    	fprintf(stderr,"%s Threshold reached! Send %d packets to xDPD.\n",module_name,PKT_TO_PEX_THRESHOLD);
+			    
 			        int ret = rte_ring_sp_enqueue_burst(pex_params.to_xdpd_queue,(void *const*)pkts_to_send.array,(unsigned)pkts_to_send.n_mbufs);
 			        
 			        if (unlikely(ret < pkts_to_send.n_mbufs)) 
 			        {
-			        	fprintf(stderr,"[%s] Not enough room in the ring towards xDPD to enqueue; the packet will be dropped.\n", MODULE_NAME);
+			        	fprintf(stderr,"%s Not enough room in the ring towards xDPD to enqueue; the packet will be dropped.\n", module_name);
 						do {
 							struct rte_mbuf *pkt_to_free = pkts_to_send.array[ret];
 							rte_pktmbuf_free(pkt_to_free);
@@ -73,12 +78,12 @@ int do_pex(void *useless)
 			
 			/*3) Send the processed packet */
 			if(likely(pkts_to_send.n_mbufs > 0))
-			{
+			{			
 				int ret = rte_ring_sp_enqueue_burst(pex_params.to_xdpd_queue,(void *const*)pkts_to_send.array,(unsigned)pkts_to_send.n_mbufs);
 			        
 	        	if (unlikely(ret < pkts_to_send.n_mbufs)) 
 		        {
-		        	fprintf(stderr,"[%s] Not enough room in the ring towards xDPD to enqueue; the packet will be dropped.\n", MODULE_NAME);
+		        	fprintf(stderr,"%s Not enough room in the ring towards xDPD to enqueue; the packet will be dropped.\n", module_name);
 					do {
 						struct rte_mbuf *pkt_to_free = pkts_to_send.array[ret];
 						rte_pktmbuf_free(pkt_to_free);
@@ -90,7 +95,7 @@ int do_pex(void *useless)
 		}/* End of if(pkts_received.n_mbufs) */
 		else
 		{
-			fprintf(stderr,"[%s] The PEX has been woken up without packets to be processed!\n",MODULE_NAME);
+			fprintf(stderr,"%s The PEX has been woken up without packets to be processed!\n",module_name);
 			assert(0);
 		}
 

@@ -16,11 +16,13 @@
 #include <fcntl.h>
 #include "../../config.h"
 
-#define NAME_LENGTH		20
+#define NAME_LENGTH		40
 
-#define MODULE_NAME "PEX_EXAMPLE"
+#define GENERAL_NAME "PEX_EXAMPLE"
 
 #define PKT_TO_PEX_THRESHOLD 200
+
+char module_name[NAME_LENGTH];
 
 typedef struct mbuf_array
 {

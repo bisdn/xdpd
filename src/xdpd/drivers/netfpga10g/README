@@ -1,6 +1,8 @@
 The NetFPGA-10G driver 
+======================
 
-## Brief:
+Brief
+-----
 
 The content of this folder is the implementation of the NetFPGA-10G Openflow switch (HAL-compliant) driver. The driver is currently based on the HW implementation that can be found under the Beta NetFPGA 10G repository under the folder:
 	
@@ -24,7 +26,8 @@ https://github.com/eastzone/openflow/tree/netfpga-10g
 As well as the HW FPGA code itself.
 
 
-## Comments:
+Comments
+--------
 	
 !!!!!STRONG WARNING!!!!! This driver is experimental 
 	
@@ -32,16 +35,19 @@ This driver uses ROFL-pipeline to maintain the cache of the HW entries (exact an
 
 We expect to see more contributions and improvements on both SW and HW implementations of the openflow_switch implementation, as the NetFPGA 10G community grows. Please do not hesitate to contact us if you wish to contribute.
 
-## Folder structure and some files:
+Folder structure and some files
+-------------------------------
 
-	- bg_taskmanager.c: subsystem for background tasks as well as PKT_IN/PKT_OUT DMA transfers from/to the NetFPFGA 
-	- hal-imp: Hardware Abstraction Layer API routines 
-	- io: I/O code (PKT_IN and PKT_OUT) 
-	- netfpga: NetFPGA flow entry mapping, and register manipulation (stats, behaviour..) via ioctl. 
-	- pipeline-imp: Implementation of the required APIs  
-	- util: Some util code. 
+- bg_taskmanager.c: subsystem for background tasks as well as PKT_IN/PKT_OUT DMA transfers from/to the NetFPFGA  
+- hal-imp: Hardware Abstraction Layer API routines  
+- io: I/O code (PKT_IN and PKT_OUT)  
+- netfpga: NetFPGA flow entry mapping, and register manipulation (stats, behaviour..) via ioctl. 
+- pipeline-imp: Implementation of the required APIs  
+- util: Some util code.  
 
-## Authorship:
-	Marc Sune<marc.sune (at) bisdn.de>
-	Tytus Sielach<tytus.sielach@gmail.com>
+Authorship
+----------
+
+Marc Sune <marc.sune (at) bisdn.de>  
+Tytus Sielach <tytus.sielach (at) gmail.com>  
 

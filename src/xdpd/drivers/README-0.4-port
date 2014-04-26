@@ -1,0 +1,88 @@
+How to port your driver from 0.3 to 0.4
+=======================================
+
+Please take always GNU/Linux driver as a reference for any port to 0.4.
+
+The old 'fwd_module's are called 'driver's now.
+
+1) Moving folders
+------------------
+
+Move the driver to the appropriate folder
+
+    git mv src/xdpd/fwd_modules/your_driver src/xdpd/drivers
+
+2) Adapting to the new HAL API (I) 
+-----------------------------------
+
+Rename afa-imp to hal-imp, and  
+
+    cd src/xdpd/drivers/your_driver  
+    git mv afa-imp/ hal-imp  
+    cd hal-imp  
+    git mv fwd_module.cc driver.cc  
+    cd openflow/openflow1x 
+    git mv of1x_fwd_module.cc of1x_driver.cc
+
+Adapt Makefile.am's accordingly
+
+3) Adapting to the new HAL API (II) 
+------------------------------------
+
+Edit driver.cc and substitute fwd_module_XXX calls for hal_driver_XXX. Substitute afa_result_t for hal_result_t and AFA_SUCCESS/AFA_FAILURE for HAL_SUCCESS/HAL_FAILURE
+
+    vim commands:
+      %s/fwd_module_/hal_driver_/c
+      %s/fwd_module/hal_driver/c
+      %s/afa_result_t/hal_result_t/g
+      %s/AFA_/HAL_/c
+
+Apply the same substitutions in hal/openflow/openflow1x/of1x_driver.cc 
+
+4) Adapting to the new HAL API (III); CMM notifications
+-------------------------------------------------------
+
+The calls to the cmm_XXX are now called hal_cmm_XXX; grep your code and apply the following substitutions:
+
+    vim commands:
+      %s/cmm_/hal_cmm/c
+      %s/AFA_/HAL_/c
+
+WARNING: the semantics of hal_cmm_notify_port_add(), hal_cmm_notify_port_delete() have changed. Now these notifications shall ONLY be called when a new port is discovered or a port has been removed from the platform. Port attachments/detachments shall never produce a port_add()/port_delete() notification, unless the port is created or destroyed during attachment/detachment.
+
+5) Adapting to the new HAL API (IV); Snapshots
+------------------------------------------------
+
+All the calls to the HAL do not expose anymore pointers to ROFL-pipeline data structures to the CMM, but either handles to them (e.g. dpid for a LSI) or snapshots (copies) of the data structures (e.g. port_snapshot). Use the snapshot facility of rofl-pipeline to obtain a snapshot of the data structure. Refer to the GNU/Linux reference implementation.
+
+WARNING: port_snapshot_t and switch_port_t are typedefs of the same structure, so the code will silently compiled. However if a pointer to internal state of the pipeline is passed to the CMM (e.g. hal_cmm_notify_port_add()), the CMM will destroy (release) this portion of memory and will lead inevitably to crash. Be advised.
+
+6) Adapting to the new HAL API (IV); Adding new calls
+-----------------------------------------------------
+
+Add the missing driver calls. Revise rofl/datapath/hal/driver.h and rofl/datapath/hal/openflow/openflow1x/of1x_driver.h. There are other calls that have been deleted. Please refer to ROFL-hal and GNU/Linux driver for more details.
+
+7) ROFL-pipeline Network Byte Order (NBO)
+-----------------------------------------
+
+ ROFL-pipeline maintains the values of matches, actions and packet matches in a specially aligned Network Byte Order(NBO). Please refer to ROFL-pipeline doxygen documentation, section endianness, for more details.
+
+Practically speaking this means that the packet classifier(s) must be adapted. If c_pktclassifier (GNU/Linux packet classifier) is used, no further action is required.
+
+If the driver needs to read the values of the matches and actions of a flowmod (of1x_flow_entry_t), then the following getters should be used in order to retrieve the values in Host Byte Order and don't have to deal with the internal alignment:
+
+Matches; get the match and mask value for a 16 bit match (e.g. ETH_TYPE):
+
+    of1x_get_match_value16(match)
+    of1x_get_match_mask16(match)
+
+Actions; get the set field value for a 128 bit action (e.g. IPV6_SRC):
+
+    of1x_get_packet_action_field128(action)
+	
+
+Related projects
+----------
+
+ROFL-pipeline  
+ROFL-HAL

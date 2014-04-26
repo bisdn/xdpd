@@ -1,0 +1,23 @@
+Platform drivers
+=================
+
+Introduction
+------------
+
+Platform drivers encapsulate the device(platform) specific code. xDPd drivers may control hardware fast path devices (e.g. ASICs), control other software components that do the packet processing, or implement software fast path elements which process packets (e.g. user-space GNU/Linux or GNU/Linux DPDK).
+
+How to port your platform
+-------------------------
+
+TODO
+
+How to port your driver from 0.3 to 0.4
+---------------------------------------
+
+Refer to README_0.4-port
+
+Related projects
+----------
+
+ROFL-pipeline  
+ROFL-HAL

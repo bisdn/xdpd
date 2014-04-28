@@ -19,7 +19,7 @@ typedef struct cpc_vlan_hdr {
 	// tag control identifier (TCI)
 	uint8_t byte0;		// vid (12b) + cfi (1b) + pcp (3b)
 	uint8_t byte1;
-	uint16_t dl_type;  		// ethernet type
+	uint16_t dl_type;  	// ethernet type
 } __attribute__((packed)) cpc_vlan_hdr_t;
 
 inline static

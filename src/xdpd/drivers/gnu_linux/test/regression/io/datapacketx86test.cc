@@ -27,7 +27,7 @@
 #include <rofl/common/protocols/fipv4frame.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "io/datapacketx86.h"
-#include "io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"
+//#include "io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"
 
 using namespace rofl;
 using namespace std;
@@ -299,7 +299,7 @@ void DataPacketX86Test::testPopPPPoE()
 	mac = HTONB64(OF1X_MAC_ALIGN(cmacaddr("00:22:22:22:22:22").get_mac()));
 	set_ether_dl_src(get_ether_hdr(pack->headers,0),mac);
 
-	push_vlan(&pkt, pack->headers, VLAN_CTAG_ETHER);
+	push_vlan(&pkt, pack->headers, VLAN_CTAG_ETHER_TYPE);
 	//set_vlan_cfi(get_vlan_hdr(pack->headers,0),true);
 	set_vlan_id(get_vlan_hdr(pack->headers,0),htobe16(0x777));
 	set_vlan_pcp(get_vlan_hdr(pack->headers,0),0x3);

@@ -710,45 +710,45 @@ static inline
 void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	if (unlikely(datalen < sizeof(cpc_icmpv6_option_hdr_t))) { return; }
 	/*So far we only parse optionsICMPV6_OPT_LLADDR_TARGET, ICMPV6_OPT_LLADDR_SOURCE and ICMPV6_OPT_PREFIX_INFO*/
-	cpc_icmpv6_option_hdr_t* icmpv6_opt = (cpc_icmpv6_option_hdr_t*)data;
+	cpc_icmpv6_option_hdr_t* icmpv6_options = (cpc_icmpv6_option_hdr_t*)data;
 	
 	//Set frame
 	unsigned int num_of_icmpv6_opt = clas_state->num_of_headers[HEADER_TYPE_ICMPV6_OPT];
 	
 	//we asume here that there is only one option for each type
-	switch(icmpv6_opt->type){
+	switch(icmpv6_options->type){
 		case ICMPV6_OPT_LLADDR_SOURCE:
-			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_SOURCE].frame = icmpv6_opt;
+			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_SOURCE].frame = icmpv6_options;
 			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_SOURCE].present = true;
 			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_SOURCE].length = datalen;
 			
 			data += sizeof(struct cpc_icmpv6_lla_option);		//update data pointer
 			datalen -= sizeof(struct cpc_icmpv6_lla_option);	//decrement data length
 			
-			clas_state->matches->__ipv6_nd_sll = get_icmpv6_ll_saddr( (struct cpc_icmpv6_lla_option *)icmpv6_opt ); //init matches
+			clas_state->matches->__ipv6_nd_sll = get_icmpv6_ll_saddr( (struct cpc_icmpv6_lla_option *)icmpv6_options ); //init matches
 
 			break;
 		case ICMPV6_OPT_LLADDR_TARGET:
-			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_TARGET].frame = icmpv6_opt;
+			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_TARGET].frame = icmpv6_options;
 			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_TARGET].present = true;
 			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_LLADDR_TARGET].length = datalen;
 			
 			data += sizeof(struct cpc_icmpv6_lla_option);		 //update pointers
 			datalen -= sizeof(struct cpc_icmpv6_lla_option);	//decrement data length
 			
-			clas_state->matches->__ipv6_nd_tll = get_icmpv6_ll_taddr( (struct cpc_icmpv6_lla_option *)icmpv6_opt ); //init matches
+			clas_state->matches->__ipv6_nd_tll = get_icmpv6_ll_taddr( (struct cpc_icmpv6_lla_option *)icmpv6_options ); //init matches
 
 			break;
 		case ICMPV6_OPT_PREFIX_INFO:
-			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_PREFIX_INFO].frame = icmpv6_opt;
+			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_PREFIX_INFO].frame = icmpv6_options;
 			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_PREFIX_INFO].present = true;
 			clas_state->headers[FIRST_ICMPV6_OPT_FRAME_POS + OFFSET_ICMPV6_OPT_PREFIX_INFO].length = datalen;
 
 			data += sizeof(struct cpc_icmpv6_prefix_info);		 //update pointers
 			datalen -= sizeof(struct cpc_icmpv6_prefix_info);	//decrement data length
 
-			get_icmpv6_pfx_on_link_flag( (struct cpc_icmpv6_prefix_info *)icmpv6_opt ); //init matches
-			get_icmpv6_pfx_aac_flag( (struct cpc_icmpv6_prefix_info *)icmpv6_opt );
+			get_icmpv6_pfx_on_link_flag( (struct cpc_icmpv6_prefix_info *)icmpv6_options ); //init matches
+			get_icmpv6_pfx_aac_flag( (struct cpc_icmpv6_prefix_info *)icmpv6_options );
 
 			break;
 	}

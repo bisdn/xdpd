@@ -151,6 +151,8 @@ typedef enum pkt_types{
 }pkt_types_t;
 
 const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {
+	/* {ETH,MPLS,VLAN,PPPOE,PPP,ARPV4,ICMPV4,IPV4,ICMPV6,ICMPV6_OPTS,ICMPV6_OPTS_LLADR_SRC,ICMPV6_OPTS_LLADR_TGT,ICMPV6_OPTS_PREFIX_INFO,IPV6,TCP,UDP,SCTP,GTPU,}*/ 
+
 	/* ETH */ {0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETH/MPLS_nlabels_1 */ {0,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETH/MPLS_nlabels_2 */ {0,18,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},

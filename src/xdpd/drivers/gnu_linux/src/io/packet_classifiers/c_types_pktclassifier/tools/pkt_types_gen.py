@@ -49,6 +49,9 @@ pkt_types = [
 	"ETH/IPV6",
 ]
 
+#
+# This is the unrolled version (options, mpls labels...) of the previous type
+#
 pkt_types_unrolled = [ ]
 
 #Unroll parameters 
@@ -86,7 +89,7 @@ def sanitize_pkt_type(pkt_type):
 	return pkt_type	
 
 def calc_inner_len_pkt_type(curr_len, pkt_type):
-	
+	""" Inner len in the offset of the inner most header for stackable headers (MPLS, VLAN)"""	
 	if "MPLS" in pkt_type:
 		#Return inner-most
 		n_mpls_labels = int(pkt_type.split("_nlabels_")[1])
@@ -94,6 +97,7 @@ def calc_inner_len_pkt_type(curr_len, pkt_type):
 	return curr_len
 
 def calc_len_pkt_type(pkt_type):
+	""" Calculates the total len including options and other variable length headers depending on the unrolled pkt types"""	
 	if "IPV4" in pkt_type:
 		n_options = int(pkt_type.split("_noptions_")[1])
 		return protocols[filter_pkt_type(pkt_type)] + (n_options*4) #1 option = 4 octets
@@ -133,6 +137,14 @@ def packet_offsets(f):
 	f.write("const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {")
 
 	first_type = True 
+	
+	#Comment to help identifying the protocols
+	f.write("\n\t/* {")
+	for type_ in protocols:
+		f.write(type_+",")
+	f.write("}*/ \n")
+	
+	#Real rows
 	for type_ in pkt_types_unrolled:
 		
 		if not first_type:

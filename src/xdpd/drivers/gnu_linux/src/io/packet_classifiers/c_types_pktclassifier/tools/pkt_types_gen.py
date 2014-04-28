@@ -38,15 +38,20 @@ pkt_types = [
 	"ETH/ARPV4",
 	"ETH/ICMPV4",
 	"ETH/ICMPV6",
-	
+
+	#IPv4	
 	"ETH/IPV4",
-	
 	"ETH/IPV4/TCP",
 	"ETH/IPV4/UDP",
 	"ETH/IPV4/UDP/GTPU",
 	"ETH/IPV4/SCTP",
-	
+
+	#IPv6	
 	"ETH/IPV6",
+	"ETH/IPV6/TCP",
+	"ETH/IPV6/UDP",
+	"ETH/IPV6/UDP/GTPU",
+	"ETH/IPV6/SCTP",
 ]
 
 #

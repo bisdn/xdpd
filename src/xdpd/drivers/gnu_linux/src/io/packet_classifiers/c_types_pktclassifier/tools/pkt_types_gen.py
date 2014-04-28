@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import re
 
 #
 # Protocols
@@ -32,26 +33,30 @@ protocols = OrderedDict(
 #
 pkt_types = [ 
 	"ETH",
+
+	#MPLS - no parsing beyond 	
+	"ETH\VLAN/MPLS",
+
+	#ARP	
+	"ETH\VLAN/ARPV4",
 	
-	"ETH/MPLS",
-	
-	"ETH/ARPV4",
-	"ETH/ICMPV4",
-	"ETH/ICMPV6",
+	#ICMPs
+	"ETH\VLAN/ICMPV4",
+	"ETH\VLAN/ICMPV6",
 
 	#IPv4	
-	"ETH/IPV4",
-	"ETH/IPV4/TCP",
-	"ETH/IPV4/UDP",
-	"ETH/IPV4/UDP/GTPU",
-	"ETH/IPV4/SCTP",
+	"ETH\VLAN/IPV4",
+	"ETH\VLAN/IPV4/TCP",
+	"ETH\VLAN/IPV4/UDP",
+	"ETH\VLAN/IPV4/UDP/GTPU",
+	"ETH\VLAN/IPV4/SCTP",
 
 	#IPv6	
-	"ETH/IPV6",
-	"ETH/IPV6/TCP",
-	"ETH/IPV6/UDP",
-	"ETH/IPV6/UDP/GTPU",
-	"ETH/IPV6/SCTP",
+	"ETH\VLAN/IPV6",
+	"ETH\VLAN/IPV6/TCP",
+	"ETH\VLAN/IPV6/UDP",
+	"ETH\VLAN/IPV6/UDP/GTPU",
+	"ETH\VLAN/IPV6/SCTP",
 ]
 
 #
@@ -78,16 +83,36 @@ def filter_pkt_type(pkt_type):
 	return pkt_type
 
 def unroll_pkt_types():
-	for type_ in pkt_types:
-		if "IPV4" in type_:
-			for i in range(0,ipv4_max_options_words+1):
-				pkt_types_unrolled.append(type_.replace("IPV4","IPV4_noptions_"+str(i)))
-			continue
-		if "MPLS" in type_:
-			for i in range(1,mpls_max_depth+1):
-				pkt_types_unrolled.append(type_.replace("MPLS","MPLS_nlabels_"+str(i)))
-			continue
-		pkt_types_unrolled.append(type_)
+	for type__ in pkt_types:
+		#Unroll ETH or ETH + VLAN
+		unrolled_types=[]
+		if "ETH\\" in type__:
+			#Add with optional
+			tmp = type__.replace("ETH\\","ETH/")
+			unrolled_types.append(tmp)
+			
+			#Add without optional
+			#re.sub('(.?)\\\w+/(.?)','\1/\2', type__)
+			#unrolled_types.append(type__)
+			tmp2 = type__.replace("ETH\\VLAN","ETH")
+			unrolled_types.append(tmp2)
+			#print "Generating %s %s "% (tmp, type__)
+			#print "Generating %s %s "% (tmp, tmp2)
+		else:
+			unrolled_types.append(type__)
+			
+
+		#Loop over all "unrolled types
+		for type_ in unrolled_types:
+			if "IPV4" in type_:
+				for i in range(0,ipv4_max_options_words+1):
+					pkt_types_unrolled.append(type_.replace("IPV4","IPV4_noptions_"+str(i)))
+				continue
+			if "MPLS" in type_:
+				for i in range(1,mpls_max_depth+1):
+					pkt_types_unrolled.append(type_.replace("MPLS","MPLS_nlabels_"+str(i)))
+				continue
+			pkt_types_unrolled.append(type_)
 
 def sanitize_pkt_type(pkt_type):
 	pkt_type = pkt_type.replace("/","_")

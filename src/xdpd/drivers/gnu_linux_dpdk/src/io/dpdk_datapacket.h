@@ -30,7 +30,6 @@ typedef struct datapacket_dpdk{
 	uint64_t internal_buffer_id;	//IO subsystem buffer ID
 
 	//Incomming packet information
-	of_switch_t* lsw;
 	uint32_t in_port;
 	uint32_t in_phy_port;
 	
@@ -90,7 +89,6 @@ static inline rofl_result_t init_datapacket_dpdk(datapacket_dpdk_t *dpkt, struct
 #endif
 
 	//Fill the structure
-	dpkt->lsw = sw;
 	dpkt->in_port = in_port;
 	dpkt->in_phy_port = in_phy_port;
 	dpkt->output_queue = 0;

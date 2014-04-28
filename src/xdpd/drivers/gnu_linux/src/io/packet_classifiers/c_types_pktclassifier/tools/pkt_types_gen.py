@@ -204,7 +204,7 @@ def packet_offsets(f):
 	f.write("\n};\n\n")
 	
 def get_hdr_macro(f):
-	f.write("\n#define PKT_TYPES_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp <= state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
+	f.write("\n#define PKT_TYPES_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp < state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
 
 ##
 ## Main function

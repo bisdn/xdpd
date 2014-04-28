@@ -63,10 +63,18 @@ def filter_pkt_type(pkt_type):
 	#MPLS
 	if "MPLS" in pkt_type:
 		return pkt_type.split("_nlabels_")[0]
+	
+	if "IPV4" in pkt_type:
+		return pkt_type.split("_noptions_")[0]
+	
 	return pkt_type
 
 def unroll_pkt_types():
 	for type_ in pkt_types:
+		if "IPV4" in type_:
+			for i in range(0,ipv4_max_options_words+1):
+				pkt_types_unrolled.append(type_.replace("IPV4","IPV4_noptions_"+str(i)))
+			continue
 		if "MPLS" in type_:
 			for i in range(1,mpls_max_depth+1):
 				pkt_types_unrolled.append(type_.replace("MPLS","MPLS_nlabels_"+str(i)))
@@ -77,13 +85,20 @@ def sanitize_pkt_type(pkt_type):
 	pkt_type = pkt_type.replace("/","_")
 	return pkt_type	
 
-def calc_len_pkt_type(curr_len, pkt_type):
+def calc_inner_len_pkt_type(curr_len, pkt_type):
 	
 	if "MPLS" in pkt_type:
 		#Return inner-most
-		n_mpls_labels = pkt_type.split("_nlabels_")[1]
-		curr_len += protocols[filter_pkt_type(pkt_type)]*(int(n_mpls_labels)-1)
+		n_mpls_labels = int(pkt_type.split("_nlabels_")[1])
+		curr_len += protocols[filter_pkt_type(pkt_type)]*(n_mpls_labels-1)
 	return curr_len
+
+def calc_len_pkt_type(pkt_type):
+	if "IPV4" in pkt_type:
+		n_options = int(pkt_type.split("_noptions_")[1])
+		return protocols[filter_pkt_type(pkt_type)] + (n_options*4) #1 option = 4 octets
+	
+	return protocols[filter_pkt_type(pkt_type)]	
 ##
 ## Main functions
 ##
@@ -130,8 +145,8 @@ def packet_offsets(f):
 			row.append(-1)
 	
 		for proto in type_.split("/"):
-			row[ protocols.keys().index(filter_pkt_type(proto))] = calc_len_pkt_type(len, proto) 
-			len += protocols[filter_pkt_type(proto)]	
+			row[ protocols.keys().index(filter_pkt_type(proto))] = calc_inner_len_pkt_type(len, proto) 
+			len += calc_len_pkt_type(proto)
 
 		f.write("\n\t/* "+type_+" */ {")
 

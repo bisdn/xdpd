@@ -177,6 +177,12 @@ void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
 //
 // Parsing code
 //
+//XXX FIXME
+
+
+//
+// Main functions
+//
 
 static inline
 void reset_classifier(classify_state_t* clas_state){

@@ -14,12 +14,12 @@ protocols = OrderedDict(
 	("ARPV4", 28), 
 	("ICMPV4", 4), 
 	("IPV4", 20), 
-	("ICMPV6", 20), 
+	("ICMPV6", 4), 
 	("ICMPV6_OPTS", 20), 
 	("ICMPV6_OPTS_LLADR_SRC", 20), 
 	("ICMPV6_OPTS_LLADR_TGT", 20), 
 	("ICMPV6_OPTS_PREFIX_INFO", 20), 
-	("IPV6", 20), 
+	("IPV6", 40), 
 	("TCP", 32), 
 	("UDP", 8), 
 	("SCTP", 12),
@@ -32,13 +32,23 @@ protocols = OrderedDict(
 #
 pkt_types = [ 
 	"ETH",
+	
 	"ETH_ARPV4",
 	"ETH_ICMPV4",
+	"ETH_ICMPV6",
+	
 	"ETH_IPV4",
+	
 	"ETH_IPV4_TCP",
 	"ETH_IPV4_UDP",
 	"ETH_IPV4_SCTP",
+	
+	"ETH_IPV6",
 ]
+
+##
+## Functions
+##
 
 def license(f):
 	f.write("/* This Source Code Form is subject to the terms of the Mozilla Public\n * License, v. 2.0. If a copy of the MPL was not distributed with this\n * file, You can obtain one at http://mozilla.org/MPL/2.0/. */\n\n")
@@ -100,11 +110,15 @@ def packet_offsets(f):
 	
 def get_hdr_macro(f):
 	f.write("\n#define PKT_TYPES_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp <= state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
-	
+
+##
+## Main function
+##
+
 def main():
 
 	#Open file
-	with open('../auto_pkt_types.h', 'w') as f:	
+	with open('../autogen_pkt_types.h', 'w') as f:	
 		
 		#License
 		license(f)

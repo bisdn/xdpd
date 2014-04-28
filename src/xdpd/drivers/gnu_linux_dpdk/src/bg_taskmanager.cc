@@ -151,7 +151,7 @@ void* x86_background_tasks_routine(void* param){
 		}
 			
 		//Throttle
-		usleep(LSW_TIMER_SLOT_MS);
+		usleep(LSW_TIMER_SLOT_MS*1000);
 	}
 	
 	//Printing some information

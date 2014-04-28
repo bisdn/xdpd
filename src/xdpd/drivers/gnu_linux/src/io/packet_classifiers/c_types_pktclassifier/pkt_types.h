@@ -38,28 +38,28 @@ typedef enum pkt_types{
 
 //Protocol types
 typedef enum protocol_types{
-	PROTO_ETH,
-	PROTO_MPLS,
-	PROTO_VLAN,
-	PROTO_PPPOE,
-	PROTO_PPP,
-	PROTO_ARPV4,
-	PROTO_IPV4,
-	PROTO_ICMPV4,
-	PROTO_ICMPV6,
-	PROTO_ICMPV6_OPTS,
-	PROTO_IPV6,
-	PROTO_TCP,
-	PROTO_UDP,
-	PROTO_SCTP,
-	PROTO_GTPU,
+	PT_PROTO_ETH,
+	PT_PROTO_MPLS,
+	PT_PROTO_VLAN,
+	PT_PROTO_PPPOE,
+	PT_PROTO_PPP,
+	PT_PROTO_ARPV4,
+	PT_PROTO_IPV4,
+	PT_PROTO_ICMPV4,
+	PT_PROTO_ICMPV6,
+	PT_PROTO_ICMPV6_OPTS,
+	PT_PROTO_IPV6,
+	PT_PROTO_TCP,
+	PT_PROTO_UDP,
+	PT_PROTO_SCTP,
+	PT_PROTO_GTPU,
 	
 	//Never delete this
-	PROTO_MAX__,
+	PT_PROTO_MAX__,
 }protocol_types_t;
 
 //Protocol offsets by type [PKT_TYPE][HEADER]
-const int protocol_offsets_bt[PT_MAX__][PROTO_MAX__] =
+const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] =
 {
 		{0,  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 		{0,  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -69,5 +69,13 @@ const int protocol_offsets_bt[PT_MAX__][PROTO_MAX__] =
 		{0,  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 		{0,  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 };
+
+#define PKT_TYPES_GET_HDR(tmp, state, proto)\
+	do{\
+		tmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\
+		if(tmp <= state->base )\
+			tmp = NULL;\
+	}while(0)
+
 
 #endif //PKT_TYPES_H

@@ -38,7 +38,18 @@
 */
 typedef struct classify_state{
 	bool is_classified;
-	pkt_types_t type;	
+	
+	//Packet type
+	pkt_types_t type;
+	
+	//Pointer + len	
+	uint8_t* base;	
+	size_t len;
+	
+	//Port in and phy port
+	uint32_t port_in;
+	uint32_t phy_port_in;
+	
 }classify_state_t;
 
 ROFL_BEGIN_DECLS
@@ -46,56 +57,65 @@ ROFL_BEGIN_DECLS
 //inline function implementations
 static inline 
 void* get_ether_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ETH); 
+	return tmp; 
 }
 
 static inline
 void* get_vlan_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_VLAN); 
+	return tmp; 
 }
 
 static inline
 void* get_mpls_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_MPLS); 
+	return tmp; 
 }
 
 static inline
 void* get_arpv4_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ARPV4); 
+	return tmp; 
 }
 
 static inline
 void* get_ipv4_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_IPV4); 
+	return tmp; 
 }
 
 static inline
 void* get_icmpv4_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV4); 
+	return tmp; 
 }
 
 static inline
 void* get_ipv6_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_IPV6); 
+	return tmp; 
 }
 
 static inline
 void* get_icmpv6_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6); 
+	return tmp; 
 }
 
 static inline
 void* get_icmpv6_opt_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS); 
+	return tmp; 
 }
 
 static inline
@@ -118,43 +138,37 @@ void* get_icmpv6_opt_prefix_info_hdr(classify_state_t* clas_state, int idx){
 
 static inline
 void* get_udp_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_UDP); 
+	return tmp;
 }
 
 static inline
 void* get_tcp_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_TCP); 
+	return tmp;
 }
 
 static inline
 void* get_pppoe_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_PPPOE); 
+	return tmp;
 }
 
 static inline
 void* get_ppp_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_PPP); 
+	return tmp;
 }
 
 static inline
 void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
-}
-
-//shifts
-static inline 
-void shift_ether(classify_state_t* clas_state, int idx, ssize_t bytes){
-	//XXX FIXME
-}
-
-static inline
-void shift_vlan(classify_state_t* clas_state, int idx, ssize_t bytes){
-	//XXX FIXME
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_GTPU); 
+	return tmp;
 }
 
 //
@@ -169,6 +183,10 @@ void reset_classifier(classify_state_t* clas_state){
 static inline
 void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, uint32_t port_in, uint32_t phy_port_in){
 	reset_classifier(clas_state);
+	clas_state->base = data;
+	clas_state->len = len;
+	clas_state->port_in = port_in;
+	clas_state->phy_port_in = phy_port_in;
 }
 
 ROFL_END_DECLS

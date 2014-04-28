@@ -1,18 +1,23 @@
 An example driver 
+=================
 
-## Brief:
+Brief
+-----
 
-This is a white canvas for writing the port to your own platform in xDPD. The driver does nothing but print traces.
-You may want to have a look to ROFL-pipeline library in order to build the internals of the library.
+This is a white canvas for writing the port to your own platform in xDPD. The driver does nothing but print traces. You may want to have a look to ROFL-pipeline library in order to build the internals of the library.
 
-## Comments:
+Comments
+--------
 
 Put any other comment here that might be of interest
 
-## Folder structure and some files:
+Folder structure and some files
+-------------------------------
 	
-	- hal-imp: Hardware Abstraction Layer API routines 
-	- .... 
+- hal-imp: Hardware Abstraction Layer API routines 
+- .... 
 	
-## Authorship:
-	Put your name and email here
+Authorship
+----------
+
+Put your name and email here  

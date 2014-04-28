@@ -12,6 +12,7 @@ v0.4RC2
 
 [+][plugins][config] Now plugin checks for unrecognized elements and aborts if any are found 
 [+] Marked SSL socket support as stable. Added example_ssl.cfg
+[+] Adapted translation utils to the new rofl-pipeline APIs (constructors in HBO and use of getters) 
 [B] Fixed deadlock during LSI destruction (port delete notification)
 
 v0.4RC1

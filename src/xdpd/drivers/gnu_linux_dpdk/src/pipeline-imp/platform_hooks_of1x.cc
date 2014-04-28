@@ -155,7 +155,6 @@ void platform_of1x_notify_flow_removed(const of1x_switch_t* sw,
 						of1x_flow_remove_reason_t reason, 
 						of1x_flow_entry_t* removed_flow_entry){
 
-	ROFL_INFO(" calling %s()\n",__FUNCTION__);
 	hal_cmm_process_of1x_flow_removed(sw->dpid, (uint8_t)reason, removed_flow_entry);
 
 }

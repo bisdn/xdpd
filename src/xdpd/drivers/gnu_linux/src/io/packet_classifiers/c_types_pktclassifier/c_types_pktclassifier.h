@@ -27,7 +27,8 @@
 #include "./headers/cpc_udp.h"
 #include "./headers/cpc_vlan.h"
 
-#include "pkt_types.h"
+//#include "pkt_types_mockup.h"
+#include "autogen_pkt_types.h"
 
 /**
 * @file c_types_pktclassifier.h

@@ -78,6 +78,7 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 		//out from the pipeline
 		pkt_state->mbuf = mbuf;
 
+#if DEBUG
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
 		assert(mbuf->pkt.nb_segs == 1);
 
@@ -86,6 +87,8 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 			rte_pktmbuf_free(mbuf);
 			continue;
 		}
+#endif
+
 		//Init&classify	
 		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
 	

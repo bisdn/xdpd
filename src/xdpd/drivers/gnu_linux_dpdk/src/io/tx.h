@@ -104,12 +104,14 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	
 	//Recover burst container (cache)
 	pkt_burst = &tasks->all_ports[port_id].tx_queues_burst[queue_id];	
-	
+
+#if DEBUG	
 	if(unlikely(!pkt_burst)){
 		rte_pktmbuf_free(mbuf);
 		assert(0);
 		return;
 	}
+#endif
 
 	ROFL_DEBUG(DRIVER_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
 

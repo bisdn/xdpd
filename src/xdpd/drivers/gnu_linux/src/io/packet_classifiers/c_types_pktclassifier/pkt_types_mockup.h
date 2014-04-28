@@ -76,7 +76,7 @@ const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] =
 #define PKT_TYPES_GET_HDR(tmp, state, proto)\
 	do{\
 		tmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\
-		if(tmp <= state->base )\
+		if(tmp < state->base )\
 			tmp = NULL;\
 	}while(0)
 

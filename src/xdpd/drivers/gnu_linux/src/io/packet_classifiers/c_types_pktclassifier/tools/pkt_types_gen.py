@@ -33,6 +33,8 @@ protocols = OrderedDict(
 pkt_types = [ 
 	"ETH",
 	
+	"ETH/MPLS",
+	
 	"ETH/ARPV4",
 	"ETH/ICMPV4",
 	"ETH/ICMPV6",
@@ -41,13 +43,49 @@ pkt_types = [
 	
 	"ETH/IPV4/TCP",
 	"ETH/IPV4/UDP",
+	"ETH/IPV4/UDP/GTPU",
 	"ETH/IPV4/SCTP",
 	
 	"ETH/IPV6",
 ]
 
+pkt_types_unrolled = [ ]
+
+#Unroll parameters 
+ipv4_max_options_words = 15 #15 Inclusive 15x4bytes=60bytes 
+mpls_max_depth=32 #Maximum
+
 ##
-## Functions
+## Helper Functions
+##
+
+def filter_pkt_type(pkt_type):
+	#MPLS
+	if "MPLS" in pkt_type:
+		return pkt_type.split("_nlabels_")[0]
+	return pkt_type
+
+def unroll_pkt_types():
+	for type_ in pkt_types:
+		if "MPLS" in type_:
+			for i in range(1,mpls_max_depth+1):
+				pkt_types_unrolled.append(type_.replace("MPLS","MPLS_nlabels_"+str(i)))
+			continue
+		pkt_types_unrolled.append(type_)
+
+def sanitize_pkt_type(pkt_type):
+	pkt_type = pkt_type.replace("/","_")
+	return pkt_type	
+
+def calc_len_pkt_type(curr_len, pkt_type):
+	
+	if "MPLS" in pkt_type:
+		#Return inner-most
+		n_mpls_labels = pkt_type.split("_nlabels_")[1]
+		curr_len += protocols[filter_pkt_type(pkt_type)]*(int(n_mpls_labels)-1)
+	return curr_len
+##
+## Main functions
 ##
 
 def license(f):
@@ -70,8 +108,8 @@ def protocols_enum(f):
 def packet_types_enum(f):
 	
 	f.write("typedef enum pkt_types{\n")
-	for type_ in pkt_types:
-		f.write("\tPT_"+type_.replace("/","_")+",\n")
+	for type_ in pkt_types_unrolled:
+		f.write("\tPT_"+sanitize_pkt_type(type_)+",\n")
 		
 	f.write("\tPT_MAX__\n}pkt_types_t;\n\n")
 
@@ -80,7 +118,7 @@ def packet_offsets(f):
 	f.write("const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {")
 
 	first_type = True 
-	for type_ in pkt_types:
+	for type_ in pkt_types_unrolled:
 		
 		if not first_type:
 			f.write(",")
@@ -92,10 +130,10 @@ def packet_offsets(f):
 			row.append(-1)
 	
 		for proto in type_.split("/"):
-			row[ protocols.keys().index(proto)] = len
-			len += protocols[proto]  	
+			row[ protocols.keys().index(filter_pkt_type(proto))] = calc_len_pkt_type(len, proto) 
+			len += protocols[filter_pkt_type(proto)]	
 
-		f.write("\n\t{")
+		f.write("\n\t/* "+type_+" */ {")
 
 		first_proto = True
 		for proto_len in row: 
@@ -116,6 +154,8 @@ def get_hdr_macro(f):
 ##
 
 def main():
+
+	unroll_pkt_types()
 
 	#Open file
 	with open('../autogen_pkt_types.h', 'w') as f:	

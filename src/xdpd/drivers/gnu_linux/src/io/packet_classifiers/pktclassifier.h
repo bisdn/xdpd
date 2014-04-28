@@ -5,7 +5,11 @@
 #ifndef _PKTCLASSIFIER_H_
 #define _PKTCLASSIFIER_H_
 
-#include "c_pktclassifier/c_pktclassifier.h"
+#if 0
+	#include "c_pktclassifier/c_pktclassifier.h"
+#else
+	#include "c_types_pktclassifier/c_types_pktclassifier.h"
+#endif
 
 ROFL_BEGIN_DECLS
 

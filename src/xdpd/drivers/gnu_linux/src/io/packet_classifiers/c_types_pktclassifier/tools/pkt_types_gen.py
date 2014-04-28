@@ -28,22 +28,22 @@ protocols = OrderedDict(
 )
 
 #
-# Packet types (using a notation similar to scapy, but using _ instead of /)
+# Packet types (using a notation similar to scapy)
 #
 pkt_types = [ 
 	"ETH",
 	
-	"ETH_ARPV4",
-	"ETH_ICMPV4",
-	"ETH_ICMPV6",
+	"ETH/ARPV4",
+	"ETH/ICMPV4",
+	"ETH/ICMPV6",
 	
-	"ETH_IPV4",
+	"ETH/IPV4",
 	
-	"ETH_IPV4_TCP",
-	"ETH_IPV4_UDP",
-	"ETH_IPV4_SCTP",
+	"ETH/IPV4/TCP",
+	"ETH/IPV4/UDP",
+	"ETH/IPV4/SCTP",
 	
-	"ETH_IPV6",
+	"ETH/IPV6",
 ]
 
 ##
@@ -71,7 +71,7 @@ def packet_types_enum(f):
 	
 	f.write("typedef enum pkt_types{\n")
 	for type_ in pkt_types:
-		f.write("\tPT_"+type_+",\n")
+		f.write("\tPT_"+type_.replace("/","_")+",\n")
 		
 	f.write("\tPT_MAX__\n}pkt_types_t;\n\n")
 
@@ -91,7 +91,7 @@ def packet_offsets(f):
 		for proto in protocols:
 			row.append(-1)
 	
-		for proto in type_.split("_"):
+		for proto in type_.split("/"):
 			row[ protocols.keys().index(proto)] = len
 			len += protocols[proto]  	
 

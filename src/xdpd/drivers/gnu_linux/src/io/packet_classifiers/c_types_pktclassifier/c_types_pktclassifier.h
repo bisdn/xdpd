@@ -119,21 +119,23 @@ void* get_icmpv6_opt_hdr(classify_state_t* clas_state, int idx){
 }
 
 static inline
-void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){		uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_SRC); 
+	return tmp; 
 }
 
 static inline
 void* get_icmpv6_opt_lladr_target_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+		uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_TGT); 
+	return tmp; 
 }
 
 static inline
 void* get_icmpv6_opt_prefix_info_hdr(classify_state_t* clas_state, int idx){
-	//XXX FIXME
-	return NULL;
+	uint8_t* tmp;
+	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_PREFIX_INFO); 
+	return tmp; 
 }
 
 static inline
@@ -182,11 +184,17 @@ void reset_classifier(classify_state_t* clas_state){
 
 static inline
 void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, uint32_t port_in, uint32_t phy_port_in){
-	reset_classifier(clas_state);
+
+	//Set basic 
 	clas_state->base = data;
 	clas_state->len = len;
 	clas_state->port_in = port_in;
 	clas_state->phy_port_in = phy_port_in;
+
+	//XXX FIXME start to parse in ethernet ethernet	
+	
+	//Mark it as classified
+	clas_state->is_classified = true;
 }
 
 ROFL_END_DECLS

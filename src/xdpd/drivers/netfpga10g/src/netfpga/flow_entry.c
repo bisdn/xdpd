@@ -348,7 +348,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 				port = of1x_get_packet_action_field32(action); 
 				entry->actions->action_flags=0;//added
 				ROFL_DEBUG(" netfpga_flow_entry_map_actions   ENTRY port %d ",port);
-				memset(&(actions->forward_bitmask),0x00,(actions->forward_bitmask));// clearing 
+				memset(&(actions->forward_bitmask),0x00,sizeof(actions->forward_bitmask));// clearing 
 
 				if ((port >= NETFPGA_FIRST_PORT) && (port <= NETFPGA_LAST_PORT)) {
 					//Send to specific port

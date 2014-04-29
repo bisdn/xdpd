@@ -138,53 +138,17 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 
 				memcpy(&matches->eth_dst.addr, &(match->__tern->value.u64), 6);
 				memcpy(&masks->eth_dst.addr, &(match->__tern->mask.u64), 6);
-				if(of1x_get_match_mask32(match) == 0x00FFFFFFULL)
+				if(of1x_get_match_mask64(match) == 0x00FFFFFFULL)
 					//Not wildcarded
 					num_of_matches++;
-
-				/*
-				tmp = (netfpga_align_mac_addr_t*) &(match->__tern->value.u64);
-				tmp_mask = (netfpga_align_mac_addr_t*) &(match->__tern->value.u64);
-
-				//inversion
-				for (i=0;i<6;i++){
-					matches->eth_dst.addr[i]=tmp->addr[5-i];
-					masks->eth_dst.addr[i]=tmp_mask->addr[5-i];
-				}
-				
-				if(check_mac_mask(tmp_mask)){
-					//Is wildcarded
-					memset(&(masks->eth_dst),0x00,sizeof(masks->eth_dst));  				
-					
-				}else
-					num_of_matches++;
-				*/
 				break;
  			case OF1X_MATCH_ETH_SRC:
 				
 				memcpy(&matches->eth_src.addr, &(match->__tern->value.u64), 6);
 				memcpy(&masks->eth_src.addr, &(match->__tern->mask.u64), 6);
-				if(of1x_get_match_mask32(match) == 0x00FFFFFFULL)
+				if(of1x_get_match_mask64(match) == 0x00FFFFFFULL)
 					//Not wildcarded
 					num_of_matches++;
-
-
-				/*tmp = (netfpga_align_mac_addr_t*) &(match->__tern->value.u64);
-				tmp_mask = (netfpga_align_mac_addr_t*) &(match->__tern->value.u64);
-
-				//inversion
-				for (i=0;i<6;i++){
-					matches->eth_src.addr[i]=tmp->addr[5-i];
-					masks->eth_src.addr[i]=tmp_mask->addr[5-i];
-				}
-				tmp_mask = 
-				if(check_mac_mask(tmp_mask)){
-					//Is wildcarded
-					memset(&(masks->eth_src),0x00,sizeof(masks->eth_src));
-				}else
-					num_of_matches++;
-
-				*/
 				break;
  			case OF1X_MATCH_ETH_TYPE:
 				matches->eth_type = of1x_get_match_value16(match);	
@@ -289,28 +253,11 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 		switch(action->type){
 
 			case OF1X_AT_SET_FIELD_ETH_DST:
-				/*
-				//Set auxiliary pointer
-				aux = (netfpga_align_mac_addr_t*) indirect; 
-				
-				//inversion
-				for (i=0;i<6;i++){
-					actions->eth_dst.addr[i]=aux->addr[5-i];
-				}*/
 				memcpy(&actions->eth_dst.addr, &(action->__field.u64), 6);
 				actions->action_flags |= (1 << NETFPGA_AT_SET_DL_DST);	
 				break;
 
 			case OF1X_AT_SET_FIELD_ETH_SRC:
-				/*
-				//Set auxiliary pointer
-				aux = (netfpga_align_mac_addr_t*) indirect; 
-				
-				//inversion
-				for (i=0;i<6;i++){
-					actions->eth_src.addr[i]=aux->addr[5-i];
-				}*/
-
 				memcpy(&actions->eth_src.addr, &(action->__field.u64), 6);
 				actions->action_flags |= (1 << NETFPGA_AT_SET_DL_SRC);	
 				break;

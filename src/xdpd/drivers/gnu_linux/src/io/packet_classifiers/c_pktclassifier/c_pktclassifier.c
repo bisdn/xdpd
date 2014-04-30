@@ -183,6 +183,12 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 				parse_ipv4(clas_state, data, datalen);
 			}
 			break;
+		case ETH_TYPE_IPV6:
+			{
+				parse_ipv6(clas_state, data, datalen);
+			}
+			break;
+
 		default:
 			{
 

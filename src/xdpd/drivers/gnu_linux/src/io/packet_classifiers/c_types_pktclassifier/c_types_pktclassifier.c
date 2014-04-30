@@ -10,6 +10,7 @@
 classify_state_t* init_classifier(datapacket_t*const  pkt){
 	classify_state_t* classifier = malloc(sizeof(classify_state_t));
 	memset(classifier,0,sizeof(classify_state_t));
+	classifier->matches = &pkt->matches;
 	return classifier;
 }
 void destroy_classifier(classify_state_t* clas_state){

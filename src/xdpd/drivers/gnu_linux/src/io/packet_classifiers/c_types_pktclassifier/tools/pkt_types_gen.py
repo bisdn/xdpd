@@ -37,6 +37,10 @@ pkt_types = [
 
 	#MPLS - no parsing beyond 	
 	"ETH\VLAN/MPLS",
+	
+	#PPPOE/PPP We don't parse beyond that, for the moment
+	"ETH\VLAN/PPPOE",
+	"ETH\VLAN/PPPOE/PPP",
 
 	#ARP	
 	"ETH\VLAN/ARPV4",

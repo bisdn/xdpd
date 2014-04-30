@@ -122,7 +122,8 @@ void* get_icmpv6_opt_hdr(classify_state_t* clas_state, int idx){
 }
 
 static inline
-void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){		uint8_t* tmp;
+void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){
+	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_SRC); 
 	return tmp; 
 }
@@ -282,6 +283,27 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 }
+static inline
+void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+	
+	/*So far we only parse optionsICMPV6_OPT_LLADDR_TARGET, ICMPV6_OPT_LLADDR_SOURCE and ICMPV6_OPT_PREFIX_INFO*/
+	cpc_icmpv6_option_hdr_t* icmpv6_options = (cpc_icmpv6_option_hdr_t*)data;
+	
+	//we asume here that there is only one option for each type
+	switch(icmpv6_options->type){
+		case ICMPV6_OPT_LLADDR_SOURCE:
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_OPTS_LLADR_SRC);	
+			break;
+		case ICMPV6_OPT_LLADDR_TARGET:
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_OPTS_PREFIX_INFO);	
+			break;
+		case ICMPV6_OPT_PREFIX_INFO:
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6);	
+			break;
+	}
+
+	//We don't go beyond this
+}
 
 static inline
 void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -322,7 +344,7 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 
 	if (datalen > 0){
-		//parse_icmpv6_opts(clas_state,data,datalen);
+		parse_icmpv6_opts(clas_state,data,datalen);
 	}
 }
 

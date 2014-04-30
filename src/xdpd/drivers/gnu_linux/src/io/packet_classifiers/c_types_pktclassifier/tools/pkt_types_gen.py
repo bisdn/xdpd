@@ -38,7 +38,7 @@ pkt_types = [
 	#MPLS - no parsing beyond 	
 	"ETH\VLAN/MPLS",
 	
-	#PPPOE/PPP We don't parse beyond that, for the moment
+	#PPPOE/PPP We don't parse beyond that (for the moment)
 	"ETH\VLAN/PPPOE",
 	"ETH\VLAN/PPPOE/PPP",
 
@@ -47,7 +47,10 @@ pkt_types = [
 	
 	#ICMPs
 	"ETH\VLAN/ICMPV4",
-	"ETH\VLAN/ICMPV6",
+	"ETH\VLAN/IPV6/ICMPV6",
+	"ETH\VLAN/IPV6/ICMPV6/ICMPV6_OPTS_LLADR_SRC",
+	"ETH\VLAN/IPV6/ICMPV6/ICMPV6_OPTS_LLADR_TGT",
+	"ETH\VLAN/IPV6/ICMPV6/ICMPV6_OPTS_PREFIX_INFO",
 
 	#IPv4	
 	"ETH\VLAN/IPV4",

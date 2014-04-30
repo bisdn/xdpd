@@ -21,9 +21,6 @@ void destroy_classifier(classify_state_t* clas_state){
 	free(clas_state);
 }
 
-
-
-
 // Remove header from classifier state
 void pop_header(classify_state_t* clas_state, enum header_type type, unsigned int start, unsigned int end){
 	if(clas_state->num_of_headers[type] == 0){

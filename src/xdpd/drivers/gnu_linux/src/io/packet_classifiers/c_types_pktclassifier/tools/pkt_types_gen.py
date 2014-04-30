@@ -195,6 +195,7 @@ def protocols_enum(f):
 def packet_types_enum(f):
 	
 	f.write("typedef enum pkt_types{\n")
+	f.write("\tPT_INVALID = -1,\n")
 	for type_ in pkt_types_unrolled:
 		f.write("\tPT_"+sanitize_pkt_type(type_)+",\n")
 		
@@ -292,9 +293,9 @@ def parse_transitions(f):
 				new_type=type_+"/"+proto
 
 			if new_type in pkt_types_unrolled:
-				row.append("PT_"+sanitize_pkt_type(new_type))
+				row.append(new_type)
 			else:
-				row.append("0")
+				row.append("-1")
 			#row.append("PT_"+sanitize_pkt_type(type_))
 		f.write("\n\t/* "+type_+" */ {")
 
@@ -303,7 +304,10 @@ def parse_transitions(f):
 			if not first_proto:
 				f.write(",")
 			first_proto = False
-			f.write(next_proto)
+			if next_proto != "-1":
+				f.write("PT_"+sanitize_pkt_type(next_proto))
+			else:
+				f.write(next_proto)
 
 		f.write("}")
 		
@@ -337,24 +341,58 @@ def push_transitions(f):
 			new_type=""
 			if "MPLS" in proto:
 				if "MPLS" in type_:
-					#If there is already an MPLS
-					pass
+					#If there is already an MPLS add to the end
+					n_labels = int(type_.split("MPLS_nlabels_")[1])+1
+					if(n_labels < mpls_max_depth):
+						new_type=type_.split("MPLS_nlabels_")[0]+"MPLS_nlabels_"+str(n_labels)
+					else:
+						new_type +="-1"
 				else:
-					#No MPLS label
-					pass
+					if "VLAN/VLAN" in type_:
+						new_type=type_.split("VLAN/VLAN")[0] + "VLAN/VLAN/MPLS_nlabels_1"
+					elif "VLAN" in type_:
+						new_type=type_.split("VLAN")[0] +"VLAN/MPLS_nlabels_1"
+					elif "ETHERNET" in type_:
+						new_type=type_.split("ETHERNET")[0] +"ETHERNET/MPLS_nlabels_1"
+					elif "8023" in type_:
+						new_type=type_.split("8023")[0] +"8023/MPLS_nlabels_1"
+					else:
+						new_type +="-1"
+				row.append(new_type)
 			elif "VLAN" in proto:
-				#FIXME
-				pass
-			elif "PPPOE" in proto:
-				#FIXME
-				pass
-			elif "PPP" in proto:
-				if "PPPOE" in proto:
-					pass
+				if "VLAN/VLAN" in type_:
+					new_type="-1"
+				elif "VLAN" in type_:
+					new_type=type_.replace("VLAN", "VLAN/VLAN")
+				elif "ETHERNET" in type_:
+					new_type=type_.replace("ETHERNET", "ETHERNET/VLAN")
+				elif "8023" in type_:
+					new_type=type_.replace("8023", "8023/VLAN")
 				else:
-					row.append("0")
+					new_type +="-1"
+
+				row.append(new_type)
+			elif "PPPOE" in proto:
+				if "PPPOE" or "MPLS" in type_:
+					new_type +="-1"
+				elif "VLAN/VLAN" in type_:
+					row.append(type_.replace("VLAN/VLAN", "VLAN/VLAN/PPPOE"))
+				elif "VLAN" in type_:
+					new_type=type_.replace("VLAN", "VLAN/PPPOE")
+				elif "ETHERNET" in type_:
+					new_type=type_.replace("ETHERNET", "ETHERNET/PPPOE")
+				elif "8023" in type_:
+					new_type=type_.replace("8023", "8023/PPPOE")
+				else:
+					new_type +="-1"
+				row.append(new_type)
+			elif "PPP" in proto:
+				if "PPPOE" in type_ and not "PPPOE/PPP" in type_:
+					row.append(type_.replace("PPPOE", "PPPOE/PPP"))
+				else:
+					row.append("-1")
 			else:
-				row.append("0")
+				row.append("-1")
 		f.write("\n\t/* "+type_+" */ {")
 
 		first_proto = True
@@ -362,8 +400,10 @@ def push_transitions(f):
 			if not first_proto:
 				f.write(",")
 			first_proto = False
-			f.write(next_proto)
-
+			if next_proto != "-1":
+				f.write("PT_"+sanitize_pkt_type(next_proto))
+			else:
+				f.write(next_proto)
 		f.write("}")
 		
 	f.write("\n};\n\n")
@@ -387,6 +427,11 @@ def add_class_type_macro(f):
 	f.write("\t\tdefault: assert(0);\\\n")
 	f.write("}}while(0)\n")
 	
+def push_macro(f):
+	f.write("\n#define PT_PUSH_PROTO(state, PROTO_TYPE)\\\n")
+	f.write("\t(pkt_types_t)push_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ]\n")
+
+
 ##
 ## Main function
 ##
@@ -429,6 +474,7 @@ def main():
 		#Macros
 		get_hdr_macro(f)
 		add_class_type_macro(f)	
+		push_macro(f)	
 
 		#End of guards
 		end_guard(f)

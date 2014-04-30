@@ -551,27 +551,23 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	//Data pointer	
 	cpc_vlan_hdr_t* vlan;
-	unsigned int n_vlans=0;	
 	uint16_t eth_type;
-	n_vlans=0;
 
 	//Set frame
 	do{
 		vlan = (cpc_vlan_hdr_t *)data;
-		eth_type = get_vlan_type(vlan);
 		data += sizeof(cpc_vlan_hdr_t);
 		datalen -= sizeof(cpc_vlan_hdr_t);
-		n_vlans++;
+		eth_type = get_vlan_type(vlan);
+	
+		//Add parsed vlan	
+		PT_CLASS_ADD_PROTO(clas_state, VLAN);
 	}while(
 		eth_type == VLAN_CTAG_ETHER_TYPE || 
 		eth_type == VLAN_STAG_ETHER_TYPE ||
 		eth_type == VLAN_ITAG_ETHER_TYPE 
 	);
 
-	//Assign type
-	//FIXME: use n_vlans 
-	PT_CLASS_ADD_PROTO(clas_state, VLAN);
-	
 	switch (eth_type) {
 		case ETH_TYPE_MPLS_UNICAST:
 		case ETH_TYPE_MPLS_MULTICAST:
@@ -675,7 +671,11 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 
 	//TODO:remove
 	//Initialize eth packet matches
-	clas_state->matches->__eth_type = get_ether_type(ether); //This MUST be here
+	cpc_vlan_hdr_t* vlan = (cpc_vlan_hdr_t*)get_vlan_hdr(clas_state, 0);
+	if(vlan)
+		clas_state->matches->__eth_type = get_vlan_type(vlan);
+	else
+		clas_state->matches->__eth_type = get_ether_type(ether);
 	clas_state->matches->__eth_src = get_ether_dl_src(ether);
 	clas_state->matches->__eth_dst = get_ether_dl_dst(ether);
 }

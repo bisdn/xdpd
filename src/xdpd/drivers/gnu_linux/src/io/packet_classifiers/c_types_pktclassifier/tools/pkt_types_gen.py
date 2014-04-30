@@ -8,7 +8,7 @@ import re
 protocols = OrderedDict(
 	(
 	("ETHERNET", 14), 
-	("8023", 17), 
+	("8023", 22), 
 	("MPLS", 4), 
 	("VLAN", 4), 
 	("PPPOE", 20), 

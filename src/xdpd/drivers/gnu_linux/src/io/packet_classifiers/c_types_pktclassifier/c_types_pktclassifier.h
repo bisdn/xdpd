@@ -278,6 +278,11 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	data += header_len_bytes;
 	datalen -=  header_len_bytes; 
 
+#ifdef DEBUG
+	//Prevent malformed packets to raise asserts()
+	if(unlikely(num_of_options < 0) || unlikely(num_of_options > 15))
+		return; 
+#endif
 	//Assign type
 	PT_CLASS_ADD_IPV4_OPTIONS(clas_state, num_of_options);
 

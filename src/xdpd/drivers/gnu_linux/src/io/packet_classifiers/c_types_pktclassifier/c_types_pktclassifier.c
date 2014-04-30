@@ -99,9 +99,12 @@ void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 		// TODO: log error
 		return 0;
 	}
+	
+	//Set new type and base(move left)
+	clas_state->type = new;
+	clas_state->base -= sizeof(cpc_vlan_hdr_t);
 
 	//Set new pkt type
-	clas_state->type = new;
 	cpc_vlan_hdr_t* vlan_header = get_vlan_hdr(clas_state, 0);
 	ether_header = get_ether_hdr(clas_state, 0);    
 	
@@ -140,9 +143,11 @@ void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 		// TODO: log error
 		return 0;
 	}
-
-	//Set new pkt type
+	
+	//Set new type and base(move left)
 	clas_state->type = new;
+	clas_state->base -= sizeof(cpc_mpls_hdr_t);
+
 	ether_header=get_ether_hdr(clas_state, 0);
 	set_ether_type(ether_header, ether_type);
 	
@@ -198,6 +203,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			//Set new pkt type
 			clas_state->type = PT_PUSH_PROTO(clas_state, PPP);
 			assert(clas_state->type != PT_INVALID);
+			clas_state->base -= bytes_to_insert; 
 
 			/*
 			 * adjust ether(0): move one pppoe tag to the left
@@ -222,6 +228,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			}
 			//Set new pkt type
 			clas_state->type = new;
+			clas_state->base -= bytes_to_insert; 
 
 			set_ether_type(get_ether_hdr(clas_state, 0), ETH_TYPE_PPPOE_DISCOVERY);
 

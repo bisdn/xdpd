@@ -35,46 +35,46 @@ unrolled_protocols = OrderedDict()
 # Packet types (using a notation similar to scapy)
 #
 pkt_types = [ 
-	"ETH\VLAN",
+	"L2", #This is ETHERNET or 8023 or ETHERNET/VLAN or 8023/VLAN or ETHERNET/VLAN/VLAN or 8023/VLAN/VLAN
 
 	#MPLS - no parsing beyond 	
-	"ETH\VLAN/MPLS",
+	"L2/MPLS",
 	
 	#PPPOE/PPP We don't parse beyond that (for the moment)
-	"ETH\VLAN/PPPOE",
-	"ETH\VLAN/PPPOE/PPP",
+	"L2/PPPOE",
+	"L2/PPPOE/PPP",
 
 	#ARP	
-	"ETH\VLAN/ARPV4",
+	"L2/ARPV4",
 	
 	##########
 	## IPv4	##
 	##########
-	"ETH\VLAN/IPV4",
+	"L2/IPV4",
 	
 	#ICMPs
-	"ETH\VLAN/IPV4/ICMPV4",
+	"L2/IPV4/ICMPV4",
 	
-	"ETH\VLAN/IPV4/TCP",
-	"ETH\VLAN/IPV4/UDP",
-	"ETH\VLAN/IPV4/UDP/GTPU",
-	"ETH\VLAN/IPV4/SCTP",
+	"L2/IPV4/TCP",
+	"L2/IPV4/UDP",
+	"L2/IPV4/UDP/GTPU",
+	"L2/IPV4/SCTP",
 
 	##########
 	## IPv6	##
 	##########
-	"ETH\VLAN/IPV6",
+	"L2/IPV6",
 
 	#ICMPs
-	"ETH\VLAN/IPV6/ICMPV6",
-	"ETH\VLAN/IPV6/ICMPV6/ICMPV6_OPTS_LLADR_SRC",
-	"ETH\VLAN/IPV6/ICMPV6/ICMPV6_OPTS_LLADR_TGT",
-	"ETH\VLAN/IPV6/ICMPV6/ICMPV6_OPTS_PREFIX_INFO",
+	"L2/IPV6/ICMPV6",
+	"L2/IPV6/ICMPV6/ICMPV6_OPTS_LLADR_SRC",
+	"L2/IPV6/ICMPV6/ICMPV6_OPTS_LLADR_TGT",
+	"L2/IPV6/ICMPV6/ICMPV6_OPTS_PREFIX_INFO",
 
-	"ETH\VLAN/IPV6/TCP",
-	"ETH\VLAN/IPV6/UDP",
-	"ETH\VLAN/IPV6/UDP/GTPU",
-	"ETH\VLAN/IPV6/SCTP",
+	"L2/IPV6/TCP",
+	"L2/IPV6/UDP",
+	"L2/IPV6/UDP/GTPU",
+	"L2/IPV6/SCTP",
 ]
 
 #
@@ -85,6 +85,7 @@ pkt_types_unrolled = [ ]
 #Unroll parameters 
 ipv4_max_options_words = 15 #15 Inclusive 15x4bytes=60bytes 
 mpls_max_depth=16 #Maximum
+vlan_max=2 #Maximum
 
 ##
 ## Helper Functions
@@ -103,27 +104,30 @@ def filter_pkt_type(pkt_type):
 def unroll_pkt_types():
 	for type__ in pkt_types:
 
-		#Unroll ETH or ETH + VLAN
+		#Unrolled
 		unrolled_types=[]
-		if "ETH\\" in type__:
-			#Add ETHERNET+VLAN 
-			tmp = type__.replace("ETH\\","ETHERNET/")
-			unrolled_types.append(tmp)
-			#Add 802.3+VLAN
-			tmp = type__.replace("ETH\\","8023/")
-			unrolled_types.append(tmp)
-	
-			#Add without optional
-			tmp2 = type__.replace("ETH\\VLAN","ETHERNET")
-			unrolled_types.append(tmp2)
-			#Add 802.3
-			tmp2 = type__.replace("ETH\\VLAN","8023")
-			unrolled_types.append(tmp2)
-			
-		else:
-			unrolled_types.append(type__)
-			
 
+		#Add without optional
+		tmp = type__.replace("L2","ETHERNET")
+		unrolled_types.append(tmp)
+		#Add 802.3
+		tmp = type__.replace("L2","8023")
+		unrolled_types.append(tmp)
+		
+		#Add ETHERNET+VLAN 
+		tmp = type__.replace("L2","ETHERNET/VLAN")
+		unrolled_types.append(tmp)
+		#Add 802.3+VLAN
+		tmp = type__.replace("L2","8023/VLAN")
+		unrolled_types.append(tmp)
+		
+		#Add ETHERNET+VLAN+VLAN 
+		tmp = type__.replace("L2","ETHERNET/VLAN/VLAN")
+		unrolled_types.append(tmp)
+		#Add 802.3+VLAN+VLAN
+		tmp = type__.replace("L2","8023/VLAN/VLAN")
+		unrolled_types.append(tmp)
+			
 		#Loop over all "unrolled types
 		for type_ in unrolled_types:
 			if "IPV4" in type_:

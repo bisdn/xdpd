@@ -306,8 +306,13 @@ void DataPacketX86Test::testPopPPPoE()
 
 	rofl::cmemory mResult(pack->get_buffer(), pack->get_buffer_length());
 
-	CPPUNIT_ASSERT(mRight == mResult);
+	if(mRight != mResult){
+		std::cerr<<"Left"<<std::endl<<mLeft;
+		std::cerr<<"Right"<<std::endl<<mRight;
+		std::cerr<<"Result"<<std::endl<<mResult;
+	}
 
+	CPPUNIT_ASSERT(mRight == mResult);
 	pack->destroy();
 };
 

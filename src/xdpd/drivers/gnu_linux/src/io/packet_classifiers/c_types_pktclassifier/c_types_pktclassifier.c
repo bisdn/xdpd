@@ -18,41 +18,263 @@ void destroy_classifier(classify_state_t* clas_state){
 }
 
 void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
-	//XXX FIXME
+	cpc_vlan_hdr_t* vlan = get_vlan_hdr(clas_state,0);
+
+	if (!vlan)
+		return;
+
+	uint16_t ether_type = get_vlan_type(vlan);
+	
+	//Take header out from packet
+	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_vlan_hdr_t));
+
+	//XXX: set type
+
+	//Set ether_type of new frame
+	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
 }
 void pop_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	//XXX FIXME
+	// outermost mpls tag, if any, following immediately the initial ethernet header
+	
+	cpc_mpls_hdr_t* mpls = get_mpls_hdr(clas_state,0);
+	
+	if (!mpls)
+		return;
+
+	//XXX: set type
+
+	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_mpls_hdr_t));
+
+	set_ether_type(get_ether_hdr(clas_state,0), ether_type);
 }
+
 void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	//XXX FIXME
+	cpc_eth_hdr_t* ether_header;
+	
+	//Recover the ether(0)
+	ether_header = get_ether_hdr(clas_state,0);
+
+	switch (get_ether_type(ether_header)) {
+		case ETH_TYPE_PPPOE_DISCOVERY:
+		{
+			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_pppoe_hdr_t));
+			//XXX: set type
+		}
+			break;
+
+		case ETH_TYPE_PPPOE_SESSION:
+		{
+			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t),sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t));
+			//XXX: set type
+		}
+		break;
+	}
+
+	set_ether_type(get_ether_hdr(clas_state,0), ether_type);
+	//ether_header->reset(ether_header->soframe(), ether_header->framelen() - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
 }
 
 void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	//XXX FIXME
+
+	if(get_gtpu_hdr(clas_state,0) == NULL)
+		return;
+
+
+	// determine effective length of GTP header
+	size_t pop_length = sizeof(cpc_ipv4_hdr_t) + sizeof(cpc_udp_hdr_t);
+
+	//Remove bytes from packet
+	pkt_pop(pkt, get_ipv4_hdr(clas_state, 0), 0, pop_length);
+
+	//XXX: set type
+
+	if (get_vlan_hdr(clas_state, -1)) {
+		set_vlan_type(get_vlan_hdr(clas_state, -1), ether_type);
+	} else {
+		set_ether_type(get_ether_hdr(clas_state, -1), ether_type);
+	}
 }
 
 void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	//XXX FIXME
-	return NULL;
+	void* ether_header;
+	//unsigned int current_length;
+
+	//Recover the ether(0)
+	ether_header = get_ether_hdr(clas_state, 0);
+	uint16_t inner_ether_type = get_ether_type(ether_header);
+
+	/*
+	 * this invalidates ether(0), as it shifts ether(0) to the left
+	 */
+	if (pkt_push(pkt, NULL, sizeof(cpc_eth_hdr_t), sizeof(cpc_vlan_hdr_t)) == ROFL_FAILURE){
+		// TODO: log error
+		return 0;
+	}
+
+	/*
+	 * adjust ether(0): move one vlan tag to the left
+	 */
+	ether_header-=sizeof(cpc_vlan_hdr_t); //We change also the local pointer
+	
+	/*
+	 * set default values in vlan tag
+	 */
+	cpc_vlan_hdr_t* vlan_header = get_vlan_hdr(clas_state, 0);
+	cpc_vlan_hdr_t* inner_vlan_header = get_vlan_hdr(clas_state, 1);
+	
+	if ( inner_vlan_header ) {
+		set_vlan_id(vlan_header, get_vlan_id(inner_vlan_header));
+		set_vlan_pcp(vlan_header, get_vlan_pcp(inner_vlan_header));
+	} else {
+		set_vlan_id(vlan_header,0x0000);
+		set_vlan_pcp(vlan_header,0x00);
+	}
+
+	//XXX: set type
+
+	set_vlan_type(vlan_header,inner_ether_type);
+	set_ether_type(ether_header, ether_type);
+	
+	return vlan_header;
 }
 
 void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	//XXX FIXME
-	return NULL;
+	void* ether_header;
+	cpc_mpls_hdr_t* mpls_header, *inner_mpls_header;
+	//unsigned int current_length;
+
+	//Recover the ether(0)
+	ether_header = get_ether_hdr(clas_state, 0);
+	
+	/*
+	 * this invalidates ether(0), as it shifts ether(0) to the left
+	 */
+	if (pkt_push(pkt, (void*)(ether_header + sizeof(cpc_eth_hdr_t)),0 , sizeof(cpc_mpls_hdr_t)) == ROFL_FAILURE){
+		// TODO: log error
+		return 0;
+	}
+
+	//XXX: set type
+	
+	/*
+	 * adjust ether(0): move one mpls tag to the left
+	 */
+	ether_header-=sizeof(cpc_mpls_hdr_t); //We change also the local pointer
+
+	set_ether_type(ether_header, ether_type);
+	/*
+	 * set default values in mpls tag
+	 */
+	mpls_header = get_mpls_hdr(clas_state, 0);
+	inner_mpls_header = get_mpls_hdr(clas_state, 1);
+	cpc_ipv4_hdr_t *ipv4_hdr = get_ipv4_hdr(clas_state, 0);
+	cpc_ipv4_hdr_t *ipv6_hdr = get_ipv6_hdr(clas_state, 0);
+
+	if (inner_mpls_header){
+		set_mpls_bos(mpls_header, false);
+		set_mpls_label(mpls_header, get_mpls_label(inner_mpls_header));
+		set_mpls_tc(mpls_header, get_mpls_tc(inner_mpls_header));
+		set_mpls_ttl(mpls_header, get_mpls_ttl(inner_mpls_header));
+	} else {
+		set_mpls_bos(mpls_header, true);
+		set_mpls_label(mpls_header, 0x0000);
+		set_mpls_tc(mpls_header, 0x00);
+		if ( ipv4_hdr ){
+			set_mpls_ttl(mpls_header, get_ipv4_ttl(ipv4_hdr));
+		}else if ( ipv6_hdr ){
+			set_mpls_ttl(mpls_header, get_ipv6_hop_limit(ipv6_hdr));
+		}else
+			set_mpls_ttl(mpls_header, 0x00);
+	}
+
+	return mpls_header;
 }
 
 void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	//XXX FIXME
+	
+	void* ether_header;
+	//unsigned int current_length;
+
+	if(!clas_state->is_classified || NULL == get_ether_hdr(clas_state, 0)){
+		assert(0);	//classify(clas_state);
+		return NULL;
+	}
+	
+	if (get_pppoe_hdr(clas_state, 0)){
+		// TODO: log error => pppoe tag already exists
+		return NULL;
+	}
+
+	//Recover the ether(0)
+	ether_header = get_ether_hdr(clas_state, 0);
+	//current_length = ether_header->framelen(); 
+	
+	cpc_pppoe_hdr_t *n_pppoe = NULL; 
+	cpc_ppp_hdr_t *n_ppp = NULL; 
+
+	switch (ether_type) {
+		case ETH_TYPE_PPPOE_SESSION:
+		{
+			unsigned int bytes_to_insert = sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t);
+
+			//XXX: set type
+
+			/*
+			 * this invalidates ether(0), as it shifts ether(0) to the left
+			 */
+			if (pkt_push(pkt, NULL, sizeof(cpc_eth_hdr_t), bytes_to_insert) == ROFL_FAILURE){
+				// TODO: log error
+				return NULL;
+			}
+
+			/*
+			 * adjust ether(0): move one pppoe tag to the left
+			 */
+			ether_header-=sizeof(cpc_mpls_hdr_t); //We change also the local pointer
+			set_ether_type(ether_header, ETH_TYPE_PPPOE_SESSION);
+			
+			set_ppp_prot(n_ppp, 0x0000);
+		}
+			break;
+
+		case ETH_TYPE_PPPOE_DISCOVERY:
+		{
+			unsigned int bytes_to_insert = sizeof(cpc_pppoe_hdr_t);
+			
+			//XXX: set type
+
+			/*
+			 * this invalidates ether(0), as it shifts ether(0) to the left
+			 */
+			if (pkt_push(pkt, (void*)(ether_header+sizeof(cpc_eth_hdr_t)),0, bytes_to_insert) == ROFL_FAILURE){
+				// TODO: log error
+				return NULL;
+			}
+			set_ether_type(get_ether_hdr(clas_state, 0), ETH_TYPE_PPPOE_DISCOVERY);
+
+			
+		}
+			break;
+	}
+
+	/*
+	 * set default values in pppoe tag
+	 */
+	set_pppoe_code(n_pppoe, 0x00);
+	set_pppoe_sessid(n_pppoe, 0x0000);
+	set_pppoe_type(n_pppoe, PPPOE_TYPE);
+	set_pppoe_vers(n_pppoe, PPPOE_VERSION);
+
 	return NULL;
 }
 
 void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	//XXX FIXME
 	return NULL;
 }
 
 void dump_pkt_classifier(classify_state_t* clas_state){
-	//XXX FIXME
+	//TODO ROFL_DEBUG(DRIVER_NAME" [c_pktclassifier] datapacketx86(%p) soframe: %p framelen: %zu\n", this, pkt->get_buffer(), pkt->get_buffer_length());
+	ROFL_DEBUG(DRIVER_NAME" [c_types_pktclassifier] Dump packet state(%p) TODO!!\n",clas_state);
 }
 
 size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to){

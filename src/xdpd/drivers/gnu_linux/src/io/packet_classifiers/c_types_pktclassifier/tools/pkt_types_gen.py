@@ -29,6 +29,8 @@ protocols = OrderedDict(
 	)
 )
 
+unrolled_protocols = OrderedDict()
+
 #
 # Packet types (using a notation similar to scapy)
 #
@@ -134,6 +136,18 @@ def unroll_pkt_types():
 				continue
 			pkt_types_unrolled.append(type_)
 
+
+def unroll_protocols():
+	# Unroll protocols (only IPv4)
+	# We need to transition based on IPv4 options
+	
+	for proto in protocols:
+		if "IPV4" in proto:
+			for i in range(0,ipv4_max_options_words+1):
+				unrolled_protocols[proto.replace("IPV4","IPV4_noptions_"+str(i))] = 0
+			continue
+		unrolled_protocols[proto] = 0
+
 def sanitize_pkt_type(pkt_type):
 	pkt_type = pkt_type.replace("/","_")
 	return pkt_type	
@@ -225,17 +239,6 @@ def packet_offsets(f):
 	
 def parse_transitions(f):
 	
-	# Unroll protocols (only IPv4)
-	# We need to transition based on IPv4 options
-	unrolled_protocols = OrderedDict()
-	
-	for proto in protocols:
-		if "IPV4" in proto:
-			for i in range(0,ipv4_max_options_words+1):
-				unrolled_protocols[proto.replace("IPV4","IPV4_noptions_"+str(i))] = 0
-			continue
-		unrolled_protocols[proto] = 0
-
 	##
 	## Unrolled protocols enum
 	##
@@ -302,6 +305,66 @@ def parse_transitions(f):
 		
 	f.write("\n};\n\n")
 
+def push_transitions(f):
+	
+	##
+	## Parse transitions
+	##
+	f.write("//Matrix for pushing protocol headers. \n")
+	f.write("const int push_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__] = {")
+
+	#Comment to help identifying the protocols
+	f.write("\n\t/* {")
+	for type_ in unrolled_protocols:
+		f.write(type_+",")
+	f.write("}*/ \n")
+
+	#Real rows
+	first_type = True 
+	for type_ in pkt_types_unrolled:
+		
+		if not first_type:
+			f.write(",")
+		first_type = False
+
+		len=0
+		row=[]
+		for proto in unrolled_protocols:
+			new_type=""
+			if "MPLS" in proto:
+				if "MPLS" in type_:
+					#If there is already an MPLS
+					pass
+				else:
+					#No MPLS label
+					pass
+			elif "VLAN" in proto:
+				#FIXME
+				pass
+			elif "PPPOE" in proto:
+				#FIXME
+				pass
+			elif "PPP" in proto:
+				if "PPPOE" in proto:
+					pass
+				else:
+					row.append("0")
+			else:
+				row.append("0")
+		f.write("\n\t/* "+type_+" */ {")
+
+		first_proto = True
+		for next_proto in row: 
+			if not first_proto:
+				f.write(",")
+			first_proto = False
+			f.write(next_proto)
+
+		f.write("}")
+		
+	f.write("\n};\n\n")
+
+
 def get_hdr_macro(f):
 	f.write("\n#define PT_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp < state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
 
@@ -327,6 +390,7 @@ def add_class_type_macro(f):
 def main():
 
 	unroll_pkt_types()
+	unroll_protocols()
 
 	#Open file
 	with open('../autogen_pkt_types.h', 'w') as f:	
@@ -351,11 +415,17 @@ def main():
 
 		#Transitions
 		parse_transitions(f)
-		#mpls_assign_type_macro(f)
+
+		#Push
+		push_transitions(f)
+
+		#Pop
+		#pop_transitions(f)
 
 		#Macros
 		get_hdr_macro(f)
 		add_class_type_macro(f)	
+
 		#End of guards
 		end_guard(f)
 

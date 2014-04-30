@@ -51,22 +51,6 @@ typedef enum pkt_types{
 	PT_ETHERNET_VLAN_MPLS_nlabels_14,
 	PT_ETHERNET_VLAN_MPLS_nlabels_15,
 	PT_ETHERNET_VLAN_MPLS_nlabels_16,
-	PT_ETHERNET_VLAN_MPLS_nlabels_17,
-	PT_ETHERNET_VLAN_MPLS_nlabels_18,
-	PT_ETHERNET_VLAN_MPLS_nlabels_19,
-	PT_ETHERNET_VLAN_MPLS_nlabels_20,
-	PT_ETHERNET_VLAN_MPLS_nlabels_21,
-	PT_ETHERNET_VLAN_MPLS_nlabels_22,
-	PT_ETHERNET_VLAN_MPLS_nlabels_23,
-	PT_ETHERNET_VLAN_MPLS_nlabels_24,
-	PT_ETHERNET_VLAN_MPLS_nlabels_25,
-	PT_ETHERNET_VLAN_MPLS_nlabels_26,
-	PT_ETHERNET_VLAN_MPLS_nlabels_27,
-	PT_ETHERNET_VLAN_MPLS_nlabels_28,
-	PT_ETHERNET_VLAN_MPLS_nlabels_29,
-	PT_ETHERNET_VLAN_MPLS_nlabels_30,
-	PT_ETHERNET_VLAN_MPLS_nlabels_31,
-	PT_ETHERNET_VLAN_MPLS_nlabels_32,
 	PT_8023_VLAN_MPLS_nlabels_1,
 	PT_8023_VLAN_MPLS_nlabels_2,
 	PT_8023_VLAN_MPLS_nlabels_3,
@@ -83,22 +67,6 @@ typedef enum pkt_types{
 	PT_8023_VLAN_MPLS_nlabels_14,
 	PT_8023_VLAN_MPLS_nlabels_15,
 	PT_8023_VLAN_MPLS_nlabels_16,
-	PT_8023_VLAN_MPLS_nlabels_17,
-	PT_8023_VLAN_MPLS_nlabels_18,
-	PT_8023_VLAN_MPLS_nlabels_19,
-	PT_8023_VLAN_MPLS_nlabels_20,
-	PT_8023_VLAN_MPLS_nlabels_21,
-	PT_8023_VLAN_MPLS_nlabels_22,
-	PT_8023_VLAN_MPLS_nlabels_23,
-	PT_8023_VLAN_MPLS_nlabels_24,
-	PT_8023_VLAN_MPLS_nlabels_25,
-	PT_8023_VLAN_MPLS_nlabels_26,
-	PT_8023_VLAN_MPLS_nlabels_27,
-	PT_8023_VLAN_MPLS_nlabels_28,
-	PT_8023_VLAN_MPLS_nlabels_29,
-	PT_8023_VLAN_MPLS_nlabels_30,
-	PT_8023_VLAN_MPLS_nlabels_31,
-	PT_8023_VLAN_MPLS_nlabels_32,
 	PT_ETHERNET_MPLS_nlabels_1,
 	PT_ETHERNET_MPLS_nlabels_2,
 	PT_ETHERNET_MPLS_nlabels_3,
@@ -115,22 +83,6 @@ typedef enum pkt_types{
 	PT_ETHERNET_MPLS_nlabels_14,
 	PT_ETHERNET_MPLS_nlabels_15,
 	PT_ETHERNET_MPLS_nlabels_16,
-	PT_ETHERNET_MPLS_nlabels_17,
-	PT_ETHERNET_MPLS_nlabels_18,
-	PT_ETHERNET_MPLS_nlabels_19,
-	PT_ETHERNET_MPLS_nlabels_20,
-	PT_ETHERNET_MPLS_nlabels_21,
-	PT_ETHERNET_MPLS_nlabels_22,
-	PT_ETHERNET_MPLS_nlabels_23,
-	PT_ETHERNET_MPLS_nlabels_24,
-	PT_ETHERNET_MPLS_nlabels_25,
-	PT_ETHERNET_MPLS_nlabels_26,
-	PT_ETHERNET_MPLS_nlabels_27,
-	PT_ETHERNET_MPLS_nlabels_28,
-	PT_ETHERNET_MPLS_nlabels_29,
-	PT_ETHERNET_MPLS_nlabels_30,
-	PT_ETHERNET_MPLS_nlabels_31,
-	PT_ETHERNET_MPLS_nlabels_32,
 	PT_8023_MPLS_nlabels_1,
 	PT_8023_MPLS_nlabels_2,
 	PT_8023_MPLS_nlabels_3,
@@ -147,22 +99,6 @@ typedef enum pkt_types{
 	PT_8023_MPLS_nlabels_14,
 	PT_8023_MPLS_nlabels_15,
 	PT_8023_MPLS_nlabels_16,
-	PT_8023_MPLS_nlabels_17,
-	PT_8023_MPLS_nlabels_18,
-	PT_8023_MPLS_nlabels_19,
-	PT_8023_MPLS_nlabels_20,
-	PT_8023_MPLS_nlabels_21,
-	PT_8023_MPLS_nlabels_22,
-	PT_8023_MPLS_nlabels_23,
-	PT_8023_MPLS_nlabels_24,
-	PT_8023_MPLS_nlabels_25,
-	PT_8023_MPLS_nlabels_26,
-	PT_8023_MPLS_nlabels_27,
-	PT_8023_MPLS_nlabels_28,
-	PT_8023_MPLS_nlabels_29,
-	PT_8023_MPLS_nlabels_30,
-	PT_8023_MPLS_nlabels_31,
-	PT_8023_MPLS_nlabels_32,
 	PT_ETHERNET_VLAN_ARPV4,
 	PT_8023_VLAN_ARPV4,
 	PT_ETHERNET_ARPV4,
@@ -541,22 +477,6 @@ const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {
 	/* ETHERNET/VLAN/MPLS_nlabels_14 */ {0,-1,70,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/VLAN/MPLS_nlabels_15 */ {0,-1,74,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/VLAN/MPLS_nlabels_16 */ {0,-1,78,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_17 */ {0,-1,82,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_18 */ {0,-1,86,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_19 */ {0,-1,90,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_20 */ {0,-1,94,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_21 */ {0,-1,98,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_22 */ {0,-1,102,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_23 */ {0,-1,106,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_24 */ {0,-1,110,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_25 */ {0,-1,114,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_26 */ {0,-1,118,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_27 */ {0,-1,122,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_28 */ {0,-1,126,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_29 */ {0,-1,130,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_30 */ {0,-1,134,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_31 */ {0,-1,138,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/VLAN/MPLS_nlabels_32 */ {0,-1,142,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/VLAN/MPLS_nlabels_1 */ {-1,0,21,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/VLAN/MPLS_nlabels_2 */ {-1,0,25,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/VLAN/MPLS_nlabels_3 */ {-1,0,29,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
@@ -573,22 +493,6 @@ const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {
 	/* 8023/VLAN/MPLS_nlabels_14 */ {-1,0,73,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/VLAN/MPLS_nlabels_15 */ {-1,0,77,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/VLAN/MPLS_nlabels_16 */ {-1,0,81,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_17 */ {-1,0,85,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_18 */ {-1,0,89,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_19 */ {-1,0,93,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_20 */ {-1,0,97,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_21 */ {-1,0,101,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_22 */ {-1,0,105,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_23 */ {-1,0,109,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_24 */ {-1,0,113,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_25 */ {-1,0,117,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_26 */ {-1,0,121,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_27 */ {-1,0,125,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_28 */ {-1,0,129,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_29 */ {-1,0,133,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_30 */ {-1,0,137,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_31 */ {-1,0,141,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/VLAN/MPLS_nlabels_32 */ {-1,0,145,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/MPLS_nlabels_1 */ {0,-1,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/MPLS_nlabels_2 */ {0,-1,18,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/MPLS_nlabels_3 */ {0,-1,22,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
@@ -605,22 +509,6 @@ const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {
 	/* ETHERNET/MPLS_nlabels_14 */ {0,-1,66,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/MPLS_nlabels_15 */ {0,-1,70,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/MPLS_nlabels_16 */ {0,-1,74,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_17 */ {0,-1,78,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_18 */ {0,-1,82,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_19 */ {0,-1,86,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_20 */ {0,-1,90,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_21 */ {0,-1,94,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_22 */ {0,-1,98,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_23 */ {0,-1,102,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_24 */ {0,-1,106,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_25 */ {0,-1,110,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_26 */ {0,-1,114,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_27 */ {0,-1,118,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_28 */ {0,-1,122,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_29 */ {0,-1,126,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_30 */ {0,-1,130,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_31 */ {0,-1,134,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* ETHERNET/MPLS_nlabels_32 */ {0,-1,138,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/MPLS_nlabels_1 */ {-1,0,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/MPLS_nlabels_2 */ {-1,0,21,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/MPLS_nlabels_3 */ {-1,0,25,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
@@ -637,22 +525,6 @@ const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {
 	/* 8023/MPLS_nlabels_14 */ {-1,0,69,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/MPLS_nlabels_15 */ {-1,0,73,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/MPLS_nlabels_16 */ {-1,0,77,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_17 */ {-1,0,81,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_18 */ {-1,0,85,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_19 */ {-1,0,89,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_20 */ {-1,0,93,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_21 */ {-1,0,97,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_22 */ {-1,0,101,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_23 */ {-1,0,105,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_24 */ {-1,0,109,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_25 */ {-1,0,113,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_26 */ {-1,0,117,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_27 */ {-1,0,121,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_28 */ {-1,0,125,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_29 */ {-1,0,129,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_30 */ {-1,0,133,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_31 */ {-1,0,137,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-	/* 8023/MPLS_nlabels_32 */ {-1,0,141,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/VLAN/ARPV4 */ {0,-1,-1,14,-1,-1,18,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* 8023/VLAN/ARPV4 */ {-1,0,-1,17,-1,-1,21,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	/* ETHERNET/ARPV4 */ {0,-1,-1,-1,-1,-1,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
@@ -1007,141 +879,117 @@ const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {
 	/* 8023/IPV6/SCTP */ {-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,17,-1,-1,57,-1}
 };
 
-const int parse_transitions [PT_MAX__][34] = {
+//Only used in transitions (inside the MACRO )
+typedef enum __unrolled_protocol_types{
+	__UNROLLED_PT_PROTO_ETHERNET,
+	__UNROLLED_PT_PROTO_8023,
+	__UNROLLED_PT_PROTO_MPLS,
+	__UNROLLED_PT_PROTO_VLAN,
+	__UNROLLED_PT_PROTO_PPPOE,
+	__UNROLLED_PT_PROTO_PPP,
+	__UNROLLED_PT_PROTO_ARPV4,
+	__UNROLLED_PT_PROTO_ICMPV4,
+	__UNROLLED_PT_PROTO_IPV4_noptions_0,
+	__UNROLLED_PT_PROTO_IPV4_noptions_1,
+	__UNROLLED_PT_PROTO_IPV4_noptions_2,
+	__UNROLLED_PT_PROTO_IPV4_noptions_3,
+	__UNROLLED_PT_PROTO_IPV4_noptions_4,
+	__UNROLLED_PT_PROTO_IPV4_noptions_5,
+	__UNROLLED_PT_PROTO_IPV4_noptions_6,
+	__UNROLLED_PT_PROTO_IPV4_noptions_7,
+	__UNROLLED_PT_PROTO_IPV4_noptions_8,
+	__UNROLLED_PT_PROTO_IPV4_noptions_9,
+	__UNROLLED_PT_PROTO_IPV4_noptions_10,
+	__UNROLLED_PT_PROTO_IPV4_noptions_11,
+	__UNROLLED_PT_PROTO_IPV4_noptions_12,
+	__UNROLLED_PT_PROTO_IPV4_noptions_13,
+	__UNROLLED_PT_PROTO_IPV4_noptions_14,
+	__UNROLLED_PT_PROTO_IPV4_noptions_15,
+	__UNROLLED_PT_PROTO_ICMPV6,
+	__UNROLLED_PT_PROTO_ICMPV6_OPTS,
+	__UNROLLED_PT_PROTO_ICMPV6_OPTS_LLADR_SRC,
+	__UNROLLED_PT_PROTO_ICMPV6_OPTS_LLADR_TGT,
+	__UNROLLED_PT_PROTO_ICMPV6_OPTS_PREFIX_INFO,
+	__UNROLLED_PT_PROTO_IPV6,
+	__UNROLLED_PT_PROTO_TCP,
+	__UNROLLED_PT_PROTO_UDP,
+	__UNROLLED_PT_PROTO_SCTP,
+	__UNROLLED_PT_PROTO_GTPU,
+	__UNROLLED_PT_PROTO_MAX__
+}__unrolled_protocol_types_t;
+
+//Matrix of incremental classification steps. The only purpose of this matrix is to simplify parsing code, it is not essentially necessary, although _very_ desirable.
+const int parse_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__] = {
 	/* {ETHERNET,8023,MPLS,VLAN,PPPOE,PPP,ARPV4,ICMPV4,IPV4_noptions_0,IPV4_noptions_1,IPV4_noptions_2,IPV4_noptions_3,IPV4_noptions_4,IPV4_noptions_5,IPV4_noptions_6,IPV4_noptions_7,IPV4_noptions_8,IPV4_noptions_9,IPV4_noptions_10,IPV4_noptions_11,IPV4_noptions_12,IPV4_noptions_13,IPV4_noptions_14,IPV4_noptions_15,ICMPV6,ICMPV6_OPTS,ICMPV6_OPTS_LLADR_SRC,ICMPV6_OPTS_LLADR_TGT,ICMPV6_OPTS_PREFIX_INFO,IPV6,TCP,UDP,SCTP,GTPU,}*/ 
 
-	/* ETHERNET/VLAN */ {0,0,0,0,0,0,PT_ETHERNET_VLAN_ARPV4,PT_ETHERNET_VLAN_ICMPV4,PT_ETHERNET_VLAN_IPV4_noptions_0,PT_ETHERNET_VLAN_IPV4_noptions_1,PT_ETHERNET_VLAN_IPV4_noptions_2,PT_ETHERNET_VLAN_IPV4_noptions_3,PT_ETHERNET_VLAN_IPV4_noptions_4,PT_ETHERNET_VLAN_IPV4_noptions_5,PT_ETHERNET_VLAN_IPV4_noptions_6,PT_ETHERNET_VLAN_IPV4_noptions_7,PT_ETHERNET_VLAN_IPV4_noptions_8,PT_ETHERNET_VLAN_IPV4_noptions_9,PT_ETHERNET_VLAN_IPV4_noptions_10,PT_ETHERNET_VLAN_IPV4_noptions_11,PT_ETHERNET_VLAN_IPV4_noptions_12,PT_ETHERNET_VLAN_IPV4_noptions_13,PT_ETHERNET_VLAN_IPV4_noptions_14,PT_ETHERNET_VLAN_IPV4_noptions_15,PT_ETHERNET_VLAN_ICMPV6,0,0,0,0,PT_ETHERNET_VLAN_IPV6,0,0,0,0},
-	/* 8023/VLAN */ {0,0,0,0,0,0,PT_8023_VLAN_ARPV4,PT_8023_VLAN_ICMPV4,PT_8023_VLAN_IPV4_noptions_0,PT_8023_VLAN_IPV4_noptions_1,PT_8023_VLAN_IPV4_noptions_2,PT_8023_VLAN_IPV4_noptions_3,PT_8023_VLAN_IPV4_noptions_4,PT_8023_VLAN_IPV4_noptions_5,PT_8023_VLAN_IPV4_noptions_6,PT_8023_VLAN_IPV4_noptions_7,PT_8023_VLAN_IPV4_noptions_8,PT_8023_VLAN_IPV4_noptions_9,PT_8023_VLAN_IPV4_noptions_10,PT_8023_VLAN_IPV4_noptions_11,PT_8023_VLAN_IPV4_noptions_12,PT_8023_VLAN_IPV4_noptions_13,PT_8023_VLAN_IPV4_noptions_14,PT_8023_VLAN_IPV4_noptions_15,PT_8023_VLAN_ICMPV6,0,0,0,0,PT_8023_VLAN_IPV6,0,0,0,0},
-	/* ETHERNET */ {0,0,0,PT_ETHERNET_VLAN,0,0,PT_ETHERNET_ARPV4,PT_ETHERNET_ICMPV4,PT_ETHERNET_IPV4_noptions_0,PT_ETHERNET_IPV4_noptions_1,PT_ETHERNET_IPV4_noptions_2,PT_ETHERNET_IPV4_noptions_3,PT_ETHERNET_IPV4_noptions_4,PT_ETHERNET_IPV4_noptions_5,PT_ETHERNET_IPV4_noptions_6,PT_ETHERNET_IPV4_noptions_7,PT_ETHERNET_IPV4_noptions_8,PT_ETHERNET_IPV4_noptions_9,PT_ETHERNET_IPV4_noptions_10,PT_ETHERNET_IPV4_noptions_11,PT_ETHERNET_IPV4_noptions_12,PT_ETHERNET_IPV4_noptions_13,PT_ETHERNET_IPV4_noptions_14,PT_ETHERNET_IPV4_noptions_15,PT_ETHERNET_ICMPV6,0,0,0,0,PT_ETHERNET_IPV6,0,0,0,0},
-	/* 8023 */ {0,0,0,PT_8023_VLAN,0,0,PT_8023_ARPV4,PT_8023_ICMPV4,PT_8023_IPV4_noptions_0,PT_8023_IPV4_noptions_1,PT_8023_IPV4_noptions_2,PT_8023_IPV4_noptions_3,PT_8023_IPV4_noptions_4,PT_8023_IPV4_noptions_5,PT_8023_IPV4_noptions_6,PT_8023_IPV4_noptions_7,PT_8023_IPV4_noptions_8,PT_8023_IPV4_noptions_9,PT_8023_IPV4_noptions_10,PT_8023_IPV4_noptions_11,PT_8023_IPV4_noptions_12,PT_8023_IPV4_noptions_13,PT_8023_IPV4_noptions_14,PT_8023_IPV4_noptions_15,PT_8023_ICMPV6,0,0,0,0,PT_8023_IPV6,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_1 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_2 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_3 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_4 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_5 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_6 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_7 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_8 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_9 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_10 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_11 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_12 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_13 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_14 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_15 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_1,0,0,0,PT_ETHERNET_VLAN_ARPV4,PT_ETHERNET_VLAN_ICMPV4,PT_ETHERNET_VLAN_IPV4_noptions_0,PT_ETHERNET_VLAN_IPV4_noptions_1,PT_ETHERNET_VLAN_IPV4_noptions_2,PT_ETHERNET_VLAN_IPV4_noptions_3,PT_ETHERNET_VLAN_IPV4_noptions_4,PT_ETHERNET_VLAN_IPV4_noptions_5,PT_ETHERNET_VLAN_IPV4_noptions_6,PT_ETHERNET_VLAN_IPV4_noptions_7,PT_ETHERNET_VLAN_IPV4_noptions_8,PT_ETHERNET_VLAN_IPV4_noptions_9,PT_ETHERNET_VLAN_IPV4_noptions_10,PT_ETHERNET_VLAN_IPV4_noptions_11,PT_ETHERNET_VLAN_IPV4_noptions_12,PT_ETHERNET_VLAN_IPV4_noptions_13,PT_ETHERNET_VLAN_IPV4_noptions_14,PT_ETHERNET_VLAN_IPV4_noptions_15,PT_ETHERNET_VLAN_ICMPV6,0,0,0,0,PT_ETHERNET_VLAN_IPV6,0,0,0,0},
+	/* 8023/VLAN */ {0,0,PT_8023_VLAN_MPLS_nlabels_1,0,0,0,PT_8023_VLAN_ARPV4,PT_8023_VLAN_ICMPV4,PT_8023_VLAN_IPV4_noptions_0,PT_8023_VLAN_IPV4_noptions_1,PT_8023_VLAN_IPV4_noptions_2,PT_8023_VLAN_IPV4_noptions_3,PT_8023_VLAN_IPV4_noptions_4,PT_8023_VLAN_IPV4_noptions_5,PT_8023_VLAN_IPV4_noptions_6,PT_8023_VLAN_IPV4_noptions_7,PT_8023_VLAN_IPV4_noptions_8,PT_8023_VLAN_IPV4_noptions_9,PT_8023_VLAN_IPV4_noptions_10,PT_8023_VLAN_IPV4_noptions_11,PT_8023_VLAN_IPV4_noptions_12,PT_8023_VLAN_IPV4_noptions_13,PT_8023_VLAN_IPV4_noptions_14,PT_8023_VLAN_IPV4_noptions_15,PT_8023_VLAN_ICMPV6,0,0,0,0,PT_8023_VLAN_IPV6,0,0,0,0},
+	/* ETHERNET */ {0,0,PT_ETHERNET_MPLS_nlabels_1,PT_ETHERNET_VLAN,0,0,PT_ETHERNET_ARPV4,PT_ETHERNET_ICMPV4,PT_ETHERNET_IPV4_noptions_0,PT_ETHERNET_IPV4_noptions_1,PT_ETHERNET_IPV4_noptions_2,PT_ETHERNET_IPV4_noptions_3,PT_ETHERNET_IPV4_noptions_4,PT_ETHERNET_IPV4_noptions_5,PT_ETHERNET_IPV4_noptions_6,PT_ETHERNET_IPV4_noptions_7,PT_ETHERNET_IPV4_noptions_8,PT_ETHERNET_IPV4_noptions_9,PT_ETHERNET_IPV4_noptions_10,PT_ETHERNET_IPV4_noptions_11,PT_ETHERNET_IPV4_noptions_12,PT_ETHERNET_IPV4_noptions_13,PT_ETHERNET_IPV4_noptions_14,PT_ETHERNET_IPV4_noptions_15,PT_ETHERNET_ICMPV6,0,0,0,0,PT_ETHERNET_IPV6,0,0,0,0},
+	/* 8023 */ {0,0,PT_8023_MPLS_nlabels_1,PT_8023_VLAN,0,0,PT_8023_ARPV4,PT_8023_ICMPV4,PT_8023_IPV4_noptions_0,PT_8023_IPV4_noptions_1,PT_8023_IPV4_noptions_2,PT_8023_IPV4_noptions_3,PT_8023_IPV4_noptions_4,PT_8023_IPV4_noptions_5,PT_8023_IPV4_noptions_6,PT_8023_IPV4_noptions_7,PT_8023_IPV4_noptions_8,PT_8023_IPV4_noptions_9,PT_8023_IPV4_noptions_10,PT_8023_IPV4_noptions_11,PT_8023_IPV4_noptions_12,PT_8023_IPV4_noptions_13,PT_8023_IPV4_noptions_14,PT_8023_IPV4_noptions_15,PT_8023_ICMPV6,0,0,0,0,PT_8023_IPV6,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_1 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_2 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_3 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_4 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_5 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_6 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_7 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_8 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_9 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_10 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_11 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_12 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_13 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_14 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/VLAN/MPLS_nlabels_15 */ {0,0,PT_ETHERNET_VLAN_MPLS_nlabels_16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	/* ETHERNET/VLAN/MPLS_nlabels_16 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_17 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_18 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_19 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_20 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_21 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_22 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_23 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_24 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_25 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_26 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_27 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_28 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_29 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_30 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_31 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/VLAN/MPLS_nlabels_32 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_1 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_2 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_3 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_4 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_5 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_6 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_7 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_8 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_9 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_10 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_11 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_12 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_13 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_14 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_15 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_1 */ {0,0,PT_8023_VLAN_MPLS_nlabels_2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_2 */ {0,0,PT_8023_VLAN_MPLS_nlabels_3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_3 */ {0,0,PT_8023_VLAN_MPLS_nlabels_4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_4 */ {0,0,PT_8023_VLAN_MPLS_nlabels_5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_5 */ {0,0,PT_8023_VLAN_MPLS_nlabels_6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_6 */ {0,0,PT_8023_VLAN_MPLS_nlabels_7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_7 */ {0,0,PT_8023_VLAN_MPLS_nlabels_8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_8 */ {0,0,PT_8023_VLAN_MPLS_nlabels_9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_9 */ {0,0,PT_8023_VLAN_MPLS_nlabels_10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_10 */ {0,0,PT_8023_VLAN_MPLS_nlabels_11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_11 */ {0,0,PT_8023_VLAN_MPLS_nlabels_12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_12 */ {0,0,PT_8023_VLAN_MPLS_nlabels_13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_13 */ {0,0,PT_8023_VLAN_MPLS_nlabels_14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_14 */ {0,0,PT_8023_VLAN_MPLS_nlabels_15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/VLAN/MPLS_nlabels_15 */ {0,0,PT_8023_VLAN_MPLS_nlabels_16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	/* 8023/VLAN/MPLS_nlabels_16 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_17 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_18 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_19 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_20 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_21 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_22 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_23 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_24 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_25 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_26 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_27 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_28 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_29 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_30 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_31 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/VLAN/MPLS_nlabels_32 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_1 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_2 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_3 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_4 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_5 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_6 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_7 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_8 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_9 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_10 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_11 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_12 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_13 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_14 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_15 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_1 */ {0,0,PT_ETHERNET_MPLS_nlabels_2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_2 */ {0,0,PT_ETHERNET_MPLS_nlabels_3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_3 */ {0,0,PT_ETHERNET_MPLS_nlabels_4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_4 */ {0,0,PT_ETHERNET_MPLS_nlabels_5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_5 */ {0,0,PT_ETHERNET_MPLS_nlabels_6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_6 */ {0,0,PT_ETHERNET_MPLS_nlabels_7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_7 */ {0,0,PT_ETHERNET_MPLS_nlabels_8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_8 */ {0,0,PT_ETHERNET_MPLS_nlabels_9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_9 */ {0,0,PT_ETHERNET_MPLS_nlabels_10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_10 */ {0,0,PT_ETHERNET_MPLS_nlabels_11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_11 */ {0,0,PT_ETHERNET_MPLS_nlabels_12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_12 */ {0,0,PT_ETHERNET_MPLS_nlabels_13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_13 */ {0,0,PT_ETHERNET_MPLS_nlabels_14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_14 */ {0,0,PT_ETHERNET_MPLS_nlabels_15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* ETHERNET/MPLS_nlabels_15 */ {0,0,PT_ETHERNET_MPLS_nlabels_16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	/* ETHERNET/MPLS_nlabels_16 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_17 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_18 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_19 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_20 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_21 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_22 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_23 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_24 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_25 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_26 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_27 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_28 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_29 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_30 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_31 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* ETHERNET/MPLS_nlabels_32 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_1 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_2 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_3 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_4 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_5 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_6 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_7 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_8 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_9 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_10 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_11 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_12 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_13 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_14 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_15 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_1 */ {0,0,PT_8023_MPLS_nlabels_2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_2 */ {0,0,PT_8023_MPLS_nlabels_3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_3 */ {0,0,PT_8023_MPLS_nlabels_4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_4 */ {0,0,PT_8023_MPLS_nlabels_5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_5 */ {0,0,PT_8023_MPLS_nlabels_6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_6 */ {0,0,PT_8023_MPLS_nlabels_7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_7 */ {0,0,PT_8023_MPLS_nlabels_8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_8 */ {0,0,PT_8023_MPLS_nlabels_9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_9 */ {0,0,PT_8023_MPLS_nlabels_10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_10 */ {0,0,PT_8023_MPLS_nlabels_11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_11 */ {0,0,PT_8023_MPLS_nlabels_12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_12 */ {0,0,PT_8023_MPLS_nlabels_13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_13 */ {0,0,PT_8023_MPLS_nlabels_14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_14 */ {0,0,PT_8023_MPLS_nlabels_15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	/* 8023/MPLS_nlabels_15 */ {0,0,PT_8023_MPLS_nlabels_16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	/* 8023/MPLS_nlabels_16 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_17 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_18 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_19 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_20 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_21 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_22 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_23 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_24 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_25 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_26 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_27 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_28 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_29 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_30 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_31 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	/* 8023/MPLS_nlabels_32 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	/* ETHERNET/VLAN/ARPV4 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	/* 8023/VLAN/ARPV4 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	/* ETHERNET/ARPV4 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -1497,7 +1345,7 @@ const int parse_transitions [PT_MAX__][34] = {
 };
 
 
-#define PKT_TYPES_GET_HDR(tmp, state, proto)\
+#define PT_GET_HDR(tmp, state, proto)\
 	do{\
 		tmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\
 		if(tmp < state->base )\
@@ -1505,71 +1353,29 @@ const int parse_transitions [PT_MAX__][34] = {
 	}while(0)
 
 
-#define PT_ASSIGN_MPLS_TYPE(t, PREFIX, n_labels) do{\
-	switch(n_labels){\
-		case 1: t = PREFIX##_MPLS_nlabels_##1;\
-		break;\
-		case 2: t = PREFIX##_MPLS_nlabels_##2;\
-		break;\
-		case 3: t = PREFIX##_MPLS_nlabels_##3;\
-		break;\
-		case 4: t = PREFIX##_MPLS_nlabels_##4;\
-		break;\
-		case 5: t = PREFIX##_MPLS_nlabels_##5;\
-		break;\
-		case 6: t = PREFIX##_MPLS_nlabels_##6;\
-		break;\
-		case 7: t = PREFIX##_MPLS_nlabels_##7;\
-		break;\
-		case 8: t = PREFIX##_MPLS_nlabels_##8;\
-		break;\
-		case 9: t = PREFIX##_MPLS_nlabels_##9;\
-		break;\
-		case 10: t = PREFIX##_MPLS_nlabels_##10;\
-		break;\
-		case 11: t = PREFIX##_MPLS_nlabels_##11;\
-		break;\
-		case 12: t = PREFIX##_MPLS_nlabels_##12;\
-		break;\
-		case 13: t = PREFIX##_MPLS_nlabels_##13;\
-		break;\
-		case 14: t = PREFIX##_MPLS_nlabels_##14;\
-		break;\
-		case 15: t = PREFIX##_MPLS_nlabels_##15;\
-		break;\
-		case 16: t = PREFIX##_MPLS_nlabels_##16;\
-		break;\
-		case 17: t = PREFIX##_MPLS_nlabels_##17;\
-		break;\
-		case 18: t = PREFIX##_MPLS_nlabels_##18;\
-		break;\
-		case 19: t = PREFIX##_MPLS_nlabels_##19;\
-		break;\
-		case 20: t = PREFIX##_MPLS_nlabels_##20;\
-		break;\
-		case 21: t = PREFIX##_MPLS_nlabels_##21;\
-		break;\
-		case 22: t = PREFIX##_MPLS_nlabels_##22;\
-		break;\
-		case 23: t = PREFIX##_MPLS_nlabels_##23;\
-		break;\
-		case 24: t = PREFIX##_MPLS_nlabels_##24;\
-		break;\
-		case 25: t = PREFIX##_MPLS_nlabels_##25;\
-		break;\
-		case 26: t = PREFIX##_MPLS_nlabels_##26;\
-		break;\
-		case 27: t = PREFIX##_MPLS_nlabels_##27;\
-		break;\
-		case 28: t = PREFIX##_MPLS_nlabels_##28;\
-		break;\
-		case 29: t = PREFIX##_MPLS_nlabels_##29;\
-		break;\
-		case 30: t = PREFIX##_MPLS_nlabels_##30;\
-		break;\
-		case 31: t = PREFIX##_MPLS_nlabels_##31;\
-		break;\
-		case 32: t = PREFIX##_MPLS_nlabels_##32;\
-		break;\
+#define PT_CLASS_ADD_PROTO(state, PROTO_TYPE) do{\
+	pkt_types_t next_header = (pkt_types_t)parse_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ];\
+	if( unlikely(next_header == 0) ){ assert(0); return; }else{ state->type = next_header;  }\
+}while(0)
+
+#define PT_CLASS_ADD_IPV4_OPTIONS(state, NUM_OPTIONS) do{\
+	switch(NUM_OPTIONS){\
+		case 0: PT_CLASS_ADD_PROTO(state, IPV4_noptions_0);break;\
+		case 1: PT_CLASS_ADD_PROTO(state, IPV4_noptions_1);break;\
+		case 2: PT_CLASS_ADD_PROTO(state, IPV4_noptions_2);break;\
+		case 3: PT_CLASS_ADD_PROTO(state, IPV4_noptions_3);break;\
+		case 4: PT_CLASS_ADD_PROTO(state, IPV4_noptions_4);break;\
+		case 5: PT_CLASS_ADD_PROTO(state, IPV4_noptions_5);break;\
+		case 6: PT_CLASS_ADD_PROTO(state, IPV4_noptions_6);break;\
+		case 7: PT_CLASS_ADD_PROTO(state, IPV4_noptions_7);break;\
+		case 8: PT_CLASS_ADD_PROTO(state, IPV4_noptions_8);break;\
+		case 9: PT_CLASS_ADD_PROTO(state, IPV4_noptions_9);break;\
+		case 10: PT_CLASS_ADD_PROTO(state, IPV4_noptions_10);break;\
+		case 11: PT_CLASS_ADD_PROTO(state, IPV4_noptions_11);break;\
+		case 12: PT_CLASS_ADD_PROTO(state, IPV4_noptions_12);break;\
+		case 13: PT_CLASS_ADD_PROTO(state, IPV4_noptions_13);break;\
+		case 14: PT_CLASS_ADD_PROTO(state, IPV4_noptions_14);break;\
+		case 15: PT_CLASS_ADD_PROTO(state, IPV4_noptions_15);break;\
+		default: assert(0);\
 }}while(0)
 #endif //PKT_TYPES_H

@@ -59,126 +59,173 @@ ROFL_BEGIN_DECLS
 static inline 
 void* get_ether_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ETHERNET);
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ETHERNET);
 	if(!tmp)
-		PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_8023);
+		PT_GET_HDR(tmp, clas_state, PT_PROTO_8023);
 	return tmp; 
 }
 
 static inline
 void* get_vlan_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_VLAN); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_VLAN); 
 	return tmp; 
 }
 
 static inline
 void* get_mpls_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_MPLS); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_MPLS); 
 	return tmp; 
 }
 
 static inline
 void* get_arpv4_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ARPV4); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ARPV4); 
 	return tmp; 
 }
 
 static inline
 void* get_ipv4_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_IPV4); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_IPV4); 
 	return tmp; 
 }
 
 static inline
 void* get_icmpv4_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV4); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV4); 
 	return tmp; 
 }
 
 static inline
 void* get_ipv6_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_IPV6); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_IPV6); 
 	return tmp; 
 }
 
 static inline
 void* get_icmpv6_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6); 
 	return tmp; 
 }
 
 static inline
 void* get_icmpv6_opt_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS); 
 	return tmp; 
 }
 
 static inline
 void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){		uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_SRC); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_SRC); 
 	return tmp; 
 }
 
 static inline
 void* get_icmpv6_opt_lladr_target_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_TGT); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_TGT); 
 	return tmp; 
 }
 
 static inline
 void* get_icmpv6_opt_prefix_info_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_PREFIX_INFO); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_PREFIX_INFO); 
 	return tmp; 
 }
 
 static inline
 void* get_udp_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_UDP); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_UDP); 
 	return tmp;
 }
 
 static inline
 void* get_tcp_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_TCP); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_TCP); 
 	return tmp;
 }
 
 static inline
 void* get_pppoe_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_PPPOE); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_PPPOE); 
 	return tmp;
 }
 
 static inline
 void* get_ppp_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_PPP); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_PPP); 
 	return tmp;
 }
 
 static inline
 void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PKT_TYPES_GET_HDR(tmp, clas_state, PT_PROTO_GTPU); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_GTPU); 
 	return tmp;
 }
 
 //
 // Parsing code
 //
+
+static inline
+void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+	PT_CLASS_ADD_PROTO(clas_state, TCP);	
+	//No further parsing
+}
+
+static inline
+void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+
+	if (unlikely(datalen < sizeof(cpc_gtphu_t))) { return; }
+	PT_CLASS_ADD_PROTO(clas_state, GTPU);
+	//No further parsing
+}
+static inline
+void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+
+	cpc_udp_hdr_t *udp = (cpc_udp_hdr_t*)data; 
+	
+	//Increment pointers and decrement remaining payload size
+	data += sizeof(cpc_udp_hdr_t);
+	datalen -= sizeof(cpc_udp_hdr_t);
+
+	PT_CLASS_ADD_PROTO(clas_state, UDP);	
+	
+	if (datalen > 0){
+		switch (get_udp_dport(udp)) {
+		case UDP_DST_PORT_GTPU: {
+			parse_gtp(clas_state, data, datalen);
+		} break;
+		default: {
+			//TODO: something
+		} break;
+		}
+	}
+}
+
+static inline
+void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+	PT_CLASS_ADD_PROTO(clas_state, ARPV4);	
+	//No further parsing
+}
+static inline
+void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+	PT_CLASS_ADD_PROTO(clas_state, ICMPV4);	
+	//No further parsing
+}
 
 static inline
 void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -193,35 +240,40 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	data += header_len_bytes;
 	datalen -=  header_len_bytes; 
 
+	//Assign type
+	PT_CLASS_ADD_IPV4_OPTIONS(clas_state, ipv4->ihlvers);
 
 	switch (get_ipv4_proto(ipv4)) {
 		case IPV4_IP_PROTO:
 			{
+				//IPv4 on IPv4 not supported
 				//parse_ipv4(clas_state, data, datalen);
 			}
 			break;
 		case ICMPV4_IP_PROTO:
 			{
-				//parse_icmpv4(clas_state, data, datalen);
+				parse_icmpv4(clas_state, data, datalen);
 			}
 			break;
 		case UDP_IP_PROTO:
 			{
-				//parse_udp(clas_state, data, datalen);
+				parse_udp(clas_state, data, datalen);
 			}
 			break;
 		case TCP_IP_PROTO:
 			{
-				//parse_tcp(clas_state, data, datalen);
+				parse_tcp(clas_state, data, datalen);
 			}
 			break;
-#if 0
+
+/*
 		case SCTP_IP_PROTO:
 			{
-				parse_sctp(clas_state, data, datalen);
+				//Not supported yet
+				//parse_sctp(clas_state, data, datalen);
 			}
 			break;
-#endif
+*/
 		default:
 			{
 			
@@ -245,20 +297,12 @@ void parse_mpls(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 		data += sizeof(cpc_mpls_hdr_t);
 		datalen -= sizeof(cpc_mpls_hdr_t);
 		mpls = (cpc_mpls_hdr_t*)data;
+
+		//Add label to the stack
+		PT_CLASS_ADD_PROTO(clas_state, MPLS);	
 	}while(! get_mpls_bos(mpls));
 
-	//Supported types; MPLS over ethernet, MPLS over VLAN
-	switch (clas_state->type){
-		case PT_ETHERNET:
-				PT_ASSIGN_MPLS_TYPE(clas_state->type, PT_ETHERNET, n_labels);
-				break;
-		case PT_ETHERNET_VLAN:
-				PT_ASSIGN_MPLS_TYPE(clas_state->type, PT_ETHERNET_VLAN, n_labels);
-				break;
-		default:
-			assert(0);
-			return;
-	}
+	//MPLS does not have explicit knowledge of the headers on top of it; so classification stops here
 }
 
 static inline
@@ -285,7 +329,7 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	//Assign type
 	//FIXME: use n_vlans 
-	clas_state->type = PT_ETHERNET_VLAN;	
+	PT_CLASS_ADD_PROTO(clas_state, VLAN);
 	
 	switch (eth_type) {
 		case ETH_TYPE_MPLS_UNICAST:
@@ -302,14 +346,20 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 			break;
 		case ETH_TYPE_ARP:
 			{
-				//parse_arpv4(clas_state, data, datalen);
+				parse_arpv4(clas_state, data, datalen);
 			}
 			break;
 		case ETH_TYPE_IPV4:
 			{
-				//parse_ipv4(clas_state, data, datalen);
+				parse_ipv4(clas_state, data, datalen);
 			}
 			break;
+		case ETH_TYPE_IPV6:
+			{
+				//parse_ipv6(clas_state, data, datalen);
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -395,7 +445,8 @@ void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, ui
 	clas_state->port_in = port_in;
 	clas_state->phy_port_in = phy_port_in;
 
-	//XXX FIXME start to parse in ethernet ethernet	
+	//Determine packet type	
+	parse_ethernet(clas_state, data, len);
 	
 	//Mark it as classified
 	clas_state->is_classified = true;

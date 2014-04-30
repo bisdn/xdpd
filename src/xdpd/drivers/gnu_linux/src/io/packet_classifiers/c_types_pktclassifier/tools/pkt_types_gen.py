@@ -67,7 +67,7 @@ pkt_types_unrolled = [ ]
 
 #Unroll parameters 
 ipv4_max_options_words = 15 #15 Inclusive 15x4bytes=60bytes 
-mpls_max_depth=32 #Maximum
+mpls_max_depth=16 #Maximum
 
 ##
 ## Helper Functions
@@ -211,9 +211,7 @@ def packet_offsets(f):
 def parse_transitions(f):
 	
 	# Unroll protocols (only IPv4)
-	#
 	# We need to transition based on IPv4 options
-	#
 	unrolled_protocols = OrderedDict()
 	
 	for proto in protocols:
@@ -222,8 +220,23 @@ def parse_transitions(f):
 				unrolled_protocols[proto.replace("IPV4","IPV4_noptions_"+str(i))] = 0
 			continue
 		unrolled_protocols[proto] = 0
-	
-	f.write("const int parse_transitions [PT_MAX__]["+str(unrolled_protocols.__len__())+"] = {")
+
+	##
+	## Unrolled protocols enum
+	##
+	f.write("//Only used in transitions (inside the MACRO )\n")
+	f.write("typedef enum __unrolled_protocol_types{\n")
+	for proto in unrolled_protocols:
+		f.write("\t__UNROLLED_PT_PROTO_"+proto+",\n")
+		
+	f.write("\t__UNROLLED_PT_PROTO_MAX__\n}__unrolled_protocol_types_t;\n\n")
+
+
+	##
+	## Parse transitions
+	##
+	f.write("//Matrix of incremental classification steps. The only purpose of this matrix is to simplify parsing code, it is not essentially necessary, although _very_ desirable.\n")
+	f.write("const int parse_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__] = {")
 
 	#Comment to help identifying the protocols
 	f.write("\n\t/* {")
@@ -242,9 +255,17 @@ def parse_transitions(f):
 		len=0
 		row=[]
 		for proto in unrolled_protocols:
+			new_type=""
 			if "MPLS" in proto:
 				#Special cases: MPLS
-				pass #XXX				
+				if type_.split("MPLS_nlabels_").__len__() == 1:
+					new_type=type_+"/"+proto+"_nlabels_1"	
+				elif type_.split("MPLS_nlabels_").__len__() == 2:
+					n_labels = int(type_.split("MPLS_nlabels_")[1])+1
+					new_type=type_.split("MPLS_nlabels_")[0]+"MPLS_nlabels_"+str(n_labels)
+				else:
+					#No type
+					new_type=type_+"/"+proto
 			else:
 				new_type=type_+"/"+proto
 
@@ -267,15 +288,23 @@ def parse_transitions(f):
 	f.write("\n};\n\n")
 
 def get_hdr_macro(f):
-	f.write("\n#define PKT_TYPES_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp < state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
+	f.write("\n#define PT_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp < state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
 
-def mpls_assign_type_macro(f):
-	f.write("\n#define PT_ASSIGN_MPLS_TYPE(t, PREFIX, n_labels) do{\\\n\tswitch(n_labels){\\\n")
-	for i in range(1,mpls_max_depth+1):
-		f.write("\t\tcase "+str(i)+": t = PREFIX##_MPLS_nlabels_##"+str(i)+";\\\n\t\tbreak;\\\n")
-	#f.write("\t\tdefault: {assert(0);} break;\\\n")
+def add_class_type_macro(f):
+	#Add main Macro
+	f.write("\n#define PT_CLASS_ADD_PROTO(state, PROTO_TYPE) do{\\\n")
+	f.write("\tpkt_types_t next_header = (pkt_types_t)parse_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ];\\\n")
+	f.write("\tif( unlikely(next_header == 0) ){ assert(0); return; }else{ state->type = next_header;  }\\\n")
+	f.write("}while(0)\n")
+	
+	#Add IPv4 options macro
+	f.write("\n#define PT_CLASS_ADD_IPV4_OPTIONS(state, NUM_OPTIONS) do{\\\n")
+	f.write("\tswitch(NUM_OPTIONS){\\\n")
+	for i in range(0,ipv4_max_options_words+1):
+		f.write("\t\tcase "+str(i)+": PT_CLASS_ADD_PROTO(state, IPV4_noptions_"+str(i)+");break;\\\n")
+	f.write("\t\tdefault: assert(0);\\\n")
 	f.write("}}while(0)\n")
-
+	
 ##
 ## Main function
 ##
@@ -307,11 +336,11 @@ def main():
 
 		#Transitions
 		parse_transitions(f)
+		#mpls_assign_type_macro(f)
 
 		#Macros
 		get_hdr_macro(f)
-		mpls_assign_type_macro(f)
-	
+		add_class_type_macro(f)	
 		#End of guards
 		end_guard(f)
 

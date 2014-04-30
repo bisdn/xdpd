@@ -19,33 +19,34 @@ void destroy_classifier(classify_state_t* clas_state){
 
 void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
 
-
-	cpc_vlan_hdr_t* vlan = get_vlan_hdr(clas_state,0);
-
-	if (!vlan)
+	pkt_types_t new = PT_POP_PROTO(clas_state, VLAN);  
+	if(unlikely(new == PT_INVALID))
 		return;
 
+	cpc_vlan_hdr_t* vlan = get_vlan_hdr(clas_state,0);
 	uint16_t ether_type = get_vlan_type(vlan);
 	
 	//Take header out from packet
 	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_vlan_hdr_t));
 
-	//XXX: set type
+	//Set new type and base(move right)
+	clas_state->type = new;
+	clas_state->base += sizeof(cpc_vlan_hdr_t);
 
 	//Set ether_type of new frame
 	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
 }
 void pop_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	// outermost mpls tag, if any, following immediately the initial ethernet header
 	
-	cpc_mpls_hdr_t* mpls = get_mpls_hdr(clas_state,0);
-	
-	if (!mpls)
+	pkt_types_t new = PT_POP_PROTO(clas_state, MPLS);  
+	if(unlikely(new == PT_INVALID))
 		return;
 
-	//XXX: set type
-
 	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_mpls_hdr_t));
+
+	//Set new type and base(move right)
+	clas_state->type = new;
+	clas_state->base += sizeof(cpc_mpls_hdr_t);
 
 	set_ether_type(get_ether_hdr(clas_state,0), ether_type);
 }
@@ -60,20 +61,33 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 		case ETH_TYPE_PPPOE_DISCOVERY:
 		{
 			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_pppoe_hdr_t));
-			//XXX: set type
+			pkt_types_t new = PT_POP_PROTO(clas_state, PPPOE);
+			if(unlikely(new == PT_INVALID))
+				return;
+			//Set new type and base(move right)
+			clas_state->type = new;
+			clas_state->base += sizeof(cpc_pppoe_hdr_t); 
 		}
 			break;
 
 		case ETH_TYPE_PPPOE_SESSION:
 		{
 			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t),sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t));
-			//XXX: set type
+			pkt_types_t new = PT_POP_PROTO(clas_state, PPP);
+			if(unlikely(new == PT_INVALID))
+				return;
+			new = PT_POP_PROTO(clas_state, PPPOE);
+			if(unlikely(new == PT_INVALID))
+				return;
+
+			//Set new type and base(move right)
+			clas_state->type = new;
+			clas_state->base += sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t);
 		}
 		break;
 	}
 
 	set_ether_type(get_ether_hdr(clas_state,0), ether_type);
-	//ether_header->reset(ether_header->soframe(), ether_header->framelen() - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
 }
 
 void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){

@@ -316,7 +316,7 @@ def parse_transitions(f):
 def push_transitions(f):
 	
 	##
-	## Parse transitions
+	## Push operations
 	##
 	f.write("//Matrix for pushing protocol headers. \n")
 	f.write("const int push_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__] = {")
@@ -408,6 +408,79 @@ def push_transitions(f):
 		
 	f.write("\n};\n\n")
 
+def pop_transitions(f):
+	
+	##
+	## Pop operations
+	##
+	f.write("//Matrix for popping protocol headers. \n")
+	f.write("const int pop_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__] = {")
+
+	#Comment to help identifying the protocols
+	f.write("\n\t/* {")
+	for type_ in unrolled_protocols:
+		f.write(type_+",")
+	f.write("}*/ \n")
+
+	#Real rows
+	first_type = True 
+	for type_ in pkt_types_unrolled:
+		
+		if not first_type:
+			f.write(",")
+		first_type = False
+
+		len=0
+		row=[]
+		for proto in unrolled_protocols:
+			new_type=""
+			if "MPLS" in proto:
+				if "MPLS" in type_:
+					#If there is already an MPLS add to the end
+					n_labels = int(type_.split("MPLS_nlabels_")[1])
+					if(n_labels > 1):
+						new_type=type_.replace("MPLS_nlabels_"+str(n_labels), "MPLS_nlabels_"+str(n_labels-1))
+					else:
+						new_type=type_.replace("/MPLS_nlabels_1","")
+				else:
+					new_type +="-1"
+				row.append(new_type)
+			elif "VLAN" in proto:
+				if "/VLAN/VLAN" in type_:
+					new_type=type_.replace("/VLAN/VLAN", "/VLAN")
+				elif "/VLAN" in type_:
+					new_type=type_.replace("/VLAN", "")
+				else:
+					new_type +="-1"
+
+				row.append(new_type)
+			elif "PPPOE" in proto:
+				if "PPPOE/PPP" in type_:
+					new_type +="-1"
+				else:
+					new_type=type_.replace("/PPPOE", "")
+				row.append(new_type)
+			elif "PPP" in proto:
+				if "/PPPOE/PPP" in type_:
+					row.append(type_.replace("/PPPOE/PPP", "/PPPOE"))
+				else:
+					row.append("-1")
+			else:
+				row.append("-1")
+		f.write("\n\t/* "+type_+" */ {")
+
+		first_proto = True
+		for next_proto in row: 
+			if not first_proto:
+				f.write(",")
+			first_proto = False
+			if next_proto != "-1":
+				f.write("PT_"+sanitize_pkt_type(next_proto))
+			else:
+				f.write(next_proto)
+		f.write("}")
+		
+	f.write("\n};\n\n")
 
 def get_hdr_macro(f):
 	f.write("\n#define PT_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp < state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
@@ -430,6 +503,11 @@ def add_class_type_macro(f):
 def push_macro(f):
 	f.write("\n#define PT_PUSH_PROTO(state, PROTO_TYPE)\\\n")
 	f.write("\t(pkt_types_t)push_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ]\n")
+
+def pop_macro(f):
+	f.write("\n#define PT_POP_PROTO(state, PROTO_TYPE)\\\n")
+	f.write("\t(pkt_types_t)pop_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ]\n")
+
 
 
 ##
@@ -469,12 +547,13 @@ def main():
 		push_transitions(f)
 
 		#Pop
-		#pop_transitions(f)
+		pop_transitions(f)
 
 		#Macros
 		get_hdr_macro(f)
 		add_class_type_macro(f)	
 		push_macro(f)	
+		pop_macro(f)	
 
 		#End of guards
 		end_guard(f)

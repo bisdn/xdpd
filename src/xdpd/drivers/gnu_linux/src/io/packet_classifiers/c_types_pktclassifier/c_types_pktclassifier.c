@@ -56,6 +56,6 @@ void dump_pkt_classifier(classify_state_t* clas_state){
 }
 
 size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to){
-	//XXX FIXME
-	return 0;
+	assert(to == NULL);	
+	return clas_state->len -( ((uint8_t*)from) - clas_state->base);
 }

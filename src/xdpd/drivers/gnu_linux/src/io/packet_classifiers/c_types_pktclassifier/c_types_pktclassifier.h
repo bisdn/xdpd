@@ -268,18 +268,18 @@ void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 static inline
 void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
-	unsigned header_len_bytes;	
-
+	unsigned header_len_bytes, num_of_options;
 	//Set reference
 	cpc_ipv4_hdr_t *ipv4 = (cpc_ipv4_hdr_t*)data; 
 
 	//Set frame
-	header_len_bytes = ipv4->ihlvers*4;
+	header_len_bytes =(ipv4->ihlvers&0x0F)*4;
+	num_of_options = (ipv4->ihlvers&0x0F) -(sizeof(cpc_ipv4_hdr_t)/4);
 	data += header_len_bytes;
 	datalen -=  header_len_bytes; 
 
 	//Assign type
-	PT_CLASS_ADD_IPV4_OPTIONS(clas_state, ipv4->ihlvers);
+	PT_CLASS_ADD_IPV4_OPTIONS(clas_state, num_of_options);
 
 	switch (get_ipv4_proto(ipv4)) {
 		case IPV4_IP_PROTO:
@@ -481,9 +481,9 @@ void parse_mpls(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 
 	do{
 		n_labels++;
+		mpls = (cpc_mpls_hdr_t*)data;
 		data += sizeof(cpc_mpls_hdr_t);
 		datalen -= sizeof(cpc_mpls_hdr_t);
-		mpls = (cpc_mpls_hdr_t*)data;
 
 		//Add label to the stack
 		PT_CLASS_ADD_PROTO(clas_state, MPLS);	
@@ -703,7 +703,14 @@ void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, ui
 	
 	//Mark it as classified
 	clas_state->is_classified = true;
+
+	//TODO:remove
+	//Fill in the matches
+	clas_state->matches->__pkt_size_bytes = len;
+	clas_state->matches->__port_in = port_in;
+	clas_state->matches->__phy_port_in = phy_port_in;
 }
+
 
 ROFL_END_DECLS
 

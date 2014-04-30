@@ -687,11 +687,17 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 static inline
 void reset_classifier(classify_state_t* clas_state){
 	clas_state->is_classified = false;
+	//TODO:remove
+	if(likely(clas_state->matches != NULL))
+		memset(clas_state->matches,0,sizeof(packet_matches_t));
 }
 
 static inline
 void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, uint32_t port_in, uint32_t phy_port_in){
 
+	//TODO:remove
+	reset_classifier(clas_state);
+	
 	//Set basic 
 	clas_state->base = data;
 	clas_state->len = len;

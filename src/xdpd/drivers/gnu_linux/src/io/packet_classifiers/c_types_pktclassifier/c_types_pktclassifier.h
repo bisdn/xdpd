@@ -361,6 +361,12 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	
 	PT_CLASS_ADD_PROTO(clas_state, ICMPV6);	
 	
+	//TODO: remove
+	//Initialize icmpv6 packet matches
+	clas_state->matches->__icmpv6_code = get_icmpv6_code(icmpv6);
+	clas_state->matches->__icmpv6_type = get_icmpv6_type(icmpv6);
+	clas_state->matches->__ipv6_nd_target = get_icmpv6_neighbor_taddr(icmpv6);
+
 	//Increment pointers and decrement remaining payload size (depending on type)
 	switch( get_icmpv6_type(icmpv6) ){
 		case ICMPV6_TYPE_ROUTER_SOLICATION:
@@ -396,11 +402,6 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 		parse_icmpv6_opts(clas_state,data,datalen);
 	}
 
-	//TODO: remove
-	//Initialize icmpv6 packet matches
-	clas_state->matches->__icmpv6_code = get_icmpv6_code(icmpv6);
-	clas_state->matches->__icmpv6_type = get_icmpv6_type(icmpv6);
-	clas_state->matches->__ipv6_nd_target = get_icmpv6_neighbor_taddr(icmpv6);
 }
 
 static inline

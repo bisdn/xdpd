@@ -25,8 +25,8 @@ enum icmpv4_ip_proto_t {
 };
 
 inline static
-uint8_t get_icmpv4_type(void *hdr){
-	return ((cpc_icmpv4_hdr_t*)hdr)->type;
+uint8_t* get_icmpv4_type(void *hdr){
+	return &((cpc_icmpv4_hdr_t*)hdr)->type;
 };
 
 inline static
@@ -35,8 +35,8 @@ void set_icmpv4_type(void *hdr, uint8_t type){
 };
 
 inline static
-uint8_t get_icmpv4_code(void *hdr){
-	return ((cpc_icmpv4_hdr_t*)hdr)->code;
+uint8_t* get_icmpv4_code(void *hdr){
+	return &((cpc_icmpv4_hdr_t*)hdr)->code;
 };
 
 inline static
@@ -45,8 +45,8 @@ void set_icmpv4_code(void *hdr, uint8_t code){
 };
 
 inline static
-uint16_t get_icmpv4_checksum(void *hdr){
-	return ((cpc_icmpv4_hdr_t*)hdr)->checksum;
+uint16_t* get_icmpv4_checksum(void *hdr){
+	return &((cpc_icmpv4_hdr_t*)hdr)->checksum;
 };
 
 inline static

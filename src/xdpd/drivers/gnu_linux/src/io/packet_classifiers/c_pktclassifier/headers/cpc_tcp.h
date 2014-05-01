@@ -106,8 +106,8 @@ void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 }
 
 inline static
-uint16_t get_tcp_sport(void *hdr){
-	return ((cpc_tcp_hdr_t*)hdr)->sport;
+uint16_t* get_tcp_sport(void *hdr){
+	return &((cpc_tcp_hdr_t*)hdr)->sport;
 }
 
 inline static
@@ -116,8 +116,8 @@ void set_tcp_sport(void *hdr, uint16_t port){
 }
 
 inline static
-uint16_t get_tcp_dport(void *hdr){
-	return ((cpc_tcp_hdr_t*)hdr)->dport;
+uint16_t* get_tcp_dport(void *hdr){
+	return &((cpc_tcp_hdr_t*)hdr)->dport;
 }
 
 inline static

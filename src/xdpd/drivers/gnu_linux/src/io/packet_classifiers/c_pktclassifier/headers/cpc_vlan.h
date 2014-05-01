@@ -29,9 +29,8 @@ void set_vlan_id(void* hdr, uint16_t vid){
 }
 
 inline static
-uint16_t get_vlan_id(void* hdr){
-	uint16_t *byte0 = (uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0;
-	return ( *byte0 & OF1X_VLAN_ID_MASK );
+uint16_t* get_vlan_id(void* hdr){
+	return (uint16_t*) &((cpc_vlan_hdr_t*)hdr)->byte0;
 }
 
 inline static
@@ -40,8 +39,8 @@ void set_vlan_pcp(void* hdr, uint8_t pcp){
 }
 
 inline static
-uint16_t get_vlan_pcp(void* hdr){
-	return ((cpc_vlan_hdr_t*)hdr)->byte0 & OF1X_3MSBITS_MASK;
+uint16_t* get_vlan_pcp(void* hdr){
+	return &((cpc_vlan_hdr_t*)hdr)->byte0;
 }
 
 #if 0
@@ -70,8 +69,8 @@ void set_vlan_type(void* hdr, uint16_t dl_type){
 }
 
 inline static
-uint16_t get_vlan_type(void* hdr){
-	return ((cpc_vlan_hdr_t*)hdr)->dl_type;
+uint16_t* get_vlan_type(void* hdr){
+	return &((cpc_vlan_hdr_t*)hdr)->dl_type;
 }
 
 

@@ -155,8 +155,8 @@ void icmpv6_calc_checksum(void *hdr, uint16_t length){
 //NOTE initialize, parse ..?¿
 
 inline static
-uint8_t get_icmpv6_code(void *hdr){
-	return ((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr.code;
+uint8_t* get_icmpv6_code(void *hdr){
+	return &((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr.code;
 };
 
 inline static
@@ -165,8 +165,8 @@ void set_icmpv6_code(void *hdr, uint8_t code){
 };
 
 inline static
-uint8_t get_icmpv6_type(void *hdr){
-	return ((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr.type;
+uint8_t* get_icmpv6_type(void *hdr){
+	return &((cpc_icmpv6u_t*)hdr)->icmpv6u_hdr.type;
 };
 
 inline static
@@ -175,27 +175,19 @@ void set_icmpv6_type(void *hdr, uint8_t type){
 };
 
 inline static
-uint128__t get_icmpv6_neighbor_taddr(void *hdr){
-	uint128__t addr = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
-	void* tmp=NULL;
+uint128__t* get_icmpv6_neighbor_taddr(void *hdr){
 	switch (get_icmpv6_type(hdr)) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			tmp = (void*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
-			addr= *(uint128__t*)tmp;
-			break;
+			return &(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
 		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			tmp = (void*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr.taddr;
-			addr= *(uint128__t*)tmp;
-			break;
+			return &(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr.taddr;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			tmp = ((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr.taddr;
-			addr= *(uint128__t*)tmp;
-			break;
+			return &(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr.taddr;
 		default:
 			//TODO LOG ERROR
 			break;
 	}
-	return addr;
+	return NULL;
 };
 
 inline static

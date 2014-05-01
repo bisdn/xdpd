@@ -13,8 +13,6 @@ classify_state_t* init_classifier(datapacket_t*const  pkt){
 	memset(classifier,0,sizeof(classify_state_t));
 
 	assert(pkt != NULL);
-	classifier->matches = &pkt->matches;
-
 	return classifier;
 }
 void destroy_classifier(classify_state_t* clas_state){

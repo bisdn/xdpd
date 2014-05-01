@@ -35,6 +35,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 	storeid id;
 	static char null_buf[DUMMY_BUF_SIZE];
 	static unsigned int pending_to_read=0;
+	packet_matches_t matches;
 	
 	//Recover platform state
 	switch_platform_state_t* ls_int = (switch_platform_state_t*)sw->platform_state;
@@ -62,6 +63,8 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 			continue;
 		}
 
+		//Fill matches
+		fill_packet_matches(pkt, &matches);
 		//Process packet in
         	rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_x86->pktin_table_id, 	
@@ -71,7 +74,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 						pkt_x86->get_buffer(), 
 						pkt_x86->pktin_send_len,
 						pkt_x86->get_buffer_length(),
-						&pkt->matches
+						&matches
 						);
 
 		if( unlikely(rv != HAL_SUCCESS) ){

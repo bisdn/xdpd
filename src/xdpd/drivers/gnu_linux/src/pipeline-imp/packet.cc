@@ -77,7 +77,7 @@ uint64_t platform_packet_get_eth_dst(datapacket_t * const pkt)
 
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
         
-	if ((NULL == get_ether_hdr(pack->headers,0))) return 0;
+	if ((NULL == pack) || (NULL == get_ether_hdr(pack->headers,0))) return 0;
 
 	return get_ether_dl_dst(get_ether_hdr(pack->headers,0));
 }
@@ -87,7 +87,7 @@ uint64_t platform_packet_get_eth_src(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
         
-	if ((NULL == get_ether_hdr(pack->headers,0))) return 0;
+	if ((NULL == pack) || (NULL == get_ether_hdr(pack->headers,0))) return 0;
         
 	return get_ether_dl_src(get_ether_hdr(pack->headers,0));
 }
@@ -97,7 +97,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_eth_type(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ether_hdr(pack->headers,0))) return 0;
+	if ((NULL == pack) || (NULL == get_ether_hdr(pack->headers,0))) return 0;
 	
 	if (get_vlan_hdr(pack->headers,-1) != NULL)
 		return get_vlan_type(get_vlan_hdr(pack->headers,-1));
@@ -118,7 +118,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_vlan_vid(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_vlan_hdr(pack->headers,0))) return 0;
+	if ((NULL == pack) || (NULL == get_vlan_hdr(pack->headers,0))) return 0;
 	
 	return get_vlan_id(get_vlan_hdr(pack->headers, 0))&0xFFF;
 }
@@ -127,7 +127,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_vlan_pcp(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_vlan_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_vlan_hdr(pack->headers, 0))) return 0;
 	return get_vlan_pcp(get_vlan_hdr(pack->headers, 0))&0x07;
 }
 
@@ -135,7 +135,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_arp_opcode(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
 	return get_arpv4_opcode(get_arpv4_hdr(pack->headers, 0));
 }
 
@@ -143,7 +143,7 @@ STATIC_PACKET_INLINE__
 uint64_t platform_packet_get_arp_sha(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
 	return get_arpv4_dl_src(get_arpv4_hdr(pack->headers, 0));
 }
 
@@ -151,7 +151,7 @@ STATIC_PACKET_INLINE__
 uint32_t platform_packet_get_arp_spa(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
 	return get_arpv4_ip_src(get_arpv4_hdr(pack->headers,0));
 }
 
@@ -159,7 +159,7 @@ STATIC_PACKET_INLINE__
 uint64_t platform_packet_get_arp_tha(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
 	return get_arpv4_dl_dst(get_arpv4_hdr(pack->headers ,0));
 }
 
@@ -167,7 +167,7 @@ STATIC_PACKET_INLINE__
 uint32_t platform_packet_get_arp_tpa(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return 0;
 	return get_arpv4_ip_dst(get_arpv4_hdr(pack->headers, 0));
 }
 
@@ -211,7 +211,7 @@ STATIC_PACKET_INLINE__
 uint32_t platform_packet_get_ipv4_src(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ipv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_ipv4_hdr(pack->headers, 0))) return 0;
 
 	return get_ipv4_src(get_ipv4_hdr(pack->headers, 0));
 }
@@ -220,7 +220,7 @@ STATIC_PACKET_INLINE__
 uint32_t platform_packet_get_ipv4_dst(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ipv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_ipv4_hdr(pack->headers, 0))) return 0;
 
 	return get_ipv4_dst(get_ipv4_hdr(pack->headers, 0));
 }
@@ -229,7 +229,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_tcp_dst(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_tcp_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_tcp_hdr(pack->headers, 0))) return 0;
 	return get_tcp_dport(get_tcp_hdr(pack->headers, 0));
 }
 
@@ -237,7 +237,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_tcp_src(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_tcp_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_tcp_hdr(pack->headers, 0))) return 0;
 	return get_tcp_sport(get_tcp_hdr(pack->headers, 0));
 }
 
@@ -245,7 +245,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_udp_dst(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_udp_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_udp_hdr(pack->headers, 0))) return 0;
 	return get_udp_dport(get_udp_hdr(pack->headers, 0));
 }
 
@@ -253,7 +253,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_udp_src(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_udp_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_udp_hdr(pack->headers, 0))) return 0;
 	return get_udp_sport(get_udp_hdr(pack->headers, 0));
 }
 
@@ -273,7 +273,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_icmpv4_type(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_icmpv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_icmpv4_hdr(pack->headers, 0))) return 0;
 	return get_icmpv4_type(get_icmpv4_hdr(pack->headers, 0));
 }
 
@@ -281,7 +281,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_icmpv4_code(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_icmpv4_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_icmpv4_hdr(pack->headers, 0))) return 0;
 	return get_icmpv4_code(get_icmpv4_hdr(pack->headers, 0));
 }
 
@@ -289,7 +289,7 @@ STATIC_PACKET_INLINE__
 uint128__t platform_packet_get_ipv6_src(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if((NULL == get_ipv6_hdr(pack->headers, 0))){
+	if((NULL==pack) || (NULL == get_ipv6_hdr(pack->headers, 0))){
 		uint128__t ipv6_src = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}; //memset 0?
 		return ipv6_src;
 	}
@@ -300,7 +300,7 @@ STATIC_PACKET_INLINE__
 uint128__t platform_packet_get_ipv6_dst(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if((NULL == get_ipv6_hdr(pack->headers, 0))){
+	if((NULL==pack) || (NULL == get_ipv6_hdr(pack->headers, 0))){
 		uint128__t ipv6_dst = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}; //memset 0?
 		return ipv6_dst;
 	}
@@ -311,7 +311,7 @@ STATIC_PACKET_INLINE__
 uint64_t platform_packet_get_ipv6_flabel(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if((NULL == get_ipv6_hdr(pack->headers, 0))) return 0;
+	if((NULL==pack) || (NULL == get_ipv6_hdr(pack->headers, 0))) return 0;
 	return get_ipv6_flow_label(get_ipv6_hdr(pack->headers, 0));
 }
 
@@ -392,7 +392,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_icmpv6_type(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if((NULL == get_icmpv6_hdr(pack->headers, 0))) return 0;
+	if((NULL==pack) || (NULL == get_icmpv6_hdr(pack->headers, 0))) return 0;
 	return get_icmpv6_type(get_icmpv6_hdr(pack->headers, 0));
 }
 
@@ -400,7 +400,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_icmpv6_code(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if((NULL == get_icmpv6_hdr(pack->headers, 0))) return 0;
+	if((NULL==pack) || (NULL == get_icmpv6_hdr(pack->headers, 0))) return 0;
 	return get_icmpv6_code(get_icmpv6_hdr(pack->headers, 0));
 }
 
@@ -408,7 +408,7 @@ STATIC_PACKET_INLINE__
 uint32_t platform_packet_get_mpls_label(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_mpls_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_mpls_hdr(pack->headers, 0))) return 0;
 	return get_mpls_label(get_mpls_hdr(pack->headers, 0))&0x000FFFFF;
 }
 
@@ -416,7 +416,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_mpls_tc(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_mpls_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_mpls_hdr(pack->headers, 0))) return 0;
 	return get_mpls_tc(get_mpls_hdr(pack->headers, 0))&0x07;
 }
 
@@ -425,7 +425,7 @@ bool
 platform_packet_get_mpls_bos(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_mpls_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_mpls_hdr(pack->headers, 0))) return 0;
 	return get_mpls_bos(get_mpls_hdr(pack->headers, 0))&0x01;
 }
 
@@ -447,7 +447,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_pppoe_code(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_pppoe_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_pppoe_hdr(pack->headers, 0))) return 0;
 	return get_pppoe_code(get_pppoe_hdr(pack->headers, 0));
 }
 
@@ -455,7 +455,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_pppoe_type(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_pppoe_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_pppoe_hdr(pack->headers, 0))) return 0;
 	return get_pppoe_type(get_pppoe_hdr(pack->headers, 0))&0x0F;
 }
 
@@ -463,7 +463,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_pppoe_sid(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_pppoe_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_pppoe_hdr(pack->headers, 0))) return 0;
 	return get_pppoe_sessid(get_pppoe_hdr(pack->headers, 0));
 }
 
@@ -471,7 +471,7 @@ STATIC_PACKET_INLINE__
 uint16_t platform_packet_get_ppp_proto(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ppp_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_ppp_hdr(pack->headers, 0))) return 0;
 	return get_ppp_prot(get_ppp_hdr(pack->headers, 0));
 }
 
@@ -479,7 +479,7 @@ STATIC_PACKET_INLINE__
 uint8_t platform_packet_get_gtp_msg_type(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_gtpu_hdr(pack->headers, 0))) return 0;
 	return get_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0));
 }
 
@@ -490,7 +490,7 @@ uint32_t platform_packet_get_gtp_teid(datapacket_t * const pkt)
 
 	TM_STAMP_STAGE(pkt, TM_S4);
 
-	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return 0;
+	if ((NULL == pack) || (NULL == get_gtpu_hdr(pack->headers, 0))) return 0;
 	return get_gtpu_teid(get_gtpu_hdr(pack->headers, 0));
 }
 
@@ -579,7 +579,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_dec_mpls_ttl(datapacket_t* pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_mpls_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_mpls_hdr(pack->headers, 0))) return;
 	dec_mpls_ttl(get_mpls_hdr(pack->headers, 0));
 }
 
@@ -587,7 +587,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_mpls_ttl(datapacket_t* pkt, uint8_t new_ttl)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_mpls_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_mpls_hdr(pack->headers, 0))) return;
 	set_mpls_ttl(get_mpls_hdr(pack->headers, 0),new_ttl);
 }
 
@@ -618,7 +618,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_eth_dst(datapacket_t* pkt, uint64_t eth_dst)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ether_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ether_hdr(pack->headers, 0))) return;
 	set_ether_dl_dst(get_ether_hdr(pack->headers, 0), eth_dst);
 }
 
@@ -626,7 +626,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_eth_src(datapacket_t* pkt, uint64_t eth_src)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ether_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ether_hdr(pack->headers, 0))) return;
 	set_ether_dl_src(get_ether_hdr(pack->headers, 0), eth_src);
 }
 
@@ -634,7 +634,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_eth_type(datapacket_t* pkt, uint16_t eth_type)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ether_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ether_hdr(pack->headers, 0))) return;
 	set_ether_type(get_ether_hdr(pack->headers, 0), eth_type);
 }
 
@@ -642,7 +642,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_vlan_vid(datapacket_t* pkt, uint16_t vlan_vid)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_vlan_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_vlan_hdr(pack->headers, 0))) return;
 	set_vlan_id(get_vlan_hdr(pack->headers, 0), vlan_vid);
 }
 
@@ -650,7 +650,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_vlan_pcp(datapacket_t* pkt, uint8_t vlan_pcp)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_vlan_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_vlan_hdr(pack->headers, 0))) return;
 	set_vlan_pcp(get_vlan_hdr(pack->headers, 0), vlan_pcp);
 }
 
@@ -658,7 +658,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_arp_opcode(datapacket_t* pkt, uint16_t arp_opcode)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return;
 	set_arpv4_opcode(get_arpv4_hdr(pack->headers, 0), arp_opcode);
 }
 
@@ -666,7 +666,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_arp_sha(datapacket_t* pkt, uint64_t arp_sha)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return;
 	set_arpv4_dl_src(get_arpv4_hdr(pack->headers, 0), arp_sha);
 }
 
@@ -674,7 +674,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_arp_spa(datapacket_t* pkt, uint32_t arp_spa)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return;
 	set_arpv4_ip_src(get_arpv4_hdr(pack->headers, 0), arp_spa);
 }
 
@@ -682,7 +682,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_arp_tha(datapacket_t* pkt, uint64_t arp_tha)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return;
 	set_arpv4_dl_dst(get_arpv4_hdr(pack->headers, 0), arp_tha);
 }
 
@@ -690,7 +690,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_arp_tpa(datapacket_t* pkt, uint32_t arp_tpa)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_arpv4_hdr(pack->headers, 0))) return;
 	set_arpv4_ip_dst(get_arpv4_hdr(pack->headers, 0), arp_tpa);
 }
 
@@ -740,7 +740,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_ipv4_src(datapacket_t* pkt, uint32_t ip_src)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ipv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ipv4_hdr(pack->headers, 0))) return;
 	set_ipv4_src(get_ipv4_hdr(pack->headers, 0), ip_src);
 	pack->ipv4_recalc_checksum = true;
 	pack->tcp_recalc_checksum = true;
@@ -751,7 +751,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_ipv4_dst(datapacket_t* pkt, uint32_t ip_dst)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ipv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ipv4_hdr(pack->headers, 0))) return;
 	set_ipv4_dst(get_ipv4_hdr(pack->headers, 0), ip_dst);
 	pack->ipv4_recalc_checksum = true;
 	pack->tcp_recalc_checksum = true;
@@ -762,7 +762,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_ipv6_src(datapacket_t* pkt, uint128__t ipv6_src)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ipv6_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ipv6_hdr(pack->headers, 0))) return;
 	set_ipv6_src(get_ipv6_hdr(pack->headers, 0), ipv6_src);
 	pack->tcp_recalc_checksum = true;
 	pack->udp_recalc_checksum = true;
@@ -772,7 +772,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_ipv6_dst(datapacket_t* pkt, uint128__t ipv6_dst)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ipv6_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ipv6_hdr(pack->headers, 0))) return;
 	set_ipv6_dst(get_ipv6_hdr(pack->headers, 0), ipv6_dst);
 	pack->tcp_recalc_checksum = true;
 	pack->udp_recalc_checksum = true;
@@ -782,7 +782,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_ipv6_flabel(datapacket_t* pkt, uint64_t ipv6_flabel)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ipv6_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ipv6_hdr(pack->headers, 0))) return;
 	set_ipv6_flow_label(get_ipv6_hdr(pack->headers, 0), ipv6_flabel);
 }
 
@@ -790,7 +790,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_ipv6_nd_target(datapacket_t* pkt, uint128__t ipv6_nd_target)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_icmpv6_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_icmpv6_hdr(pack->headers, 0))) return;
 	set_icmpv6_neighbor_taddr(get_icmpv6_hdr(pack->headers, 0), ipv6_nd_target);
 }
 
@@ -799,7 +799,7 @@ void platform_packet_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	void *lla_opt_hdr;
-	if ( 
+	if ( (NULL == pack) || 
 		NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_source_hdr(pack->headers, 0))
 		) return;
 	set_icmpv6_ll_saddr(lla_opt_hdr, ipv6_nd_sll);
@@ -810,7 +810,7 @@ void platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	void *lla_opt_hdr;
-	if ( 
+	if ( (NULL == pack) || 
 		(NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_target_hdr(pack->headers, 0)))
 		) return;
 	set_icmpv6_ll_taddr(lla_opt_hdr,ipv6_nd_tll);
@@ -826,7 +826,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_icmpv6_type(datapacket_t* pkt, uint8_t icmpv6_type)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_icmpv6_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_icmpv6_hdr(pack->headers, 0))) return;
 	set_icmpv6_type(get_icmpv6_hdr(pack->headers, 0), icmpv6_type);
 }
 
@@ -834,7 +834,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_icmpv6_code(datapacket_t* pkt, uint8_t icmpv6_code)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_icmpv6_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_icmpv6_hdr(pack->headers, 0))) return;
 	set_icmpv6_code(get_icmpv6_hdr(pack->headers, 0), icmpv6_code);
 }
 
@@ -842,7 +842,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_tcp_src(datapacket_t* pkt, uint16_t tcp_src)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_tcp_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_tcp_hdr(pack->headers, 0))) return;
 	set_tcp_sport(get_tcp_hdr(pack->headers, 0), tcp_src);
 	pack->tcp_recalc_checksum = true;
 }
@@ -851,7 +851,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_tcp_dst(datapacket_t* pkt, uint16_t tcp_dst)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_tcp_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_tcp_hdr(pack->headers, 0))) return;
 	set_tcp_dport(get_tcp_hdr(pack->headers, 0), tcp_dst);
 	pack->tcp_recalc_checksum = true;
 }
@@ -860,7 +860,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_udp_src(datapacket_t* pkt, uint16_t udp_src)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_udp_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_udp_hdr(pack->headers, 0))) return;
 	set_udp_sport(get_udp_hdr(pack->headers, 0), udp_src);
 	pack->udp_recalc_checksum = true;
 }
@@ -869,7 +869,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_udp_dst(datapacket_t* pkt, uint16_t udp_dst)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_udp_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_udp_hdr(pack->headers, 0))) return;
 	set_udp_dport(get_udp_hdr(pack->headers, 0), udp_dst);
 	pack->udp_recalc_checksum = true;
 }
@@ -890,7 +890,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_icmpv4_type(datapacket_t* pkt, uint8_t type)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_icmpv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_icmpv4_hdr(pack->headers, 0))) return;
 	set_icmpv4_type(get_icmpv4_hdr(pack->headers, 0), type);
 	pack->icmpv4_recalc_checksum = true;
 }
@@ -899,7 +899,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_icmpv4_code(datapacket_t* pkt, uint8_t code)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_icmpv4_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_icmpv4_hdr(pack->headers, 0))) return;
 	set_icmpv4_code(get_icmpv4_hdr(pack->headers, 0), code);
 	pack->icmpv4_recalc_checksum = true;
 }
@@ -909,7 +909,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_mpls_label(datapacket_t* pkt, uint32_t label)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_mpls_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_mpls_hdr(pack->headers, 0))) return;
 	set_mpls_label(get_mpls_hdr(pack->headers, 0), label);
 }
 
@@ -917,14 +917,14 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_mpls_tc(datapacket_t* pkt, uint8_t tc)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_mpls_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_mpls_hdr(pack->headers, 0))) return;
 	set_mpls_tc(get_mpls_hdr(pack->headers, 0), tc);
 }
 STATIC_PACKET_INLINE__
 void platform_packet_set_mpls_bos(datapacket_t* pkt, bool bos)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_mpls_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_mpls_hdr(pack->headers, 0))) return;
 	set_mpls_bos(get_mpls_hdr(pack->headers, 0), bos);
 }
 STATIC_PACKET_INLINE__
@@ -951,7 +951,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_pppoe_type(datapacket_t* pkt, uint8_t type)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_pppoe_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_pppoe_hdr(pack->headers, 0))) return;
 	set_pppoe_type(get_pppoe_hdr(pack->headers, 0), type);
 }
 
@@ -959,7 +959,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_pppoe_code(datapacket_t* pkt, uint8_t code)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_pppoe_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_pppoe_hdr(pack->headers, 0))) return;
 	set_pppoe_code(get_pppoe_hdr(pack->headers, 0), code);
 }
 
@@ -967,7 +967,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_pppoe_sid(datapacket_t* pkt, uint16_t sid)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_pppoe_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_pppoe_hdr(pack->headers, 0))) return;
 	set_pppoe_sessid(get_pppoe_hdr(pack->headers, 0), sid);
 }
 
@@ -975,7 +975,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_ppp_proto(datapacket_t* pkt, uint16_t proto)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ppp_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_ppp_hdr(pack->headers, 0))) return;
 	set_ppp_prot(get_ppp_hdr(pack->headers, 0), proto);
 }
 
@@ -983,7 +983,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_gtp_msg_type(datapacket_t* pkt, uint8_t msg_type)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_gtpu_hdr(pack->headers, 0))) return;
 	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
 }
 
@@ -991,7 +991,7 @@ STATIC_PACKET_INLINE__
 void platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	if ((NULL == pack) || (NULL == get_gtpu_hdr(pack->headers, 0))) return;
 	set_gtpu_teid(get_gtpu_hdr(pack->headers, 0), teid);
 }
 
@@ -1114,7 +1114,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 	//Outer most IPv4 frame
 	void *fipv4 = get_ipv4_hdr(pack->headers, 0);
 
-	if ((pack->tcp_recalc_checksum) && get_tcp_hdr(pack->headers, 0) != NULL && fipv4) {
+	if ((pack->tcp_recalc_checksum) && get_tcp_hdr(pack->headers, 0) && fipv4) {
 		
 		
 	tcp_calc_checksum(
@@ -1124,7 +1124,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 			get_ipv4_proto(fipv4),
 			get_pkt_len(pkt, pack->headers, get_tcp_hdr(pack->headers,0), NULL) ); // start at innermost IPv4 up to and including last frame
 
-	} else if ((pack->udp_recalc_checksum) && (get_udp_hdr(pack->headers, 0) != NULL) && fipv4) {
+	} else if ((pack->udp_recalc_checksum) && (get_udp_hdr(pack->headers, 0)) && fipv4) {
 
 		udp_calc_checksum(
 				get_udp_hdr(pack->headers, 0),
@@ -1133,7 +1133,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 				get_ipv4_proto(fipv4),
 				get_pkt_len(pkt, pack->headers, get_udp_hdr(pack->headers, 0), NULL) ); // start at innermost IPv4 up to and including last frame
 
-	} else if ((pack->icmpv4_recalc_checksum) && (get_icmpv4_hdr(pack->headers,0) != NULL)) {
+	} else if ((pack->icmpv4_recalc_checksum) && (get_icmpv4_hdr(pack->headers,0))) {
 
 		icmpv4_calc_checksum(
 			get_icmpv4_hdr(pack->headers, 0),

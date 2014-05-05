@@ -10,12 +10,16 @@ Change log
 
 v0.4RC2
 
+[K] Automake 1.4 compilation. Please refer to the README.
+
 [+][plugins][config] Now plugin checks for unrecognized elements and aborts if any are found 
 [+] Marked SSL socket support as stable. Added example_ssl.cfg
 [+] Adapted translation utils to the new rofl-pipeline APIs (constructors in HBO and use of getters) 
 [B] Fixed deadlock during LSI destruction (port delete notification)
 
 v0.4RC1
+
+[K] Automake 1.4 compilation. Please refer to the README.
 
 [+] Change in the build system: documentation is now compiled via `make doc`.
 [+] Change in the build system: platform support is now compiled via `../configure --with-hw-support=driver-name`.

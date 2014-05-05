@@ -6,6 +6,11 @@ Brief
 
 Platform driver using Intel's DPDK 
 
+Requirements
+------------
+
+DPDK v1.6
+
 Comments
 --------
 

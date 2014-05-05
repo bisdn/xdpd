@@ -48,7 +48,8 @@ sh# ../configure
 sh# make  
 sh# make install
 
-Optionally you can 'make check' for consistency checks.
+Optionally you can 'make check' for consistency checks. For other platforms different than gnu-linux, please make sure --with-hw-support=platform-name is specified, and that
+the appropriate README is read (e.g. src/xdpd/drivers/example/README).
 
 How to run it
 ================================

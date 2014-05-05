@@ -1,3 +1,32 @@
-xdpd needs to be configured like this (if libraries are not installed):
+The GNU/Linux DPDK driver 
+================================
+
+Brief
+-----
+
+Platform driver using Intel's DPDK 
+
+Requirements
+------------
+
+DPDK v1.6
+
+Comments
+--------
+
+To compile xDPd with DPDK support, make sure it is configured like this (if libraries are not installed):
 
 CFLAGS="-L$RTE_SDK/lib/ -I$RTE_SDK/include/" CXXFLAGS="$CFLAGS" ../configure --with-hw-support=gnu-linux-dpdk --disable-silent-rules 
+
+Note also that _before_ compiling, the file src/config.h should be revised to make sure that at least:
+
+- IO_IFACE_NUM_QUEUES, RX_XXTHRESH and TX_XXTHRESH are correct according to your NIC's capabilities
+- Core mask is at least 3 (2 cores)
+
+To execute xdpd use the normal config file. Note that DPDK's driver will discover 1G ports as geXX and 10G as 10geXX.
+
+Limitations
+-----------
+
+Note that current config.h cannot handle multiple configurations of ports and RX/TX thresholds. This will be fixed in following version
+

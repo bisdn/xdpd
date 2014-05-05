@@ -1,4 +1,4 @@
-AC_INIT(xdpd - GNU/Linux driver, 0.4.0, rofl@bisdn.de, xdpd_gnu_linux_fm)
+AC_INIT(xdpd - GNU/Linux driver, m4_esyscmd_s(cat VERSION), rofl@bisdn.de, xdpd_gnu_linux_fm)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])

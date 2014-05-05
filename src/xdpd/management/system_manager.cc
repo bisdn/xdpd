@@ -10,6 +10,7 @@
 #include "switch_manager.h"
 #include "port_manager.h"
 #include "plugin_manager.h"
+#include "plugins/pm_timestamp.h" //Regnerate on configure for version numbers
 
 
 using namespace xdpd;

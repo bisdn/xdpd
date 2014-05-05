@@ -1,4 +1,4 @@
-AC_INIT(xdpd - DPDK GNU/Linux driver, 0.4, xdpd@bisdn.de, xdpd_gnu_linux_dpdk_fm)
+AC_INIT(xdpd - DPDK GNU/Linux driver, m4_esyscmd_s(cat VERSION), xdpd@bisdn.de, xdpd_gnu_linux_dpdk_fm)
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])

@@ -12,12 +12,12 @@ Supported platforms (drivers)
 Shipped with all xDPd instances:
 - GNU/Linux amd64/x86 user-space with mmap or netmap (gnu-linux). open-source
 - GNU/Linux + NetFGPA-10G (netfpga10g). open-source. 
+- GNU/Linux Intel's DPDK accelerated driver (gnu-linux-dpdk). open-source
 
 Also available:
 
 - Broadcom Triumph2 (bcm).
 - Octeon network processors (octeon5650). 
-- GNU/Linux + DPDK (gnu-linux-dpdk).
 - Other: refer to the wiki page for more details
 
 You may want to have a look to the particular README pages of each platform by inspecting:
@@ -48,8 +48,7 @@ sh# ../configure
 sh# make  
 sh# make install
 
-Optionally you can 'make check' for consistency checks. For other platforms different than gnu-linux, please make sure --with-hw-support=platform-name is specified, and that
-the appropriate README is read (e.g. src/xdpd/drivers/example/README).
+Optionally you can 'make check' for consistency checks. For other platforms different than gnu-linux, please make sure --with-hw-support=platform-name is specified, and that the appropriate README is read (e.g. src/xdpd/drivers/example/README).
 
 How to run it
 ================================

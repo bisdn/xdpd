@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.4RC3
+
+[+][gnu-linux-dpdk] Merged GNU/Linux DPDK mainstream
+
 v0.4RC2
 
 [K] Automake 1.4 compilation. Please refer to the README.
@@ -37,22 +41,22 @@ v0.4RC1
 
 [+][plugins][config] Added support for multiple connections (>2). Added support for FQDNs, socket family and bind address and port.
 
-[+][GNU/Linux] Improved I/O subsytem, including new packet classifier (c_pktclassifier).
-[+][GNU/Linux] Adding support for stats in ioport_vlink.
-[+][GNU/Linux] Added experimental support for OF1.3. WARNING: OF1.3 is marked as pre-alpha. 
-[B][GNU/Linux] Fixed bug: not properly updating of_port_state in ioport_mmap ports when up/down events were done externally (i.e. ifconfig) 
+[+][gnu-linux] Improved I/O subsytem, including new packet classifier (c_pktclassifier).
+[+][gnu-linux] Adding support for stats in ioport_vlink.
+[+][gnu-linux] Added experimental support for OF1.3. WARNING: OF1.3 is marked as pre-alpha. 
+[B][gnu-linux] Fixed bug: not properly updating of_port_state in ioport_mmap ports when up/down events were done externally (i.e. ifconfig) 
 
 [K][netfpga10g] Driver has not been adapted yet to the latest network byte order changes of the pipeline. Currently unusable.
 
 v0.3.5 
 
-[+] [GNU/Linux] Adding support for LLC frame parsing (ETH_TYPE)
+[+] [gnu-linux] Adding support for LLC frame parsing (ETH_TYPE)
 
 v0.3.4
 
-[+][NetFPGA-10G] Merged into mainstream support for the NetFPGA-10G platform (T.Sielach, M.Sune)
+[+][netfpga10g] Merged into mainstream support for the NetFPGA-10G platform (T.Sielach, M.Sune)
 [B] Backport fixes on commit 25b49d52 and commit 9cdbc06c (devel-0.4); 'no port field and no prop-max-rate field in 1.0', 'invalid instructions reverse-mapping'
-[O][GNU/Linux] Reducing default buffer expiration timeout (180s->10s)
+[O][gnu-linux] Reducing default buffer expiration timeout (180s->10s)
 
 v0.3.3
 

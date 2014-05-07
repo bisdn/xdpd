@@ -32,7 +32,7 @@
 * I/O stuff
 */
 //Number of output queues per interface
-#define IO_IFACE_NUM_QUEUES 8
+#define IO_IFACE_NUM_QUEUES 1 //8
 #define IO_IFACE_MAX_PKT_BURST 32
 #define IO_MAX_PACKET_SIZE 1518
 
@@ -59,7 +59,7 @@
  */
 #define RX_PTHRESH 8 /**< Default values of RX prefetch threshold reg. */
 #define RX_HTHRESH 8 /**< Default values of RX host threshold reg. */
-#define RX_WTHRESH 4 /**< Default values of RX write-back threshold reg. */
+#define RX_WTHRESH 0 /**< Default values of RX write-back threshold reg. */
 
 /*
  * These default values are optimized for use with the Intel(R) 82599 10 GbE
@@ -68,12 +68,12 @@
  */
 #define TX_PTHRESH 16 /**< Default values of TX prefetch threshold reg. */
 #define TX_HTHRESH 4  /**< Default values of TX host threshold reg. */
-#define TX_WTHRESH 4  /**< Default values of TX write-back threshold reg. */
+#define TX_WTHRESH 0  /**< Default values of TX write-back threshold reg. */
 
 /*
  * Configurable number of RX/TX ring descriptors
  */
-#define RTE_TEST_RX_DESC_DEFAULT 128
+#define RTE_TEST_RX_DESC_DEFAULT 512
 #define RTE_TEST_TX_DESC_DEFAULT 512
 
 /*
@@ -82,7 +82,7 @@
 //Nothing yet
 
 //DPDK defines
-#define RTE_CORE_MASK 0x0000FFFF //16 cores
+#define RTE_CORE_MASK 0x00000003 //2 cores(1 doing I/O)
 #define RTE_MEM_CHANNELS 2
 #define SOCKET0 0
 #define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)

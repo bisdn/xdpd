@@ -1,4 +1,4 @@
-AC_INIT(xdpd - NetFPGA-10G driver, 0.4, rofl@bisdn.de,  xdpd_netfpga10g_fm)
+AC_INIT(xdpd - NetFPGA-10G driver, m4_esyscmd_s(cat VERSION), rofl@bisdn.de,  xdpd_netfpga10g_fm)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])

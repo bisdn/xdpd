@@ -252,7 +252,7 @@ void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 	
 	//Now reset frame 
 	clas_state->headers[FIRST_VLAN_FRAME_POS].frame = ether_header + sizeof(cpc_eth_hdr_t);
-	clas_state->headers[FIRST_VLAN_FRAME_POS].length =  get_buffer_length(pkt) + sizeof(cpc_vlan_hdr_t) - sizeof(cpc_eth_hdr_t);
+	clas_state->headers[FIRST_VLAN_FRAME_POS].length =  get_pkt_buffer_length(pkt) + sizeof(cpc_vlan_hdr_t) - sizeof(cpc_eth_hdr_t);
 	//ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fvlanframe::vlan_hdr_t));
 	//headers[FIRST_VLAN_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fvlanframe::vlan_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
 
@@ -312,7 +312,7 @@ void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 	clas_state->headers[FIRST_MPLS_FRAME_POS].frame = ether_header + sizeof(cpc_eth_hdr_t);
 	//Size of ethernet needs to be extended with + MPLS size 
 	//MPLS size needs to be ether_header->size + MPLS - ether_header
-	clas_state->headers[FIRST_MPLS_FRAME_POS].length = get_buffer_length(pkt) + sizeof(cpc_mpls_hdr_t) - sizeof(cpc_eth_hdr_t);
+	clas_state->headers[FIRST_MPLS_FRAME_POS].length = get_pkt_buffer_length(pkt) + sizeof(cpc_mpls_hdr_t) - sizeof(cpc_eth_hdr_t);
 	//ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fmplsframe::mpls_hdr_t));
 	//headers[FIRST_MPLS_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fmplsframe::mpls_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
 
@@ -395,9 +395,9 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 	
 			//Now reset frames
 			clas_state->headers[FIRST_PPPOE_FRAME_POS].frame = ether_header + sizeof(cpc_eth_hdr_t);
-			clas_state->headers[FIRST_PPPOE_FRAME_POS].length = get_buffer_length(pkt) + sizeof(cpc_pppoe_hdr_t) - sizeof(cpc_eth_hdr_t);
+			clas_state->headers[FIRST_PPPOE_FRAME_POS].length = get_pkt_buffer_length(pkt) + sizeof(cpc_pppoe_hdr_t) - sizeof(cpc_eth_hdr_t);
 			clas_state->headers[FIRST_PPP_FRAME_POS].frame = ether_header + sizeof(cpc_eth_hdr_t) + sizeof(cpc_pppoe_hdr_t);
-			clas_state->headers[FIRST_PPP_FRAME_POS].length = get_buffer_length(pkt) + sizeof(cpc_ppp_hdr_t) - sizeof(cpc_eth_hdr_t) - sizeof(cpc_pppoe_hdr_t);
+			clas_state->headers[FIRST_PPP_FRAME_POS].length = get_pkt_buffer_length(pkt) + sizeof(cpc_ppp_hdr_t) - sizeof(cpc_eth_hdr_t) - sizeof(cpc_pppoe_hdr_t);
 			//ether_header->reset(ether_header->soframe(), current_length + bytes_to_insert);
 			//n_pppoe->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), ether_header->framelen() - sizeof(struct rofl::fetherframe::eth_hdr_t) );
 			//n_ppp->reset(n_pppoe->soframe() + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t), n_pppoe->framelen() - sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
@@ -439,7 +439,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			clas_state->headers[FIRST_PPPOE_FRAME_POS].frame = ether_header + sizeof(cpc_eth_hdr_t);
 			//Size of ethernet needs to be extended with +PPPOE size 
 			//PPPOE size needs to be ether_header->size + PPPOE - ether_header
-			clas_state->headers[FIRST_PPPOE_FRAME_POS].length = get_buffer_length(pkt) + sizeof(cpc_pppoe_hdr_t) - sizeof(cpc_eth_hdr_t);
+			clas_state->headers[FIRST_PPPOE_FRAME_POS].length = get_pkt_buffer_length(pkt) + sizeof(cpc_pppoe_hdr_t) - sizeof(cpc_eth_hdr_t);
 			//ether_header->reset(ether_header->soframe(), current_length + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t));
 			//headers[FIRST_PPPOE_FRAME_POS].frame->reset(ether_header->soframe() + sizeof(struct rofl::fetherframe::eth_hdr_t), current_length + sizeof(struct rofl::fpppoeframe::pppoe_hdr_t) - sizeof(struct rofl::fetherframe::eth_hdr_t));
 
@@ -472,7 +472,7 @@ void dump_pkt_classifier(classify_state_t* clas_state){
 
 size_t get_pkt_len(datapacket_t* pkt, classify_state_t* clas_state, void *from, void *to){
 
-	unsigned int total_length = get_buffer_length(pkt);
+	unsigned int total_length = get_pkt_buffer_length(pkt);
 	void* eth = get_ether_hdr(clas_state, 0);
 
 	if(!from)

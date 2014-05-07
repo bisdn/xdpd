@@ -102,15 +102,16 @@ Note there will be a considerably number of warnings shown. Once bug 13928, 'sub
 
 
 Doxygen documentation
-================================
+=====================
 Documentation can be compiled via 'make doc'. Documentation is generated in build/doc/ folder
 
 More information, documentation and support
 ===========================================
 
-Please visit: 
-
+http://www.xdpd.org
 https://www.codebasin.net/redmine/projects/xdpd/wiki
+
+For getting support or participate in the discussions, join the mailing list dev@xdpd.org at http://www.xdpd.org/mailman
 
 Authorship
 ==========

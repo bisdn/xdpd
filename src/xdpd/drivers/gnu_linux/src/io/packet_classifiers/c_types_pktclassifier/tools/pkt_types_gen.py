@@ -373,10 +373,10 @@ def push_transitions(f):
 
 				row.append(new_type)
 			elif "PPPOE" in proto:
-				if "PPPOE" or "MPLS" in type_:
+				if "PPPOE" in type_ or "MPLS" in type_:
 					new_type +="-1"
 				elif "VLAN/VLAN" in type_:
-					row.append(type_.replace("VLAN/VLAN", "VLAN/VLAN/PPPOE"))
+					new_type=type_.replace("VLAN/VLAN", "VLAN/VLAN/PPPOE")
 				elif "VLAN" in type_:
 					new_type=type_.replace("VLAN", "VLAN/PPPOE")
 				elif "ETHERNET" in type_:
@@ -385,6 +385,11 @@ def push_transitions(f):
 					new_type=type_.replace("8023", "8023/PPPOE")
 				else:
 					new_type +="-1"
+					
+				#We don't parse beyond PPPOE
+				if new_type != "-1":
+					new_type=new_type.split("PPPOE")[0]+"PPPOE"
+				
 				row.append(new_type)
 			elif "PPP" in proto:
 				if "PPPOE" in type_ and not "PPPOE/PPP" in type_:

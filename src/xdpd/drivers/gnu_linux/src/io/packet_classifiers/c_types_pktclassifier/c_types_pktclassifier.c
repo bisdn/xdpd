@@ -88,6 +88,9 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 	}
 
 	set_ether_type(get_ether_hdr(clas_state,0), ether_type);
+	
+	//re-classify packet to get the headers beyond pppoe
+	classify_packet(clas_state, get_pkt_buffer(pkt), get_pkt_buffer_length(pkt),get_pkt_in_port(pkt), get_pkt_in_phy_port(pkt));
 }
 
 void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){

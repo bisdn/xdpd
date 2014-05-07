@@ -15,6 +15,7 @@ Folder structure and some files
 -------------------------------
 	
 - hal-imp: Hardware Abstraction Layer API routines 
+- pipeline-imp: ROFL Pipeline routines 
 - .... 
 	
 Authorship

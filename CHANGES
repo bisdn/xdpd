@@ -10,6 +10,9 @@ Change log
 
 v0.4RC3
 
+[+] Added tutorial on how to create new platform drivers under src/xdpd/drivers/README
+[+] Changed main version detection; now it uses VERSION file instead of 'git tag' 
+
 [+][gnu-linux-dpdk] Merged GNU/Linux DPDK mainstream
 
 v0.4RC2

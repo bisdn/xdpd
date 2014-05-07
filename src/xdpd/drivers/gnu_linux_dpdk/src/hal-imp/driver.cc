@@ -27,7 +27,7 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "../bg_taskmanager.h"
 #include "../io/bufferpool.h"
-#include "../io/port_manager.h"
+#include "../io/iface_manager.h"
 #include "../io/pktin_dispatcher.h"
 #include "../processing/processing.h"
 
@@ -113,7 +113,7 @@ hal_result_t hal_driver_init(const char* extra_params){
 		return HAL_FAILURE;
 
 	//Discover and initialize rofl-pipeline state
-	if(port_manager_discover_system_ports() != ROFL_SUCCESS)
+	if(iface_manager_discover_system_ports() != ROFL_SUCCESS)
 		return HAL_FAILURE;
 
 	//Initialize processing
@@ -171,7 +171,7 @@ hal_result_t hal_driver_destroy(){
 	bufferpool::destroy();
 	
 	//Shutdown ports
-	port_manager_destroy();
+	iface_manager_destroy();
 
 	return HAL_SUCCESS; 
 }
@@ -410,7 +410,7 @@ hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 	}
 	
 	//Create virtual port pair
-	if(port_manager_create_virtual_port_pair(lsw1, &vport1, lsw2, &vport2) != ROFL_SUCCESS){
+	if(iface_manager_create_virtual_port_pair(lsw1, &vport1, lsw2, &vport2) != ROFL_SUCCESS){
 		assert(0);
 		return HAL_FAILURE;
 	}
@@ -578,7 +578,7 @@ hal_result_t hal_driver_bring_port_up(const char* name){
 		return HAL_FAILURE;
 
 	//Bring it up
-	port_manager_enable(port);
+	iface_manager_bring_up(port);
 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
 	hal_cmm_notify_port_status_changed(port_snapshot);
@@ -605,7 +605,7 @@ hal_result_t hal_driver_bring_port_down(const char* name){
 		return HAL_FAILURE;
 
 	//Bring it down
-	port_manager_disable(port);
+	iface_manager_bring_down(port);
 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
 	hal_cmm_notify_port_status_changed(port_snapshot);

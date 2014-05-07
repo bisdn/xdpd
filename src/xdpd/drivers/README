@@ -11,7 +11,7 @@ How to port your platform
 
 Disclaimer: a basic autotools knowledge is assumed in this short tutorial
 
-0) Check first the introductory slides of xDPd's architecture, and ROFL-pipeline and ROFL-hal doxygen documentation. 
+0) Check first the introductory slides of xDPd's architecture, ROFL-pipeline and ROFL-hal doxygen documentation. 
 
 1) Decide a code-name for the new platform. The platform code-name must use '-' as a separator  xxx-yyy-zzz. Try to use a short code name. For our tutorial we will choose 'my-asic'.
 

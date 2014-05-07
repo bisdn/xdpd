@@ -2,7 +2,7 @@
 
 #Default
 XDPD_VERSION="$PACKAGE_VERSION" #Unknown (no GIT repository detected)"
-FILE_VERSION=`cat ../VERSION`
+FILE_VERSION=`cat $srcdir/VERSION`
 
 #Since AC_INIT caches VERSION; force an autogen.sh
 if test "$XDPD_VERSION" != "$FILE_VERSION"; 

@@ -45,42 +45,42 @@ ROFL_BEGIN_DECLS
 /**
 * Discovers and initializes (including rofl-pipeline state) DPDK-enabled ports.
 */
-rofl_result_t port_manager_discover_system_ports(void);
+rofl_result_t iface_manager_discover_system_ports(void);
 
 /**
 * Creates a virtual link port pair
 */
-rofl_result_t port_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_port_t **vport1, of_switch_t* lsw2, switch_port_t **vport2);
+rofl_result_t iface_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_port_t **vport1, of_switch_t* lsw2, switch_port_t **vport2);
 
 /**
 * Shutdown all ports in the system 
 */
-rofl_result_t port_manager_destroy(void);
+rofl_result_t iface_manager_destroy(void);
 
 /**
 * Setup tx and rx queues 
 */
-rofl_result_t port_manager_set_queues(unsigned int core_id, unsigned int port_id);
+rofl_result_t iface_manager_set_queues(unsigned int core_id, unsigned int port_id);
 
 /**
 * Enable port 
 */
-rofl_result_t port_manager_enable(switch_port_t* port);
+rofl_result_t iface_manager_bring_up(switch_port_t* port);
 
 /**
 * Disable port 
 */
-rofl_result_t port_manager_disable(switch_port_t* port);
+rofl_result_t iface_manager_bring_down(switch_port_t* port);
 
 /**
 * Update link states 
 */
-void port_manager_update_links(void);
+void iface_manager_update_links(void);
 
 /**
 * Update port stats (pipeline)
 */
-void port_manager_update_stats(void);
+void iface_manager_update_stats(void);
 
 
 //C++ extern C

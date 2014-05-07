@@ -19,7 +19,7 @@
 #include "dpdk_datapacket.h"
 
 #include "port_state.h"
-#include "port_manager.h"
+#include "iface_manager.h"
 #include "../processing/processing.h"
 
 //Make sure pipeline-imp are BEFORE _pp.h

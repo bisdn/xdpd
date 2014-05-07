@@ -76,6 +76,7 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 			pkt_types_t new = PT_POP_PROTO(clas_state, PPP);
 			if(unlikely(new == PT_INVALID))
 				return;
+			clas_state->type = new;
 			new = PT_POP_PROTO(clas_state, PPPOE);
 			if(unlikely(new == PT_INVALID))
 				return;
@@ -218,6 +219,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 				return NULL;
 			}
 			//Set new pkt type
+			clas_state->type = new;
 			clas_state->type = PT_PUSH_PROTO(clas_state, PPP);
 			assert(clas_state->type != PT_INVALID);
 			clas_state->base -= bytes_to_insert; 
@@ -225,9 +227,10 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 			/*
 			 * adjust ether(0): move one pppoe tag to the left
 			 */
-			ether_header-=sizeof(cpc_mpls_hdr_t); //We change also the local pointer
+			ether_header-=bytes_to_insert; //We change also the local pointer
 			set_ether_type(ether_header, ETH_TYPE_PPPOE_SESSION);
 			
+			n_ppp = get_ppp_hdr(clas_state,0);
 			set_ppp_prot(n_ppp, 0x0000);
 		}
 			break;
@@ -257,6 +260,7 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 	/*
 	 * set default values in pppoe tag
 	 */
+	n_pppoe = get_pppoe_hdr(clas_state,0);
 	set_pppoe_code(n_pppoe, 0x00);
 	set_pppoe_sessid(n_pppoe, 0x0000);
 	set_pppoe_type(n_pppoe, PPPOE_TYPE);

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 PKG_NAME="xdpd"
 PKG_NAME_DBG="xdpd-dbg"
@@ -8,7 +8,7 @@ REQUIRES+=""
 LICENSE="MPL"
 GROUP="net"
 MAINTAINER="dev@xdpd.org"
-
+DESCRIPTION="eXtensible DataPath daemon(xDPd) - an OpenFlow switch"
 IS_DEBUG=""
 
 dump_result(){
@@ -45,7 +45,8 @@ get_release(){
 }
 
 generate_pkg(){
-	sudo checkinstall -D -y --pkgname=$1 --pkgversion=$VERSION --pkgrelease=$RELEASE --pkglicense=$LICENSE --pkggroup=$GROUP --maintainer=$MAINTAINER --provides=$1 --requires=$REQUIRES --conflicts=$2 --replaces=$2
+	echo $DESCRIPTION > description-pak
+	sudo checkinstall -D -y --pkgname="$1" --pkgversion="$VERSION" --pkgrelease="$RELEASE" --pkglicense="$LICENSE" --pkggroup="$GROUP" --maintainer="$MAINTAINER" --provides="$1" --requires="$REQUIRES" --conflicts="$2" --replaces="$2"
 }
 
 #
@@ -58,7 +59,7 @@ get_version
 get_release
 
 #Generate the package
-if test -z $IS_NOT_DEBUG;
+if test -z "$IS_NOT_DEBUG";
 then
 	dump_result $PKG_NAME_DBG $PKG_NAME
 	generate_pkg $PKG_NAME_DBG $PKG_NAME

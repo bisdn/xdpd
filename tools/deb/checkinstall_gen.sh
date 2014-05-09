@@ -13,6 +13,13 @@ MAINTAINER="dev@xdpd.org"
 DESCRIPTION="eXtensible DataPath daemon(xDPd) - an OpenFlow switch"
 IS_DEBUG=""
 
+check_root(){
+	if [ "$(id -u)" != "0" ]; then
+	   echo "This script must be run as root" 1>&2
+	   exit 1
+	fi
+}
+
 dump_result(){
 	echo "Detected configuration"
 	echo "Package name: $1"
@@ -56,6 +63,7 @@ generate_pkg(){
 #
 
 #Detect stuff
+check_root
 is_debug
 get_version
 get_release

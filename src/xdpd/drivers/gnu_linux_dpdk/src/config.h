@@ -19,6 +19,16 @@
 #define DRIVER_NAME "[xdpd][dpdk]"
 
 /*
+*	PEX stuffs
+*/
+//Enable PEX capability
+#define GNU_LINUX_DPDK_ENABLE_PEX
+
+//IVANO - FIXME: write a meaningfull value
+#define PKT_TO_PEX_THRESHOLD 	200
+
+
+/*
 * BG stuff
 */
 

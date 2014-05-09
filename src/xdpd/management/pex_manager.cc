@@ -39,8 +39,14 @@ std::list<std::string> pex_manager::list_available_pex_names()
 // PEX creation/destruction
 //
 
-void pex_manager::create_pex(std::string& pex_name, std::string& path, uint32_t core_mask, uint32_t num_memory_channels, uint32_t lcore_id)
+void pex_manager::create_pex(std::string& pex_name, PexType pexType, std::string& path)
 {
+	if(pexType != DPDK)
+	{
+		ROFL_ERR("%s ERROR: only DPDK type is currently implemented\n", MODULE_NAME);
+		throw ePexmInvalidPEX();	
+	}
+
 	// Serialize
 	pthread_mutex_lock(&pex_manager::mutex);
 	
@@ -52,7 +58,7 @@ void pex_manager::create_pex(std::string& pex_name, std::string& path, uint32_t 
 		throw ePexmInvalidPEX();
 	}
 	
-	if(hal_driver_pex_create_pex(pex_name.c_str(), path.c_str(), core_mask, num_memory_channels, lcore_id) != HAL_SUCCESS)
+	if(hal_driver_pex_create_pex(pex_name.c_str(), pexType, path.c_str()) != HAL_SUCCESS)
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
 		assert(0);

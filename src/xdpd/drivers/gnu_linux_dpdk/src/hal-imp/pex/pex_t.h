@@ -16,10 +16,7 @@
 typedef struct{
 	const char *pex_name;
 	const char *path;
-	uint32_t core_mask;
-	uint32_t num_memory_channels;
-	uint32_t lcore_id;
-	pid_t pid;
+	PexType pexType;
 }pex_t;
 
 pex_t pex[PORT_MANAGER_MAX_PORTS];

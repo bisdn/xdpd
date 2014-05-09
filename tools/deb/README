@@ -6,13 +6,11 @@ Execute as:
 	sh# cd build/
 	sh# export REQUIRES="<pkg_name1, pkg_name2...>"; ../tools/deb/checkinstall_gen.sh 
 
-Required packages for rofl/rofl-dbg pkg
+Required packages for xdpd/xdpd-dbg pkg
 =======================================
 
-xDPd has certain requirements
-
 Common: 
-	- rofl/rofl-dbg - This are already added by the script
+	- rofl or rofl-dbg - This one is are already added by the script
 
 Plugin dependant:
 	- config:

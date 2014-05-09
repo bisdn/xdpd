@@ -1,0 +1,22 @@
+How to use
+==========
+
+Execute as:
+
+	sh# cd build/
+	sh# export REQUIRES="<pkg_name1, pkg_name2...>"; ../tools/deb/checkinstall_gen.sh 
+
+Required packages for rofl/rofl-dbg pkg
+=======================================
+
+xDPd has certain requirements
+
+WARNING: always match xdpd-dbg with rofl-dbg to have full ROFL output.
+
+Common: 
+	- rofl/rofl-dbg
+
+Plugin dependant:
+	- config:
+		- Debian 7.X, Ubuntu 14.04 (at least): libconfig++9
+	- Add more here..

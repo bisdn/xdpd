@@ -18,9 +18,6 @@
 
 using namespace xdpd::gnu_linux;
 
-#define DATAPACKET_STORE_EXPIRATION_TIME 180
-#define DATAPACKET_STORE_MAX_BUFFERS bufferpool::RESERVED_SLOTS/2 
-
 /*
 * Hooks for configuration of the switch
 */

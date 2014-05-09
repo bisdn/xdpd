@@ -549,7 +549,8 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	datalen -= sizeof(cpc_udp_hdr_t);
 
 	if (datalen > 0){
-		switch (get_udp_dport(udp)) {
+		//WARNING check if get_udp_dport returns NULL?
+		switch (*get_udp_dport(udp)) {
 		case UDP_DST_PORT_GTPU: {
 			parse_gtp(clas_state, data, datalen);
 		} break;
@@ -636,8 +637,8 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	// FIXME: IP header with options
 
-
-	switch (get_ipv4_proto(ipv4)) {
+	//WARNING check if get_ipv4_proto returns NULL?
+	switch (*get_ipv4_proto(ipv4)) {
 		case IPV4_IP_PROTO:
 			{
 				parse_ipv4(clas_state, data, datalen);
@@ -732,7 +733,8 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	clas_state->num_of_headers[HEADER_TYPE_ICMPV6] = num_of_icmpv6+1;
 
 	//Increment pointers and decrement remaining payload size (depending on type)
-	switch(get_icmpv6_type(icmpv6)){
+	//WARNING check if get_icmpv6_type returns NULL?
+	switch(*get_icmpv6_type(icmpv6)){
 		case ICMPV6_TYPE_ROUTER_SOLICATION:
 			data += sizeof(struct cpc_icmpv6_router_solicitation_hdr);
 			datalen -= sizeof(struct cpc_icmpv6_router_solicitation_hdr);
@@ -787,8 +789,8 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	datalen -= sizeof(cpc_ipv6_hdr_t);
 
 	// FIXME: IP header with options
-
-	switch (get_ipv6_next_header(ipv6)) {
+	//WARNING check if get_ipv6_next_header returns NULL?
+	switch (*get_ipv6_next_header(ipv6)) {
 		case IPV4_IP_PROTO:
 			{
 				parse_ipv4(clas_state, data, datalen);
@@ -878,7 +880,8 @@ void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	clas_state->num_of_headers[HEADER_TYPE_PPP] = num_of_ppp+1;
 
 	//Increment pointers and decrement remaining payload size
-	switch (get_ppp_prot(ppp)) {
+	//WARNING check if get_ppp_prot returns NULL?
+	switch (*get_ppp_prot(ppp)) {
 		case PPP_PROT_IPV4:
 			{
 				//Increment pointers and decrement remaining payload size
@@ -971,7 +974,8 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	data += sizeof(cpc_vlan_hdr_t);
 	datalen -= sizeof(cpc_vlan_hdr_t);
 
-	clas_state->eth_type = get_vlan_type(vlan);
+	//WARNING check if get_vlan_type returns NULL?
+	clas_state->eth_type = *get_vlan_type(vlan);
 
 	switch (clas_state->eth_type) {
 		case VLAN_CTAG_ETHER_TYPE:
@@ -1040,7 +1044,8 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 		datalen -= sizeof(cpc_eth_hdr_t);
 	}
 
-	clas_state->eth_type = get_ether_type(ether);
+	//WARNING check if get_ether_type returns NULL?
+	clas_state->eth_type = *get_ether_type(ether);
 
 	switch (clas_state->eth_type) {
 		case VLAN_CTAG_ETHER_TYPE:

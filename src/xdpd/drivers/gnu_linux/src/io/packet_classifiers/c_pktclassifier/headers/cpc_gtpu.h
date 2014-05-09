@@ -169,7 +169,7 @@ void set_gtpu_teid(void *hdr, uint32_t teid){
 
 inline static
 uint16_t* get_gtpu_seq_no(void *hdr){
-	if(unlikely(get_gtpu_s_flag(hdr))){
+	if(unlikely(get_gtpu_s_flag(hdr)==NULL)){
 		assert(0);
 		return NULL;
 	}

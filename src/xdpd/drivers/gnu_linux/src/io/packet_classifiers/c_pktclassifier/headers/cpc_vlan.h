@@ -39,7 +39,7 @@ void set_vlan_pcp(void* hdr, uint8_t pcp){
 }
 
 inline static
-uint16_t* get_vlan_pcp(void* hdr){
+uint8_t* get_vlan_pcp(void* hdr){
 	return &((cpc_vlan_hdr_t*)hdr)->byte0;
 }
 

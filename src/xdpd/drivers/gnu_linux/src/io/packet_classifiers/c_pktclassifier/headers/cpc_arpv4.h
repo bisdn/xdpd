@@ -88,8 +88,7 @@ void set_arpv4_opcode(void *hdr, uint16_t opcode){
 
 inline static
 uint64_t* get_arpv4_dl_dst(void *hdr){
-	uint64_t *ret = (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_dst;
-	return (*ret) & OF1X_6_BYTE_MASK;
+	return (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_dst;
 };
 
 inline static
@@ -100,8 +99,7 @@ void set_arpv4_dl_dst(void* hdr, uint64_t dl_dst){
 
 inline static
 uint64_t* get_arpv4_dl_src(void* hdr){
-	uint64_t *ret = (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_src;
-	return (*ret) & OF1X_6_BYTE_MASK;
+	return (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_src;
 };
 
 inline static

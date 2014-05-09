@@ -62,7 +62,7 @@ void set_ipv6_version(void *hdr, uint8_t version){
 
 inline static
 uint8_t* get_ipv6_version(void *hdr){
-	return (uint8_t*)&((cpc_ipv6_hdr_t*)hdr)->bytes[0]
+	return (uint8_t*)&((cpc_ipv6_hdr_t*)hdr)->bytes[0];
 };
 
 inline static
@@ -84,8 +84,9 @@ void set_ipv6_dscp(void *hdr, uint8_t dscp){
 }
 
 inline static
-uint8_t* get_ipv6_dscp(void *hdr){
+uint8_t get_ipv6_dscp(void *hdr){
 	//NOTE We are aligning this value to fit IPv4 alignment of DSCP
+	//NOTE therefore we also need to pass it as value and not as pointer
 	return ( (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & OF1X_4LSBITS_MASK) << 4 ) | ( (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_2MSBITS_MASK) >> 4 );
 };
 
@@ -96,8 +97,9 @@ void set_ipv6_ecn(void *hdr, uint8_t ecn){
 }
 
 inline static
-uint8_t* get_ipv6_ecn(void *hdr){
+uint8_t get_ipv6_ecn(void *hdr){
 	//NOTE We are aligning this value to fit IPv4 alignment of ECN
+	//NOTE therefore we also need to pass it as value and not as pointer
 	return (uint8_t)(((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_BITS_4AND5_MASK) >> 4;
 };
 
@@ -156,7 +158,6 @@ void set_ipv6_src(void *hdr, uint128__t src){
 inline static
 uint128__t* get_ipv6_src(void *hdr){
 	return (uint128__t*)(((cpc_ipv6_hdr_t*)hdr)->src);
-	return src;
 };
 
 inline static

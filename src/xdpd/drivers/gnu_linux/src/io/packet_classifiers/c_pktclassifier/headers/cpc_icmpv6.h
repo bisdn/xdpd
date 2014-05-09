@@ -176,13 +176,17 @@ void set_icmpv6_type(void *hdr, uint8_t type){
 
 inline static
 uint128__t* get_icmpv6_neighbor_taddr(void *hdr){
-	switch (get_icmpv6_type(hdr)) {
+	uint8_t* icmpv6_type = get_icmpv6_type(hdr);
+	if ( icmpv6_type == NULL )
+		return NULL;
+	
+	switch (*icmpv6_type) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
-			return &(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
+			return (uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
 		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
-			return &(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr.taddr;
+			return (uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_advertisement_hdr.taddr;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
-			return &(uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr.taddr;
+			return (uint128__t*)((cpc_icmpv6u_t*)hdr)->icmpv6u_redirect_hdr.taddr;
 		default:
 			//TODO LOG ERROR
 			break;
@@ -193,7 +197,11 @@ uint128__t* get_icmpv6_neighbor_taddr(void *hdr){
 inline static
 void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 	uint128__t *ptr;
-	switch (get_icmpv6_type(hdr)) {
+	uint8_t* icmpv6_type = get_icmpv6_type(hdr);
+	if ( icmpv6_type == NULL )
+		return;
+	
+	switch (*icmpv6_type) {
 		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
 			ptr= (uint128__t*)&((cpc_icmpv6u_t*)hdr)->icmpv6u_neighbor_solication_hdr.taddr;
 			break;

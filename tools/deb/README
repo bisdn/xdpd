@@ -11,10 +11,8 @@ Required packages for rofl/rofl-dbg pkg
 
 xDPd has certain requirements
 
-WARNING: always match xdpd-dbg with rofl-dbg to have full ROFL output.
-
 Common: 
-	- rofl/rofl-dbg
+	- rofl/rofl-dbg - This are already added by the script
 
 Plugin dependant:
 	- config:

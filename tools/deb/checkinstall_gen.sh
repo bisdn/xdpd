@@ -2,6 +2,8 @@
 
 PKG_NAME="xdpd"
 PKG_NAME_DBG="xdpd-dbg"
+ROFL_PKG_NAME="rofl"
+ROFL_DBG_PKG_NAME="rofl-dbg"
 VERSION=""
 RELEASE=""
 REQUIRES+=""
@@ -61,9 +63,11 @@ get_release
 #Generate the package
 if test -z "$IS_NOT_DEBUG";
 then
+	REQUIRES+=", $ROFL_DBG_PKG_NAME"
 	dump_result $PKG_NAME_DBG $PKG_NAME
 	generate_pkg $PKG_NAME_DBG $PKG_NAME
 else
+	REQUIRES+=", $ROFL_PKG_NAME"
 	dump_result  $PKG_NAME $PKG_NAME_DBG
 	generate_pkg $PKG_NAME $PKG_NAME_DBG
 fi

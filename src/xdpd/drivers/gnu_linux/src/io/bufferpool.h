@@ -155,7 +155,7 @@ datapacket_t* bufferpool::get_free_buffer_nonblocking(){
 		}
 	
 		//Circular increment
-		if( (i++) == bp->capacity ){
+		if( (i+1) == bp->capacity ){
 			i = 0;
 		}
 

@@ -18,7 +18,9 @@ libxdpd_driver_gnu_linux_dpdk_src_io_la_SOURCES = \
 					tx.cc\
 					rx.cc
 
-CLASSIFIER_LIB=packet_classifiers/c_pktclassifier/libxdpd_driver_gnu_linux_dpdk_io_classifiers_c.la
+#Define classifier
+#CLASSIFIER_LIB=packet_classifiers/c_pktclassifier/libxdpd_driver_gnu_linux_dpdk_io_classifiers_c.la
+CLASSIFIER_LIB=packet_classifiers/c_types_pktclassifier/libxdpd_driver_gnu_linux_dpdk_io_classifiers_c_types.la
 					
 libxdpd_driver_gnu_linux_dpdk_src_io_la_LIBADD = \
 					$(CLASSIFIER_LIB)

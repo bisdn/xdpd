@@ -30,6 +30,7 @@ static void* process_packet_ins(void* param){
 	datapacket_storage* dps;
 	struct rte_mbuf* mbuf;
 	int drain_credits = -1; 
+	packet_matches_t matches;
 
 	//prepare timeout
 	struct timespec timeout;
@@ -87,6 +88,9 @@ static void* process_packet_ins(void* param){
 			continue;
 		}
 
+		//Fill matches
+		fill_packet_matches(pkt, &matches);
+
 		//Process packet in
 		rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_dpdk->pktin_table_id, 	
@@ -96,7 +100,7 @@ static void* process_packet_ins(void* param){
 						get_buffer_dpdk(pkt_dpdk), 
 						pkt_dpdk->pktin_send_len, 
 						get_buffer_length_dpdk(pkt_dpdk),
-						((packet_matches_t*)&pkt->matches)
+						&matches
 				);
 
 		if( rv != HAL_SUCCESS ){

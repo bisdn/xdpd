@@ -10,7 +10,6 @@
 classify_state_t* init_classifier(datapacket_t*const  pkt){
 	classify_state_t* classifier = malloc(sizeof(classify_state_t));
 	memset(classifier,0,sizeof(classify_state_t));
-	classifier->matches = &pkt->matches;
 	return classifier;
 }
 void destroy_classifier(classify_state_t* clas_state){
@@ -24,7 +23,7 @@ void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
 		return;
 
 	cpc_vlan_hdr_t* vlan = get_vlan_hdr(clas_state,0);
-	uint16_t ether_type = get_vlan_type(vlan);
+	uint16_t ether_type = *get_vlan_type(vlan);
 	
 	//Take header out from packet
 	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_vlan_hdr_t));
@@ -57,7 +56,7 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state,0);
 
-	switch (get_ether_type(ether_header)) {
+	switch ( *get_ether_type(ether_header) ) {
 		case ETH_TYPE_PPPOE_DISCOVERY:
 		{
 			pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_pppoe_hdr_t));
@@ -110,7 +109,7 @@ void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 	//Recover the current ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);
 	cpc_vlan_hdr_t* inner_vlan_header = get_vlan_hdr(clas_state, 0);
-	uint16_t inner_ether_type = get_ether_type(ether_header);
+	uint16_t inner_ether_type = *get_ether_type(ether_header);
 
 	//Move bytes
 	if (pkt_push(pkt, NULL, sizeof(cpc_eth_hdr_t), sizeof(cpc_vlan_hdr_t)) == ROFL_FAILURE){
@@ -127,8 +126,8 @@ void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 	ether_header = get_ether_hdr(clas_state, 0);    
 	
 	if ( inner_vlan_header ) {
-		set_vlan_id(vlan_header, get_vlan_id(inner_vlan_header));
-		set_vlan_pcp(vlan_header, get_vlan_pcp(inner_vlan_header));
+		set_vlan_id(vlan_header, *get_vlan_id(inner_vlan_header));
+		set_vlan_pcp(vlan_header, *get_vlan_pcp(inner_vlan_header));
 	} else {
 		set_vlan_id(vlan_header,0x0000);
 		set_vlan_pcp(vlan_header,0x00);
@@ -173,17 +172,17 @@ void* push_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_
 	mpls_header = get_mpls_hdr(clas_state, 0);
 	if (inner_mpls_header){
 		set_mpls_bos(mpls_header, false);
-		set_mpls_label(mpls_header, get_mpls_label(inner_mpls_header));
-		set_mpls_tc(mpls_header, get_mpls_tc(inner_mpls_header));
-		set_mpls_ttl(mpls_header, get_mpls_ttl(inner_mpls_header));
+		set_mpls_label(mpls_header, *get_mpls_label(inner_mpls_header));
+		set_mpls_tc(mpls_header, *get_mpls_tc(inner_mpls_header));
+		set_mpls_ttl(mpls_header, *get_mpls_ttl(inner_mpls_header));
 	} else {
 		set_mpls_bos(mpls_header, true);
 		set_mpls_label(mpls_header, 0x0000);
 		set_mpls_tc(mpls_header, 0x00);
 		if ( ipv4_hdr ){
-			set_mpls_ttl(mpls_header, get_ipv4_ttl(ipv4_hdr));
+			set_mpls_ttl(mpls_header, *get_ipv4_ttl(ipv4_hdr));
 		}else if ( ipv6_hdr ){
-			set_mpls_ttl(mpls_header, get_ipv6_hop_limit(ipv6_hdr));
+			set_mpls_ttl(mpls_header, *get_ipv6_hop_limit(ipv6_hdr));
 		}else
 			set_mpls_ttl(mpls_header, 0x00);
 	}

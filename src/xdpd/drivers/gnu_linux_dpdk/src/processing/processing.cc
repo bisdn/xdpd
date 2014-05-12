@@ -9,7 +9,7 @@
 #include "../io/tx.h"
 
 #include "../io/port_state.h"
-#include "../io/port_manager.h"
+#include "../io/iface_manager.h"
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
 
@@ -265,7 +265,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	}
 
 	//FIXME: check if already scheduled
-	if( port_manager_set_queues(current_core_index, port_state->port_id) != ROFL_SUCCESS){
+	if( iface_manager_set_queues(current_core_index, port_state->port_id) != ROFL_SUCCESS){
 		assert(0);
 		return ROFL_FAILURE;
 	}

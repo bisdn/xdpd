@@ -201,8 +201,16 @@ def packet_types_enum(f):
 		
 	f.write("\tPT_MAX__\n}pkt_types_t;\n\n")
 
+
+def packet_offsets_fwd(f):
+	
+	f.write("//Matrix of header offsets from the first byte of the buffer.\n")
+	f.write("extern const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__];\n\n")
+
+
 def packet_offsets(f):
 	
+	f.write("//Matrix of header offsets from the first byte of the buffer.\n")
 	f.write("const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__] = {")
 
 	first_type = True 
@@ -242,8 +250,8 @@ def packet_offsets(f):
 		
 	f.write("\n};\n\n")
 	
-def parse_transitions(f):
-	
+def parse_transitions_fwd(f):
+
 	##
 	## Unrolled protocols enum
 	##
@@ -255,6 +263,15 @@ def parse_transitions(f):
 	f.write("\t__UNROLLED_PT_PROTO_MAX__\n}__unrolled_protocol_types_t;\n\n")
 
 
+	##
+	## Parse transitions
+	##
+	f.write("//Matrix of incremental classification steps. The only purpose of this matrix is to simplify parsing code, it is not essentially necessary, although _very_ desirable.\n")
+	f.write("extern const int parse_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__];\n\n")
+
+
+def parse_transitions(f):
+	
 	##
 	## Parse transitions
 	##
@@ -312,6 +329,15 @@ def parse_transitions(f):
 		f.write("}")
 		
 	f.write("\n};\n\n")
+
+def push_transitions_fwd(f):
+	
+	##
+	## Push operations
+	##
+	f.write("//Matrix for pushing protocol headers. \n")
+	f.write("extern const int push_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__];\n\n")
+
 
 def push_transitions(f):
 	
@@ -412,6 +438,15 @@ def push_transitions(f):
 		f.write("}")
 		
 	f.write("\n};\n\n")
+
+
+def pop_transitions_fwd(f):
+	
+	##
+	## Pop operations
+	##
+	f.write("//Matrix for popping protocol headers. \n")
+	f.write("extern const int pop_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__];\n\n")
 
 def pop_transitions(f):
 	
@@ -519,49 +554,68 @@ def pop_macro(f):
 ## Main function
 ##
 
+FILE_NAME_NOEXT="autogen_pkt_types"
+
 def main():
 
 	unroll_pkt_types()
 	unroll_protocols()
 
-	#Open file
-	with open('../autogen_pkt_types.h', 'w') as f:	
-		
+	#Header file Open file
+	with open("../"+FILE_NAME_NOEXT+'.h', 'w') as header:	
 		#License
-		license(f)
+		license(header)
 
 		#Init guard
-		init_guard(f)
+		init_guard(header)
 		
 		#Header comment
-		comments(f)
+		comments(header)
 	
 		#Generate protocol enum
-		protocols_enum(f)
+		protocols_enum(header)
 
 		#Generate pkt types enum
-		packet_types_enum(f)
+		packet_types_enum(header)
 	
 		#Offsets in bytes
-		packet_offsets(f)
+		packet_offsets_fwd(header)
 
 		#Transitions
-		parse_transitions(f)
+		parse_transitions_fwd(header)
 
 		#Push
-		push_transitions(f)
+		push_transitions_fwd(header)
 
 		#Pop
-		pop_transitions(f)
+		pop_transitions_fwd(header)
 
 		#Macros
-		get_hdr_macro(f)
-		add_class_type_macro(f)	
-		push_macro(f)	
-		pop_macro(f)	
+		get_hdr_macro(header)
+		add_class_type_macro(header)	
+		push_macro(header)	
+		pop_macro(header)	
 
 		#End of guards
-		end_guard(f)
+		end_guard(header)
+
+	with open("../"+FILE_NAME_NOEXT+'.c', 'w') as c_file:	
+
+		#Header inclusion
+		c_file.write("#include \""+FILE_NAME_NOEXT+".h\"\n\n\n")
+
+		#Offsets in bytes
+		packet_offsets(c_file)
+
+		#Transitions
+		parse_transitions(c_file)
+
+		#Push
+		push_transitions(c_file)
+
+		#Pop
+		pop_transitions(c_file)
+
 
 if __name__ == "__main__":
 	main()

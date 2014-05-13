@@ -5,8 +5,6 @@
 #ifndef _CPC_PPP_H_
 #define _CPC_PPP_H_
 
-#include "../cpc_utils.h"
-
 /**
 * @file cpc_ppp.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
@@ -25,35 +23,6 @@ enum hdlc_code_t {
 
 // PPP frame related definitions
 //
-
-enum ppp_prot_t {
-#ifdef CPC_IN_HOSTBYTEORDER
-	PPP_PROT_PADDING 	= 0x0001, // 0x00 0x01 in network byte order
-	PPP_PROT_LCP 		= 0xc021, // 0xc0 0x21 in network byte order
-	PPP_PROT_PAP 		= 0xc023, // 0xc0 0x23 in network byte order
-	PPP_PROT_LQR 		= 0xc025, // 0xc0 0x25 in network byte order
-	PPP_PROT_CHAP 		= 0xc223, // 0xc2 0x23 in network byte order
-	PPP_PROT_EAP 		= 0xc227, // 0xc2 0x27 in network byte order
-	PPP_PROT_IPCP 		= 0x8021, // 0x80 0x21 in network byte order
-	PPP_PROT_IPV4 		= 0x0021, // 0x00 0x21 in network byte order
-	PPP_PROT_IPV6CP 	= 0x8057, // 0x80 0x57 in network byte order
-	PPP_PROT_IPV6 		= 0x0057, // 0x00 0x57 in network byte order
-	PPP_PROT_CCP 		= 0x80fd, // 0x80 0xfd in network byte order
-#else
-	PPP_PROT_PADDING 	= 0x0100, // 0x00 0x01 in network byte order
-	PPP_PROT_LCP 		= 0x21c0, // 0xc0 0x21 in network byte order
-	PPP_PROT_PAP 		= 0x23c0, // 0xc0 0x23 in network byte order
-	PPP_PROT_LQR 		= 0x25c0, // 0xc0 0x25 in network byte order
-	PPP_PROT_CHAP 		= 0x23c2, // 0xc2 0x23 in network byte order
-	PPP_PROT_EAP 		= 0x27c2, // 0xc2 0x27 in network byte order
-	PPP_PROT_IPCP 		= 0x2180, // 0x80 0x21 in network byte order
-	PPP_PROT_IPV4 		= 0x2100, // 0x00 0x21 in network byte order
-	PPP_PROT_IPV6CP 	= 0x5780, // 0x80 0x57 in network byte order
-	PPP_PROT_IPV6 		= 0x5700, // 0x00 0x57 in network byte order
-	PPP_PROT_CCP 		= 0xfd80, // 0x80 0xfd in network byte order
-#endif
-};
-
 struct cpc_ppp_hdr {
 	uint16_t prot;
 	uint8_t data[0];
@@ -169,118 +138,72 @@ typedef struct cpc_ppp_ipcp_opt_hdr cpc_ppp_ipcp_opt_hdr_t;
 
 inline static
 uint16_t get_ppp_prot(void *hdr){
-	return CPC_BE16TOH(((cpc_ppp_hdr_t*)hdr)->prot);
+	return ((cpc_ppp_hdr_t*)hdr)->prot;
 }
 
 inline static
-void set_ppp_prot(void *hdr, uint16_t prot)
-{
-	((cpc_ppp_hdr_t*)hdr)->prot = CPC_HTOBE16(prot);
+void set_ppp_prot(void *hdr, uint16_t prot){
+	((cpc_ppp_hdr_t*)hdr)->prot = prot;
 }
 
 inline static
-uint8_t get_ppp_lcp_code(void *hdr)
-{
-	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
-
+uint8_t get_ppp_lcp_code(void *hdr){
 	return ((cpc_ppp_lcp_hdr_t*)hdr)->code;
 }
 
 inline static
-void set_ppp_lcp_code(void *hdr, uint8_t code)
-{
-	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
-
+void set_ppp_lcp_code(void *hdr, uint8_t code){
 	((cpc_ppp_lcp_hdr_t*)hdr)->code = code;
 }
 
 inline static
-uint8_t get_ppp_lcp_ident(void *hdr)
-{
-	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
-
+uint8_t get_ppp_lcp_ident(void *hdr){
 	return ((cpc_ppp_lcp_hdr_t*)hdr)->ident;
 }
 
 inline static
-void set_ppp_lcp_ident(void *hdr, uint8_t ident)
-{
-	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
-
+void set_ppp_lcp_ident(void *hdr, uint8_t ident){
 	((cpc_ppp_lcp_hdr_t*)hdr)->ident = ident;
 }
 
 inline static
-uint16_t get_ppp_lcp_length(void *hdr)
-{
-	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
-
-	return CPC_BE16TOH(((cpc_ppp_lcp_hdr_t*)hdr)->length);
+uint16_t get_ppp_lcp_length(void *hdr){
+	return ((cpc_ppp_lcp_hdr_t*)hdr)->length;
 }
 
 inline static
-void set_ppp_lcp_length(void *hdr, uint16_t len)
-{
-	//if (0 == ((cpc_ppp_lcp_hdr_t*)hdr)) throw ePPPLcpNotFound();
-
-	((cpc_ppp_lcp_hdr_t*)hdr)->length = CPC_HTOBE16(len);
+void set_ppp_lcp_length(void *hdr, uint16_t len){
+	((cpc_ppp_lcp_hdr_t*)hdr)->length = len;
 }
 
-#if 0
-TODO
 inline static
-cpc_ppp_lcp_option_t* get_lcp_option(void *hdr, enum ppp_lcp_option_t option)
-{
-	if (lcp_options.find(option) == lcp_options.end()) throw ePPPLcpOptionNotFound();
-
-	return lcp_options[option];
-}
-#endif
-inline static
-uint8_t get_ppp_ipcp_code(void *hdr)
-{
-	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
-
+uint8_t get_ppp_ipcp_code(void *hdr){
 	return ((cpc_ppp_lcp_hdr_t*)hdr)->code;
 }
 
 inline static
-void set_ppp_ipcp_code(void *hdr, uint8_t code)
-{
-	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
-
+void set_ppp_ipcp_code(void *hdr, uint8_t code){
 	((cpc_ppp_lcp_hdr_t*)hdr)->code = code;
 }
 
 inline static
-uint8_t get_ppp_ipcp_ident(void *hdr)
-{
-	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
-
+uint8_t get_ppp_ipcp_ident(void *hdr){
 	return ((cpc_ppp_lcp_hdr_t*)hdr)->ident;
 }
 
 inline static
-void set_ppp_ipcp_ident(void *hdr, uint8_t ident)
-{
-	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
-
+void set_ppp_ipcp_ident(void *hdr, uint8_t ident){
 	((cpc_ppp_lcp_hdr_t*)hdr)->ident = ident;
 }
 
 inline static
-uint16_t get_ppp_ipcp_length(void *hdr)
-{
-	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
-
-	return CPC_BE16TOH(((cpc_ppp_lcp_hdr_t*)hdr)->length);
+uint16_t get_ppp_ipcp_length(void *hdr){
+	return ((cpc_ppp_lcp_hdr_t*)hdr)->length;
 }
 
 inline static
 void set_ppp_ipcp_length(void *hdr, uint16_t len){
-	//if (0 == ppp_ipcp_hdr) throw ePPPIpcpNotFound();
-
-	((cpc_ppp_lcp_hdr_t*)hdr)->length = CPC_HTOBE16(len);
+	((cpc_ppp_lcp_hdr_t*)hdr)->length = len;
 }
 
 #if 0
@@ -291,6 +214,14 @@ fppp_ipcp_option* get_ipcp_option(void *hdr, enum ppp_ipcp_option_t option)
 	//if (ipcp_options.find(option) == ipcp_options.end()) throw ePPPIpcpOptionNotFound();
 
 	return ipcp_options[option];
+}
+
+inline static
+cpc_ppp_lcp_option_t* get_lcp_option(void *hdr, enum ppp_lcp_option_t option)
+{
+       if (lcp_options.find(option) == lcp_options.end()) throw ePPPLcpOptionNotFound();
+
+       return lcp_options[option];
 }
 #endif
 

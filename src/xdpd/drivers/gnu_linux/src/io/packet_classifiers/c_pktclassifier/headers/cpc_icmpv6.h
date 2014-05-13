@@ -6,7 +6,6 @@
 #define _CPC_ICMPV6_H_
 
 #include <rofl/datapath/pipeline/common/large_types.h>
-#include "../cpc_utils.h"
 #include "cpc_ethernet.h"
 #include "../../../../util/likely.h"
 #include "../../../../util/compiler_assert.h"
@@ -196,7 +195,6 @@ uint128__t get_icmpv6_neighbor_taddr(void *hdr){
 			//TODO LOG ERROR
 			break;
 	}
-	CPC_SWAP_U128(addr); //be128toh
 	return addr;
 };
 
@@ -218,7 +216,6 @@ void set_icmpv6_neighbor_taddr(void *hdr, uint128__t taddr){
 			return;
 			break;
 	}
-	CPC_SWAP_U128(taddr); //htobe128
 	*ptr = taddr;
 };
 

@@ -13,7 +13,7 @@
 * @author Nick Bastin<nick (at) bssoftworks.com>
 *
 * @brief Simple rest plugin
-* 
+* @warning: this is just sketch plugin with limited functionality 
 */
 
 namespace xdpd {

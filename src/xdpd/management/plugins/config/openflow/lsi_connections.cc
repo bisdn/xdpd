@@ -159,7 +159,12 @@ lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setti
 
 	lsi_connection con;
 
+	bool enable_ssl = false;
 	if (setting.exists(LSI_CONNECTION_SSL)) {
+		setting.lookupValue(LSI_CONNECTION_SSL, enable_ssl);
+	}
+
+	if (enable_ssl) {
 		con.type = rofl::csocket::SOCKET_TYPE_OPENSSL;
 		//Generate list of empty parameters for this socket
 		con.params = rofl::csocket::get_default_params(con.type);

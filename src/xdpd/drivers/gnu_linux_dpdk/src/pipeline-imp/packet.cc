@@ -1123,7 +1123,7 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 			* Virtual link
 			*/
 			//Reset port_in and reprocess
-			((datapacket_dpdk_t*)pkt->platform_state)->in_port = pkt->matches.port_in = ((switch_port_t*)port->platform_port_state)->of_port_num;
+			((datapacket_dpdk_t*)pkt->platform_state)->in_port = pkt->matches.__port_in = ((switch_port_t*)port->platform_port_state)->of_port_num;
 	
 			xdpd::gnu_linux_dpdk::tx_pkt_vlink(port, pkt);
 			return;

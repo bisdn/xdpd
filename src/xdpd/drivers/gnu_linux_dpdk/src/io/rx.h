@@ -19,7 +19,7 @@
 #include "dpdk_datapacket.h"
 
 #include "port_state.h"
-#include "port_manager.h"
+#include "iface_manager.h"
 #include "../processing/processing.h"
 
 //Make sure pipeline-imp are BEFORE _pp.h
@@ -90,6 +90,7 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		//out from the pipeline
 		pkt_state->mbuf = mbuf;
 
+#if DEBUG
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
 		assert(mbuf->pkt.nb_segs == 1);
 
@@ -112,6 +113,8 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 			rte_pktmbuf_free(mbuf);
 			continue;
 		}
+#endif
+
 		//Init&classify	
 		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, tmp_port->of_port_num, 0, true, false);
 	

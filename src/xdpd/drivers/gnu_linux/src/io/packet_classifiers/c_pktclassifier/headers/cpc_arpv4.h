@@ -5,7 +5,6 @@
 #ifndef _CPC_ARPV4_H_
 #define _CPC_ARPV4_H_
 
-#include "../cpc_utils.h"
 #include "cpc_ethernet.h"
 
 /**
@@ -39,22 +38,22 @@ typedef struct cpc_arpv4_hdr {
 /* ARPv4 definitions */
 inline static
 uint16_t get_arpv4_htype(void *hdr){
-	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->htype);
+	return ((cpc_arpv4_hdr_t *)hdr)->htype;
 };
 
 inline static
 void set_arpv4_htype(void *hdr, uint16_t htype){
-	((cpc_arpv4_hdr_t*)hdr)->htype = CPC_HTOBE16(htype);
+	((cpc_arpv4_hdr_t*)hdr)->htype = htype;
 };
 
 inline static
 uint16_t get_arpv4_ptype(void *hdr){
-	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->ptype);
+	return ((cpc_arpv4_hdr_t *)hdr)->ptype;
 };
 
 inline static
 void set_arpv4_ptype(void *hdr, uint16_t ptype){
-	((cpc_arpv4_hdr_t*)hdr)->ptype = CPC_HTOBE16(ptype);
+	((cpc_arpv4_hdr_t*)hdr)->ptype = ptype;
 };
 
 inline static
@@ -79,57 +78,55 @@ void set_arpv4_plen(void *hdr, uint8_t plen){
 
 inline static
 uint16_t get_arpv4_opcode(void *hdr){
-	return CPC_BE16TOH(((cpc_arpv4_hdr_t *)hdr)->opcode);
+	return ((cpc_arpv4_hdr_t *)hdr)->opcode;
 };
 
 inline static
 void set_arpv4_opcode(void *hdr, uint16_t opcode){
-	((cpc_arpv4_hdr_t*)hdr)->opcode = CPC_HTOBE16(opcode);
+	((cpc_arpv4_hdr_t*)hdr)->opcode = opcode;
 };
 
 inline static
 uint64_t get_arpv4_dl_dst(void *hdr){
-	uint64_t ret = mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_dst);
-	CPC_SWAP_MAC(ret);
-	return ret;
+	uint64_t *ret = (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_dst;
+	return (*ret) & OF1X_6_BYTE_MASK;
 };
 
 inline static
 void set_arpv4_dl_dst(void* hdr, uint64_t dl_dst){
-	CPC_SWAP_MAC(dl_dst);
-	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_dst, dl_dst);
+	uint64_t *ptr = (uint64_t *) &((cpc_arpv4_hdr_t*)hdr)->dl_dst;
+	*ptr = (dl_dst & OF1X_6_BYTE_MASK) | (*ptr & ~OF1X_6_BYTE_MASK);
 };
 
 inline static
 uint64_t get_arpv4_dl_src(void* hdr){
-	uint64_t ret = mac_addr_to_u64(((cpc_arpv4_hdr_t*)hdr)->dl_src);
-	CPC_SWAP_MAC(ret);
-	return ret;
+	uint64_t *ret = (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_src;
+	return (*ret) & OF1X_6_BYTE_MASK;
 };
 
 inline static
 void set_arpv4_dl_src(void* hdr, uint64_t dl_src){
-	CPC_SWAP_MAC(dl_src);
-	u64_to_mac_ptr(((cpc_arpv4_hdr_t*)hdr)->dl_src, dl_src);
+	uint64_t *ptr = (uint64_t *) &((cpc_arpv4_hdr_t*)hdr)->dl_src;
+	*ptr = (dl_src & OF1X_6_BYTE_MASK) | (*ptr & ~OF1X_6_BYTE_MASK);
 };
 
 inline static
 uint32_t get_arpv4_ip_src(void *hdr){
-	return CPC_BE32TOH(((cpc_arpv4_hdr_t *)hdr)->ip_src);
+	return ((cpc_arpv4_hdr_t *)hdr)->ip_src;
 };
 
 inline static
 void set_arpv4_ip_src(void *hdr, uint16_t ip_src){
-	((cpc_arpv4_hdr_t*)hdr)->ip_src = CPC_HTOBE32(ip_src);
+	((cpc_arpv4_hdr_t*)hdr)->ip_src = ip_src;
 };
 
 inline static
 uint32_t get_arpv4_ip_dst(void *hdr){
-	return CPC_BE32TOH(((cpc_arpv4_hdr_t *)hdr)->ip_dst);
+	return ((cpc_arpv4_hdr_t *)hdr)->ip_dst;
 };
 
 inline static
 void set_arpv4_ip_dst(void *hdr, uint16_t ip_dst){
-	((cpc_arpv4_hdr_t*)hdr)->ip_dst = CPC_HTOBE32(ip_dst);
+	((cpc_arpv4_hdr_t*)hdr)->ip_dst = ip_dst;
 };
 #endif //_CPC_ARPV4_H_

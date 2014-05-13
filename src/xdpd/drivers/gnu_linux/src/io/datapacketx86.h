@@ -84,10 +84,10 @@ public:
 public: // methods
 
 	//Initialize the already constructed object
-	rofl_result_t init(uint8_t* buf, size_t buflen, of_switch_t* sw, uint32_t in_port, uint32_t in_phy_port = 0, bool classify=true, bool copy_packet_to_internal_buffer = true);
+	inline rofl_result_t init(uint8_t* buf, size_t buflen, of_switch_t* sw, uint32_t in_port, uint32_t in_phy_port = 0, bool classify=true, bool copy_packet_to_internal_buffer = true);
 
 	//Destroy object. This is NOT a destructor nor releases memory, but resets fields
-	void destroy(void);
+	inline void destroy(void);
 
 	/*
 	* Return pointer to the buffer, regardless of where is right now (NIC or USER_SPACE). For memory on USER_SPACE returns pointer to the FIRST packet bytes.
@@ -205,6 +205,77 @@ inline void datapacketx86::init_internal_buffer_location_defaults(x86buffering_s
 	}
 }
 
+/*
+ * Inline methods for acquiring/releasing a buffer from data packet storage
+ */
+
+//Init
+
+rofl_result_t datapacketx86::init(
+		uint8_t* buf, size_t buflen,
+		of_switch_t* sw,
+		uint32_t in_port,
+		uint32_t in_phy_port,
+		bool classify, 
+		bool copy_packet_to_internal_buffer){
+
+	// do this sanity check here, as someone may request later a transfer to user space,
+	// so make sure we have enough space for doing this later
+	if (buflen > FRAME_SIZE_BYTES){
+		return ROFL_FAILURE;
+	}
+
+	if( copy_packet_to_internal_buffer) {
+
+		init_internal_buffer_location_defaults(X86_DATAPACKET_BUFFERED_IN_USER_SPACE, NULL, buflen);
+
+		if(buf)
+			platform_memcpy(buffer.iov_base, buf, buflen);
+	}else{
+		if(!buf)
+			return ROFL_FAILURE;
+
+		init_internal_buffer_location_defaults(X86_DATAPACKET_BUFFERED_IN_NIC, buf, buflen);
+	}
+
+	//Fill in
+	this->lsw = sw;
+	this->in_port = in_port;
+	this->in_phy_port = in_phy_port;
+	//this->eth_type 		= 0;
+
+	this->output_queue = 0;
+
+	//Timestamp S1	
+	TM_STAMP_STAGE_DPX86(this, TM_S1);
+	
+	//Classify the packet
+	if(classify)
+		classify_packet(headers, get_buffer(), get_buffer_length(), in_port, 0);
+
+	return ROFL_SUCCESS;
+}
+
+
+
+void datapacketx86::destroy(void){
+
+	reset_classifier(headers);
+
+	if (X86_DATAPACKET_BUFFERED_IN_USER_SPACE == get_buffering_status()){
+#ifndef NDEBUG
+		// not really necessary, but makes debugging a little bit easier
+		platform_memset(slot.iov_base, 0x00, slot.iov_len);
+#endif
+
+		slot.iov_base 	= 0;
+		slot.iov_len 	= 0;
+		buffer.iov_base = 0;
+		buffer.iov_len 	= 0;
+
+		buffering_status = X86_DATAPACKET_BUFFER_IS_EMPTY;
+	}
+}
 }// namespace xdpd::gnu_linux 
 }// namespace xdpd
 

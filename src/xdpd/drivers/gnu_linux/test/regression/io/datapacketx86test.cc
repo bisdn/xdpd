@@ -27,9 +27,7 @@
 #include <rofl/common/protocols/fipv4frame.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "io/datapacketx86.h"
-#include "io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"
-
-#include "../../../openflow/endianness_translation_utils.h"
+//#include "io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"
 
 using namespace rofl;
 using namespace std;
@@ -53,7 +51,7 @@ public:
 	void testPopPPPoE();
 
 	CPPUNIT_TEST_SUITE(DataPacketX86Test);
-	// CPPUNIT_TEST(testPushPPPoE);
+	CPPUNIT_TEST(testPushPPPoE);
 	CPPUNIT_TEST(testPopPPPoE);
 	CPPUNIT_TEST_SUITE_END();
 };
@@ -95,7 +93,7 @@ void DataPacketX86Test::setUp()
 	mRight[idx++] = 0x00;
 
 	// vlan vid + pcp
-	mRight[idx++] = 0x77;
+	mRight[idx++] = 0x07; //CFI=0, setter is not implemented in packet classifier
 	mRight[idx++] = 0x77;
 	// vlan ethernet type: ipv4 (=0x0800)
 	mRight[idx++] = 0x08;
@@ -266,17 +264,20 @@ void DataPacketX86Test::testPushPPPoE()
 
 	classify_packet(pack->headers, pack->get_buffer(), pack->get_buffer_length(), 1, 1);
 	pop_vlan(&pkt,pack->headers);
-	set_ether_dl_dst(get_ether_hdr(pack->headers,0),cmacaddr("00:33:33:33:33:33").get_mac());
-	set_ether_dl_src(get_ether_hdr(pack->headers,0),cmacaddr("00:44:44:44:44:44").get_mac());
+	uint64_t mac = HTONB64(OF1X_MAC_ALIGN(cmacaddr("00:33:33:33:33:33").get_mac()));
+	set_ether_dl_dst(get_ether_hdr(pack->headers,0),mac);
+	mac = HTONB64(OF1X_MAC_ALIGN(cmacaddr("00:44:44:44:44:44").get_mac()));
+	set_ether_dl_src(get_ether_hdr(pack->headers,0),mac);
 
-	push_pppoe(&pkt, pack->headers, fpppoeframe::PPPOE_ETHER_SESSION);
+	push_pppoe(&pkt, pack->headers, ETH_TYPE_PPPOE_SESSION);
 
 	set_pppoe_code(get_pppoe_hdr(pack->headers,0),0x0000);
 	set_pppoe_sessid(get_pppoe_hdr(pack->headers,0),0xaaaa);
 	set_pppoe_type(get_pppoe_hdr(pack->headers,0),fpppoeframe::PPPOE_TYPE);
-	set_pppoe_vers(get_pppoe_hdr(pack->headers,0),fpppoeframe::PPPOE_VERSION);
-	set_pppoe_length(get_pppoe_hdr(pack->headers,0),get_ipv4_length(get_ipv4_hdr(pack->headers,0)) + sizeof(fpppframe::ppp_hdr_t));
-	set_ppp_prot(get_pppoe_hdr(pack->headers,0),fpppframe::PPP_PROT_IPV4);
+	set_pppoe_vers(get_pppoe_hdr(pack->headers,0),OF1X_SHIFT_LEFT(fpppoeframe::PPPOE_VERSION,4));
+	uint16_t len = NTOHB16(get_ipv4_length(get_ipv4_hdr(pack->headers,0))) + sizeof(fpppframe::ppp_hdr_t);
+	set_pppoe_length(get_pppoe_hdr(pack->headers,0),HTONB16(len));
+	set_ppp_prot(get_ppp_hdr(pack->headers,0), PPP_PROT_IPV4);
 
 	rofl::cmemory mResult(pack->get_buffer(), pack->get_buffer_length());
 
@@ -294,17 +295,15 @@ void DataPacketX86Test::testPopPPPoE()
 
 	classify_packet(pack->headers, pack->get_buffer(), pack->get_buffer_length(), 1, 1);
 
-	pop_pppoe(&pkt, pack->headers, htobe16(rofl::fipv4frame::IPV4_ETHER))	;
+	pop_pppoe(&pkt, pack->headers, HTONB16(rofl::fipv4frame::IPV4_ETHER))	;
 
-	uint64_t mac = cmacaddr("00:11:11:11:11:11").get_mac();
-	MACTOBE(mac);
+	uint64_t mac = HTONB64(OF1X_MAC_ALIGN(cmacaddr("00:11:11:11:11:11").get_mac()));
 	set_ether_dl_dst(get_ether_hdr(pack->headers,0),mac);
-	mac = cmacaddr("00:22:22:22:22:22").get_mac();
-	MACTOBE(mac);
+	mac = HTONB64(OF1X_MAC_ALIGN(cmacaddr("00:22:22:22:22:22").get_mac()));
 	set_ether_dl_src(get_ether_hdr(pack->headers,0),mac);
 
-	push_vlan(&pkt, pack->headers, htobe16(rofl::fvlanframe::VLAN_CTAG_ETHER));
-	set_vlan_cfi(get_vlan_hdr(pack->headers,0),true);
+	push_vlan(&pkt, pack->headers, VLAN_CTAG_ETHER_TYPE);
+	//set_vlan_cfi(get_vlan_hdr(pack->headers,0),true);
 	set_vlan_id(get_vlan_hdr(pack->headers,0),htobe16(0x777));
 	set_vlan_pcp(get_vlan_hdr(pack->headers,0),0x3);
 

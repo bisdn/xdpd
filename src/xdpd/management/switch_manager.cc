@@ -247,7 +247,7 @@ bool switch_manager::exists_by_name(std::string& name){
 
 uint64_t switch_manager::get_switch_dpid(std::string& name){
 
-	uint64_t dpid;
+	uint64_t dpid=0x0ULL;
 	bool found=false;
 
 	pthread_rwlock_rdlock(&switch_manager::rwlock);

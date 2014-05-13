@@ -1,4 +1,4 @@
-AC_INIT(xdpd, 0.4, xdpd@bisdn.de, xdpd)
+AC_INIT(xdpd, m4_esyscmd_s(cat VERSION), xdpd@bisdn.de, xdpd)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -29,12 +29,13 @@ AC_SUBST(LIBTOOL)dnl
 CFLAGS="-Werror -Wall -Wl,--as-needed -Wl,-export-dynamic $CFLAGS"
 CXXFLAGS="-Werror -Wall -Wl,--as-needed -Wl,-export-dynamic $CXXFLAGS"
 AC_DEFINE(__STDC_FORMAT_MACROS)
+AC_DEFINE(__STDC_CONSTANT_MACROS)
 
 #Check libs used
 AC_CHECK_LIB(pthread, pthread_kill,,AC_MSG_ERROR([pthread library not found])) 
 AC_CHECK_LIB(rt, clock_gettime,,[AC_MSG_ERROR([rt library not found])]) 
 
-PKG_CHECK_MODULES([ROFL], [rofl >= 0.4.0], [have_rofl=yes], AC_MSG_ERROR([Revised OpenFlow Libraries(ROFL) not found]))
+PKG_CHECK_MODULES([ROFL], [rofl >= 0.5.0], [have_rofl=yes], AC_MSG_ERROR([Revised OpenFlow Libraries(ROFL) not found]))
 if (test "${have_rofl}" = "yes"); then
         CPPFLAGS+="$ROFL_CFLAGS"
         LIBS+="$ROFL_LIBS"

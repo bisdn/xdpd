@@ -22,7 +22,7 @@
 #include <rofl/datapath/hal/driver.h>
 #include <rofl/datapath/hal/cmm.h>
 #include "io/bufferpool.h"
-#include "io/port_manager.h"
+#include "io/iface_manager.h"
 #include "io/datapacket_storage.h"
 #include "util/time_utils.h"
 
@@ -140,18 +140,18 @@ void* x86_background_tasks_routine(void* param){
 		
 		//Update link state(s)
 		if(get_time_difference_ms(&now, &last_time_links_updated)>=BG_UPDATE_PORT_LINKS_MS){
-			port_manager_update_links();
+			iface_manager_update_links();
 			last_time_links_updated = now;
 		}
 	
 		//Update port stats
 		if(get_time_difference_ms(&now, &last_time_stats_updated)>=BG_UPDATE_PORT_STATS_MS){
-			port_manager_update_stats();
+			iface_manager_update_stats();
 			last_time_stats_updated = now;
 		}
 			
 		//Throttle
-		usleep(LSW_TIMER_SLOT_MS);
+		usleep(LSW_TIMER_SLOT_MS*1000);
 	}
 	
 	//Printing some information

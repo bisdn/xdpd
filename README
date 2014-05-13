@@ -12,12 +12,12 @@ Supported platforms (drivers)
 Shipped with all xDPd instances:
 - GNU/Linux amd64/x86 user-space with mmap or netmap (gnu-linux). open-source
 - GNU/Linux + NetFGPA-10G (netfpga10g). open-source. 
+- GNU/Linux Intel's DPDK accelerated driver (gnu-linux-dpdk). open-source
 
 Also available:
 
 - Broadcom Triumph2 (bcm).
 - Octeon network processors (octeon5650). 
-- GNU/Linux + DPDK (gnu-linux-dpdk).
 - Other: refer to the wiki page for more details
 
 You may want to have a look to the particular README pages of each platform by inspecting:
@@ -48,7 +48,7 @@ sh# ../configure
 sh# make  
 sh# make install
 
-Optionally you can 'make check' for consistency checks.
+Optionally you can 'make check' for consistency checks. For other platforms different than gnu-linux, please make sure --with-hw-support=platform-name is specified, and that the appropriate README is read (e.g. src/xdpd/drivers/example/README).
 
 How to run it
 ================================
@@ -74,16 +74,44 @@ Optional ../configure parameters
 --enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).  
 --disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)  
 
+Known issues with Automake 1.4
+==============================
+
+xDPd package uses 'subdir-objects'. From 1.4 on, the support of 'subdir-objects' must be explicitly added in AM_INIT_AUTOMAKE() in order to prevent warnings that will abort compilation. However, due to the following bug:
+
+http://debbugs.gnu.org/cgi/bugreport.cgi?bug=13928
+
+The build system won't work if 'subdir-objects' is added in AM_INIT_AUTOMAKE() for both Automake 1.4 and 1.3. 
+
+Currently, in order to compile the package, the suggested strategy is to remove -Werror from AM_INIT_AUTOMAKE() in ALL the configure.ac-s (configure.ac, src/xdpd/drivers/example/configure.ac ...):
+
+	diff --git a/configure.ac b/configure.ac
+	index ccf3f21..96931b9 100644
+	--- a/configure.ac
+	+++ b/configure.ac
+	@@ -3,7 +3,7 @@ AC_INIT(xdpd, 0.4, xdpd@bisdn.de, xdpd)
+	 AC_CONFIG_AUX_DIR([build-aux])
+	 AC_CONFIG_MACRO_DIR([m4])
+	 
+	-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+	+AM_INIT_AUTOMAKE([-Wall foreign])
+	 
+	 AC_GNU_SOURCE
+
+Note there will be a considerably number of warnings shown. Once bug 13928, 'subdir-objects' will be added as it should be.
+
+
 Doxygen documentation
-================================
+=====================
 Documentation can be compiled via 'make doc'. Documentation is generated in build/doc/ folder
 
 More information, documentation and support
 ===========================================
 
-Please visit: 
-
+http://www.xdpd.org
 https://www.codebasin.net/redmine/projects/xdpd/wiki
+
+For getting support or participate in the discussions, join the mailing list dev@xdpd.org at http://www.xdpd.org/mailman
 
 Authorship
 ==========

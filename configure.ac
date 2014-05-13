@@ -1,4 +1,4 @@
-AC_INIT(xdpd, m4_esyscmd_s(cat VERSION), xdpd@bisdn.de, xdpd)
+AC_INIT(xdpd, m4_esyscmd_s(cat VERSION), xdpd-devel@xdpd.org, xdpd, http://www.xdpd.org)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])

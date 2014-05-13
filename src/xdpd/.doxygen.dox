@@ -28,11 +28,13 @@
 *
 * @section arch_sec Architecture
 
-* You can have a look on xDPd's architecture checking xDPd's wiki <a href="https://www.codebasin.net/redmine/projects/xdpd/wiki/Architecture">here</a>
+* You can have a look on xDPd's architecture checking xDPd's wiki <a href="http://www.xdpd.org/">here</a>
 * 
 * @section rel_proj Related projects
 *
-* <a href="https://www.codebasin.net/redmine/projects/rofl-core/wiki"> ROFL(Revised OpenFlow Library) </a>
+* <a href="http://www.roflibs.org"> ROFL(Revised OpenFlow Library) </a>
+*
+* <a href="https://github.com/bisdn/rofl-core"> ROFL(Revised OpenFlow Library) - github</a>
 *
 * @section author Authors:
 *  - Marc Sune Clos <marc.sune (at) bisdn.de>

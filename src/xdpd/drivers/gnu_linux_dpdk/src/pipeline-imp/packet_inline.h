@@ -1152,7 +1152,7 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
 #ifdef DEBUG
-		dump_packet_matches(&pkt, false);
+		dump_packet_matches(pkt, false);
 #endif
 		if(port->type == PORT_TYPE_VIRTUAL){
 			/*
@@ -1275,7 +1275,7 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 		}
 
 #ifdef DEBUG
-		dump_packet_matches(&pkt, false);
+		dump_packet_matches(pkt, false);
 #endif
 			
 		//discard the original packet always (has been replicated)

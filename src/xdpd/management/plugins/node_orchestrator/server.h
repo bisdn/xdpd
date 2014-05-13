@@ -47,7 +47,7 @@ private:
 			},
 		"ports" : ["ge0","ge1"],
 		"network-functions" : ["firewall"],
-		"virtual-links" : ["0x100","0x100"]
+		"virtual-links" : ["0x100","0x101"]
 	}
 */
 	static string createLSI(string message);

@@ -69,6 +69,9 @@ ADD_PLUGIN(rest)
 #run_pex
 ADD_PLUGIN(run_pex)
 
+#node_orchestrator
+ADD_PLUGIN(node_orchestrator)
+
 #Example
 ADD_PLUGIN(example)
 

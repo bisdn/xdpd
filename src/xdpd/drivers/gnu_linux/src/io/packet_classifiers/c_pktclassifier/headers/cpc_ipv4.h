@@ -73,8 +73,8 @@ void set_ipv4_src(void *hdr, uint32_t src){
 };
 
 inline static
-uint32_t get_ipv4_src(void *hdr){
-	return ((cpc_ipv4_hdr_t*)hdr)->src;
+uint32_t* get_ipv4_src(void *hdr){
+	return &((cpc_ipv4_hdr_t*)hdr)->src;
 };
 
 inline static
@@ -83,8 +83,8 @@ void set_ipv4_dst(void *hdr, uint32_t dst){
 };
 
 inline static
-uint32_t get_ipv4_dst(void *hdr){
-	return ((cpc_ipv4_hdr_t*)hdr)->dst;
+uint32_t* get_ipv4_dst(void *hdr){
+	return &((cpc_ipv4_hdr_t*)hdr)->dst;
 };
 
 inline static
@@ -94,7 +94,9 @@ void set_ipv4_dscp(void *hdr, uint8_t dscp){
 
 inline static
 uint8_t get_ipv4_dscp(void *hdr){
-	return (((cpc_ipv4_hdr_t*)hdr)->tos & OF1X_6MSBITS_MASK);
+	//NOTE we need to pass this one as value because its alineation is differrent from the one in ipv6
+	//return (((cpc_ipv4_hdr_t*)hdr)->tos & OF1X_6MSBITS_MASK);
+	return ((cpc_ipv4_hdr_t*)hdr)->tos;
 };
 
 inline static
@@ -104,7 +106,9 @@ void set_ipv4_ecn(void *hdr, uint8_t ecn){
 
 inline static
 uint8_t get_ipv4_ecn(void *hdr){
-	return (((cpc_ipv4_hdr_t*)hdr)->tos & OF1X_2LSBITS_MASK);
+	//NOTE we need to pass this one as value because its alineation is differrent from the one in ipv6
+	//return (((cpc_ipv4_hdr_t*)hdr)->tos & OF1X_2LSBITS_MASK);
+	return ((cpc_ipv4_hdr_t*)hdr)->tos;
 };
 
 inline static
@@ -113,8 +117,8 @@ void set_ipv4_ttl(void *hdr, uint8_t ttl){
 };
 
 inline static
-uint8_t get_ipv4_ttl(void *hdr){
-	return ((cpc_ipv4_hdr_t*)hdr)->ttl;
+uint8_t* get_ipv4_ttl(void *hdr){
+	return &((cpc_ipv4_hdr_t*)hdr)->ttl;
 };
 
 inline static
@@ -128,8 +132,8 @@ void set_ipv4_proto(void *hdr, uint8_t proto){
 };
 
 inline static
-uint8_t get_ipv4_proto(void *hdr){
-	return ((cpc_ipv4_hdr_t*)hdr)->proto;
+uint8_t* get_ipv4_proto(void *hdr){
+	return &((cpc_ipv4_hdr_t*)hdr)->proto;
 };
 
 inline static
@@ -138,8 +142,8 @@ void set_ipv4_ihl(void *hdr, uint8_t ihl){
 };
 
 inline static
-uint8_t get_ipv4_ihl(void *hdr){
-	return ((cpc_ipv4_hdr_t*)hdr)->ihlvers & OF1X_4LSBITS_MASK;
+uint8_t* get_ipv4_ihl(void *hdr){
+	return &((cpc_ipv4_hdr_t*)hdr)->ihlvers;
 };
 
 inline static
@@ -148,8 +152,8 @@ void set_ipv4_version(void *hdr, uint8_t version){
 };
 
 inline static
-uint8_t get_ipv4_version(void *hdr){
-	return ((cpc_ipv4_hdr_t*)hdr)->ihlvers & OF1X_4MSBITS_MASK;
+uint8_t* get_ipv4_version(void *hdr){
+	return &((cpc_ipv4_hdr_t*)hdr)->ihlvers;
 };
 
 inline static
@@ -158,8 +162,8 @@ void set_ipv4_length(void *hdr, uint16_t length){
 };
 
 inline static
-uint32_t get_ipv4_length(void *hdr){
-	return ((cpc_ipv4_hdr_t*)hdr)->length;
+uint16_t* get_ipv4_length(void *hdr){
+	return &((cpc_ipv4_hdr_t*)hdr)->length;
 };
 
 inline static

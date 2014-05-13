@@ -25,9 +25,8 @@ void set_mpls_label(void *hdr, uint32_t label){
 }
 
 inline static
-uint32_t get_mpls_label(void *hdr){
-	uint32_t *label_ptr = (uint32_t*) &(((cpc_mpls_hdr_t*)hdr)->label[0]) ;
-	return (*label_ptr) & OF1X_20_BITS_MASK;
+uint32_t* get_mpls_label(void *hdr){
+	return (uint32_t*) &(((cpc_mpls_hdr_t*)hdr)->label[0]) ;
 }
 
 inline static
@@ -36,8 +35,8 @@ void set_mpls_tc(void *hdr, uint8_t tc){
 }
 
 inline static
-uint8_t get_mpls_tc(void *hdr){
-	return ((cpc_mpls_hdr_t*)hdr)->label[2] & OF1X_BITS_12AND3_MASK;
+uint8_t* get_mpls_tc(void *hdr){
+	return &((cpc_mpls_hdr_t*)hdr)->label[2];
 }
 
 inline static
@@ -51,8 +50,8 @@ void set_mpls_ttl(void *hdr, uint8_t ttl){
 }
 
 inline static
-uint8_t get_mpls_ttl(void *hdr){
-	return ((cpc_mpls_hdr_t*)hdr)->ttl;
+uint8_t* get_mpls_ttl(void *hdr){
+	return &((cpc_mpls_hdr_t*)hdr)->ttl;
 }
 
 inline static

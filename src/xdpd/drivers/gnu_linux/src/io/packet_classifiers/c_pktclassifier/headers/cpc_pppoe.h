@@ -64,8 +64,8 @@ struct cpc_pppoe_tag_hdr_t {
 };
 
 inline static
-uint8_t get_pppoe_vers(void *hdr){
-	return ((cpc_pppoe_hdr_t*)hdr)->verstype & OF1X_4MSBITS_MASK;
+uint8_t* get_pppoe_vers(void *hdr){
+	return &((cpc_pppoe_hdr_t*)hdr)->verstype;
 }
 
 inline static
@@ -74,8 +74,8 @@ void set_pppoe_vers(void *hdr, uint8_t version){
 }
 
 inline static
-uint8_t get_pppoe_type(void *hdr){
-	return (((cpc_pppoe_hdr_t*)hdr)->verstype & OF1X_4LSBITS_MASK);
+uint8_t* get_pppoe_type(void *hdr){
+	return &(((cpc_pppoe_hdr_t*)hdr)->verstype);
 }
 
 inline static
@@ -84,8 +84,8 @@ void set_pppoe_type(void *hdr, uint8_t type){
 }
 
 inline static
-uint8_t get_pppoe_code(void *hdr){
-	return ((cpc_pppoe_hdr_t*)hdr)->code;
+uint8_t* get_pppoe_code(void *hdr){
+	return &((cpc_pppoe_hdr_t*)hdr)->code;
 }
 
 inline static
@@ -95,8 +95,8 @@ void set_pppoe_code(void *hdr, uint8_t code){
 
 
 inline static
-uint16_t get_pppoe_sessid(void *hdr){
-	return ((cpc_pppoe_hdr_t*)hdr)->sessid;
+uint16_t* get_pppoe_sessid(void *hdr){
+	return &((cpc_pppoe_hdr_t*)hdr)->sessid;
 }
 
 inline static
@@ -105,8 +105,8 @@ void set_pppoe_sessid(void *hdr, uint16_t sessid){
 }
 
 inline static
-uint16_t get_pppoe_length(void *hdr){
-	return ((cpc_pppoe_hdr_t*)hdr)->length;
+uint16_t* get_pppoe_length(void *hdr){
+	return &((cpc_pppoe_hdr_t*)hdr)->length;
 }
 
 inline static

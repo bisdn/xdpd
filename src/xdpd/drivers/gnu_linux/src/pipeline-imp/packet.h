@@ -11,6 +11,6 @@
 #else
 	#define STATIC_PACKET_INLINE__ static inline 
 	#include <rofl/datapath/pipeline/util/pp_guard.h> // Do not forget the guard 
-	#include "packet.cc" //Yes, nasty :)	
+	#include "packet_inline.h"
 #endif //Define inline
 #endif //Guards used only when inlining

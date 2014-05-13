@@ -37,8 +37,8 @@ typedef struct cpc_arpv4_hdr {
 
 /* ARPv4 definitions */
 inline static
-uint16_t get_arpv4_htype(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->htype;
+uint16_t* get_arpv4_htype(void *hdr){
+	return &((cpc_arpv4_hdr_t *)hdr)->htype;
 };
 
 inline static
@@ -47,8 +47,8 @@ void set_arpv4_htype(void *hdr, uint16_t htype){
 };
 
 inline static
-uint16_t get_arpv4_ptype(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->ptype;
+uint16_t* get_arpv4_ptype(void *hdr){
+	return &((cpc_arpv4_hdr_t *)hdr)->ptype;
 };
 
 inline static
@@ -57,8 +57,8 @@ void set_arpv4_ptype(void *hdr, uint16_t ptype){
 };
 
 inline static
-uint8_t get_arpv4_hlen(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->hlen;
+uint8_t* get_arpv4_hlen(void *hdr){
+	return &((cpc_arpv4_hdr_t *)hdr)->hlen;
 };
 
 inline static
@@ -67,8 +67,8 @@ void set_arpv4_hlen(void *hdr, uint8_t hlen){
 };
 
 inline static
-uint8_t get_arpv4_plen(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->plen;
+uint8_t* get_arpv4_plen(void *hdr){
+	return &((cpc_arpv4_hdr_t *)hdr)->plen;
 };
 
 inline static
@@ -77,8 +77,8 @@ void set_arpv4_plen(void *hdr, uint8_t plen){
 };
 
 inline static
-uint16_t get_arpv4_opcode(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->opcode;
+uint16_t* get_arpv4_opcode(void *hdr){
+	return &((cpc_arpv4_hdr_t *)hdr)->opcode;
 };
 
 inline static
@@ -87,9 +87,8 @@ void set_arpv4_opcode(void *hdr, uint16_t opcode){
 };
 
 inline static
-uint64_t get_arpv4_dl_dst(void *hdr){
-	uint64_t *ret = (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_dst;
-	return (*ret) & OF1X_6_BYTE_MASK;
+uint64_t* get_arpv4_dl_dst(void *hdr){
+	return (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_dst;
 };
 
 inline static
@@ -99,9 +98,8 @@ void set_arpv4_dl_dst(void* hdr, uint64_t dl_dst){
 };
 
 inline static
-uint64_t get_arpv4_dl_src(void* hdr){
-	uint64_t *ret = (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_src;
-	return (*ret) & OF1X_6_BYTE_MASK;
+uint64_t* get_arpv4_dl_src(void* hdr){
+	return (uint64_t*) &((cpc_arpv4_hdr_t*)hdr)->dl_src;
 };
 
 inline static
@@ -111,8 +109,8 @@ void set_arpv4_dl_src(void* hdr, uint64_t dl_src){
 };
 
 inline static
-uint32_t get_arpv4_ip_src(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->ip_src;
+uint32_t* get_arpv4_ip_src(void *hdr){
+	return &((cpc_arpv4_hdr_t *)hdr)->ip_src;
 };
 
 inline static
@@ -121,8 +119,8 @@ void set_arpv4_ip_src(void *hdr, uint16_t ip_src){
 };
 
 inline static
-uint32_t get_arpv4_ip_dst(void *hdr){
-	return ((cpc_arpv4_hdr_t *)hdr)->ip_dst;
+uint32_t* get_arpv4_ip_dst(void *hdr){
+	return &((cpc_arpv4_hdr_t *)hdr)->ip_dst;
 };
 
 inline static

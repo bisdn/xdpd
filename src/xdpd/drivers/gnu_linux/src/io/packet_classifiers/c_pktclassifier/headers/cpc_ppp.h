@@ -137,8 +137,8 @@ struct cpc_ppp_ipcp_opt_hdr{
 typedef struct cpc_ppp_ipcp_opt_hdr cpc_ppp_ipcp_opt_hdr_t;
 
 inline static
-uint16_t get_ppp_prot(void *hdr){
-	return ((cpc_ppp_hdr_t*)hdr)->prot;
+uint16_t* get_ppp_prot(void *hdr){
+	return &((cpc_ppp_hdr_t*)hdr)->prot;
 }
 
 inline static
@@ -147,8 +147,8 @@ void set_ppp_prot(void *hdr, uint16_t prot){
 }
 
 inline static
-uint8_t get_ppp_lcp_code(void *hdr){
-	return ((cpc_ppp_lcp_hdr_t*)hdr)->code;
+uint8_t* get_ppp_lcp_code(void *hdr){
+	return &((cpc_ppp_lcp_hdr_t*)hdr)->code;
 }
 
 inline static
@@ -157,8 +157,8 @@ void set_ppp_lcp_code(void *hdr, uint8_t code){
 }
 
 inline static
-uint8_t get_ppp_lcp_ident(void *hdr){
-	return ((cpc_ppp_lcp_hdr_t*)hdr)->ident;
+uint8_t* get_ppp_lcp_ident(void *hdr){
+	return &((cpc_ppp_lcp_hdr_t*)hdr)->ident;
 }
 
 inline static
@@ -167,8 +167,8 @@ void set_ppp_lcp_ident(void *hdr, uint8_t ident){
 }
 
 inline static
-uint16_t get_ppp_lcp_length(void *hdr){
-	return ((cpc_ppp_lcp_hdr_t*)hdr)->length;
+uint16_t* get_ppp_lcp_length(void *hdr){
+	return &((cpc_ppp_lcp_hdr_t*)hdr)->length;
 }
 
 inline static
@@ -177,8 +177,8 @@ void set_ppp_lcp_length(void *hdr, uint16_t len){
 }
 
 inline static
-uint8_t get_ppp_ipcp_code(void *hdr){
-	return ((cpc_ppp_lcp_hdr_t*)hdr)->code;
+uint8_t* get_ppp_ipcp_code(void *hdr){
+	return &((cpc_ppp_lcp_hdr_t*)hdr)->code;
 }
 
 inline static
@@ -187,8 +187,8 @@ void set_ppp_ipcp_code(void *hdr, uint8_t code){
 }
 
 inline static
-uint8_t get_ppp_ipcp_ident(void *hdr){
-	return ((cpc_ppp_lcp_hdr_t*)hdr)->ident;
+uint8_t* get_ppp_ipcp_ident(void *hdr){
+	return &((cpc_ppp_lcp_hdr_t*)hdr)->ident;
 }
 
 inline static
@@ -197,8 +197,8 @@ void set_ppp_ipcp_ident(void *hdr, uint8_t ident){
 }
 
 inline static
-uint16_t get_ppp_ipcp_length(void *hdr){
-	return ((cpc_ppp_lcp_hdr_t*)hdr)->length;
+uint16_t* get_ppp_ipcp_length(void *hdr){
+	return &((cpc_ppp_lcp_hdr_t*)hdr)->length;
 }
 
 inline static

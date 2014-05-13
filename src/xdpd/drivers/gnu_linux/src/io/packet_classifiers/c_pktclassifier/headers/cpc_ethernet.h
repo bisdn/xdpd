@@ -44,9 +44,8 @@ struct cpc_eth_llc_hdr {
 typedef struct cpc_eth_llc_hdr cpc_eth_llc_hdr_t;
 
 inline static
-uint64_t get_ether_dl_dst(void *hdr){
-	uint64_t *ret = (uint64_t*) &((cpc_eth_hdr_t*)hdr)->dl_dst;
-	return (*ret) & OF1X_6_BYTE_MASK;
+uint64_t* get_ether_dl_dst(void *hdr){
+	return (uint64_t*) &((cpc_eth_hdr_t*)hdr)->dl_dst;
 };
 
 inline static
@@ -56,9 +55,8 @@ void set_ether_dl_dst(void* hdr, uint64_t dl_dst){
 };
 
 inline static
-uint64_t get_ether_dl_src(void* hdr){
-	uint64_t *ret = (uint64_t*) &((cpc_eth_hdr_t*)hdr)->dl_src;
-	return (*ret) & OF1X_6_BYTE_MASK;
+uint64_t* get_ether_dl_src(void* hdr){
+	return (uint64_t*) &((cpc_eth_hdr_t*)hdr)->dl_src;
 };
 
 inline static
@@ -73,11 +71,11 @@ bool is_llc_frame(void* hdr){
 }
 
 inline static
-uint16_t get_ether_type(void* hdr){
+uint16_t* get_ether_type(void* hdr){
 	if ( is_llc_frame(hdr) ){
-		return ((cpc_eth_llc_hdr_t *)hdr)->dl_type;
+		return &((cpc_eth_llc_hdr_t *)hdr)->dl_type;
 	}else{
-		return ((cpc_eth_hdr_t *)hdr)->dl_type;
+		return &((cpc_eth_hdr_t *)hdr)->dl_type;
 	}
 };
 

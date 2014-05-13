@@ -61,8 +61,8 @@ void set_ipv6_version(void *hdr, uint8_t version){
 };
 
 inline static
-uint8_t get_ipv6_version(void *hdr){
-	return (uint8_t)(((cpc_ipv6_hdr_t*)hdr)->bytes[0] & OF1X_4MSBITS_MASK);
+uint8_t* get_ipv6_version(void *hdr){
+	return (uint8_t*)&((cpc_ipv6_hdr_t*)hdr)->bytes[0];
 };
 
 inline static
@@ -72,9 +72,8 @@ void set_ipv6_traffic_class(void *hdr, uint16_t tc){
 }
 
 inline static
-uint16_t get_ipv6_traffic_class(void *hdr){
-	uint16_t *ptr = (uint16_t*)(((cpc_ipv6_hdr_t*)hdr)->bytes);
-	return (*ptr) & OF1X_8MIDDLE_BITS_MASK;
+uint16_t* get_ipv6_traffic_class(void *hdr){
+	return (uint16_t*)(((cpc_ipv6_hdr_t*)hdr)->bytes);
 };
 
 inline static
@@ -87,6 +86,7 @@ void set_ipv6_dscp(void *hdr, uint8_t dscp){
 inline static
 uint8_t get_ipv6_dscp(void *hdr){
 	//NOTE We are aligning this value to fit IPv4 alignment of DSCP
+	//NOTE therefore we also need to pass it as value and not as pointer
 	return ( (((cpc_ipv6_hdr_t*)hdr)->bytes[0] & OF1X_4LSBITS_MASK) << 4 ) | ( (((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_2MSBITS_MASK) >> 4 );
 };
 
@@ -99,6 +99,7 @@ void set_ipv6_ecn(void *hdr, uint8_t ecn){
 inline static
 uint8_t get_ipv6_ecn(void *hdr){
 	//NOTE We are aligning this value to fit IPv4 alignment of ECN
+	//NOTE therefore we also need to pass it as value and not as pointer
 	return (uint8_t)(((cpc_ipv6_hdr_t*)hdr)->bytes[1] & OF1X_BITS_4AND5_MASK) >> 4;
 };
 
@@ -109,9 +110,8 @@ void set_ipv6_flow_label(void *hdr, uint32_t flabel){
 }
 
 inline static
-uint32_t get_ipv6_flow_label(void *hdr){
-	uint32_t *ptr = (uint32_t*)&((cpc_ipv6_hdr_t*)hdr)->bytes[1];
-	return (*ptr) & OF1X_20_BITS_IPV6_FLABEL_MASK;
+uint32_t* get_ipv6_flow_label(void *hdr){
+	return (uint32_t*)&((cpc_ipv6_hdr_t*)hdr)->bytes[1];
 };
 
 inline static
@@ -120,8 +120,8 @@ void set_ipv6_payload_length(void *hdr, uint16_t len){
 }
 
 inline static
-uint16_t get_ipv6_payload_length(void *hdr){
-	return ((cpc_ipv6_hdr_t*)hdr)->payloadlen;
+uint16_t* get_ipv6_payload_length(void *hdr){
+	return &((cpc_ipv6_hdr_t*)hdr)->payloadlen;
 };
 
 inline static
@@ -130,8 +130,8 @@ void set_ipv6_next_header(void *hdr, uint8_t nxthdr){
 }
 
 inline static
-uint8_t get_ipv6_next_header(void *hdr){
-	return ((cpc_ipv6_hdr_t*)hdr)->nxthdr;
+uint8_t* get_ipv6_next_header(void *hdr){
+	return &((cpc_ipv6_hdr_t*)hdr)->nxthdr;
 };
 
 inline static
@@ -140,8 +140,8 @@ void set_ipv6_hop_limit(void *hdr, uint8_t hops){
 }
 
 inline static
-uint8_t get_ipv6_hop_limit(void *hdr){
-	return ((cpc_ipv6_hdr_t*)hdr)->hoplimit;
+uint8_t* get_ipv6_hop_limit(void *hdr){
+	return &((cpc_ipv6_hdr_t*)hdr)->hoplimit;
 };
 
 inline static
@@ -156,10 +156,8 @@ void set_ipv6_src(void *hdr, uint128__t src){
 };
 
 inline static
-uint128__t get_ipv6_src(void *hdr){
-	void* tmp = (void*)(((cpc_ipv6_hdr_t*)hdr)->src);
-	uint128__t src=*(uint128__t*)tmp;
-	return src;
+uint128__t* get_ipv6_src(void *hdr){
+	return (uint128__t*)(((cpc_ipv6_hdr_t*)hdr)->src);
 };
 
 inline static
@@ -169,10 +167,8 @@ void set_ipv6_dst(void *hdr, uint128__t dst){
 };
 
 inline static
-uint128__t get_ipv6_dst(void *hdr){
-	void * tmp = (((cpc_ipv6_hdr_t*)hdr)->dst);
-	uint128__t dst=*(uint128__t*)tmp;
-	return dst;
+uint128__t* get_ipv6_dst(void *hdr){
+	return (uint128__t*) (((cpc_ipv6_hdr_t*)hdr)->dst);
 };
 
 

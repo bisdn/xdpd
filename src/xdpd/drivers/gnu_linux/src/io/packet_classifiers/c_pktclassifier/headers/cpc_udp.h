@@ -77,8 +77,8 @@ void udp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 }
 
 inline static
-uint16_t get_udp_sport(void *hdr){
-	return ((cpc_udp_hdr_t*)hdr)->sport;
+uint16_t* get_udp_sport(void *hdr){
+	return &((cpc_udp_hdr_t*)hdr)->sport;
 }
 
 inline static
@@ -87,8 +87,8 @@ void set_udp_sport(void *hdr, uint16_t port){
 }
 
 inline static
-uint16_t get_udp_dport(void *hdr){
-	return ((cpc_udp_hdr_t*)hdr)->dport;
+uint16_t* get_udp_dport(void *hdr){
+	return &((cpc_udp_hdr_t*)hdr)->dport;
 }
 
 inline static
@@ -97,8 +97,8 @@ void set_udp_dport(void *hdr, uint16_t port){
 }
 
 inline static
-uint16_t get_udp_length(void *hdr){
-	return ((cpc_udp_hdr_t*)hdr)->length;
+uint16_t* get_udp_length(void *hdr){
+	return &((cpc_udp_hdr_t*)hdr)->length;
 }
 
 inline static

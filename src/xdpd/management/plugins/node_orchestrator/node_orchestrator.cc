@@ -3,10 +3,6 @@
 
 using namespace xdpd;
 
-#define NUM_TABLES		8
-#define RECONNECT_TIME 	1	//1s
-#define OFVERSION 		OF_VERSION_12
-
 //FIXME: protect this variable with a mutex?
 uint64_t NodeOrchestrator::nextDpid = 0x1;
 

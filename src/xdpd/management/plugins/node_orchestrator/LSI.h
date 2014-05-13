@@ -20,6 +20,7 @@ private:
 	map<string,unsigned int> ports;
 	
 public:
+	LSI(){}
 	LSI(uint64_t dpid, map<string,unsigned int> ports);
 
 	uint64_t getDpid();

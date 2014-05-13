@@ -18,8 +18,7 @@
 #include "node_orchestrator.h"
 #include "LSI.h"
 #include "sockutils.h"
-
-#define LISTEN_ON_PORT	"2525"
+#include "orchestrator_constants.h"
 
 using namespace std;
 using namespace json_spirit;
@@ -47,11 +46,50 @@ private:
 			},
 		"ports" : ["ge0","ge1"],
 		"network-functions" : ["firewall"],
-		"virtual-links" : ["0x100","0x101"]
+		"virtual-links" : 
+			{
+				"number" : "2",
+				"with-lsi" : "0x100"
+			}
+	}
+*
+*	Example of answer
+*
+	{
+		"command" : "create-lsi",
+		"status" : "ok",
+		"lsi-id" : "0x200",
+		"ports" : [
+			 { 
+			 	"name" : "ge0",
+			 	"id" : "0x1"
+			 },
+			{
+				"name" : "ge1",
+				"id" : "0x2"
+			}	
+		],
+		"network-functions" : [
+			{
+				"name" : "firewall", 
+				"id" : "0x3"
+			}
+		],
+		"virtual-links" : [
+			{
+				"local-id" : "0x4",
+				"other-id" : "0xFA",	
+			},
+			{
+				"local-id" : "0x5",
+				"other-id" : "0xFB",	
+			}
+		]
 	}
 */
 	static string createLSI(string message);
-	
+	static string createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts);
+
 /**
 *	Example of command to discover the physical ports of xDPD
 *
@@ -68,6 +106,17 @@ private:
 	}
 */
 	static string discoverPhyPorts(string message);
+
+/**	
+*	Example of answer
+*	
+	{
+		"answer" : "create-lsi",
+		"status" : "error",
+		"message" : "bla bla bla"
+	}
+*/
+	static string createErrorMessage(string command, string message);
 };
 
 }

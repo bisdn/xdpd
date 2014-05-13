@@ -69,7 +69,6 @@ void *Server::listen(void *param)
 		const char *answer = message.c_str();
 		
 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Answer to be sent: %s\n",answer);
-
 		WrittenBytes= sock_send(ChildSocket, answer, strlen(answer), ErrBuf, sizeof(ErrBuf));
 		if (WrittenBytes == sockFAILURE)
 		{
@@ -97,9 +96,9 @@ string Server::processCommand(string message)
         if( name == "command" )
         {
         	string command = value.getString();
-			if(command == "create-lsi")
+			if(command == CREATE_LSI)
 				return createLSI(message);
-			if(command == "discover-physical-ports")
+			if(command == DISCOVER_PHY_PORTS)
 				return discoverPhyPorts(message);
 			
 			//ERROR
@@ -108,16 +107,7 @@ string Server::processCommand(string message)
     }
 
 	//ERROR
-
-	Object json;
-	json["command"] = "ERROR";
-	json["status"] = "error";
-	json["message"] = "Unknown command";
-	
-	stringstream ss;
- 	write_formatted(json, ss );
- 	
- 	return ss.str();
+	return createErrorMessage(string(ERROR), string("Unknown command"));
 }
 
 string Server::createLSI(string message)
@@ -185,26 +175,66 @@ string Server::createLSI(string message)
     if(!foundControllerAddress || !foundControllerPort)
     {
     	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" without field \"port\" or \"address\" or \"both\"");
-    	
-		Object json;
-		json["command"] = "create-lsi";
-		json["status"] = "error";
-		json["message"] = "Command without port, address, or both";
-	
-		stringstream ss;
- 		write_formatted(json, ss );
-    	
-    	return ss.str();
+    	return createErrorMessage(string(CREATE_LSI), string("Command without controller port, controller address, or both"));
     }
-    
-	LSI lsi = NodeOrchestrator::createLSI(physicalPorts,controllerAddress,controllerPort);
+ 
+ 	LSI lsi;
+ 	try
+	{   
+		lsi = NodeOrchestrator::createLSI(physicalPorts,controllerAddress,controllerPort);
+	} catch (...)
+	{
+		return createErrorMessage(string(CREATE_LSI),string("error during the creation of the LSI"));
+	}
+	
 	for(list<string>::iterator it = networkFunctions.begin(); it != networkFunctions.end(); it++)
  	{	
  		stringstream portName;
  		portName << lsi.getDpid() << "_" << *it;
  		nfPorts[*it] = NodeOrchestrator::createNfPort(lsi.getDpid(), portName.str(),DPDK);
  	}  
-	return string("dummy");
+	return createLSIAnswer(lsi,nfPorts);
+}
+
+string Server::createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts)
+{
+	Object json;
+	
+	json["command"] = CREATE_LSI;
+	json["status"] = "ok";	
+	
+	json["lsi-id"] = lsi.getDpid();
+	
+	Array ports_array;
+	map<string,unsigned int> ports = lsi.getPorts();
+	map<string,unsigned int>::iterator p = ports.begin();
+	for(; p != ports.end(); p++)
+	{
+		Object port;
+		port["name"] = p->first;
+		port["id"] = p->second;
+		ports_array.push_back(port);
+	}	
+	if(ports.size() > 0)
+		json["ports"] = ports_array;
+	
+	Array nfs_array;
+	map<string,uint32_t>::iterator nf = nfPorts.begin();
+	for(; nf != nfPorts.end(); nf++)
+	{
+		Object network_function;
+		network_function["name"] = nf->first;
+		network_function["id"] = nf->second;
+		nfs_array.push_back(network_function);
+	}
+	if(nfPorts.size() > 0)
+		json["network-functions"] = nfs_array;
+	
+	stringstream ss;
+ 	write_formatted(json, ss );
+ 	
+ 	return ss.str();
+
 }
 
 string Server::discoverPhyPorts(string message)
@@ -226,6 +256,19 @@ string Server::discoverPhyPorts(string message)
  	write_formatted(json, ss );
  	
  	return ss.str();
+}
+
+string Server::createErrorMessage(string command, string message)
+{
+	//ERROR
+	Object json;
+	json["command"] = command.c_str();
+	json["status"] = "error";
+	json["message"] = message.c_str();
+	
+	stringstream ss;
+	write_formatted(json, ss );
+	return ss.str();
 }
 
 }

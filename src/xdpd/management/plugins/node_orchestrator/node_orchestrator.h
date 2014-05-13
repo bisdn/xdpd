@@ -12,14 +12,13 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include "../../../openflow/openflow_switch.h"
 #include "LSI.h"
+#include "orchestrator_constants.h"
 
 #include <list>
 #include <map>
 #include <pthread.h>
 
 #include "server.h"
-
-#define PLUGIN_NAME 	"NodeOrchestrator" 
 
 using namespace std;
 

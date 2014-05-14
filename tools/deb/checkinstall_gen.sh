@@ -4,9 +4,9 @@ PKG_NAME="xdpd"
 PKG_NAME_DBG="xdpd-dbg"
 ROFL_PKG_NAME="rofl"
 ROFL_DBG_PKG_NAME="rofl-dbg"
-VERSION="0.4"
-RELEASE="0"
-REQUIRES+="libconfig++"
+VERSION=""
+RELEASE=""
+DEFAULT_REQUIRES=" libconfig++9"
 LICENSE="Mozilla Public License, Version 2.0"
 GROUP="net"
 MAINTAINER="xdpd-devel@xdpd.org"
@@ -18,6 +18,12 @@ check_root(){
 	   echo "This script must be run as root" 1>&2
 	   exit 1
 	fi
+}
+
+assign_default_requires(){
+	if [ -z "${REQUIRES}" ]; then
+		REQUIRES=$DEFAULT_REQUIRES 
+	fi	
 }
 
 dump_result(){
@@ -64,6 +70,7 @@ generate_pkg(){
 
 #Detect stuff
 check_root
+assign_default_requires
 is_debug
 get_version
 get_release

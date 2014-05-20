@@ -608,7 +608,7 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 	}
 
 	//semaphore	
-	ps->semaphore = sem_open(pex_port, O_CREAT | O_EXCL, 0644, 0);
+	ps->semaphore = sem_open(pex_port, O_CREAT , 0644, 0);
 	if(ps->semaphore == SEM_FAILED)
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create semaphore '%s' for queue in port: %s\n", pex_port, pex_port);

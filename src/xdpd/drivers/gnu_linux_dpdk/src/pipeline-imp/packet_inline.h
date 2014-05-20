@@ -1163,7 +1163,7 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 	
 			xdpd::gnu_linux_dpdk::tx_pkt_vlink(port, pkt);
 			return;
-		else if(port->type == PORT_TYPE_PEX)
+		}else if(port->type == PORT_TYPE_PEX)
 		{
 			/*
 			* PEX port

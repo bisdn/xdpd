@@ -121,6 +121,9 @@ string Server::createLSI(string message)
 	bool foundControllerAddress = false;
 	bool foundControllerPort = false;
 	
+	int vlinks_number = 0;
+    uint64_t vlinks_remote_dpid = 0;
+	
 	Value value;
     read( message, value );
 	Object obj = value.getObject();
@@ -170,6 +173,34 @@ string Server::createLSI(string message)
 				networkFunctions.push_back( nfs_array[i].getString() );
 			}
         }
+        else if( name == "virtual-links")
+        {
+        	Object virtual_links = value.getObject();
+        	bool foundNumber = false;
+        	bool foundRemoteLSI = false; 
+        	 
+      		for( Object::const_iterator j = virtual_links.begin(); j != virtual_links.end(); ++j )
+			{
+				const string& c_name  = j->first;
+				const Value&  c_value = j->second;
+				
+				if( c_name == "number" )
+				{
+					vlinks_number = c_value.getInt();
+					foundNumber = true;
+				}
+				else if (c_name == "remote-lsi")
+				{
+					vlinks_remote_dpid = c_value.getInt(); //FIXME: the dpid is actually a uint64_t
+					foundRemoteLSI = true;
+				}
+			}
+			if(!foundNumber || !foundRemoteLSI)
+			{
+				ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with field \"virtual-links\" without sub-fields \"number\" or \"remote-lsi\" or \"both\"");
+				return createErrorMessage(string(CREATE_LSI), string("Received command \"create-lsi\" with field \"virtual-links\" without sub-fields \"number\" or \"remote-lsi\" or \"both\""));
+			}
+        }
     }
     
     if(!foundControllerAddress || !foundControllerPort)
@@ -192,11 +223,19 @@ string Server::createLSI(string message)
  		stringstream portName;
  		portName << lsi.getDpid() << "_" << *it;
  		nfPorts[*it] = NodeOrchestrator::createNfPort(lsi.getDpid(), portName.str(),DPDK);
- 	}  
-	return createLSIAnswer(lsi,nfPorts);
+ 	} 
+ 	
+ 	list<pair<unsigned int, unsigned int> > virtual_links;
+ 	for(int i = 0; i < vlinks_number; i++)
+ 	{
+	 	pair<unsigned int, unsigned int> ids = NodeOrchestrator::createVirtualLink(lsi.getDpid(),vlinks_remote_dpid);
+	 	virtual_links.push_back(ids);
+    }
+ 	 
+	return createLSIAnswer(lsi,nfPorts,virtual_links);
 }
 
-string Server::createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts)
+string Server::createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts,list<pair<unsigned int, unsigned int> > virtual_links)
 {
 	Object json;
 	
@@ -230,6 +269,18 @@ string Server::createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts)
 	if(nfPorts.size() > 0)
 		json["network-functions"] = nfs_array;
 	
+	Array vlinks_array;
+	list<pair<unsigned int, unsigned int> >::iterator vl = virtual_links.begin();
+	for(; vl != virtual_links.end(); vl++)
+	{
+		Object virtual_link;
+		virtual_link["local-id"] = vl->first;
+		virtual_link["remote-id"] = vl->second;
+		vlinks_array.push_back(virtual_link);
+	}
+	if(virtual_links.size() > 0)
+		json["virtual-links"] = vlinks_array;
+	
 	stringstream ss;
  	write_formatted(json, ss );
  	
@@ -243,7 +294,7 @@ string Server::discoverPhyPorts(string message)
 	
 	Object json;
 	
-	json["command"] = "discover-physical-interfaces";
+	json["command"] = DISCOVER_PHY_PORTS;
 	json["status"] = "ok";	
 	
 	Array ports_array;

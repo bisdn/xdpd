@@ -49,7 +49,7 @@ private:
 		"virtual-links" : 
 			{
 				"number" : "2",
-				"with-lsi" : "0x100"
+				"remote-lsi" : "0x100"
 			}
 	}
 *
@@ -78,17 +78,17 @@ private:
 		"virtual-links" : [
 			{
 				"local-id" : "0x4",
-				"other-id" : "0xFA",	
+				"remote-id" : "0xFA",	
 			},
 			{
 				"local-id" : "0x5",
-				"other-id" : "0xFB",	
+				"remote-id" : "0xFB",	
 			}
 		]
 	}
 */
 	static string createLSI(string message);
-	static string createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts);
+	static string createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts,list<pair<unsigned int, unsigned int> > virtual_links);
 
 /**
 *	Example of command to discover the physical ports of xDPD

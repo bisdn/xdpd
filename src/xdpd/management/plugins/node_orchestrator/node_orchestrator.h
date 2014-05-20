@@ -46,8 +46,8 @@ friend class Server;
 public:
 	virtual void init(void);
 
-	virtual std::string get_name(void){
-		//Use code-name
+	virtual std::string get_name(void)
+	{
 		return std::string(PLUGIN_NAME);
 	};
 
@@ -57,10 +57,15 @@ protected:
 	*/
 	static LSI createLSI(list<string> phyPorts, string controllerAddress, string controllerPort);
 	static list<string> discoverPhyPorts();
-	static void createVirtualLink(uint64_t dpid_a,uint64_t dpid_b);
+	static pair<unsigned int, unsigned int> createVirtualLink(uint64_t dpid_a,uint64_t dpid_b);
 	static unsigned int createNfPort(uint64_t dpid, string NfName,PexType type);
 	
 	static uint64_t nextDpid;
+	
+private:
+	//FIXME: tmp because the xDPD api does not export the ID of vlinks
+	//for each LSI, contains the last ID used as port identifier
+	static map<uint64_t, unsigned int> last_ports_id;
 };
 
 }// namespace xdpd 

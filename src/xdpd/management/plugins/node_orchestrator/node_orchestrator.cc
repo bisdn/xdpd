@@ -5,6 +5,7 @@ using namespace xdpd;
 
 //FIXME: protect this variable with a mutex?
 uint64_t NodeOrchestrator::nextDpid = 0x1;
+map<uint64_t, unsigned int> NodeOrchestrator::last_ports_id;
 
 void NodeOrchestrator::init(){
 	//DO something
@@ -72,6 +73,10 @@ LSI NodeOrchestrator::createLSI(list<string> phyPorts, string controllerAddress,
 		try{
 			//Attach
 			port_manager::attach_port_to_switch(dpid, *port_it, &i);
+			
+			//FIXME: tmp code
+			last_ports_id[dpid] = i;
+			
 			//Bring up
 			port_manager::bring_up(*port_it);
 		}catch(...){	
@@ -80,7 +85,7 @@ LSI NodeOrchestrator::createLSI(list<string> phyPorts, string controllerAddress,
 		}
 		ports[*port_it] = i;
 	}
-	
+
 	return LSI(dpid,ports);
 }
 
@@ -97,13 +102,29 @@ list<string> NodeOrchestrator::discoverPhyPorts()
 	return availablePorts;
 }
 
-void NodeOrchestrator::createVirtualLink(uint64_t dpid_a,uint64_t dpid_b)
+pair<unsigned int, unsigned int> NodeOrchestrator::createVirtualLink(uint64_t dpid_a,uint64_t dpid_b)
 {
-	string port_a;
-	string port_b;
-	port_manager::connect_switches(dpid_a, port_a, dpid_b, port_b);
+	string name_port_a;
+	string name_port_b;
+	unsigned int port_a, port_b;
+	port_manager::connect_switches(dpid_a, name_port_a, dpid_b, name_port_b);
 	
-	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Virtual link created - %x:%s <-> %x:%s\n", dpid_a,port_a.c_str(),dpid_b,port_b.c_str());
+	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Virtual link created - %x:%s <-> %x:%s\n", dpid_a,name_port_a.c_str(),dpid_b,name_port_b.c_str());
+	
+	//FIXME: tmp code;
+	if(last_ports_id.count(dpid_a) == 0)
+		port_a = 1;
+	else
+		port_a = last_ports_id[dpid_a] + 1;
+	last_ports_id[dpid_a] = port_a;
+	
+	if(last_ports_id.count(dpid_b) == 0)
+		port_b = 1;
+	else
+		port_b = last_ports_id[dpid_b] + 1;
+	last_ports_id[dpid_b] = port_b;
+			
+	return make_pair(port_a,port_b);
 }
 
 unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName,PexType type)
@@ -113,6 +134,10 @@ unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName,PexType
 
 	pex_manager::create_pex(NfName,type,scriptPath);	
 	port_manager::attach_port_to_switch(dpid, NfName, &port_number);
+	
+	//FIXME: tmp code
+	last_ports_id[dpid] = port_number;
+	
 	port_manager::bring_up(NfName);
 	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Port '%s' attached to port %d of LSI '%x'\n",NfName.c_str(),port_number,dpid);	

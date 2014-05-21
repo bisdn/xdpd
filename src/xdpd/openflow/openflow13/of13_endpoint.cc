@@ -25,7 +25,7 @@ of13_endpoint::of13_endpoint(
 	versionbitmap.add_ofp_version(openflow13::OFP_VERSION);
 
 	//Connect to controller
-	crofbase::rpc_connect_to_ctl(versionbitmap, reconnect_start_timeout, socket_type, socket_params);
+	crofbase::rpc_connect_to_ctl(versionbitmap, socket_type, socket_params);
 }
 
 /*
@@ -1491,7 +1491,7 @@ of13_endpoint::handle_experimenter_message(
 
 
 void
-of13_endpoint::handle_ctrl_open(crofctl *ctrl)
+of13_endpoint::handle_ctl_attached(crofctl *ctrl)
 {
 	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , ctrl->get_peer_addr().c_str()); //FIXME: add role
 }
@@ -1499,7 +1499,7 @@ of13_endpoint::handle_ctrl_open(crofctl *ctrl)
 
 
 void
-of13_endpoint::handle_ctrl_close(crofctl *ctrl)
+of13_endpoint::handle_ctl_detached(crofctl *ctrl)
 {
 	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() ,ctrl->get_peer_addr().c_str()); //FIXME: add role
 

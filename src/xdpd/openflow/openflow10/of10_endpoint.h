@@ -248,7 +248,7 @@ private:
 	 * @param ctrl new cofctrl instance
 	 */
 	virtual void
-	handle_ctrl_open(crofctl *ctrl);
+	handle_ctl_attached(crofctl *ctrl);
 
 	/** Handle close event on ctrl
 	 *
@@ -257,7 +257,7 @@ private:
 	 * @param ctrl cofctrl instance to be deleted
 	 */
 	virtual void
-	handle_ctrl_close(crofctl *ctrl);
+	handle_ctl_detached(crofctl *ctrl);
 
 
 	/**

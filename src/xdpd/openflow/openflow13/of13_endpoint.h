@@ -95,7 +95,7 @@ private:
 	 * @param pack OF packet received from controlling entity.
 	 */
 	virtual void
-	handle_features_request(crofctl& ctl, rofl::openflow::cofmsg_features_request& msg, uint8_t aux_id = 0);
+	handle_features_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_features_request& msg);
 
 	/** Handle OF get-config request. To be overwritten by derived class.
 	 *
@@ -106,90 +106,90 @@ private:
 	 * @pack OF GET-CONFIG.request packet received from controller
 	 */
 	virtual void
-	handle_get_config_request(crofctl& ctl, rofl::openflow::cofmsg_get_config_request& msg, uint8_t aux_id = 0);
+	handle_get_config_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_get_config_request& msg);
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_desc_stats_request(crofctl& ctl, rofl::openflow::cofmsg_desc_stats_request& msg, uint8_t aux_id = 0);
-
-
-	/**
-	 *
-	 */
-	virtual void
-	handle_table_stats_request(crofctl& ctl, rofl::openflow::cofmsg_table_stats_request& msg, uint8_t aux_id = 0);
+	handle_desc_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_desc_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_port_stats_request(crofctl& ctl, rofl::openflow::cofmsg_port_stats_request& msg, uint8_t aux_id = 0);
+	handle_table_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_table_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_flow_stats_request(crofctl& ctl, rofl::openflow::cofmsg_flow_stats_request& msg, uint8_t aux_id = 0);
+	handle_port_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_port_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_aggregate_stats_request(crofctl& ctl, rofl::openflow::cofmsg_aggr_stats_request& msg, uint8_t aux_id = 0);
+	handle_flow_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_flow_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_queue_stats_request(crofctl& ctl, rofl::openflow::cofmsg_queue_stats_request& msg, uint8_t aux_id = 0);
+	handle_aggregate_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_aggr_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_group_stats_request(crofctl& ctl, rofl::openflow::cofmsg_group_stats_request& msg, uint8_t aux_id = 0);
+	handle_queue_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_queue_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_group_desc_stats_request(crofctl& ctl, rofl::openflow::cofmsg_group_desc_stats_request& msg, uint8_t aux_id = 0);
+	handle_group_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_group_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_group_features_stats_request(crofctl& ctl, rofl::openflow::cofmsg_group_features_stats_request& msg, uint8_t aux_id = 0);
+	handle_group_desc_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_group_desc_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_table_features_stats_request(crofctl& ctl, rofl::openflow::cofmsg_table_features_stats_request& msg, uint8_t aux_id = 0);
+	handle_group_features_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_group_features_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_port_desc_stats_request(crofctl& ctl, rofl::openflow::cofmsg_port_desc_stats_request& msg, uint8_t aux_id = 0);
+	handle_table_features_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_table_features_stats_request& msg);
 
 
 	/**
 	 *
 	 */
 	virtual void
-	handle_experimenter_stats_request(crofctl& ctl, rofl::openflow::cofmsg_experimenter_stats_request& msg, uint8_t aux_id = 0);
+	handle_port_desc_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_port_desc_stats_request& msg);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_experimenter_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_experimenter_stats_request& msg);
 
 	/** Handle OF packet-out messages. To be overwritten by derived class.
 	 *
@@ -199,7 +199,7 @@ private:
 	 * @param pack PACKET-OUT.message packet received from controller.
 	 */
 	virtual void
-	handle_packet_out(crofctl& ctl, rofl::openflow::cofmsg_packet_out& msg, uint8_t aux_id = 0);
+	handle_packet_out(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_packet_out& msg);
 
 	/** Handle OF barrier request. To be overwritten by derived class.
 	 *
@@ -209,7 +209,7 @@ private:
 	 * @param pack BARRIER.request packet received from controller.
 	 */
 	virtual void
-	handle_barrier_request(crofctl& ctl, rofl::openflow::cofmsg_barrier_request& msg, uint8_t aux_id = 0);
+	handle_barrier_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_barrier_request& msg);
 
 	/** Handle OF flow-mod message. To be overwritten by derived class.
 	 *
@@ -219,7 +219,7 @@ private:
 	 * @param pack FLOW-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_flow_mod(crofctl& ctl, rofl::openflow::cofmsg_flow_mod& msg, uint8_t aux_id = 0);
+	handle_flow_mod(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_flow_mod& msg);
 
 	/** Handle OF group-mod message. To be overwritten by derived class.
 	 *
@@ -229,7 +229,7 @@ private:
 	 * @param pack GROUP-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_group_mod(crofctl& ctl, rofl::openflow::cofmsg_group_mod& msg, uint8_t aux_id = 0);
+	handle_group_mod(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_group_mod& msg);
 
 	/** Handle OF table-mod message. To be overwritten by derived class.
 	 *
@@ -239,7 +239,7 @@ private:
 	 * @param pack TABLE-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_table_mod(crofctl& ctl, rofl::openflow::cofmsg_table_mod& msg, uint8_t aux_id = 0);
+	handle_table_mod(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_table_mod& msg);
 
 	/** Handle OF port-mod message. To be overwritten by derived class.
 	 *
@@ -249,7 +249,7 @@ private:
 	 * @param pack PORT-MOD.message packet received from controller.
 	 */
 	virtual void
-	handle_port_mod(crofctl& ctl, rofl::openflow::cofmsg_port_mod& msg, uint8_t aux_id = 0);
+	handle_port_mod(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_port_mod& msg);
 
 	/** Handle OF set-config message. To be overwritten by derived class.
 	 *
@@ -259,7 +259,7 @@ private:
 	 * @param pack SET-CONFIG.message packet received from controller.
 	 */
 	virtual void
-	handle_set_config(crofctl& ctl, rofl::openflow::cofmsg_set_config& msg, uint8_t aux_id = 0);
+	handle_set_config(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_set_config& msg);
 
 	/** Handle OF queue-get-config request. To be overwritten by derived class.
 	 *
@@ -270,7 +270,7 @@ private:
 	 * @param pack QUEUE-GET-CONFIG.reply packet received from datapath
 	 */
 	virtual void
-	handle_queue_get_config_request(crofctl& ctl, rofl::openflow::cofmsg_queue_get_config_request& msg, uint8_t aux_id = 0);
+	handle_queue_get_config_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_queue_get_config_request& msg);
 
 	/** Handle OF experimenter message. To be overwritten by derived class.
 	 *
@@ -280,7 +280,7 @@ private:
 	 * @param pack VENDOR.message packet received from controller.
 	 */
 	virtual void
-	handle_experimenter_message(crofctl& ctl, rofl::openflow::cofmsg_experimenter& msg, uint8_t aux_id = 0);
+	handle_experimenter_message(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_experimenter& msg);
 
 	/** Handle new ctrl
 	 *

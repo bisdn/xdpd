@@ -49,7 +49,7 @@
 *
 * @description The GNU/Linux driver is a user-space (only) forwarding backend. It implements an entire I/O susbystem (currently using PACKET_MMAP RX/TX rings), processing subsystem and HAL handling code. 
 * 
-* To know more about xdpd GNU/Linux driver, please check the <a href="https://www.codebasin.net/redmine/projects/xdpd/wiki">wiki</a>.
+* To know more about xdpd GNU/Linux driver, please check the <a href="https://www.xdpd.org">wiki</a>.
 */
 
 //IO

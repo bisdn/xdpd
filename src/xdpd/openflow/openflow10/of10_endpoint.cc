@@ -649,7 +649,11 @@ of10_endpoint::process_packet_in(
 
 		return ROFL_SUCCESS;
 
-	} catch (eRofBaseNotConnected& e) {
+	} catch (rofl::eRofBaseNotConnected& e) {
+
+		return ROFL_FAILURE;
+
+	} catch (rofl::eRofBaseCongested& e) {
 
 		return ROFL_FAILURE;
 

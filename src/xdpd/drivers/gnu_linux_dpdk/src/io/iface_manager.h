@@ -103,9 +103,10 @@ void iface_manager_update_stats(void);
  * @name port_manager_create_pex_port
  * @brief Create and initializes (including rofl-pipeline state) a PEX port
  * 
+ * @param pex_name		Name of the PEX associated with the port to be created
  * @param port_name		Name of the port to be created
  */
-rofl_result_t port_manager_create_pex_port(const char *port_name);
+rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *port_name);
 
 /**
  * @name port_manager_destroy_pex_port

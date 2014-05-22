@@ -15,6 +15,7 @@
 #include <semaphore.h>
 #include <fcntl.h>
 #include "../../config.h"
+#include <unistd.h>
 
 #define NAME_LENGTH		40
 

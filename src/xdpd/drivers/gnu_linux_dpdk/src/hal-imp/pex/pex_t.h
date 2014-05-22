@@ -13,12 +13,13 @@
 *		contains information about the the process that is running/will 
 *		run the PEX
 */
-typedef struct{
-	const char *pex_name;
-	const char *path;
-	PexType pexType;
-}pex_t;
+//IVANO - FIXME: I think that this structure is quite useless
 
-pex_t pex[PORT_MANAGER_MAX_PORTS];
+typedef struct{
+	const char *pex_port_name;
+	PexType pexType;
+}pex_port_t;
+
+pex_port_t pex_port[PORT_MANAGER_MAX_PORTS];
 
 #endif //PEX_T_H

@@ -8,38 +8,38 @@ using namespace xdpd;
 
 pthread_mutex_t pex_manager::mutex = PTHREAD_MUTEX_INITIALIZER; 
 
-bool pex_manager::pex_exists(std::string& pex_name)
+bool pex_manager::pex_port_exists(std::string& pex_port_name)
 {
-	return hal_driver_pex_exists(pex_name.c_str());
+	return hal_driver_pex_port_exists(pex_port_name.c_str());
 }
 
-std::list<std::string> pex_manager::list_available_pex_names()
+std::list<std::string> pex_manager::list_available_pex_port_names()
 {
 	unsigned int i;
-	pex_name_list_t* pex_names;
-	std::list<std::string> pex_name_list;
+	pex_port_name_list_t* pex_port_names;
+	std::list<std::string> pex_port_name_list;
 	
 	//Call the driver to list the ports
-	pex_names = hal_driver_get_all_pex_names();
+	pex_port_names = hal_driver_get_all_pex_port_names();
 	
-	if(!pex_names)
+	if(!pex_port_names)
 		throw ePexmUnknownError();
 
-	//Run over the PEX and get the name
-	for(i=0;i<pex_names->num_of_pex;i++)
-		pex_name_list.push_back(std::string(pex_names->names[i].name));
+	//Run over the PEX ports and get the name
+	for(i=0;i<pex_port_names->num_of_pex;i++)
+		pex_port_name_list.push_back(std::string(pex_port_names->names[i].name));
 
 	//Destroy the list of PEX
 	//pex_name_list_destroy(pex_names); //TODO: decommentare questa linea
 	
-	return pex_name_list; 
+	return pex_port_name_list; 
 }
 
 //
 // PEX creation/destruction
 //
 
-void pex_manager::create_pex(std::string& pex_name, PexType pexType, std::string& path)
+void pex_manager::create_pex_port(std::string& pex_name, std::string& pex_port_name, PexType pexType)
 {
 	if(pexType != DPDK)
 	{
@@ -50,23 +50,23 @@ void pex_manager::create_pex(std::string& pex_name, PexType pexType, std::string
 	// Serialize
 	pthread_mutex_lock(&pex_manager::mutex);
 	
-	// The PEX must not exist
-	if(pex_exists(pex_name))
+	// The PEX port must not exist
+	if(pex_port_exists(pex_port_name))
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
-		ROFL_ERR("%s ERROR: Attempting to create an existent PEX %s\n", MODULE_NAME, pex_name.c_str());
+		ROFL_ERR("%s ERROR: Attempting to create an existent PEX port %s\n", MODULE_NAME, pex_port_name.c_str());
 		throw ePexmInvalidPEX();
 	}
 	
-	if(hal_driver_pex_create_pex(pex_name.c_str(), pexType, path.c_str()) != HAL_SUCCESS)
+	if(hal_driver_pex_create_pex_port(pex_name.c_str(), pex_port_name.c_str(), pexType) != HAL_SUCCESS)
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
 		assert(0);
-		ROFL_ERR("%s ERROR: Driver was unable to create the PEX\n", MODULE_NAME, pex_name.c_str());
+		ROFL_ERR("%s ERROR: Driver was unable to create the PEX port\n", MODULE_NAME, pex_port_name.c_str());
 		throw ePexmUnknownError(); 
 	}
 	
-	ROFL_INFO("%s PEX %s created\n", MODULE_NAME, pex_name.c_str());
+	ROFL_INFO("%s PEX port %s created\n", MODULE_NAME, pex_port_name.c_str());
 
 	//TODO: notify the creation to the plugins?
 
@@ -74,28 +74,28 @@ void pex_manager::create_pex(std::string& pex_name, PexType pexType, std::string
 	pthread_mutex_unlock(&pex_manager::mutex);
 }
 
-void pex_manager::destroy_pex(std::string& pex_name)
+void pex_manager::destroy_pex_port(std::string& pex_port_name)
 {
 	// Serialize
 	pthread_mutex_lock(&pex_manager::mutex);
 	
 	// The PEX must exist
-	if(!pex_exists(pex_name))
+	if(!pex_port_exists(pex_port_name))
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
-		ROFL_ERR("%s ERROR: Attempting to destroy a non-existent PEX %s\n", MODULE_NAME, pex_name.c_str());
+		ROFL_ERR("%s ERROR: Attempting to destroy a non-existent PEX port %s\n", MODULE_NAME, pex_port_name.c_str());
 		throw ePexmInvalidPEX();
 	}
 	
-	if(hal_driver_pex_destroy_pex(pex_name.c_str()) != HAL_SUCCESS)
+	if(hal_driver_pex_destroy_pex_port(pex_port_name.c_str()) != HAL_SUCCESS)
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
 		assert(0);
-		ROFL_ERR("%s ERROR: Driver was unable to destroy the PEX\n", MODULE_NAME, pex_name.c_str());
+		ROFL_ERR("%s ERROR: Driver was unable to destroy the PEX port %s\n", MODULE_NAME, pex_port_name.c_str());
 		throw ePexmUnknownError(); 
 	}
 	
-	ROFL_INFO("%s PEX %s destroyed\n", MODULE_NAME, pex_name.c_str());
+	ROFL_INFO("%s PEX port %s destroyed\n", MODULE_NAME, pex_port_name.c_str());
 
 	//TODO: notify the destruction to the plugins?
 

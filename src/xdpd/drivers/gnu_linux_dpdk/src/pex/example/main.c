@@ -7,11 +7,20 @@
 
 int main(int argc, char *argv[])
 {
+	//Check for root privileges 
+	if(geteuid() != 0)
+	{
+		fprintf(stderr,"ERROR: Root permissions are required to run %s\n",argv[0]);	
+		exit(EXIT_FAILURE);	
+	}
+
 	uint32_t lcore;
 	int ret;
 
 	/* Init EAL */
 	ret = rte_eal_init(argc, argv);
+
+	fflush(stdout);
 	if (ret < 0)
 		return -1;
 	argc -= ret;

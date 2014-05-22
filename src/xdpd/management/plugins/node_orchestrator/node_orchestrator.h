@@ -58,7 +58,7 @@ protected:
 	static LSI createLSI(list<string> phyPorts, string controllerAddress, string controllerPort);
 	static list<string> discoverPhyPorts();
 	static pair<unsigned int, unsigned int> createVirtualLink(uint64_t dpid_a,uint64_t dpid_b);
-	static unsigned int createNfPort(uint64_t dpid, string NfName,PexType type);
+	static unsigned int createNfPort(uint64_t dpid, string NfName, string NfPortName, PexType type);
 	
 	static uint64_t nextDpid;
 	

@@ -113,8 +113,8 @@ string Server::processCommand(string message)
 string Server::createLSI(string message)
 {
 	list<string> physicalPorts;
-	list<string> networkFunctions;	
-	map<string,uint32_t> nfPorts;
+	list< pair<string,list<string> > > networkFunctions; //list <nf name, list <port name> >
+	map<string,map<string,uint32_t> > nfPorts; //map <nf name, map <port name, port id> >
 	
 	string controllerAddress;
 	string controllerPort;
@@ -168,9 +168,45 @@ string Server::createLSI(string message)
         else if( name == "network-functions")
     	{
 			const Array& nfs_array = value.getArray();
+			
 			for( unsigned int i = 0; i < nfs_array.size(); ++i )
 			{
-				networkFunctions.push_back( nfs_array[i].getString() );
+				Object nfs = nfs_array[i].getObject();
+				
+				bool foundName = false;
+        		bool foundPorts = false;
+        		list<string> ports;
+				string name;
+
+				for( Object::const_iterator j = nfs.begin(); j != nfs.end(); ++j )
+				{
+					const string& nf_name  = j->first;
+					const Value&  nf_value = j->second;	
+									
+					if(nf_name == "name")
+					{
+						name = nf_value.getString();
+						foundName = true;
+					}
+					else if(nf_name == "ports")
+					{
+						const Array& ports_array = nf_value.getArray();
+						for( unsigned int i = 0; i < ports_array.size(); ++i )
+						{
+							ports.push_back( ports_array[i].getString() );
+						}
+						if(ports.size() > 0)
+							foundPorts = true;
+					}
+				
+				}
+				if(!foundName || !foundPorts)
+				{
+					ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", or both");
+					return createErrorMessage(string(CREATE_LSI), string(" Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", or both"));
+				}
+				
+				networkFunctions.push_back(make_pair(name,ports));
 			}
         }
         else if( name == "virtual-links")
@@ -218,11 +254,20 @@ string Server::createLSI(string message)
 		return createErrorMessage(string(CREATE_LSI),string("error during the creation of the LSI"));
 	}
 	
-	for(list<string>::iterator it = networkFunctions.begin(); it != networkFunctions.end(); it++)
+	for(list< pair<string,list<string> > >::iterator it = networkFunctions.begin(); it != networkFunctions.end(); it++)
  	{	
- 		stringstream portName;
- 		portName << lsi.getDpid() << "_" << *it;
- 		nfPorts[*it] = NodeOrchestrator::createNfPort(lsi.getDpid(), portName.str(),DPDK);
+ 		stringstream nfName;
+ 		nfName << lsi.getDpid() << "_" << it->first;
+ 		
+ 		list<string> ports = it->second;
+ 		map<string,unsigned int> port_id;
+ 		for(list<string>::iterator p = ports.begin(); p != ports.end(); p++)
+ 		{
+	 		stringstream portName;
+	 		portName << lsi.getDpid() << "_" << *p;
+	 		port_id[*p] = NodeOrchestrator::createNfPort(lsi.getDpid(), nfName.str(), portName.str(),DPDK);
+	 	}
+	 	nfPorts[it->first] = port_id;
  	} 
  	
  	list<pair<unsigned int, unsigned int> > virtual_links;
@@ -235,7 +280,7 @@ string Server::createLSI(string message)
 	return createLSIAnswer(lsi,nfPorts,virtual_links);
 }
 
-string Server::createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts,list<pair<unsigned int, unsigned int> > virtual_links)
+string Server::createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links)
 {
 	Object json;
 	
@@ -258,12 +303,22 @@ string Server::createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts,list<pair<u
 		json["ports"] = ports_array;
 	
 	Array nfs_array;
-	map<string,uint32_t>::iterator nf = nfPorts.begin();
+	map<string,map<string,uint32_t> >::iterator nf = nfPorts.begin();
 	for(; nf != nfPorts.end(); nf++)
 	{
 		Object network_function;
 		network_function["name"] = nf->first;
-		network_function["id"] = nf->second;
+		Array ports_array;
+		map<string,uint32_t> ports = nf->second;
+		for(map<string,uint32_t>::iterator p = ports.begin(); p != ports.end(); p++)
+		{
+			Object port;
+			port["name"] = p->first;
+			port["id"] = p->second;
+			ports_array.push_back(port);		
+		}
+		network_function["ports"] = ports_array;
+		
 		nfs_array.push_back(network_function);
 	}
 	if(nfPorts.size() > 0)

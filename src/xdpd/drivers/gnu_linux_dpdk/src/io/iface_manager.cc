@@ -360,7 +360,7 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 		{
 			//Was down; run the corresponding PEX
 			port_id = ((pex_port_state_t*)port->platform_port_state)->pex_id;
-			if(hal_driver_pex_start_pex(port_id) != HAL_SUCCESS)
+			if(hal_driver_pex_start_pex_port(port_id) != HAL_SUCCESS)
 			{
 				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start PEX\n");
 				assert(0);
@@ -422,7 +422,7 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 		if(port->up)
 		{
 			port_id = ((pex_port_state_t*)port->platform_port_state)->pex_id;
-			if(hal_driver_pex_stop_pex(port_id) != HAL_SUCCESS)
+			if(hal_driver_pex_stop_pex_port(port_id) != HAL_SUCCESS)
 			{
 				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start PEX\n");
 				assert(0);
@@ -557,7 +557,7 @@ void iface_manager_update_stats(){
 *****************************************************************************/
 
 //Initializes the pipeline structure and launches the PEX port 
-static switch_port_t* configure_pex_port(const char *pex_port)
+static switch_port_t* configure_pex_port(const char *pex_name, const char *pex_port)
 {
 	switch_port_t* port;
 	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
@@ -576,9 +576,8 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 		return NULL;
 	}
 		
-	//Create rofl-pipeline queue state
-	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-%s", "queue",pex_port);
-	if(switch_port_add_queue(port, 0, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
+	//Create rofl-pipeline queue state	
+	if(switch_port_add_queue(port, 0, (char*)&pex_port, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
 		assert(0);
@@ -588,7 +587,8 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 	// Create the state of the PEX port
 	
 	//queue xDPD -> PEX
-	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-to-pex", pex_port);
+	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-to-nf", pex_port);
+
 	ps->to_pex_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
 	if(unlikely( ps->to_pex_queue == NULL ))
 	{
@@ -599,6 +599,7 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 	
 	//queue PEX -> xDPD
 	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-to-xdpd", pex_port);
+		
 	ps->to_xdpd_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SP_ENQ);
 	if(unlikely( ps->to_xdpd_queue == NULL ))
 	{
@@ -608,7 +609,8 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 	}
 
 	//semaphore	
-	ps->semaphore = sem_open(pex_port, O_CREAT , 0644, 0);
+	ps->semaphore = sem_open(pex_name, O_CREAT , 0644, 0);
+	
 	if(ps->semaphore == SEM_FAILED)
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create semaphore '%s' for queue in port: %s\n", pex_port, pex_port);
@@ -634,13 +636,13 @@ static switch_port_t* configure_pex_port(const char *pex_port)
 }
 
 
-rofl_result_t port_manager_create_pex_port(const char *pex_port)
+rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *pex_port)
 {
 	switch_port_t* port;
 	
 	ROFL_INFO(DRIVER_NAME"[port_manager] Creating a PEX port named '%s'\n",pex_port);
 	
-	if(! ( port = configure_pex_port(pex_port) ) )
+	if(! ( port = configure_pex_port(pex_name,pex_port) ) )
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Unable to initialize PEX port %s\n", pex_port);
 		return ROFL_FAILURE;

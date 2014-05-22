@@ -15,6 +15,8 @@ void NodeOrchestrator::init(){
 	
 	pthread_t thread[1];
 	pthread_create(&thread[0],NULL,Server::listen,NULL);
+	pthread_detach(thread[0]);
+	
 	
 	//list<string> phyPorts = discoverPhyPorts();
 	
@@ -127,20 +129,19 @@ pair<unsigned int, unsigned int> NodeOrchestrator::createVirtualLink(uint64_t dp
 	return make_pair(port_a,port_b);
 }
 
-unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName,PexType type)
+unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string NfPortName, PexType type)
 {
-	string scriptPath;
 	unsigned int port_number = 0;
 
-	pex_manager::create_pex(NfName,type,scriptPath);	
-	port_manager::attach_port_to_switch(dpid, NfName, &port_number);
+	pex_manager::create_pex_port(NfName, NfPortName,type);	
+	port_manager::attach_port_to_switch(dpid, NfPortName, &port_number);
 	
 	//FIXME: tmp code
 	last_ports_id[dpid] = port_number;
 	
-	port_manager::bring_up(NfName);
+	port_manager::bring_up(NfPortName);
 	
-	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Port '%s' attached to port %d of LSI '%x'\n",NfName.c_str(),port_number,dpid);	
+	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Port '%s' attached to port %d of LSI '%x'\n",NfPortName.c_str(),port_number,dpid);	
 	
 	return port_number;
 }

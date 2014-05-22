@@ -47,18 +47,18 @@ public:
 	//
 
  	/**
- 	 * @name pex_exists
-	 * @brief Check if the PEX named pex_name already exists
+ 	 * @name pex_port_exists
+	 * @brief Check if the PEX port named pex_port_name already exists
 	 * 
-	 * @param pex_name	Name of the PEX to be checked
+	 * @param pex_port_name		Name of the PEX port to be checked
 	 */
-	static bool pex_exists(std::string& pex_name);
+	static bool pex_port_exists(std::string& pex_port_name);
 
 	/**
 	* @name list_available_PEX_names
 	* @brief List the names of the PEX available
 	*/
-	static std::list<std::string> list_available_pex_names(void);
+	static std::list<std::string> list_available_pex_port_names(void);
 
 
 	//
@@ -66,22 +66,22 @@ public:
 	//
 	
 	/**
-	* @name create_pex
-	* @brief Create a PEX named pex_name
+	* @name create_pex_port
+	* @brief Create a PEX port named pex_name
 	*
-	* @param pex_name				Name of the PEX to be created
+	* @param pex_name				Name of the PEX associated with this port
+	* @param pex_port_name			Name of the PEX port to be created
 	* @param pex_type				Type of the PEX to be created
-	* @param path					Path of the PEX excutable (may be not needed)
 	*/
-	static void create_pex(std::string& pex_name, PexType pexType, std::string& path);
+	static void create_pex_port(std::string& pex_name, std::string& pex_port_name, PexType pexType);
 	
 	/**
-	* @name destroy_pex
-	* @brief Destroy a PEX named pex_name
+	* @name destroy_pex_pex
+	* @brief Destroy a PEX port named pex_port_name
 	*
-	* @param pex_name	Name of the PEX to be destroyed
+	* @param pex_port_name		Name of the PEX to be destroyed
 	*/
-	static void destroy_pex(std::string& pex_name);
+	static void destroy_pex_port(std::string& pex_port_name);
 
 	//TODO: reconfigure a PEX
 	

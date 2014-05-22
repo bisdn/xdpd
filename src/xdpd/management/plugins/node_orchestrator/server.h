@@ -88,7 +88,7 @@ private:
 	}
 */
 	static string createLSI(string message);
-	static string createLSIAnswer(LSI lsi, map<string,uint32_t> nfPorts,list<pair<unsigned int, unsigned int> > virtual_links);
+	static string createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links);
 
 /**
 *	Example of command to discover the physical ports of xDPD

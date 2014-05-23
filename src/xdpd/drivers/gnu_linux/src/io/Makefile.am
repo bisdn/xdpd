@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = packet_classifiers ports scheduler
+SUBDIRS = packet_classifiers pirl ports scheduler
 
 noinst_LTLIBRARIES = libxdpd_driver_gnu_linux_io.la
 
@@ -24,5 +24,6 @@ CLASSIFIER_LIB=packet_classifiers/c_types_pktclassifier/libxdpd_driver_gnu_linux
 
 libxdpd_driver_gnu_linux_io_la_LIBADD = \
 	$(CLASSIFIER_LIB)\
+	pirl/libxdpd_driver_gnu_linux_io_pirl.la \
 	ports/libxdpd_driver_gnu_linux_io_ports.la \
 	scheduler/libxdpd_driver_gnu_linux_io_scheduler.la

@@ -11,11 +11,23 @@
 *
 * @brief PIRL settings 
 *
-* The only reason for this file to exist is to be able to reuse pirl.h/pirl.c without
-* any change
+* The only reason for this file to exist is to be able to reuse pirl.h/pirl.c without any change in several platforms
 *
 */
 
-//FIXME: add 
+#include <stdint.h>
+#include <time.h>
+#include "../../util/likely.h"
+
+/**
+* Returns the number of ms since epoch
+*/
+static inline uint64_t pirl_clock_gettime_ms(){
+	struct timespec tp;
+        clock_gettime(CLOCK_MONOTONIC_COARSE, &tp);
+	
+	return tp.tv_sec*1000 + tp.tv_nsec/1000000; 
+}
+
 
 #endif //PIRL_CONFIG

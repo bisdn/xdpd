@@ -227,18 +227,20 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	try {
 		uint16_t value = ofmatch.get_vlan_vid_value();
 		uint16_t mask  = ofmatch.get_vlan_vid_mask();
-		enum of1x_vlan_present vlan_present = OF1X_MATCH_VLAN_NONE;
+		enum of1x_vlan_present vlan_present=OF1X_MATCH_VLAN_NONE;
 
 		if ((value == rofl::openflow13::OFPVID_PRESENT) && (mask == rofl::openflow13::OFPVID_PRESENT)){
 			vlan_present = OF1X_MATCH_VLAN_ANY;
-		} else
-		if (value & rofl::openflow13::OFPVID_PRESENT) {
+		}else if (value == rofl::openflow13::OFPVID_NONE && mask==0xFFFF){
+			vlan_present = OF1X_MATCH_VLAN_NONE;
+		}else if (value && value&rofl::openflow13::OFPVID_PRESENT /*&& mask == 0xFFFF*/){ 
 			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
+		}else{
+			//Invalid 
+			assert(0);
 		}
 		
-		match = of1x_init_vlan_vid_match(ofmatch.get_vlan_vid_value() & ~openflow::OFPVID_PRESENT,
-							ofmatch.get_vlan_vid_mask(),
-							vlan_present);
+		match = of1x_init_vlan_vid_match(value, mask, vlan_present);
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 

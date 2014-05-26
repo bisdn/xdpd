@@ -10,6 +10,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 
 #include "of_endpoint.h"
+#include "pirl/pirl.h"
 
 /**
 * @file openflow_switch.h
@@ -32,6 +33,9 @@ protected:
 	//Endpoint context
 	of_endpoint* endpoint;
 
+	//Packet in rate limiter
+	pirl rate_limiter;
+	
 	openflow_switch(const uint64_t dpid, const std::string &dpname, const of_version_t version, unsigned int num_of_tables);
 
 public:
@@ -46,10 +50,11 @@ public:
 	 */
 	virtual ~openflow_switch(void){};
 
+
 	/*
-	* Pure virtual methods
+	* Pure virtual methods that must be implemented by derived classes
 	*/
-	virtual rofl_result_t process_packet_in(
+	inline rofl_result_t process_and_filter_packet_in(
 					uint8_t table_id,
 					uint8_t reason,
 					uint32_t in_port,
@@ -57,7 +62,22 @@ public:
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
-					packet_matches_t* matches)=0;
+					packet_matches_t* matches){
+
+		if(rate_limiter.filter_pkt() == true)
+			//Packet exceeds configured rate
+			return ROFL_FAILURE;
+		
+		return process_packet_in(table_id,
+					reason,
+					in_port,
+					buffer_id,
+					pkt_buffer,
+					buf_len,
+					total_len,
+					matches);
+	};
+
 	virtual rofl_result_t process_flow_removed(uint8_t reason, of1x_flow_entry_t* removed_flow_entry)=0;
 
 	/**
@@ -77,6 +97,21 @@ public:
 	virtual void rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params);
 
 	virtual void rpc_disconnect_from_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params);
+
+protected:
+	/*
+	* Pure virtual method that must be implemented by derived classes
+	*/
+	virtual rofl_result_t process_packet_in(
+					uint8_t table_id,
+					uint8_t reason,
+					uint32_t in_port,
+					uint32_t buffer_id,
+					uint8_t* pkt_buffer,
+					uint32_t buf_len,
+					uint16_t total_len,
+					packet_matches_t* matches)=0;
+
 };
 
 }// namespace rofl

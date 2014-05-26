@@ -12,9 +12,10 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include "io/pirl/pirl.h"
+#include "xdpd/openflow/pirl/pirl.h"
 
 using namespace std;
+using namespace xdpd;
 
 #define MAX_RATE_S 2000
 
@@ -26,19 +27,17 @@ class PIRLTestCase : public CppUnit::TestFixture{
 	
 	void test_max_rate(void);
 	void test_cost(void);
-	pirl_t* pirl;	
+	pirl pirl_inst;	
 public:
 	void setUp(void);
 	void tearDown(void);
 };
 
 void PIRLTestCase::setUp(){
-	pirl = init_pirl(MAX_RATE_S, PIRL_DISABLED);
-
+	pirl_inst.reconfigure(MAX_RATE_S);
 }
 
 void PIRLTestCase::tearDown(){
-	destroy_pirl(pirl);
 }
 
 #define MAX_ITERATIONS 0xFFFFFFF
@@ -53,7 +52,7 @@ void PIRLTestCase::test_max_rate(void)
 	clock_gettime(/*CLOCK_MONOTONIC_COARSE*/CLOCK_REALTIME, &tp_init);
 
 	for(int i=0;i<MAX_ITERATIONS;i++){
-		if(pirl_filter_pkt(pirl, NULL) == false)
+		if(pirl_inst.filter_pkt() == false)
 			cnt++;
 	}
 	
@@ -62,14 +61,14 @@ void PIRLTestCase::test_max_rate(void)
 	//Calculate number of real buckets
 	init_ms = tp_init.tv_sec*1000 + tp_init.tv_nsec/1000000;
 	final_ms = tp_final.tv_sec*1000 + tp_final.tv_nsec/1000000;
-	n_buckets = (final_ms - init_ms) /(1000/PIRL_NUMBER_OF_BUCKETS_PER_S) + 1; 
-	if((final_ms - init_ms) % (1000/PIRL_NUMBER_OF_BUCKETS_PER_S) != 0)
+	n_buckets = (final_ms - init_ms) /(1000/pirl::PIRL_NUMBER_OF_BUCKETS_PER_S) + 1; 
+	if((final_ms - init_ms) % (1000/pirl::PIRL_NUMBER_OF_BUCKETS_PER_S) != 0)
 		n_buckets++;
 	float seconds = ((float)(final_ms-init_ms))/1000;
 	float rate =  ((float)cnt)/seconds; 
 	int rate_normalized = ((int)(rate/n_buckets))*n_buckets;
 	fprintf(stderr,"Outputed rate (pkt/s): %f, normalized (pkts/s): %f, cnt %d, n_buckets %d, seconds %f\n", rate, (float)rate_normalized, cnt, n_buckets, seconds); 
-	CPPUNIT_ASSERT( (n_buckets*MAX_RATE_S/PIRL_NUMBER_OF_BUCKETS_PER_S) >= cnt );
+	CPPUNIT_ASSERT( (n_buckets*MAX_RATE_S/pirl::PIRL_NUMBER_OF_BUCKETS_PER_S) >= cnt );
 }
 
 inline uint64_t rdtsc() {
@@ -101,7 +100,7 @@ void PIRLTestCase::test_cost(void)
 	ticks_initial = rdtsc();
 
 	for(cnt=0;cnt<MAX_ITERATIONS;cnt++)
-		pirl_filter_pkt(pirl, NULL);
+		pirl_inst.filter_pkt();
 	
 	ticks_final = rdtsc();
 	

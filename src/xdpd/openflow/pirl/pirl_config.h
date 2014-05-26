@@ -17,7 +17,7 @@
 
 #include <stdint.h>
 #include <time.h>
-#include "../../util/likely.h"
+#include "likely.h"
 
 /**
 * Returns the number of ms since epoch

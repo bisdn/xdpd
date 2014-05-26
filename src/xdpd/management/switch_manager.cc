@@ -427,7 +427,7 @@ rofl_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 	sw = switch_manager::__get_switch_by_dpid(dpid); 
 
 	if(sw)
-		result = sw->process_packet_in(table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);
+		result = sw->process_and_filter_packet_in(table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);
 	else	
 		result = ROFL_FAILURE;
 	

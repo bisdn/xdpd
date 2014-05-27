@@ -86,7 +86,7 @@
 
 //Kernel scheduling policy for I/O threads. Possible values SCHED_FIFO, SCHED_RR or SCHED_OTHER
 //Warning: change it only if you know what you are doing 
-#define IO_KERN_SCHED_POL SCHED_RR
+#define IO_KERN_SCHED_POL SCHED_OTHER
 
 //Uncomment this to prevent the driver to change priority and scheduling policy for I/O threads
 //Warning: change it only if you know what you are doing 

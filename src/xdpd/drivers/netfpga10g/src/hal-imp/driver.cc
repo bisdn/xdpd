@@ -24,7 +24,7 @@ static of_switch_t* sw=NULL;
 #define NETFPGA10G_CODE_NAME DRIVER_NAME 
 #define NETFPGA10G_VERSION VERSION 
 #define NETFPGA10G_DESC \
-"NetFPGA-10G OpenFlow switch driver.\n\nThe driver is currently based on the HW implementation that can be found under the Beta NetFPGA 10G repository under the folder:\n\nNetFPGA-10G-live/contrib-projects/openflow_switch/\n\nwritten by Tatsuya Yabe (et al.?).\n\nSince this HW implementation is only OF1.0 compliant, the driver is currently exposing itself as a _very_ restricted OF1.2 compliant driver. Check more details here:\n\nhttps://www.codebasin.net/redmine/projects/xdpd/wiki\n\nWARNING: this driver is experimental"
+"NetFPGA-10G OpenFlow switch driver.\n\nThe driver is currently based on the HW implementation that can be found under the Beta NetFPGA 10G repository under the folder:\n\nNetFPGA-10G-live/contrib-projects/openflow_switch/\n\nwritten by Tatsuya Yabe (et al.?).\n\nSince this HW implementation is only OF1.0 compliant, the driver is currently exposing itself as a _very_ restricted OF1.2 compliant driver. Check more details here:\n\nhttp://www.xdpd.org\n\nWARNING: this driver is experimental"
 
 #define NETFPGA10G_USAGE  "" //We don't support extra params
 #define NETFPGA10G_EXTRA_PARAMS "" //We don't support extra params

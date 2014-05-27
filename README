@@ -35,7 +35,8 @@ Requirements
 - [optional] if you want to run automatic tests (make check), libcunit and libcppunit are required (in libcunit1-dev and libcppunit-dev packages in Debian-like systems).
 - [optional] Doxygen to generate the documentation.
 
-[1] https://www.codebasin.net/redmine/projects/rofl-core/wiki
+[1] http://www.roflibs.org/, https://github.com/bisdn/rofl-core
+
 
 How to build
 ============
@@ -103,15 +104,20 @@ Note there will be a considerably number of warnings shown. Once bug 13928, 'sub
 
 Doxygen documentation
 =====================
+
+You can have a look on: 
+
+http://www.xdpd.org/doc/
+
 Documentation can be compiled via 'make doc'. Documentation is generated in build/doc/ folder
 
 More information, documentation and support
 ===========================================
 
 http://www.xdpd.org
-https://www.codebasin.net/redmine/projects/xdpd/wiki
+https://github.com/bisdn/xdpd
 
-For getting support or participate in the discussions, join the mailing list dev@xdpd.org at http://www.xdpd.org/mailman
+For getting support or participate in the discussions, join the mailing list xdpd-devel@xdpd.org at http://www.xdpd.org/mailman
 
 Authorship
 ==========

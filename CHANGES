@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.5.0
+
+[+][CMM] Added per LSI Packet In Rate Limiter(PIRL) functionality and config plugin support.
+
 v0.4.1
 
 [B] Fixed OF1.2 VLAN matching translation according to spec, issue #15

@@ -306,6 +306,26 @@ switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socke
 }
 
 
+//
+// Other configuration parameters
+//
+
+void switch_manager::reconfigure_pirl(uint64_t dpid, const int max_rate){
+
+	pthread_rwlock_wrlock(&switch_manager::rwlock);
+	
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmDoesNotExist();
+	}
+
+	//Get switch instance
+	openflow_switch* dp = switch_manager::switchs[dpid];
+	dp->rate_limiter.reconfigure(max_rate);
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+}
+
+
 openflow_switch* switch_manager::__get_switch_by_dpid(uint64_t dpid){
 
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
@@ -314,7 +334,6 @@ openflow_switch* switch_manager::__get_switch_by_dpid(uint64_t dpid){
 
 	return switch_manager::switchs[dpid];
 }
-
 
 //
 //CMM demux

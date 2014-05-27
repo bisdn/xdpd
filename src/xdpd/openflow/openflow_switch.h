@@ -33,9 +33,6 @@ protected:
 	//Endpoint context
 	of_endpoint* endpoint;
 
-	//Packet in rate limiter
-	pirl rate_limiter;
-	
 	openflow_switch(const uint64_t dpid, const std::string &dpname, const of_version_t version, unsigned int num_of_tables);
 
 public:
@@ -45,6 +42,9 @@ public:
 	of_version_t version;
 	unsigned int num_of_tables;
 
+	//Packet in rate limiter
+	pirl rate_limiter;
+	
 	/**
 	 * Destructor
 	 */

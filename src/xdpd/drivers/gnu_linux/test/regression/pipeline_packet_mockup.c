@@ -143,7 +143,7 @@ uint128__t
 	return &addr_128;
 }
 
-uint64_t
+uint32_t
 *platform_packet_get_ipv6_flabel(datapacket_t * const pkt)
 {
 	return 0x0;
@@ -246,7 +246,7 @@ uint8_t
 }
 
 bool
-*platform_packet_get_mpls_bos(datapacket_t * const pkt)
+platform_packet_get_mpls_bos(datapacket_t * const pkt)
 {
 	 return 0x0;
 }

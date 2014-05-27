@@ -264,7 +264,7 @@ void DataPacketX86Test::testPushPPPoE()
 
 	classify_packet(pack->headers, pack->get_buffer(), pack->get_buffer_length(), 1, 1);
 	//we need to get the length here because we cannot access ipv4 header once pppoe is pushed
-	uint16_t pkt_length = NTOHB16(*get_ipv4_length(get_ipv4_hdr(pack->headers,0))) + sizeof(fpppframe::ppp_hdr_t);
+	uint16_t pkt_length = NTOHB16(*	get_ipv4_length(get_ipv4_hdr(pack->headers,0))) + sizeof(fpppframe::ppp_hdr_t);
 	
 	pop_vlan(&pkt,pack->headers);
 	uint64_t mac = HTONB64(OF1X_MAC_ALIGN(cmacaddr("00:33:33:33:33:33").get_mac()));

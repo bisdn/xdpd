@@ -28,6 +28,7 @@ protected:
 	//Parsing routines
 	void parse_version(libconfig::Setting& setting, of_version_t* version);
 	void parse_reconnect_time(libconfig::Setting& setting, unsigned int* reconnect_time);
+	void parse_pirl(libconfig::Setting& setting, bool* pirl_enabled, int* pirl_rate); 
 	void parse_active_connections(libconfig::Setting& setting, std::string& master_controller, int& master_controller_port, std::string& slave_controller, int& slave_controller_port);
 	void parse_matching_algorithms(libconfig::Setting& setting, of_version_t version, unsigned int num_of_tables, int* ma_list, bool dry_run);
 	void parse_ports(libconfig::Setting& setting, std::vector<std::string>& ports, bool dry_run);

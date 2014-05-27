@@ -7,6 +7,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>
 #include "../../../switch_manager.h"
 #include "../../../port_manager.h"
+#include "../../../../openflow/pirl/pirl.h"
 
 #include "../config.h"
 #include "lsi_connections.h"
@@ -19,6 +20,8 @@ using namespace rofl;
 #define LSI_VERSION "version"
 #define LSI_DESCRIPTION "description"
 #define LSI_RECONNECT_TIME "reconnect-time"
+#define LSI_PIRL_ENABLED "pirl-enabled"
+#define LSI_PIRL_RATE "pirl-rate"
 #define LSI_NUM_OF_TABLES "num-of-tables"
 #define LSI_TABLES_MATCHING_ALGORITHM "tables-matching-algorithm"
 #define LSI_PORTS "ports" 
@@ -34,6 +37,10 @@ lsi_scope::lsi_scope(std::string name, bool mandatory):scope(name, mandatory){
 	
 	//Reconnect time
 	register_parameter(LSI_RECONNECT_TIME);
+
+	//PIRL
+	register_parameter(LSI_PIRL_ENABLED);
+	register_parameter(LSI_PIRL_RATE);
 	
 	//Number of tables and matching algorithms
 	register_parameter(LSI_NUM_OF_TABLES);
@@ -74,6 +81,21 @@ void lsi_scope::parse_reconnect_time(libconfig::Setting& setting, unsigned int* 
 	}
 }
 
+void lsi_scope::parse_pirl(libconfig::Setting& setting, bool* pirl_enabled, int* pirl_rate){ 
+
+	if(setting.exists(LSI_PIRL_ENABLED)){
+		*pirl_enabled = setting[LSI_PIRL_ENABLED]; 
+	}
+	if(setting.exists(LSI_PIRL_RATE)){
+		*pirl_rate = setting[LSI_PIRL_RATE];	
+	}
+	
+	if(*pirl_rate < pirl::PIRL_MIN_RATE ){
+		ROFL_ERR(CONF_PLUGIN_ID "%s: invalid pirl-rate of %u. Value must be >=  %d\n", setting.getPath().c_str(), *pirl_rate, pirl::PIRL_MIN_RATE);
+		throw eConfParseError(); 	
+
+	}
+}
 void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string>& ports, bool dry_run){
 
 	//TODO: improve conf file to be able to control the OF port number when attaching
@@ -178,6 +200,8 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	//caddress bind_address;
 	std::vector<std::string> ports;
 	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
+	bool pirl_enabled = true;
+	int pirl_rate=pirl::PIRL_DEFAULT_MAX_RATE;
 
 	//Recover dpid and try to parse
 	std::string dpid_s = setting[LSI_DPID];
@@ -212,6 +236,10 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 	//Parse matching algorithms
 	parse_matching_algorithms(setting, version, num_of_tables, ma_list, dry_run);
+
+
+	//Parse pirl
+	parse_pirl(setting, &pirl_enabled, &pirl_rate);
 
 	//Parse ports	
 	parse_ports(setting, ports, dry_run);
@@ -249,7 +277,14 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 				throw;
 			}
 		}
-	
+
+		//Configure PIRL
+		if(pirl_enabled == false)
+			switch_manager::reconfigure_pirl(dpid, pirl::PIRL_DISABLED);
+		else
+			switch_manager::reconfigure_pirl(dpid, pirl_rate);
+			
+		
 		//Connect(1..N-1)
 		for(std::vector<lsi_connection>::iterator it = (conns.begin()+1); it != conns.end(); ++it) {
 			switch_manager::rpc_connect_to_ctl(dpid, it->type, it->params); 

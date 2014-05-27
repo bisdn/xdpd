@@ -321,7 +321,13 @@ void switch_manager::reconfigure_pirl(uint64_t dpid, const int max_rate){
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
+	if(max_rate == pirl::PIRL_DISABLED){
+		ROFL_INFO("[xdpd][switch_manager][0x%llx] Disabling PIRL.\n", (long long unsigned)dpid);
+	}else{
+		ROFL_INFO("[xdpd][switch_manager][0x%llx] Enabling and reconfiguring PIRL, with max rate: %d PKT_IN/s.\n", (long long unsigned)dpid, max_rate);
+	}
 	dp->rate_limiter.reconfigure(max_rate);
+
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 }
 

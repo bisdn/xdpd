@@ -5,6 +5,12 @@
  *      Author: tobi
  */
 
+#include <rofl.h>
+
+#ifdef ROFL_PIPELINE_INLINE_PP_PLATFORM_FUNCS
+	#error ROFL-pipeline has been compiled with inline packet processing platfrom functions, but the tests do not support this feature. Please, recompile ROFL-pipeline without this feature and retry `make check`
+#endif
+
 #include <assert.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_async_events_hooks.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>

@@ -8,7 +8,15 @@ Legend:
 Change log
 ==========
 
-v0.4RC3
+v0.5.0
+
+[+][CMM] Added per LSI Packet In Rate Limiter(PIRL) functionality and config plugin support.
+
+v0.4.1
+
+[B] Fixed OF1.2 VLAN matching translation according to spec, issue #15
+
+v0.4.0
 
 [+] Added tutorial on how to create new platform drivers under src/xdpd/drivers/README
 [+] Changed main version detection; now it uses VERSION file instead of 'git tag' 

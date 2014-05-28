@@ -3,6 +3,7 @@ MAINTAINERCLEANFILES = Makefile.in
 SUBDIRS = io 
 
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/c_types_pktclassifier/c_types_pktclassifier.c \
+		$(top_srcdir)/src/io/packet_classifiers/c_types_pktclassifier/autogen_pkt_types.c \
 		$(top_srcdir)/src/io/packet_classifiers/packet_operations.cc
 
 #Shared stuff

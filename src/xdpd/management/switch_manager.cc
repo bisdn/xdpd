@@ -306,6 +306,32 @@ switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socke
 }
 
 
+//
+// Other configuration parameters
+//
+
+void switch_manager::reconfigure_pirl(uint64_t dpid, const int max_rate){
+
+	pthread_rwlock_wrlock(&switch_manager::rwlock);
+	
+	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmDoesNotExist();
+	}
+
+	//Get switch instance
+	openflow_switch* dp = switch_manager::switchs[dpid];
+	if(max_rate == pirl::PIRL_DISABLED){
+		ROFL_INFO("[xdpd][switch_manager][0x%llx] Disabling PIRL.\n", (long long unsigned)dpid);
+	}else{
+		ROFL_INFO("[xdpd][switch_manager][0x%llx] Enabling and reconfiguring PIRL, with max rate: %d PKT_IN/s.\n", (long long unsigned)dpid, max_rate);
+	}
+	dp->rate_limiter.reconfigure(max_rate);
+
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+}
+
+
 openflow_switch* switch_manager::__get_switch_by_dpid(uint64_t dpid){
 
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
@@ -314,7 +340,6 @@ openflow_switch* switch_manager::__get_switch_by_dpid(uint64_t dpid){
 
 	return switch_manager::switchs[dpid];
 }
-
 
 //
 //CMM demux
@@ -427,7 +452,7 @@ rofl_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 	sw = switch_manager::__get_switch_by_dpid(dpid); 
 
 	if(sw)
-		result = sw->process_packet_in(table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);
+		result = sw->process_and_filter_packet_in(table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);
 	else	
 		result = ROFL_FAILURE;
 	

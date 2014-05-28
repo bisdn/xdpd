@@ -153,47 +153,98 @@ static rofl_result_t fill_port_admin_and_link_state(switch_port_t* port){
 
 static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cmd* edata){
 
-	bitmap32_t port_capabilities=0x0;
+	bitmap32_t supported_capabilities=0x0, advertised_capabilities=0x0;
 	port_features_t current_speed=PORT_FEATURE_10MB_HD;
 
+	// Fill supported features
+	if ( edata->supported & SUPPORTED_10baseT_Half )
+		supported_capabilities |= PORT_FEATURE_10MB_HD;
+	if ( edata->supported & SUPPORTED_10baseT_Full )
+		supported_capabilities |= PORT_FEATURE_10MB_FD;
+	if ( edata->supported & SUPPORTED_100baseT_Half )
+		supported_capabilities |= PORT_FEATURE_100MB_HD;
+	if ( edata->supported & SUPPORTED_100baseT_Full )
+		supported_capabilities |= PORT_FEATURE_100MB_FD;
+	if ( edata->supported & SUPPORTED_1000baseT_Half )
+		supported_capabilities |= PORT_FEATURE_1GB_HD;
+	if ( edata->supported & SUPPORTED_1000baseT_Full )
+		supported_capabilities |= PORT_FEATURE_1GB_FD;
+	if ( edata->supported & SUPPORTED_Autoneg )
+		supported_capabilities |= PORT_FEATURE_AUTONEG;
+	if ( edata->supported & SUPPORTED_Pause )
+		supported_capabilities |= PORT_FEATURE_PAUSE;
+	if ( edata->supported & SUPPORTED_Asym_Pause )
+		supported_capabilities |= PORT_FEATURE_PAUSE_ASYM;
+	if ( edata->advertising & SUPPORTED_1000baseKX_Full ||  
+		edata->advertising & SUPPORTED_10000baseKX4_Full ||
+		edata->advertising & SUPPORTED_10000baseKR_Full ||
+		edata->advertising & SUPPORTED_10000baseR_FEC ||
+		edata->advertising & SUPPORTED_20000baseMLD2_Full ||
+		edata->advertising & SUPPORTED_20000baseKR2_Full
+	)
+		advertised_capabilities |= PORT_FEATURE_OTHER;
+	//TODO other rates & medium
+	
+	// Fill advertised features
+	if ( edata->advertising & ADVERTISED_10baseT_Half )
+		advertised_capabilities |= PORT_FEATURE_10MB_HD;
+	if ( edata->advertising & ADVERTISED_10baseT_Full )
+		advertised_capabilities |= PORT_FEATURE_10MB_FD;
+	if ( edata->advertising & ADVERTISED_100baseT_Half )
+		advertised_capabilities |= PORT_FEATURE_100MB_HD;
+	if ( edata->advertising & ADVERTISED_100baseT_Full )
+		advertised_capabilities |= PORT_FEATURE_100MB_FD;
+	if ( edata->advertising & ADVERTISED_1000baseT_Half )
+		advertised_capabilities |= PORT_FEATURE_1GB_HD;
+	if ( edata->advertising & ADVERTISED_1000baseT_Full )
+		advertised_capabilities |= PORT_FEATURE_1GB_FD;
+	if ( edata->advertising & ADVERTISED_10000baseT_Full )
+		advertised_capabilities |= PORT_FEATURE_10GB_FD;
+	if ( edata->advertising & ADVERTISED_Autoneg )
+		advertised_capabilities |= PORT_FEATURE_AUTONEG;
+	if ( edata->advertising & ADVERTISED_Pause )
+		advertised_capabilities |= PORT_FEATURE_PAUSE;
+	if ( edata->advertising & ADVERTISED_Asym_Pause )
+		advertised_capabilities |= PORT_FEATURE_PAUSE_ASYM;
+	if ( edata->advertising & ADVERTISED_1000baseKX_Full ||  
+		edata->advertising & ADVERTISED_10000baseKX4_Full ||
+		edata->advertising & ADVERTISED_10000baseKR_Full ||
+		edata->advertising & ADVERTISED_10000baseR_FEC ||
+		edata->advertising & ADVERTISED_20000baseMLD2_Full ||
+		edata->advertising & ADVERTISED_20000baseKR2_Full
+	)
+		advertised_capabilities |= PORT_FEATURE_OTHER;
+	//TODO other rates & medium
+	
+	
 	//Get speed	
 	uint32_t speed = ethtool_cmd_speed(edata);
-
+	
 	if(speed >= 10 && edata->duplex == DUPLEX_FULL){
-		port_capabilities |= PORT_FEATURE_10MB_FD;
 		current_speed = PORT_FEATURE_10MB_FD; 
 	}else if (speed >= 10 && edata->duplex == DUPLEX_HALF){
-		port_capabilities |= PORT_FEATURE_10MB_HD;
 		current_speed = PORT_FEATURE_10MB_HD; 
 	}
-	
 	if(speed >= 100 && edata->duplex == DUPLEX_FULL){
-		port_capabilities |= PORT_FEATURE_100MB_FD;
 		current_speed = PORT_FEATURE_100MB_FD; 
 	}else if (speed >= 100 && edata->duplex == DUPLEX_HALF){
-		port_capabilities |= PORT_FEATURE_100MB_HD;
 		current_speed = PORT_FEATURE_100MB_HD; 
 	}
-	
 	if(speed >= 1000 && edata->duplex == DUPLEX_FULL){
-		port_capabilities |= PORT_FEATURE_1GB_FD;
 		current_speed = PORT_FEATURE_1GB_FD; 
 	}else if (speed >= 1000 && edata->duplex == DUPLEX_HALF){
-		port_capabilities |= PORT_FEATURE_1GB_HD;
 		current_speed = PORT_FEATURE_1GB_HD; 
 	}
-
 	if(speed >= 10000 && edata->duplex == DUPLEX_FULL){
-		port_capabilities |= PORT_FEATURE_10GB_FD;
 		current_speed = PORT_FEATURE_10GB_FD; 
 	}
 
 	//TODO: properly deduce speeds
 	//Filling only with the deduced speed
-	switch_port_add_capabilities(&port->curr, port_capabilities);	
-	switch_port_add_capabilities(&port->advertised, port_capabilities);	
-	switch_port_add_capabilities(&port->supported, port_capabilities);	
-	switch_port_add_capabilities(&port->peer, port_capabilities);	
+	switch_port_add_capabilities(&port->curr, advertised_capabilities);	
+	switch_port_add_capabilities(&port->advertised, advertised_capabilities);	
+	switch_port_add_capabilities(&port->supported, supported_capabilities);	
+	switch_port_add_capabilities(&port->peer, advertised_capabilities);	
 
 	//Filling speeds
 	switch_port_set_current_speed(port, current_speed);

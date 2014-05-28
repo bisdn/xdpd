@@ -43,46 +43,46 @@ How to build
 
 Install the dependencies and run:
 
-sh# ./autogen.sh  
-sh# cd build  
-sh# ../configure  
-sh# make  
-sh# make install
+	sh# ./autogen.sh  
+	sh# cd build  
+	sh# ../configure  
+	sh# make  
+	sh# make install
 
-Optionally you can 'make check' for consistency checks. For other platforms different than gnu-linux, please make sure --with-hw-support=platform-name is specified, and that the appropriate README is read (e.g. src/xdpd/drivers/example/README).
+Optionally you can `make check` for consistency checks. For other platforms different than `gnu-linux`, please make sure `--with-hw-support=platform-name` is specified, and that the appropriate README is read (e.g. src/xdpd/drivers/example/README).
 
 How to run it
 ================================
 
 Copy the example.cfg: 
 
-sh# cd build/src/xdpd  
-sh# cp src/xdpd/management/plugins/config/example.cfg .  
+	sh# cd build/src/xdpd  
+	sh# cp src/xdpd/management/plugins/config/example.cfg .  
 
 Now edit the configuration. Make sure ports attached to the Logical Switch Instance (LSI) exist in the system.
 
-sh# vi src/xdpd/management/plugins/config/example.cfg  
+	sh# vi src/xdpd/management/plugins/config/example.cfg  
 
 Run xdpd:
-
-sh# ./xdpd -c example.cfg
+	
+	sh# ./xdpd -c example.cfg
 
 Optional ../configure parameters
 ================================
 
---with-hw-support=platform-name: Compiles support for the platform-name (forwarding module). Default is gnu-linux.  
---with-plugins="plugin1...pluginN": Compile with plugin1..pluginN enabled. Default is --with-plugins="config" plugin.
---enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).  
---disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)  
+	--with-hw-support=platform-name: Compiles support for the platform-name (platform driver). Default is gnu-linux.   
+	--with-plugins="plugin1...pluginN": Compile with plugin1..pluginN enabled. Default is --with-plugins="config" plugin.  
+	--enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).  
+	--disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)   
 
 Known issues with Automake 1.4
 ==============================
 
-xDPd package uses 'subdir-objects'. From 1.4 on, the support of 'subdir-objects' must be explicitly added in AM_INIT_AUTOMAKE() in order to prevent warnings that will abort compilation. However, due to the following bug:
+xDPd package uses `subdir-objects`. From 1.4 on, the support of `subdir-objects` must be explicitly added in AM_INIT_AUTOMAKE() in order to prevent warnings that will abort compilation. However, due to the following bug:
 
 http://debbugs.gnu.org/cgi/bugreport.cgi?bug=13928
 
-The build system won't work if 'subdir-objects' is added in AM_INIT_AUTOMAKE() for both Automake 1.4 and 1.3. 
+The build system won't work if `subdir-objects` is added in AM_INIT_AUTOMAKE() for both Automake 1.4 and 1.3. 
 
 Currently, in order to compile the package, the suggested strategy is to remove -Werror from AM_INIT_AUTOMAKE() in ALL the configure.ac-s (configure.ac, src/xdpd/drivers/example/configure.ac ...):
 
@@ -109,7 +109,7 @@ You can have a look on:
 
 http://www.xdpd.org/doc/
 
-Documentation can be compiled via 'make doc'. Documentation is generated in build/doc/ folder
+Documentation can be compiled via `make doc`. Documentation is generated in build/doc/ folder
 
 More information, documentation and support
 ===========================================

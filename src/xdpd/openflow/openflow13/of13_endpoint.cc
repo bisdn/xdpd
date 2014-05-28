@@ -786,6 +786,57 @@ of13_endpoint::handle_group_features_stats_request(
 
 
 void
+of13_endpoint::handle_meter_stats_request(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid,
+		rofl::openflow::cofmsg_meter_stats_request& msg)
+{
+	rofl::openflow::cofmeterstatsarray meter_stats_reply(rofl::openflow13::OFP_VERSION);
+
+	// TODO: adjust meter_stats_reply, when meters have been implemented in the pipeline/in the drivers
+
+	ctl.send_meter_stats_reply(auxid, msg.get_xid(), meter_stats_reply);
+}
+
+
+
+void
+of13_endpoint::handle_meter_config_stats_request(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid,
+		rofl::openflow::cofmsg_meter_config_stats_request& msg)
+{
+	rofl::openflow::cofmeterconfigarray meter_config_reply(rofl::openflow13::OFP_VERSION);
+
+	// TODO: adjust meter_config_reply, when meters have been implemented in the pipeline/in the drivers
+
+	ctl.send_meter_config_stats_reply(auxid, msg.get_xid(), meter_config_reply);
+}
+
+
+
+void
+of13_endpoint::handle_meter_features_stats_request(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid,
+		rofl::openflow::cofmsg_meter_features_stats_request& msg)
+{
+	rofl::openflow::cofmeter_features_reply meter_features_reply(rofl::openflow13::OFP_VERSION);
+
+	meter_features_reply.set_max_meter(0);	// no meters supported
+	meter_features_reply.set_band_types(0);
+	meter_features_reply.set_capabilities(0);
+	meter_features_reply.set_max_bands(0);
+	meter_features_reply.set_max_color(0);
+
+	// TODO: adjust meter_features_reply, when meters have been implemented in the pipeline/in the drivers
+
+	ctl.send_meter_features_stats_reply(auxid, msg.get_xid(), meter_features_reply);
+}
+
+
+
+void
 of13_endpoint::handle_table_features_stats_request(
 		rofl::crofctl& ctl,
 		const rofl::cauxid& auxid,

@@ -175,6 +175,27 @@ private:
 	 *
 	 */
 	virtual void
+	handle_meter_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_meter_stats_request& msg);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_meter_config_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_meter_config_stats_request& msg);
+
+
+	/**
+	 *
+	 */
+	virtual void
+	handle_meter_features_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_meter_features_stats_request& msg);
+
+
+	/**
+	 *
+	 */
+	virtual void
 	handle_table_features_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_table_features_stats_request& msg);
 
 

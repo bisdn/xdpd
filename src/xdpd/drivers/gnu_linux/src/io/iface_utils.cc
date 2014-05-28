@@ -183,6 +183,8 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 		edata->advertising & SUPPORTED_20000baseKR2_Full
 	)
 		advertised_capabilities |= PORT_FEATURE_OTHER;
+	if ( edata->supported & SUPPORTED_FIBRE )
+		supported_capabilities |= PORT_FEATURE_FIBER;
 	//TODO other rates & medium
 	
 	// Fill advertised features
@@ -214,6 +216,8 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 		edata->advertising & ADVERTISED_20000baseKR2_Full
 	)
 		advertised_capabilities |= PORT_FEATURE_OTHER;
+	if ( edata->advertising & ADVERTISED_FIBRE )
+		advertised_capabilities |= PORT_FEATURE_FIBER;
 	//TODO other rates & medium
 	
 	

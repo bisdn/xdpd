@@ -13,21 +13,23 @@ Disclaimer: a basic autotools knowledge is assumed in this short tutorial
 
 0) Check first the introductory slides of xDPd's architecture, ROFL-pipeline and ROFL-hal doxygen documentation. 
 
+http://www.xdpd.org
+
 1) Decide a code-name for the new platform. The platform code-name must use '-' as a separator  xxx-yyy-zzz. Try to use a short code name. For our tutorial we will choose 'my-asic'.
 
 2) Copy the example folder to 'my_asic/' (NOTE that '_' must be used instead of '-' in the folder name)
 
-sh# cp src/xdpd/drivers/example src/xdpd/drivers/my_asic/ -R
+	sh# cp src/xdpd/drivers/example src/xdpd/drivers/my_asic/ -R
 
 3) Edit README and put the relevant information.
 
-4) Edit configure.ac and change the name of the package accordingly.
+4) Edit `configure.ac` and change the name of the package accordingly.
 
-5) Edit all Makefile.am and substitute 'example' for 'my_asic'. Example of substitution in vim:
+5) Edit all `Makefile.am` and substitute 'example' for 'my_asic'. Example of substitution in vim:
 
-%s/example/my_asic/c
+	%s/example/my_asic/c
 
-6) Now add the platform to the list of available platforms in config/hw.m4. The diff should look something like:
+6) Now add the platform to the list of available platforms in `config/hw.m4`. The diff should look something like:
 
 
 	diff --git a/config/hw.m4 b/config/hw.m4
@@ -56,12 +58,12 @@ sh# cp src/xdpd/drivers/example src/xdpd/drivers/my_asic/ -R
 		msg="$msg Example platform"
 		AC_DEFINE(HW_EXAMPLE)
 
-7) Run 'autogen.sh'. At this point the code should compile. Remember that to compile a hw platform different than the default one, you must specify --with-hw-support='my-asic' (Note '-'):
+7) Run `autogen.sh`. At this point the code should compile. Remember that to compile a hw platform different than the default one, you must specify --with-hw-support='my-asic' (Note '-'):
 
-sh# bash autogen.sh
-sh# cd build
-sh# ../configure --enable-debug --disable-silent-rules --with-hw-support="my-asic"
-sh# make
+	sh# bash autogen.sh
+	sh# cd build
+	sh# ../configure --enable-debug --disable-silent-rules --with-hw-support="my-asic"
+	sh# make
 
 8) Now add the necessary functionality behind the HAL calls. For that, you can take as a reference:
 
@@ -80,5 +82,5 @@ Refer to README_0.4-port
 Related projects
 ----------
 
-ROFL-pipeline  
-ROFL-HAL
+ROFL-pipeline: http://www.roflibs.org/doc/rofl-pipeline/ 
+ROFL-HAL: http://www.roflibs.org/doc/rofl-hal/

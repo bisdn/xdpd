@@ -14,7 +14,13 @@ v0.5.0
 
 v0.4.1
 
+[+] Improve markdown support in READMEs #12
 [B] Fixed OF1.2 VLAN matching translation according to spec, issue #15
+
+[B][gnu-linux] Fixed make check when rofl-pipeline is compiled with inline funcs. #8
+[B][gnu-linux] Unbalanced throughput among ports beyond I/O limit #10
+
+[+][gnu-linux-dpdk] Change verbosity of I/O debug logs #11
 
 v0.4.0
 

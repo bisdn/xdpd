@@ -58,7 +58,7 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 
 	//XXX: statistics
 
-	//ROFL_DEBUG(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
+	//ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 
 	//Prefetch
 	if( burst_len )

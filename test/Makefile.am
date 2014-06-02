@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = # xdpd
+SUBDIRS =  xdpd
 
 export INCLUDES += -I$(abs_srcdir)/../src/
 

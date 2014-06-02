@@ -1,5 +1,5 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = unit #regression 
+SUBDIRS = pirl
 
 

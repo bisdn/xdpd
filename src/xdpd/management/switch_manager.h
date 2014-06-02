@@ -152,6 +152,18 @@ public:
 	static void rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, rofl::cparams const& socket_params);
 
 	//
+	// Other configuration parameters
+	//
+
+	/**
+	* Change Packet In Rate Limiter(PIRL) rate, in packet_in events per second
+	*
+	* @param max_rate Maximum rate in pkt_in/s. It should be higher or equal than the minimum PIRL rate. Use pirl::PIRL_DISABLED to disable PIRL subsytem.
+	*/
+	static void reconfigure_pirl(uint64_t dpid, const int max_rate);
+
+
+	//
 	//CMM demux
 	//
 	

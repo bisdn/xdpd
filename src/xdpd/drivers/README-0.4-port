@@ -84,5 +84,5 @@ Actions; get the set field value for a 128 bit action (e.g. IPV6_SRC):
 Related projects
 ----------
 
-ROFL-pipeline  
-ROFL-HAL
+ROFL-pipeline: http://www.roflibs.org/doc/rofl-pipeline/ 
+ROFL-HAL: http://www.roflibs.org/doc/rofl-hal/

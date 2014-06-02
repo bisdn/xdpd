@@ -59,7 +59,7 @@ public:
 	/**
 	* Maps a of1x_action from an OF1.2 Header
 	*/
-	static void of12_map_flow_entry_actions(crofctl *ctl, openflow_switch* sw, rofl::openflow::cofactions& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
+	static void of12_map_flow_entry_actions(crofctl *ctl, openflow_switch* sw, const rofl::openflow::cofactions& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
 
 
 	/**
@@ -85,7 +85,32 @@ public:
 	/**
 	*
 	*/
-	static void of12_map_reverse_flow_entry_instruction(of1x_instruction_t* inst, rofl::openflow::cofinst& instruction);
+	static void of12_map_reverse_flow_entry_instruction_goto_table(of1x_instruction_t* inst, rofl::openflow::cofinstruction_goto_table& instruction);
+
+	/**
+	*
+	*/
+	static void of12_map_reverse_flow_entry_instruction_apply_actions(of1x_instruction_t* inst, rofl::openflow::cofinstruction_apply_actions& instruction);
+
+	/**
+	*
+	*/
+	static void of12_map_reverse_flow_entry_instruction_write_actions(of1x_instruction_t* inst, rofl::openflow::cofinstruction_write_actions& instruction);
+
+	/**
+	*
+	*/
+	static void of12_map_reverse_flow_entry_instruction_clear_actions(of1x_instruction_t* inst, rofl::openflow::cofinstruction_clear_actions& instruction);
+
+	/**
+	*
+	*/
+	static void of12_map_reverse_flow_entry_instruction_write_metadata(of1x_instruction_t* inst, rofl::openflow::cofinstruction_write_metadata& instruction);
+
+	/**
+	*
+	*/
+	static void of12_map_reverse_flow_entry_instruction_experimenter(of1x_instruction_t* inst, rofl::openflow::cofinstruction_experimenter& instruction);
 
 	/**
 	*

@@ -16,7 +16,7 @@ Comments
 
 To compile xDPd with DPDK support, make sure it is configured like this (if libraries are not installed):
 
-CFLAGS="-L$RTE_SDK/lib/ -I$RTE_SDK/include/" CXXFLAGS="$CFLAGS" ../configure --with-hw-support=gnu-linux-dpdk --disable-silent-rules 
+	CFLAGS="-L$RTE_SDK/lib/ -I$RTE_SDK/include/" CXXFLAGS="$CFLAGS" ../configure --with-hw-support=gnu-linux-dpdk --disable-silent-rules 
 
 Note also that _before_ compiling, the file src/config.h should be revised to make sure that at least:
 

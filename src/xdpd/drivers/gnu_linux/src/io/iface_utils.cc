@@ -169,6 +169,8 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 		supported_capabilities |= PORT_FEATURE_1GB_HD;
 	if ( edata->supported & SUPPORTED_1000baseT_Full )
 		supported_capabilities |= PORT_FEATURE_1GB_FD;
+	if ( edata->supported & ADVERTISED_10000baseT_Full )
+		supported_capabilities |= PORT_FEATURE_10GB_FD;
 	if ( edata->supported & SUPPORTED_Autoneg )
 		supported_capabilities |= PORT_FEATURE_AUTONEG;
 	if ( edata->supported & SUPPORTED_Pause )

@@ -20,8 +20,8 @@ const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 6632)
 //Static initialization
 std::map<uint64_t, openflow_switch*> switch_manager::switchs;
 uint64_t switch_manager::dpid_under_destruction = 0x0;
-pthread_rwlock_t switch_manager::rwlock = PTHREAD_RWLOCK_INITIALIZER; 
-pthread_mutex_t switch_manager::mutex = PTHREAD_MUTEX_INITIALIZER; 
+pthread_rwlock_t switch_manager::rwlock = PTHREAD_RWLOCK_INITIALIZER; //Used to prevent deletion of a switch during notification treatment (e.g. port_status_changed)
+pthread_mutex_t switch_manager::mutex = PTHREAD_MUTEX_INITIALIZER; //Used to serialize management actions 
 
 /**
 * Static methods of the manager
@@ -78,7 +78,7 @@ openflow_switch* switch_manager::create_switch(
 		//Add more here...
 		
 		default:
-			pthread_rwlock_unlock(&switch_manager::rwlock);
+			pthread_mutex_unlock(&switch_manager::mutex);
 			throw eOfSmVersionNotSupported();
 
 	}	

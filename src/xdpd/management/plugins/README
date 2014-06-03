@@ -20,7 +20,7 @@ WARNING: do NOT overwrite CPPFLAGS, LDFALGS, CFLAGS, CXXFLAGS or any other wide-
 
 3) Go to src/xdpd/management/plugins/ and copy example folder:
 
-    cp -r example/ my_plugin
+	cp -r example/ my_plugin
 
 4) Modify the internal code of the plugin. At least rename the file example.h/cc to my_plugin.h/cc and the plugin class defined there. Add additional logic
 
@@ -28,32 +28,32 @@ WARNING: do NOT overwrite CPPFLAGS, LDFALGS, CFLAGS, CXXFLAGS or any other wide-
 
 4) Add the following code to plugin_manager_loader.cc
 
-    #ifdef WITH_MGMT_MY_PLUGIN
-   	   #include "my_plugin/my_plugin.h"
-    #endif
+	#ifdef WITH_MGMT_MY_PLUGIN
+	   #include "my_plugin/my_plugin.h"
+	#endif
 
 And register the plugin; note that the position in the plugin_manager::pre_init() method
 matters, so you will have to place where it logically fits:
 
-    #ifdef WITH_MGMT_MY_PLUGIN
+	#ifdef WITH_MGMT_MY_PLUGIN
 	    //Register MY_PLUGIN
 	    register_plugin(new my_plugin());
-    #endif
+	#endif
 
 5) Add the following line at the end of src/xdpd/management/plugins/Makefile.am:
 
-    include my_plugin/Plugin.ma 
+	include my_plugin/Plugin.ma 
 
 6) Run autogen.sh again and you are ready to recompile. Your plugin can be compiled by configuring xdpd with:
 
-    ../configure --with-plugins="my_plugin [other plugins]" 
+	../configure --with-plugins="my_plugin [other plugins]" 
 
 Notes
 =====
 
 When creating new plugins it is sometimes useful to enable the verbose output by autotools. Run:
 
-    ../configure --with-plugins="..." --disable-silent-rules.
+	../configure --with-plugins="..." --disable-silent-rules.
 
 
 Take always example plugin as a reference.

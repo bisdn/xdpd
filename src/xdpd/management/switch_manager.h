@@ -185,6 +185,7 @@ private:
 	static const rofl::caddress controller_addr;
 	static const rofl::caddress binding_addr;
 
+	static pthread_mutex_t mutex;
 	static pthread_rwlock_t rwlock;
 
 };

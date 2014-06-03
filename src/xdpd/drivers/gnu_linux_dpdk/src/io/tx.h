@@ -38,13 +38,13 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct
 	//Dequeue a burst from the TX ring	
 	len = rte_ring_mc_dequeue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);      
 
-	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n",phy_port_mapping[port_id]->name,  port_id, queue_id, len);
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n",phy_port_mapping[port_id]->name,  port_id, queue_id, len);
 
 	//Send burst
 	ret = rte_eth_tx_burst(port_id, queue_id, burst, len);
 	//XXX port_statistics[port].tx += ret;
 	
-	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] +++ Transmited %u pkts, on queue_id %u\n", phy_port_mapping[port_id]->name, port_id, ret, queue_id);
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] +++ Transmited %u pkts, on queue_id %u\n", phy_port_mapping[port_id]->name, port_id, ret, queue_id);
 
 	if (unlikely(ret < len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -62,13 +62,13 @@ flush_port_queue_tx_burst(switch_port_t* port, unsigned int port_id, struct mbuf
 		return;
 	}
 
-	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] Trying to flush burst(enqueue in lcore ring) on port queue_id %u of length: %u\n", port->name,  port_id, queue_id, queue->len);
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] Trying to flush burst(enqueue in lcore ring) on port queue_id %u of length: %u\n", port->name,  port_id, queue_id, queue->len);
 		
 	//Enqueue to the lcore (if it'd we us, we could probably call to transmit directly)
 	ret = rte_ring_mp_enqueue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)queue->burst, queue->len);
 	//XXX port_statistics[port].tx += ret;
 	
-	ROFL_DEBUG(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
 
 	if (unlikely(ret < queue->len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -113,7 +113,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	}
 #endif
 
-	ROFL_DEBUG(DRIVER_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
 
 	//Enqueue
 	len = pkt_burst->len; 

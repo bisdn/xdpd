@@ -481,6 +481,10 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 		//notify port detached and deleted
 		hal_cmm_notify_port_delete(port_pair_snapshot);
 		
+		//Remove ioports
+		delete (ioport*)port->platform_port_state;
+		delete (ioport*)port_pair->platform_port_state;
+
 		//Remove from the pipeline and delete
 		if(physical_switch_remove_port(port->name) != ROFL_SUCCESS){
 			ROFL_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
@@ -496,9 +500,6 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 			
 		}
 
-		delete (ioport*)port->platform_port_state;
-		delete (ioport*)port_pair->platform_port_state;
-	
 		//notify port detached and deleted
 		hal_cmm_notify_port_delete(port_snapshot);
 	}

@@ -1339,7 +1339,7 @@ of12_endpoint::handle_queue_get_config_request(
 		throw rofl::eRofBase();
 
 
-	rofl::openflow::cofpacket_queue_list pql(ctl.get_version());
+	rofl::openflow::cofpacket_queues queues(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for(unsigned int n = 1; n < of12switch->max_ports; n++){
@@ -1358,23 +1358,17 @@ of12_endpoint::handle_queue_get_config_request(
 		for(unsigned int i=0; i<port->max_queues; i++){
 			if(!port->queues[i].set)
 				continue;
-
-			rofl::openflow::cofpacket_queue pq(ctl.get_version());
-			pq.set_queue_id(port->queues[i].id);
-			pq.set_port(port->of_port_num);
-			pq.get_queue_prop_list().next() = rofl::openflow::cofqueue_prop_min_rate(ctl.get_version(), port->queues[i].min_rate);
-			pq.get_queue_prop_list().next() = rofl::openflow::cofqueue_prop_max_rate(ctl.get_version(), port->queues[i].max_rate);
-			//fprintf(stderr, "min_rate: %d\n", port->queues[i].min_rate);
-			//fprintf(stderr, "max_rate: %d\n", port->queues[i].max_rate);
-
-			pql.next() = pq;
+			queues.set_pqueue(port->of_port_num, port->queues[i].id).set_queue_props().
+					add_queue_prop_min_rate().set_min_rate(port->queues[i].min_rate);
+			queues.set_pqueue(port->of_port_num, port->queues[i].id).set_queue_props().
+					add_queue_prop_max_rate().set_max_rate(port->queues[i].max_rate);
 		}
 	}
 
 	//Destroy the snapshot
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of12switch);
 		
-	ctl.send_queue_get_config_reply(auxid, pack.get_xid(), pack.get_port_no(), pql);
+	ctl.send_queue_get_config_reply(auxid, pack.get_xid(), pack.get_port_no(), queues);
 }
 
 

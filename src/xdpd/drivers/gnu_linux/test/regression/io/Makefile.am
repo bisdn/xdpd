@@ -29,6 +29,7 @@ SHARED_SRC=\
 	$(top_srcdir)/src/pipeline-imp/packet.cc 
 	
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/c_types_pktclassifier/c_types_pktclassifier.c \
+		$(top_srcdir)/src/io/packet_classifiers/c_types_pktclassifier/autogen_pkt_types.c \
 		$(top_srcdir)/src/io/packet_classifiers/packet_operations.cc
 	
 datapacketx86test_SOURCES= $(top_srcdir)/src/io/datapacketx86.cc\

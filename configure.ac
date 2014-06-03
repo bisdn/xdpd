@@ -80,7 +80,11 @@ AC_CONFIG_FILES([
 	src/xdpd/openflow/openflow10/Makefile
 	src/xdpd/openflow/openflow12/Makefile
 	src/xdpd/openflow/openflow13/Makefile
+	src/xdpd/openflow/pirl/Makefile
 	test/Makefile
+	test/xdpd/Makefile
+	test/xdpd/unit/Makefile
+	test/xdpd/unit/pirl/Makefile
 ])
 
 # Doxygen (here to be the last Makefile) 

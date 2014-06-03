@@ -501,14 +501,14 @@ void
 of13_translation_utils::of13_map_flow_entry_actions(
 		crofctl *ctl,
 		openflow_switch* sw, 
-		rofl::openflow::cofactions& actions,
+		const rofl::openflow::cofactions& actions,
 		of1x_action_group_t *apply_actions,
 		of1x_write_actions_t *write_actions)
 {
-	for (std::list<rofl::openflow::cofaction*>::iterator
+	for (std::list<rofl::openflow::cofaction*>::const_iterator
 			jt = actions.begin(); jt != actions.end(); ++jt)
 	{
-		rofl::openflow::cofaction& raction = *(*jt);
+		const rofl::openflow::cofaction& raction = *(*jt);
 
 		of1x_packet_action_t *action = NULL;
 		wrap_uint_t field;
@@ -1146,57 +1146,169 @@ of13_translation_utils::of13_map_reverse_flow_entry_instructions(
 	for (unsigned int i = 0; i < (sizeof(group->instructions) / sizeof(of1x_instruction_t)); i++) {
 		if (OF1X_IT_NO_INSTRUCTION == group->instructions[i].type)
 			continue;
-		rofl::openflow::cofinst instruction(rofl::openflow13::OFP_VERSION);
-		of13_map_reverse_flow_entry_instruction(&(group->instructions[i]), instruction);
-		instructions.add_inst(instruction);
+		switch (group->instructions[i].type) {
+		case OF1X_IT_APPLY_ACTIONS: {
+			of13_map_reverse_flow_entry_instruction_apply_actions(&(group->instructions[i]), instructions.add_inst_apply_actions());
+		} break;
+		case OF1X_IT_CLEAR_ACTIONS: {
+			of13_map_reverse_flow_entry_instruction_clear_actions(&(group->instructions[i]), instructions.add_inst_clear_actions());
+		} break;
+		case OF1X_IT_WRITE_ACTIONS: {
+			of13_map_reverse_flow_entry_instruction_write_actions(&(group->instructions[i]), instructions.add_inst_write_actions());
+		} break;
+		case OF1X_IT_WRITE_METADATA: {
+			of13_map_reverse_flow_entry_instruction_write_metadata(&(group->instructions[i]), instructions.add_inst_write_metadata());
+		} break;
+		case OF1X_IT_EXPERIMENTER: {
+			// TODO: both are marked TODO in of1x_pipeline
+			//of13_map_reverse_flow_entry_instruction_experimenter(&(group->instructions[i]), instructions.add_inst_experimenter());
+		} break;
+		case OF1X_IT_GOTO_TABLE: {
+			of13_map_reverse_flow_entry_instruction_goto_table(&(group->instructions[i]), instructions.add_inst_goto_table());
+		} break;
+		case OF1X_IT_METER: {
+			of13_map_reverse_flow_entry_instruction_meter(&(group->instructions[i]), instructions.add_inst_meter());
+		} break;
+		default: {
+			// do nothing
+		} break;
+		}
 	}
 }
 
 
+
 void
-of13_translation_utils::of13_map_reverse_flow_entry_instruction(
+of13_translation_utils::of13_map_reverse_flow_entry_instruction_goto_table(
 		of1x_instruction_t* inst,
-		rofl::openflow::cofinst& instruction)
+		rofl::openflow::cofinstruction_goto_table& instruction)
 {
 	switch (inst->type) {
-	case OF1X_IT_APPLY_ACTIONS: {
-		instruction = rofl::openflow::cofinst_apply_actions(rofl::openflow13::OFP_VERSION);
-		for (of1x_packet_action_t *of1x_action = inst->apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
-			if (OF1X_AT_NO_ACTION == of1x_action->type)
-				continue;
-			rofl::openflow::cofaction action(rofl::openflow13::OFP_VERSION);
-			of13_map_reverse_flow_entry_action(of1x_action, action);
-			instruction.get_actions().append_action(action);
-		}
-	} break;
-	case OF1X_IT_CLEAR_ACTIONS: {
-		instruction = rofl::openflow::cofinst_clear_actions(rofl::openflow13::OFP_VERSION);
-	} break;
-	case OF1X_IT_WRITE_ACTIONS: {
-		instruction = rofl::openflow::cofinst_write_actions(rofl::openflow13::OFP_VERSION);
-		for (unsigned int i = 0; i < inst->write_actions->num_of_actions; i++) {
-			if (OF1X_AT_NO_ACTION == inst->write_actions->actions[i].type)
-				continue;
-			rofl::openflow::cofaction action(rofl::openflow13::OFP_VERSION);
-			of13_map_reverse_flow_entry_action(&(inst->write_actions->actions[i]), action);
-			instruction.get_actions().append_action(action);
-		}
-	} break;
-	case OF1X_IT_WRITE_METADATA:
-	case OF1X_IT_EXPERIMENTER: {
-		// TODO: both are marked TODO in of1x_pipeline
-	} break;
 	case OF1X_IT_GOTO_TABLE: {
-		instruction = rofl::openflow::cofinst_goto_table(rofl::openflow13::OFP_VERSION, inst->go_to_table);
-	} break;
-	case OF1X_IT_METER: {
-		instruction = rofl::openflow::cofinst_meter(rofl::openflow13::OFP_VERSION); //TODO: meter-id
+		instruction = rofl::openflow::cofinstruction_goto_table(rofl::openflow13::OFP_VERSION, inst->go_to_table);
 	} break;
 	default: {
 		// do nothing
 	} break;
 	}
 }
+
+
+
+void
+of13_translation_utils::of13_map_reverse_flow_entry_instruction_write_metadata(
+		of1x_instruction_t* inst,
+		rofl::openflow::cofinstruction_write_metadata& instruction)
+{
+	switch (inst->type) {
+	case OF1X_IT_WRITE_METADATA: {
+		// TODO: both are marked TODO in of1x_pipeline
+	} break;
+	default: {
+		// do nothing
+	} break;
+	}
+}
+
+
+
+void
+of13_translation_utils::of13_map_reverse_flow_entry_instruction_write_actions(
+		of1x_instruction_t* inst,
+		rofl::openflow::cofinstruction_write_actions& instruction)
+{
+	switch (inst->type) {
+	case OF1X_IT_WRITE_ACTIONS: {
+		instruction = rofl::openflow::cofinstruction_write_actions(rofl::openflow13::OFP_VERSION);
+		for (unsigned int i = 0; i < inst->write_actions->num_of_actions; i++) {
+			if (OF1X_AT_NO_ACTION == inst->write_actions->actions[i].type)
+				continue;
+			rofl::openflow::cofaction action(rofl::openflow13::OFP_VERSION);
+			of13_map_reverse_flow_entry_action(&(inst->write_actions->actions[i]), action);
+			instruction.set_actions().append_action(action);
+		}
+	} break;
+	default: {
+		// do nothing
+	} break;
+	}
+}
+
+
+
+void
+of13_translation_utils::of13_map_reverse_flow_entry_instruction_apply_actions(
+		of1x_instruction_t* inst,
+		rofl::openflow::cofinstruction_apply_actions& instruction)
+{
+	switch (inst->type) {
+	case OF1X_IT_APPLY_ACTIONS: {
+		instruction = rofl::openflow::cofinstruction_apply_actions(rofl::openflow13::OFP_VERSION);
+		for (of1x_packet_action_t *of1x_action = inst->apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
+			if (OF1X_AT_NO_ACTION == of1x_action->type)
+				continue;
+			rofl::openflow::cofaction action(rofl::openflow13::OFP_VERSION);
+			of13_map_reverse_flow_entry_action(of1x_action, action);
+			instruction.set_actions().append_action(action);
+		}
+	} break;
+	default: {
+		// do nothing
+	} break;
+	}
+}
+
+
+
+void
+of13_translation_utils::of13_map_reverse_flow_entry_instruction_clear_actions(
+		of1x_instruction_t* inst,
+		rofl::openflow::cofinstruction_clear_actions& instruction)
+{
+	switch (inst->type) {
+	case OF1X_IT_CLEAR_ACTIONS: {
+		instruction = rofl::openflow::cofinstruction_clear_actions(rofl::openflow13::OFP_VERSION);
+	} break;
+	default: {
+		// do nothing
+	} break;
+	}
+}
+
+
+
+void
+of13_translation_utils::of13_map_reverse_flow_entry_instruction_meter(
+		of1x_instruction_t* inst,
+		rofl::openflow::cofinstruction_meter& instruction)
+{
+	switch (inst->type) {
+	case OF1X_IT_METER: {
+		instruction = rofl::openflow::cofinstruction_meter(rofl::openflow13::OFP_VERSION, /*meter-id=*/0); //TODO: inst->meter-id
+	} break;
+	default: {
+		// do nothing
+	} break;
+	}
+}
+
+
+
+void
+of13_translation_utils::of13_map_reverse_flow_entry_instruction_experimenter(
+		of1x_instruction_t* inst,
+		rofl::openflow::cofinstruction_experimenter& instruction)
+{
+	switch (inst->type) {
+	case OF1X_IT_EXPERIMENTER: {
+		// TODO: both are marked TODO in of1x_pipeline
+	} break;
+	default: {
+		// do nothing
+	} break;
+	}
+}
+
 
 
 void

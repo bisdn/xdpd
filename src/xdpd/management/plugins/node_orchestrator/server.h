@@ -45,11 +45,26 @@ private:
 				"port" : "6653"
 			},
 		"ports" : ["ge0","ge1"],
-		"network-functions" : ["firewall"],
+		"network-functions" : [
+			 {
+		        "name" : "VPN",
+		        "ports" : [
+		            "VPN_1"
+		        ]
+		    },
+		    {
+		        "name" : "firewall",
+		        "ports" : [
+		            "firewall_1",
+		            "firewall_2",
+		            "firewall_3"
+		        ]
+		    }	
+		],
 		"virtual-links" : 
 			{
 				"number" : "2",
-				"remote-lsi" : "0x100"
+				"remote-lsi" : "1"
 			}
 	}
 *
@@ -71,9 +86,31 @@ private:
 		],
 		"network-functions" : [
 			{
-				"name" : "firewall", 
-				"id" : "0x3"
-			}
+		        "name" : "VPN",
+		        "ports" : [
+		            {
+		                "id" : 1,
+		                "name" : "VPN_1"
+		            }
+			    ]
+		    },
+		    {
+		        "name" : "firewall",
+		        "ports" : [
+		            {
+		                "id" : 2,
+		                "name" : "firewall_1"
+		            },
+		            {
+		                "id" : 3,
+		                "name" : "firewall_2"
+		            },
+		            {
+		                "id" : 4,
+		                "name" : "firewall_3"
+		            }
+		        ]
+		    }
 		],
 		"virtual-links" : [
 			{
@@ -89,6 +126,22 @@ private:
 */
 	static string createLSI(string message);
 	static string createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links);
+
+/**
+*	Example of command to create a new LSI
+*
+	{
+		"command" : "create-lsi",
+		"lsi-id" : "0x200"
+	}
+*
+*	Example of answer
+*
+	{
+		"command" : "destroy-lsi",
+		"status" : "ok"
+*/
+	static string destroyLSI(string message);
 
 /**
 *	Example of command to discover the physical ports of xDPD

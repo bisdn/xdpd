@@ -17,6 +17,7 @@
 #include <list>
 #include <map>
 #include <pthread.h>
+#include <semaphore.h>
 
 #include "server.h"
 
@@ -56,6 +57,7 @@ protected:
 	*	Methods implementing commands from the orchestrator
 	*/
 	static LSI createLSI(list<string> phyPorts, string controllerAddress, string controllerPort);
+	static void destroyLSI(uint64_t dpid);
 	static list<string> discoverPhyPorts();
 	static pair<unsigned int, unsigned int> createVirtualLink(uint64_t dpid_a,uint64_t dpid_b);
 	static unsigned int createNfPort(uint64_t dpid, string NfName, string NfPortName, PexType type);
@@ -66,6 +68,22 @@ private:
 	//FIXME: tmp because the xDPD api does not export the ID of vlinks
 	//for each LSI, contains the last ID used as port identifier
 	static map<uint64_t, unsigned int> last_ports_id;
+	
+	/**
+	*	@brief: create a new thread and start the infinite loop of the control part of the LSI
+	*/
+	static void *run(void*);
+	
+typedef struct
+{
+	string controllerAddress;
+	string controllerPort;
+	uint64_t dpid;
+	
+	sem_t lsi_created;
+	sem_t ports_attached;
+}lsi_parameters_t;
+	
 };
 
 }// namespace xdpd 

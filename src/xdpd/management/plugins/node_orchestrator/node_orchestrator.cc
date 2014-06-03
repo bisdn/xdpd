@@ -7,7 +7,8 @@ using namespace xdpd;
 uint64_t NodeOrchestrator::nextDpid = 0x1;
 map<uint64_t, unsigned int> NodeOrchestrator::last_ports_id;
 
-void NodeOrchestrator::init(){
+void NodeOrchestrator::init()
+{
 	//DO something
 	ROFL_INFO("\n\n[xdpd]["PLUGIN_NAME"] **************************\n");	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Plugin receiving commands from the node orchestrator.\n");
@@ -16,52 +17,27 @@ void NodeOrchestrator::init(){
 	pthread_t thread[1];
 	pthread_create(&thread[0],NULL,Server::listen,NULL);
 	pthread_detach(thread[0]);
-	
-	
-	//list<string> phyPorts = discoverPhyPorts();
-	
-//	list<string> ports1;
-//	ports1.push_back("ge0");
-//	LSI lsi1 = createLSI(ports1,string("127.0.0.1"),string("6653"));
-	
-	/*list<string> ports2;
-	ports2.push_back("ge1");
-	LSI lsi2 = createLSI(ports2,string("127.0.0.1"),string("6653"));
-	
-	createVirtualLink(lsi1.getDpid(),lsi2.getDpid());
-	
-	uint32_t nfPortNumber = createNfPort(lsi1.getDpid(), "firewall",DPDK);
-	
-	cout << nfPortNumber << endl;
-	*/
 };
 
 LSI NodeOrchestrator::createLSI(list<string> phyPorts, string controllerAddress, string controllerPort)
 {
 	map<string,unsigned int> ports;
 
-	uint64_t dpid = nextDpid;
-	
+	uint64_t dpid = nextDpid;	
 	nextDpid++;
-	
-	rofl::cparams socket_params = rofl::csocket::get_default_params(rofl::csocket::SOCKET_TYPE_PLAIN);
-	socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) =  controllerAddress;
-	socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = controllerPort; 
-	socket_params.set_param(rofl::csocket::PARAM_KEY_DOMAIN) = string("inet"); 
 
-	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
+	lsi_parameters_t lsi_parameters;
+	lsi_parameters.controllerAddress = controllerAddress;
+	lsi_parameters.controllerPort = controllerPort;
+	lsi_parameters.dpid = dpid;
+	sem_init(&lsi_parameters.lsi_created, 0, 0);
+	sem_init(&lsi_parameters.ports_attached, 0, 0);
 
-	stringstream lsiName_ss;
-	lsiName_ss << dpid;
-	string lsiName = lsiName_ss.str();
+	pthread_t thread[1];
+	pthread_create(&thread[0],NULL,NodeOrchestrator::run,&lsi_parameters);
+	pthread_detach(thread[0]);
 
-	try
-	{
-		switch_manager::create_switch(OFVERSION, dpid,lsiName,NUM_TABLES,ma_list,RECONNECT_TIME,rofl::csocket::SOCKET_TYPE_PLAIN,socket_params);
-	} catch (...) {
-		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create LSI\n");
-		throw;
-	}	
+	sem_wait(&lsi_parameters.lsi_created);
 
 	//Attach ports
 	list<string>::iterator port_it;
@@ -87,9 +63,48 @@ LSI NodeOrchestrator::createLSI(list<string> phyPorts, string controllerAddress,
 		}
 		ports[*port_it] = i;
 	}
+	
+	sem_post(&lsi_parameters.ports_attached);
+
+	sem_destroy(&lsi_parameters.lsi_created);
 
 	return LSI(dpid,ports);
 }
+
+void *NodeOrchestrator::run(void *parameters)
+{
+	lsi_parameters_t *lsi_parameters = (lsi_parameters_t*)parameters;
+
+	stringstream lsiName_ss;
+	lsiName_ss << lsi_parameters->dpid;
+	string lsiName = lsiName_ss.str();
+
+	rofl::cparams socket_params = rofl::csocket::get_default_params(rofl::csocket::SOCKET_TYPE_PLAIN);
+	socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) = lsi_parameters->controllerAddress;
+	socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = lsi_parameters->controllerPort; 
+	socket_params.set_param(rofl::csocket::PARAM_KEY_DOMAIN) = string("inet"); 
+		int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
+	try
+	{
+		switch_manager::create_switch(OFVERSION, lsi_parameters->dpid,lsiName,NUM_TABLES,ma_list,RECONNECT_TIME,rofl::csocket::SOCKET_TYPE_PLAIN,socket_params);
+	} catch (...) {
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create the LSI\n");
+		throw;
+	}	
+	
+	sem_post(&lsi_parameters->lsi_created);
+	sem_wait(&lsi_parameters->ports_attached);
+
+	sem_destroy(&lsi_parameters->ports_attached);
+
+	rofl::cioloop::run();
+	
+	rofl::cioloop::shutdown();
+	
+	pthread_exit(NULL);
+
+	return NULL;
+}	
 
 list<string> NodeOrchestrator::discoverPhyPorts()
 {
@@ -146,5 +161,14 @@ unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string
 	return port_number;
 }
 
-
+void NodeOrchestrator::destroyLSI(uint64_t dpid)
+{
+	try
+	{
+		switch_manager::destroy_switch(dpid);
+	} catch (...) {
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to destroy LSI\n");
+		throw;
+	}	
+}
 

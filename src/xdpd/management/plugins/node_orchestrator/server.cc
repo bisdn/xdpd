@@ -64,7 +64,6 @@ void *Server::listen(void *param)
 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Data received (%d bytes):\n",ReadBytes);
 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] %s\n",DataBuffer);
 
-		//FIXME: the message could contain a different command
 		string message = processCommand(string(DataBuffer));
 		const char *answer = message.c_str();
 		
@@ -76,7 +75,8 @@ void *Server::listen(void *param)
 
 		}
 
-		sock_close(ChildSocket,ErrBuf,sizeof(ErrBuf));
+		shutdown(ChildSocket,SHUT_RD);
+//		sock_close(ChildSocket,ErrBuf,sizeof(ErrBuf));
 	}
 
 	return NULL;
@@ -98,6 +98,8 @@ string Server::processCommand(string message)
         	string command = value.getString();
 			if(command == CREATE_LSI)
 				return createLSI(message);
+			if(command == DESTROY_LSI)
+				return destroyLSI(message);
 			if(command == DISCOVER_PHY_PORTS)
 				return discoverPhyPorts(message);
 			
@@ -340,7 +342,58 @@ string Server::createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPort
  	write_formatted(json, ss );
  	
  	return ss.str();
+}
 
+string Server::destroyLSI(string message)
+{	
+	bool foundLsiID = false;
+	uint64_t lsiID = 0;
+		
+	Value value;
+    read( message, value );
+	Object obj = value.getObject();
+		
+	for( Object::const_iterator i = obj.begin(); i != obj.end(); ++i )
+    {
+        const string& name  = i->first;
+        const Value&  value = i->second;
+
+        if( name == "command" )
+        {
+			continue;
+        }
+        else if( name == "lsi-id")
+        {
+        	foundLsiID = true;
+			lsiID = value.getInt(); //FIXME: it isn't an int!
+        }
+    }
+    
+    if(!foundLsiID)
+    {
+    	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"destroy-lsi\" without field \"lsi-id\"");
+    	return createErrorMessage(string(DESTROY_LSI), string("Command without lsi-id"));
+    }
+ 
+ 	LSI lsi;
+ 	try
+	{   
+		NodeOrchestrator::destroyLSI(lsiID);
+	} catch (...)
+	{
+		return createErrorMessage(string(CREATE_LSI),string("error during the destruction of the LSI"));
+	}
+	 	 
+	//Create the answer
+	Object json;
+	
+	json["command"] = DESTROY_LSI;
+	json["status"] = "ok";	
+
+	stringstream ss;
+ 	write_formatted(json, ss );
+ 	
+ 	return ss.str();
 }
 
 string Server::discoverPhyPorts(string message)

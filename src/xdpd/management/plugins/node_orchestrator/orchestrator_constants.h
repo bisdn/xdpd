@@ -20,6 +20,7 @@
 *	node orchestrator
 */
 #define CREATE_LSI			"create-lsi"
+#define DESTROY_LSI			"destroy-lsi"
 #define DISCOVER_PHY_PORTS	"discover-physical-ports"
 #define ERROR				"ERROR"
 

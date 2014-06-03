@@ -6,10 +6,10 @@ ROFL_PKG_NAME="rofl"
 ROFL_DBG_PKG_NAME="rofl-dbg"
 VERSION=""
 RELEASE=""
-REQUIRES+=""
-LICENSE="MPL"
+DEFAULT_REQUIRES=" libconfig++9"
+LICENSE="Mozilla Public License, Version 2.0"
 GROUP="net"
-MAINTAINER="dev@xdpd.org"
+MAINTAINER="xdpd-devel@xdpd.org"
 DESCRIPTION="eXtensible DataPath daemon(xDPd) - an OpenFlow switch"
 IS_DEBUG=""
 
@@ -18,6 +18,12 @@ check_root(){
 	   echo "This script must be run as root" 1>&2
 	   exit 1
 	fi
+}
+
+assign_default_requires(){
+	if [ -z "${REQUIRES}" ]; then
+		REQUIRES=$DEFAULT_REQUIRES 
+	fi	
 }
 
 dump_result(){
@@ -64,6 +70,7 @@ generate_pkg(){
 
 #Detect stuff
 check_root
+assign_default_requires
 is_debug
 get_version
 get_release

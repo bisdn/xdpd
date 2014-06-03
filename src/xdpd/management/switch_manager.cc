@@ -20,7 +20,8 @@ const caddress switch_manager::binding_addr = caddress(AF_INET, "0.0.0.0", 6632)
 //Static initialization
 std::map<uint64_t, openflow_switch*> switch_manager::switchs;
 uint64_t switch_manager::dpid_under_destruction = 0x0;
-pthread_rwlock_t switch_manager::rwlock = PTHREAD_RWLOCK_INITIALIZER; 
+pthread_rwlock_t switch_manager::rwlock = PTHREAD_RWLOCK_INITIALIZER; //Used to prevent deletion of a switch during notification treatment (e.g. port_status_changed)
+pthread_mutex_t switch_manager::mutex = PTHREAD_MUTEX_INITIALIZER; //Used to serialize management actions 
 
 /**
 * Static methods of the manager
@@ -37,18 +38,18 @@ openflow_switch* switch_manager::create_switch(
 
 	openflow_switch* dp;
 
-	pthread_rwlock_wrlock(&switch_manager::rwlock);
-
+	pthread_mutex_lock(&switch_manager::mutex);
+	
 	//
 	if(switch_manager::switchs.find(dpid) != switch_manager::switchs.end()){
-		pthread_rwlock_unlock(&switch_manager::rwlock);
+		pthread_mutex_unlock(&switch_manager::mutex);
 		throw eOfSmExists();
 	}
 
 	//Check if ROFL supports SSL or any other socket type, so that we can send a nice exception
 	if(!rofl::csocket::supports_socket_type(socket_type)){
 		ROFL_ERR("[xdpd][switch_manager] ERROR Unsupported socket type by ROFL, specified in the first connection of switch with dpid: 0x%llx. Perhaps compiled ROFL without SSL support?\n", (long long unsigned int)dpid); 
-		pthread_rwlock_unlock(&switch_manager::rwlock);
+		pthread_mutex_unlock(&switch_manager::mutex);
 		throw eOfSmUnknownSocketType();
 	}
 
@@ -67,7 +68,7 @@ openflow_switch* switch_manager::create_switch(
 		case OF_VERSION_13:
 #if ! defined(EXPERIMENTAL)
 			ROFL_ERR("[xdpd][switch_manager] ERROR: OF1.3 is experimental (i.e. alpha state). Compile xdpd enabling experimental code to test this feature. Don't forget to make clean\n"); 
-			pthread_rwlock_unlock(&switch_manager::rwlock);
+			pthread_mutex_unlock(&switch_manager::mutex);
 			throw eOfSmExperimentalNotSupported(); 
 #endif
 			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
@@ -77,7 +78,7 @@ openflow_switch* switch_manager::create_switch(
 		//Add more here...
 		
 		default:
-			pthread_rwlock_unlock(&switch_manager::rwlock);
+			pthread_mutex_unlock(&switch_manager::mutex);
 			throw eOfSmVersionNotSupported();
 
 	}	
@@ -85,7 +86,7 @@ openflow_switch* switch_manager::create_switch(
 	//Store in the switch list
 	switch_manager::switchs[dpid] = dp;
 	
-	pthread_rwlock_unlock(&switch_manager::rwlock);
+	pthread_mutex_unlock(&switch_manager::mutex);
 	
 	ROFL_INFO("[xdpd][switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
 
@@ -103,10 +104,10 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	switch_port_snapshot_t* port;
 	std::string port_name;
 
-	pthread_rwlock_wrlock(&switch_manager::rwlock);
+	pthread_mutex_lock(&switch_manager::mutex);
 	
 	if (switch_manager::switchs.find(dpid) == switch_manager::switchs.end()){
-		pthread_rwlock_unlock(&switch_manager::rwlock);
+		pthread_mutex_unlock(&switch_manager::mutex);
 		throw eOfSmDoesNotExist();
 	}
 
@@ -114,7 +115,7 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	sw_snapshot = hal_driver_get_switch_snapshot_by_dpid(dpid);
 	
 	if(!sw_snapshot){
-		pthread_rwlock_unlock(&switch_manager::rwlock);
+		pthread_mutex_unlock(&switch_manager::mutex);
 		assert(0);
 		ROFL_ERR("[xdpd][switch_manager] Unknown ERROR: unable to create snapshot for dpid 0x%llx. Switch deletion aborted...\n", (long long unsigned)dpid);
 		throw eOfSmGeneralError(); 
@@ -133,7 +134,7 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 			//Detach port
 			port_manager::detach_port_from_switch(dpid, port_name);
 		}catch(...){
-			pthread_rwlock_unlock(&switch_manager::rwlock);
+			pthread_mutex_unlock(&switch_manager::mutex);
 			ROFL_ERR("[xdpd][switch_manager] ERROR: unable to detach port %s from dpid 0x%llx. Switch deletion aborted...\n", port->name, (long long unsigned)dpid);
 			assert(0);
 
@@ -141,6 +142,8 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 			throw;
 		}
 	}
+	
+	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
 	//Get switch instance 
 	openflow_switch* dp = switch_manager::switchs[dpid];
@@ -154,6 +157,7 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 	dpid_under_destruction = 0x0;
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
+	pthread_mutex_unlock(&switch_manager::mutex);
 
 	//Destroy snapshot
 	of_switch_destroy_snapshot(sw_snapshot);		
@@ -162,22 +166,13 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 //static
 void switch_manager::destroy_all_switches(){
 
-	pthread_rwlock_wrlock(&switch_manager::rwlock);
-	
-	for(std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(); it != switchs.end(); ++it) {
-		//Set the dpid under destruction
-		dpid_under_destruction = it->second->dpid;
-
-		//Delete	
-		delete it->second; 
-		
-		dpid_under_destruction = 0x0;
+	std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(), tmp;
+	while( it != switchs.end() ){
+		tmp = it;	
+		it++;
+		destroy_switch(tmp->second->dpid);
 	}
-	
 	switchs.clear();
-	
-	pthread_rwlock_unlock(&switch_manager::rwlock);
-	
 }
 
 /**

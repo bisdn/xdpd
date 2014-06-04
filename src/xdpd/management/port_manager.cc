@@ -34,22 +34,13 @@ std::list<std::string> port_manager::list_available_port_names(){
 	return port_name_list; 
 }
 
+switch_port_snapshot_t const* port_manager::get_port_info(std::string& name){
+	return (switch_port_snapshot_t const*) hal_driver_get_port_snapshot_by_name(name.c_str());
+}
+
 //
 //Port operations
 //
-bool port_manager::get_admin_state(std::string& name){
-
-	bool state;
-
-	//Get snapshot
-	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(name.c_str());
-	state = port_snapshot->up;	
-	//Destroy
-	switch_port_destroy_snapshot(port_snapshot);	
-
-	return state;
-}
-
 void port_manager::bring_up(std::string& name){
 
 	hal_result_t result;

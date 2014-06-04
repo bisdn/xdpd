@@ -264,6 +264,9 @@ uint64_t switch_manager::get_switch_dpid(std::string& name){
 }
 
 
+of_switch_snapshot_t const* switch_manager::get_switch_info(uint64_t dpid){
+	return (of_switch_snapshot_t const*) hal_driver_get_switch_snapshot_by_dpid(dpid); 
+}
 
 
 void

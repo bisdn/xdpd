@@ -303,6 +303,15 @@ private:
 	virtual void
 	handle_experimenter_message(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_experimenter& msg);
 
+	/** Handle OF meter-mod message. To be overwritten by derived class.
+	 *
+	 * Called upon reception of a meter-mod.message from the controlling entity.
+	 *
+	 * @param pack VENDOR.message packet received from controller.
+	 */
+	virtual void
+	handle_meter_mod(rofl::crofctl& ctl, const cauxid& auxid, rofl::openflow::cofmsg_meter_mod& msg);
+
 	/** Handle new ctrl
 	 *
 	 * Called upon creation of a new cofctrl instance.

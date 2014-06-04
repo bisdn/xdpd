@@ -65,9 +65,10 @@ public:
 	//
 	
 	/**
-	* Get meta-state up/down
+	* Get port information (snapshot)
+	* @returns Port snapshot or NULL. The snapshot MUST be deleted using switch_port_destroy_snapshot().
 	*/
-	static bool get_admin_state(std::string& name);
+	static switch_port_snapshot_t const* get_port_info(std::string& name);
 	
 	//TODO: Add more fine-grained "up/down states" here...
 	

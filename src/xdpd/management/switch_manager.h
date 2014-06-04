@@ -133,6 +133,13 @@ public:
 	static uint64_t get_switch_dpid(std::string& name);
 
 	/**
+	* Get switch information (snapshot)
+	* @returns Switch snapshot or NULL. The snapshot MUST be deleted using of_switch_destroy_snapshot() 
+	*/
+	static of_switch_snapshot_t const* get_switch_info(uint64_t dpid);
+	
+
+	/**
 	 * List available matching algorithms
 	 */
 	static std::list<std::string> list_matching_algorithms(of_version_t of_version);

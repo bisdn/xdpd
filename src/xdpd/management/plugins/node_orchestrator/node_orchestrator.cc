@@ -7,6 +7,13 @@ using namespace xdpd;
 uint64_t NodeOrchestrator::nextDpid = 0x1;
 map<uint64_t, unsigned int> NodeOrchestrator::last_ports_id;
 
+map<uint64_t, pthread_t> NodeOrchestrator::threads;
+
+void NodeOrchestrator::sigurs_handler(int signum)
+{
+	ciosrv::stop();
+}
+
 void NodeOrchestrator::init()
 {
 	//DO something
@@ -14,9 +21,11 @@ void NodeOrchestrator::init()
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Plugin receiving commands from the node orchestrator.\n");
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] **************************\n\n");	
 	
-	pthread_t thread[1];
-	pthread_create(&thread[0],NULL,Server::listen,NULL);
-	pthread_detach(thread[0]);
+	signal(SIGUSR1,NodeOrchestrator::sigurs_handler);
+	
+	pthread_t thread;
+	pthread_create(&thread,NULL,Server::listen,NULL);
+	pthread_detach(thread);
 };
 
 LSI NodeOrchestrator::createLSI(list<string> phyPorts, string controllerAddress, string controllerPort)
@@ -33,9 +42,12 @@ LSI NodeOrchestrator::createLSI(list<string> phyPorts, string controllerAddress,
 	sem_init(&lsi_parameters.lsi_created, 0, 0);
 	sem_init(&lsi_parameters.ports_attached, 0, 0);
 
-	pthread_t thread[1];
-	pthread_create(&thread[0],NULL,NodeOrchestrator::run,&lsi_parameters);
-	pthread_detach(thread[0]);
+	pthread_t thread;
+	pthread_create(&thread,NULL,NodeOrchestrator::run,&lsi_parameters);
+	pthread_detach(thread);
+	
+	threads[dpid] = thread;
+	assert(thread == threads[dpid]);
 
 	sem_wait(&lsi_parameters.lsi_created);
 
@@ -75,8 +87,10 @@ void *NodeOrchestrator::run(void *parameters)
 {
 	lsi_parameters_t *lsi_parameters = (lsi_parameters_t*)parameters;
 
+	uint64_t dpid = lsi_parameters->dpid;
+	
 	stringstream lsiName_ss;
-	lsiName_ss << lsi_parameters->dpid;
+	lsiName_ss << dpid;
 	string lsiName = lsiName_ss.str();
 
 	rofl::cparams socket_params = rofl::csocket::get_default_params(rofl::csocket::SOCKET_TYPE_PLAIN);
@@ -86,7 +100,7 @@ void *NodeOrchestrator::run(void *parameters)
 		int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
 	try
 	{
-		switch_manager::create_switch(OFVERSION, lsi_parameters->dpid,lsiName,NUM_TABLES,ma_list,RECONNECT_TIME,rofl::csocket::SOCKET_TYPE_PLAIN,socket_params);
+		switch_manager::create_switch(OFVERSION, dpid,lsiName,NUM_TABLES,ma_list,RECONNECT_TIME,rofl::csocket::SOCKET_TYPE_PLAIN,socket_params);
 	} catch (...) {
 		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create the LSI\n");
 		throw;
@@ -97,9 +111,16 @@ void *NodeOrchestrator::run(void *parameters)
 
 	sem_destroy(&lsi_parameters->ports_attached);
 
-	rofl::cioloop::run();
-	
-	rofl::cioloop::shutdown();
+//	rofl::cioloop::run();
+	ciosrv::run();
+
+	try
+	{
+		switch_manager::destroy_switch(dpid);
+	} catch (...) {
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to destroy LSI\n");
+		throw;
+	}	
 	
 	pthread_exit(NULL);
 
@@ -163,12 +184,11 @@ unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string
 
 void NodeOrchestrator::destroyLSI(uint64_t dpid)
 {
-	try
-	{
-		switch_manager::destroy_switch(dpid);
-	} catch (...) {
-		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to destroy LSI\n");
-		throw;
-	}	
+	assert(threads.count(dpid) != 0);
+
+	pthread_kill(threads[dpid],SIGUSR1);
+
+	threads.erase(threads.find(dpid));
+
 }
 

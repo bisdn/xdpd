@@ -68,11 +68,19 @@ private:
 	//FIXME: tmp because the xDPD api does not export the ID of vlinks
 	//for each LSI, contains the last ID used as port identifier
 	static map<uint64_t, unsigned int> last_ports_id;
-	
+		
+	/**
+	*	@brief: for each LSI started, the map associates the dpid with
+	*		the tread that is running the (openflow?) loop on that LSI
+	*/
+	static map<uint64_t, pthread_t> threads;	
+		
 	/**
 	*	@brief: create a new thread and start the infinite loop of the control part of the LSI
 	*/
 	static void *run(void*);
+
+	static void sigurs_handler(int signum);
 	
 typedef struct
 {

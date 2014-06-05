@@ -6,6 +6,7 @@
 #define PORT_MANAGER_H 
 
 #include <list>
+#include <map>
 #include <string>
 #include <stdbool.h>
 #include <pthread.h>
@@ -25,7 +26,7 @@
 
 namespace xdpd {
 
-class ePmBase			: public rofl::RoflException {};	// base error class for all switch_manager related errors
+class ePmBase			: public rofl::RoflException {};	// base error class for all port_manager related errors
 class ePmInvalidPort		: public ePmBase {};
 class ePmUnknownError		: public ePmBase {};
 class ePmPortNotAttachedError	: public ePmBase {};
@@ -53,6 +54,17 @@ public:
 	 * @brief Retrieves the port named port_name
 	 */
 	static bool port_exists(std::string& port_name);
+
+ 	/**
+	 * @brief Is a vlink port 
+	 */
+	static bool is_vlink(std::string& port_name);
+
+ 	/**
+	 * @brief Get the vlink port name pair 
+	 */
+	static std::string get_vlink_pair(std::string& port_name);
+
 
 	/**
 	* @brief List the names of the system ports (regardless of the nature) available. 
@@ -140,15 +152,49 @@ public:
 	* Log a port deletion in the system event
 	*/
 	static inline void __notify_port_deleted(const switch_port_snapshot_t* port_snapshot){
+	
+		std::string port_name(port_snapshot->name);
+
+		//Notify
 		if(port_snapshot->is_attached_to_sw)
 			ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] detached and removed from the system\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name);
 		else
 			ROFL_INFO("[xdpd][port_manager][%s] removed from the system;\n", port_snapshot->name);
+
+		if(is_vlink(port_name)){
+			//Remove port and pair from the cache
+			pthread_rwlock_wrlock(&port_manager::rwlock);
+			port_manager::vlinks.erase(port_name);
+			pthread_rwlock_unlock(&port_manager::rwlock);
+		}
 	};
 	
 private:
-	static pthread_mutex_t mutex;	
+
+	//Add port and pair from the cache
+	static void add_vlink(std::string& port1, std::string& port2){
+
+		pthread_rwlock_wrlock(&port_manager::rwlock);
+
+		if ( port_manager::vlinks.find(port1) != port_manager::vlinks.end() || port_manager::vlinks.find(port2) != port_manager::vlinks.end()){
+			ROFL_INFO("[xdpd][port_manager] Corrupted vlink cache state; vlink %s or %s \n", port1.c_str(), port2.c_str());
+			assert(0);
+			pthread_rwlock_unlock(&port_manager::rwlock);
+			throw ePmUnknownError();
+		}
 	
+		//Add them
+		port_manager::vlinks[port1] = port2;		
+		port_manager::vlinks[port2] = port1;		
+	
+		pthread_rwlock_unlock(&port_manager::rwlock);
+	};
+
+	//Virtual link cache
+	static std::map<std::string, std::string> vlinks;
+
+	static pthread_mutex_t mutex;	
+	static pthread_rwlock_t rwlock;
 };
 
 }// namespace xdpd 

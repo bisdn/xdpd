@@ -536,7 +536,19 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 			goto DRIVER_DETACH_ERROR;
 			
 		}
-	}else{
+	}
+	else if (port->type == PORT_TYPE_PEX)
+        {
+                /*
+                *       Port connected to a PEX
+                */
+                if(processing_deschedule_pex_port(port) != ROFL_SUCCESS)
+                {
+                        assert(0);
+                        return HAL_FAILURE;
+                }
+        }
+	else{
 		/*
 		*  PHYSICAL
 		*/

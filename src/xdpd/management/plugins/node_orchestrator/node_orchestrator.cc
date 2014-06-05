@@ -192,6 +192,7 @@ unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string
 
 void NodeOrchestrator::destroyLSI(uint64_t dpid)
 {	
+	ROFL_ERR("[xdpd]["PLUGIN_NAME"] Trying to destroy the LSI: %d\n",dpid);
 	try
 	{
 		switch_manager::destroy_switch(dpid);
@@ -199,5 +200,6 @@ void NodeOrchestrator::destroyLSI(uint64_t dpid)
 		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to destroy LSI\n");
 		throw;
 	}	
+	ROFL_ERR("[xdpd]["PLUGIN_NAME"] LSI %d destroyed\n",dpid);
 }
 

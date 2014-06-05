@@ -17,8 +17,6 @@
 
 #include <list>
 #include <map>
-//#include <pthread.h>
-//#include <semaphore.h>
 
 using namespace std;
 
@@ -44,7 +42,6 @@ class NodeOrchestrator :
 	public rofl::ciosrv,
 	public rofl::csocket_owner
 {
-
 	rofl::csocket*			socket;			// listening socket
 	rofl::cparams			socket_params;
 	
@@ -84,32 +81,16 @@ protected:
 	virtual void handle_listen(rofl::csocket& socket, int newsd);
 
 	virtual void handle_accepted(rofl::csocket& socket);
-
-	virtual void handle_accept_refused(rofl::csocket& socket) {
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"]accepted refused!\n");
-	};
 	
-	virtual void handle_connected(rofl::csocket& socket) {
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"]connected!\n");
-	};
-
-	virtual void handle_connect_refused(rofl::csocket& socket)
-	{
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"]connect refused!\n");
-	};
-	
-	virtual void handle_connect_failed(csocket& socket)
-	{
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"]connect failed!\n");
-	};
-
 	virtual void handle_write(rofl::csocket& socket);
 
 	virtual void handle_read(rofl::csocket& socket);
 
-	virtual void handle_closed(rofl::csocket& socket) {
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"]closed!\n");
-	};
+	virtual void handle_accept_refused(rofl::csocket& socket) {}
+	virtual void handle_connected(rofl::csocket& socket) {}
+	virtual void handle_connect_refused(rofl::csocket& socket) {}
+	virtual void handle_connect_failed(csocket& socket){}
+	virtual void handle_closed(rofl::csocket& socket) {}
 };
 
 }// namespace xdpd 

@@ -478,6 +478,12 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	if( !port || !port->attached_sw || port->attached_sw->dpid != dpid)
 		return HAL_FAILURE;
 
+	//Detach it
+	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS){
+		ROFL_ERR(DRIVER_NAME" Error detaching port %s.\n",port->name);
+		assert(0);
+		goto DRIVER_DETACH_ERROR;	
+	}
 	
 	if(port->type == PORT_TYPE_VIRTUAL){
 		/*
@@ -494,6 +500,13 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 		hal_cmm_notify_port_delete(port_snapshot);
 		hal_cmm_notify_port_delete(port_pair_snapshot);
 	
+		//Detach pair
+		if(physical_switch_detach_port_from_logical_switch(port_pair, port_pair->attached_sw) != ROFL_SUCCESS){
+			ROFL_ERR(DRIVER_NAME" Error detaching port %s.\n",port_pair->name);
+			assert(0);
+			goto DRIVER_DETACH_ERROR;	
+		}
+
 		//Remove from the pipeline and delete
 		if(physical_switch_remove_port(port->name) != ROFL_SUCCESS){
 			ROFL_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
@@ -516,12 +529,7 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 		processing_deschedule_port(port);
 	}
 
-	//Detach it
-	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME" Error detaching port %s.\n",port->name);
-		assert(0);
-		goto DRIVER_DETACH_ERROR;	
-	}
+
 	
 	return HAL_SUCCESS; 
 

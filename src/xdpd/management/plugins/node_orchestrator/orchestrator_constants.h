@@ -13,7 +13,10 @@
 /*
 *	Connection from the node orchestrator
 */
-#define LISTEN_ON_PORT		"2525"
+
+#define MGMT_PROTOCOL		"tcp"
+#define MGMT_ADDR			"127.0.0.1"
+#define MGMT_PORT			"2525"
 
 /*
 *	Messages and answers from/to the

@@ -6,9 +6,7 @@ noinst_LTLIBRARIES = libxdpd_mgmt_node_orchestrator.la
 libxdpd_mgmt_node_orchestrator_la_SOURCES = \
 	node_orchestrator.cc \
 	LSI.cc \
-	server.cc \
-	sockutils.c
+	message_handler.cc
 
 libxdpd_mgmt_node_orchestrator_la_LIBADD = \
-	-ljson_spirit \
-	-lpthread
+	-ljson_spirit

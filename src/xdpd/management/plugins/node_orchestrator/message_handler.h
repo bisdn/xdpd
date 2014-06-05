@@ -17,7 +17,6 @@
 
 #include "node_orchestrator.h"
 #include "LSI.h"
-#include "sockutils.h"
 #include "orchestrator_constants.h"
 
 using namespace std;
@@ -26,12 +25,12 @@ using namespace json_spirit;
 namespace xdpd
 {
 
-class Server
+class MessageHandler
 {
-public:
-	static void *listen(void *param);
 
-private:
+friend class NodeOrchestrator;
+
+protected:
 	static string processCommand(string message);
 
 /**

@@ -13,13 +13,12 @@
 #include "../../../openflow/openflow_switch.h"
 #include "LSI.h"
 #include "orchestrator_constants.h"
+#include "message_handler.h"
 
 #include <list>
 #include <map>
-#include <pthread.h>
-#include <semaphore.h>
-
-#include "server.h"
+//#include <pthread.h>
+//#include <semaphore.h>
 
 using namespace std;
 
@@ -40,11 +39,23 @@ namespace xdpd {
 * @brief Plugin that receives command from the node orchestrator
 * @ingroup cmm_mgmt_plugins
 */
-class NodeOrchestrator:public plugin {
+class NodeOrchestrator :
+	public plugin,
+	public rofl::ciosrv,
+	public rofl::csocket_owner
+{
+
+	rofl::csocket*			socket;			// listening socket
+	rofl::cparams			socket_params;
 	
-friend class Server;
+friend class MessageHandler;
 	
 public:
+
+	NodeOrchestrator();
+
+	virtual ~NodeOrchestrator();
+
 	virtual void init(void);
 
 	virtual std::string get_name(void)
@@ -63,35 +74,42 @@ protected:
 	static unsigned int createNfPort(uint64_t dpid, string NfName, string NfPortName, PexType type);
 	
 	static uint64_t nextDpid;
-	
-private:
-	//FIXME: tmp because the xDPD api does not export the ID of vlinks
-	//for each LSI, contains the last ID used as port identifier
-	static map<uint64_t, unsigned int> last_ports_id;
-		
-	/**
-	*	@brief: for each LSI started, the map associates the dpid with
-	*		the tread that is running the (openflow?) loop on that LSI
-	*/
-	static map<uint64_t, pthread_t> threads;	
-		
-	/**
-	*	@brief: create a new thread and start the infinite loop of the control part of the LSI
-	*/
-	static void *run(void*);
 
-	static void sigurs_handler(int signum);
+protected:
+
+	/*
+	 * overloaded from csocket_owner
+	 */
+
+	virtual void handle_listen(rofl::csocket& socket, int newsd);
+
+	virtual void handle_accepted(rofl::csocket& socket);
+
+	virtual void handle_accept_refused(rofl::csocket& socket) {
+		ROFL_INFO("[xdpd]["PLUGIN_NAME"]accepted refused!\n");
+	};
 	
-typedef struct
-{
-	string controllerAddress;
-	string controllerPort;
-	uint64_t dpid;
+	virtual void handle_connected(rofl::csocket& socket) {
+		ROFL_INFO("[xdpd]["PLUGIN_NAME"]connected!\n");
+	};
+
+	virtual void handle_connect_refused(rofl::csocket& socket)
+	{
+		ROFL_INFO("[xdpd]["PLUGIN_NAME"]connect refused!\n");
+	};
 	
-	sem_t lsi_created;
-	sem_t ports_attached;
-}lsi_parameters_t;
-	
+	virtual void handle_connect_failed(csocket& socket)
+	{
+		ROFL_INFO("[xdpd]["PLUGIN_NAME"]connect failed!\n");
+	};
+
+	virtual void handle_write(rofl::csocket& socket);
+
+	virtual void handle_read(rofl::csocket& socket);
+
+	virtual void handle_closed(rofl::csocket& socket) {
+		ROFL_INFO("[xdpd]["PLUGIN_NAME"]closed!\n");
+	};
 };
 
 }// namespace xdpd 

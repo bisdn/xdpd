@@ -1,88 +1,9 @@
-#include "server.h"
+#include "message_handler.h"
 
 namespace xdpd
 {
 
-void *Server::listen(void *param)
-{
-
-	int AddressFamily = AF_INET; //use IPv4
-	int TransportProtocol = SOCK_STREAM; //use TCP
-
-	char ErrBuf[1024];
-	char DataBuffer[1024];
-	int ChildSocket;				// keeps the socket ID for connections from clients
-	struct addrinfo Hints;			// temporary struct to keep settings needed to open the new socket
-	struct addrinfo *AddrInfo;		// keeps the addrinfo chain; required to open a new socket
-	struct sockaddr_storage From;	// temp variable that keeps the parameters of the incoming connection
-	int ReadBytes, WrittenBytes;
-	int ServerSocket;
-
-	// Prepare to open a new server socket
-	memset(&Hints, 0, sizeof(struct addrinfo));
-
-	Hints.ai_family= AddressFamily;
-	Hints.ai_socktype= TransportProtocol;	// Open a TCP/UDP connection
-	Hints.ai_flags = AI_PASSIVE;			// This is a server: ready to bind() a socket
-	
-	if (sock_initaddress (NULL, LISTEN_ON_PORT, &Hints, &AddrInfo, ErrBuf, sizeof(ErrBuf)) == sockFAILURE)
-	{
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Error resolving given address/port (%s/%s): %s", LISTEN_ON_PORT, ErrBuf);
-		return NULL;
-	}
-
-	if ( (ServerSocket= sock_open(AddrInfo, 1, 10,  ErrBuf, sizeof(ErrBuf))) == sockFAILURE)
-	{
-		// AddrInfo is no longer required
-		sock_freeaddrinfo(AddrInfo);
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Cannot opening the socket: %s", ErrBuf);
-		return NULL;
-	}
-
-	// AddrInfo is no longer required
-	sock_freeaddrinfo(AddrInfo);
-
-	while(1)
-	{
-		if ( (ChildSocket= sock_accept(ServerSocket, &From, ErrBuf, sizeof(ErrBuf))) == sockFAILURE)
-		{
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] error when accepting a new connection: %s", ErrBuf);
-			continue;
-		}
-
-		ReadBytes= sock_recv(ChildSocket, DataBuffer, sizeof(DataBuffer), SOCK_RECEIVEALL_NO, 0/*no timeout*/, ErrBuf, sizeof(ErrBuf));
-		if (ReadBytes == sockFAILURE)
-		{
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] Error reading data: %s", ErrBuf);
-			continue;
-		}
-
-		// Terminate buffer, just for printing purposes
-		// Warning: this can originate a buffer overflow
-		DataBuffer[ReadBytes]= 0;
-
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Data received (%d bytes):\n",ReadBytes);
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"] %s\n",DataBuffer);
-
-		string message = processCommand(string(DataBuffer));
-		const char *answer = message.c_str();
-		
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Answer to be sent: %s\n",answer);
-		WrittenBytes= sock_send(ChildSocket, answer, strlen(answer), ErrBuf, sizeof(ErrBuf));
-		if (WrittenBytes == sockFAILURE)
-		{
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] Error sending data: %s", ErrBuf);
-
-		}
-
-		shutdown(ChildSocket,SHUT_RD);
-//		sock_close(ChildSocket,ErrBuf,sizeof(ErrBuf));
-	}
-
-	return NULL;
-}
-
-string Server::processCommand(string message)
+string MessageHandler::processCommand(string message)
 {
 	Value value;
     read( message, value );
@@ -112,7 +33,7 @@ string Server::processCommand(string message)
 	return createErrorMessage(string(ERROR), string("Unknown command"));
 }
 
-string Server::createLSI(string message)
+string MessageHandler::createLSI(string message)
 {
 	list<string> physicalPorts;
 	list< pair<string,list<string> > > networkFunctions; //list <nf name, list <port name> >
@@ -282,7 +203,7 @@ string Server::createLSI(string message)
 	return createLSIAnswer(lsi,nfPorts,virtual_links);
 }
 
-string Server::createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links)
+string MessageHandler::createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links)
 {
 	Object json;
 	
@@ -344,7 +265,7 @@ string Server::createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPort
  	return ss.str();
 }
 
-string Server::destroyLSI(string message)
+string MessageHandler::destroyLSI(string message)
 {	
 	bool foundLsiID = false;
 	uint64_t lsiID = 0;
@@ -396,7 +317,7 @@ string Server::destroyLSI(string message)
  	return ss.str();
 }
 
-string Server::discoverPhyPorts(string message)
+string MessageHandler::discoverPhyPorts(string message)
 {
 	list<string> ports = NodeOrchestrator::discoverPhyPorts();
 	
@@ -417,7 +338,7 @@ string Server::discoverPhyPorts(string message)
  	return ss.str();
 }
 
-string Server::createErrorMessage(string command, string message)
+string MessageHandler::createErrorMessage(string command, string message)
 {
 	//ERROR
 	Object json;

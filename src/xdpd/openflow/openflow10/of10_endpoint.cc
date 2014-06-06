@@ -801,7 +801,7 @@ of10_endpoint::handle_flow_mod(
 		const rofl::cauxid& auxid,
 		rofl::openflow::cofmsg_flow_mod& msg)
 {
-	switch (msg.get_command()) {
+	switch (msg.get_flowmod().get_command()) {
 		case rofl::openflow10::OFPFC_ADD: {
 				flow_mod_add(ctl, msg);
 			} break;
@@ -834,7 +834,7 @@ of10_endpoint::flow_mod_add(
 		rofl::crofctl& ctl,
 		rofl::openflow::cofmsg_flow_mod& msg)
 {
-	uint8_t table_id = msg.get_table_id();
+	uint8_t table_id = msg.get_flowmod().get_table_id();
 	hal_result_t res;
 	of1x_flow_entry_t *entry=NULL;
 
@@ -843,7 +843,7 @@ of10_endpoint::flow_mod_add(
 	{
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
-				sw->dpname.c_str(), msg.get_table_id());
+				sw->dpname.c_str(), msg.get_flowmod().get_table_id());
 	
 		assert(0);
 		return;
@@ -864,10 +864,10 @@ of10_endpoint::flow_mod_add(
 	}
 
 	if (HAL_SUCCESS != (res = hal_driver_of1x_process_flow_mod_add(sw->dpid,
-								msg.get_table_id(),
+								msg.get_flowmod().get_table_id(),
 								&entry,
-								msg.get_buffer_id(),
-								msg.get_flags() & rofl::openflow10::OFPFF_CHECK_OVERLAP,
+								msg.get_flowmod().get_buffer_id(),
+								msg.get_flowmod().get_flags() & rofl::openflow10::OFPFF_CHECK_OVERLAP,
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/))){
 		// log error
 		ROFL_DEBUG("Error inserting the flowmod\n");
@@ -891,11 +891,11 @@ of10_endpoint::flow_mod_modify(
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
-	if (pack.get_table_id() > sw->num_of_tables)
+	if (pack.get_flowmod().get_table_id() > sw->num_of_tables)
 	{
 		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
 				"invalid table-id:%d in flow-mod command",
-				sw->dpname.c_str(), pack.get_table_id());
+				sw->dpname.c_str(), pack.get_flowmod().get_table_id());
 
 		assert(0);
 		return;
@@ -919,9 +919,9 @@ of10_endpoint::flow_mod_modify(
 
 
 	if(HAL_SUCCESS != hal_driver_of1x_process_flow_mod_modify(sw->dpid,
-								pack.get_table_id(),
+								pack.get_flowmod().get_table_id(),
 								&entry,
-								pack.get_buffer_id(),
+								pack.get_flowmod().get_buffer_id(),
 								strictness,
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/)){
 		ROFL_DEBUG("Error modiying flowmod\n");
@@ -959,9 +959,9 @@ of10_endpoint::flow_mod_delete(
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 	if(HAL_SUCCESS != hal_driver_of1x_process_flow_mod_delete(sw->dpid,
-								pack.get_table_id(),
+								pack.get_flowmod().get_table_id(),
 								entry,
-								of10_translation_utils::get_out_port(pack.get_out_port()),
+								of10_translation_utils::get_out_port(pack.get_flowmod().get_out_port()),
 								OF1X_GROUP_ANY,
 								strictness)) {
 		ROFL_DEBUG("Error deleting flowmod\n");

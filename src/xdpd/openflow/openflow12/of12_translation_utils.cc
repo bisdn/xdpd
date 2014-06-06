@@ -42,21 +42,21 @@ of12_translation_utils::of12_map_flow_entry(
 		openflow_switch* sw)
 {
 
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flags() & openflow12::OFPFF_SEND_FLOW_REM);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flowmod().get_flags() & openflow12::OFPFF_SEND_FLOW_REM);
 
 	if(!entry)
 		throw eFlowModUnknown();
 
 	// store flow-mod fields in of1x_flow_entry
-	entry->priority 		= msg->get_priority();
-	entry->cookie 			= msg->get_cookie();
-	entry->cookie_mask 		= msg->get_cookie_mask();
-	entry->timer_info.idle_timeout	= msg->get_idle_timeout(); // these timers must be activated some time, when?
-	entry->timer_info.hard_timeout	= msg->get_hard_timeout();
+	entry->priority 		= msg->get_flowmod().get_priority();
+	entry->cookie 			= msg->get_flowmod().get_cookie();
+	entry->cookie_mask 		= msg->get_flowmod().get_cookie_mask();
+	entry->timer_info.idle_timeout	= msg->get_flowmod().get_idle_timeout(); // these timers must be activated some time, when?
+	entry->timer_info.hard_timeout	= msg->get_flowmod().get_hard_timeout();
 
 	try{
 		// extract OXM fields from pack and store them in of1x_flow_entry
-		of12_map_flow_entry_matches(ctl, msg->get_match(), sw, entry);
+		of12_map_flow_entry_matches(ctl, msg->get_flowmod().get_match(), sw, entry);
 	}catch(...){
 		of1x_destroy_flow_entry(entry);	
 		throw eFlowModUnknown();
@@ -66,11 +66,11 @@ of12_translation_utils::of12_map_flow_entry(
 	/*
 	 * Inst-Apply-Actions
 	 */
-	if (msg->get_instructions().has_inst_apply_actions()) {
+	if (msg->get_flowmod().get_instructions().has_inst_apply_actions()) {
 		of1x_action_group_t *apply_actions = of1x_init_action_group(0);
 		try{
 			of12_map_flow_entry_actions(ctl, sw,
-					msg->get_instructions().get_inst_apply_actions().get_actions(),
+					msg->get_flowmod().get_instructions().get_inst_apply_actions().get_actions(),
 					apply_actions, /*of1x_write_actions_t*/0);
 
 			of1x_add_instruction_to_group(
@@ -90,7 +90,7 @@ of12_translation_utils::of12_map_flow_entry(
 	/*
 	 * Inst-Clear-Actions
 	 */
-	if (msg->get_instructions().has_inst_clear_actions()) {
+	if (msg->get_flowmod().get_instructions().has_inst_clear_actions()) {
 		of1x_add_instruction_to_group(
 				&(entry->inst_grp),
 				OF1X_IT_CLEAR_ACTIONS,
@@ -104,7 +104,7 @@ of12_translation_utils::of12_map_flow_entry(
 	/*
 	 * Inst-Experimenter
 	 */
-	if (msg->get_instructions().has_inst_experimenter()) {
+	if (msg->get_flowmod().get_instructions().has_inst_experimenter()) {
 		of1x_add_instruction_to_group(
 					&(entry->inst_grp),
 					OF1X_IT_EXPERIMENTER,
@@ -118,25 +118,25 @@ of12_translation_utils::of12_map_flow_entry(
 	/*
 	 * Inst-Goto-Table
 	 */
-	if (msg->get_instructions().has_inst_goto_table()) {
+	if (msg->get_flowmod().get_instructions().has_inst_goto_table()) {
 		of1x_add_instruction_to_group(
 				&(entry->inst_grp),
 				OF1X_IT_GOTO_TABLE,
 				NULL,
 				NULL,
 				NULL,
-				/*go_to_table*/msg->get_instructions().get_inst_goto_table().get_table_id());
+				/*go_to_table*/msg->get_flowmod().get_instructions().get_inst_goto_table().get_table_id());
 	}
 
 
 	/*
 	 * Inst-Write-Actions
 	 */
-	if (msg->get_instructions().has_inst_write_actions()) {
+	if (msg->get_flowmod().get_instructions().has_inst_write_actions()) {
 		of1x_write_actions_t *write_actions = of1x_init_write_actions();
 		try{
 			of12_map_flow_entry_actions(ctl, sw,
-					msg->get_instructions().get_inst_write_actions().get_actions(),
+					msg->get_flowmod().get_instructions().get_inst_write_actions().get_actions(),
 					/*of1x_action_group_t*/0, write_actions);
 
 			of1x_add_instruction_to_group(
@@ -156,10 +156,10 @@ of12_translation_utils::of12_map_flow_entry(
 	/*
 	 * Inst-Write-Metadata
 	 */
-	if (msg->get_instructions().has_inst_write_metadata()) {
+	if (msg->get_flowmod().get_instructions().has_inst_write_metadata()) {
 		of1x_write_metadata_t metadata = {
-				msg->get_instructions().get_inst_write_metadata().get_metadata(),
-				msg->get_instructions().get_inst_write_metadata().get_metadata_mask()
+				msg->get_flowmod().get_instructions().get_inst_write_metadata().get_metadata(),
+				msg->get_flowmod().get_instructions().get_inst_write_metadata().get_metadata_mask()
 		};
 
 		of1x_add_instruction_to_group(

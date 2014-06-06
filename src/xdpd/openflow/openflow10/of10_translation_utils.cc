@@ -44,21 +44,21 @@ of10_translation_utils::of1x_map_flow_entry(
 		openflow_switch* sw)
 {
 
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flags() & openflow10::OFPFF_SEND_FLOW_REM);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flowmod().get_flags() & openflow10::OFPFF_SEND_FLOW_REM);
 
 	if(!entry)
 		throw eFlowModUnknown();
 
 	// store flow-mod fields in of1x_flow_entry
-	entry->priority 		= msg->get_priority();
-	entry->cookie 			= msg->get_cookie();
+	entry->priority 		= msg->get_flowmod().get_priority();
+	entry->cookie 			= msg->get_flowmod().get_cookie();
 	entry->cookie_mask 		= 0xFFFFFFFFFFFFFFFFULL;
-	entry->timer_info.idle_timeout	= msg->get_idle_timeout(); // these timers must be activated some time, when?
-	entry->timer_info.hard_timeout	= msg->get_hard_timeout();
+	entry->timer_info.idle_timeout	= msg->get_flowmod().get_idle_timeout(); // these timers must be activated some time, when?
+	entry->timer_info.hard_timeout	= msg->get_flowmod().get_hard_timeout();
 
 	try{
 		// extract OXM fields from pack and store them in of1x_flow_entry
-		of10_map_flow_entry_matches(ctl, msg->get_match(), sw, entry);
+		of10_map_flow_entry_matches(ctl, msg->get_flowmod().get_match(), sw, entry);
 	}catch(...){
 		of1x_destroy_flow_entry(entry);
 		throw eFlowModUnknown();
@@ -68,7 +68,7 @@ of10_translation_utils::of1x_map_flow_entry(
 	of1x_action_group_t *apply_actions = of1x_init_action_group(0);
 
 	try{
-		of1x_map_flow_entry_actions(ctl, sw, msg->get_actions(), apply_actions, /*of1x_write_actions_t*/0);
+		of1x_map_flow_entry_actions(ctl, sw, msg->set_flowmod().set_actions(), apply_actions, /*of1x_write_actions_t*/0);
 	}catch(...){
 		of1x_destroy_flow_entry(entry);
 		throw eFlowModUnknown();

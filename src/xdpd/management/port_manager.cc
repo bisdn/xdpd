@@ -6,10 +6,41 @@
 using namespace rofl;
 using namespace xdpd;
 
-pthread_mutex_t port_manager::mutex = PTHREAD_MUTEX_INITIALIZER; 
+pthread_mutex_t port_manager::mutex = PTHREAD_MUTEX_INITIALIZER; //Serialize operations 
+pthread_rwlock_t port_manager::rwlock = PTHREAD_RWLOCK_INITIALIZER; //Used to protect the vlink cache 
+std::map<std::string, std::string> port_manager::vlinks;
 
 bool port_manager::port_exists(std::string& port_name){
 	return hal_driver_port_exists(port_name.c_str());
+}
+
+//vlinks
+bool port_manager::is_vlink(std::string& port_name){
+	return port_manager::vlinks.find(port_name) != port_manager::vlinks.end();
+}
+
+std::string port_manager::get_vlink_pair(std::string& port_name){
+
+	std::map<std::string, std::string>::iterator it;
+	std::string pair;
+
+	//Make sure iterator is readable all along	
+	pthread_rwlock_rdlock(&port_manager::rwlock);
+	
+	it = port_manager::vlinks.find(port_name);
+	
+
+	if ( it == port_manager::vlinks.end()){
+		pthread_rwlock_unlock(&port_manager::rwlock);
+		throw ePmInvalidPort();
+	}
+	
+	//Store the pair and release
+	pair = it->second;
+
+	pthread_rwlock_unlock(&port_manager::rwlock);
+
+	return pair; 
 }
 
 std::list<std::string> port_manager::list_available_port_names(){
@@ -34,22 +65,13 @@ std::list<std::string> port_manager::list_available_port_names(){
 	return port_name_list; 
 }
 
+switch_port_snapshot_t const* port_manager::get_port_info(std::string& name){
+	return (switch_port_snapshot_t const*) hal_driver_get_port_snapshot_by_name(name.c_str());
+}
+
 //
 //Port operations
 //
-bool port_manager::get_admin_state(std::string& name){
-
-	bool state;
-
-	//Get snapshot
-	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(name.c_str());
-	state = port_snapshot->up;	
-	//Destroy
-	switch_port_destroy_snapshot(port_snapshot);	
-
-	return state;
-}
-
 void port_manager::bring_up(std::string& name){
 
 	hal_result_t result;
@@ -167,10 +189,19 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, std::string& port_name1,
 		assert(0);
 		throw ePmUnknownError(); 
 	}
-		
+
+	
 	//Copy port names
 	port_name1 = std::string(port1->name);
 	port_name2 = std::string(port2->name);
+
+		//Add them to the cache
+	try{	
+		add_vlink(port_name1, port_name2);
+	}catch(...){
+		pthread_mutex_unlock(&port_manager::mutex);
+		throw;
+	}
 
 	ROFL_INFO("[xdpd][port_manager] Link created between switch with dpid 0x%llx and 0x%llx, with virtual interface names %s and %s respectively \n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2, port1->name, port2->name);
 

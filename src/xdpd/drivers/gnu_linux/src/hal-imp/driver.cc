@@ -432,34 +432,35 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	if( !port || !port->attached_sw || port->attached_sw->dpid != dpid)
 		return HAL_FAILURE;
 
-	//Snapshoting the port *before* it is detached 
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	
-	if(!port_snapshot)
-		return HAL_FAILURE;
 	
 	//Remove it from the iomanager (do not feed more packets)
 	if(iomanager::remove_port((ioport*)port->platform_port_state) != ROFL_SUCCESS){
 		ROFL_ERR(DRIVER_NAME" Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
 		assert(0);
-		goto FWD_MODULE_DETACH_ERROR;	
+		goto DRIVER_DETACH_ERROR;	
 	}
 	
 	//Detach it
 	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS){
 		ROFL_ERR(DRIVER_NAME" Error detaching port %s.\n",port->name);
 		assert(0);
-		goto FWD_MODULE_DETACH_ERROR;	
+		goto DRIVER_DETACH_ERROR;	
 	}
 	
 	//For virtual ports, remove counter port
 	if(port->type == PORT_TYPE_VIRTUAL){
+		//Snapshoting the port *before* it is detached 
+		port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	
+		if(!port_snapshot)
+			return HAL_FAILURE;
+
 		switch_port_t* port_pair = get_vlink_pair(port); 
 
 		if(!port_pair){
 			ROFL_ERR(DRIVER_NAME" Error detaching a virtual link port. Could not find the counter port of %s.\n",port->name);
 			assert(0);
-			goto FWD_MODULE_DETACH_ERROR;
+			goto DRIVER_DETACH_ERROR;
 		}
 	
 		//Recover the snapshot *before* detachment 
@@ -469,13 +470,13 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 		if(iomanager::remove_port((ioport*)port_pair->platform_port_state) != ROFL_SUCCESS){
 			ROFL_ERR(DRIVER_NAME" Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
 			assert(0);
-			goto FWD_MODULE_DETACH_ERROR;
+			goto DRIVER_DETACH_ERROR;
 		}
 	
 		if(!port_pair->attached_sw || physical_switch_detach_port_from_logical_switch(port_pair,port_pair->attached_sw) != ROFL_SUCCESS){
 			ROFL_ERR(DRIVER_NAME" Error detaching port-pair %s from the sw.\n",port_pair->name);
 			assert(0);
-			goto FWD_MODULE_DETACH_ERROR;
+			goto DRIVER_DETACH_ERROR;
 		}
 
 		//notify port detached and deleted
@@ -496,7 +497,7 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 		if(physical_switch_remove_port(port_pair->name) != ROFL_SUCCESS){
 			ROFL_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
 			assert(0);
-			goto FWD_MODULE_DETACH_ERROR;
+			goto DRIVER_DETACH_ERROR;
 			
 		}
 
@@ -506,7 +507,7 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	
 	return HAL_SUCCESS; 
 
-FWD_MODULE_DETACH_ERROR:
+DRIVER_DETACH_ERROR:
 
 	if(port_snapshot)
 		switch_port_destroy_snapshot(port_snapshot);	

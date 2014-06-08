@@ -197,15 +197,85 @@ of10_translation_utils::of10_map_flow_entry_matches(
 /**
 * Maps a of1x_action from an OF1.0 Header
 */
-//FIXME TODO XXX: cofaction should have appropiate getters and setters instead of having  to access internals of the class!
 void
 of10_translation_utils::of1x_map_flow_entry_actions(
 		crofctl *ctl,
 		openflow_switch* sw,
-		rofl::openflow::cofactions& actions,
+		const rofl::openflow::cofactions& actions,
 		of1x_action_group_t *apply_actions,
 		of1x_write_actions_t *write_actions)
 {
+	for (std::map<unsigned int, unsigned int>::const_iterator
+			jt = actions.get_actions_index().begin();
+					jt != actions.get_actions_index().end(); ++jt) {
+
+		const unsigned int& index 	= jt->first;
+		const unsigned int& type	= jt->second;
+
+		of1x_packet_action_t *action = NULL;
+		wrap_uint_t field;
+		memset(&field,0,sizeof(wrap_uint_t));
+
+		switch (type) {
+			case rofl::openflow10::OFPAT_OUTPUT:
+				//Translate special values to of1x
+				field.u32 = get_out_port(actions.get_action_output(index).get_port_no());
+				action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, actions.get_action_output(index).get_max_len());
+				break;
+			case rofl::openflow10::OFPAT_SET_VLAN_VID:
+				field.u16 = actions.get_action_set_vlan_vid(index).get_vlan_vid();
+				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, 0x0);
+				break;
+			case rofl::openflow10::OFPAT_SET_VLAN_PCP:
+				field.u8 = actions.get_action_set_vlan_pcp(index).get_vlan_pcp();
+				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, 0x0);
+				break;
+			case rofl::openflow10::OFPAT_STRIP_VLAN:
+				action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, 0x0);
+				break;
+			case rofl::openflow10::OFPAT_SET_DL_SRC: {
+				field.u64 = actions.get_action_set_dl_src(index).get_dl_src().get_mac();
+				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, 0x0);
+				} break;
+			case rofl::openflow10::OFPAT_SET_DL_DST: {
+				field.u64 = actions.get_action_set_dl_dst(index).get_dl_dst().get_mac();
+				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0);
+				} break;
+			case rofl::openflow10::OFPAT_SET_NW_SRC:
+				field.u32 = NTOHB32(actions.get_action_set_nw_src(index).get_nw_src().ca_s4addr->sin_addr.s_addr);
+				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, 0x0);
+				break;
+			case rofl::openflow10::OFPAT_SET_NW_DST:
+				field.u32 = NTOHB32(actions.get_action_set_nw_src(index).get_nw_src().ca_s4addr->sin_addr.s_addr);
+				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0);
+				break;
+			case rofl::openflow10::OFPAT_SET_NW_TOS:
+				field.u8 = OF1X_IP_DSCP_VALUE(actions.get_action_set_nw_tos(index).get_nw_tos()); //Align to get DSCP value from TOS
+				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, 0x0);
+				break;
+			case rofl::openflow10::OFPAT_SET_TP_SRC:
+				field.u16 = actions.get_action_set_tp_src(index).get_tp_src();
+				action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_SRC, field, 0x0);
+				break;
+			case rofl::openflow10::OFPAT_SET_TP_DST:
+				field.u16 = actions.get_action_set_tp_dst(index).get_tp_dst();
+				action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TP_DST, field, 0x0);
+				break;
+			case rofl::openflow10::OFPAT_ENQUEUE:
+				field.u32 = actions.get_action_enqueue(index).get_queue_id();
+				action = of1x_init_packet_action( OF1X_AT_SET_QUEUE, field, 0x0);
+				if (NULL != apply_actions) of1x_push_packet_action_to_group(apply_actions, action);
+				field.u64 = get_out_port(actions.get_action_enqueue(index).get_port_no());
+				action = of1x_init_packet_action( OF1X_AT_OUTPUT, field, 0x0);
+				break;
+			}
+
+			if (NULL != apply_actions)
+			{
+				of1x_push_packet_action_to_group(apply_actions, action);
+			}
+	}
+#if 0
 	for (std::list<rofl::openflow::cofaction*>::iterator
 			jt = actions.begin(); jt != actions.end(); ++jt)
 	{
@@ -276,6 +346,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 				of1x_push_packet_action_to_group(apply_actions, action);
 			}
 	}
+#endif
 }
 
 
@@ -404,12 +475,13 @@ of10_translation_utils::of1x_map_reverse_flow_entry_actions(
 		if(!group->instructions[i].apply_actions)
 			continue;
 
+		unsigned int index = 0;
+
 		for (of1x_packet_action_t *of1x_action = group->instructions[i].apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
 				continue;
 			rofl::openflow::cofaction action(OFP10_VERSION);
-			of1x_map_reverse_flow_entry_action(of1x_action, action, pipeline_miss_send_len);
-			actions.append_action(action);
+			of1x_map_reverse_flow_entry_action(of1x_action, index++, actions, pipeline_miss_send_len);
 			
 			//Skip next action if action is set-queue (SET-QUEUE-OUTPUT)
 			if(of1x_action->type == OF1X_AT_SET_QUEUE){
@@ -430,7 +502,8 @@ of10_translation_utils::of1x_map_reverse_flow_entry_actions(
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		of1x_packet_action_t* of1x_action,
-		rofl::openflow::cofaction& action,
+		unsigned int index,
+		rofl::openflow::cofactions& actions,
 		uint16_t pipeline_miss_send_len)
 {
 	/*
@@ -443,59 +516,62 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		// do nothing
 	} break;
 	case OF1X_AT_POP_VLAN: {
-		//action = rofl::openflow::cofaction_pop_vlan(OFP10_VERSION);
-		action = rofl::openflow::cofaction_strip_vlan(OFP10_VERSION);
+		actions.add_action_strip_vlan(index);
 	} break;
 	case OF1X_AT_PUSH_VLAN: {
-		action = rofl::openflow::cofaction_push_vlan(OFP10_VERSION, of1x_get_packet_action_field16(of1x_action));
+		actions.add_action_push_vlan(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));
 	} break;
 	case OF1X_AT_SET_FIELD_ETH_DST: {
 		uint64_t mac = of1x_get_packet_action_field64(of1x_action);
-		action = rofl::openflow::cofaction_set_dl_dst(OFP10_VERSION, cmacaddr(mac));
+		actions.add_action_set_dl_dst(index).set_dl_dst(cmacaddr(mac));
 	} break;
 	case OF1X_AT_SET_FIELD_ETH_SRC: {
 		uint64_t mac = of1x_get_packet_action_field64(of1x_action);
-		action = rofl::openflow::cofaction_set_dl_src(OFP10_VERSION, cmacaddr(mac));
+		actions.add_action_set_dl_src(index).set_dl_src(cmacaddr(mac));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_VID: {
-		action = rofl::openflow::cofaction_set_vlan_vid(OFP10_VERSION, of1x_get_packet_action_field16(of1x_action));
+		actions.add_action_set_vlan_vid(index).set_vlan_vid(of1x_get_packet_action_field16(of1x_action));
 	} break;
 	case OF1X_AT_SET_FIELD_VLAN_PCP: {
-		action = rofl::openflow::cofaction_set_vlan_pcp(OFP10_VERSION, of1x_get_packet_action_field8(of1x_action));
+		actions.add_action_set_vlan_pcp(index).set_vlan_pcp(of1x_get_packet_action_field8(of1x_action));
 	} break;
 	case OF1X_AT_SET_FIELD_IP_DSCP: {
-		action = rofl::openflow::cofaction_set_nw_tos(OFP10_VERSION, OF1X_IP_DSCP_ALIGN(of1x_get_packet_action_field8(of1x_action))); //We need to get the TOS value from the DSCP
+		actions.add_action_set_nw_tos(index).set_nw_tos(OF1X_IP_DSCP_ALIGN(of1x_get_packet_action_field8(of1x_action))); //We need to get the TOS value from the DSCP
 	} break;
 	case OF1X_AT_SET_FIELD_NW_SRC: {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(of1x_get_packet_action_field32(of1x_action));
-		action = rofl::openflow::cofaction_set_nw_src(OFP10_VERSION, addr);
+		actions.add_action_set_nw_src(index).set_nw_src(addr);
 	} break;
 	case OF1X_AT_SET_FIELD_NW_DST: {
 		caddress addr(AF_INET, "0.0.0.0");
 		addr.set_ipv4_addr(of1x_get_packet_action_field32(of1x_action));
-		action = rofl::openflow::cofaction_set_nw_dst(OFP10_VERSION, addr);
+		actions.add_action_set_nw_dst(index).set_nw_dst(addr);
 	} break;
 	case OF1X_AT_SET_FIELD_TP_SRC: {
-		action = rofl::openflow::cofaction_set_tp_src(OFP10_VERSION, of1x_get_packet_action_field16(of1x_action));
+		actions.add_action_set_tp_src(index).set_tp_src(of1x_get_packet_action_field16(of1x_action));
 	} break;
 	case OF1X_AT_SET_FIELD_TP_DST: {
-		action = rofl::openflow::cofaction_set_tp_dst(OFP10_VERSION, of1x_get_packet_action_field16(of1x_action));
+		actions.add_action_set_tp_dst(index).set_tp_dst(of1x_get_packet_action_field16(of1x_action));
 	} break;
 	case OF1X_AT_EXPERIMENTER: {
 		// TODO
+		//actions.add_action_vendor(index).set_exp_id();
+		//actions.add_action_vendor(index).set_exp_body();
 	} break;
 	case OF1X_AT_SET_QUEUE: {
 		//Right after queue we must have an output
-		if(of1x_action->next)
-			action = rofl::openflow::cofaction_enqueue(OFP10_VERSION, get_out_port_reverse(of1x_get_packet_action_field32(of1x_action->next)), of1x_get_packet_action_field32(of1x_action));
-		else{
+		if(of1x_action->next) {
+			actions.add_action_enqueue(index).set_port_no(get_out_port_reverse(of1x_get_packet_action_field32(of1x_action->next)));
+			actions.add_action_enqueue(index).set_queue_id(of1x_get_packet_action_field32(of1x_action));
+		}else{
 			assert(0);
 		}
 	}break;
 	case OF1X_AT_OUTPUT: {
 		//Setting max_len to the switch max_len (we do not support per action max_len)
-		action = rofl::openflow::cofaction_output(OFP10_VERSION, get_out_port_reverse(of1x_get_packet_action_field32(of1x_action)), of1x_action->send_len);
+		actions.add_action_output(index).set_port_no(get_out_port_reverse(of1x_get_packet_action_field32(of1x_action)));
+		actions.add_action_output(index).set_max_len(of1x_action->send_len);
 	} break;
 	default: {
 		// do nothing

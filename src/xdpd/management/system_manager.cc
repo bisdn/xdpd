@@ -216,7 +216,7 @@ void system_manager::init(int argc, char** argv){
 		rofl::logging::notice << "[xdpd][system_manager] Launched with -t "<< XDPD_TEST_RUN_OPT_FULL_NAME <<". Doing a test-run execution" << std::endl;
 
 	//Driver initialization
-	if(hal_driver_init(get_driver_extra_params().c_str()) != HAL_SUCCESS){
+	if(hal_driver_init(__get_driver_extra_params().c_str()) != HAL_SUCCESS){
 		ROFL_ERR("[xdpd][system_manager] ERROR: initialization of platform driver failed! Aborting...\n");	
 		exit(EXIT_FAILURE);
 	}

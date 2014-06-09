@@ -8,6 +8,11 @@ Legend:
 Change log
 ==========
 
+v0.4.2 
+
+[B] Fixing deadlock in switch_manager #16
+[B] Fixing driver-extra-params #19
+
 v0.4.1
 
 [+] Improve markdown support in READMEs #12

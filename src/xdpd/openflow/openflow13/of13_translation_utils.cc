@@ -496,7 +496,6 @@ of13_translation_utils::of13_map_flow_entry_matches(
 /**
 * Maps a of1x_action from an OF1.3 Header
 */
-//FIXME TODO XXX: cofaction should have appropiate getters and setters instead of having  to access internals of the class!
 void
 of13_translation_utils::of13_map_flow_entry_actions(
 		crofctl *ctl,
@@ -1342,7 +1341,6 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 
 		case OF1X_AT_PUSH_MPLS: {
 			actions.add_action_push_mpls(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));
-
 		} break;
 		case OF1X_AT_PUSH_VLAN: {
 			actions.add_action_push_vlan(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));

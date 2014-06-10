@@ -194,8 +194,8 @@ int processing_core_process_packets(void* not_used){
 
 #ifdef GNU_LINUX_DPDK_ENABLE_PEX			
 			//handle PEX ports
-			for(i=0, l=0; l<total_num_of_pex_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
-				
+			for(i=0, l=0; l<total_num_of_pex_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i)
+			{	
 				if(!tasks->pex_ports[i].present)
 					continue;
 					
@@ -206,7 +206,8 @@ int processing_core_process_packets(void* not_used){
 		}
 		
 		//Process RX
-		for(i=0;i<tasks->num_of_rx_ports;++i){
+		for(i=0;i<tasks->num_of_rx_ports;++i)
+		{
 			port = tasks->port_list[i];
 			if(likely(port != NULL) && likely(port->up)){ //This CAN happen while deschedulings
 				//Process RX&pipeline 
@@ -327,9 +328,13 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 */
 rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 {
+	unsigned int i, index, *num_of_ports;	
 
-	unsigned int i, index, *num_of_ports;
-	pex_port_state_t* port_state = (pex_port_state_t*)port->platform_port_state;	
+	if(port->type != PORT_TYPE_PEX_DPDK && port->type != PORT_TYPE_PEX_KNI)
+	{
+		assert(0);
+		return ROFL_FAILURE;
+	}
 
 	rte_spinlock_lock(&mutex);
 
@@ -341,7 +346,8 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 	}
 
 	//Select core
-	for(current_core_index++, index=current_core_index;;){
+	for(current_core_index++, index=current_core_index;;)
+	{
 		if( processing_core_tasks[current_core_index].available == true && processing_core_tasks[current_core_index].num_of_rx_ports != PROCESSING_MAX_PORTS_PER_CORE )
 			break;
 
@@ -352,7 +358,8 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 			current_core_index++;
 	
 		//We've already checked all positions. No core free. Return
-		if(current_core_index == index){
+		if(current_core_index == index)
+		{
 			//All full 
 			ROFL_ERR(DRIVER_NAME"[processing] All cores are full. No available port slots\n");
 			assert(0);		
@@ -366,17 +373,14 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 	num_of_ports = &processing_core_tasks[current_core_index].num_of_rx_ports;
 
 	//Assign port and exit
-	if(processing_core_tasks[current_core_index].port_list[*num_of_ports] != NULL){
+	if(processing_core_tasks[current_core_index].port_list[*num_of_ports] != NULL)
+	{
 		ROFL_ERR(DRIVER_NAME"[processing] Corrupted state on the core task list\n");
 		assert(0);
 		rte_spinlock_unlock(&mutex);
 		return ROFL_FAILURE;
 	}
 
-	//Store attachment info (back reference)
-	port_state->core_id = current_core_index; 
-	port_state->core_port_slot = *num_of_ports;
-	
 	assert(port != NULL);
 	
 	processing_core_tasks[current_core_index].port_list[*num_of_ports] = port;
@@ -384,10 +388,35 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 	
 	index = current_core_index;
 
-	//Mark port as present (and scheduled) on all cores (TX)
-	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_core_tasks[i].pex_ports[port_state->pex_id].present = true;
-		processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = index;
+	if(port->type == PORT_TYPE_PEX_DPDK)
+	{
+		pex_port_state_dpdk_t* port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
+
+		//Store attachment info (back reference)
+		port_state->core_id = current_core_index; 
+		port_state->core_port_slot = *num_of_ports;
+
+		//Mark port as present (and scheduled) on all cores (TX)
+		for(i=0;i<RTE_MAX_LCORE;++i)
+		{
+			processing_core_tasks[i].pex_ports[port_state->pex_id].present = true;
+			processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = index;
+		}
+	}
+	else
+	{
+		pex_port_state_kni_t* port_state = (pex_port_state_kni_t*)port->platform_port_state;
+
+		//Store attachment info (back reference)
+		port_state->core_id = current_core_index; 
+		port_state->core_port_slot = *num_of_ports;
+
+		//Mark port as present (and scheduled) on all cores (TX)
+		for(i=0;i<RTE_MAX_LCORE;++i)
+		{
+			processing_core_tasks[i].pex_ports[port_state->pex_id].present = true;
+			processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = index;
+		}
 	}
 
 	//Increment total counter
@@ -395,8 +424,10 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 	
 	rte_spinlock_unlock(&mutex);
 
-	if(!processing_core_tasks[index].active){
-		if(rte_eal_get_lcore_state(index) != WAIT){
+	if(!processing_core_tasks[index].active)
+	{
+		if(rte_eal_get_lcore_state(index) != WAIT)
+		{
 			assert(0);
 			rte_panic("Core status corrupted!");
 		}
@@ -410,7 +441,16 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 		ROFL_DEBUG_VERBOSE("Post-launching core %u due to scheduling action of port %p\n", index, port);
 	}
 	
-	port_state->scheduled = true;
+	if(port->type == PORT_TYPE_PEX_DPDK)
+	{
+		pex_port_state_dpdk_t* port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
+		port_state->scheduled = true;
+	}
+	else
+	{
+		pex_port_state_kni_t* port_state = (pex_port_state_kni_t*)port->platform_port_state;
+		port_state->scheduled = true;
+	}
 	
 	return ROFL_SUCCESS;
 }
@@ -481,59 +521,119 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 rofl_result_t processing_deschedule_pex_port(switch_port_t* port)
 {
 	unsigned int i;
-	pex_port_state_t* port_state = (pex_port_state_t*)port->platform_port_state;	
-	core_tasks_t* core_task = &processing_core_tasks[port_state->core_id];
-
-	assert(port->type == PORT_TYPE_PEX);
-
-	if(port_state->scheduled == false){
-		ROFL_ERR(DRIVER_NAME"[processing] Tyring to descheduled an unscheduled PEX port\n");
-		assert(0);
-		return ROFL_FAILURE;
-	}
-
-	rte_spinlock_lock(&mutex);
-
-	//This loop copies from descheduled port, all the rest of the ports
-	//one up, so that list of ports is contiguous (0...N-1)
-
-	assert(core_task->num_of_rx_ports != 0);
-
-	for(i=(core_task->num_of_rx_ports-1); i > port_state->core_port_slot; i--)
-		core_task->port_list[i-1] = core_task->port_list[i];	
 	
-	//Cleanup the last position
-	core_task->num_of_rx_ports--;
-	core_task->port_list[core_task->num_of_rx_ports] = NULL;
+	assert(port->type == PORT_TYPE_PEX_DPDK || port->type == PORT_TYPE_PEX_KNI);
+	
+	if(port->type == PORT_TYPE_PEX_DPDK)
+	{
+	
+		pex_port_state_dpdk_t* port_state = (pex_port_state_dpdk_t*)port->platform_port_state;	
+		core_tasks_t* core_task = &processing_core_tasks[port_state->core_id];
 
-	//There are no more ports, so simply stop core
-	if(core_task->num_of_rx_ports == 0){
-		if(rte_eal_get_lcore_state(port_state->core_id) != RUNNING){
-			ROFL_ERR(DRIVER_NAME"[processing] Corrupted state; port was marked as active, but EAL informs it was not running..\n");
+		if(port_state->scheduled == false){
+			ROFL_ERR(DRIVER_NAME"[processing] Tyring to descheduled an unscheduled PEX port\n");
 			assert(0);
-			
+			return ROFL_FAILURE;
 		}
-		
-		ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down core %u, since port list is empty\n",i);
-		
-		core_task->active = false;
-		
-		//Wait for core to stop
-		rte_eal_wait_lcore(port_state->core_id);
-	}
-	
-	//Decrement total counter
-	total_num_of_pex_ports--;
-	
-	//Mark PEX port as NOT present anymore (descheduled) on all cores (TX)
-	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_core_tasks[i].pex_ports[port_state->pex_id].present = false;
-		processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = 0xFFFFFFFF;
-	}
 
-	rte_spinlock_unlock(&mutex);	
+		rte_spinlock_lock(&mutex);
+
+		//This loop copies from descheduled port, all the rest of the ports
+		//one up, so that list of ports is contiguous (0...N-1)
+
+		assert(core_task->num_of_rx_ports != 0);
+
+		for(i=(core_task->num_of_rx_ports-1); i > port_state->core_port_slot; i--)
+			core_task->port_list[i-1] = core_task->port_list[i];	
 	
-	port_state->scheduled = false;
+		//Cleanup the last position
+		core_task->num_of_rx_ports--;
+		core_task->port_list[core_task->num_of_rx_ports] = NULL;
+
+		//There are no more ports, so simply stop core
+		if(core_task->num_of_rx_ports == 0){
+			if(rte_eal_get_lcore_state(port_state->core_id) != RUNNING){
+				ROFL_ERR(DRIVER_NAME"[processing] Corrupted state; port was marked as active, but EAL informs it was not running..\n");
+				assert(0);
+			
+			}
+		
+			ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down core %u, since port list is empty\n",i);
+		
+			core_task->active = false;
+		
+			//Wait for core to stop
+			rte_eal_wait_lcore(port_state->core_id);
+		}
+	
+		//Decrement total counter
+		total_num_of_pex_ports--;
+	
+		//Mark PEX port as NOT present anymore (descheduled) on all cores (TX)
+		for(i=0;i<RTE_MAX_LCORE;++i){
+			processing_core_tasks[i].pex_ports[port_state->pex_id].present = false;
+			processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = 0xFFFFFFFF;
+		}
+
+		rte_spinlock_unlock(&mutex);	
+	
+		port_state->scheduled = false;
+	}
+	else	//if(port->type == PORT_TYPE_PEX_DPDK)
+	{
+	
+		pex_port_state_kni_t* port_state = (pex_port_state_kni_t*)port->platform_port_state;	
+		core_tasks_t* core_task = &processing_core_tasks[port_state->core_id];
+
+		if(port_state->scheduled == false){
+			ROFL_ERR(DRIVER_NAME"[processing] Tyring to descheduled an unscheduled PEX port\n");
+			assert(0);
+			return ROFL_FAILURE;
+		}
+
+		rte_spinlock_lock(&mutex);
+
+		//This loop copies from descheduled port, all the rest of the ports
+		//one up, so that list of ports is contiguous (0...N-1)
+
+		assert(core_task->num_of_rx_ports != 0);
+
+		for(i=(core_task->num_of_rx_ports-1); i > port_state->core_port_slot; i--)
+			core_task->port_list[i-1] = core_task->port_list[i];	
+	
+		//Cleanup the last position
+		core_task->num_of_rx_ports--;
+		core_task->port_list[core_task->num_of_rx_ports] = NULL;
+
+		//There are no more ports, so simply stop core
+		if(core_task->num_of_rx_ports == 0){
+			if(rte_eal_get_lcore_state(port_state->core_id) != RUNNING){
+				ROFL_ERR(DRIVER_NAME"[processing] Corrupted state; port was marked as active, but EAL informs it was not running..\n");
+				assert(0);
+			
+			}
+		
+			ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down core %u, since port list is empty\n",i);
+		
+			core_task->active = false;
+		
+			//Wait for core to stop
+			rte_eal_wait_lcore(port_state->core_id);
+		}
+	
+		//Decrement total counter
+		total_num_of_pex_ports--;
+	
+		//Mark PEX port as NOT present anymore (descheduled) on all cores (TX)
+		for(i=0;i<RTE_MAX_LCORE;++i){
+			processing_core_tasks[i].pex_ports[port_state->pex_id].present = false;
+			processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = 0xFFFFFFFF;
+		}
+
+		rte_spinlock_unlock(&mutex);	
+	
+		port_state->scheduled = false;
+	}
 
 	return ROFL_SUCCESS;
 }

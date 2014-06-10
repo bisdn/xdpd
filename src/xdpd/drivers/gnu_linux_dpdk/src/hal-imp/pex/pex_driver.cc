@@ -29,13 +29,13 @@ pex_port_name_list_t* hal_driver_get_all_pex_port_names()
 
 hal_result_t hal_driver_pex_create_pex_port(const char *pex_name, const char *pex_port_name, PexType pexType)
 {
-	if(pexType != DPDK)
+	if((pexType != DPDK) && (pexType != EXTERNAL))
 	{
 		return HAL_FAILURE;
 	}
 
 	//create the port and initialize the structure for the pipeline
-	if(port_manager_create_pex_port(pex_name, pex_port_name) != ROFL_SUCCESS)
+	if(port_manager_create_pex_port(pex_name, pex_port_name, (pexType == DPDK)? PORT_TYPE_PEX_DPDK : PORT_TYPE_PEX_KNI) != ROFL_SUCCESS)
 	{
 		return HAL_FAILURE;
 	}
@@ -62,14 +62,14 @@ hal_result_t hal_driver_pex_destroy_pex_port(const char *pex_port_name)
 
 hal_result_t hal_driver_pex_start_pex_port(uint32_t pex_port_id)
 {
-	if(pex_port[pex_port_id].pexType == DPDK)
+	if(pex_port[pex_port_id].pexType == DPDK || pex_port[pex_port_id].pexType == EXTERNAL)
 	{
 		//In this case, noting to do
 		return HAL_SUCCESS;
 	}
 	else
 	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Only DPDK PEX are currenty supported\n");
+		ROFL_ERR(DRIVER_NAME"[port_manager] Only DPDK and KNI PEX are currenty supported\n");
         return HAL_FAILURE;	
 	}
 }
@@ -77,7 +77,7 @@ hal_result_t hal_driver_pex_start_pex_port(uint32_t pex_port_id)
 hal_result_t hal_driver_pex_stop_pex_port(uint32_t pex_port_id)
 {
 
-	if(pex_port[pex_port_id].pexType == DPDK)
+	if(pex_port[pex_port_id].pexType == DPDK || pex_port[pex_port_id].pexType == EXTERNAL)
 	{
 		//In this case, noting to do
 		return HAL_SUCCESS;

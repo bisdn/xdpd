@@ -137,14 +137,14 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 *****************************************************************************/
 
 inline void
-tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
+tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 {
-	assert(port->type == PORT_TYPE_PEX);
+	assert(port->type == PORT_TYPE_PEX_DPDK);
 
 	int ret;
 	uint32_t tmp, next_tmp;
 	uint64_t local_flush_time, cache_last_flush_time;
-	pex_port_state *port_state = (pex_port_state_t*)port->platform_port_state;
+	pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 	struct rte_mbuf* mbuf;
 	
 	//Get mbuf pointer
@@ -193,17 +193,44 @@ tx_pkt_pex_port(switch_port_t* port, datapacket_t* pkt)
 	}
 }
 
+inline void
+tx_pkt_kni_pex_port(switch_port_t* port, datapacket_t* pkt)
+{
+	assert(port->type == PORT_TYPE_PEX_KNI);
+/*
+	int ret;
+	pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
+	struct rte_mbuf* mbuf;
+	
+	//Get mbuf pointer
+	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
+
+//ret = rte_ring_mp_enqueue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)queue->burst, queue->len);
+	ret = rte_kni_tx_burst(port_state->kni, pkts_burst, nb_rx);
+
+		else
+	{
+		//The queue is full, and the pkt must be dropped
+		
+		//XXX port_statistics[port].dropped++
+		
+		rte_pktmbuf_free(mbuf);
+	}*/
+}
+
+
 void inline
 flush_pex_port(switch_port_t *port)
 {
 	//IVANO - FIXME: this function is probably wrong
+	return;
 
 	uint64_t tmp_time;
 	uint32_t tmp_counter_from_last_flush;
 	
 	assert(port != NULL);
 
-	pex_port_state *port_state = (pex_port_state_t*)port->platform_port_state;
+	pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 
 	//If there are pkts into the rte_ring, check if the timeout is expired
 	tmp_time = port_state->last_flush_time;

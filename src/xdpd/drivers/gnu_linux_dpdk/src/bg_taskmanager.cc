@@ -130,6 +130,7 @@ int process_timeouts(){
 void* x86_background_tasks_routine(void* param){
 
 	static struct timeval last_time_stats_updated={0,0}, last_time_links_updated={0,0}, now;
+	static struct timeval last_time_kni_commands_handled={0,0};
 
 	while(bg_continue_execution){
 		
@@ -149,6 +150,15 @@ void* x86_background_tasks_routine(void* param){
 			iface_manager_update_stats();
 			last_time_stats_updated = now;
 		}
+		
+		//Handle commands for KNI ports
+#ifdef GNU_LINUX_DPDK_ENABLE_PEX
+		if(get_time_difference_ms(&now, &last_time_kni_commands_handled)>=BG_HANDLE_KNI_COMMANDS_MS)
+		{
+			iface_manager_handle_kni_commands();
+			last_time_kni_commands_handled = now;
+		}
+#endif
 			
 		//Throttle
 		usleep(LSW_TIMER_SLOT_MS*1000);

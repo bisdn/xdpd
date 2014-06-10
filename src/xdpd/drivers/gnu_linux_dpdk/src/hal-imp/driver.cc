@@ -250,7 +250,7 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	for(i=0;i<sw->max_ports;i++){
 
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
-			if(sw->logical_ports[i].port->type == PORT_TYPE_PEX)
+			if(sw->logical_ports[i].port->type == PORT_TYPE_PEX_DPDK)
 				//Deschedule a PEX port
 				processing_deschedule_pex_port(sw->logical_ports[i].port);
 			else if(sw->logical_ports[i].port->type != PORT_TYPE_VIRTUAL)	
@@ -374,18 +374,17 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 		* Virtual link
 		*/
 		//Do nothing
-	}else if (port->type == PORT_TYPE_PEX)
+	}else if (port->type == PORT_TYPE_PEX_DPDK || port->type == PORT_TYPE_PEX_KNI)
 	{
 		/*
-		*	Port connected to a PEX
+		*	Port connected to a PEX (the type of the PEX does not matter
 		*/
 		if(processing_schedule_pex_port(port) != ROFL_SUCCESS)
 		{
 			assert(0);
 			return HAL_FAILURE;
 		}
-	}
-	else
+	}else
 	{
 		/*
 		*  PHYSICAL
@@ -537,17 +536,17 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 			
 		}
 	}
-	else if (port->type == PORT_TYPE_PEX)
+	else if (port->type == PORT_TYPE_PEX_DPDK || port->type == PORT_TYPE_PEX_KNI)
+    {
+        /*
+        *       Port connected to a PEX
+        */
+        if(processing_deschedule_pex_port(port) != ROFL_SUCCESS)
         {
-                /*
-                *       Port connected to a PEX
-                */
-                if(processing_deschedule_pex_port(port) != ROFL_SUCCESS)
-                {
-                        assert(0);
-                        return HAL_FAILURE;
-                }
+                assert(0);
+                return HAL_FAILURE;
         }
+	}
 	else{
 		/*
 		*  PHYSICAL

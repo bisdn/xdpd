@@ -41,9 +41,9 @@ std::list<std::string> pex_manager::list_available_pex_port_names()
 
 void pex_manager::create_pex_port(std::string& pex_name, std::string& pex_port_name, PexType pexType)
 {
-	if(pexType != DPDK)
+	if(pexType == INTERNAL)
 	{
-		ROFL_ERR("%s ERROR: only DPDK type is currently implemented\n", MODULE_NAME);
+		ROFL_ERR("%s ERROR: only DPDK and EXTERNAL types are currently implemented\n", MODULE_NAME);
 		throw ePexmInvalidPEX();	
 	}
 

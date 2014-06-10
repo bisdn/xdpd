@@ -17,9 +17,14 @@
 #include <rte_ethdev.h>
 #include <rte_ring.h>
 #include <rte_launch.h>
+#include <rte_kni.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
+
+#include <sys/socket.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
 
 #include "port_state.h"
 #include "../processing/processing.h"
@@ -88,6 +93,11 @@ void iface_manager_update_links(void);
 */
 void iface_manager_update_stats(void);
 
+/**
+* Handle commands for KNI ports
+*/
+void iface_manager_handle_kni_commands(void);
+
 /****************************************************************************
 *						Funtions specific for PEX ports						*
 *****************************************************************************/
@@ -105,8 +115,9 @@ void iface_manager_update_stats(void);
  * 
  * @param pex_name		Name of the PEX associated with the port to be created
  * @param port_name		Name of the port to be created
+ * @param pex_type		Type of the PEX to be created
  */
-rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *port_name);
+rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *port_name, port_type_t pex_port_type);
 
 /**
  * @name port_manager_destroy_pex_port

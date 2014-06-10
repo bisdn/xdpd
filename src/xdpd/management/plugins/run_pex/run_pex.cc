@@ -21,7 +21,7 @@ void runPEX::init()
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] This plugin instantiates some PEX, whose description is embedded into the code.\n");
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] **************************\n\n");	
 	
-	std::string pexName1 = "pex25";
+	std::string pexName1 = "vEth25";
 	std::string pexName2 = "pex11";
 	
 	std::string scriptPath = "/home/ivano/Desktop/pex";
@@ -29,13 +29,13 @@ void runPEX::init()
 	//Create two PEX
 	try
 	{
-		pex_manager::create_pex(pexName1,DPDK,scriptPath);
+		pex_manager::create_pex_port(pexName1,pexName1,EXTERNAL);
 	}catch(...)
 	{
 		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create %s\n",pexName1.c_str());
 		return;
 	}
-
+	
 /*	try{
 		pex_manager::create_pex(pexName2,scriptPath,0x2,4,25);
 	}catch(...)
@@ -44,9 +44,10 @@ void runPEX::init()
 		return;
 	}
 */
+
 /*	try{	
 		ROFL_INFO("[xdpd]["PLUGIN_NAME"]Existing PEX:\n");
-		std::list<std::string> available_pex = pex_manager::list_available_pex_names();	
+		std::list<std::string> available_pex = pex_manager::list_available_pex_port_names();	
 		for(std::list<std::string>::iterator it = available_pex.begin(); it != available_pex.end(); it++)
 		{
 			ROFL_INFO("[xdpd]["PLUGIN_NAME"]\t%s\n",(*it).c_str());
@@ -56,8 +57,7 @@ void runPEX::init()
 		ROFL_ERR("[xdpd]["PLUGIN_NAME" No PEX exists\n");
 		return;
 	}
-*/	
-
+*/
 
 	if(plugin_manager::get_plugins().size() != 1)
 	{
@@ -103,9 +103,11 @@ void runPEX::init()
 		}
 	}
 
-	//Sleep some seconds, before destroying the PEX		
-/*	sleep(10);	
-		
+	//Sleep some seconds before destroying the PEX		
+	sleep(100);
+	
+	ROFL_INFO("[xdpd]["PLUGIN_NAME"] ***********************************\n");
+	ROFL_INFO("[xdpd]["PLUGIN_NAME"] ***********************************\n");	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Destroying all the PEX just created\n");	
 	
 	if(plugin_manager::get_plugins().size() != 1)
@@ -120,7 +122,7 @@ void runPEX::init()
 		{	
 			ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", pexName1.c_str(),dpid);
 		}
-		
+/*		
 		//Bring down the port
 		port_manager::bring_down(pexName2);
 		try
@@ -130,16 +132,16 @@ void runPEX::init()
 		}catch(...)
 		{	
 			ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", pexName2.c_str(),dpid);
-		}
+		}*/
 	}
 
 	try
 	{
-		pex_manager::destroy_pex(pexName1);
+		pex_manager::destroy_pex_port(pexName1);
 	}catch(...){}
-	try
+/*	try
 	{
-		pex_manager::destroy_pex(pexName2);
+		pex_manager::destroy_pex_port(pexName2);
 	}catch(...){}
 	*/
 	if(plugin_manager::get_plugins().size() == 1)

@@ -435,8 +435,10 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	//Snapshoting the port *before* it is detached 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
 	
-	if(!port_snapshot)
+	if(!port_snapshot){
+		assert(0);
 		return HAL_FAILURE;
+	}
 	
 	//Remove it from the iomanager (do not feed more packets)
 	if(iomanager::remove_port((ioport*)port->platform_port_state) != ROFL_SUCCESS){
@@ -502,6 +504,9 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 
 		//notify port detached and deleted
 		hal_cmm_notify_port_delete(port_snapshot);
+	}else{
+		//There was no notification so release
+		switch_port_destroy_snapshot(port_snapshot);
 	}
 	
 	return HAL_SUCCESS; 

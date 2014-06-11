@@ -38,6 +38,9 @@
 //Frequency(period) of port stats updating in milliseconds
 #define BG_UPDATE_PORT_STATS_MS 2000
 
+//Frequency(period) of handling KNI commands in milliseconds
+#define BG_HANDLE_KNI_COMMANDS_MS 1000
+
 /*
 * I/O stuff
 */

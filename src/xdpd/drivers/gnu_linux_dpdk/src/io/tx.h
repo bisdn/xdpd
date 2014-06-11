@@ -136,6 +136,10 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 *						Funtions specific for PEX ports						*
 *****************************************************************************/
 
+/*
+*	DPDK
+*/
+
 inline void
 tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 {
@@ -193,34 +197,8 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 	}
 }
 
-inline void
-tx_pkt_kni_pex_port(switch_port_t* port, datapacket_t* pkt)
-{
-	assert(port->type == PORT_TYPE_PEX_KNI);
-/*
-	int ret;
-	pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
-	struct rte_mbuf* mbuf;
-	
-	//Get mbuf pointer
-	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
-
-//ret = rte_ring_mp_enqueue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)queue->burst, queue->len);
-	ret = rte_kni_tx_burst(port_state->kni, pkts_burst, nb_rx);
-
-		else
-	{
-		//The queue is full, and the pkt must be dropped
-		
-		//XXX port_statistics[port].dropped++
-		
-		rte_pktmbuf_free(mbuf);
-	}*/
-}
-
-
 void inline
-flush_pex_port(switch_port_t *port)
+flush_dpdk_pex_port(switch_port_t *port)
 {
 	//IVANO - FIXME: this function is probably wrong
 	return;
@@ -246,6 +224,99 @@ flush_pex_port(switch_port_t *port)
 		tmp_counter_from_last_flush = port_state->counter_from_last_flush;
 	}
 }
+
+/*
+*	KNI
+*/
+inline void
+flush_kni_pex_port(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue, unsigned int queue_id)
+{
+	unsigned ret;
+
+	if( queue->len == 0 || unlikely((port->up == false)) ){
+		return;
+	}
+
+	/*ROFL_DEBUG_VERBOSE*/ROFL_INFO(DRIVER_NAME"[io][%s(%u)] Trying to flush burst(enqueue in lcore ring) on port queue_id %u of length: %u\n", port->name,  port_id, queue_id, queue->len);
+		
+	//Enqueue to the lcore (if it'd we us, we could probably call to transmit directly)
+	pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
+		
+	assert(port_state != NULL);
+	
+	ret = rte_kni_tx_burst(port_state->kni, queue->burst, queue->len);
+						
+	//XXX port_statistics[port].tx += ret;
+	
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
+	
+	ROFL_INFO(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
+
+	if (unlikely(ret < queue->len)) 
+	{
+		//XXX port_statistics[port].dropped += (n - ret);
+		do {
+			rte_pktmbuf_free(queue->burst[ret]);
+		} while (++ret < queue->len);
+	}
+
+	//Reset queue size	
+	queue->len = 0;
+}
+
+inline void 
+tx_pkt_kni_pex_port(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt)
+{
+	struct rte_mbuf* mbuf;
+	struct mbuf_burst* pkt_burst;
+	unsigned int port_id, len;
+
+	//Get mbuf pointer
+	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
+	port_id = ((pex_port_state_kni_t*)port->platform_port_state)->pex_id;
+	
+	fprintf(stderr,"PKT TO BE SENT TO PORT %s\n",port->name);
+
+#ifdef DEBUG
+	if(unlikely(!mbuf)){
+		assert(0);
+		return;
+	}
+#endif
+	
+	//Recover core task
+	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
+	
+	//Recover burst container (cache)
+	pkt_burst = &tasks->pex_ports[port_id].tx_queues_burst[queue_id];	
+
+#if DEBUG	
+	if(unlikely(!pkt_burst)){
+		rte_pktmbuf_free(mbuf);
+		assert(0);
+		return;
+	}
+#endif
+
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+
+	//Enqueue
+	len = pkt_burst->len; 
+	pkt_burst->burst[len] = mbuf;
+	len++;
+
+	//If burst is full => trigger send
+	if ( unlikely(!tasks->active) || unlikely(len == IO_IFACE_MAX_PKT_BURST)) { //If buffer is full or mgmt core
+		pkt_burst->len = len;
+		flush_kni_pex_port(port, port_id, pkt_burst, queue_id);
+		return;
+	}
+
+	pkt_burst->len = len;
+
+	return;
+}
+
 
 /****************************************************************************
 *						Funtions specific for vlinks						*

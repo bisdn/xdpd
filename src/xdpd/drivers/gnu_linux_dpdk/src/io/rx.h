@@ -67,7 +67,16 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
 		burst_len = rte_kni_rx_burst(port_state->kni, pkts_burst, IO_IFACE_MAX_PKT_BURST);
 		if(burst_len != 0)
+		{
 			ROFL_INFO(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
+			for(i=0;i<burst_len;i++)
+			{
+				unsigned char *tmp = rte_pktmbuf_mtod(pkts_burst[i],unsigned char *);
+				unsigned int tmp_len = rte_pktmbuf_pkt_len(pkts_burst[i]);	 
+				printf("#%d length: %d\n",i,tmp_len);	
+				ROFL_INFO("#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
+			}	
+		}
 	}
 	else{
 #endif
@@ -100,7 +109,6 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		//out from the pipeline
 		pkt_state->mbuf = mbuf;
 
-#if DEBUG
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
 		assert(mbuf->pkt.nb_segs == 1);
 
@@ -110,7 +118,12 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 #ifdef GNU_LINUX_DPDK_ENABLE_PEX	
 		if(port->type == PORT_TYPE_PEX_DPDK)
 		{
+			//IVANO - FIXME: not sure that the mapping is needed
 			tmp_port = pex_port_mapping[mbuf->pkt.in_port];
+		}
+		else if(port->type == PORT_TYPE_PEX_KNI)
+		{
+			tmp_port=port;
 		}else{
 #endif
 			tmp_port = phy_port_mapping[mbuf->pkt.in_port];
@@ -119,11 +132,10 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 #endif
 
 		if(unlikely(!tmp_port)){
-			//Not attached	
+			//Not attached
 			rte_pktmbuf_free(mbuf);
 			continue;
 		}
-#endif
 
 		//Init&classify	
 		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, tmp_port->of_port_num, 0, true, false);

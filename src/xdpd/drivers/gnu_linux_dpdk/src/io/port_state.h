@@ -26,9 +26,9 @@ typedef struct dpdk_port_state dpdk_port_state_t;
 /**
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
 *
-* @brief Represent the state of a PEX port
+* @brief Represent the state of a DPDK PEX port
 */
-struct pex_port_state
+struct pex_port_state_dpdk
 {
 	/**
 	* @brief queue used to send packets to a PEX
@@ -69,6 +69,43 @@ struct pex_port_state
 	
 }__rte_cache_aligned;
 
-typedef struct pex_port_state pex_port_state_t;  
+typedef struct pex_port_state_dpdk pex_port_state_dpdk_t;  
+
+
+
+/**
+* @author Ivano Cerrato<ivano.cerrato (at) polito.it>
+*
+* @brief Represent the state of a KNI PEX port
+*/
+struct pex_port_state_kni
+{
+	/**
+	*	@brief: KNI context
+	*/
+	struct rte_kni *kni;
+	
+	/**
+	*	@brief: flag to used to avoid a double
+	*		notification to the CMM when the
+	*		port is created
+	*/
+	bool just_created;
+	
+	/**
+	* @brief Core attachement information
+	*/
+	bool scheduled;
+	unsigned int core_id;
+	unsigned int core_port_slot;
+	
+	/**
+	* @brief Identifier of the PEX port
+	*/
+	unsigned int pex_id;
+	
+}__rte_cache_aligned;
+
+typedef struct pex_port_state_kni pex_port_state_kni_t;  
 
 #endif //_PORT_STATE_H_

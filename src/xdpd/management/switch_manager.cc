@@ -325,6 +325,10 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 		
 	pthread_rwlock_unlock(&switch_manager::rwlock);
 
+
+	if(sw_snapshot)
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)sw_snapshot);	
+
 	if(hal_flows)
 		of1x_destroy_stats_flow_msg(hal_flows);	
 	if(entry)

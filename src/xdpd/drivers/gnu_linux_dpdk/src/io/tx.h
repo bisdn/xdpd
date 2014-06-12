@@ -228,30 +228,56 @@ flush_dpdk_pex_port(switch_port_t *port)
 /*
 *	KNI
 */
+
 inline void
-flush_kni_pex_port(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue, unsigned int queue_id)
+transmit_kni_pex_port_burst(switch_port_t* port, unsigned int port_id, struct rte_mbuf** burst)
+{	
+	unsigned int ret, len;
+
+	//Dequeue a burst from the TX ring	
+	len = rte_ring_mc_dequeue_burst(port_tx_pex_lcore_queue[port_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);      
+
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Trying to transmit burst on KNI port %s of length %u\n",pex_port_mapping[port_id]->name, len);
+
+	//Send burst
+	pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
+	ret = rte_kni_tx_burst(port_state->kni, burst, len);
+	
+	//XXX port_statistics[port].tx += ret;
+	if(ret > 0)
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Transmited %u pkts, on port %s\n", ret, pex_port_mapping[port_id]->name);
+
+	if (unlikely(ret < len)) {
+		//XXX port_statistics[port].dropped += (n - ret);
+		do {
+			rte_pktmbuf_free(burst[ret]);
+		} while (++ret < len);
+	}
+}
+
+inline void
+flush_kni_pex_port_burst(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue)
 {
 	unsigned ret;
 
 	if( queue->len == 0 || unlikely((port->up == false)) ){
 		return;
 	}
-
-	/*ROFL_DEBUG_VERBOSE*/ROFL_INFO(DRIVER_NAME"[io][%s(%u)] Trying to flush burst(enqueue in lcore ring) on port queue_id %u of length: %u\n", port->name,  port_id, queue_id, queue->len);
 		
 	//Enqueue to the lcore (if it'd we us, we could probably call to transmit directly)
 	pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
 		
 	assert(port_state != NULL);
 	
-	ret = rte_kni_tx_burst(port_state->kni, queue->burst, queue->len);
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Trying to flush burst(enqueue in lcore ring) on KNI port %s\n", port->name, queue->len);
+	
+	
+	ret = rte_ring_mp_enqueue_burst(port_tx_pex_lcore_queue[port_id], (void **)queue->burst, queue->len);
 						
 	//XXX port_statistics[port].tx += ret;
 	
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] --- Flushed %u pkts, on KNI port %s\n", port_id, ret, port->name);
 	
-	ROFL_INFO(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
-
 	if (unlikely(ret < queue->len)) 
 	{
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -265,7 +291,7 @@ flush_kni_pex_port(switch_port_t* port, unsigned int port_id, struct mbuf_burst*
 }
 
 inline void 
-tx_pkt_kni_pex_port(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt)
+tx_pkt_kni_pex_port(switch_port_t* port, datapacket_t* pkt)
 {
 	struct rte_mbuf* mbuf;
 	struct mbuf_burst* pkt_burst;
@@ -275,8 +301,6 @@ tx_pkt_kni_pex_port(switch_port_t* port, unsigned int queue_id, datapacket_t* pk
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 	port_id = ((pex_port_state_kni_t*)port->platform_port_state)->pex_id;
 	
-	fprintf(stderr,"PKT TO BE SENT TO PORT %s\n",port->name);
-
 #ifdef DEBUG
 	if(unlikely(!mbuf)){
 		assert(0);
@@ -288,7 +312,7 @@ tx_pkt_kni_pex_port(switch_port_t* port, unsigned int queue_id, datapacket_t* pk
 	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
 	
 	//Recover burst container (cache)
-	pkt_burst = &tasks->pex_ports[port_id].tx_queues_burst[queue_id];	
+	pkt_burst = &tasks->pex_ports[port_id].tx_queues_burst[0];	
 
 #if DEBUG	
 	if(unlikely(!pkt_burst)){
@@ -306,9 +330,10 @@ tx_pkt_kni_pex_port(switch_port_t* port, unsigned int queue_id, datapacket_t* pk
 	len++;
 
 	//If burst is full => trigger send
-	if ( unlikely(!tasks->active) || unlikely(len == IO_IFACE_MAX_PKT_BURST)) { //If buffer is full or mgmt core
+	if ( unlikely(!tasks->active) || unlikely(len == IO_IFACE_MAX_PKT_BURST)) 
+	{ //If buffer is full or mgmt core
 		pkt_burst->len = len;
-		flush_kni_pex_port(port, port_id, pkt_burst, queue_id);
+		flush_kni_pex_port_burst(port, port_id, pkt_burst);
 		return;
 	}
 

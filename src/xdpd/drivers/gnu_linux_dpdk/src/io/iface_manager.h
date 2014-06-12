@@ -48,6 +48,12 @@ extern switch_port_t* pex_port_mapping[PORT_MANAGER_MAX_PORTS];
 */
 extern struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES];
 
+/**
+* TX is served only by the port lcore. The other lcores shall enqueue packets in this queue when they need to be flushed.
+* This array is similar to the previous one but, for each port, it defines a single queue. In fact, PEX ports (DPDK and
+* KNI) does not have many queues
+*/
+extern struct rte_ring* port_tx_pex_lcore_queue[PORT_MANAGER_MAX_PORTS];
 
 
 //C++ extern C

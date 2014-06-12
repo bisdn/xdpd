@@ -201,32 +201,25 @@ int processing_core_process_packets(void* not_used){
 					
 				l++;
 				
-				//make code readable
-				port_queues = &tasks->pex_ports[i];
-				
-				//Check whether is our port (we have to also transmit TX queues)				
-				own_port = (port_queues->core_id == core_id);
-						
-				//Flush (enqueue them in the RX/TX port lcore)
-				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- )
+				if(pex_port_mapping[i]->type == PORT_TYPE_PEX_KNI)
 				{
-					flush_kni_pex_port(pex_port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
-					
-			//		if(own_port)	
-			//			transmit_port_queue_tx_burst(i, j, pkt_burst);
-				}
+					//make code readable
+					port_queues = &tasks->pex_ports[i];
 				
+					//Check whether is our port (we have to also transmit TX queues)				
+					own_port = (port_queues->core_id == core_id);
+						
+					flush_kni_pex_port_burst(pex_port_mapping[i], i, &port_queues->tx_queues_burst[0]);
+				
+					if(own_port)		
+						transmit_kni_pex_port_burst(pex_port_mapping[i],i, pkt_burst);
+				}
+				else
+				{
+					assert(pex_port_mapping[i]->type == PORT_TYPE_PEX_DPDK);
+					flush_dpdk_pex_port(pex_port_mapping[i]);
+				}				
 			}
-			
-			
-/*			for(i=0, l=0; l<total_num_of_pex_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i)
-			{	
-				if(!tasks->pex_ports[i].present)
-					continue;
-					
-				l++;
-				flush_dpdk_pex_port(pex_port_mapping[i]);
-			}*/
 #endif
 		}
 		

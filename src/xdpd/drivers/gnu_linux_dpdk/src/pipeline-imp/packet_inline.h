@@ -1173,7 +1173,10 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 			xdpd::gnu_linux_dpdk::tx_pkt_dpdk_pex_port(port, pkt);
 		}else if(port->type == PORT_TYPE_PEX_KNI)
 		{
-			xdpd::gnu_linux_dpdk::tx_pkt_kni_pex_port(port, pack->output_queue, pkt);
+			/*
+			* KNI PEX port
+			*/
+			xdpd::gnu_linux_dpdk::tx_pkt_kni_pex_port(port, pkt);
 		}
 #endif		
 		else{

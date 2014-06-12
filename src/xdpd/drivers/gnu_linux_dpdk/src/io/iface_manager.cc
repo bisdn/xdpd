@@ -21,6 +21,8 @@ extern struct rte_mempool *pool_direct;
 switch_port_t* phy_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 switch_port_t* pex_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES] = {{NULL}};
+struct rte_ring* port_tx_pex_lcore_queue[PORT_MANAGER_MAX_PORTS] = {NULL};
+
 unsigned int pex_id = 0;
 
 //Initializes the pipeline structure and launches the port 
@@ -786,6 +788,8 @@ static switch_port_t* configure_pex_port_kni(const char *pex_name, const char *p
 		switch_port_destroy(port);
 		return NULL;
 	}
+	
+	//Add TX queue to the pipeline
 			
 	//Create rofl-pipeline queue state	
 	if(switch_port_add_queue(port, 0, (char*)&pex_port, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
@@ -794,6 +798,16 @@ static switch_port_t* configure_pex_port_kni(const char *pex_name, const char *p
 		assert(0);
 		return NULL;
 	}
+		
+	//Add port_tx_pex_lcore_queue
+	port_tx_pex_lcore_queue[pex_id] = rte_ring_create(port->name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
+
+	if(unlikely(port_tx_pex_lcore_queue[pex_id] == NULL ))
+	{
+		ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
+		assert(0);
+		return NULL;
+	}	
 
 	// Create the state of the PEX port
 	
@@ -804,7 +818,7 @@ static switch_port_t* configure_pex_port_kni(const char *pex_name, const char *p
 	memset(&ops, 0, sizeof(ops));
 	
 	sprintf(conf.name,"%s", pex_port);
-	conf.mbuf_size = 2048; //IVANO - TODO: write a constant
+	conf.mbuf_size = IO_MAX_PACKET_SIZE;
 
 	ops.port_id = pex_id;
 	ops.config_network_if = kni_config_network_interface;

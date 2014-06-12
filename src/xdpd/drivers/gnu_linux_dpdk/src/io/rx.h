@@ -69,13 +69,15 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		if(burst_len != 0)
 		{
 			ROFL_INFO(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
+#if DEBUG	
 			for(i=0;i<burst_len;i++)
 			{
 				unsigned char *tmp = rte_pktmbuf_mtod(pkts_burst[i],unsigned char *);
 				unsigned int tmp_len = rte_pktmbuf_pkt_len(pkts_burst[i]);	 
 				printf("#%d length: %d\n",i,tmp_len);	
-				ROFL_INFO("#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
+				ROFL_DEBUG_VERBOSE("#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
 			}	
+#endif
 		}
 	}
 	else{

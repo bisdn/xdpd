@@ -7,6 +7,8 @@
 
 using namespace xdpd;
 
+
+
 flow_entry_snapshot::flow_entry_snapshot(of_version_t ver, uint16_t miss_send_len, of1x_stats_single_flow_msg_t* flow_it){
 
 		rofl::openflow::cofinstructions inst;
@@ -50,6 +52,8 @@ flow_entry_snapshot::flow_entry_snapshot(of_version_t ver, uint16_t miss_send_le
 				break;
 		}	
 }
+
+
 
 rofl_result_t flow_entry_snapshot::map_flow_stats_msg(of_version_t ver, uint16_t miss_send_len, of1x_stats_flow_msg_t* hal_flows, std::list<flow_entry_snapshot>& flows ){
 

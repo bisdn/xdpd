@@ -29,9 +29,39 @@ namespace xdpd {
 class flow_entry_snapshot : public rofl::openflow::cofflow_stats_reply {
 
 public:
+	/**
+	* Main constructor
+	*/
 	flow_entry_snapshot(of_version_t ver, uint16_t miss_send_len, of1x_stats_single_flow_msg_t*);
-	static rofl_result_t map_flow_stats_msg(of_version_t ver, uint16_t miss_send_len, of1x_stats_flow_msg_t* hal_flows, std::list<flow_entry_snapshot>& flows ); 
+
+	/**
+	* Map a list of flow entries 
+	*/
+	static rofl_result_t map_flow_stats_msg(of_version_t ver, uint16_t miss_send_len, of1x_stats_flow_msg_t* hal_flows, std::list<flow_entry_snapshot>& flows );
+
+ 	//Dumping operator
+	friend std::ostream& operator<<(std::ostream& os, const flow_entry_snapshot& f)
+	{
+		os << " p:"<< f.get_priority()<<" cookie:"<<f.get_cookie()<<" pkt_count:"<<f.get_packet_count();
+		os << " {matches";
+
+		//TODO: use (non-exisiting yet) single line dumpers
+
+		os << f.get_match();
+
+		if(f.get_version() != 0x1){
+			os << " {, instructions"; 
+				os << f.get_instructions();	
+		}else{
+			os << " {, actions"; 
+				os << f.get_actions();	
+		}
+
+		os << " }\n";
+		return os;
+	}
 };
+
 
 
 }// namespace xdpd

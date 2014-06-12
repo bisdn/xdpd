@@ -53,7 +53,7 @@ public:
 		os <<std::hex<< "\t [{ matches:0x"<<t.config_match.__submap[0]<<"-"<<t.config_match.__submap[1];
 		os<<", wildcards:0x"<<t.config_wildcards.__submap[0]<<"-"<<t.config_wildcards.__submap[1];
 		os<<", inst:0x"<<t.config_instructions;
-		os<<", MNE:0x"<<t.max_entries<<"}]\n";
+		os<<", MNE:0x"<<t.max_entries<<"}]\n"<<std::dec;
 		return os;
 	}
 
@@ -191,6 +191,7 @@ public:
 	{
 	    os << "OpenFlow switch: "<<sw.name<<"\n"; 
 	    os << "\tversion:"<<sw.get_version_str()<<", # tables:"<<sw.num_of_tables<<", capabilities:0x"<<std::hex<<sw.capabilities<<", miss_send_len:"<<std::dec<<sw.miss_send_len<<"\n"; 
+		//TODO: add controllers
 	
 	    return os;
 	}

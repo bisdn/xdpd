@@ -246,7 +246,7 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, 0x0);
 				break;
 			case rofl::openflow10::OFPAT_SET_NW_DST:
-				field.u32 = NTOHB32(actions.get_action_set_nw_src(index).get_nw_src().ca_s4addr->sin_addr.s_addr);
+				field.u32 = NTOHB32(actions.get_action_set_nw_dst(index).get_nw_dst().ca_s4addr->sin_addr.s_addr);
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0);
 				break;
 			case rofl::openflow10::OFPAT_SET_NW_TOS:

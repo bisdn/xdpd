@@ -563,7 +563,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		//Right after queue we must have an output
 		if(of1x_action->next) {
 			actions.add_action_enqueue(index).set_port_no(get_out_port_reverse(of1x_get_packet_action_field32(of1x_action->next)));
-			actions.add_action_enqueue(index).set_queue_id(of1x_get_packet_action_field32(of1x_action));
+			actions.set_action_enqueue(index).set_queue_id(of1x_get_packet_action_field32(of1x_action));
 		}else{
 			assert(0);
 		}
@@ -571,7 +571,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 	case OF1X_AT_OUTPUT: {
 		//Setting max_len to the switch max_len (we do not support per action max_len)
 		actions.add_action_output(index).set_port_no(get_out_port_reverse(of1x_get_packet_action_field32(of1x_action)));
-		actions.add_action_output(index).set_max_len(of1x_action->send_len);
+		actions.set_action_output(index).set_max_len(of1x_action->send_len);
 	} break;
 	default: {
 		// do nothing

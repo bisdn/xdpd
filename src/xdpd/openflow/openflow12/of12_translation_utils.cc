@@ -264,16 +264,12 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		caddress value(ofmatch.get_ipv4_src_value());
-		caddress mask (ofmatch.get_ipv4_src_mask());
-		match = of1x_init_ip4_src_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
+		match = of1x_init_ip4_src_match(ofmatch.get_ipv4_src_value().get_addr_hbo(), ofmatch.get_ipv4_src_mask().get_addr_hbo());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
-		caddress value(ofmatch.get_ipv4_dst_value());
-		caddress mask (ofmatch.get_ipv4_dst_mask());
-		match = of1x_init_ip4_dst_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
+		match = of1x_init_ip4_dst_match(ofmatch.get_ipv4_dst_value().get_addr_hbo(), ofmatch.get_ipv4_dst_mask().get_addr_hbo());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
@@ -330,10 +326,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		caddress value(ofmatch.get_arp_spa_value());
-		caddress mask(ofmatch.get_arp_spa_mask());
-
-		match = of1x_init_arp_spa_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
+		match = of1x_init_arp_spa_match(ofmatch.get_arp_spa_value().get_addr_hbo(), ofmatch.get_arp_spa_mask().get_addr_hbo());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
@@ -345,26 +338,20 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		caddress value(ofmatch.get_arp_tpa_value());
-		caddress mask (ofmatch.get_arp_tpa_mask());
-		match = of1x_init_arp_tpa_match(value.get_ipv4_addr(), mask.get_ipv4_addr());
+		match = of1x_init_arp_tpa_match(ofmatch.get_arp_tpa_value().get_addr_hbo(), ofmatch.get_arp_tpa_mask().get_addr_hbo());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
-		caddress value(ofmatch.get_ipv6_src_value());
-		uint128__t val = value.get_ipv6_addr();
-		caddress mask (ofmatch.get_ipv6_src_mask());
-		uint128__t msk = mask.get_ipv6_addr();
+		uint128__t val; ofmatch.get_ipv6_src_value().pack(val.val, 16); NTOHB128(val);
+		uint128__t msk; ofmatch.get_ipv6_src_mask().pack(msk.val, 16);  NTOHB128(msk);
 		match = of1x_init_ip6_src_match(val, msk);
 		of1x_add_match_to_entry(entry,match);
 	} catch(...) {}
 	
 	try {
-		caddress value(ofmatch.get_ipv6_dst_value());
-		uint128__t val = value.get_ipv6_addr();
-		caddress mask (ofmatch.get_ipv6_dst_mask());
-		uint128__t msk = mask.get_ipv6_addr();
+		uint128__t val; ofmatch.get_ipv6_dst_value().pack(val.val, 16); NTOHB128(val);
+		uint128__t msk; ofmatch.get_ipv6_dst_mask().pack(msk.val, 16);  NTOHB128(msk);
 		match = of1x_init_ip6_dst_match(val, msk);
 		of1x_add_match_to_entry(entry,match);
 	} catch(...) {}
@@ -385,8 +372,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		caddress value(ofmatch.get_ipv6_nd_target());
-		uint128__t val = value.get_ipv6_addr();
+		uint128__t val; ofmatch.get_ipv6_nd_target().pack(val.val, 16); NTOHB128(val);
 		match = of1x_init_ip6_nd_target_match(val);
 		of1x_add_match_to_entry(entry,match);
 	} catch(...) {}
@@ -681,11 +667,11 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					break;
 
 				case rofl::openflow12::OFPXMT_OFB_IPV6_SRC: {
-					field.u128 = oxm.get_u128value().get_ipv6_addr();
+					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_DST: {
-					field.u128 = oxm.get_u128value().get_ipv6_addr();
+					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_DST, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_FLABEL: {
@@ -693,7 +679,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_FLABEL, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_ND_TARGET: {
-					field.u128 = oxm.get_u128value().get_ipv6_addr();
+					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_ND_SLL: {
@@ -1017,11 +1003,11 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					break;
 
 				case rofl::openflow12::OFPXMT_OFB_IPV6_SRC: {
-					field.u128 = oxm.get_u128value().get_ipv6_addr();
+					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_DST: {
-					field.u128 = oxm.get_u128value().get_ipv6_addr();
+					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_DST, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_FLABEL: {
@@ -1029,7 +1015,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_FLABEL, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_ND_TARGET: {
-					field.u128 = oxm.get_u128value().get_ipv6_addr();
+					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_ND_SLL: {
@@ -1214,10 +1200,8 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 				break;
 			case OF1X_MATCH_ARP_SPA:
 			{
-				caddress addr(AF_INET, "0.0.0.0");
-				caddress mask(AF_INET, "0.0.0.0");
-				addr.set_ipv4_addr(of1x_get_match_value32(m));
-				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
+				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
 				match.set_arp_spa(addr);
 			}
 				break;
@@ -1230,10 +1214,8 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 				break;
 			case OF1X_MATCH_ARP_TPA:
 			{
-				caddress addr(AF_INET, "0.0.0.0");
-				caddress mask(AF_INET, "0.0.0.0");
-				addr.set_ipv4_addr(of1x_get_match_value32(m));
-				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
+				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
 				match.set_arp_tpa(addr, mask);
 			}
 				break;
@@ -1248,19 +1230,15 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 				break;
 			case OF1X_MATCH_IPV4_SRC:
 			{
-				caddress addr(AF_INET, "0.0.0.0");
-				caddress mask(AF_INET, "0.0.0.0");
-				addr.set_ipv4_addr(of1x_get_match_value32(m));
-				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
+				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
 				match.set_ipv4_src(addr, mask);
 			}
 				break;
 			case OF1X_MATCH_IPV4_DST:
 			{
-				caddress addr(AF_INET, "0.0.0.0");
-				caddress mask(AF_INET, "0.0.0.0");
-				addr.set_ipv4_addr(of1x_get_match_value32(m));
-				mask.set_ipv4_addr(of1x_get_match_mask32(m));
+				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
+				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
 				match.set_ipv4_dst(addr, mask);
 			}
 				break;
@@ -1289,18 +1267,18 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 				match.set_icmpv4_code(of1x_get_match_value8(m));
 				break;
 			case OF1X_MATCH_IPV6_SRC: {
-				caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
-				caddress mask(AF_INET6,"0:0:0:0:0:0:0:0");
-				addr.set_ipv6_addr(of1x_get_match_value128(m));
-				addr.set_ipv6_addr(of1x_get_match_mask128(m));
-				match.set_ipv6_src(addr,mask);
+				uint128__t value = of1x_get_match_value128(m); HTONB128(value);
+				caddress_in6 addr; addr.unpack(value.val, 16);
+				uint128__t mask = of1x_get_match_mask128(m); HTONB128(mask);
+				caddress_in6 msk; msk.unpack(mask.val, 16);
+				match.set_ipv6_src(addr,msk);
 				}break;
 			case OF1X_MATCH_IPV6_DST:{
-				caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
-				caddress mask(AF_INET6,"0:0:0:0:0:0:0:0");
-				addr.set_ipv6_addr(of1x_get_match_value128(m));
-				mask.set_ipv6_addr(of1x_get_match_mask128(m));
-				match.set_ipv6_dst(addr, mask);
+				uint128__t value = of1x_get_match_value128(m); HTONB128(value);
+				caddress_in6 addr; addr.unpack(value.val, 16);
+				uint128__t mask = of1x_get_match_mask128(m); HTONB128(mask);
+				caddress_in6 msk; msk.unpack(mask.val, 16);
+				match.set_ipv6_dst(addr, msk);
 				}break;
 			case OF1X_MATCH_IPV6_FLABEL:
 				match.set_ipv6_flabel(of1x_get_match_value32(m));
@@ -1312,8 +1290,8 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 				match.set_icmpv6_code(of1x_get_match_value8(m));
 				break;
 			case OF1X_MATCH_IPV6_ND_TARGET:{
-				caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
-				addr.set_ipv6_addr(of1x_get_match_value128(m));
+				uint128__t value = of1x_get_match_value128(m); HTONB128(value);
+				caddress_in6 addr; addr.unpack(value.val, 16);
 				match.set_ipv6_nd_target(addr);
 				}break;
 			case OF1X_MATCH_IPV6_ND_SLL:{
@@ -1691,24 +1669,21 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		} break;
 		
 		case OF1X_AT_SET_FIELD_IPV6_SRC: {
-			uint128__t value = of1x_get_packet_action_field128(of1x_action);
-			rofl::caddress addr(AF_INET6);
-			addr.set_ipv6_addr(value);
+			uint128__t value = of1x_get_packet_action_field128(of1x_action); HTONB128(value);
+			caddress_in6 addr; addr.unpack(value.val, 16);
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_ipv6_src(addr));
 		} break;
 		case OF1X_AT_SET_FIELD_IPV6_DST: {
-			uint128__t value = of1x_get_packet_action_field128(of1x_action);
-			rofl::caddress addr(AF_INET6);
-			addr.set_ipv6_addr(value);
+			uint128__t value = of1x_get_packet_action_field128(of1x_action); HTONB128(value);
+			caddress_in6 addr; addr.unpack(value.val, 16);
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_ipv6_dst(addr));
 		} break;
 		case OF1X_AT_SET_FIELD_IPV6_FLABEL: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_ipv6_flabel(of1x_get_packet_action_field32(of1x_action)));
 		} break;
 		case OF1X_AT_SET_FIELD_IPV6_ND_TARGET: {
-			uint128__t value = of1x_get_packet_action_field128(of1x_action);
-			rofl::caddress addr(AF_INET6);
-			addr.set_ipv6_addr(value);
+			uint128__t value = of1x_get_packet_action_field128(of1x_action); HTONB128(value);
+			caddress_in6 addr; addr.unpack(value.val, 16);
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_ipv6_nd_target(addr));
 		} break;
 		case OF1X_AT_SET_FIELD_IPV6_ND_SLL: {
@@ -1809,8 +1784,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		match.set_arp_sha( cmacaddr(mac) );
 	}
 	if(packet_matches_get_arp_spa_value(pm)); {
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches_get_arp_spa_value(pm));
+		caddress_in4 addr; addr.set_addr_hbo(packet_matches_get_arp_spa_value(pm));
 		match.set_arp_spa(addr);
 	}
 	if(packet_matches_get_arp_tha_value(pm)){
@@ -1818,8 +1792,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		match.set_arp_tha(cmacaddr(mac));
 	}
 	if(packet_matches_get_arp_tpa_value(pm)); {
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches_get_arp_tpa_value(pm));
+		caddress_in4 addr; addr.set_addr_hbo(packet_matches_get_arp_tpa_value(pm));
 		match.set_arp_tpa(addr);
 	}
 	if(packet_matches_get_ip_dscp_value(pm))
@@ -1829,14 +1802,11 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches_get_ip_proto_value(pm))
 		match.set_ip_proto(packet_matches_get_ip_proto_value(pm));
 	if(packet_matches_get_ipv4_src_value(pm)){
-			caddress addr(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(packet_matches_get_ipv4_src_value(pm));
-			match.set_ipv4_src(addr);
-
+		caddress_in4 addr; addr.set_addr_hbo(packet_matches_get_ipv4_src_value(pm));
+		match.set_ipv4_src(addr);
 	}
 	if(packet_matches_get_ipv4_dst_value(pm)){
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches_get_ipv4_dst_value(pm));
+		caddress_in4 addr; addr.set_addr_hbo(packet_matches_get_ipv4_dst_value(pm));
 		match.set_ipv4_dst(addr);
 	}
 	if(packet_matches_get_tcp_src_value(pm))
@@ -1854,17 +1824,15 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 	
 	tmp = packet_matches_get_ipv6_src_value(pm);	
 	if( UINT128__T_IS_NOT_ZERO(tmp) ){
-		caddress addr(AF_INET6,"0:0:0:0:0:0:0:0");
-		uint128__t addru128 = packet_matches_get_ipv6_src_value(pm);
-		addr.set_ipv6_addr(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_src_value(pm); HTONB128(addru128);
+		caddress_in6 addr; addr.unpack(addru128.val, 16);
 		match.set_ipv6_src(addr);
 	}
 	
 	tmp = packet_matches_get_ipv6_dst_value(pm);
 	if( UINT128__T_IS_NOT_ZERO(tmp) ){
-		caddress addr(AF_INET6,"0:0:0:0");
-		uint128__t addru128 = packet_matches_get_ipv6_dst_value(pm);
-		addr.set_ipv6_addr(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_dst_value(pm); HTONB128(addru128);
+		caddress_in6 addr; addr.unpack(addru128.val, 16);
 		match.set_ipv6_dst(addr);
 	}
 	if(packet_matches_get_ipv6_flabel_value(pm))
@@ -1872,9 +1840,8 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 
 	tmp = packet_matches_get_ipv6_nd_target_value(pm);
 	if( UINT128__T_IS_NOT_ZERO(tmp) ){
-		caddress addr(AF_INET6,"0:0:0:0");
-		uint128__t addru128 = packet_matches_get_ipv6_nd_target_value(pm);
-		addr.set_ipv6_addr(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_nd_target_value(pm); HTONB128(addru128);
+		caddress_in6 addr; addr.unpack(addru128.val, 16);
 		match.set_ipv6_nd_target(addr);
 	}
 	if(packet_matches_get_ipv6_nd_sll_value(pm)){

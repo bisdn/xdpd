@@ -201,8 +201,10 @@ private:
 	static openflow_switch* __get_switch_by_dpid(uint64_t dpid);	
 
 	//Default addresses
-	static const rofl::caddress controller_addr;
-	static const rofl::caddress binding_addr;
+	static const rofl::caddress_in4 controller_addr;
+	static const uint16_t controller_port;
+	static const rofl::caddress_in4 binding_addr;
+	static const uint16_t binding_port;
 
 	static pthread_mutex_t mutex;
 	static pthread_rwlock_t rwlock;

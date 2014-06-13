@@ -160,8 +160,8 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	//NW SRC
 	try {
-		uint32_t value = ofmatch.get_nw_src_value().get_ipv4_addr();
-		uint32_t mask = ofmatch.get_nw_src_mask().get_ipv4_addr();
+		uint32_t value = ofmatch.get_nw_src_value().get_addr_nbo();
+		uint32_t mask = ofmatch.get_nw_src_mask().get_addr_nbo();
 		if(value != 0x0){
 			match = of1x_init_nw_src_match(value, mask);
 			of1x_add_match_to_entry(entry, match);
@@ -170,8 +170,8 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	//NW DST 
 	try {
-		uint32_t value = ofmatch.get_nw_dst_value().get_ipv4_addr();
-		uint32_t mask = ofmatch.get_nw_dst_mask().get_ipv4_addr();
+		uint32_t value = ofmatch.get_nw_dst_value().get_addr_nbo();
+		uint32_t mask = ofmatch.get_nw_dst_mask().get_addr_nbo();
 		if(value != 0x0){
 			match = of1x_init_nw_dst_match(value, mask);
 			of1x_add_match_to_entry(entry, match);
@@ -242,11 +242,13 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0);
 				} break;
 			case rofl::openflow10::OFPAT_SET_NW_SRC:
-				field.u32 = NTOHB32(actions.get_action_set_nw_src(index).get_nw_src().ca_s4addr->sin_addr.s_addr);
+				//field.u32 = NTOHB32(actions.get_action_set_nw_src(index).get_nw_src().get_addr_nbo());
+				field.u32 = actions.get_action_set_nw_src(index).get_nw_src().get_addr_hbo();
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, 0x0);
 				break;
 			case rofl::openflow10::OFPAT_SET_NW_DST:
-				field.u32 = NTOHB32(actions.get_action_set_nw_src(index).get_nw_src().ca_s4addr->sin_addr.s_addr);
+				//field.u32 = NTOHB32(actions.get_action_set_nw_dst(index).get_nw_dst().get_addr_nbo());
+				field.u32 = actions.get_action_set_nw_dst(index).get_nw_dst().get_addr_hbo();
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0);
 				break;
 			case rofl::openflow10::OFPAT_SET_NW_TOS:
@@ -397,19 +399,15 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			break;
 		case OF1X_MATCH_ARP_SPA:
 		{
-			caddress addr(AF_INET, "0.0.0.0");
-			caddress mask(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(of1x_get_match_value32(m));
-			mask.set_ipv4_addr(of1x_get_match_mask32(m));
+			caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
+			caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
 			match.set_nw_src(addr, mask);
 		}
 			break;
 		case OF1X_MATCH_ARP_TPA:
 		{
-			caddress addr(AF_INET, "0.0.0.0");
-			caddress mask(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(of1x_get_match_value32(m));
-			mask.set_ipv4_addr(of1x_get_match_mask32(m));
+			caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
+			caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
 			match.set_nw_dst(addr, mask);
 		}
 			break;
@@ -421,20 +419,15 @@ of10_translation_utils::of1x_map_reverse_flow_entry_matches(
 			break;
 		case OF1X_MATCH_NW_SRC:
 		{
-			caddress addr(AF_INET, "0.0.0.0");
-			caddress mask(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(of1x_get_match_value32(m));
-			mask.set_ipv4_addr(of1x_get_match_mask32(m));
+			caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
+			caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
 			match.set_nw_src(addr, mask);
-
 		}
 			break;
 		case OF1X_MATCH_NW_DST:
 		{
-			caddress addr(AF_INET, "0.0.0.0");
-			caddress mask(AF_INET, "0.0.0.0");
-			addr.set_ipv4_addr(of1x_get_match_value32(m));
-			mask.set_ipv4_addr(of1x_get_match_mask32(m));
+			caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
+			caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
 			match.set_nw_dst(addr, mask);
 		}
 			break;
@@ -539,14 +532,10 @@ of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		actions.add_action_set_nw_tos(index).set_nw_tos(OF1X_IP_DSCP_ALIGN(of1x_get_packet_action_field8(of1x_action))); //We need to get the TOS value from the DSCP
 	} break;
 	case OF1X_AT_SET_FIELD_NW_SRC: {
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(of1x_get_packet_action_field32(of1x_action));
-		actions.add_action_set_nw_src(index).set_nw_src(addr);
+		actions.add_action_set_nw_src(index).set_nw_src().set_addr_hbo(of1x_get_packet_action_field32(of1x_action));
 	} break;
 	case OF1X_AT_SET_FIELD_NW_DST: {
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(of1x_get_packet_action_field32(of1x_action));
-		actions.add_action_set_nw_dst(index).set_nw_dst(addr);
+		actions.add_action_set_nw_dst(index).set_nw_dst().set_addr_hbo(of1x_get_packet_action_field32(of1x_action));
 	} break;
 	case OF1X_AT_SET_FIELD_TP_SRC: {
 		actions.add_action_set_tp_src(index).set_tp_src(of1x_get_packet_action_field16(of1x_action));
@@ -606,13 +595,13 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches_get_arp_opcode_value(pm))
 		match.set_nw_proto(packet_matches_get_arp_opcode_value(pm));
 	if(packet_matches_get_arp_spa_value(pm)) {
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches_get_arp_spa_value(pm));
+		caddress_in4 addr;
+		addr.set_addr_hbo(packet_matches_get_arp_spa_value(pm));
 		match.set_nw_src(addr);
 	}
 	if(packet_matches_get_arp_tpa_value(pm)) {
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches_get_arp_tpa_value(pm));
+		caddress_in4 addr;
+		addr.set_addr_hbo(packet_matches_get_arp_tpa_value(pm));
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches_get_ip_dscp_value(pm))
@@ -620,13 +609,13 @@ void of10_translation_utils::of1x_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches_get_ip_proto_value(pm))
 		match.set_ip_proto(packet_matches_get_ip_proto_value(pm));
 	if(packet_matches_get_ipv4_src_value(pm)){
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches_get_ipv4_src_value(pm));
+		caddress_in4 addr;
+		addr.set_addr_hbo(packet_matches_get_ipv4_src_value(pm));
 		match.set_nw_src(addr);
 	}
 	if(packet_matches_get_ipv4_dst_value(pm)){
-		caddress addr(AF_INET, "0.0.0.0");
-		addr.set_ipv4_addr(packet_matches_get_ipv4_dst_value(pm));
+		caddress_in4 addr;
+		addr.set_addr_hbo(packet_matches_get_ipv4_dst_value(pm));
 		match.set_nw_dst(addr);
 	}
 	if(packet_matches_get_tcp_src_value(pm))

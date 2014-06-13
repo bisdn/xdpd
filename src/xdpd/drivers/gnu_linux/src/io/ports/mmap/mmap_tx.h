@@ -18,9 +18,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <linux/if.h>
+#include <linux/if_packet.h>
+#include <linux/if_ether.h>
 
 #include <rofl/common/croflexception.h>
-#include <rofl/common/caddress.h>
 #include <rofl/common/utils/c_logger.h>
 #include "../../../util/likely.h"
 #include "../../../config.h"
@@ -57,7 +59,8 @@ private:
 	std::string devname; // device name e.g. "eth0"
 	
 	int sd; // socket descriptor
-	rofl::caddress ll_addr; // link layer sockaddr
+	//rofl::caddress ll_addr; // link layer sockaddr
+	struct sockaddr_ll ll_addr;
 	struct tpacket_req req; // ring buffer
 
 	//Circular buffer pointer

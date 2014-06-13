@@ -1549,7 +1549,8 @@ of13_endpoint::handle_meter_mod(
 void
 of13_endpoint::handle_ctl_attached(crofctl *ctrl)
 {
-	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , ctrl->get_peer_addr().c_str()); //FIXME: add role
+	std::stringstream sstr; sstr << ctrl->get_peer_addr();
+	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , sstr.str().c_str()); //FIXME: add role
 }
 
 
@@ -1557,7 +1558,7 @@ of13_endpoint::handle_ctl_attached(crofctl *ctrl)
 void
 of13_endpoint::handle_ctl_detached(crofctl *ctrl)
 {
-	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() ,ctrl->get_peer_addr().c_str()); //FIXME: add role
-
+	std::stringstream sstr; sstr << ctrl->get_peer_addr();
+	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() , sstr.str().c_str()); //FIXME: add role
 }
 

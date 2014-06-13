@@ -5,12 +5,14 @@
 #ifndef IOPORTV2_MMAP_H
 #define IOPORTV2_MMAP_H 
 
+#include <linux/sockios.h>
+
 #include <string>
 
 #include <rofl.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
-#include <rofl/common/cmacaddr.h>
+#include <rofl/common/caddress.h>
 
 #include "../ioport.h"
 #include "mmap_rx.h"

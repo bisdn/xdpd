@@ -9,7 +9,7 @@
 #include <string> 
 #include <list> 
 #include <rofl.h>
-#include <rofl/common/cmacaddr.h>
+#include <rofl/common/caddress.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 
 /**
@@ -228,8 +228,7 @@ public:
 	{
 		
 		//HW address
-		rofl::cmemory mac((uint8_t*)s->hwaddr, OFP_ETH_ALEN);
-		hw_address = rofl::cmacaddr(mac);	
+		hw_address.unpack((uint8_t*)s->hwaddr, 6);
 		
 		for(unsigned int i=0;i<s->max_queues;++i){
 			if(s->queues[i].set)

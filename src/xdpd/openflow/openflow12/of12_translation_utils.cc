@@ -1740,7 +1740,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		} break;
 		case OF1X_AT_OUTPUT: {
 			actions.add_action_output(index).set_port_no(of1x_get_packet_action_field32(of1x_action));
-			actions.add_action_output(index).set_max_len(of1x_action->send_len);
+			actions.set_action_output(index).set_max_len(of1x_action->send_len);
 		} break;
 		default: {
 			// do nothing

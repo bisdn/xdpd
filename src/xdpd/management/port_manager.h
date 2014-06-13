@@ -16,6 +16,8 @@
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/common/croflexception.h>
 
+#include "snapshots/port_snapshot.h"
+
 /**
 * @file port_manager.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
@@ -78,9 +80,9 @@ public:
 	
 	/**
 	* Get port information (snapshot)
-	* @returns Port snapshot or NULL. The snapshot MUST be deleted using switch_port_destroy_snapshot().
+	* @param snapshot Snapshot of the switch port to be filled in. 
 	*/
-	static switch_port_snapshot_t const* get_port_info(std::string& name);
+	static void get_port_info(std::string& name, port_snapshot& snapshot);
 	
 	//TODO: Add more fine-grained "up/down states" here...
 	

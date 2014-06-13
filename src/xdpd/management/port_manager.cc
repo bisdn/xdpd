@@ -65,8 +65,17 @@ std::list<std::string> port_manager::list_available_port_names(){
 	return port_name_list; 
 }
 
-switch_port_snapshot_t const* port_manager::get_port_info(std::string& name){
-	return (switch_port_snapshot_t const*) hal_driver_get_port_snapshot_by_name(name.c_str());
+void port_manager::get_port_info(std::string& name, port_snapshot& snapshot){
+
+	(void)get_port_info; //Prevent unused warning
+	
+	switch_port_snapshot_t* s =  hal_driver_get_port_snapshot_by_name(name.c_str());
+	if(!s)
+		throw ePmInvalidPort();
+	
+	snapshot = port_snapshot(s);
+
+	switch_port_destroy_snapshot(s);	
 }
 
 //

@@ -266,9 +266,77 @@ uint64_t switch_manager::get_switch_dpid(std::string& name){
 }
 
 
-of_switch_snapshot_t const* switch_manager::get_switch_info(uint64_t dpid){
-	return (of_switch_snapshot_t const*) hal_driver_get_switch_snapshot_by_dpid(dpid); 
+void switch_manager::get_switch_info(uint64_t dpid, openflow_switch_snapshot& snapshot){
+	
+	//Make sure 	
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	//Recover the switch
+	of_switch_snapshot_t* sw = hal_driver_get_switch_snapshot_by_dpid(dpid);
+	
+	if(!sw){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmDoesNotExist();
+	}
+
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+	
+	snapshot = openflow_switch_snapshot(sw);
+
+	//Destroy the snapshot
+	of_switch_destroy_snapshot(sw);
 }
+
+void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TODO: Add filtering */, std::list<flow_entry_snapshot>& flows){
+
+	of1x_stats_flow_msg_t* hal_flows = NULL;
+	of1x_switch_snapshot_t* sw_snapshot = NULL; 
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(false); //empty matches (all)
+
+	//Make sure 	
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	//Recover the switch
+	openflow_switch* sw = __get_switch_by_dpid(dpid);
+	
+	if(!sw){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmDoesNotExist();
+	}
+
+	//Call HAL
+	hal_flows = hal_driver_of1x_get_flow_stats(dpid, table_id, 0x0, 0x0, OF1X_PORT_ANY, OF1X_GROUP_ANY, &entry->matches);
+	sw_snapshot = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
+
+	if(!hal_flows || !sw_snapshot){
+		assert(0);
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		//FIXME throw exception
+	}
+
+	//Clear original
+	flows.clear();
+
+	//Add translated
+	if(flow_entry_snapshot::map_flow_stats_msg(sw_snapshot->of_ver, sw_snapshot->pipeline.miss_send_len, hal_flows, flows) != ROFL_SUCCESS){
+		assert(0);
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		//FIXME throw exception
+			
+	}
+		
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+
+	if(sw_snapshot)
+		of_switch_destroy_snapshot((of_switch_snapshot_t*)sw_snapshot);	
+
+	if(hal_flows)
+		of1x_destroy_stats_flow_msg(hal_flows);	
+	if(entry)
+		of1x_destroy_flow_entry(entry);	
+}
+
 
 
 void

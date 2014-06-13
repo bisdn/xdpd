@@ -61,7 +61,7 @@ Copy the example.cfg:
 
 Now edit the configuration. Make sure ports attached to the Logical Switch Instance (LSI) exist in the system.
 
-	sh# vi src/xdpd/management/plugins/config/example.cfg  
+	sh# vi example.cfg  
 
 Run xdpd:
 	

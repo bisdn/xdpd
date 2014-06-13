@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = plugins 
+SUBDIRS = plugins snapshots 
 
 noinst_LTLIBRARIES = libxdpd_mgmt.la
 
@@ -11,5 +11,5 @@ libxdpd_mgmt_la_SOURCES = \
 	port_manager.cc\
 	system_manager.cc
 
-libxdpd_mgmt_la_LIBADD = plugins/libxdpd_mgmt_plugins.la
- 
+libxdpd_mgmt_la_LIBADD = plugins/libxdpd_mgmt_plugins.la \
+			snapshots/libxdpd_mgmt_snapshots.la

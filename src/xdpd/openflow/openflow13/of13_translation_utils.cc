@@ -1474,7 +1474,11 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 
 		/*TODO EXT HDR*/
 		case OF1X_AT_SET_FIELD_IPV6_EXTHDR:
+#ifdef NDEBUG
+			throw eBadActionBadType("of13_translation_utils::of13_map_reverse_flow_entry_action()");
+#else
 			throw eNotImplemented(std::string("of13_translation_utils::of13_map_reverse_flow_entry_action() IPV6 ICMPV6"));
+#endif
 			break;
 	
 #if 0

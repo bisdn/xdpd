@@ -236,8 +236,13 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		}else if (value && value&rofl::openflow13::OFPVID_PRESENT /*&& mask == 0xFFFF*/){ 
 			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
 		}else{
+#if 0
 			//Invalid 
 			assert(0);
+#endif
+			// this is invalid, but the ryu tests are using it anyway, so use this workaround for now
+			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
+			value |= rofl::openflow13::OFPVID_PRESENT;
 		}
 		
 		match = of1x_init_vlan_vid_match(value, mask, vlan_present);

@@ -524,7 +524,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 			action = of1x_init_packet_action( OF1X_AT_PUSH_VLAN, field, 0x0);
 			break;
 		case rofl::openflow13::OFPAT_POP_VLAN:
-			field.u16 = 0; // TODO: check with specification: there is no field defined for pop-vlan!?
+			field.u16 = 0;
 			action = of1x_init_packet_action( OF1X_AT_POP_VLAN, field, 0x0);
 			break;
 		case rofl::openflow13::OFPAT_PUSH_MPLS:
@@ -534,6 +534,14 @@ of13_translation_utils::of13_map_flow_entry_actions(
 		case rofl::openflow13::OFPAT_POP_MPLS:
 			field.u16 = actions.get_action_pop_mpls(index).get_eth_type();
 			action = of1x_init_packet_action( OF1X_AT_POP_MPLS,  field, 0x0);
+			break;
+		case rofl::openflow13::OFPAT_PUSH_PBB:
+			field.u16 = actions.get_action_push_pbb(index).get_eth_type();
+			action = of1x_init_packet_action( OF1X_AT_PUSH_PBB, field, 0x0);
+			break;
+		case rofl::openflow13::OFPAT_POP_PBB:
+			field.u16 = 0;
+			action = of1x_init_packet_action( OF1X_AT_POP_PBB, field, 0x0);
 			break;
 		case rofl::openflow13::OFPAT_SET_QUEUE:
 			field.u32 = actions.get_action_set_queue(index).get_queue_id();
@@ -1305,18 +1313,24 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		case OF1X_AT_POP_MPLS: {
 			actions.add_action_pop_mpls(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));
 		} break;
-		
 #if 0
 		/* Extensions */
 		case OF1X_AT_POP_PPPOE: {
 			action = rofl::openflow::cofaction_pop_pppoe(rofl::openflow13::OFP_VERSION, of1x_get_packet_action_field16(of1x_action));
 		} break;
+#endif
+		case OF1X_AT_POP_PBB: {
+			actions.add_action_pop_pbb(index);
+		} break;
+		case OF1X_AT_PUSH_PBB: {
+			actions.add_action_push_pbb(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));
+		} break;
+#if 0
 		case OF1X_AT_PUSH_PPPOE: {
 			action = rofl::openflow::cofaction_push_pppoe(rofl::openflow13::OFP_VERSION, of1x_get_packet_action_field16(of1x_action));
 		} break;
 		/* End of extensions */
 #endif
-
 		case OF1X_AT_PUSH_MPLS: {
 			actions.add_action_push_mpls(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));
 		} break;

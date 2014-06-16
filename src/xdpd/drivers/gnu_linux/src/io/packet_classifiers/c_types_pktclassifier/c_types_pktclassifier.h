@@ -74,11 +74,10 @@ void* get_vlan_hdr(classify_state_t* clas_state, int idx){
 }
 
 static inline
-void* get_pbb_hdr(classify_state_t* clas_state, int idx){
-	//uint8_t* tmp;
-	//PT_GET_HDR(tmp, clas_state, PT_PROTO_PBB); 
-	//return tmp; 
-	return NULL;
+void* get_pbb_isid_hdr(classify_state_t* clas_state, int idx){
+	uint8_t* tmp;
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ISID); 
+	return tmp; 
 }
 
 static inline

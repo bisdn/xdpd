@@ -17,7 +17,17 @@ void destroy_classifier(classify_state_t* clas_state){
 }
 
 void pop_pbb(datapacket_t* pkt, classify_state_t* clas_state){
-	// TODO: implement
+
+	pkt_types_t new = PT_POP_PROTO(clas_state, ISID); //Use a nice PBB wrapper instead  
+	if(unlikely(new == PT_INVALID))
+		return;
+
+	//Take header out from packet
+	pkt_pop(pkt, NULL,0, sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t));
+
+	//Set new type and base(move right)
+	clas_state->type = new;
+	clas_state->base += sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t);
 }
 
 void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
@@ -105,6 +115,27 @@ void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_typ
 void* push_pbb(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
 	// TODO: implement
 	return NULL;
+	uint8_t* ether_header;
+
+	pkt_types_t new = PT_PUSH_PROTO(clas_state, ISID); //Put a nice trace  
+	if(unlikely(new == PT_INVALID))
+		return NULL;
+
+	//Move bytes
+	if (pkt_push(pkt, NULL, 0, sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t)) == ROFL_FAILURE){
+		// TODO: log error
+		return 0;
+	}
+
+	//Set new type and base(move left)
+	clas_state->type = new;
+	clas_state->base -= sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t); 
+
+	//Set new pkt type
+	ether_header = get_ether_hdr(clas_state, 0);    
+	
+	set_ether_type(ether_header, ether_type);
+
 }
 
 void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){

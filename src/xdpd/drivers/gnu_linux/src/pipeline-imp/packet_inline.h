@@ -424,8 +424,8 @@ bool platform_packet_get_mpls_bos(datapacket_t * const pkt){
 STATIC_PACKET_INLINE__
 uint32_t* platform_packet_get_pbb_isid(datapacket_t *const pkt){
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_pbb_hdr(pack->headers, 0))) return NULL;
-	return get_pbb_isid(get_mpls_hdr(pack->headers, 0));
+	if ((NULL == get_pbb_isid_hdr(pack->headers, 0))) return NULL;
+	return get_pbb_isid(get_pbb_isid_hdr(pack->headers, 0));
 }
 
 //Tunnel id
@@ -925,8 +925,8 @@ void platform_packet_set_pbb_isid(datapacket_t*pkt, uint32_t pbb_isid)
 {
 	//TODO: verify implementation
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_pbb_hdr(pack->headers, 0))) return;
-	set_pbb_isid(get_pbb_hdr(pack->headers, 0), pbb_isid);
+	if ((NULL == get_pbb_isid_hdr(pack->headers, 0))) return;
+	set_pbb_isid(get_pbb_isid_hdr(pack->headers, 0), pbb_isid);
 }
 STATIC_PACKET_INLINE__
 void platform_packet_set_tunnel_id(datapacket_t*pkt, uint64_t tunnel_id)

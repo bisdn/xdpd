@@ -11,6 +11,7 @@ protocols = OrderedDict(
 	("8023", 22), 
 	("MPLS", 4), 
 	("VLAN", 4), 
+	("ISID", 4), 
 	("PPPOE", 6), 
 	("PPP", 2), 
 	("ARPV4", 28), 
@@ -35,7 +36,7 @@ unrolled_protocols = OrderedDict()
 # Packet types (using a notation similar to scapy)
 #
 pkt_types = [ 
-	"L2", #This is ETHERNET or 8023 or ETHERNET/VLAN or 8023/VLAN or ETHERNET/VLAN/VLAN or 8023/VLAN/VLAN
+	"L2", #This is ETHERNET or 8023 or ETHERNET/VLAN or 8023/VLAN or ETHERNET/VLAN/VLAN or 8023/VLAN/VLAN and all the PBB stuff
 
 	#MPLS - no parsing beyond 	
 	"L2/MPLS",
@@ -110,12 +111,20 @@ def unroll_pkt_types():
 		#Add without optional
 		tmp = type__.replace("L2","ETHERNET")
 		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET")
+		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET")
+		unrolled_types.append(tmp)
 		#Add 802.3
 		tmp = type__.replace("L2","8023")
 		unrolled_types.append(tmp)
 		
 		#Add ETHERNET+VLAN 
 		tmp = type__.replace("L2","ETHERNET/VLAN")
+		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET/VLAN")
+		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET/VLAN")
 		unrolled_types.append(tmp)
 		#Add 802.3+VLAN
 		tmp = type__.replace("L2","8023/VLAN")
@@ -124,10 +133,19 @@ def unroll_pkt_types():
 		#Add ETHERNET+VLAN+VLAN 
 		tmp = type__.replace("L2","ETHERNET/VLAN/VLAN")
 		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET/VLAN/VLAN")
+		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET/VLAN/VLAN")
+		unrolled_types.append(tmp)
+
 		#Add 802.3+VLAN+VLAN
 		tmp = type__.replace("L2","8023/VLAN/VLAN")
 		unrolled_types.append(tmp)
-			
+		
+
+		#for t in unrolled_types:
+		#	print t+"\n"
+	
 		#Loop over all "unrolled types
 		for type_ in unrolled_types:
 			if "IPV4" in type_:
@@ -365,7 +383,12 @@ def push_transitions(f):
 		row=[]
 		for proto in unrolled_protocols:
 			new_type=""
-			if "MPLS" in proto:
+			if "ISID" in proto or "ISID" in  type_:
+				if "ISID" in type_ and "ISID" not in type_: 
+					row.append(type_.replace("ETHERNET","ETHERNET/ISID"))
+				else:
+					row.append("-1")
+			elif "MPLS" in proto:
 				if "MPLS" in type_:
 					#If there is already an MPLS add to the end
 					n_labels = int(type_.split("MPLS_nlabels_")[1])+1
@@ -386,7 +409,12 @@ def push_transitions(f):
 						new_type +="-1"
 				row.append(new_type)
 			elif "VLAN" in proto:
-				if "VLAN/VLAN" in type_:
+				if "ISID" in type_:
+					if "ISID/VLAN" not in type_:
+						new_type=type_.replace("ISID", "ISID/VLAN")
+					else:
+						new_type ="-1"
+				elif "VLAN/VLAN" in type_:
 					new_type="-1"
 				elif "VLAN" in type_:
 					new_type=type_.replace("VLAN", "VLAN/VLAN")
@@ -395,7 +423,7 @@ def push_transitions(f):
 				elif "8023" in type_:
 					new_type=type_.replace("8023", "8023/VLAN")
 				else:
-					new_type +="-1"
+					new_type ="-1"
 
 				row.append(new_type)
 			elif "PPPOE" in proto:
@@ -474,7 +502,12 @@ def pop_transitions(f):
 		row=[]
 		for proto in unrolled_protocols:
 			new_type=""
-			if "MPLS" in proto:
+			if "ISID" in proto or "ISID" in  type_:
+				if "ISID" in type_ and "VLAN/ISID" not in type_: 
+					row.append(type_.replace("ETHERNET/ISID/", ""))
+				else:
+					row.append("-1")
+			elif "MPLS" in proto:
 				if "MPLS" in type_:
 					#If there is already an MPLS add to the end
 					n_labels = int(type_.split("MPLS_nlabels_")[1])
@@ -486,7 +519,9 @@ def pop_transitions(f):
 					new_type +="-1"
 				row.append(new_type)
 			elif "VLAN" in proto:
-				if "/VLAN/VLAN" in type_:
+				if "/ISID/VLAN" in type_:
+					new_type=type_.replace("/ISID/VLAN", "/ISID")
+				elif "/VLAN/VLAN" in type_:
 					new_type=type_.replace("/VLAN/VLAN", "/VLAN")
 				elif "/VLAN" in type_:
 					new_type=type_.replace("/VLAN", "")
@@ -543,6 +578,9 @@ def add_class_type_macro(f):
 def push_macro(f):
 	f.write("\n#define PT_PUSH_PROTO(state, PROTO_TYPE)\\\n")
 	f.write("\t(pkt_types_t)push_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ]\n")
+	
+	#Nice usage
+	f.write("\n#define PBB__ ISID\n\n");
 
 def pop_macro(f):
 	f.write("\n#define PT_POP_PROTO(state, PROTO_TYPE)\\\n")

@@ -175,6 +175,24 @@ void* get_ether_hdr(classify_state_t* clas_state, int idx){
 }
 
 inline static
+void* get_pbb_hdr(classify_state_t* clas_state, int idx){
+	unsigned int pos;
+
+	if(idx > (int)MAX_PBB_FRAMES)
+		return NULL;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_PBB_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_PBB] - 1;
+	else
+		pos = FIRST_PBB_FRAME_POS + idx;
+
+	//Return the index
+	if(clas_state->headers[pos].present)
+		return clas_state->headers[pos].frame;
+	return NULL;
+}
+
+inline static
 void* get_vlan_hdr(classify_state_t* clas_state, int idx){
 	unsigned int pos;	
 
@@ -456,6 +474,26 @@ void shift_ether(classify_state_t* clas_state, int idx, ssize_t bytes){
 		pos = FIRST_ETHER_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_ETHER] - 1;
 	else
 		pos = FIRST_ETHER_FRAME_POS + idx;	
+
+	//Return the index
+	if(clas_state->headers[pos].presen){
+		clas_state->headers[pos].frame = (uint8_t*)(clas_state->headers[pos].frame) + bytes;
+		clas_state->headers[pos].length += bytes;
+	}
+}
+
+inline static
+void shift_pbb(classify_state_t* clas_state, int idx, ssize_t bytes){
+	//NOTE if bytes id < 0 the header will be shifted left, if it is > 0, right
+	unsigned int pos;
+
+	if(idx > (int)MAX_PBB_FRAMES)
+		return;
+
+	if(idx < 0) //Inner most
+		pos = FIRST_PBB_FRAME_POS + clas_state->num_of_headers[HEADER_TYPE_PBB] - 1;
+	else
+		pos = FIRST_PBB_FRAME_POS + idx;
 
 	//Return the index
 	if(clas_state->headers[pos].present){
@@ -1045,7 +1083,7 @@ void parse_pbb(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	datalen -= sizeof(cpc_pbb_hdr_t);
 
 	//WARNING check if get_vlan_type returns NULL?
-	clas_state->eth_type = *get_ether_type(pbb);
+	clas_state->eth_type = *get_ether_c_dltype(pbb);
 
 	// TODO: check this? must be 0x88e7 => *get_i_dl_type == VLAN_ITAG_ETHER_TYPE
 
@@ -1118,13 +1156,13 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 	clas_state->eth_type = *get_ether_type(ether);
 
 	switch (clas_state->eth_type) {
-		case VLAN_STAG_ETHER_TYPE:
+		case VLAN_ITAG_ETHER_TYPE:
 			{
 				parse_pbb(clas_state, data, datalen);
 			}
 			break;
 		case VLAN_CTAG_ETHER_TYPE:
-		case VLAN_ITAG_ETHER_TYPE:
+		case VLAN_STAG_ETHER_TYPE:
 			{
 				parse_vlan(clas_state, data, datalen);
 			}

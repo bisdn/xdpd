@@ -924,7 +924,10 @@ void platform_packet_set_mpls_bos(datapacket_t* pkt, bool bos)
 STATIC_PACKET_INLINE__
 void platform_packet_set_pbb_isid(datapacket_t*pkt, uint32_t pbb_isid)
 {
-	//TODO: implement
+	//TODO: verify implementation
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == get_pbb_hdr(pack->headers, 0))) return;
+	set_pbb_isid(get_pbb_hdr(pack->headers, 0), pbb_isid);
 }
 STATIC_PACKET_INLINE__
 void platform_packet_set_tunnel_id(datapacket_t*pkt, uint64_t tunnel_id)
@@ -932,14 +935,20 @@ void platform_packet_set_tunnel_id(datapacket_t*pkt, uint64_t tunnel_id)
 	//TODO: implement
 }
 STATIC_PACKET_INLINE__
-void platform_packet_pop_pbb(datapacket_t* pkt, uint16_t ether_type)
+void platform_packet_pop_pbb(datapacket_t* pkt)
 {
-	//TODO: implement
+	//TODO: verify implementation
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if (NULL == pack) return;
+	pop_pbb(pkt, pack->headers);
 }
 STATIC_PACKET_INLINE__
 void platform_packet_push_pbb(datapacket_t* pkt, uint16_t ether_type)
 {
-	//TODO: implement
+	//TODO: verify implementation
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if (NULL == pack) return;
+	push_pbb(pkt, pack->headers, ether_type);
 }
 STATIC_PACKET_INLINE__
 void platform_packet_set_pppoe_type(datapacket_t* pkt, uint8_t type)

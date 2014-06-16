@@ -17,6 +17,10 @@ void destroy_classifier(classify_state_t* clas_state){
 }
 
 void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
+	// TODO: implement
+}
+
+void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
 
 	pkt_types_t new = PT_POP_PROTO(clas_state, VLAN);  
 	if(unlikely(new == PT_INVALID))
@@ -96,6 +100,11 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
 	//TODO
 	return;
+}
+
+void* push_pbb(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
+	// TODO: implement
+	return NULL;
 }
 
 void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){

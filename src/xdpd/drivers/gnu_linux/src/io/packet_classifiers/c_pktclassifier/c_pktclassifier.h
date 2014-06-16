@@ -25,6 +25,7 @@
 #include "./headers/cpc_tcp.h"
 #include "./headers/cpc_udp.h"
 #include "./headers/cpc_vlan.h"
+#include "./headers/cpc_pbb.h"
 
 /**
 * @file cpc_pktclassifier.h
@@ -35,21 +36,22 @@
 
 //Header type
 enum header_type{
-	HEADER_TYPE_ETHER = 0,	
-	HEADER_TYPE_VLAN = 1,	
-	HEADER_TYPE_MPLS = 2,	
-	HEADER_TYPE_ARPV4 = 3,	
-	HEADER_TYPE_IPV4 = 4,	
-	HEADER_TYPE_ICMPV4 = 5,
-	HEADER_TYPE_IPV6 = 6,	
-	HEADER_TYPE_ICMPV6 = 7,	
-	HEADER_TYPE_ICMPV6_OPT = 8,	
-	HEADER_TYPE_UDP = 9,	
-	HEADER_TYPE_TCP = 10,	
-	HEADER_TYPE_SCTP = 11,	
-	HEADER_TYPE_PPPOE = 12,	
-	HEADER_TYPE_PPP = 13,	
-	HEADER_TYPE_GTP = 14,
+	HEADER_TYPE_ETHER = 0,
+	HEADER_TYPE_PBB = 1,
+	HEADER_TYPE_VLAN = 2,
+	HEADER_TYPE_MPLS = 3,
+	HEADER_TYPE_ARPV4 = 4,
+	HEADER_TYPE_IPV4 = 5,
+	HEADER_TYPE_ICMPV4 = 6,
+	HEADER_TYPE_IPV6 = 7,
+	HEADER_TYPE_ICMPV6 = 8,
+	HEADER_TYPE_ICMPV6_OPT = 9,
+	HEADER_TYPE_UDP = 10,
+	HEADER_TYPE_TCP = 11,
+	HEADER_TYPE_SCTP = 12,
+	HEADER_TYPE_PPPOE = 13,
+	HEADER_TYPE_PPP = 14,
+	HEADER_TYPE_GTP = 15,
 
 	//Must be the last one
 	HEADER_TYPE_MAX
@@ -59,6 +61,7 @@ enum header_type{
 // Constants
 //Maximum header occurrences per type
 #define MAX_ETHER_FRAMES 2
+#define MAX_PBB_FRAMES 1
 #define MAX_VLAN_FRAMES 4
 #define MAX_MPLS_FRAMES 16
 #define MAX_ARPV4_FRAMES 1
@@ -76,6 +79,7 @@ enum header_type{
 
 //Total maximum header occurrences
 #define MAX_HEADERS MAX_ETHER_FRAMES + \
+						MAX_PBB_FRAMES + \
 						MAX_VLAN_FRAMES + \
 						MAX_MPLS_FRAMES + \
 						MAX_ARPV4_FRAMES + \
@@ -95,7 +99,8 @@ enum header_type{
 //Relative positions within the array;
 //Very first frame always
 #define FIRST_ETHER_FRAME_POS 0
-#define FIRST_VLAN_FRAME_POS FIRST_ETHER_FRAME_POS+MAX_ETHER_FRAMES
+#define FIRST_PBB_FRAME_POS FIRST_ETHER_FRAME_POS+MAX_ETHER_FRAMES
+#define FIRST_VLAN_FRAME_POS FIRST_ETHER_FRAME_POS+MAX_PBB_FRAMES
 #define FIRST_MPLS_FRAME_POS FIRST_VLAN_FRAME_POS+MAX_VLAN_FRAMES
 #define FIRST_ARPV4_FRAME_POS FIRST_MPLS_FRAME_POS+MAX_MPLS_FRAMES
 #define FIRST_IPV4_FRAME_POS FIRST_ARPV4_FRAME_POS+MAX_ARPV4_FRAMES
@@ -1021,6 +1026,71 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 static inline
+void parse_pbb(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+
+	if (unlikely(datalen < sizeof(cpc_pbb_hdr_t))) { return; }
+
+	//Data pointer
+	cpc_pbb_hdr_t* pbb = (cpc_pbb_hdr_t *)data;
+
+	//Set frame
+	unsigned int num_of_pbb = clas_state->num_of_headers[HEADER_TYPE_PBB];
+	clas_state->headers[FIRST_PBB_FRAME_POS + num_of_pbb].frame = pbb;
+	clas_state->headers[FIRST_PBB_FRAME_POS + num_of_pbb].present = true;
+	clas_state->headers[FIRST_PBB_FRAME_POS + num_of_pbb].length = datalen;
+	clas_state->num_of_headers[HEADER_TYPE_PBB] = num_of_pbb+1;
+
+	//Increment pointers and decrement remaining payload size
+	data += sizeof(cpc_pbb_hdr_t);
+	datalen -= sizeof(cpc_pbb_hdr_t);
+
+	//WARNING check if get_vlan_type returns NULL?
+	clas_state->eth_type = *get_ether_type(pbb);
+
+	// TODO: check this? must be 0x88e7 => *get_i_dl_type == VLAN_ITAG_ETHER_TYPE
+
+	switch (clas_state->eth_type) {
+		case VLAN_CTAG_ETHER_TYPE:
+			{
+				parse_vlan(clas_state, data, datalen);
+			}
+			break;
+		case ETH_TYPE_MPLS_UNICAST:
+		case ETH_TYPE_MPLS_MULTICAST:
+			{
+				parse_mpls(clas_state, data, datalen);
+			}
+			break;
+		case ETH_TYPE_PPPOE_DISCOVERY:
+		case ETH_TYPE_PPPOE_SESSION:
+			{
+				parse_pppoe(clas_state, data, datalen);
+			}
+			break;
+		case ETH_TYPE_ARP:
+			{
+				parse_arpv4(clas_state, data, datalen);
+			}
+			break;
+		case ETH_TYPE_IPV4:
+			{
+				parse_ipv4(clas_state, data, datalen);
+			}
+			break;
+		case ETH_TYPE_IPV6:
+			{
+				parse_ipv6(clas_state, data, datalen);
+			}
+			break;
+		default:
+			{
+
+			}
+			break;
+	}
+}
+
+static inline
 void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	if (unlikely(datalen < sizeof(cpc_eth_hdr_t))){return;}
@@ -1048,8 +1118,12 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 	clas_state->eth_type = *get_ether_type(ether);
 
 	switch (clas_state->eth_type) {
-		case VLAN_CTAG_ETHER_TYPE:
 		case VLAN_STAG_ETHER_TYPE:
+			{
+				parse_pbb(clas_state, data, datalen);
+			}
+			break;
+		case VLAN_CTAG_ETHER_TYPE:
 		case VLAN_ITAG_ETHER_TYPE:
 			{
 				parse_vlan(clas_state, data, datalen);

@@ -415,9 +415,7 @@ uint8_t* platform_packet_get_mpls_tc(datapacket_t * const pkt)
 }
 
 STATIC_PACKET_INLINE__
-bool
-platform_packet_get_mpls_bos(datapacket_t * const pkt)
-{
+bool platform_packet_get_mpls_bos(datapacket_t * const pkt){
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == get_mpls_hdr(pack->headers, 0))) return NULL;
 	return get_mpls_bos(get_mpls_hdr(pack->headers, 0));
@@ -425,8 +423,9 @@ platform_packet_get_mpls_bos(datapacket_t * const pkt)
 
 STATIC_PACKET_INLINE__
 uint32_t* platform_packet_get_pbb_isid(datapacket_t *const pkt){
-	//TODO: add implementation when supported
-	return NULL;
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == get_pbb_hdr(pack->headers, 0))) return NULL;
+	return get_pbb_isid(get_mpls_hdr(pack->headers, 0));
 }
 
 //Tunnel id

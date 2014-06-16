@@ -21,6 +21,7 @@
 #include "./headers/cpc_ipv4.h"
 #include "./headers/cpc_ipv6.h"
 #include "./headers/cpc_mpls.h"
+#include "./headers/cpc_pbb.h"
 #include "./headers/cpc_ppp.h"
 #include "./headers/cpc_pppoe.h"
 #include "./headers/cpc_tcp.h"
@@ -70,6 +71,14 @@ void* get_vlan_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_VLAN); 
 	return tmp; 
+}
+
+static inline
+void* get_pbb_hdr(classify_state_t* clas_state, int idx){
+	//uint8_t* tmp;
+	//PT_GET_HDR(tmp, clas_state, PT_PROTO_PBB); 
+	//return tmp; 
+	return NULL;
 }
 
 static inline

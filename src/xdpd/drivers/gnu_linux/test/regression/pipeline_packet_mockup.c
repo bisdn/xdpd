@@ -356,7 +356,7 @@ platform_packet_push_vlan(datapacket_t* pkt, uint16_t ether_type)
 	fprintf(stderr,"PUSH VLAN\n");
 // 	dpx86_push_vlan(pkt, ether_type);
 }
-void platform_packet_pop_pbb(datapacket_t* pkt, uint16_t ether_type)
+void platform_packet_pop_pbb(datapacket_t* pkt)
 {
 	//TODO: implement
 }

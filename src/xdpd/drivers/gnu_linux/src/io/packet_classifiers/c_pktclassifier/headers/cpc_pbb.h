@@ -14,7 +14,6 @@
 * @brief Structure definitions and inline getters and setters for Provider Backbone Bridges (IEEE 802.1ah)
 */
 
-#define DEFAULT_ETHER_FRAME_SIZE 1518
 #define PBB_ETH_ALEN 6
 
 /* Ethernet constants and definitions */
@@ -51,7 +50,7 @@ uint64_t* get_pbb_c_da(void *hdr){
 inline static
 void set_pbb_c_da(void* hdr, uint64_t c_da){
 	uint64_t *ptr = (uint64_t *) &((cpc_pbb_hdr_t*)hdr)->c_da;
-	*ptr = (p_da & OF1X_6_BYTE_MASK) | (*ptr & ~OF1X_6_BYTE_MASK);
+	*ptr = (c_da & OF1X_6_BYTE_MASK) | (*ptr & ~OF1X_6_BYTE_MASK);
 };
 
 inline static

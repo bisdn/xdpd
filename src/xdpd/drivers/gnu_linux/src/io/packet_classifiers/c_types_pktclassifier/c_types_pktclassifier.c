@@ -16,7 +16,7 @@ void destroy_classifier(classify_state_t* clas_state){
 	free(clas_state);
 }
 
-void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
+void pop_pbb(datapacket_t* pkt, classify_state_t* clas_state){
 	// TODO: implement
 }
 

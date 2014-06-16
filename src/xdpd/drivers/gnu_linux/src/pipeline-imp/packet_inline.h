@@ -95,12 +95,7 @@ STATIC_PACKET_INLINE__
 uint16_t* platform_packet_get_eth_type(datapacket_t * const pkt)
 {
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
-	if ((NULL == get_ether_hdr(pack->headers,0))) return NULL;
-	
-	if (get_vlan_hdr(pack->headers,-1) != NULL)
-		return get_vlan_type(get_vlan_hdr(pack->headers,-1));
-	
-	return get_ether_type(get_ether_hdr(pack->headers,0));
+	return classifier_get_eth_type(pack->headers); 
 }
 
 STATIC_PACKET_INLINE__

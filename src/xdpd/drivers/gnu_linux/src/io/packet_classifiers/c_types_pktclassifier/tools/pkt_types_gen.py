@@ -11,7 +11,7 @@ protocols = OrderedDict(
 	("8023", 22), 
 	("MPLS", 4), 
 	("VLAN", 4), 
-	("ISID", 4), 
+	("ISID", 6), 
 	("PPPOE", 6), 
 	("PPP", 2), 
 	("ARPV4", 28), 
@@ -250,9 +250,12 @@ def packet_offsets(f):
 		row=[]
 		for proto in protocols:
 			row.append(-1)
-	
+
+		parsed_isid=False	
 		for proto in type_.split("/"):
-			row[ protocols.keys().index(filter_pkt_type(proto))] = calc_inner_len_pkt_type(len, proto) 
+			if row[ protocols.keys().index(filter_pkt_type(proto))] == -1:
+				row[ protocols.keys().index(filter_pkt_type(proto))] = len #calc_inner_len_pkt_type(len, proto) 
+			#row[ protocols.keys().index(filter_pkt_type(proto))] = calc_inner_len_pkt_type(len, proto) 
 			len += calc_len_pkt_type(proto)
 
 		f.write("\n\t/* "+type_+" */ {")
@@ -268,6 +271,54 @@ def packet_offsets(f):
 		
 	f.write("\n};\n\n")
 	
+def eth_type_offsets_fwd(f):
+	
+	f.write("//Array of eth_type offsets from the first byte of the buffer.\n")
+	f.write("extern const int eth_type_offsets[PT_MAX__];\n\n")
+
+
+def eth_type_offsets(f):
+	
+	f.write("//Array of eth_type offsets from the first byte of the buffer.\n")
+	f.write("const int eth_type_offsets[PT_MAX__] = {\n")
+
+	first_type = True 
+	
+	
+	#Real rows
+	for type_ in pkt_types_unrolled:
+	
+		#Comment to help identifying the protocols
+		f.write("\t/* {"+str(type_)+"} */ ")	
+		
+		offset=0
+		
+		#Calculate the ethertype
+		if "ISID" in type_:
+			if "VLAN/ISID" in type_:
+				offset = protocols["ETHERNET"]+protocols["VLAN"] 
+			else:
+				offset = protocols["ETHERNET"]
+		elif "VLAN/VLAN" in type_:
+			if "ETHERNET/VLAN" in type_:
+				offset = protocols["ETHERNET"]+(protocols["VLAN"]*2) 
+			else:
+				offset = protocols["8023"]+(protocols["VLAN"]*2) 
+		elif "VLAN" in type_:
+			if "ETHERNET/VLAN" in type_:
+				offset = protocols["ETHERNET"]+protocols["VLAN"] 
+			else:
+				offset = protocols["8023"]+protocols["VLAN"] 
+		else:
+			if "ETHERNET" in type_:
+				offset = protocols["ETHERNET"] 
+			else:
+				offset = protocols["8023"] 
+				
+		f.write(str(offset)+",\n")
+		
+	f.write("\n};\n\n")
+
 def parse_transitions_fwd(f):
 
 	##
@@ -619,6 +670,9 @@ def main():
 		#Offsets in bytes
 		packet_offsets_fwd(header)
 
+		#Offsets in bytes
+		eth_type_offsets_fwd(header)
+
 		#Transitions
 		parse_transitions_fwd(header)
 
@@ -644,6 +698,10 @@ def main():
 
 		#Offsets in bytes
 		packet_offsets(c_file)
+
+		#Offsets in bytes
+		eth_type_offsets(c_file)
+
 
 		#Transitions
 		parse_transitions(c_file)

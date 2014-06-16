@@ -1539,6 +1539,9 @@ typedef enum pkt_types{
 //Matrix of header offsets from the first byte of the buffer.
 extern const int protocol_offsets_bt[PT_MAX__][PT_PROTO_MAX__];
 
+//Array of eth_type offsets from the first byte of the buffer.
+extern const int eth_type_offsets[PT_MAX__];
+
 //Only used in transitions (inside the MACRO )
 typedef enum __unrolled_protocol_types{
 	__UNROLLED_PT_PROTO_ETHERNET,

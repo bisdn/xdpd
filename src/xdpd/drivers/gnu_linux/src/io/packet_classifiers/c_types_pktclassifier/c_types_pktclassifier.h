@@ -590,6 +590,15 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 	}
 }
 
+
+//
+// Ethertype: get it regardless of the packet type (inner ETH_TYPE)
+//
+static inline
+uint16_t* classifier_get_eth_type(classify_state_t* clas_state){
+	return (uint16_t*) (clas_state->base + eth_type_offsets[clas_state->type]);
+}
+
 //
 // Main functions
 //
@@ -614,6 +623,8 @@ void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, ui
 	//Mark it as classified
 	clas_state->is_classified = true;
 }
+
+
 
 
 ROFL_END_DECLS

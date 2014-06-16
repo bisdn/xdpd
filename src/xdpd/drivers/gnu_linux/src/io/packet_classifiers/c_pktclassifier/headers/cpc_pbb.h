@@ -19,6 +19,7 @@
 // Provider Backbone Bridges (IEEE 802.1ah) header
 // I-TAG => chapter 9.7
 struct cpc_pbb_isid_hdr {
+	uint16_t eth_type;
 	uint32_t i_tag;
 }__attribute__((packed));
 

@@ -259,39 +259,26 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	switch (*get_ipv4_proto(ipv4)) {
 		case IPV4_IP_PROTO:
-			{
-				//IPv4 on IPv4 not supported
-				//parse_ipv4(clas_state, data, datalen);
-			}
+			//IPv4 on IPv4 not supported
+			//parse_ipv4(clas_state, data, datalen);
 			break;
 		case ICMPV4_IP_PROTO:
-			{
-				parse_icmpv4(clas_state, data, datalen);
-			}
+			parse_icmpv4(clas_state, data, datalen);
 			break;
 		case UDP_IP_PROTO:
-			{
-				parse_udp(clas_state, data, datalen);
-			}
+			parse_udp(clas_state, data, datalen);
 			break;
 		case TCP_IP_PROTO:
-			{
-				parse_tcp(clas_state, data, datalen);
-			}
+			parse_tcp(clas_state, data, datalen);
 			break;
 
 /*
 		case SCTP_IP_PROTO:
-			{
-				//Not supported yet
-				//parse_sctp(clas_state, data, datalen);
-			}
+			//Not supported yet
+			//parse_sctp(clas_state, data, datalen);
 			break;
 */
 		default:
-			{
-			
-			}
 			break;
 	}
 }
@@ -377,43 +364,28 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	switch ( *get_ipv6_next_header(ipv6) ) {
 		case IPV4_IP_PROTO:
-			{
-				//Not supported
-				//parse_ipv4(clas_state, data, datalen);
-			}
+			//Not supported
+			//parse_ipv4(clas_state, data, datalen);
 			break;
 		case IPV6_IP_PROTO:
-			{
-				//Not supported
-				//parse_ipv6(clas_state, data, datalen);
-			}
+			//Not supported
+			//parse_ipv6(clas_state, data, datalen);
 			break;
 		case ICMPV6_IP_PROTO:
-			{
-				parse_icmpv6(clas_state, data, datalen);
-			}
+			parse_icmpv6(clas_state, data, datalen);
 			break;
 		case UDP_IP_PROTO:
-			{
-				parse_udp(clas_state, data, datalen);
-			}
+			parse_udp(clas_state, data, datalen);
 			break;
 		case TCP_IP_PROTO:
-			{
-				parse_tcp(clas_state, data, datalen);
-			}
+			parse_tcp(clas_state, data, datalen);
 			break;
 #if 0
 		case SCTP_IP_PROTO:
-			{
-				parse_sctp(data, datalen);
-			}
+			parse_sctp(data, datalen);
 			break;
 #endif
 		default:
-			{
-			
-			}
 			break;
 	}
 }
@@ -453,26 +425,32 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen, ui
 
 	switch (eth_type) {
 		case ETH_TYPE_PPPOE_DISCOVERY:
-			{
-				datalen -= sizeof(cpc_pppoe_hdr_t);
-			}
+			datalen -= sizeof(cpc_pppoe_hdr_t);
 			break;
 		case ETH_TYPE_PPPOE_SESSION:
-			{
-				//Increment pointers and decrement remaining payload size
-				data += sizeof(cpc_pppoe_hdr_t);
-				datalen -= sizeof(cpc_pppoe_hdr_t);
+			//Increment pointers and decrement remaining payload size
+			data += sizeof(cpc_pppoe_hdr_t);
+			datalen -= sizeof(cpc_pppoe_hdr_t);
 
-				parse_ppp(clas_state,data, datalen);
-			}
+			parse_ppp(clas_state,data, datalen);
 			break;
 		default:
-			{
-				// log error?
-			}
+			// log error?
 			break;
 	}
 }
+
+static inline
+void parse_pbb_isid(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+
+	
+	PT_CLASS_ADD_PROTO(clas_state, ISID);	
+
+	//We don't parse beyond PBB
+
+	return;
+}
+
 
 static inline
 void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
@@ -492,37 +470,29 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 		PT_CLASS_ADD_PROTO(clas_state, VLAN);
 	}while(
 		eth_type == VLAN_CTAG_ETHER_TYPE || 
-		eth_type == VLAN_STAG_ETHER_TYPE ||
-		eth_type == VLAN_ITAG_ETHER_TYPE 
+		eth_type == VLAN_STAG_ETHER_TYPE 
 	);
 
 	switch (eth_type) {
+		case VLAN_ITAG_ETHER_TYPE:
+			parse_pbb_isid(clas_state, data, datalen);	
+			break;
 		case ETH_TYPE_MPLS_UNICAST:
 		case ETH_TYPE_MPLS_MULTICAST:
-			{
-				parse_mpls(clas_state, data, datalen);
-			}
+			parse_mpls(clas_state, data, datalen);
 			break;
 		case ETH_TYPE_PPPOE_DISCOVERY:
 		case ETH_TYPE_PPPOE_SESSION:
-			{
-				parse_pppoe(clas_state, data, datalen, eth_type);
-			}
+			parse_pppoe(clas_state, data, datalen, eth_type);
 			break;
 		case ETH_TYPE_ARP:
-			{
-				parse_arpv4(clas_state, data, datalen);
-			}
+			parse_arpv4(clas_state, data, datalen);
 			break;
 		case ETH_TYPE_IPV4:
-			{
-				parse_ipv4(clas_state, data, datalen);
-			}
+			parse_ipv4(clas_state, data, datalen);
 			break;
 		case ETH_TYPE_IPV6:
-			{
-				parse_ipv6(clas_state, data, datalen);
-			}
+			parse_ipv6(clas_state, data, datalen);
 			break;
 
 		default:
@@ -548,44 +518,31 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 	}
 
 	switch ( *get_ether_type(ether) ) {
+		case VLAN_ITAG_ETHER_TYPE:
+			parse_pbb_isid(clas_state, data, datalen);	
+			break;
 		case VLAN_CTAG_ETHER_TYPE:
 		case VLAN_STAG_ETHER_TYPE:
-		case VLAN_ITAG_ETHER_TYPE:
-			{
-				parse_vlan(clas_state, data, datalen);
-			}
+			parse_vlan(clas_state, data, datalen);
 			break;
 		case ETH_TYPE_MPLS_UNICAST:
 		case ETH_TYPE_MPLS_MULTICAST:
-			{
-				parse_mpls(clas_state, data, datalen);
-			}
+			parse_mpls(clas_state, data, datalen);
 			break;
 		case ETH_TYPE_PPPOE_DISCOVERY:
 		case ETH_TYPE_PPPOE_SESSION:
-			{
-				parse_pppoe(clas_state, data, datalen, *get_ether_type(ether));
-			}
+			parse_pppoe(clas_state, data, datalen, *get_ether_type(ether));
 			break;
 		case ETH_TYPE_ARP:
-			{
-				parse_arpv4(clas_state, data, datalen);
-			}
+			parse_arpv4(clas_state, data, datalen);
 			break;
 		case ETH_TYPE_IPV4:
-			{
-				parse_ipv4(clas_state, data, datalen);
-			}
+			parse_ipv4(clas_state, data, datalen);
 			break;
 		case ETH_TYPE_IPV6:
-			{
-				parse_ipv6(clas_state, data,datalen);
-			}
+			parse_ipv6(clas_state, data,datalen);
 			break;
 		default:
-			{
-				
-			}
 			break;
 	}
 }

@@ -8,7 +8,7 @@ using namespace xdpd;
 /*
 * This file contains the initialization code for the plugins
 * It must for every plugin:
-*   1) Include the appropiate header CONDITIONALLY
+*   1) Include the appropriate header CONDITIONALLY
 *   2) Call register_plugin(new plugin_class_name()) CONDITIONALLY
 *
 * Note also that orders in the pre_init function matters, as the order
@@ -16,7 +16,7 @@ using namespace xdpd;
 */
 
 //
-//Plugin header inclusion. They must be conditionally includedi, ALWAYS!
+//Plugin header inclusion. They must be conditionally included, ALWAYS!
 //
 #ifdef WITH_MGMT_CONFIG
 	#include "config/config.h"

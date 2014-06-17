@@ -212,6 +212,8 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	datalen -= sizeof(cpc_udp_hdr_t);
 
 	PT_CLASS_ADD_PROTO(clas_state, UDP);	
+
+	assert(clas_state->type != PT_INVALID);
 	
 	if (datalen > 0){
 		switch (*get_udp_dport(udp)) {
@@ -229,11 +231,13 @@ static inline
 void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	PT_CLASS_ADD_PROTO(clas_state, ARPV4);	
 	//No further parsing
+	assert(clas_state->type != PT_INVALID);
 }
 static inline
 void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	PT_CLASS_ADD_PROTO(clas_state, ICMPV4);	
 	//No further parsing
+	assert(clas_state->type != PT_INVALID);
 }
 
 static inline
@@ -256,6 +260,7 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 #endif
 	//Assign type
 	PT_CLASS_ADD_IPV4_OPTIONS(clas_state, num_of_options);
+	assert(clas_state->type != PT_INVALID);
 
 	switch (*get_ipv4_proto(ipv4)) {
 		case IPV4_IP_PROTO:
@@ -310,6 +315,7 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	cpc_icmpv6_hdr_t* icmpv6 = (cpc_icmpv6_hdr_t*)data;
 	
 	PT_CLASS_ADD_PROTO(clas_state, ICMPV6);	
+	assert(clas_state->type != PT_INVALID);
 	
 	//Increment pointers and decrement remaining payload size (depending on type)
 	switch( *get_icmpv6_type(icmpv6) ){
@@ -355,6 +361,7 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	cpc_ipv6_hdr_t *ipv6 = (cpc_ipv6_hdr_t*)data; 
 
 	PT_CLASS_ADD_PROTO(clas_state, IPV6);	
+	assert(clas_state->type != PT_INVALID);
 
 	//Increment pointers and decrement remaining payload size
 	data += sizeof(cpc_ipv6_hdr_t);
@@ -407,6 +414,8 @@ void parse_mpls(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 		//Add label to the stack
 		PT_CLASS_ADD_PROTO(clas_state, MPLS);	
 	}while(! get_mpls_bos(mpls));
+		
+	assert(clas_state->type != PT_INVALID);
 	//MPLS does not have explicit knowledge of the headers on top of it; so classification stops here
 }
 
@@ -414,6 +423,7 @@ static inline
 void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	PT_CLASS_ADD_PROTO(clas_state, PPP);	
+	assert(clas_state->type != PT_INVALID);
 
 	//We currently don't parse beyond PPPoE	
 }
@@ -422,6 +432,7 @@ static inline
 void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen, uint16_t eth_type){
 
 	PT_CLASS_ADD_PROTO(clas_state, PPPOE);
+	assert(clas_state->type != PT_INVALID);
 
 	switch (eth_type) {
 		case ETH_TYPE_PPPOE_DISCOVERY:
@@ -443,8 +454,8 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen, ui
 static inline
 void parse_pbb_isid(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
-	
-	PT_CLASS_ADD_PROTO(clas_state, ISID);	
+	//Special parsing schema
+	clas_state->type = PT_ETHERNET_ISID_ETHERNET;
 
 	//We don't parse beyond PBB
 
@@ -472,6 +483,8 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 		eth_type == VLAN_CTAG_ETHER_TYPE || 
 		eth_type == VLAN_STAG_ETHER_TYPE 
 	);
+	
+	assert(clas_state->type != PT_INVALID);
 
 	switch (eth_type) {
 		case VLAN_ITAG_ETHER_TYPE:

@@ -435,8 +435,8 @@ def push_transitions(f):
 		for proto in unrolled_protocols:
 			new_type=""
 			if "ISID" in proto or "ISID" in  type_:
-				if "ISID" in type_ and "ISID" not in type_: 
-					row.append(type_.replace("ETHERNET","ETHERNET/ISID"))
+				if "ISID" in proto and "ISID" not in type_: 
+					row.append("ETHERNET/ISID/ETHERNET") #type_.replace("ETHERNET","ETHERNET/ISID/ETHERNET"))
 				else:
 					row.append("-1")
 			elif "MPLS" in proto:
@@ -554,7 +554,7 @@ def pop_transitions(f):
 		for proto in unrolled_protocols:
 			new_type=""
 			if "ISID" in proto or "ISID" in  type_:
-				if "ISID" in type_ and "VLAN/ISID" not in type_: 
+				if "ISID" in proto and "ISID" in type_ and "VLAN/ISID" not in type_: 
 					row.append(type_.replace("ETHERNET/ISID/", ""))
 				else:
 					row.append("-1")

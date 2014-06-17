@@ -26,8 +26,10 @@ void pop_pbb(datapacket_t* pkt, classify_state_t* clas_state){
 	pkt_pop(pkt, NULL,0, sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t));
 
 	//Set new type and base(move right)
-	clas_state->type = new;
 	clas_state->base += sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t);
+
+	//reclassify
+	parse_ethernet(clas_state, clas_state->base, clas_state->len);
 }
 
 void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){

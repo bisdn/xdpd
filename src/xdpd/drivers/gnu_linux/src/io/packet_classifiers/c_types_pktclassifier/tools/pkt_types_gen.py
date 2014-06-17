@@ -296,24 +296,24 @@ def eth_type_offsets(f):
 		#Calculate the ethertype
 		if "ISID" in type_:
 			if "VLAN/ISID" in type_:
-				offset = protocols["ETHERNET"]+protocols["VLAN"] 
+				offset = protocols["ETHERNET"]+protocols["VLAN"]-2 
 			else:
-				offset = protocols["ETHERNET"]
+				offset = protocols["ETHERNET"]-2
 		elif "VLAN/VLAN" in type_:
 			if "ETHERNET/VLAN" in type_:
-				offset = protocols["ETHERNET"]+(protocols["VLAN"]*2) 
+				offset = protocols["ETHERNET"]+(protocols["VLAN"]*2)-2 
 			else:
-				offset = protocols["8023"]+(protocols["VLAN"]*2) 
+				offset = protocols["8023"]+(protocols["VLAN"]*2)-2 
 		elif "VLAN" in type_:
 			if "ETHERNET/VLAN" in type_:
-				offset = protocols["ETHERNET"]+protocols["VLAN"] 
+				offset = protocols["ETHERNET"]+protocols["VLAN"]-2
 			else:
-				offset = protocols["8023"]+protocols["VLAN"] 
+				offset = protocols["8023"]+protocols["VLAN"]-2
 		else:
 			if "ETHERNET" in type_:
-				offset = protocols["ETHERNET"] 
+				offset = protocols["ETHERNET"]-2
 			else:
-				offset = protocols["8023"] 
+				offset = protocols["8023"]-2 
 				
 		f.write(str(offset)+",\n")
 		

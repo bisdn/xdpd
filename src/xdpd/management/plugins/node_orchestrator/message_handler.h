@@ -47,12 +47,14 @@ protected:
 		"network-functions" : [
 			 {
 		        "name" : "VPN",
+		        "type" : "dpdk",
 		        "ports" : [
 		            "VPN_1"
 		        ]
 		    },
 		    {
 		        "name" : "firewall",
+		        "type" : "docker"
 		        "ports" : [
 		            "firewall_1",
 		            "firewall_2",

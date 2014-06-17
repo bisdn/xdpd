@@ -31,6 +31,8 @@
 //Now include pp headers
 #include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 
+extern struct rte_mempool *pool_direct;
+
 namespace xdpd {
 namespace gnu_linux_dpdk {
 
@@ -45,7 +47,7 @@ namespace gnu_linux_dpdk {
 inline void
 process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t* pkt, datapacket_dpdk_t* pkt_state){
 	
-	unsigned int i, burst_len;
+	unsigned int i, burst_len = 0;
 	of_switch_t* sw = port->attached_sw;
 	struct rte_mbuf* mbuf;
 	datapacket_dpdk_t* pkt_dpdk = pkt_state;
@@ -65,16 +67,23 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 	{		
 		//KNI PEX port - pkts received through a KNI interface
 		pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
+		assert(port_state->kni != NULL);
+		
+		assert(!rte_mempool_full(pool_direct));
+		if(rte_mempool_count(pool_direct) <= 2*IO_IFACE_MAX_PKT_BURST)
+			ROFL_INFO("**********************\n");		
 		burst_len = rte_kni_rx_burst(port_state->kni, pkts_burst, IO_IFACE_MAX_PKT_BURST);
+		
+#if DEBUG
 		if(burst_len != 0)
 		{
-			ROFL_INFO(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
-#if DEBUG	
+			ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
+	
 			for(i=0;i<burst_len;i++)
 			{
 				unsigned char *tmp = rte_pktmbuf_mtod(pkts_burst[i],unsigned char *);
 				unsigned int tmp_len = rte_pktmbuf_pkt_len(pkts_burst[i]);	 
-				printf("#%d length: %d\n",i,tmp_len);	
+				ROFL_DEBUG_VERBOSE("#%d length: %d\n",i,tmp_len);	
 				ROFL_DEBUG_VERBOSE("#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
 			}	
 #endif
@@ -96,7 +105,6 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 	//Prefetch
 	if( burst_len )
 		rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[0], void *));
-
 
 	//Process them 
 	for(i=0;i<burst_len;++i){

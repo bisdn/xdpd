@@ -825,7 +825,7 @@ static switch_port_t* configure_pex_port_kni(const char *pex_name, const char *p
 
 	ps->kni = rte_kni_alloc(pool_direct, &conf, &ops);
 
-	if (!ps->kni)
+	if (ps->kni == NULL)
 	{
 		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create KNI context for port: %s\n",pex_port);
 		assert(0);

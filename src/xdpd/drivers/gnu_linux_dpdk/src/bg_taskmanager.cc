@@ -32,6 +32,9 @@ using namespace xdpd::gnu_linux;
 static pthread_t bg_thread;
 static bool bg_continue_execution = true;
 
+//IVANO: tmp code
+extern struct rte_mempool *pool_direct;
+
 /**
  * This piece of code is meant to manage a thread that does:
  * 
@@ -130,7 +133,7 @@ int process_timeouts(){
 void* x86_background_tasks_routine(void* param){
 
 	static struct timeval last_time_stats_updated={0,0}, last_time_links_updated={0,0}, now;
-	static struct timeval last_time_kni_commands_handled={0,0};
+	static struct timeval last_time_kni_commands_handled={0,0}, last_mempool_printed={0,0};
 
 	while(bg_continue_execution){
 		
@@ -159,6 +162,13 @@ void* x86_background_tasks_routine(void* param){
 			last_time_kni_commands_handled = now;
 		}
 #endif
+
+		if(get_time_difference_ms(&now, &last_mempool_printed)>=1000)
+		{
+			last_mempool_printed = now;
+//			rte_mempool_dump(pool_direct);
+			ROFL_INFO("+++++++++++++++++++++++++++++ %d\n",rte_mempool_count(pool_direct));
+		}
 			
 		//Throttle
 		usleep(LSW_TIMER_SLOT_MS*1000);

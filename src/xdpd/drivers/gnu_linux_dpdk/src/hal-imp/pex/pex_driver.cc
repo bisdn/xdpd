@@ -29,7 +29,7 @@ pex_port_name_list_t* hal_driver_get_all_pex_port_names()
 
 hal_result_t hal_driver_pex_create_pex_port(const char *pex_name, const char *pex_port_name, PexType pexType)
 {
-	if((pexType != DPDK) && (pexType != EXTERNAL))
+	if((pexType != DPDK) && (pexType != DOCKER))
 	{
 		return HAL_FAILURE;
 	}
@@ -62,7 +62,7 @@ hal_result_t hal_driver_pex_destroy_pex_port(const char *pex_port_name)
 
 hal_result_t hal_driver_pex_start_pex_port(uint32_t pex_port_id)
 {
-	if(pex_port[pex_port_id].pexType == DPDK || pex_port[pex_port_id].pexType == EXTERNAL)
+	if(pex_port[pex_port_id].pexType == DPDK || pex_port[pex_port_id].pexType == DOCKER)
 	{
 		//In this case, noting to do
 		return HAL_SUCCESS;
@@ -77,7 +77,7 @@ hal_result_t hal_driver_pex_start_pex_port(uint32_t pex_port_id)
 hal_result_t hal_driver_pex_stop_pex_port(uint32_t pex_port_id)
 {
 
-	if(pex_port[pex_port_id].pexType == DPDK || pex_port[pex_port_id].pexType == EXTERNAL)
+	if(pex_port[pex_port_id].pexType == DPDK || pex_port[pex_port_id].pexType == DOCKER)
 	{
 		//In this case, noting to do
 		return HAL_SUCCESS;

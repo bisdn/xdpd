@@ -37,6 +37,7 @@ string MessageHandler::createLSI(string message)
 {
 	list<string> physicalPorts;
 	list< pair<string,list<string> > > networkFunctions; //list <nf name, list <port name> >
+	map<string,PexType> nfTypes; //list of <nf_name, nf type>
 	map<string,map<string,uint32_t> > nfPorts; //map <nf name, map <port name, port id> >
 	
 	string controllerAddress;
@@ -97,9 +98,11 @@ string MessageHandler::createLSI(string message)
 				Object nfs = nfs_array[i].getObject();
 				
 				bool foundName = false;
+				bool foundType = false;
         		bool foundPorts = false;
         		list<string> ports;
 				string name;
+				PexType nfType;
 
 				for( Object::const_iterator j = nfs.begin(); j != nfs.end(); ++j )
 				{
@@ -110,6 +113,18 @@ string MessageHandler::createLSI(string message)
 					{
 						name = nf_value.getString();
 						foundName = true;
+					}
+					else if(nf_name == "type")
+					{
+						string tmp = nf_value.getString();
+						if(tmp != "dpdk" && tmp != "docker")
+						{
+							ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function with a wrong \"type\"");
+						return createErrorMessage(string(CREATE_LSI), string(" Received command \"create-lsi\" with a network function with a wrong \"type\""));
+						}
+						
+						nfType = (tmp == "dpdk")? DPDK : DOCKER;
+						foundType = true;
 					}
 					else if(nf_name == "ports")
 					{
@@ -123,13 +138,14 @@ string MessageHandler::createLSI(string message)
 					}
 				
 				}
-				if(!foundName || !foundPorts)
+				if(!foundName || !foundPorts || !foundType)
 				{
-					ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", or both");
-					return createErrorMessage(string(CREATE_LSI), string(" Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", or both"));
+					ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", the \"type\", all of them");
+					return createErrorMessage(string(CREATE_LSI), string(" Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", the \"type\", all of them"));
 				}
 				
 				networkFunctions.push_back(make_pair(name,ports));
+				nfTypes[name] = nfType;
 			}
         }
         else if( name == "virtual-links")
@@ -188,7 +204,7 @@ string MessageHandler::createLSI(string message)
  		{
 	 		stringstream portName;
 	 		portName << lsi.getDpid() << "_" << *p;
-	 		port_id[*p] = NodeOrchestrator::createNfPort(lsi.getDpid(), nfName.str(), portName.str(),DPDK);
+	 		port_id[*p] = NodeOrchestrator::createNfPort(lsi.getDpid(), nfName.str(), portName.str(),nfTypes[it->first]);
 	 	}
 	 	nfPorts[it->first] = port_id;
  	} 

@@ -99,6 +99,6 @@
 #define RTE_MEM_CHANNELS 2
 #define SOCKET0 0
 #define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
-#define NB_MBUF   8192
+#define NB_MBUF   3*8192
 
 #endif //XDPD_GNU_LINUX_XDPD_CONFIG_H

@@ -332,6 +332,7 @@ tx_pkt_kni_pex_port(switch_port_t* port, datapacket_t* pkt)
 	//If burst is full => trigger send
 	if ( unlikely(!tasks->active) || unlikely(len == IO_IFACE_MAX_PKT_BURST)) 
 	{ //If buffer is full or mgmt core
+		assert(0);
 		pkt_burst->len = len;
 		flush_kni_pex_port_burst(port, port_id, pkt_burst);
 		return;

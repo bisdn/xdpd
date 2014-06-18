@@ -149,7 +149,7 @@ xmp::handle_port_attach(
 		portname = msg.get_xmpies().get_ie_portname().get_portname();
 		dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
 
-		unsigned int of_port_num;
+		unsigned int of_port_num = 0;
 		port_manager::attach_port_to_switch(dpid, portname, &of_port_num);
 		rofl::logging::error << "[xdpd][plugin][xmp] attached port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " "

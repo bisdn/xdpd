@@ -886,7 +886,8 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				break;
 			case OF1X_MATCH_VLAN_VID:
 				if(m->vlan_present == OF1X_MATCH_VLAN_SPECIFIC) {
-					match.set_vlan_vid(of1x_get_match_value16(m), of1x_get_match_mask16(m));
+					//match.set_vlan_vid(of1x_get_match_value16(m), of1x_get_match_mask16(m));
+					match.set_vlan_vid(of1x_get_match_value16(m) | rofl::openflow13::OFPVID_PRESENT);
 				}
 				if(m->vlan_present == OF1X_MATCH_VLAN_NONE) {
 					match.set_vlan_vid(rofl::openflow13::OFPVID_NONE);

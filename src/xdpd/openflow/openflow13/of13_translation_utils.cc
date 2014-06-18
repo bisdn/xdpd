@@ -236,8 +236,12 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		}else if (value && value&rofl::openflow13::OFPVID_PRESENT /*&& mask == 0xFFFF*/){ 
 			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
 		}else{
+#if 0
 			//Invalid 
 			assert(0);
+#endif
+			// is this condition valid, e.g., for masked VID values? at least ryu is doing it like this
+			vlan_present = OF1X_MATCH_VLAN_SPECIFIC;
 		}
 		
 		match = of1x_init_vlan_vid_match(value, mask, vlan_present);
@@ -886,8 +890,16 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				break;
 			case OF1X_MATCH_VLAN_VID:
 				if(m->vlan_present == OF1X_MATCH_VLAN_SPECIFIC) {
+					uint16_t value = of1x_get_match_value16(m);
+					uint16_t mask = of1x_get_match_mask16(m);
+
+					if (mask == 0x0fff) {
+						match.set_vlan_vid(value | rofl::openflow13::OFPVID_PRESENT);
+					} else {
+						match.set_vlan_vid(value, mask);
+					}
+
 					//match.set_vlan_vid(of1x_get_match_value16(m), of1x_get_match_mask16(m));
-					match.set_vlan_vid(of1x_get_match_value16(m) | rofl::openflow13::OFPVID_PRESENT);
 				}
 				if(m->vlan_present == OF1X_MATCH_VLAN_NONE) {
 					match.set_vlan_vid(rofl::openflow13::OFPVID_NONE);

@@ -54,7 +54,7 @@ protected:
 		    },
 		    {
 		        "name" : "firewall",
-		        "type" : "docker"
+		        "type" : "docker",
 		        "ports" : [
 		            "firewall_1",
 		            "firewall_2",
@@ -116,11 +116,11 @@ protected:
 		"virtual-links" : [
 			{
 				"local-id" : "0x4",
-				"remote-id" : "0xFA",	
+				"remote-id" : "0xFA"	
 			},
 			{
 				"local-id" : "0x5",
-				"remote-id" : "0xFB",	
+				"remote-id" : "0xFB"	
 			}
 		]
 	}
@@ -129,7 +129,7 @@ protected:
 	static string createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links);
 
 /**
-*	Example of command to create a new LSI
+*	Example of command to destroy an LSI
 *
 	{
 		"command" : "create-lsi",
@@ -141,8 +141,133 @@ protected:
 	{
 		"command" : "destroy-lsi",
 		"status" : "ok"
+	}
 */
 	static string destroyLSI(string message);
+
+/**
+*	Example of command to attach physical ports
+*
+	{
+		"command" : "attach-phy-ports",
+		"lsi-id" : "0x100",
+		"ports" : ["ge0","ge1"]
+	}
+*
+*	Example of answer
+*
+	{
+		"command" : "attach-phy-ports",
+		"status" : "ok",
+		"ports" : [
+			{ 
+			 	"name" : "ge0",
+			 	"id" : "0x1"
+			},
+			{
+				"name" : "ge1",
+				"id" : "0x2"
+			}	
+		]
+	}
+*/
+	static string attachPhyPorts(string message);
+
+/**
+*	Example of command to detach physical ports
+*
+	{
+		"command" : "detach-physical-ports",
+		"lsi-id" : "0x200",
+		"ports" : [ge0,ge1]
+	}
+*
+*	Example of answer
+*	
+*	{
+		"command" : "detach-physical-ports",
+		"status" : "ok"
+	}
+*/
+	static string detachPhyPorts(string message);
+
+
+/**
+*	Example of command to create NF ports
+*
+	{
+		"command" : "create-nf-ports",
+		"lsi-id" : "0x200",
+		"network-functions" : [
+			 {
+		        "name" : "VPN",
+		        "type" : "dpdk",
+		        "ports" : [
+		            "VPN_1"
+		        ]
+		    },
+		    {
+		        "name" : "firewall",
+		        "type" : "docker",
+		        "ports" : [
+		            "firewall_1",
+		            "firewall_2"
+		        ]
+		    }
+*
+*	Example of answer
+*
+	{
+		"command" : "create-nf-ports",
+		"status" : "ok",
+		"network-functions" : [
+			{
+		        "name" : "VPN",
+		        "ports" : [
+		            {
+		                "id" : 1,
+		                "name" : "VPN_1"
+		            }
+			    ]
+		    },
+		    {
+		        "name" : "firewall",
+		        "ports" : [
+		            {
+		                "id" : 2,
+		                "name" : "firewall_1"
+		            },
+		            {
+		                "id" : 3,
+		                "name" : "firewall_2"
+		            }
+		        ]
+		    }
+		]
+	}
+*/
+	static string createNFPorts(string message);
+
+/**
+*	Example of command to destroy NF ports
+*
+	{
+		"command" : "destroy-nf-ports",
+		"lsi-id" : "0x200",
+		"ports" : [
+			"VPN_1",
+			"firewall_2"  
+		]
+	}
+*
+*	Example of answer
+*	
+*	{
+		"command" : "destroy-nf-ports",
+		"status" : "ok"
+	}
+*/
+	static string destroyNFPorts(string message);
 
 /**
 *	Example of command to discover the physical ports of xDPD
@@ -160,6 +285,61 @@ protected:
 	}
 */
 	static string discoverPhyPorts(string message);
+
+/**
+*	Example of command to create new virtual links
+*
+	{
+		"command" : "create-virtual-link",
+		"number" : "2",
+		"lsi-a" : "0x100",
+		"lsi-b" : "0x200"
+	}
+*
+*	Example of answer
+*
+	{
+		"command" : "create-virtual-link",
+		"status" : "ok",
+		"virtual-links" : [
+			{
+				"id-a" : "0x4",
+				"id-b" : "0xFA",	
+			},
+			{
+				"id-a" : "0x5",
+				"id-b" : "0xFB",	
+			}
+		]
+	}
+*/	
+	static string createVirtualLinks(string message);
+
+/**
+*	Example of command to destroy virtual links
+*
+	{
+		"command" : "destroy-virtual-links"
+		"virtual-links" : [
+			{
+				"lsi-id" : "0x100",
+			 	"vlink-id" : "0xF"
+			},
+			{
+				"lsi-id" : "0x100",
+			 	"vlink-id" : "0xAF"
+			}
+		]
+	}
+*
+*	Example of answer
+*	
+*	{
+		"command" : "destroy-virtual-links",
+		"status" : "ok"
+	}
+*/	
+	static string destroyVirtualLinks(string message);
 
 /**	
 *	Example of answer

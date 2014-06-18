@@ -109,7 +109,8 @@ LSI NodeOrchestrator::createLSI(list<string> phyPorts, string controllerAddress,
 	socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) = controllerAddress;
 	socket_params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = controllerPort; 
 	socket_params.set_param(rofl::csocket::PARAM_KEY_DOMAIN) = string("inet"); 
-		int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
+	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
+	
 	try
 	{
 		switch_manager::create_switch(OFVERSION, dpid,lsiName,NUM_TABLES,ma_list,RECONNECT_TIME,rofl::csocket::SOCKET_TYPE_PLAIN,socket_params);
@@ -156,12 +157,37 @@ list<string> NodeOrchestrator::discoverPhyPorts()
 	return availablePorts;
 }
 
+unsigned int NodeOrchestrator::attachPhyPort(uint64_t dpid, string port)
+{
+	unsigned int portID;
+	try{
+		//Attach
+		port_manager::attach_port_to_switch(dpid, port, &portID);
+		
+		//Bring up
+		port_manager::bring_up(port);
+	}catch(...){	
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to attach port '%s'",port.c_str());
+		throw;
+	}
+	
+	return portID;
+}
+
 pair<unsigned int, unsigned int> NodeOrchestrator::createVirtualLink(uint64_t dpid_a,uint64_t dpid_b)
 {
 	string name_port_a;
 	string name_port_b;
 	unsigned int port_a, port_b;
-	port_manager::connect_switches(dpid_a, name_port_a, dpid_b, name_port_b);
+	
+	try
+	{
+		port_manager::connect_switches(dpid_a, name_port_a, dpid_b, name_port_b);
+	}catch(...)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create a virtual link between the switch '%d' and '%d'",dpid_a,dpid_b);
+		throw;
+	}
 	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Virtual link created - %x:%s <-> %x:%s\n", dpid_a,name_port_a.c_str(),dpid_b,name_port_b.c_str());
 	
@@ -180,8 +206,25 @@ unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string
 {
 	unsigned int port_number = 0;
 
-	pex_manager::create_pex_port(NfName, NfPortName,type);	
-	port_manager::attach_port_to_switch(dpid, NfPortName, &port_number);
+	try
+	{
+		pex_manager::create_pex_port(NfName, NfPortName,type);	
+	}catch(...)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create the NF port %s",NfPortName.c_str());
+		throw;
+	}
+	
+	try
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create the NF port %s",NfPortName.c_str());
+		port_manager::attach_port_to_switch(dpid, NfPortName, &port_number);
+	}catch(...)
+	{
+		pex_manager::destroy_pex_port(NfPortName);
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to attach the NF port %s to the switch %d",NfPortName.c_str(),dpid);
+		throw;
+	}
 	
 	port_manager::bring_up(NfPortName);
 	
@@ -201,5 +244,61 @@ void NodeOrchestrator::destroyLSI(uint64_t dpid)
 		throw;
 	}	
 	ROFL_ERR("[xdpd]["PLUGIN_NAME"] LSI %d destroyed\n",dpid);
+}
+
+bool NodeOrchestrator::destroyNfPort(uint64_t dpid, string NfPortName)
+{
+	//Bring down the port
+	port_manager::bring_down(NfPortName);
+	try
+	{
+		//Detatch the port from the LSI
+		port_manager::detach_port_from_switch(dpid, NfPortName);
+	}catch(...)
+	{	
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", NfPortName.c_str(),dpid);
+		return false;
+	}
+	
+	try
+	{
+		//Destroy the port
+		pex_manager::destroy_pex_port(NfPortName);
+	}catch(...)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to destroy port '%s'. Unknown error.\n", NfPortName.c_str());
+		return false;
+	}
+	
+	ROFL_ERR("[xdpd]["PLUGIN_NAME"] Port %s destroyed\n",NfPortName.c_str());
+	return true;
+}
+
+bool NodeOrchestrator::detachPort(uint64_t dpid, uint64_t portID)
+{
+	try
+	{
+		port_manager::detach_port_from_switch_by_num(dpid, portID);
+	}catch(...)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detach port '%d' from switch %d. Unknown error.\n",portID,dpid);
+	}
+	
+	ROFL_ERR("[xdpd]["PLUGIN_NAME"] Port %d detached from switch %d\n",portID,dpid);	
+	return true;
+}
+
+bool NodeOrchestrator::detachPort(uint64_t dpid, string port)
+{
+	try
+	{
+		port_manager::detach_port_from_switch(dpid, port);
+	}catch(...)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detach port '%s' from switch %d. Unknown error.\n",port.c_str(),dpid);
+	}
+	
+	ROFL_ERR("[xdpd]["PLUGIN_NAME"] Port %s detached from switch %d\n",port.c_str(),dpid);	
+	return true;
 }
 

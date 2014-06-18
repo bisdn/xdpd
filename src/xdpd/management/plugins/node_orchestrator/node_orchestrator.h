@@ -25,11 +25,9 @@ using namespace std;
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
 *
 * @brief Plugin that receives commands from the node orchestrator
-* 
 */
 
 class openflow_switch;
-class Server;
 
 namespace xdpd {
 
@@ -64,11 +62,22 @@ protected:
 	/*
 	*	Methods implementing commands from the orchestrator
 	*/
+	
 	static LSI createLSI(list<string> phyPorts, string controllerAddress, string controllerPort);
 	static void destroyLSI(uint64_t dpid);
-	static list<string> discoverPhyPorts();
-	static pair<unsigned int, unsigned int> createVirtualLink(uint64_t dpid_a,uint64_t dpid_b);
+	
+	static unsigned int attachPhyPort(uint64_t dpid, string port);
+	
 	static unsigned int createNfPort(uint64_t dpid, string NfName, string NfPortName, PexType type);
+	static bool destroyNfPort(uint64_t dpid, string NfPortName);
+
+	static pair<unsigned int, unsigned int> createVirtualLink(uint64_t dpid_a,uint64_t dpid_b);
+	
+	//Used both the detach a physical port and to destroy a virtual link
+	static bool detachPort(uint64_t dpid, uint64_t portID);
+	static bool detachPort(uint64_t dpid, string port);
+	
+	static list<string> discoverPhyPorts();
 	
 	static uint64_t nextDpid;
 

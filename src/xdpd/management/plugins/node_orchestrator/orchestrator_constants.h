@@ -22,9 +22,19 @@
 *	Messages and answers from/to the
 *	node orchestrator
 */
-#define CREATE_LSI			"create-lsi"
-#define DESTROY_LSI			"destroy-lsi"
-#define DISCOVER_PHY_PORTS	"discover-physical-ports"
-#define ERROR				"ERROR"
+#define CREATE_LSI				"create-lsi"
+#define DESTROY_LSI				"destroy-lsi"
 
-#endif //endl
+#define ATTACH_PHY_PORTS		"attach-physical-ports"
+#define DETACH_PHY_PORTS		"detach-physical-ports"
+
+#define CREATE_NF_PORTS			"create-nfs-ports"
+#define DESTROY_NF_PORTS		"destroy-nfs-ports"
+
+#define CREATE_VIRTUAL_LINKS	"create-virtual-link"
+#define DESTROY_VIRTUAL_LINKS	"destroy-virtual-link"
+
+#define DISCOVER_PHY_PORTS		"discover-physical-ports"
+#define ERROR					"ERROR"
+
+#endif //endif

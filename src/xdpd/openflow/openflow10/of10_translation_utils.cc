@@ -160,8 +160,8 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	//NW SRC
 	try {
-		uint32_t value = ofmatch.get_nw_src_value().get_addr_nbo();
-		uint32_t mask = ofmatch.get_nw_src_mask().get_addr_nbo();
+		uint32_t value = ofmatch.get_nw_src_value().get_addr_hbo();
+		uint32_t mask = ofmatch.get_nw_src_mask().get_addr_hbo();
 		if(value != 0x0){
 			match = of1x_init_nw_src_match(value, mask);
 			of1x_add_match_to_entry(entry, match);
@@ -170,8 +170,8 @@ of10_translation_utils::of10_map_flow_entry_matches(
 
 	//NW DST 
 	try {
-		uint32_t value = ofmatch.get_nw_dst_value().get_addr_nbo();
-		uint32_t mask = ofmatch.get_nw_dst_mask().get_addr_nbo();
+		uint32_t value = ofmatch.get_nw_dst_value().get_addr_hbo();
+		uint32_t mask = ofmatch.get_nw_dst_mask().get_addr_hbo();
 		if(value != 0x0){
 			match = of1x_init_nw_dst_match(value, mask);
 			of1x_add_match_to_entry(entry, match);
@@ -242,12 +242,10 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0);
 				} break;
 			case rofl::openflow10::OFPAT_SET_NW_SRC:
-				//field.u32 = NTOHB32(actions.get_action_set_nw_src(index).get_nw_src().get_addr_nbo());
 				field.u32 = actions.get_action_set_nw_src(index).get_nw_src().get_addr_hbo();
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_SRC, field, 0x0);
 				break;
 			case rofl::openflow10::OFPAT_SET_NW_DST:
-				//field.u32 = NTOHB32(actions.get_action_set_nw_dst(index).get_nw_dst().get_addr_nbo());
 				field.u32 = actions.get_action_set_nw_dst(index).get_nw_dst().get_addr_hbo();
 				action = of1x_init_packet_action( OF1X_AT_SET_FIELD_NW_DST, field, 0x0);
 				break;

@@ -104,6 +104,9 @@ protected:
 	handle_connect_refused(rofl::csocket& socket) {};
 
 	virtual void
+	handle_connect_failed(rofl::csocket& socket) {};
+
+	virtual void
 	handle_write(rofl::csocket& socket) {};
 
 	virtual void

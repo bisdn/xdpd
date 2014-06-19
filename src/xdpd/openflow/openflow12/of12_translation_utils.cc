@@ -1202,7 +1202,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_arp_spa(addr);
+				match.set_arp_spa(addr, mask);
 			}
 				break;
 			case OF1X_MATCH_ARP_THA:
@@ -1501,6 +1501,8 @@ of12_translation_utils::of12_map_reverse_flow_entry_instruction_write_metadata(
 	switch (inst->type) {
 	case OF1X_IT_WRITE_METADATA: {
 		// TODO: both are marked TODO in of1x_pipeline
+		instruction.set_metadata(inst->write_metadata.metadata);
+		instruction.set_metadata_mask(inst->write_metadata.metadata_mask);
 	} break;
 	default: {
 		// do nothing

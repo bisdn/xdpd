@@ -296,7 +296,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 
 	//FIXME: check if already scheduled
-	if( iface_manager_set_queues(current_core_index, port_state->port_id) != ROFL_SUCCESS){
+	if( iface_manager_set_queues(port, current_core_index, port_state->port_id) != ROFL_SUCCESS){
 		assert(0);
 		return ROFL_FAILURE;
 	}

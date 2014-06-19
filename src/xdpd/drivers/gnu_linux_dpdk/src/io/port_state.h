@@ -14,6 +14,7 @@
 struct dpdk_port_state{
 	//Core attachement state
 	bool scheduled;
+	bool queues_set; 
 	unsigned int core_id;
 	unsigned int core_port_slot;
 

@@ -14,7 +14,7 @@ mmap_rx::mmap_rx(
 		frame_size(__frame_size),
 		devname(__devname),
 		sd(-1),
-		ll_addr(ETH_P_ALL, devname, 0, 0, NULL, 0),
+		//ll_addr(ETH_P_ALL, devname, 0, 0, NULL, 0),
 		rpos(0)
 {
 	int rc = 0;
@@ -46,7 +46,15 @@ mmap_rx::mmap_rx(
 	{
 		throw eConstructorMmapRx();	
 	}
-	ll_addr.ca_sladdr->sll_ifindex = ifr.ifr_ifindex;
+	//ll_addr.ca_sladdr->sll_ifindex = ifr.ifr_ifindex;
+	memset(&ll_addr, 0, sizeof(ll_addr));
+	ll_addr.sll_family = AF_PACKET;
+	ll_addr.sll_protocol = htons(ETH_P_ALL);
+	ll_addr.sll_ifindex = ifr.ifr_ifindex;
+	ll_addr.sll_hatype = 0;
+	ll_addr.sll_pkttype = 0;
+	ll_addr.sll_halen = 0;
+
 
 	/* prepare packet request struct */
 	struct packet_mreq mr;
@@ -159,7 +167,7 @@ mmap_rx::mmap_rx(
 
 
 	/* bind socket to device */
-	if (-1 == bind(sd, ll_addr.ca_saddr, ll_addr.salen)){
+	if (-1 == bind(sd, (struct sockaddr*)&ll_addr, sizeof(ll_addr))){
 		throw eConstructorMmapRx();
 	}
 		

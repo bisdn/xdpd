@@ -59,7 +59,7 @@ public:
 	/**
 	* Maps a of1x_action from an OF1.0 Header
 	*/
-	static void of1x_map_flow_entry_actions(crofctl *ctl, openflow_switch* sw, rofl::openflow::cofactions& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
+	static void of1x_map_flow_entry_actions(crofctl *ctl, openflow_switch* sw, const rofl::openflow::cofactions& actions, of1x_action_group_t *apply_actions, of1x_write_actions_t *write_actions);
 
 
 	/**
@@ -75,7 +75,7 @@ public:
 	/**
 	*
 	*/
-	static void of1x_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, rofl::openflow::cofaction& action, uint16_t pipeline_miss_send_len);
+	static void of1x_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, unsigned int index, rofl::openflow::cofactions& actions, uint16_t pipeline_miss_send_len);
 
 	/**
 	*

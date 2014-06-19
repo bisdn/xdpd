@@ -140,7 +140,7 @@ of13_endpoint::handle_flow_mod(
 		const rofl::cauxid& auxid,
 		rofl::openflow::cofmsg_flow_mod& msg)
 {
-	switch (msg.get_command()) {
+	switch (msg.get_flowmod().get_command()) {
 	case openflow13::OFPFC_ADD: {
 		flow_mod_add(ctl, msg);
 	} break;
@@ -168,14 +168,14 @@ of13_endpoint::flow_mod_add(
 		rofl::crofctl& ctl,
 		rofl::openflow::cofmsg_flow_mod& msg)
 {
-	uint8_t table_id = msg.get_table_id();
+	uint8_t table_id = msg.get_flowmod().get_table_id();
 	hal_result_t res;
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
 	if ( (table_id > sw->num_of_tables) && (table_id != openflow13::OFPTT_ALL) ){
 		rofl::logging::error << "[xdpd][of13][flow-mod-add] unable to add flow-mod due to " <<
-				"invalid table-id:" << msg.get_table_id() << " on dpt:" << sw->dpname << std::endl;
+				"invalid table-id:" << msg.get_flowmod().get_table_id() << " on dpt:" << sw->dpname << std::endl;
 		throw rofl::eFlowModBadTableId();
 	}
 
@@ -191,11 +191,11 @@ of13_endpoint::flow_mod_add(
 	}
 
 	if (HAL_SUCCESS != (res = hal_driver_of1x_process_flow_mod_add(sw->dpid,
-								msg.get_table_id(),
+								msg.get_flowmod().get_table_id(),
 								&entry,
-								msg.get_buffer_id(),
-								msg.get_flags() & openflow13::OFPFF_CHECK_OVERLAP,
-								msg.get_flags() & openflow13::OFPFF_RESET_COUNTS))){
+								msg.get_flowmod().get_buffer_id(),
+								msg.get_flowmod().get_flags() & openflow13::OFPFF_CHECK_OVERLAP,
+								msg.get_flowmod().get_flags() & openflow13::OFPFF_RESET_COUNTS))){
 		// log error
 		rofl::logging::error << "[xdpd][of13][flow-mod-add] error inserting flow-mod on dpt:" << sw->dpname << std::endl;
 		of1x_destroy_flow_entry(entry);
@@ -219,10 +219,10 @@ of13_endpoint::flow_mod_modify(
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
-	if (pack.get_table_id() > sw->num_of_tables)
+	if (pack.get_flowmod().get_table_id() > sw->num_of_tables)
 	{
 		rofl::logging::error << "[xdpd][of13][flow-mod-modify] unable to modify flow-mod due to " <<
-				"invalid table-id:" << pack.get_table_id() << " on dpt:" << sw->dpname << std::endl;
+				"invalid table-id:" << pack.get_flowmod().get_table_id() << " on dpt:" << sw->dpname << std::endl;
 		throw rofl::eFlowModBadTableId();
 	}
 
@@ -242,11 +242,11 @@ of13_endpoint::flow_mod_modify(
 
 
 	if(HAL_SUCCESS != hal_driver_of1x_process_flow_mod_modify(sw->dpid,
-								pack.get_table_id(),
+								pack.get_flowmod().get_table_id(),
 								&entry,
-								pack.get_buffer_id(),
+								pack.get_flowmod().get_buffer_id(),
 								strictness,
-								pack.get_flags() & openflow13::OFPFF_RESET_COUNTS)){
+								pack.get_flowmod().get_flags() & openflow13::OFPFF_RESET_COUNTS)){
 		rofl::logging::error << "[xdpd][of13][flow-mod-modify] error modifying flow-mod on dpt:" << sw->dpname << std::endl;
 		of1x_destroy_flow_entry(entry);
 
@@ -279,10 +279,10 @@ of13_endpoint::flow_mod_delete(
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
 	if(HAL_SUCCESS != hal_driver_of1x_process_flow_mod_delete(sw->dpid,
-								pack.get_table_id(),
+								pack.get_flowmod().get_table_id(),
 								entry,
-								pack.get_out_port(),
-								pack.get_out_group(),
+								pack.get_flowmod().get_out_port(),
+								pack.get_flowmod().get_out_group(),
 								strictness)) {
 		rofl::logging::error << "[xdpd][of13][flow-mod-delete] error deleting flow-mod on dpt:" << sw->dpname << std::endl;
 		of1x_destroy_flow_entry(entry);
@@ -1549,7 +1549,8 @@ of13_endpoint::handle_meter_mod(
 void
 of13_endpoint::handle_ctl_attached(crofctl *ctrl)
 {
-	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , ctrl->get_peer_addr().c_str()); //FIXME: add role
+	std::stringstream sstr; sstr << ctrl->get_peer_addr();
+	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , sstr.str().c_str()); //FIXME: add role
 }
 
 
@@ -1557,7 +1558,7 @@ of13_endpoint::handle_ctl_attached(crofctl *ctrl)
 void
 of13_endpoint::handle_ctl_detached(crofctl *ctrl)
 {
-	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() ,ctrl->get_peer_addr().c_str()); //FIXME: add role
-
+	std::stringstream sstr; sstr << ctrl->get_peer_addr();
+	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() , sstr.str().c_str()); //FIXME: add role
 }
 

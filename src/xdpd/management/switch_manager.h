@@ -29,6 +29,10 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 
+//Snapshot
+#include "snapshots/switch_snapshot.h"
+#include "snapshots/flow_entry_snapshot.h"
+
 /**
 * @file switch_manager.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
@@ -134,10 +138,15 @@ public:
 
 	/**
 	* Get switch information (snapshot)
-	* @returns Switch snapshot or NULL. The snapshot MUST be deleted using of_switch_destroy_snapshot() 
+	* @param snapshot Snapshot of the switch to be filled in. 
 	*/
-	static of_switch_snapshot_t const* get_switch_info(uint64_t dpid);
-	
+	static void get_switch_info(uint64_t dpid, openflow_switch_snapshot& snapshot);
+
+	/**
+	* Get list of switch table flow entries currently installed 
+	* @param flows List of flows installed. 
+	*/
+	static void get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TODO: Add filtering */, std::list<flow_entry_snapshot>& flows);
 
 	/**
 	 * List available matching algorithms
@@ -201,8 +210,10 @@ private:
 	static openflow_switch* __get_switch_by_dpid(uint64_t dpid);	
 
 	//Default addresses
-	static const rofl::caddress controller_addr;
-	static const rofl::caddress binding_addr;
+	static const rofl::caddress_in4 controller_addr;
+	static const uint16_t controller_port;
+	static const rofl::caddress_in4 binding_addr;
+	static const uint16_t binding_port;
 
 	static pthread_mutex_t mutex;
 	static pthread_rwlock_t rwlock;

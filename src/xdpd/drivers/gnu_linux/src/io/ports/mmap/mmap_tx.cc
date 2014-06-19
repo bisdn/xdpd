@@ -14,7 +14,7 @@ mmap_tx::mmap_tx(
 		frame_size(__frame_size),
 		devname(__devname),
 		sd(-1),
-		ll_addr(ETH_P_ALL, devname, 0, 0, NULL, 0),
+		//ll_addr(ETH_P_ALL, devname, 0, 0, NULL, 0),
 		tpos(0)
 {
 	ROFL_DEBUG_VERBOSE(DRIVER_NAME" mmap_tx(%p)::mmap_tx() %s\n",
@@ -46,7 +46,14 @@ mmap_tx::mmap_tx(
 	{
 		throw eConstructorMmapTx();
 	}
-	ll_addr.ca_sladdr->sll_ifindex = ifr.ifr_ifindex;
+	//ll_addr.ca_sladdr->sll_ifindex = ifr.ifr_ifindex;
+	memset(&ll_addr, 0, sizeof(ll_addr));
+	ll_addr.sll_family = AF_PACKET;
+	ll_addr.sll_protocol = htons(ETH_P_ALL);
+	ll_addr.sll_ifindex = ifr.ifr_ifindex;
+	ll_addr.sll_hatype = 0;
+	ll_addr.sll_pkttype = 0;
+	ll_addr.sll_halen = 0;
 
 	/* prepare packet request struct */
 	struct packet_mreq mr;

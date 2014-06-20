@@ -361,7 +361,7 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 			port_pair->state |= PORT_STATE_LINK_DOWN;
 		}
 	}
-	else if(port->type == PORT_TYPE_PEX_DPDK)
+	else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{
 		/*
 		*  DPDK PEX
@@ -377,7 +377,7 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 				return ROFL_FAILURE; 
 			}
 		}
-	}else if(port->type == PORT_TYPE_PEX_KNI)
+	}else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 	{
 		/*
 		*	KNI PEX
@@ -464,7 +464,7 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 		port->state |= PORT_STATE_LINK_DOWN;
 		port_pair->state |= PORT_STATE_LINK_DOWN;
 	}
-	else if(port->type == PORT_TYPE_PEX_DPDK)
+	else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{
 		/*
 		* PEX port
@@ -481,7 +481,7 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 			}
 		}		
 		port->up = false;
-	}else if(port->type == PORT_TYPE_PEX_KNI)
+	}else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 	{
 		/*
 		*	KNI PEX
@@ -656,7 +656,7 @@ void iface_manager_handle_kni_commands()
 		port = pex_port_mapping[i];
 		if(unlikely(port != NULL))
 		{
-			if(port->type == PORT_TYPE_PEX_KNI)
+			if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 			{
 				pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
 				rte_kni_handle_request(port_state->kni);
@@ -708,7 +708,7 @@ static switch_port_t* configure_pex_port_dpdk(const char *pex_name, const char *
 	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
 	
 	//Initialize pipeline port
-	port = switch_port_init((char*)pex_port, false, PORT_TYPE_PEX_DPDK, PORT_STATE_NONE);
+	port = switch_port_init((char*)pex_port, false, PORT_TYPE_PEX_DPDK_SECONDARY, PORT_STATE_NONE);
 	if(!port)
 		return NULL; 
 
@@ -786,7 +786,7 @@ static switch_port_t* configure_pex_port_kni(const char *pex_name, const char *p
 	switch_port_t* port;
 	
 	//Initialize pipeline port
-	port = switch_port_init((char*)pex_port, false, PORT_TYPE_PEX_KNI, PORT_STATE_NONE);
+	port = switch_port_init((char*)pex_port, false, PORT_TYPE_PEX_DPDK_KNI, PORT_STATE_NONE);
 	if(!port)
 		return NULL; 
 
@@ -863,7 +863,7 @@ rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *pex
 	
 	ROFL_INFO(DRIVER_NAME"[port_manager] Creating a PEX port named '%s'\n",pex_port);
 	
-	if(pex_port_type == PORT_TYPE_PEX_DPDK)
+	if(pex_port_type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{
 		if(! ( port = configure_pex_port_dpdk(pex_name,pex_port) ) )
 		{
@@ -871,7 +871,7 @@ rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *pex
 			return ROFL_FAILURE;
 		}
 	}
-	else if(pex_port_type == PORT_TYPE_PEX_KNI)
+	else if(pex_port_type == PORT_TYPE_PEX_DPDK_KNI)
 	{
 		if(! ( port = configure_pex_port_kni(pex_name,pex_port) ) )
 		{
@@ -894,7 +894,7 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 {
 	switch_port_t *port = physical_switch_get_port_by_name(port_name);
 	
-	if(port->type == PORT_TYPE_PEX_DPDK)
+	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{	
 		pex_port_state_dpdk_t *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 
@@ -912,7 +912,7 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 		}
 		rte_free(port_state);
 	}
-	else if(port->type == PORT_TYPE_PEX_KNI)
+	else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 	{
 		pex_port_state_kni_t *port_state = (pex_port_state_kni_t*)port->platform_port_state;
 		

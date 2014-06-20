@@ -1165,13 +1165,13 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 			return;
 		}
 #ifdef GNU_LINUX_DPDK_ENABLE_PEX		
-		else if(port->type == PORT_TYPE_PEX_DPDK)
+		else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 		{
 			/*
 			* DPDK PEX port
 			*/
 			xdpd::gnu_linux_dpdk::tx_pkt_dpdk_pex_port(port, pkt);
-		}else if(port->type == PORT_TYPE_PEX_KNI)
+		}else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 		{
 			/*
 			* KNI PEX port

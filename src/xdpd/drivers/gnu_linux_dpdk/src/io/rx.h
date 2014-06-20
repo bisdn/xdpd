@@ -57,13 +57,13 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		
 	//Read a burst
 #ifdef GNU_LINUX_DPDK_ENABLE_PEX	
-	if(port->type == PORT_TYPE_PEX_DPDK) 
+	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY) 
 	{
 		//DPDK PEX port - pkts received through an rte_ring
 		pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 		burst_len = rte_ring_mc_dequeue_burst(port_state->to_xdpd_queue, (void **)pkts_burst, IO_IFACE_MAX_PKT_BURST);
 	}
-	else if(port->type == PORT_TYPE_PEX_KNI)
+	else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 	{		
 		//KNI PEX port - pkts received through a KNI interface
 		pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
@@ -126,12 +126,11 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		//(note that the port_mapping used is different
 		switch_port_t *tmp_port;
 #ifdef GNU_LINUX_DPDK_ENABLE_PEX	
-		if(port->type == PORT_TYPE_PEX_DPDK)
-		{
+		if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY) {
 			//IVANO - FIXME: not sure that the mapping is needed
 			tmp_port = pex_port_mapping[mbuf->pkt.in_port];
 		}
-		else if(port->type == PORT_TYPE_PEX_KNI)
+		else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 		{
 			tmp_port=port;
 		}else{

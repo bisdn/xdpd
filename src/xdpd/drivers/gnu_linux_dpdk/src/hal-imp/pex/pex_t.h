@@ -20,6 +20,6 @@ typedef struct{
 	PexType pexType;
 }pex_port_t;
 
-pex_port_t pex_port[PORT_MANAGER_MAX_PORTS];
+//pex_port_t pex_port[PORT_MANAGER_MAX_PORTS];
 
 #endif //PEX_T_H

@@ -201,7 +201,7 @@ int processing_core_process_packets(void* not_used){
 					
 				l++;
 				
-				if(pex_port_mapping[i]->type == PORT_TYPE_PEX_KNI)
+				if(pex_port_mapping[i]->type == PORT_TYPE_PEX_DPDK_KNI)
 				{
 					//make code readable
 					port_queues = &tasks->pex_ports[i];
@@ -216,7 +216,7 @@ int processing_core_process_packets(void* not_used){
 				}
 				else
 				{
-					assert(pex_port_mapping[i]->type == PORT_TYPE_PEX_DPDK);
+					assert(pex_port_mapping[i]->type == PORT_TYPE_PEX_DPDK_SECONDARY);
 					flush_dpdk_pex_port(pex_port_mapping[i]);
 				}				
 			}
@@ -348,7 +348,7 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 {
 	unsigned int i, index, *num_of_ports;	
 
-	if(port->type != PORT_TYPE_PEX_DPDK && port->type != PORT_TYPE_PEX_KNI)
+	if(port->type != PORT_TYPE_PEX_DPDK_SECONDARY && port->type != PORT_TYPE_PEX_DPDK_KNI)
 	{
 		assert(0);
 		return ROFL_FAILURE;
@@ -406,7 +406,7 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 	
 	index = current_core_index;
 
-	if(port->type == PORT_TYPE_PEX_DPDK)
+	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{
 		pex_port_state_dpdk_t* port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 
@@ -459,7 +459,7 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 		ROFL_DEBUG_VERBOSE("Post-launching core %u due to scheduling action of port %p\n", index, port);
 	}
 	
-	if(port->type == PORT_TYPE_PEX_DPDK)
+	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{
 		pex_port_state_dpdk_t* port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 		port_state->scheduled = true;
@@ -540,10 +540,12 @@ rofl_result_t processing_deschedule_pex_port(switch_port_t* port)
 {
 	unsigned int i;
 	
-	assert(port->type == PORT_TYPE_PEX_DPDK || port->type == PORT_TYPE_PEX_KNI);
+	assert(port->type == PORT_TYPE_PEX_DPDK_SECONDARY || port->type == PORT_TYPE_PEX_DPDK_KNI);
 	
-	if(port->type == PORT_TYPE_PEX_DPDK)
+	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{
+	
+		ROFL_ERR(DRIVER_NAME"[processing] Here for pex port %s\n",port->name);
 	
 		pex_port_state_dpdk_t* port_state = (pex_port_state_dpdk_t*)port->platform_port_state;	
 		core_tasks_t* core_task = &processing_core_tasks[port_state->core_id];
@@ -597,7 +599,7 @@ rofl_result_t processing_deschedule_pex_port(switch_port_t* port)
 	
 		port_state->scheduled = false;
 	}
-	else	//if(port->type == PORT_TYPE_PEX_DPDK)
+	else	//if(port->type == PORT_TYPE_PEX_KNI)
 	{
 	
 		pex_port_state_kni_t* port_state = (pex_port_state_kni_t*)port->platform_port_state;	

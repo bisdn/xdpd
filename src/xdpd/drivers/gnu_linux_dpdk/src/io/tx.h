@@ -143,7 +143,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 inline void
 tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 {
-	assert(port->type == PORT_TYPE_PEX_DPDK);
+	assert(port->type == PORT_TYPE_PEX_DPDK_SECONDARY);
 
 	int ret;
 	uint32_t tmp, next_tmp;
@@ -199,30 +199,10 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 
 void inline
 flush_dpdk_pex_port(switch_port_t *port)
-{
-	//IVANO - FIXME: this function is probably wrong
-	return;
-
-	uint64_t tmp_time;
-	uint32_t tmp_counter_from_last_flush;
-	
+{	
 	assert(port != NULL);
-
 	pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
-
-	//If there are pkts into the rte_ring, check if the timeout is expired
-	tmp_time = port_state->last_flush_time;
-	tmp_counter_from_last_flush = port_state->counter_from_last_flush;
-	while( (tmp_counter_from_last_flush > 0) /* && ((rte_rdtsc() - tmp_time) > TIME_THRESHOLD) */)
-	{
-		if(__sync_bool_compare_and_swap(&(port_state->last_flush_time),tmp_time,rte_rdtsc()) == true)
-		{
-			sem_post(port_state->semaphore);
-			break;
-		}
-		tmp_time = port_state->last_flush_time;
-		tmp_counter_from_last_flush = port_state->counter_from_last_flush;
-	}
+	sem_post(port_state->semaphore);
 }
 
 /*

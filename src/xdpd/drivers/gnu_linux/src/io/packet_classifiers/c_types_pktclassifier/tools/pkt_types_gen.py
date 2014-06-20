@@ -85,7 +85,7 @@ pkt_types_unrolled = [ ]
 
 #Unroll parameters 
 ipv4_max_options_words = 15 #15 Inclusive 15x4bytes=60bytes 
-mpls_max_depth=16 #Maximum
+mpls_max_depth=32 #Maximum
 vlan_max=2 #Maximum
 
 ##

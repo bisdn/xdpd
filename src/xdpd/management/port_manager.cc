@@ -213,7 +213,7 @@ void port_manager::detach_port_from_switch(uint64_t dpid, std::string& port_name
 	if(hal_driver_detach_port_from_switch(dpid,port_name.c_str()) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
 		switch_port_destroy_snapshot(port_snapshot);	
-		ROFL_ERR("[xdpd][port_manager] Unknown ERROR: Driver was unabel to detach non-existent port %s from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
+		ROFL_ERR("[xdpd][port_manager] Unknown ERROR: Driver was unable to detach non-existent port %s from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
 		assert(0);	
 		throw ePmUnknownError();
 	}

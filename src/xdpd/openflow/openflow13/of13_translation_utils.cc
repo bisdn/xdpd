@@ -1201,6 +1201,8 @@ of13_translation_utils::of13_map_reverse_flow_entry_instruction_write_metadata(
 	switch (inst->type) {
 	case OF1X_IT_WRITE_METADATA: {
 		// TODO: both are marked TODO in of1x_pipeline
+		instruction.set_metadata(inst->write_metadata.metadata);
+		instruction.set_metadata_mask(inst->write_metadata.metadata_mask);
 	} break;
 	default: {
 		// do nothing

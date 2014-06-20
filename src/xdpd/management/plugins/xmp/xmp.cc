@@ -149,7 +149,7 @@ xmp::handle_port_attach(
 		portname = msg.get_xmpies().get_ie_portname().get_portname();
 		dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
 
-		unsigned int of_port_num;
+		unsigned int of_port_num = 0;
 		port_manager::attach_port_to_switch(dpid, portname, &of_port_num);
 		rofl::logging::error << "[xdpd][plugin][xmp] attached port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " "
@@ -161,11 +161,19 @@ xmp::handle_port_attach(
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
-				<< " to dpid:" << (unsigned long long)dpid << " failed, port does not exist" << std::endl;
+				<< " to dpid:" << (unsigned long long)dpid << " failed (ePmInvalidPort)" << std::endl;
+
+	} catch(ePmUnknownError& e) {
+		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
+				<< " from dpid:" << (unsigned long long)dpid << " failed (ePmUnknownError)" << std::endl;
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
-				<< " to dpid:" << (unsigned long long)dpid << " failed." << std::endl;
+				<< " to dpid:" << (unsigned long long)dpid << " failed (eOfSmGeneralError)" << std::endl;
+
+	} catch (...) {
+		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
+				<< " to dpid:" << (unsigned long long)dpid << " failed" << std::endl;
 
 	}
 }
@@ -198,13 +206,25 @@ xmp::handle_port_detach(
 
 	} catch(eOfSmDoesNotExist& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
-				<< " from dpid:" << (unsigned long long)dpid << " failed, LSI does not exist" << std::endl;
+				<< " from dpid:" << (unsigned long long)dpid << " failed, LSI does not exist (eOfSmDoesNotExist)" << std::endl;
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
-				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist" << std::endl;
+				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmInvalidPort)" << std::endl;
+
+	} catch(ePmPortNotAttachedError& e) {
+		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
+				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmPortNotAttachedError)" << std::endl;
+
+	} catch(ePmUnknownError& e) {
+		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
+				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmUnknownError)" << std::endl;
 
 	} catch(eOfSmGeneralError& e) {
+		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
+				<< " from dpid:" << (unsigned long long)dpid << " failed (eOfSmGeneralError)" << std::endl;
+
+	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed." << std::endl;
 
@@ -230,10 +250,16 @@ xmp::handle_port_enable(
 		rofl::logging::error << "[xdpd][plugin][xmp] brought port:" << portname <<" up"<< std::endl;
 
 	} catch(ePmInvalidPort& e) {
-		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed, port does not exist" << std::endl;
+		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (ePmInvalidPort)" << std::endl;
+
+	} catch(ePmUnknownError& e) {
+		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (ePmUnknownError)" << std::endl;
 
 	} catch(eOfSmGeneralError& e) {
-		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed." << std::endl;
+		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (eOfSmGeneralError)" << std::endl;
+
+	} catch (...) {
+		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed" << std::endl;
 
 	}
 }
@@ -257,10 +283,16 @@ xmp::handle_port_disable(
 		rofl::logging::error << "[xdpd][plugin][xmp] brought port:" << portname <<" down"<< std::endl;
 
 	} catch(ePmInvalidPort& e) {
-		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed, port does not exist" << std::endl;
+		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (ePmInvalidPort)" << std::endl;
+
+	} catch(ePmUnknownError& e) {
+		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (ePmUnknownError)" << std::endl;
 
 	} catch(eOfSmGeneralError& e) {
-		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed." << std::endl;
+		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (eOfSmGeneralError)" << std::endl;
+
+	} catch (...) {
+		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed" << std::endl;
 
 	}
 }

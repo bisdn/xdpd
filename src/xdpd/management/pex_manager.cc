@@ -8,42 +8,15 @@ using namespace xdpd;
 
 pthread_mutex_t pex_manager::mutex = PTHREAD_MUTEX_INITIALIZER; 
 
-bool pex_manager::pex_port_exists(std::string& pex_port_name)
-{
-	return hal_driver_pex_port_exists(pex_port_name.c_str());
-}
-
-std::list<std::string> pex_manager::list_available_pex_port_names()
-{
-	unsigned int i;
-	pex_port_name_list_t* pex_port_names;
-	std::list<std::string> pex_port_name_list;
-	
-	//Call the driver to list the ports
-	pex_port_names = hal_driver_get_all_pex_port_names();
-	
-	if(!pex_port_names)
-		throw ePexmUnknownError();
-
-	//Run over the PEX ports and get the name
-	for(i=0;i<pex_port_names->num_of_pex;i++)
-		pex_port_name_list.push_back(std::string(pex_port_names->names[i].name));
-
-	//Destroy the list of PEX
-	//pex_name_list_destroy(pex_names); //TODO: decommentare questa linea
-	
-	return pex_port_name_list; 
-}
-
 //
 // PEX creation/destruction
 //
 
 void pex_manager::create_pex_port(std::string& pex_name, std::string& pex_port_name, PexType pexType)
 {
-	if(pexType == INTERNAL)
+	if(pexType == DPDK_PRIMARY)
 	{
-		ROFL_ERR("%s ERROR: only DPDK and EXTERNAL types are currently implemented\n", MODULE_NAME);
+		ROFL_ERR("%s ERROR: only DPDK_SECONDARY and DPDK_KNI types are currently implemented\n", MODULE_NAME);
 		throw ePexmInvalidPEX();	
 	}
 
@@ -51,7 +24,7 @@ void pex_manager::create_pex_port(std::string& pex_name, std::string& pex_port_n
 	pthread_mutex_lock(&pex_manager::mutex);
 	
 	// The PEX port must not exist
-	if(pex_port_exists(pex_port_name))
+	if(port_manager::port_exists(pex_port_name))
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
 		ROFL_ERR("%s ERROR: Attempting to create an existent PEX port %s\n", MODULE_NAME, pex_port_name.c_str());
@@ -80,7 +53,7 @@ void pex_manager::destroy_pex_port(std::string& pex_port_name)
 	pthread_mutex_lock(&pex_manager::mutex);
 	
 	// The PEX must exist
-	if(!pex_port_exists(pex_port_name))
+	if(!port_manager::port_exists(pex_port_name))
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
 		ROFL_ERR("%s ERROR: Attempting to destroy a non-existent PEX port %s\n", MODULE_NAME, pex_port_name.c_str());

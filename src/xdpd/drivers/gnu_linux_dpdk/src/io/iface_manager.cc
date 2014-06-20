@@ -364,15 +364,14 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 	else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{
 		/*
-		*  DPDK PEX
+		*  DPDK SECONDARY PEX
 		*/
 		if(!port->up)
 		{
-			//Was down; run the corresponding PEX
-			port_id = ((pex_port_state_dpdk_t*)port->platform_port_state)->pex_id;
-			if(hal_driver_pex_start_pex_port(port_id) != HAL_SUCCESS)
+			//Was down
+			if(hal_driver_pex_start_pex_port(port->name,port->type) != HAL_SUCCESS)
 			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK PEX port\n");
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK SECONDARY PEX port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
@@ -380,43 +379,16 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 	}else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 	{
 		/*
-		*	KNI PEX
+		*	DPDK KNI PEX
 		*/
 		if(!port->up)
 		{
-			struct ifreq ifr;
-		
-			int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-			if(sockfd == -1)
+			//Was down
+			if(hal_driver_pex_start_pex_port(port->name,port->type) != HAL_SUCCESS)
 			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot bring up KNI PEX port\n");
-				return ROFL_FAILURE;
-			}
-			/* get interface name */
-			strncpy(ifr.ifr_name, port->name, IFNAMSIZ);
-			
-			/* Read interface flags */
-			if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0) 
-			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot bring up KNI PEX port\n");
-				return ROFL_FAILURE;
-			}
-		
-			#ifdef ifr_flags
-				# define IRFFLAGS       ifr_flags
-			#else   /* Present on kFreeBSD */
-				# define IRFFLAGS       ifr_flagshigh
-			#endif
-		
-			// If interface is down, bring it up
-			if (!(ifr.IRFFLAGS & IFF_UP)) 
-			{
-				ifr.IRFFLAGS |= IFF_UP;
-				if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0) 
-				{
-					ROFL_ERR(DRIVER_NAME"[port_manager] Cannot bring up KNI PEX port\n");
-					return ROFL_FAILURE;
-				}
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK KNI PEX port: %s\n",port->name);
+				assert(0);
+				return ROFL_FAILURE; 
 			}
 		}
 	}else{
@@ -452,8 +424,7 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 	if(unlikely(!port))
 		return ROFL_FAILURE;
 	
-	if(port->type == PORT_TYPE_VIRTUAL)
-	{
+	if(port->type == PORT_TYPE_VIRTUAL) {
 		/*
 		* Virtual link
 		*/
@@ -464,68 +435,31 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 		port->state |= PORT_STATE_LINK_DOWN;
 		port_pair->state |= PORT_STATE_LINK_DOWN;
 	}
-	else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
-	{
+	else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY) {
 		/*
 		* PEX port
 		*/
-		
-		if(port->up)
-		{
-			port_id = ((pex_port_state_dpdk_t*)port->platform_port_state)->pex_id;
-			if(hal_driver_pex_stop_pex_port(port_id) != HAL_SUCCESS)
-			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK PEX port\n");
+		if(port->up) {
+			if(hal_driver_pex_stop_pex_port(port->name,port->type) != HAL_SUCCESS) {
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK SECONDARY PEX port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
 		}		
 		port->up = false;
-	}else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
-	{
+	}else if(port->type == PORT_TYPE_PEX_DPDK_KNI) {
 		/*
 		*	KNI PEX
 		*/
-		if(port->up)
-		{
-			struct ifreq ifr;
-		
-			int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-			if(sockfd == -1)
-			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot bring down KNI PEX port\n");
-				return ROFL_FAILURE;
+		if(port->up){
+			if(hal_driver_pex_stop_pex_port(port->name,port->type) != HAL_SUCCESS) {
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK KNI PEX port: %s\n",port->name);
+				assert(0);
+				return ROFL_FAILURE; 
 			}
-			/* get interface name */
-			strncpy(ifr.ifr_name, port->name, IFNAMSIZ);
-		
-			/* Read interface flags */
-			if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0) 
-			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot bring down KNI PEX port\n");
-				return ROFL_FAILURE;
-			}
-		
-			#ifdef ifr_flags
-				# define IRFFLAGS       ifr_flags
-			#else   /* Present on kFreeBSD */
-				# define IRFFLAGS       ifr_flagshigh
-			#endif
-		
-			// If interface is up, bring it down
-			if (ifr.IRFFLAGS & IFF_UP)
-			{
-				ifr.IRFFLAGS &= ~IFF_UP;
-				if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0) 
-				{
-					ROFL_ERR(DRIVER_NAME"[port_manager] Cannot bring down KNI PEX port\n");
-					return ROFL_FAILURE;
-				}
-			}
-			port->up = false;
 		}
-	}else
-	{
+		port->up = false;
+	}else {
 		/*
 		*  PHYSICAL
 		*/

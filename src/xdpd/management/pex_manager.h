@@ -13,6 +13,8 @@
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/hal/pex/pex_driver.h>
 
+#include "port_manager.h"
+
 /**
 * @file pex_manager.h
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
@@ -41,26 +43,7 @@ public:
 	* This section contains the API to manage PEX. This includes PEX creation, PEX removal,
 	* and PEX reconfiguration
 	*/
-
-	//
-	// Basic
-	//
-
- 	/**
- 	 * @name pex_port_exists
-	 * @brief Check if the PEX port named pex_port_name already exists
-	 * 
-	 * @param pex_port_name		Name of the PEX port to be checked
-	 */
-	static bool pex_port_exists(std::string& pex_port_name);
-
-	/**
-	* @name list_available_PEX_names
-	* @brief List the names of the PEX available
-	*/
-	static std::list<std::string> list_available_pex_port_names(void);
-
-
+	
 	//
 	//PEX operations
 	//

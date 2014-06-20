@@ -147,7 +147,6 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 
 	int ret;
 	uint32_t tmp, next_tmp;
-	uint64_t local_flush_time, cache_last_flush_time;
 	pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 	struct rte_mbuf* mbuf;
 	
@@ -155,8 +154,7 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 
 	ret = rte_ring_mp_enqueue(port_state->to_pex_queue, (void *) mbuf);
-	if( likely((ret == 0) || (ret == -EDQUOT)) )
-	{
+	if( likely((ret == 0) || (ret == -EDQUOT)) ){
 		//The packet has been enqueued
 		
 		//XXX port_statistics[port].tx++;
@@ -170,30 +168,18 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 				next_tmp = 0;
 			else
 				next_tmp = tmp + 1;
-		}while(__sync_bool_compare_and_swap(&(port_state->counter_from_last_flush),tmp,next_tmp) != false);
+		}while(__sync_bool_compare_and_swap(&(port_state->counter_from_last_flush),tmp,next_tmp) == false);
 		
-		if(tmp == (PKT_TO_PEX_THRESHOLD - 1))
-		{
+		if(next_tmp == 0){
 			//Notify that pkts are available
 			sem_post(port_state->semaphore);
-	
-			//Store the current time
-			local_flush_time = rte_rdtsc();
-
-			do{
-				cache_last_flush_time = port_state->last_flush_time; 
-				if(port_state->last_flush_time > local_flush_time)
-					break;
-			}while(__sync_bool_compare_and_swap(&(port_state->last_flush_time),cache_last_flush_time,local_flush_time) != false);
-		}
-	}
-	else
-	{
-		//The queue is full, and the pkt must be dropped
+		}		
+	}else{
+			//The queue is full, and the pkt must be dropped
 		
-		//XXX port_statistics[port].dropped++
+			//XXX port_statistics[port].dropped++
 		
-		rte_pktmbuf_free(mbuf);
+			rte_pktmbuf_free(mbuf);
 	}
 }
 

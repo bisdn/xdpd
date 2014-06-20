@@ -42,10 +42,10 @@ hal_result_t hal_driver_pex_destroy_pex_port(const char *pex_port_name)
 
 hal_result_t hal_driver_pex_start_pex_port(const char *pex_port_name, port_type_t pex_port_type)
 {
-	if(pex_port_type != PORT_TYPE_PEX_DPDK_SECONDARY)
+	if(pex_port_type == PORT_TYPE_PEX_DPDK_SECONDARY)
 		return HAL_SUCCESS;
 		
-	if(pex_port_type != PORT_TYPE_PEX_DPDK_KNI)
+	if(pex_port_type == PORT_TYPE_PEX_DPDK_KNI)
 	{
 		struct ifreq ifr;
 	
@@ -92,10 +92,10 @@ hal_result_t hal_driver_pex_start_pex_port(const char *pex_port_name, port_type_
 hal_result_t hal_driver_pex_stop_pex_port(const char *pex_port_name, port_type_t pex_port_type)
 {
 
-	if(pex_port_type != PORT_TYPE_PEX_DPDK_SECONDARY)
+	if(pex_port_type == PORT_TYPE_PEX_DPDK_SECONDARY)
 		return HAL_SUCCESS;
 		
-	if(pex_port_type != PORT_TYPE_PEX_DPDK_KNI)
+	if(pex_port_type == PORT_TYPE_PEX_DPDK_KNI)
 	{
 		struct ifreq ifr;
 	

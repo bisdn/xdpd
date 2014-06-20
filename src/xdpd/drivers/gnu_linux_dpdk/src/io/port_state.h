@@ -27,7 +27,7 @@ typedef struct dpdk_port_state dpdk_port_state_t;
 /**
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
 *
-* @brief Represent the state of a DPDK PEX port
+* @brief Represent the state of a DPDK SECONDARY PEX port
 */
 struct pex_port_state_dpdk
 {
@@ -45,14 +45,11 @@ struct pex_port_state_dpdk
 	* @brief POSIX named semaphore used to implement batching towards the PEX
 	*/
 	sem_t *semaphore;
-
-	/**
-	* @brief Time of the last sem_post done on the semaphore to wake up a PEX
-	*/
-	uint64_t last_flush_time;
 	
 	/**
 	* @brief Count the number of packets inserted after the last sem_post
+	*	(this counter does not consider the sem_post called for the expiration
+	*	of the timeout)
 	*/
 	uint32_t counter_from_last_flush; 
 	
@@ -77,7 +74,7 @@ typedef struct pex_port_state_dpdk pex_port_state_dpdk_t;
 /**
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
 *
-* @brief Represent the state of a KNI PEX port
+* @brief Represent the state of a DPDK KNI PEX port
 */
 struct pex_port_state_kni
 {

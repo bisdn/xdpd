@@ -697,7 +697,6 @@ static switch_port_t* configure_pex_port_dpdk(const char *pex_name, const char *
 		return NULL;
 	}
 
-	ps->last_flush_time = 0;
 	ps->counter_from_last_flush = 0;
 	ps->pex_id = pex_id;
 

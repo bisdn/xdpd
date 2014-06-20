@@ -64,6 +64,9 @@ void pop_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_ty
 	clas_state->base += sizeof(cpc_mpls_hdr_t);
 
 	set_ether_type(get_ether_hdr(clas_state,0), ether_type);
+
+	//reclassify
+	parse_ethernet(clas_state, clas_state->base, clas_state->len);
 }
 
 void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){

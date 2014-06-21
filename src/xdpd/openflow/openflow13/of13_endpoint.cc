@@ -373,6 +373,7 @@ of13_endpoint::handle_flow_stats_request(
 		flowstatsarray.set_flow_stats(flow_id).set_priority(elem->priority);
 		flowstatsarray.set_flow_stats(flow_id).set_idle_timeout(elem->idle_timeout);
 		flowstatsarray.set_flow_stats(flow_id).set_hard_timeout(elem->hard_timeout);
+		flowstatsarray.set_flow_stats(flow_id).set_flags(elem->flags);
 		flowstatsarray.set_flow_stats(flow_id).set_cookie(elem->cookie);
 		flowstatsarray.set_flow_stats(flow_id).set_packet_count(elem->packet_count);
 		flowstatsarray.set_flow_stats(flow_id).set_byte_count(elem->byte_count);

@@ -933,7 +933,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_arp_spa(addr);
+				match.set_arp_spa(addr, mask);
 			}
 				break;
 			case OF1X_MATCH_ARP_THA:

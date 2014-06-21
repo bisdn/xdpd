@@ -11,7 +11,7 @@ protocols = OrderedDict(
 	("8023", 22), 
 	("MPLS", 4), 
 	("VLAN", 4), 
-	("ISID", 6), 
+	("ISID", 4), 
 	("PPPOE", 6), 
 	("PPP", 2), 
 	("ARPV4", 28), 

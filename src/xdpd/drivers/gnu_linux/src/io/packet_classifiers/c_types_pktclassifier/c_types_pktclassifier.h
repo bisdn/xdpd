@@ -26,6 +26,7 @@
 #include "./headers/cpc_pppoe.h"
 #include "./headers/cpc_tcp.h"
 #include "./headers/cpc_udp.h"
+#include "./headers/cpc_sctp.h"
 #include "./headers/cpc_vlan.h"
 
 //#include "pkt_types_mockup.h"
@@ -151,6 +152,13 @@ void* get_icmpv6_opt_prefix_info_hdr(classify_state_t* clas_state, int idx){
 }
 
 static inline
+void* get_sctp_hdr(classify_state_t* clas_state, int idx){
+	uint8_t* tmp;
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_SCTP);
+	return tmp;
+}
+
+static inline
 void* get_udp_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_UDP); 
@@ -228,6 +236,12 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 static inline
+void parse_sctp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+	PT_CLASS_ADD_PROTO(clas_state, SCTP);
+	//No further parsing
+}
+
+static inline
 void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	PT_CLASS_ADD_PROTO(clas_state, ARPV4);	
 	//No further parsing
@@ -276,13 +290,9 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 		case TCP_IP_PROTO:
 			parse_tcp(clas_state, data, datalen);
 			break;
-
-/*
 		case SCTP_IP_PROTO:
-			//Not supported yet
-			//parse_sctp(clas_state, data, datalen);
+			parse_sctp(clas_state, data, datalen);
 			break;
-*/
 		default:
 			break;
 	}
@@ -387,11 +397,9 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 		case TCP_IP_PROTO:
 			parse_tcp(clas_state, data, datalen);
 			break;
-#if 0
 		case SCTP_IP_PROTO:
-			parse_sctp(data, datalen);
+			parse_sctp(clas_state, data, datalen);
 			break;
-#endif
 		default:
 			break;
 	}

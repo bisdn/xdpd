@@ -299,13 +299,13 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		ofmatch.get_sctp_src();
-		throw eNotImplemented(std::string("of13_translation_utils::flow_mod_add() openflow13::OFPXMT_OFB_SCTP_SRC is missing")); // TODO
+		match = of1x_init_sctp_src_match(ofmatch.get_sctp_src());
+		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
-		ofmatch.get_sctp_dst();
-		throw eNotImplemented(std::string("of13_translation_utils::flow_mod_add() openflow13::OFPXMT_OFB_SCTP_DST is missing")); // TODO
+		match = of1x_init_sctp_dst_match(ofmatch.get_sctp_dst());
+		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
@@ -711,6 +711,18 @@ of13_translation_utils::of13_map_flow_entry_actions(
 				{
 					field.u16 = oxm.get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_UDP_SRC, field, 0x0);
+				}
+					break;
+				case rofl::openflow13::OFPXMT_OFB_SCTP_DST:
+				{
+					field.u16 = oxm.get_u16value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_SCTP_DST, field, 0x0);
+				}
+					break;
+				case rofl::openflow13::OFPXMT_OFB_SCTP_SRC:
+				{
+					field.u16 = oxm.get_u16value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_SCTP_SRC, field, 0x0);
 				}
 					break;
 
@@ -1430,6 +1442,12 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		case OF1X_AT_SET_FIELD_UDP_DST: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_udp_dst(of1x_get_packet_action_field16(of1x_action)));
 		} break;
+		case OF1X_AT_SET_FIELD_SCTP_SRC: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_sctp_src(of1x_get_packet_action_field16(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_SCTP_DST: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_sctp_dst(of1x_get_packet_action_field16(of1x_action)));
+		} break;
 		case OF1X_AT_SET_FIELD_ICMPV4_TYPE: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_icmpv4_type(of1x_get_packet_action_field8(of1x_action)));
 		} break;
@@ -1604,6 +1622,10 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 		match.set_udp_src(packet_matches_get_udp_src_value(pm));
 	if(packet_matches_get_udp_dst_value(pm))
 		match.set_udp_dst(packet_matches_get_udp_dst_value(pm));
+	if(packet_matches_get_sctp_src_value(pm))
+		match.set_sctp_src(packet_matches_get_sctp_src_value(pm));
+	if(packet_matches_get_sctp_dst_value(pm))
+		match.set_sctp_dst(packet_matches_get_sctp_dst_value(pm));
 	if(packet_matches_get_icmpv4_type_value(pm))
 		match.set_icmpv4_type(packet_matches_get_icmpv4_type_value(pm));
 	if(packet_matches_get_icmpv4_code_value(pm))

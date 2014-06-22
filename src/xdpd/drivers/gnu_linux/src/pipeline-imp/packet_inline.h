@@ -252,15 +252,17 @@ uint16_t* platform_packet_get_udp_src(datapacket_t * const pkt)
 
 STATIC_PACKET_INLINE__
 uint16_t* platform_packet_get_sctp_dst(datapacket_t *const pkt){
-	//TODO: add implementation when supported
-	return NULL;
-}
-STATIC_PACKET_INLINE__
-uint16_t* platform_packet_get_sctp_src(datapacket_t *const pkt){
-	//TODO: add implementation when supported
-	return NULL;
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == get_sctp_hdr(pack->headers, 0))) return NULL;
+	return get_sctp_sport(get_sctp_hdr(pack->headers, 0));
 }
 
+STATIC_PACKET_INLINE__
+uint16_t* platform_packet_get_sctp_src(datapacket_t *const pkt){
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == get_sctp_hdr(pack->headers, 0))) return NULL;
+	return get_sctp_dport(get_sctp_hdr(pack->headers, 0));
+}
 
 STATIC_PACKET_INLINE__
 uint8_t* platform_packet_get_icmpv4_type(datapacket_t * const pkt)

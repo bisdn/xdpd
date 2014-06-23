@@ -1183,7 +1183,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_instruction(
 		}
 	} break;
 	case OF1X_IT_WRITE_METADATA: {
-		instruction = rofl::openflow::cofinstruction_write_metadata(rofl::openflow13::OFP_VERSION,
+		instruction = rofl::openflow::cofinst_write_metadata(rofl::openflow13::OFP_VERSION,
 				inst->write_metadata.metadata, inst->write_metadata.metadata_mask);
 	} break;
 	case OF1X_IT_EXPERIMENTER: {

@@ -28,7 +28,7 @@ class ePexmUnknownError : public ePexmBase {};
 
 
 /**
-* @brief Port management API.
+* @brief PEX port management API.
 *
 * The PEX manager API is a C++ interface that can be consumed
 * by the add-on management modules for general PEX management operations.

@@ -60,7 +60,7 @@ rofl_result_t iface_manager_destroy(void);
 /**
 * Setup tx and rx queues 
 */
-rofl_result_t iface_manager_set_queues(unsigned int core_id, unsigned int port_id);
+rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id, unsigned int port_id);
 
 /**
 * Enable port 

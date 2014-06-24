@@ -92,6 +92,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	}
 
 	//Fill-in dpdk port state
+	ps->queues_set = false;
 	ps->scheduled = false;
 	ps->port_id = port_id;
 	port->platform_port_state = (platform_port_state_t*)ps;
@@ -106,7 +107,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	return port;
 }
 
-rofl_result_t iface_manager_set_queues(unsigned int core_id, unsigned int port_id){
+rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id, unsigned int port_id ){
 	
 	unsigned int i;
 	int ret;
@@ -122,6 +123,12 @@ rofl_result_t iface_manager_set_queues(unsigned int core_id, unsigned int port_i
 	tx_conf.tx_thresh.wthresh = TX_WTHRESH;
 	tx_conf.tx_free_thresh = 0; /* Use PMD default values */
 	tx_conf.tx_rs_thresh = 0; /* Use PMD default values */
+	
+	//Recover the 	
+	dpdk_port_state_t* dpdk_port = (dpdk_port_state_t*)port->platform_port_state;
+	
+	if(dpdk_port->queues_set)
+		return ROFL_SUCCESS;
 	
 	//Setup RX
 	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_TEST_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, pool_direct)) < 0 ){
@@ -168,6 +175,9 @@ rofl_result_t iface_manager_set_queues(unsigned int core_id, unsigned int port_i
 	
 	//Reset stats
 	rte_eth_stats_reset(port_id);
+
+	//Set as queues setup
+	dpdk_port->queues_set=true;
 	
 	return ROFL_SUCCESS;
 }

@@ -611,6 +611,46 @@ def pop_transitions(f):
 def get_hdr_macro(f):
 	f.write("\n#define PT_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp < state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
 
+#
+# MPLS stuff
+#
+
+def mpls_tables_fwd(f):
+	"""
+	MPLS forward decls.
+	"""
+
+	f.write("//Num of headers. \n")
+	f.write("extern const int mpls_num_of_labels[PT_MAX__];\n\n")
+
+def mpls_tables(f):
+	"""
+	MPLS forward decls.
+	"""
+	f.write("//Num of MPLS labels. \n")
+	f.write("const int mpls_num_of_labels[PT_MAX__] = {\n")
+
+	#Real rows
+	first_type = True 
+	for type_ in pkt_types_unrolled:
+		
+		if not first_type:
+			f.write(",")
+		first_type = False
+
+		n_labels = 0
+		if "MPLS" in type_:
+			#If there is already an MPLS add to the end
+			n_labels = int(type_.split("MPLS_nlabels_")[1])
+		
+		f.write("\n\t/* "+type_+" */"+str(n_labels))
+	f.write("\n};\n\n")
+
+	
+def mpls_macros(f):
+	#none for the moment
+	pass
+
 def add_class_type_macro(f):
 	#Add main Macro
 	f.write("\n#define PT_CLASS_ADD_PROTO(state, PROTO_TYPE) do{\\\n")
@@ -682,11 +722,15 @@ def main():
 		#Pop
 		pop_transitions_fwd(header)
 
+		#MPLS
+		mpls_tables_fwd(header)
+
 		#Macros
 		get_hdr_macro(header)
 		add_class_type_macro(header)	
 		push_macro(header)	
 		pop_macro(header)	
+		mpls_macros(header)
 
 		#End of guards
 		end_guard(header)
@@ -712,6 +756,8 @@ def main():
 		#Pop
 		pop_transitions(c_file)
 
+		#MPLS
+		mpls_tables(c_file)
 
 if __name__ == "__main__":
 	main()

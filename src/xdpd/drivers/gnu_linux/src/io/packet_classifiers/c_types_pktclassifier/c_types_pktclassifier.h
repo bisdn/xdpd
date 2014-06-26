@@ -83,9 +83,30 @@ void* get_pbb_isid_hdr(classify_state_t* clas_state, int idx){
 
 static inline
 void* get_mpls_hdr(classify_state_t* clas_state, int idx){
+	
 	uint8_t* tmp;
-	PT_GET_HDR(tmp, clas_state, PT_PROTO_MPLS); 
-	return tmp; 
+	
+	if(idx == 0){
+		//Outer most	
+		PT_GET_HDR(tmp, clas_state, PT_PROTO_MPLS); 
+		return tmp;
+	}else{
+		int num_of_lables = mpls_num_of_labels[clas_state->type];
+	
+		if( idx >= 0 ){
+			if( idx < num_of_lables ){
+				PT_GET_HDR(tmp, clas_state, PT_PROTO_MPLS); 
+				return tmp + ( (idx) * 4);
+			}
+		}else{
+			if((num_of_lables+idx+1) >= 0){
+				PT_GET_HDR(tmp, clas_state, PT_PROTO_MPLS); 
+				return tmp + ( (num_of_lables+idx+1) * 4 );
+			}
+		}
+	}
+
+	return NULL;
 }
 
 static inline

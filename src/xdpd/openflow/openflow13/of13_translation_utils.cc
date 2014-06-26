@@ -362,7 +362,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		match = of1x_init_ip6_flabel_match(ofmatch.get_ipv6_flabel());
+		match = of1x_init_ip6_flabel_match(ofmatch.get_ipv6_flabel(), ofmatch.get_ipv6_flabel_mask());
 		of1x_add_match_to_entry(entry,match);
 	} catch(...) {}
 

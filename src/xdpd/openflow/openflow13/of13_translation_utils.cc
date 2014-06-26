@@ -51,6 +51,7 @@ of13_translation_utils::of13_map_flow_entry(
 	entry->priority 		= msg->get_flowmod().get_priority();
 	entry->cookie 			= msg->get_flowmod().get_cookie();
 	entry->cookie_mask 		= msg->get_flowmod().get_cookie_mask();
+	entry->flags	 		= msg->get_flowmod().get_flags();
 	entry->timer_info.idle_timeout	= msg->get_flowmod().get_idle_timeout(); // these timers must be activated some time, when?
 	entry->timer_info.hard_timeout	= msg->get_flowmod().get_hard_timeout();
 

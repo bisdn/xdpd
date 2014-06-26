@@ -44,20 +44,21 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 	for(i=0; i<sw->pipeline.num_of_tables; i++){
 		of1x_flow_table_config_t *config = &(sw->pipeline.tables[i].config);
 	
-		//Lets set to zero the unssuported matches and actions.
-		bitmap128_unset(&config->apply_actions, OF1X_AT_COPY_TTL_OUT);
-		bitmap128_unset(&config->write_actions, OF1X_AT_COPY_TTL_OUT);
-		
-		//bitmap128_unset(&config->match, OF1X_MATCH_SCTP_SRC);
-		//bitmap128_unset(&config->wildcards, OF1X_MATCH_SCTP_SRC);
-		
-		//bitmap128_unset(&config->match, OF1X_MATCH_SCTP_DST);
-		//bitmap128_unset(&config->wildcards, OF1X_MATCH_SCTP_DST);
-		
+		/*
+		* Lets set to zero the unssuported matches and actions.
+		*/
+
+		//Matches
 		bitmap128_unset(&config->match, OF1X_MATCH_IPV6_EXTHDR);
 		bitmap128_unset(&config->wildcards, OF1X_MATCH_IPV6_EXTHDR);
+		
+		bitmap128_unset(&config->match, OF1X_MATCH_TUNNEL_ID);
+		bitmap128_unset(&config->wildcards, OF1X_MATCH_TUNNEL_ID);
 
-		//TODO: PBB, TUNNEL_ID zero them when they are set to 1 in ROFL_pipeline
+		//Actions
+		bitmap128_unset(&config->apply_actions, OF1X_AT_SET_FIELD_IPV6_EXTHDR);	
+		bitmap128_unset(&config->apply_actions, OF1X_AT_SET_FIELD_TUNNEL_ID);	
+		bitmap128_unset(&config->apply_actions, OF1X_AT_EXPERIMENTER);
 	}
 
 	return ROFL_SUCCESS;

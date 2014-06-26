@@ -20,7 +20,8 @@
 // I-TAG => chapter 9.7
 struct cpc_pbb_isid_hdr {
 	//uint16_t eth_type;
-	uint32_t i_tag;
+	uint8_t tc;
+	uint8_t i_tag[3];
 }__attribute__((packed));
 
 typedef struct cpc_pbb_isid_hdr cpc_pbb_isid_hdr_t;

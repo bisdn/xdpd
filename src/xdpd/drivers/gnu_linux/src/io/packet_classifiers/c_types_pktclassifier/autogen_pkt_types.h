@@ -836,6 +836,9 @@ extern const int push_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__];
 //Matrix for popping protocol headers. 
 extern const int pop_transitions [PT_MAX__][__UNROLLED_PT_PROTO_MAX__];
 
+//Num of headers. 
+extern const int mpls_num_of_labels[PT_MAX__];
+
 
 #define PT_GET_HDR(tmp, state, proto)\
 	do{\

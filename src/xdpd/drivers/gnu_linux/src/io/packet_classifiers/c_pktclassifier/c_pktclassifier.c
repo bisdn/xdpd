@@ -577,7 +577,7 @@ void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datal
 			break;
 		default:
 
-			if (icmpv6_opt->len < sizeof(struct cpc_icmpv6_option_hdr_t)) {
+			if (icmpv6_opt->len < sizeof(cpc_icmpv6_option_hdr_t)) {
 				continue_parsing = 0;
 			}else{
 				data += icmpv6_opt->len;

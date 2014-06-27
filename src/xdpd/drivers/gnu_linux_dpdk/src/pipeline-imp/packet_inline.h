@@ -919,7 +919,7 @@ STATIC_PACKET_INLINE__ void platform_packet_set_tunnel_id(datapacket_t*pkt, uint
 {
 	//TODO: implement
 }
-STATIC_PACKET_INLINE__ void platform_packet_pop_pbb(datapacket_t* pkt, uint16_t ether_type)
+STATIC_PACKET_INLINE__ void platform_packet_pop_pbb(datapacket_t* pkt)
 {
 	//TODO: implement
 }

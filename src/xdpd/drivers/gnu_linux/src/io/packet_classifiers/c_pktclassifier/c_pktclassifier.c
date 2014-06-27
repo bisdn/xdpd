@@ -531,6 +531,7 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+	unsigned int continue_parsing = 1;
 	if (unlikely(datalen < sizeof(cpc_icmpv6_option_hdr_t))) { return; }
 	/*So far we only parse optionsICMPV6_OPT_LLADDR_TARGET, ICMPV6_OPT_LLADDR_SOURCE and ICMPV6_OPT_PREFIX_INFO*/
 	cpc_icmpv6_option_hdr_t* icmpv6_opt = (cpc_icmpv6_option_hdr_t*)data;
@@ -574,10 +575,19 @@ void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datal
 			get_icmpv6_pfx_aac_flag( (struct cpc_icmpv6_prefix_info *)icmpv6_opt );
 
 			break;
+		default:
+
+			if (icmpv6_opt->len < sizeof(struct cpc_icmpv6_option_hdr_t)) {
+				continue_parsing = 0;
+			}else{
+				data += icmpv6_opt->len;
+				datalen -= icmpv6_opt->len;
+			}
+			break;
 	}
 	clas_state->num_of_headers[HEADER_TYPE_ICMPV6_OPT] = num_of_icmpv6_opt+1;
 
-	if (datalen > 0){
+	if ((continue_parsing) && (datalen > 0)){
 		parse_icmpv6_opts(clas_state, data, datalen);
 	}
 }

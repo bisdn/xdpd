@@ -543,11 +543,9 @@ rofl_result_t processing_deschedule_pex_port(switch_port_t* port)
 	assert(port->type == PORT_TYPE_PEX_DPDK_SECONDARY || port->type == PORT_TYPE_PEX_DPDK_KNI);
 	
 	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
-	{
-	
-		ROFL_ERR(DRIVER_NAME"[processing] Here for pex port %s\n",port->name);
-	
+	{	
 		pex_port_state_dpdk_t* port_state = (pex_port_state_dpdk_t*)port->platform_port_state;	
+		
 		core_tasks_t* core_task = &processing_core_tasks[port_state->core_id];
 
 		if(port_state->scheduled == false){
@@ -603,6 +601,7 @@ rofl_result_t processing_deschedule_pex_port(switch_port_t* port)
 	{
 	
 		pex_port_state_kni_t* port_state = (pex_port_state_kni_t*)port->platform_port_state;	
+
 		core_tasks_t* core_task = &processing_core_tasks[port_state->core_id];
 
 		if(port_state->scheduled == false){

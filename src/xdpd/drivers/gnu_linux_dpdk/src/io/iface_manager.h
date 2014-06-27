@@ -116,6 +116,11 @@ void iface_manager_handle_kni_commands(void);
 */
 
 /**
+ * @brief: used to prevent seg fault when a PEX DPDK KNI port is descheduled
+ */
+extern pthread_rwlock_t rwlock;
+
+/**
  * @name port_manager_create_pex_port
  * @brief Create and initializes (including rofl-pipeline state) a PEX port
  * 

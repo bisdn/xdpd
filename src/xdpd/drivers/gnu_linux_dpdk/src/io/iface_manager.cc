@@ -23,6 +23,8 @@ switch_port_t* pex_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES] = {{NULL}};
 struct rte_ring* port_tx_pex_lcore_queue[PORT_MANAGER_MAX_PORTS] = {NULL};
 
+pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
+
 unsigned int pex_id = 0;
 
 //Initializes the pipeline structure and launches the port 
@@ -587,6 +589,7 @@ void iface_manager_handle_kni_commands()
 
 	for(int i=0;i<PORT_MANAGER_MAX_PORTS;i++)
 	{
+		pthread_rwlock_rdlock(&rwlock);
 		port = pex_port_mapping[i];
 		if(unlikely(port != NULL))
 		{
@@ -596,6 +599,7 @@ void iface_manager_handle_kni_commands()
 				rte_kni_handle_request(port_state->kni);
 			}
 		}
+		pthread_rwlock_unlock(&rwlock);
 	}
 
 }
@@ -831,6 +835,10 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 	{	
 		pex_port_state_dpdk_t *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 
+		pthread_rwlock_wrlock(&rwlock);
+		pex_port_mapping[port_state->pex_id] = NULL;
+		pthread_rwlock_unlock(&rwlock);
+
 		//According to http://dpdk.info/ml/archives/dev/2014-January/001120.html,
 		//rte_rings connot be destroyed
 	
@@ -848,6 +856,10 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 	else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
 	{
 		pex_port_state_kni_t *port_state = (pex_port_state_kni_t*)port->platform_port_state;
+
+		pthread_rwlock_wrlock(&rwlock);
+		pex_port_mapping[port_state->pex_id] = NULL;
+		pthread_rwlock_unlock(&rwlock);
 		
 		rte_kni_release(port_state->kni);	
 		port_state->kni = NULL;

@@ -69,13 +69,13 @@ protected:
 	static unsigned int attachPhyPort(uint64_t dpid, string port);
 	
 	static unsigned int createNfPort(uint64_t dpid, string NfName, string NfPortName, PexType type);
-	static bool destroyNfPort(uint64_t dpid, string NfPortName);
+	static bool destroyNfPort(uint64_t dpid, string NfPortName, bool detach = true);
 
 	static pair<unsigned int, unsigned int> createVirtualLink(uint64_t dpid_a,uint64_t dpid_b);
 	
 	//Used both the detach a physical port and to destroy a virtual link
-	static bool detachPort(uint64_t dpid, uint64_t portID);
-	static bool detachPort(uint64_t dpid, string port);
+	static bool detachPort(uint64_t dpid, uint64_t portID, bool vlink);
+	static bool detachPort(uint64_t dpid, string port, bool vlink);
 	
 	static list<string> discoverPhyPorts();
 	

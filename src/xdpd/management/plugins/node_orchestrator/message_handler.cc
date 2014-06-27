@@ -3,6 +3,8 @@
 namespace xdpd
 {
 
+map<uint64_t,list<string> > MessageHandler::nfPortNames;
+
 string MessageHandler::processCommand(string message)
 {
 	Value value;
@@ -135,7 +137,7 @@ string MessageHandler::createLSI(string message)
 						return createErrorMessage(string(CREATE_LSI), string(" Received command \"create-lsi\" with a network function with a wrong \"type\""));
 						}
 						
-						nfType = (tmp == "dpdk")? DPDK : DOCKER;
+						nfType = (tmp == "dpdk")? DPDK_SECONDARY : DPDK_KNI;
 						foundType = true;
 					}
 					else if(nf_name == "ports")
@@ -205,6 +207,7 @@ string MessageHandler::createLSI(string message)
 		return createErrorMessage(string(CREATE_LSI),string("error during the creation of the LSI"));
 	}
 	
+	list<string> names;
 	for(list< pair<string,list<string> > >::iterator it = networkFunctions.begin(); it != networkFunctions.end(); it++)
  	{	
  		stringstream nfName;
@@ -212,12 +215,14 @@ string MessageHandler::createLSI(string message)
  		
  		list<string> ports = it->second;
  		map<string,unsigned int> port_id;
+ 		
  		for(list<string>::iterator p = ports.begin(); p != ports.end(); p++)
  		{
 	 		stringstream portName;
 	 		portName << lsi.getDpid() << "_" << *p;
 	 		try
 	 		{
+	 			names.push_back(portName.str());
 		 		port_id[*p] = NodeOrchestrator::createNfPort(lsi.getDpid(), nfName.str(), portName.str(),nfTypes[it->first]);
 		 	}catch(...)
 		 	{
@@ -227,8 +232,10 @@ string MessageHandler::createLSI(string message)
 				return createErrorMessage(string(CREATE_LSI), ss.str());	
 		 	}
 	 	}
+	 	
 	 	nfPorts[it->first] = port_id;
- 	} 
+ 	}
+ 	nfPortNames[lsi.getDpid()] = names;
  	
  	list<pair<unsigned int, unsigned int> > virtual_links;
  	for(int i = 0; i < vlinks_number; i++)
@@ -344,6 +351,12 @@ string MessageHandler::destroyLSI(string message)
  	try
 	{   
 		NodeOrchestrator::destroyLSI(lsiID);
+	
+		//The NF ports must be destroyed manually
+		list<string> names = nfPortNames[lsiID];		
+		for(list<string>::iterator n = names.begin(); n != names.end(); n++)
+			NodeOrchestrator::destroyNfPort(lsiID,*n,false);
+		nfPortNames.erase(lsiID);
 	} catch (...)
 	{
 		return createErrorMessage(string(DESTROY_LSI),string("error during the destruction of the LSI"));
@@ -490,7 +503,7 @@ string MessageHandler::detachPhyPorts(string message)
 
     for(list<string>::iterator port =  physicalPorts.begin(); port != physicalPorts.end(); port++)
     {
-    	if(!NodeOrchestrator::detachPort(lsiID,*port))
+    	if(!NodeOrchestrator::detachPort(lsiID,*port,false))
  		{
  			stringstream ss;
  			ss << "An error occurred while detaching the port " << *port << " from LSI " << lsiID;
@@ -569,7 +582,7 @@ string MessageHandler::createNFPorts(string message)
 						return createErrorMessage(string(CREATE_NF_PORTS), string(" Received command \"create-lsi\" with a network function with a wrong \"type\""));
 						}
 						
-						nfType = (tmp == "dpdk")? DPDK : DOCKER;
+						nfType = (tmp == "dpdk")? DPDK_SECONDARY : DPDK_SECONDARY;
 						foundType = true;
 					}
 					else if(nf_name == "ports")
@@ -602,6 +615,7 @@ string MessageHandler::createNFPorts(string message)
     	return createErrorMessage(string(CREATE_NF_PORTS), string("Command without lsi-id"));
     }
 	
+	list<string> names = nfPortNames[lsiID];
 	for(list< pair<string,list<string> > >::iterator it = networkFunctions.begin(); it != networkFunctions.end(); it++)
  	{	
  		stringstream nfName;
@@ -613,6 +627,7 @@ string MessageHandler::createNFPorts(string message)
  		{
 	 		stringstream portName;
 	 		portName << lsiID << "_" << *p;
+	 		names.push_back(portName.str());
 	 		try
 	 		{
 	 			port_id[*p] = NodeOrchestrator::createNfPort(lsiID, nfName.str(), portName.str(),nfTypes[it->first]);
@@ -626,6 +641,8 @@ string MessageHandler::createNFPorts(string message)
 	 	}
 	 	nfPorts[it->first] = port_id;
  	} 
+ 	nfPortNames.erase(lsiID);
+ 	nfPortNames[lsiID] = names;
 
 	//Prepare the answer
 	Object json;
@@ -713,6 +730,19 @@ string MessageHandler::destroyNFPorts(string message)
  
  	for(list<string>::iterator port = ports.begin(); port != ports.end(); port++)
  	{
+ 	
+		list<string> names = nfPortNames[lsiID];		
+		for(list<string>::iterator n = names.begin(); n != names.end(); n++)
+		{
+			if(*n == *port)
+			{
+				names.erase(n);
+				break;
+			}
+ 		}
+ 		nfPortNames.erase(lsiID);
+ 		nfPortNames[lsiID] = names;
+ 	
  		if(!NodeOrchestrator::destroyNfPort(lsiID,*port))
  		{
  			stringstream ss;
@@ -888,7 +918,7 @@ string MessageHandler::destroyVirtualLinks(string message)
  
  	for(list<pair<uint64_t, uint64_t> >::iterator vlink = virtual_links.begin(); vlink != virtual_links.end(); vlink++)
  	{
- 		if(!NodeOrchestrator::detachPort(vlink->first,vlink->second))
+ 		if(!NodeOrchestrator::detachPort(vlink->first,vlink->second,true))
  		{
  			stringstream ss;
  			ss << "An error occurred while destroying the virtual link - lsi-id: " << vlink->first << " - vlink-id: " << vlink->second;

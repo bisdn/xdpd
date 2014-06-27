@@ -30,6 +30,13 @@ class MessageHandler
 
 friend class NodeOrchestrator;
 
+private:
+	/**
+	*	This map contains, for each LSI, a list of the NFs port names
+	*	attached with the LSI itself
+	*/
+	static map<uint64_t,list<string> > nfPortNames;
+
 protected:
 	static string processCommand(string message);
 
@@ -290,7 +297,7 @@ protected:
 *	Example of command to create new virtual links
 *
 	{
-		"command" : "create-virtual-link",
+		"command" : "create-virtual-links",
 		"number" : "2",
 		"lsi-a" : "0x100",
 		"lsi-b" : "0x200"
@@ -299,7 +306,7 @@ protected:
 *	Example of answer
 *
 	{
-		"command" : "create-virtual-link",
+		"command" : "create-virtual-links",
 		"status" : "ok",
 		"virtual-links" : [
 			{

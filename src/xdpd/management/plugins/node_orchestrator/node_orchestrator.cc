@@ -84,8 +84,8 @@ void NodeOrchestrator::handle_read(rofl::csocket& socket)
 	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Answer to be sent: %s\n",answer);
 
-
-	rofl::caddress const& raddr = socket.get_raddr();
+	//rofl::caddress const& raddr = socket.get_raddr();
+	rofl::csockaddr const& raddr = socket.get_raddr();
 
 	cmemory *mem2 = new cmemory((uint8_t*)answer,message.length());
 	
@@ -185,19 +185,21 @@ pair<unsigned int, unsigned int> NodeOrchestrator::createVirtualLink(uint64_t dp
 		port_manager::connect_switches(dpid_a, name_port_a, dpid_b, name_port_b);
 	}catch(...)
 	{
-		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create a virtual link between the switch '%d' and '%d'",dpid_a,dpid_b);
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create a virtual link between the switch '%d' and '%d'\n",dpid_a,dpid_b);
 		throw;
 	}
 	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Virtual link created - %x:%s <-> %x:%s\n", dpid_a,name_port_a.c_str(),dpid_b,name_port_b.c_str());
 	
-	const switch_port_snapshot_t *port_snapshot_a = port_manager::get_port_info(name_port_a);
-	port_a = port_snapshot_a->of_port_num;
-	switch_port_destroy_snapshot((switch_port_snapshot_t*)port_snapshot_a);
+	xdpd::port_snapshot port_snapshot_a;
+	port_manager::get_port_info(name_port_a,port_snapshot_a);
 	
-	const switch_port_snapshot_t *port_snapshot_b = port_manager::get_port_info(name_port_b);
-	port_b = port_snapshot_b->of_port_num;
-	switch_port_destroy_snapshot((switch_port_snapshot_t*)port_snapshot_b);
+	port_a = port_snapshot_a.of_port_num;
+	
+	xdpd::port_snapshot port_snapshot_b;
+	port_manager::get_port_info(name_port_b,port_snapshot_b);
+	
+	port_b = port_snapshot_b.of_port_num;
 				
 	return make_pair(port_a,port_b);
 }
@@ -217,7 +219,6 @@ unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string
 	
 	try
 	{
-		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create the NF port %s",NfPortName.c_str());
 		port_manager::attach_port_to_switch(dpid, NfPortName, &port_number);
 	}catch(...)
 	{
@@ -246,18 +247,21 @@ void NodeOrchestrator::destroyLSI(uint64_t dpid)
 	ROFL_ERR("[xdpd]["PLUGIN_NAME"] LSI %d destroyed\n",dpid);
 }
 
-bool NodeOrchestrator::destroyNfPort(uint64_t dpid, string NfPortName)
+bool NodeOrchestrator::destroyNfPort(uint64_t dpid, string NfPortName, bool detach)
 {
-	//Bring down the port
-	port_manager::bring_down(NfPortName);
-	try
+	if(detach)
 	{
-		//Detatch the port from the LSI
-		port_manager::detach_port_from_switch(dpid, NfPortName);
-	}catch(...)
-	{	
-		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", NfPortName.c_str(),dpid);
-		return false;
+		//Bring down the port
+		port_manager::bring_down(NfPortName);
+		try
+		{
+			//Detatch the port from the LSI
+			port_manager::detach_port_from_switch(dpid, NfPortName);
+		}catch(...)
+		{	
+			ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to detatch port '%s' from LSI '%s'. Unknown error.\n", NfPortName.c_str(),dpid);
+			return false;
+		}
 	}
 	
 	try
@@ -274,8 +278,10 @@ bool NodeOrchestrator::destroyNfPort(uint64_t dpid, string NfPortName)
 	return true;
 }
 
-bool NodeOrchestrator::detachPort(uint64_t dpid, uint64_t portID)
+bool NodeOrchestrator::detachPort(uint64_t dpid, uint64_t portID, bool vlink)
 {
+	//TODO: check if it is a vlink. This must be done through the switch snapshot
+
 	try
 	{
 		port_manager::detach_port_from_switch_by_num(dpid, portID);
@@ -288,8 +294,19 @@ bool NodeOrchestrator::detachPort(uint64_t dpid, uint64_t portID)
 	return true;
 }
 
-bool NodeOrchestrator::detachPort(uint64_t dpid, string port)
+bool NodeOrchestrator::detachPort(uint64_t dpid, string port, bool vlink)
 {
+	if(vlink && !port_manager::is_vlink(port))
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] The port '%s' is not a virtual link!\n",port.c_str());
+		return false;
+	}
+	else if(!vlink && port_manager::is_vlink(port))
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] The port '%s' is a virtual link!\n",port.c_str());
+		return false;
+	}
+
 	try
 	{
 		port_manager::detach_port_from_switch(dpid, port);

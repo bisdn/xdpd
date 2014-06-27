@@ -31,8 +31,8 @@
 #define CREATE_NF_PORTS			"create-nfs-ports"
 #define DESTROY_NF_PORTS		"destroy-nfs-ports"
 
-#define CREATE_VIRTUAL_LINKS	"create-virtual-link"
-#define DESTROY_VIRTUAL_LINKS	"destroy-virtual-link"
+#define CREATE_VIRTUAL_LINKS	"create-virtual-links"
+#define DESTROY_VIRTUAL_LINKS	"destroy-virtual-links"
 
 #define DISCOVER_PHY_PORTS		"discover-physical-ports"
 #define ERROR					"ERROR"

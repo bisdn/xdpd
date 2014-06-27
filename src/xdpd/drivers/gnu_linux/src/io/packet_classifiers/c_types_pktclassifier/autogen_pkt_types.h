@@ -1797,7 +1797,7 @@ extern const int mpls_num_of_labels[PT_MAX__];
 
 #define PT_CLASS_ADD_PROTO(state, PROTO_TYPE) do{\
 	pkt_types_t next_header = (pkt_types_t)parse_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ];\
-	if( unlikely(next_header == 0) ){ assert(0); return; }else{ state->type = next_header;  }\
+	if( unlikely(next_header == PT_INVALID) ){ assert(0); return; }else{ state->type = next_header;  }\
 }while(0)
 
 #define PT_CLASS_ADD_IPV4_OPTIONS(state, NUM_OPTIONS) do{\

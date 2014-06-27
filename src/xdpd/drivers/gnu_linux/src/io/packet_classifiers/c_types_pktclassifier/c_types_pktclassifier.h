@@ -330,10 +330,12 @@ void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datal
 			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_OPTS_LLADR_SRC);	
 			break;
 		case ICMPV6_OPT_LLADDR_TARGET:
-			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_OPTS_PREFIX_INFO);	
+			//PT_CLASS_ADD_PROTO(clas_state, ICMPV6_OPTS_PREFIX_INFO);
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_OPTS_LLADR_TGT);
 			break;
 		case ICMPV6_OPT_PREFIX_INFO:
-			PT_CLASS_ADD_PROTO(clas_state, ICMPV6);	
+			//PT_CLASS_ADD_PROTO(clas_state, ICMPV6);
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_OPTS_PREFIX_INFO);
 			break;
 	}
 

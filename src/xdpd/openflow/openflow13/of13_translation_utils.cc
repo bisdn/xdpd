@@ -1025,7 +1025,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				match.set_ipv6_dst(addr, msk);
 				}break;
 			case OF1X_MATCH_IPV6_FLABEL:
-				match.set_ipv6_flabel(of1x_get_match_value32(m));
+				match.set_ipv6_flabel(of1x_get_match_value32(m), of1x_get_match_mask32(m));
 				break;
 			case OF1X_MATCH_ICMPV6_TYPE:
 				match.set_icmpv6_type(of1x_get_match_value8(m));

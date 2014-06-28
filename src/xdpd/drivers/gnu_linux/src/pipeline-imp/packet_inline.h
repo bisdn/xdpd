@@ -484,6 +484,38 @@ uint32_t* platform_packet_get_gtp_teid(datapacket_t * const pkt)
 	return get_gtpu_teid(get_gtpu_hdr(pack->headers, 0));
 }
 
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_capwap_wbid(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return NULL;
+	return get_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0));
+#endif
+}
+
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_capwap_rid(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return NULL;
+	return get_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0));
+#endif
+}
+
+STATIC_PACKET_INLINE__
+uint16_t* platform_packet_get_capwap_flags(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return NULL;
+	return get_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0));
+#endif
+}
 
 //Actions
 STATIC_PACKET_INLINE__
@@ -1038,6 +1070,36 @@ void platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
 	set_gtpu_teid(get_gtpu_hdr(pack->headers, 0), teid);
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_capwap_wbid(datapacket_t* pkt, uint8_t wbid)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_capwap_rid(datapacket_t* pkt, uint8_t rid)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_capwap_flags(datapacket_t* pkt, uint16_t flags)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
+#endif
 }
 
 

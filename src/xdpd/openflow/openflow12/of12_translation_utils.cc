@@ -443,6 +443,27 @@ of12_translation_utils::of12_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 	
+	try {
+		rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid oxm_capwap_wbid(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_WBID));
+		match = of1x_init_capwap_wbid_match(oxm_capwap_wbid.get_u8value(),oxm_capwap_wbid.get_u8mask());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
+	try {
+		rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_rid oxm_capwap_rid(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_RID));
+		match = of1x_init_capwap_rid_match(oxm_capwap_rid.get_u8value(),oxm_capwap_rid.get_u8mask());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
+	try {
+		rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_flags oxm_capwap_flags(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_FLAGS));
+		match = of1x_init_capwap_flags_match(oxm_capwap_flags.get_u16value(),oxm_capwap_flags.get_u16mask());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
 	/* End of extensions */
 }
 
@@ -747,6 +768,18 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				case rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_TEID: {
 					field.u32 = oxm.get_u32value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_TEID, field, 0x0);
+				} break;
+				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_WBID: {
+					field.u8 = oxm.get_u8value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_WBID, field, 0x0);
+				} break;
+				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_RID: {
+					field.u8 = oxm.get_u8value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_RID, field, 0x0);
+				} break;
+				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_FLAGS: {
+					field.u16 = oxm.get_u16value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_FLAGS, field, 0x0);
 				} break;
 				}
 
@@ -1338,6 +1371,15 @@ of12_translation_utils::of12_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_GTP_TEID:
 				match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(of1x_get_match_value32(m), of1x_get_match_mask32(m)));
 				break;
+			case OF1X_MATCH_CAPWAP_WBID:
+				match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid(of1x_get_match_value8(m), of1x_get_match_mask8(m)));
+				break;
+			case OF1X_MATCH_CAPWAP_RID:
+				match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_rid(of1x_get_match_value8(m), of1x_get_match_mask8(m)));
+				break;
+			case OF1X_MATCH_CAPWAP_FLAGS:
+				match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_flags(of1x_get_match_value16(m), of1x_get_match_mask16(m)));
+				break;
 			default:
 				break;
 		}
@@ -1750,6 +1792,15 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		case OF1X_AT_SET_FIELD_GTP_TEID: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(of1x_get_packet_action_field32(of1x_action)));
 		} break;
+		case OF1X_AT_SET_FIELD_CAPWAP_WBID: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid(of1x_get_packet_action_field8(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_CAPWAP_RID: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_rid(of1x_get_packet_action_field8(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_CAPWAP_FLAGS: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_flags(of1x_get_packet_action_field8(of1x_action)));
+		} break;
 		/* End of extensions */
 
 		case OF1X_AT_GROUP: {
@@ -1900,6 +1951,12 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(packet_matches_get_gtp_msg_type_value(pm)));
 	if(packet_matches_get_gtp_teid_value(pm))
 		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(packet_matches_get_gtp_teid_value(pm)));
+	if(packet_matches_get_capwap_wbid_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid(packet_matches_get_capwap_wbid_value(pm)));
+	if(packet_matches_get_capwap_rid_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_rid(packet_matches_get_capwap_rid_value(pm)));
+	if(packet_matches_get_capwap_flags_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_flags(packet_matches_get_capwap_flags_value(pm)));
 }
 
 /*

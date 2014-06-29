@@ -1128,6 +1128,18 @@ void platform_packet_push_capwap(datapacket_t* pkt)
 
 
 STATIC_PACKET_INLINE__
+void platform_packet_pop_wlan(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+STATIC_PACKET_INLINE__
+void platform_packet_push_wlan(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
+
+STATIC_PACKET_INLINE__
 void platform_packet_drop(datapacket_t* pkt)
 {
 	ROFL_DEBUG(DRIVER_NAME"[pkt] Dropping packet(%p)\n",pkt);

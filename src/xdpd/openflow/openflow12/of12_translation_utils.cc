@@ -799,7 +799,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 		case rofl::openflow12::OFPAT_EXPERIMENTER: {
 
 			switch (actions.get_action_experimenter(index).get_exp_id()) {
-			case rofl::openflow::experimental::gtp::GTP_EXP_ID:
+			case rofl::openflow::experimental::gtp::GTP_EXP_ID: {
 				rofl::openflow::experimental::gtp::cofaction_experimenter_gtp action_gtp(actions.get_action_experimenter(index));
 				switch (action_gtp.get_exp_type()) {
 				case rofl::openflow::experimental::gtp::GTP_ACTION_PUSH_GTP:{
@@ -813,6 +813,22 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					action = of1x_init_packet_action( OF1X_AT_POP_GTP, field, 0x0);
 				}break;
 				}
+			} break;
+			case rofl::openflow::experimental::capwap::CAPWAP_EXP_ID: {
+				rofl::openflow::experimental::capwap::cofaction_experimenter_capwap action_capwap(actions.get_action_experimenter(index));
+				switch (action_capwap.get_exp_type()) {
+				case rofl::openflow::experimental::capwap::CAPWAP_ACTION_PUSH_CAPWAP:{
+					rofl::openflow::experimental::capwap::cofaction_push_capwap action_capwap_push(action_capwap);
+					field.u16 = action_capwap_push.get_ether_type();
+					action = of1x_init_packet_action( OF1X_AT_PUSH_CAPWAP, field, 0x0);
+				}break;
+				case rofl::openflow::experimental::capwap::CAPWAP_ACTION_POP_CAPWAP:{
+					rofl::openflow::experimental::capwap::cofaction_pop_capwap action_capwap_pop(action_capwap);
+					field.u16 = action_capwap_pop.get_ether_type();
+					action = of1x_init_packet_action( OF1X_AT_POP_CAPWAP, field, 0x0);
+				}break;
+				}
+			} break;
 			}
 
 #if 0
@@ -1645,6 +1661,18 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 #endif
 		case OF1X_AT_POP_GTP: {
 			rofl::openflow::experimental::gtp::cofaction_pop_gtp action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
+			rofl::cmemory body(action.length());
+			action.pack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
+		} break;
+		case OF1X_AT_POP_CAPWAP: {
+			rofl::openflow::experimental::capwap::cofaction_pop_capwap action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
+			rofl::cmemory body(action.length());
+			action.pack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
+		} break;
+		case OF1X_AT_PUSH_CAPWAP: {
+			rofl::openflow::experimental::capwap::cofaction_push_capwap action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
 			rofl::cmemory body(action.length());
 			action.pack(body.somem(), body.memlen());
 			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());

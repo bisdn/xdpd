@@ -16,6 +16,8 @@
 
 #include "../openflow_switch.h"
 
+#include <rofl/common/openflow/experimental/actions/gtp_actions.h>
+
 /**
 * @file of13_translation_utils.h
 * @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>

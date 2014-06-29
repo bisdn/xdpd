@@ -517,6 +517,84 @@ uint16_t* platform_packet_get_capwap_flags(datapacket_t * const pkt)
 #endif
 }
 
+STATIC_PACKET_INLINE__
+uint16_t* platform_packet_get_wlan_fc(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return NULL;
+	return get_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0));
+#endif
+}
+
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_wlan_type(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return NULL;
+	return get_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0));
+#endif
+}
+
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_wlan_subtype(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return NULL;
+	return get_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0));
+#endif
+}
+
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_wlan_direction(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return NULL;
+	return get_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0));
+#endif
+}
+
+STATIC_PACKET_INLINE__
+uint64_t* platform_packet_get_wlan_address_1(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return NULL;
+	return get_arpv4_dl_src(get_arpv4_hdr(pack->headers, 0));
+#endif
+}
+
+STATIC_PACKET_INLINE__
+uint64_t* platform_packet_get_wlan_address_2(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return NULL;
+	return get_arpv4_dl_src(get_arpv4_hdr(pack->headers, 0));
+#endif
+}
+
+STATIC_PACKET_INLINE__
+uint64_t* platform_packet_get_wlan_address_3(datapacket_t * const pkt)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	return NULL;
+#if 0
+	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return NULL;
+	return get_arpv4_dl_src(get_arpv4_hdr(pack->headers, 0));
+#endif
+}
+
+
 //Actions
 STATIC_PACKET_INLINE__
 void platform_packet_copy_ttl_in(datapacket_t* pkt)
@@ -1099,6 +1177,76 @@ void platform_packet_set_capwap_flags(datapacket_t* pkt, uint16_t flags)
 #if 0
 	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
 	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_fc(datapacket_t* pkt, uint16_t fc)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_type(datapacket_t* pkt, uint8_t type)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_subtype(datapacket_t* pkt, uint8_t subtype)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_direction(datapacket_t* pkt, uint8_t direction)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_gtpu_hdr(pack->headers, 0))) return;
+	set_gtpu_msg_type(get_gtpu_hdr(pack->headers, 0), msg_type);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_address_1(datapacket_t* pkt, uint64_t address_1)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return;
+	set_arpv4_dl_src(get_arpv4_hdr(pack->headers, 0), arp_sha);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_address_2(datapacket_t* pkt, uint64_t address_2)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return;
+	set_arpv4_dl_src(get_arpv4_hdr(pack->headers, 0), arp_sha);
+#endif
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_address_3(datapacket_t* pkt, uint64_t address_3)
+{
+	//datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+#if 0
+	if ((NULL == get_arpv4_hdr(pack->headers, 0))) return;
+	set_arpv4_dl_src(get_arpv4_hdr(pack->headers, 0), arp_sha);
 #endif
 }
 

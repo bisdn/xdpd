@@ -16,8 +16,7 @@
 
 #include "../openflow_switch.h"
 
-#include <rofl/common/openflow/experimental/matches/pppoe_matches.h>
-#include <rofl/common/openflow/experimental/actions/pppoe_actions.h>
+#include <rofl/common/openflow/experimental/actions/gtp_actions.h>
 
 /**
 * @file of12_translation_utils.h

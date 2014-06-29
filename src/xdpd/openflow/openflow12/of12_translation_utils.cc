@@ -797,6 +797,24 @@ of12_translation_utils::of12_map_flow_entry_actions(
 		}
 			break;
 		case rofl::openflow12::OFPAT_EXPERIMENTER: {
+
+			switch (actions.get_action_experimenter(index).get_exp_id()) {
+			case rofl::openflow::experimental::gtp::GTP_EXP_ID:
+				rofl::openflow::experimental::gtp::cofaction_experimenter_gtp action_gtp(actions.get_action_experimenter(index));
+				switch (action_gtp.get_exp_type()) {
+				case rofl::openflow::experimental::gtp::GTP_ACTION_PUSH_GTP:{
+					rofl::openflow::experimental::gtp::cofaction_push_gtp action_gtp_push(action_gtp);
+					field.u16 = action_gtp_push.get_ether_type();
+					action = of1x_init_packet_action( OF1X_AT_PUSH_GTP, field, 0x0);
+				}break;
+				case rofl::openflow::experimental::gtp::GTP_ACTION_POP_GTP:{
+					rofl::openflow::experimental::gtp::cofaction_pop_gtp action_gtp_pop(action_gtp);
+					field.u16 = action_gtp_pop.get_ether_type();
+					action = of1x_init_packet_action( OF1X_AT_POP_GTP, field, 0x0);
+				}break;
+				}
+			}
+
 #if 0
 			rofl::openflow::cofaction_experimenter eaction(raction);
 
@@ -1619,18 +1637,30 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 		case OF1X_AT_POP_MPLS: {
 			actions.add_action_pop_mpls(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));
 		} break;
-
-#if 0
 		/* Extensions */
+#if 0
 		case OF1X_AT_POP_PPPOE: {
 			action = rofl::openflow::cofaction_pop_pppoe(rofl::openflow12::OFP_VERSION, of1x_get_packet_action_field16(of1x_action));
 		} break;
+#endif
+		case OF1X_AT_POP_GTP: {
+			rofl::openflow::experimental::gtp::cofaction_pop_gtp action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
+			rofl::cmemory body(action.length());
+			action.pack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
+		} break;
+		case OF1X_AT_PUSH_GTP: {
+			rofl::openflow::experimental::gtp::cofaction_push_gtp action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
+			rofl::cmemory body(action.length());
+			action.pack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
+		} break;
+#if 0
 		case OF1X_AT_PUSH_PPPOE: {
 			action = rofl::openflow::cofaction_push_pppoe(rofl::openflow12::OFP_VERSION, of1x_get_packet_action_field16(of1x_action));
 		} break;
-		/* End of extensions */
 #endif
-
+		/* End of extensions */
 		case OF1X_AT_PUSH_MPLS: {
 			actions.add_action_push_mpls(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));
 		} break;

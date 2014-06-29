@@ -859,6 +859,21 @@ of13_translation_utils::of13_map_flow_entry_actions(
 		case rofl::openflow13::OFPAT_EXPERIMENTER: {
 
 			switch (actions.get_action_experimenter(index).get_exp_id()) {
+			case rofl::openflow::experimental::pppoe::PPPOE_EXP_ID: {
+				rofl::openflow::experimental::pppoe::cofaction_experimenter_pppoe action_pppoe(actions.get_action_experimenter(index));
+				switch (action_pppoe.get_exp_type()) {
+				case rofl::openflow::experimental::pppoe::PPPOE_ACTION_PUSH_PPPOE:{
+					rofl::openflow::experimental::pppoe::cofaction_push_pppoe action_pppoe_push(action_pppoe);
+					field.u16 = action_pppoe_push.get_ether_type();
+					action = of1x_init_packet_action( OF1X_AT_PUSH_PPPOE, field, 0x0);
+				}break;
+				case rofl::openflow::experimental::pppoe::PPPOE_ACTION_POP_PPPOE:{
+					rofl::openflow::experimental::pppoe::cofaction_pop_pppoe action_pppoe_pop(action_pppoe);
+					field.u16 = action_pppoe_pop.get_ether_type();
+					action = of1x_init_packet_action( OF1X_AT_POP_PPPOE, field, 0x0);
+				}break;
+				}
+			} break;
 			case rofl::openflow::experimental::gtp::GTP_EXP_ID: {
 				rofl::openflow::experimental::gtp::cofaction_experimenter_gtp action_gtp(actions.get_action_experimenter(index));
 				switch (action_gtp.get_exp_type()) {
@@ -891,38 +906,8 @@ of13_translation_utils::of13_map_flow_entry_actions(
 			} break;
 			}
 
-#if 0
-			rofl::openflow::cofaction_experimenter eaction(raction);
-
-			switch (eaction.get_exp_id()) {
-				case ROFL_EXPERIMENTER_ID: {
-
-					/*
-					 * but one does not have to, PPPoE still uses a different body definition
-					 */
-					// ROFL experimental actions contain experimental action type at position data[0]
-					uint8_t acttype = eaction.oac_12experimenter->data[0];
-
-					switch (acttype) {
-						case rofl::openflow::cofaction_push_pppoe::OFXAT_PUSH_PPPOE: {
-							rofl::openflow::cofaction_push_pppoe paction(eaction);
-							field.u16 = NTOHB16(paction.eoac_push_pppoe->expbody.ethertype);
-							action = of1x_init_packet_action( OF1X_AT_PUSH_PPPOE, field, 0x0);
-						} break;
-						case rofl::openflow::cofaction_pop_pppoe::OFXAT_POP_PPPOE: {
-							rofl::openflow::cofaction_pop_pppoe paction(eaction);
-							field.u16 = NTOHB16(paction.eoac_pop_pppoe->expbody.ethertype);
-							action = of1x_init_packet_action( OF1X_AT_POP_PPPOE, field, 0x0);
-						} break;
-					}
-
-				} break;
-				default: {
-					// TODO
-				} break;
-			}
-#endif
-			} break;
+		}
+			break;
 		}
 
 		if (NULL != apply_actions)
@@ -1421,11 +1406,12 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 			actions.add_action_pop_pbb(index);
 		} break;
 		/* Extensions */
-#if 0
 		case OF1X_AT_POP_PPPOE: {
-			action = rofl::openflow::cofaction_pop_pppoe(rofl::openflow13::OFP_VERSION, of1x_get_packet_action_field16(of1x_action));
+			rofl::openflow::experimental::pppoe::cofaction_pop_pppoe action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
+			rofl::cmemory body(action.length());
+			action.pack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
 		} break;
-#endif
 		case OF1X_AT_POP_GTP: {
 			rofl::openflow::experimental::gtp::cofaction_pop_gtp action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
 			rofl::cmemory body(action.length());
@@ -1450,11 +1436,12 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 			action.pack(body.somem(), body.memlen());
 			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
 		} break;
-#if 0
 		case OF1X_AT_PUSH_PPPOE: {
-			action = rofl::openflow::cofaction_push_pppoe(rofl::openflow13::OFP_VERSION, of1x_get_packet_action_field16(of1x_action));
+			rofl::openflow::experimental::pppoe::cofaction_push_pppoe action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
+			rofl::cmemory body(action.length());
+			action.pack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
 		} break;
-#endif
 		/* End of extensions */
 		case OF1X_AT_PUSH_PBB: {
 			actions.add_action_push_pbb(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));

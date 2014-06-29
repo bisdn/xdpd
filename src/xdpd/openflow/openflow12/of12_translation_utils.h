@@ -16,6 +16,7 @@
 
 #include "../openflow_switch.h"
 
+#include <rofl/common/openflow/experimental/actions/pppoe_actions.h>
 #include <rofl/common/openflow/experimental/actions/gtp_actions.h>
 #include <rofl/common/openflow/experimental/actions/capwap_actions.h>
 

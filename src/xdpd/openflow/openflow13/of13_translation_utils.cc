@@ -1583,6 +1583,9 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		case OF1X_AT_DEC_NW_TTL: {
 			actions.add_action_dec_nw_ttl(index);
 		} break;
+		case OF1X_AT_SET_NW_TTL: {
+			actions.add_action_set_nw_ttl(index).set_nw_ttl(of1x_get_packet_action_field8(of1x_action));
+		} break;
 		case OF1X_AT_DEC_MPLS_TTL: {
 			actions.add_action_dec_mpls_ttl(index);
 		} break;

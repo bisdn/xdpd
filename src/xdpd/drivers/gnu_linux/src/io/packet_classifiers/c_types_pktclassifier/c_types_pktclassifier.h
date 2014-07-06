@@ -154,14 +154,22 @@ void* get_icmpv6_opt_hdr(classify_state_t* clas_state, int idx){
 static inline
 void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_SRC); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_SRC);
+	if (NULL == tmp)
+		PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_RTR_SOL_OPTS_LLADR_SRC);
+	if (NULL == tmp)
+		PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_RTR_ADV_OPTS_LLADR_SRC);
+	if (NULL == tmp)
+		PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_NEIGH_SOL_OPTS_LLADR_SRC);
 	return tmp; 
 }
 
 static inline
 void* get_icmpv6_opt_lladr_target_hdr(classify_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_TGT); 
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_TGT);
+	if (NULL == tmp)
+		PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_NEIGH_ADV_OPTS_LLADR_TGT);
 	return tmp; 
 }
 
@@ -347,28 +355,76 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	cpc_icmpv6_hdr_t* icmpv6 = (cpc_icmpv6_hdr_t*)data;
 	
+#if 1
 	PT_CLASS_ADD_PROTO(clas_state, ICMPV6);	
 	assert(clas_state->type != PT_INVALID);
+#endif
 	
 	//Increment pointers and decrement remaining payload size (depending on type)
 	switch( *get_icmpv6_type(icmpv6) ){
-		case ICMPV6_TYPE_ROUTER_SOLICATION:
+		case ICMPV6_TYPE_ROUTER_SOLICATION:{
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_RTR_SOL);
+			assert(clas_state->type != PT_INVALID);
 			data += sizeof(struct cpc_icmpv6_router_solicitation_hdr);
 			datalen -= sizeof(struct cpc_icmpv6_router_solicitation_hdr);
-			break;
-		case ICMPV6_TYPE_ROUTER_ADVERTISEMENT:
+
+			cpc_icmpv6_option_hdr_t* icmpv6_options = (cpc_icmpv6_option_hdr_t*)data;
+			//we asume here that there is only one option for each type
+			switch(icmpv6_options->type){
+				case ICMPV6_OPT_LLADDR_SOURCE:
+					PT_CLASS_ADD_PROTO(clas_state, ICMPV6_RTR_SOL_OPTS_LLADR_SRC);
+					break;
+			}
+
+			}return;
+		case ICMPV6_TYPE_ROUTER_ADVERTISEMENT:{
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_RTR_ADV);
+			assert(clas_state->type != PT_INVALID);
 			data += sizeof(struct cpc_icmpv6_router_advertisement_hdr);
 			datalen -= sizeof(struct cpc_icmpv6_router_advertisement_hdr);
-			break;
-		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:
+
+			cpc_icmpv6_option_hdr_t* icmpv6_options = (cpc_icmpv6_option_hdr_t*)data;
+			//we asume here that there is only one option for each type
+			switch(icmpv6_options->type){
+				case ICMPV6_OPT_LLADDR_SOURCE:
+					PT_CLASS_ADD_PROTO(clas_state, ICMPV6_RTR_ADV_OPTS_LLADR_SRC);
+					break;
+			}
+
+			}return;
+		case ICMPV6_TYPE_NEIGHBOR_SOLICITATION:{
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_NEIGH_SOL);
+			assert(clas_state->type != PT_INVALID);
 			data += sizeof(struct cpc_icmpv6_neighbor_solicitation_hdr);
 			datalen -= sizeof(struct cpc_icmpv6_neighbor_solicitation_hdr);
-			break;
-		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:
+
+			cpc_icmpv6_option_hdr_t* icmpv6_options = (cpc_icmpv6_option_hdr_t*)data;
+			//we asume here that there is only one option for each type
+			switch(icmpv6_options->type){
+				case ICMPV6_OPT_LLADDR_SOURCE:
+					PT_CLASS_ADD_PROTO(clas_state, ICMPV6_NEIGH_SOL_OPTS_LLADR_SRC);
+					break;
+			}
+
+			}return;
+		case ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT:{
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_NEIGH_ADV);
+			assert(clas_state->type != PT_INVALID);
 			data += sizeof(struct cpc_icmpv6_neighbor_advertisement_hdr);
 			datalen -= sizeof(struct cpc_icmpv6_neighbor_advertisement_hdr);
-			break;
+
+			cpc_icmpv6_option_hdr_t* icmpv6_options = (cpc_icmpv6_option_hdr_t*)data;
+			//we asume here that there is only one option for each type
+			switch(icmpv6_options->type){
+				case ICMPV6_OPT_LLADDR_TARGET:
+					PT_CLASS_ADD_PROTO(clas_state, ICMPV6_NEIGH_ADV_OPTS_LLADR_TGT);
+					break;
+			}
+
+			}return;
 		case ICMPV6_TYPE_REDIRECT_MESSAGE:
+			PT_CLASS_ADD_PROTO(clas_state, ICMPV6_REDIRECT);
+			assert(clas_state->type != PT_INVALID);
 			data += sizeof(struct cpc_icmpv6_redirect_hdr);
 			datalen -= sizeof(struct cpc_icmpv6_redirect_hdr);
 			break;

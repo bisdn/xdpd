@@ -68,7 +68,9 @@ public:
 	bool ipv4_recalc_checksum;
 	bool tcp_recalc_checksum;
 	bool udp_recalc_checksum;
+	bool sctp_recalc_checksum;
 	bool icmpv4_recalc_checksum;
+	bool icmpv6_recalc_checksum;
 
 	//Temporary store for pkt_in information
 	uint8_t pktin_table_id;

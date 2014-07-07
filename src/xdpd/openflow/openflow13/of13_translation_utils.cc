@@ -1248,6 +1248,9 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		case OF1X_AT_SET_MPLS_TTL: {
 			action = rofl::openflow::cofaction_set_mpls_ttl(rofl::openflow13::OFP_VERSION, of1x_get_packet_action_field8(of1x_action));
 		} break;
+		case OF1X_AT_SET_NW_TTL: {
+			action = rofl::openflow::cofaction_set_nw_ttl(rofl::openflow13::OFP_VERSION, of1x_get_packet_action_field8(of1x_action));
+		} break;
 		case OF1X_AT_SET_QUEUE: {
 			action = rofl::openflow::cofaction_set_queue(rofl::openflow13::OFP_VERSION, of1x_get_packet_action_field8(of1x_action));
 		} break;

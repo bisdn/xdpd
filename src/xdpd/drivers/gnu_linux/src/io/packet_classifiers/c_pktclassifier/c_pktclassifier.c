@@ -538,6 +538,10 @@ void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datal
 	
 	//Set frame
 	unsigned int num_of_icmpv6_opt = clas_state->num_of_headers[HEADER_TYPE_ICMPV6_OPT];
+
+	//Make sure we have space in the headers array 
+	if(unlikely( num_of_icmpv6_opt >= MAX_ICMPV6_OPT_FRAMES ))
+		return;
 	
 	//we asume here that there is only one option for each type
 	switch(icmpv6_opt->type){

@@ -56,6 +56,7 @@ AC_CONFIG_FILES([
 	src/io/Makefile
 	src/io/packet_classifiers/Makefile
 	src/io/packet_classifiers/c_pktclassifier/Makefile
+	src/io/packet_classifiers/c_types_pktclassifier/Makefile
 	src/netfpga/Makefile
 	src/pipeline-imp/Makefile
 	src/util/Makefile

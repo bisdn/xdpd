@@ -9,4 +9,5 @@ libxdpd_mgmt_node_orchestrator_la_SOURCES = \
 	message_handler.cc
 
 libxdpd_mgmt_node_orchestrator_la_LIBADD = \
-	-ljson_spirit
+	-ljson_spirit \
+	-lboost_system

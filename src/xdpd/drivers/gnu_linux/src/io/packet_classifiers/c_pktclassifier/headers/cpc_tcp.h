@@ -55,6 +55,34 @@ enum tcp_ip_proto_t {
 };
 
 inline static
+uint16_t ietf_calc_checksum(uint8_t* buf, size_t buflen)
+{
+	/* Compute Internet Checksum for "count" bytes
+	 *         beginning at location "addr".
+	 *  C "reference" implementation defined in IETF RFC 1071
+	 */
+	register uint32_t sum = 0;
+
+	while( buflen > 1 )  {
+		/*  This is the inner loop */
+		sum += * (uint16_t*)buf++;
+		buflen -= 2;
+	}
+
+	/*  Add left-over byte, if any */
+	if( buflen > 0 )
+		sum += * (uint8_t*)buf;
+
+   /*  Fold 32-bit sum to 16 bits */
+   while (sum>>16)
+	   sum = (sum & 0xffff) + (sum >> 16);
+
+   uint16_t checksum = ~sum;
+
+   return checksum;
+}
+
+inline static
 void tcpv4_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_proto, uint16_t length){
 	int wnum;
 	int i;

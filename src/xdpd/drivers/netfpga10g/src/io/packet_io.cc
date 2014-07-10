@@ -7,30 +7,19 @@ using namespace xdpd::gnu_linux;
 
 void netpfga_io_read_from_port(switch_port_t* port){
 
+	struct pcap_pkthdr header;	/* The header that pcap gives us */
+	const u_char* packet;		/* The actual packet */
+	packet_matches_t matches;
 	netfpga_port_t* state = (netfpga_port_t*)port->platform_port_state;
 
-	//ROFL_DEBUG("["FWD_MOD_NAME"] packet_io.cc Got a packet from kernel (PKT_IN) in port %s %p!\n", port->name, state);
-	
 	//Retrieve an empty buffer
 	datapacket_t* pkt=bufferpool::get_free_buffer_nonblocking();
 	
 	if(!pkt)
 		return;
 
-	//ROFL_DEBUG(" packet_io.cc pkt->platform_state %p \n",pkt->platform_state);
-
 	datapacketx86* pack=(datapacketx86*)pkt->platform_state;
 	
-	
-	//ROFL_DEBUG(" packet_io.cc pack->get_FRAME_SIZE_BYTES() %p \n",pack->get_FRAME_SIZE_BYTES());
-	
-	//uint8_t* x[pack->get_FRAME_SIZE_BYTES()];
-	//uint8_t* buff=(uint8_t*)x;
-	
-
-	struct pcap_pkthdr header;	/* The header that pcap gives us */
-	const u_char* packet;		/* The actual packet */
-
 	/* Grab a packet */
 	packet = pcap_next(state->pcap_fd, &header);
 
@@ -41,7 +30,6 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	//ROFL_DEBUG(" read size %d \n",header.len);
 
 	
-
 	pack->init((uint8_t*)packet, header.len, port->attached_sw, port->of_port_num, 0, true, false);
 
 	//ROFL_DEBUG(" packet_io.cc buffer %p \n",pack->get_buffer());
@@ -58,12 +46,9 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	storeid storage_id=storage->store_packet(pkt);
 	//ROFL_DEBUG(" PACKET_IN storage ID %d for datapacket pkt %d dpid %d  \n", storage_id, pkt,sw->dpid);
 
-	packet_matches_t* matches = &pkt->matches;
-	
-	//ROFL_DEBUG(" of1x_switch_t* %d , port->attached_sw %d ", sw, port->attached_sw);
-	ROFL_DEBUG("\n in port: %x ", pack->in_port);
-	
-
+	//Fill matches
+	fill_packet_matches(pkt, &matches);
+	//Process packet in
 	hal_result r=hal_cmm_process_of1x_packet_in(
 		sw->dpid,
 		pack->pktin_table_id,
@@ -71,9 +56,9 @@ void netpfga_io_read_from_port(switch_port_t* port){
 		pack->in_port,
 		storage_id,
 		pack->get_buffer(),
-		header.len,
+		pack->pktin_send_len,
 		pack->get_buffer_length(), 
-		matches );
+		&matches );
 
 
 	if ( HAL_FAILURE == r  ) ROFL_DEBUG(" packet_io.cc cmm packet_in unsuccessful");

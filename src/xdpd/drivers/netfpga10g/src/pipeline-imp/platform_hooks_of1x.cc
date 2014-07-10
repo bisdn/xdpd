@@ -70,6 +70,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	hal_result_t rv;
 	storeid id;
 	struct logical_switch_internals* ls_state = (struct logical_switch_internals*)sw->platform_state;
+	packet_matches_t matches;
 
 	if(!pkt)
 		return;
@@ -90,6 +91,9 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 		return; 
 	}
 
+	//Fill matches
+	fill_packet_matches(pkt, &matches);
+
 	//Process packet in
 	rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 					table_id, 	
@@ -99,7 +103,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 					pkt_x86->get_buffer(), 
 					send_len,
 					pkt_x86->get_buffer_length(),
-					&pkt->matches
+					&matches
 					);
 
 	if(rv == HAL_FAILURE){

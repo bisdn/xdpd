@@ -124,30 +124,35 @@ void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_typ
 }
 
 void* push_pbb(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	// TODO: implement
-	return NULL;
-	uint8_t* ether_header;
+	void *ether_header, *inner_ether_header;
 
+	uint16_t offset = sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t);
 	pkt_types_t new = PT_PUSH_PROTO(clas_state, ISID); //Put a nice trace  
 	if(unlikely(new == PT_INVALID))
 		return NULL;
 
+	inner_ether_header = get_ether_hdr(clas_state, 0);
+
 	//Move bytes
-	if (pkt_push(pkt, NULL, 0, sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t)) == ROFL_FAILURE){
+	if (pkt_push(pkt, NULL, 0, offset) == ROFL_FAILURE){
 		// TODO: log error
 		return 0;
 	}
 
 	//Set new type and base(move left)
 	clas_state->type = new;
-	clas_state->base -= sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t); 
-	clas_state->len += sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t); 
+	clas_state->base -= offset; 
+	clas_state->len += offset;
 
 	//Set new pkt type
 	ether_header = get_ether_hdr(clas_state, 0);    
 	
-	set_ether_type(ether_header, ether_type);
+	set_ether_dl_dst(ether_header, *get_ether_dl_dst(inner_ether_header));
+	set_ether_dl_src(ether_header, *get_ether_dl_src(inner_ether_header));
+	//set_ether_type(ether_header, ether_type); //Never use set_ether_type => now is 0x0, and will interpret frame as 802.3
+	*((uint16_t*)((uint8_t*)ether_header+12)) = ether_type; 
 
+	return get_pbb_isid_hdr(clas_state,0);
 }
 
 void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){

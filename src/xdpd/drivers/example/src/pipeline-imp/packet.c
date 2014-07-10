@@ -42,7 +42,7 @@
 * Gets the complete packet size in bytes.
 */
 uint32_t platform_packet_get_size_bytes(datapacket_t *const pkt){
-	return 0x0;
+	return 0;
 }
 
 /**
@@ -96,7 +96,7 @@ datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 * @ingroup platform_packet
 * Retrieves the port in identifier (position in the of1x_switch_t->logical_ports array) where the packet got in
 */
-uint32_t platform_packet_get_port_in(datapacket_t *const pkt){
+uint32_t* platform_packet_get_port_in(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -104,7 +104,7 @@ uint32_t platform_packet_get_port_in(datapacket_t *const pkt){
 * Retrieves the PHY port in identifier where the packet got in
 * @return id if existing, 0x0 otherwise.
 */
-uint32_t platform_packet_get_phy_port_in(datapacket_t *const pkt){
+uint32_t* platform_packet_get_phy_port_in(datapacket_t *const pkt){
 	return 0x0;
 }	
 
@@ -125,21 +125,21 @@ void platform_packet_set_queue(datapacket_t* pkt, uint32_t queue){
 * @ingroup platform_packet
 * Retrieve the Ethernet src MAC address of the packet 
 */
-uint64_t platform_packet_get_eth_src(datapacket_t *const pkt){
+uint64_t* platform_packet_get_eth_src(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
 * @ingroup platform_packet
 * Retrieve the Ethernet dst MAC address of the packet 
 */
-uint64_t platform_packet_get_eth_dst(datapacket_t *const pkt){
+uint64_t* platform_packet_get_eth_dst(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
 * @ingroup platform_packet
 * Retrieve the Ethernet ETH_TYPE of the packet 
 */
-uint16_t platform_packet_get_eth_type(datapacket_t *const pkt){
+uint16_t* platform_packet_get_eth_type(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -181,7 +181,7 @@ bool platform_packet_has_vlan(datapacket_t *const pkt){
 * Retrieves the VLAN id of the outer-most 802.1q VLAN tag
 * @return id if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_vlan_vid(datapacket_t *const pkt){
+uint16_t* platform_packet_get_vlan_vid(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -189,7 +189,7 @@ uint16_t platform_packet_get_vlan_vid(datapacket_t *const pkt){
 * Retrieves the VLAN PCP of the outer-most 802.1q VLAN tag
 * @return id if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_vlan_pcp(datapacket_t *const pkt){
+uint8_t* platform_packet_get_vlan_pcp(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -231,7 +231,7 @@ void platform_packet_push_vlan(datapacket_t* pkt, uint16_t ether_type){
 * Retrieves the outer-most MPLS tag label
 * @return label if existing, 0x0 otherwise.
 */
-uint32_t platform_packet_get_mpls_label(datapacket_t *const pkt){
+uint32_t* platform_packet_get_mpls_label(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -239,7 +239,7 @@ uint32_t platform_packet_get_mpls_label(datapacket_t *const pkt){
 * Retrieves the outer-most MPLS tag tc flag 
 * @return flag if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_mpls_tc(datapacket_t *const pkt){
+uint8_t* platform_packet_get_mpls_tc(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -310,7 +310,7 @@ void platform_packet_push_mpls(datapacket_t* pkt, uint16_t ether_type){
 * @ingroup platform_packet
 * Get Tunnel ID
 */
-uint64_t platform_packet_get_tunnel_id(datapacket_t *const pkt){
+uint64_t* platform_packet_get_tunnel_id(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -329,7 +329,7 @@ void platform_packet_set_tunnel_id(datapacket_t*pkt, uint64_t tunnel_id){
 * Get PBB I-SID value of the packet
 * @return value if existing, 0x0 otherwise.
 */
-uint32_t platform_packet_get_pbb_isid(datapacket_t *const pkt){
+uint32_t* platform_packet_get_pbb_isid(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -344,7 +344,7 @@ void platform_packet_set_pbb_isid(datapacket_t*pkt, uint32_t pbb_isid){
 * @ingroup platform_packet
 * Pop outer-most PBB header
 */
-void platform_packet_pop_pbb(datapacket_t* pkt, uint16_t ether_type){
+void platform_packet_pop_pbb(datapacket_t* pkt){
 
 }
 /**
@@ -396,7 +396,7 @@ void platform_packet_set_nw_ttl(datapacket_t* pkt, uint8_t new_ttl){
 * Get the ip proto value of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_ip_proto(datapacket_t *const pkt){
+uint8_t* platform_packet_get_ip_proto(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -446,7 +446,7 @@ void platform_packet_set_ip_ecn(datapacket_t* pkt, uint8_t ip_ecn){
 * Get the ARP OPCODE value of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_arp_opcode(datapacket_t *const pkt){
+uint16_t* platform_packet_get_arp_opcode(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -454,7 +454,7 @@ uint16_t platform_packet_get_arp_opcode(datapacket_t *const pkt){
 * Get the ARP SHA value of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint64_t platform_packet_get_arp_sha(datapacket_t *const pkt){
+uint64_t* platform_packet_get_arp_sha(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -462,7 +462,7 @@ uint64_t platform_packet_get_arp_sha(datapacket_t *const pkt){
 * Get the ARP SPA value of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint32_t platform_packet_get_arp_spa(datapacket_t *const pkt){
+uint32_t* platform_packet_get_arp_spa(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -470,7 +470,7 @@ uint32_t platform_packet_get_arp_spa(datapacket_t *const pkt){
 * Get the ARP THA value of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint64_t platform_packet_get_arp_tha(datapacket_t *const pkt){
+uint64_t* platform_packet_get_arp_tha(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -478,7 +478,7 @@ uint64_t platform_packet_get_arp_tha(datapacket_t *const pkt){
 * Get the ARP TPA value of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint32_t platform_packet_get_arp_tpa(datapacket_t *const pkt){
+uint32_t* platform_packet_get_arp_tpa(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -527,7 +527,7 @@ void platform_packet_set_arp_tpa(datapacket_t* pkt, uint32_t arp_tpa){
 * Get the IPv4 src address of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint32_t platform_packet_get_ipv4_src(datapacket_t *const pkt){
+uint32_t* platform_packet_get_ipv4_src(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -535,7 +535,7 @@ uint32_t platform_packet_get_ipv4_src(datapacket_t *const pkt){
 * Get the IPv4 dst address of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint32_t platform_packet_get_ipv4_dst(datapacket_t *const pkt){
+uint32_t* platform_packet_get_ipv4_dst(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -564,25 +564,23 @@ void platform_packet_set_ipv4_dst(datapacket_t* pkt, uint32_t ip_dst){
 * Get the IPv6 src address of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint128__t platform_packet_get_ipv6_src(datapacket_t *const pkt){
-	uint128__t ret;
-	return ret;
+uint128__t* platform_packet_get_ipv6_src(datapacket_t *const pkt){
+	return 0x0;
 }
 /**
 * @ingroup platform_packet
 * Get the IPv6 dst address of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint128__t platform_packet_get_ipv6_dst(datapacket_t *const pkt){
-	uint128__t ret;
-	return ret;
+uint128__t* platform_packet_get_ipv6_dst(datapacket_t *const pkt){
+	return 0x0;
 }
 /**
 * @ingroup platform_packet
 * Get the IPv6 label of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint64_t platform_packet_get_ipv6_flabel(datapacket_t *const pkt){
+uint32_t* platform_packet_get_ipv6_flabel(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -590,16 +588,15 @@ uint64_t platform_packet_get_ipv6_flabel(datapacket_t *const pkt){
 * Get the IPv6 nd target of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint128__t platform_packet_get_ipv6_nd_target(datapacket_t *const pkt){
-	uint128__t ret;
-	return ret;
+uint128__t* platform_packet_get_ipv6_nd_target(datapacket_t *const pkt){
+	return 0x0;
 }
 /**
 * @ingroup platform_packet
 * Get the IPv6 nd sll of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint64_t platform_packet_get_ipv6_nd_sll(datapacket_t *const pkt){
+uint64_t* platform_packet_get_ipv6_nd_sll(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -607,7 +604,7 @@ uint64_t platform_packet_get_ipv6_nd_sll(datapacket_t *const pkt){
 * Get the IPv6 nd tll of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint64_t platform_packet_get_ipv6_nd_tll(datapacket_t *const pkt){
+uint64_t* platform_packet_get_ipv6_nd_tll(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -615,7 +612,7 @@ uint64_t platform_packet_get_ipv6_nd_tll(datapacket_t *const pkt){
 * Get the IPv6 exthdr of the packet 
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_ipv6_exthdr(datapacket_t *const pkt){
+uint16_t* platform_packet_get_ipv6_exthdr(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -677,7 +674,7 @@ void platform_packet_set_ipv6_exthdr(datapacket_t*pkt, uint16_t ipv6_exthdr){
 * Get the TCP src port 
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_tcp_src(datapacket_t *const pkt){
+uint16_t* platform_packet_get_tcp_src(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -685,7 +682,7 @@ uint16_t platform_packet_get_tcp_src(datapacket_t *const pkt){
 * Get the TCP dst port 
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_tcp_dst(datapacket_t *const pkt){
+uint16_t* platform_packet_get_tcp_dst(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -713,7 +710,7 @@ void platform_packet_set_tcp_dst(datapacket_t* pkt, uint16_t tcp_dst){
 * Get the UDP src port 
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_udp_src(datapacket_t *const pkt){
+uint16_t* platform_packet_get_udp_src(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -721,7 +718,7 @@ uint16_t platform_packet_get_udp_src(datapacket_t *const pkt){
 * Get the UDP dst port 
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_udp_dst(datapacket_t *const pkt){
+uint16_t* platform_packet_get_udp_dst(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -749,7 +746,7 @@ void platform_packet_set_udp_dst(datapacket_t* pkt, uint16_t udp_dst){
 * Get the SCTP src port 
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_sctp_src(datapacket_t *const pkt){
+uint16_t* platform_packet_get_sctp_src(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -757,7 +754,7 @@ uint16_t platform_packet_get_sctp_src(datapacket_t *const pkt){
 * Get the SCTP src port 
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_sctp_dst(datapacket_t *const pkt){
+uint16_t* platform_packet_get_sctp_dst(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -785,7 +782,7 @@ void platform_packet_set_sctp_dst(datapacket_t* pkt, uint16_t sctp_dst){
 * Get the ICMPv4 type
 * @return value if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_icmpv4_type(datapacket_t *const pkt){
+uint8_t* platform_packet_get_icmpv4_type(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -793,7 +790,7 @@ uint8_t platform_packet_get_icmpv4_type(datapacket_t *const pkt){
 * Get the ICMPv4 code
 * @return value if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_icmpv4_code(datapacket_t *const pkt){
+uint8_t* platform_packet_get_icmpv4_code(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -821,7 +818,7 @@ void platform_packet_set_icmpv4_code(datapacket_t* pkt, uint8_t code){
 * Get the ICMPv6 type
 * @return value if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_icmpv6_type(datapacket_t *const pkt){
+uint8_t* platform_packet_get_icmpv6_type(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -829,7 +826,7 @@ uint8_t platform_packet_get_icmpv6_type(datapacket_t *const pkt){
 * Get the ICMPv6 code
 * @return value if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_icmpv6_code(datapacket_t *const pkt){
+uint8_t* platform_packet_get_icmpv6_code(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -861,7 +858,7 @@ void platform_packet_set_icmpv6_code(datapacket_t*pkt, uint8_t icmpv6_code){
 * Get the PPPoE code 
 * @return value if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_pppoe_code(datapacket_t *const pkt){
+uint8_t* platform_packet_get_pppoe_code(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -869,7 +866,7 @@ uint8_t platform_packet_get_pppoe_code(datapacket_t *const pkt){
 * Get the PPPoE type 
 * @return value if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_pppoe_type(datapacket_t *const pkt){
+uint8_t* platform_packet_get_pppoe_type(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -877,7 +874,7 @@ uint8_t platform_packet_get_pppoe_type(datapacket_t *const pkt){
 * Get the PPPoE session id
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_pppoe_sid(datapacket_t *const pkt){
+uint16_t* platform_packet_get_pppoe_sid(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -926,7 +923,7 @@ void platform_packet_push_pppoe(datapacket_t* pkt, uint16_t ether_type){
 * Get the PPP proto
 * @return value if existing, 0x0 otherwise.
 */
-uint16_t platform_packet_get_ppp_proto(datapacket_t *const pkt){
+uint16_t* platform_packet_get_ppp_proto(datapacket_t *const pkt){
 	return 0x0;
 }
 
@@ -946,7 +943,7 @@ void platform_packet_set_ppp_proto(datapacket_t* pkt, uint16_t proto){
 * Get the GTP msg type 
 * @return value if existing, 0x0 otherwise.
 */
-uint8_t platform_packet_get_gtp_msg_type(datapacket_t *const pkt){
+uint8_t* platform_packet_get_gtp_msg_type(datapacket_t *const pkt){
 	return 0x0;
 }
 /**
@@ -954,7 +951,7 @@ uint8_t platform_packet_get_gtp_msg_type(datapacket_t *const pkt){
 * Get the GTP teid
 * @return value if existing, 0x0 otherwise.
 */
-uint32_t platform_packet_get_gtp_teid(datapacket_t *const pkt){
+uint32_t* platform_packet_get_gtp_teid(datapacket_t *const pkt){
 	return 0x0;
 }
 

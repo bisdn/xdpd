@@ -5,8 +5,6 @@
 #ifndef _CPC_TCP_H_
 #define _CPC_TCP_H_
 
-#include <stdio.h>
-
 /**
 * @file cpc_tcp.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
@@ -155,39 +153,25 @@ void tcpv4_calc_checksum(void* hdr, /*nbo*/uint32_t ip_src, /*nbo*/uint32_t ip_d
 	/*
 	* part -I- (IPv4 pseudo header)
 	*/
-#if 0
-	// this seems to be wrong ...
-	word16 = (uint16_t*)(void*)&ip_src;
-	sum += *(word16+1);
-	fprintf(stderr, "sum: 0x%08x\n", sum);
-	sum += *(word16);
-	fprintf(stderr, "sum: 0x%08x\n", sum);
 
-	word16 = (uint16_t*)(void*)&ip_dst;
-	sum += *(word16+1);
-	fprintf(stderr, "sum: 0x%08x\n", sum);
-	sum += *(word16);
-	fprintf(stderr, "sum: 0x%08x\n", sum);
-#else
 	word16 = (uint16_t*)(&((uint8_t*)&ip_src)[0]);
 	sum += *word16;
-	fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
 	word16 = (uint16_t*)(&((uint8_t*)&ip_src)[2]);
 	sum += *word16;
-	fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
 
 	word16 = (uint16_t*)(&((uint8_t*)&ip_dst)[0]);
 	sum += *word16;
-	fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
 	word16 = (uint16_t*)(&((uint8_t*)&ip_dst)[2]);
 	sum += *word16;
-	fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
-#endif
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
 
 	sum += htobe16((uint16_t)ip_proto);
-	fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x (ip-proto)\n", ip_proto, sum);
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x (ip-proto)\n", ip_proto, sum);
 	sum += htobe16(length);
-	fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x (length)\n", length, sum);
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x (length)\n", length, sum);
 
 	/*
 	* part -II- (TCP header + payload)
@@ -200,7 +184,7 @@ void tcpv4_calc_checksum(void* hdr, /*nbo*/uint32_t ip_src, /*nbo*/uint32_t ip_d
 
 	for (i = 0; i < wnum; i++){
 		sum += (uint32_t)word16[i];
-		fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", word16[i], sum);
+		//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", word16[i], sum);
 	}
 
 	if(length & 0x1)
@@ -214,7 +198,7 @@ void tcpv4_calc_checksum(void* hdr, /*nbo*/uint32_t ip_src, /*nbo*/uint32_t ip_d
 
 	((cpc_tcp_hdr_t*)hdr)->checksum = (uint16_t)~sum; // correct: this inserts the checksum in network-byte-order
 
-	fprintf(stderr,"cksum (nbo):  0x04%x \n", ((cpc_tcp_hdr_t*)hdr)->checksum);
+	//fprintf(stderr,"cksum (nbo):  0x04%x \n", ((cpc_tcp_hdr_t*)hdr)->checksum);
 }
 
 inline static

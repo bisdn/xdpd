@@ -38,7 +38,9 @@ void udpv4_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip
 	/*
 	* part -I- (IPv4 pseudo header)
 	*/
-	
+
+#if 0
+	// this seems to be wrong ...
 	word16 = (uint16_t*)(void*)&ip_src;
 	sum += *(word16+1);
 	sum += *(word16);
@@ -49,6 +51,27 @@ void udpv4_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip
 
 	sum += htobe16(ip_proto);
 	sum += htobe16(length); 
+#else
+	word16 = (uint16_t*)(&((uint8_t*)&ip_src)[0]);
+	sum += *word16;
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
+	word16 = (uint16_t*)(&((uint8_t*)&ip_src)[2]);
+	sum += *word16;
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
+
+	word16 = (uint16_t*)(&((uint8_t*)&ip_dst)[0]);
+	sum += *word16;
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
+	word16 = (uint16_t*)(&((uint8_t*)&ip_dst)[2]);
+	sum += *word16;
+	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
+#endif
+
+	sum += htobe16((uint16_t)ip_proto);
+	//fprintf(stderr, "sum: 0x%08x\n", sum);
+	sum += htobe16(length);
+	//fprintf(stderr, "sum: 0x%08x\n", sum);
+
 
 	/*
 	* part -II- (TCP header + payload)
@@ -72,7 +95,7 @@ void udpv4_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip
 		sum = (sum & 0xFFFF)+(sum >> 16);
 	}while (sum >> 16); 
 
-	((cpc_udp_hdr_t*)hdr)->checksum =(uint16_t) ~sum;
+	((cpc_udp_hdr_t*)hdr)->checksum = (uint16_t)~sum; // correct: this inserts the checksum in network-byte-order
 
 //	fprintf(stderr," %x \n", udp_hdr->checksum);
 }

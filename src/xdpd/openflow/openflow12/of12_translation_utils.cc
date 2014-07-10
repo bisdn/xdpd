@@ -1788,7 +1788,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(packet_matches_get_gtp_msg_type_value(pm)));
 	if(packet_matches_get_gtp_teid_value(pm))
 		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(packet_matches_get_gtp_teid_value(pm)));
-
+#ifdef EXPERIMENTAL
 	//CAPWAP
 	if(packet_matches_get_capwap_wbid_value(pm))
 		match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid(packet_matches_get_capwap_wbid_value(pm)));
@@ -1818,6 +1818,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		uint64_t mac = packet_matches_get_wlan_address_3_value(pm);
 		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3(cmacaddr(mac)));
 	}
+#endif
 }
 
 /*

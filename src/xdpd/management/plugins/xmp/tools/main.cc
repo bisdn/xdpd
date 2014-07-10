@@ -33,10 +33,12 @@ main(int argc, char** argv)
 			xmpclient.port_disable(std::string(argv[3]));
 
 		} else {
-
+			// todo usage
+			return -1;
 		}
 	} else {
-
+		// todo usage
+		return -1;
 	}
 
 	xmpclient.run();

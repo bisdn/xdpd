@@ -26,6 +26,7 @@ void pop_pbb(datapacket_t* pkt, classify_state_t* clas_state){
 	pkt_pop(pkt, NULL,0, sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t));
 
 	//Set new type and base(move right)
+	clas_state->type = new; // NEU
 	clas_state->base += sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t);
 
 	//reclassify
@@ -47,6 +48,7 @@ void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
 	//Set new type and base(move right)
 	clas_state->type = new;
 	clas_state->base += sizeof(cpc_vlan_hdr_t);
+	clas_state->len -= sizeof(cpc_vlan_hdr_t); // NEU
 
 	//Set ether_type of new frame
 	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
@@ -62,6 +64,7 @@ void pop_mpls(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_ty
 	//Set new type and base(move right)
 	clas_state->type = new;
 	clas_state->base += sizeof(cpc_mpls_hdr_t);
+	clas_state->len -= sizeof(cpc_mpls_hdr_t); //NEU
 
 	set_ether_type(get_ether_hdr(clas_state,0), ether_type);
 

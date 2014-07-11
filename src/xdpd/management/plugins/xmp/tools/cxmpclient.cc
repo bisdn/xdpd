@@ -10,7 +10,8 @@
 using namespace xdpd::mgmt::protocol;
 
 cxmpclient::cxmpclient() :
-		socket(NULL)
+		socket(NULL),
+		dest(AF_INET, "127.0.0.1", 8444)
 {
 	socket = rofl::csocket::csocket_factory(rofl::csocket::SOCKET_TYPE_PLAIN, this);
 
@@ -63,7 +64,7 @@ cxmpclient::port_attach(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket->send(mem);
+	socket->send(mem, dest);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -85,7 +86,7 @@ cxmpclient::port_detach(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket->send(mem);
+	socket->send(mem, dest);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -106,7 +107,7 @@ cxmpclient::port_enable(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket->send(mem);
+	socket->send(mem, dest);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }
@@ -127,7 +128,7 @@ cxmpclient::port_disable(
 
 	msg.pack(mem->somem(), mem->memlen());
 
-	socket->send(mem);
+	socket->send(mem, dest);
 
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
 }

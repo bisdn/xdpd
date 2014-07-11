@@ -31,6 +31,7 @@ class cxmpclient :
 {
 	rofl::csocket*		socket;
 	rofl::cparams		socket_params;
+	rofl::csockaddr		dest;
 
 	enum cxmpclient_timer_t {
 		TIMER_XMPCLNT_EXIT 		= 1,

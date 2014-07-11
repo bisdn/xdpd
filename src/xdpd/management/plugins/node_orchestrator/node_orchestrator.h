@@ -7,6 +7,7 @@
 #include "../../port_manager.h"
 #include "../../pex_manager.h"
 #include "../../switch_manager.h"
+#include "../../system_manager.h"
 
 #include <rofl/common/logging.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
@@ -31,6 +32,8 @@ class openflow_switch;
 
 namespace xdpd {
 
+class eConfParamNotFound: public rofl::RoflException {};
+
 /**
 * @brief Plugin that receives command from the node orchestrator
 * @ingroup cmm_mgmt_plugins
@@ -52,6 +55,8 @@ public:
 	virtual ~NodeOrchestrator();
 
 	virtual void init(void);
+	
+	virtual vector<rofl::coption> get_options(void);
 
 	virtual std::string get_name(void)
 	{

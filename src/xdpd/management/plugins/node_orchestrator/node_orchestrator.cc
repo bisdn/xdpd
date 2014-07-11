@@ -27,11 +27,31 @@ NodeOrchestrator::~NodeOrchestrator()
 
 void NodeOrchestrator::init()
 {
+	if(!system_manager::is_option_set(CONFIG_FILE_NAME))
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] No configuration file specified either via -%c or --%s\n",CONFIG_FILE_CODE,CONFIG_FILE_NAME);
+		throw eConfParamNotFound();
+	}
+	string conf_file = system_manager::get_option_value(CONFIG_FILE_NAME).c_str();
+
+	if(!MessageHandler::parseConfigFile(conf_file))
+		throw eConfParamNotFound();
+
 	ROFL_INFO("\n\n[xdpd]["PLUGIN_NAME"] **************************\n");	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Plugin receiving commands from the node orchestrator.\n");
-	ROFL_INFO("[xdpd]["PLUGIN_NAME"] **************************\n\n");	
+	ROFL_INFO("[xdpd]["PLUGIN_NAME"] **************************\n\n");
 	
 	socket->listen(socket_params);
+};
+
+vector<rofl::coption> NodeOrchestrator::get_options(void)
+{
+		vector<rofl::coption> vec;
+
+		//Add mandatory -c argument
+		vec.push_back(rofl::coption(false,REQUIRED_ARGUMENT, CONFIG_FILE_CODE,  CONFIG_FILE_NAME, "xDPd config file","./config/example.xml"));
+	
+		return vec;
 };
 
 void NodeOrchestrator::handle_listen(rofl::csocket& socket, int newsd)

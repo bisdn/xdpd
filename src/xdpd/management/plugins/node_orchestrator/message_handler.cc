@@ -4,6 +4,53 @@ namespace xdpd
 {
 
 map<uint64_t,list<string> > MessageHandler::nfPortNames;
+map<string,string> MessageHandler::portSide;
+
+bool MessageHandler::parseConfigFile(string conf_file)
+{
+	libconfig::Config* cfg = new libconfig::Config;
+	cfg->readFile(conf_file.c_str());
+	
+	const libconfig::Setting& root = cfg->getRoot();
+
+	// Output a list of all books in the inventory.
+	try
+	{
+		const libconfig::Setting &ports = root["ports"];
+		int count = ports.getLength();
+
+		if(count == 0)
+		{
+			ROFL_ERR("[xdpd]["PLUGIN_NAME"] The configuration file does not specify any port.\n");
+			delete cfg;
+			return false;
+		}
+		
+		for(int i = 0; i < count; ++i)
+		{
+			const libconfig::Setting &port = ports[i];
+
+			string name, type;
+
+			if(!port.lookupValue("name", name) || !port.lookupValue("type", type))
+			{
+				ROFL_ERR("[xdpd]["PLUGIN_NAME"] The configuration file is malformed. A port does not specify the name, the type or both.\n");
+				delete cfg;
+				return false;
+			}
+			portSide[name] = type;
+		}
+	}
+	catch(const libconfig::SettingNotFoundException &nfex)
+	{
+		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Error while parsing the configuration file.\n");
+		delete cfg;
+		return false;
+	}
+
+	delete cfg;
+	return true;
+}
 
 string MessageHandler::processCommand(string message)
 {
@@ -936,7 +983,6 @@ string MessageHandler::destroyVirtualLinks(string message)
  	return ss.str();
 }
 
-
 string MessageHandler::discoverPhyPorts(string message)
 {
 	list<string> ports = NodeOrchestrator::discoverPhyPorts();
@@ -948,7 +994,15 @@ string MessageHandler::discoverPhyPorts(string message)
 	
 	Array ports_array;
 	for(list<string>::iterator p = ports.begin(); p != ports.end(); p++)
-		ports_array.push_back(*p);
+	{
+		if(portSide.count(*p) != 0)
+		{
+			Object port; 
+			port["name"] = *p;
+			port["type"] = portSide[*p];
+			ports_array.push_back(port);
+		}
+	}
 	
 	json["ports"] = ports_array;
 	

@@ -4,6 +4,12 @@
 #define PLUGIN_NAME 	"NodeOrchestrator" 
 
 /*
+*	Configuration
+*/
+#define CONFIG_FILE_NAME	"config-file"
+#define CONFIG_FILE_CODE	'c'
+
+/*
 *	Openflow stuffs
 */
 #define NUM_TABLES			8

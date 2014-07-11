@@ -10,10 +10,11 @@
 #include <json_spirit/writer_template.h>
 #include <json_spirit/value.h>
 
-
 #include <string>
 #include <sstream>
 #include <list>
+
+#include <libconfig.h++> 
 
 #include "node_orchestrator.h"
 #include "LSI.h"
@@ -37,7 +38,19 @@ private:
 	*/
 	static map<uint64_t,list<string> > nfPortNames;
 
+	/**
+	*	For each physical port, indicates if it is an edge port or a 
+	*	core port
+	*/
+	static map<string,string> portSide;
+	
 protected:
+
+	/**
+	*	Parse the configuration file of the plugin
+	*/
+	static bool parseConfigFile(string conf_file);
+
 	static string processCommand(string message);
 
 /**
@@ -288,7 +301,16 @@ protected:
 	{
 		"answer" : "discover-physical-ports",
 		"status" : "ok",
-		"ports" : ["ge0", "ge1"]
+		"ports" : [
+			{
+				"name" : "ge0", 
+				"type " : "edge"
+			},
+			{
+				"name" : "ge1",
+				"type" : "core"
+			}
+		]
 	}
 */
 	static string discoverPhyPorts(string message);

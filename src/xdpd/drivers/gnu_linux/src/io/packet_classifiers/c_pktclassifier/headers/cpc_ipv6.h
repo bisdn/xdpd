@@ -52,6 +52,7 @@ typedef struct cpc_ipv6_hdr {
 inline static
 void ipv6_calc_checksum(void *hdr, uint16_t length){
 	//TODO implement checksum calulation
+	//well, there is no checksum field in IPv6, it relies on link-layer and higher layer protocols (or adaptation protocols like TCP or UDP)
 };
 
 

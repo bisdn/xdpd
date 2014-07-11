@@ -296,6 +296,57 @@ uint32_t
 	 return 0x0;
 }
 
+
+uint8_t* platform_packet_get_capwap_wbid(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint8_t* platform_packet_get_capwap_rid(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint16_t* platform_packet_get_capwap_flags(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint16_t* platform_packet_get_wlan_fc(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint8_t* platform_packet_get_wlan_type(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint8_t* platform_packet_get_wlan_subtype(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint8_t* platform_packet_get_wlan_direction(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t* platform_packet_get_wlan_address_1(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t* platform_packet_get_wlan_address_2(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
+uint64_t* platform_packet_get_wlan_address_3(datapacket_t * const pkt)
+{
+	return 0x0;
+}
+
 /*
 * Actions
 */
@@ -345,6 +396,26 @@ void platform_packet_pop_gtp(datapacket_t* pkt)
 	//TODO: implement
 }
 void platform_packet_push_gtp(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
+void platform_packet_pop_capwap(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
+void platform_packet_push_capwap(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
+void platform_packet_pop_wlan(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
+void platform_packet_push_wlan(datapacket_t* pkt)
 {
 	//TODO: implement
 }
@@ -707,6 +778,56 @@ platform_packet_set_gtp_teid(datapacket_t* pkt, uint32_t teid)
 {
 	fprintf(stderr,"SET GTP TEID\n");
 // 	dpx86_set_gtp_teid(pkt, teid);
+}
+
+void platform_packet_set_capwap_wbid(datapacket_t* pkt, uint8_t wbid)
+{
+	fprintf(stderr,"SET CAPWAP WBID\n");
+}
+
+void platform_packet_set_capwap_rid(datapacket_t* pkt, uint8_t rid)
+{
+	fprintf(stderr,"SET CAPWAP RID\n");
+}
+
+void platform_packet_set_capwap_flags(datapacket_t* pkt, uint16_t flags)
+{
+	fprintf(stderr,"SET CAPWAP FLAGS\n");
+}
+
+void platform_packet_set_wlan_fc(datapacket_t* pkt, uint16_t fc)
+{
+	fprintf(stderr,"SET WLAN FC\n");
+}
+
+void platform_packet_set_wlan_type(datapacket_t* pkt, uint8_t type)
+{
+	fprintf(stderr,"SET WLAN TYPE\n");
+}
+
+void platform_packet_set_wlan_subtype(datapacket_t* pkt, uint8_t subtype)
+{
+	fprintf(stderr,"SET WLAN SUBTYPE\n");
+}
+
+void platform_packet_set_wlan_direction(datapacket_t* pkt, uint8_t direction)
+{
+	fprintf(stderr,"SET WLAN DIRECTION\n");
+}
+
+void platform_packet_set_wlan_address_1(datapacket_t* pkt, uint64_t address_1)
+{
+	fprintf(stderr,"SET WLAN ADDRESS 1\n");
+}
+
+void platform_packet_set_wlan_address_2(datapacket_t* pkt, uint64_t address_2)
+{
+	fprintf(stderr,"SET WLAN ADDRESS 2\n");
+}
+
+void platform_packet_set_wlan_address_3(datapacket_t* pkt, uint64_t address_3)
+{
+	fprintf(stderr,"SET WLAN ADDRESS 3\n");
 }
 
 void

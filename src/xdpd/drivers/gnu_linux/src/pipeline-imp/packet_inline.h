@@ -938,6 +938,7 @@ void platform_packet_set_ipv6_nd_target(datapacket_t* pkt, uint128__t ipv6_nd_ta
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == get_icmpv6_hdr(pack->headers, 0))) return;
 	set_icmpv6_neighbor_taddr(get_icmpv6_hdr(pack->headers, 0), ipv6_nd_target);
+	pack->icmpv6_recalc_checksum = true;
 }
 
 STATIC_PACKET_INLINE__
@@ -949,6 +950,7 @@ void platform_packet_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll)
 		NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_source_hdr(pack->headers, 0))
 		) return;
 	set_icmpv6_ll_saddr(lla_opt_hdr, ipv6_nd_sll);
+	pack->icmpv6_recalc_checksum = true;
 }
 
 STATIC_PACKET_INLINE__
@@ -960,6 +962,7 @@ void platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
 		(NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_target_hdr(pack->headers, 0)))
 		) return;
 	set_icmpv6_ll_taddr(lla_opt_hdr,ipv6_nd_tll);
+	pack->icmpv6_recalc_checksum = true;
 }
 
 STATIC_PACKET_INLINE__
@@ -974,6 +977,7 @@ void platform_packet_set_icmpv6_type(datapacket_t* pkt, uint8_t icmpv6_type)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == get_icmpv6_hdr(pack->headers, 0))) return;
 	set_icmpv6_type(get_icmpv6_hdr(pack->headers, 0), icmpv6_type);
+	pack->icmpv6_recalc_checksum = true;
 }
 
 STATIC_PACKET_INLINE__
@@ -982,6 +986,7 @@ void platform_packet_set_icmpv6_code(datapacket_t* pkt, uint8_t icmpv6_code)
 	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
 	if ((NULL == get_icmpv6_hdr(pack->headers, 0))) return;
 	set_icmpv6_code(get_icmpv6_hdr(pack->headers, 0), icmpv6_code);
+	pack->icmpv6_recalc_checksum = true;
 }
 
 STATIC_PACKET_INLINE__
@@ -1023,13 +1028,19 @@ void platform_packet_set_udp_dst(datapacket_t* pkt, uint16_t udp_dst)
 STATIC_PACKET_INLINE__
 void platform_packet_set_sctp_src(datapacket_t* pkt, uint16_t sctp_src)
 {
-	//TODO: implement
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == get_sctp_hdr(pack->headers, 0))) return;
+	set_sctp_sport(get_sctp_hdr(pack->headers, 0), sctp_src);
+	pack->sctp_recalc_checksum = true;
 }
 
 STATIC_PACKET_INLINE__
 void platform_packet_set_sctp_dst(datapacket_t* pkt, uint16_t sctp_dst)
 {
-	//TODO: implement
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if ((NULL == get_sctp_hdr(pack->headers, 0))) return;
+	set_sctp_dport(get_sctp_hdr(pack->headers, 0), sctp_dst);
+	pack->sctp_recalc_checksum = true;
 }
 
 STATIC_PACKET_INLINE__
@@ -1392,30 +1403,64 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 	//Outer most IPv4 frame
 	void *fipv4 = get_ipv4_hdr(pack->headers, 0);
 
-	if ((pack->tcp_recalc_checksum) && get_tcp_hdr(pack->headers, 0) && fipv4) {
-		
-		
-	tcp_calc_checksum(
-			get_tcp_hdr(pack->headers, 0),
-			*get_ipv4_src(fipv4),
-			*get_ipv4_dst(fipv4),
-			*get_ipv4_proto(fipv4),
-			get_pkt_len(pkt, pack->headers, get_tcp_hdr(pack->headers,0), NULL) ); // start at innermost IPv4 up to and including last frame
+	if (NULL != fipv4) {
+		if ((pack->tcp_recalc_checksum) && get_tcp_hdr(pack->headers, 0) && fipv4) {
 
-	} else if ((pack->udp_recalc_checksum) && (get_udp_hdr(pack->headers, 0)) && fipv4) {
+			tcpv4_calc_checksum(
+					get_tcp_hdr(pack->headers, 0),
+					*get_ipv4_src(fipv4),
+					*get_ipv4_dst(fipv4),
+					*get_ipv4_proto(fipv4),
+					get_pkt_len(pkt, pack->headers, get_tcp_hdr(pack->headers,0), NULL) ); // start at innermost IPv4 up to and including last frame
 
-		udp_calc_checksum(
-				get_udp_hdr(pack->headers, 0),
-				*get_ipv4_src(fipv4),
-				*get_ipv4_dst(fipv4),
-				*get_ipv4_proto(fipv4),
-				get_pkt_len(pkt, pack->headers, get_udp_hdr(pack->headers, 0), NULL) ); // start at innermost IPv4 up to and including last frame
+		} else if ((pack->udp_recalc_checksum) && (get_udp_hdr(pack->headers, 0)) && fipv4) {
 
-	} else if ((pack->icmpv4_recalc_checksum) && (get_icmpv4_hdr(pack->headers,0))) {
+			udpv4_calc_checksum(
+					get_udp_hdr(pack->headers, 0),
+					*get_ipv4_src(fipv4),
+					*get_ipv4_dst(fipv4),
+					*get_ipv4_proto(fipv4),
+					get_pkt_len(pkt, pack->headers, get_udp_hdr(pack->headers, 0), NULL) ); // start at innermost IPv4 up to and including last frame
 
-		icmpv4_calc_checksum(
-			get_icmpv4_hdr(pack->headers, 0),
-			get_pkt_len(pkt, pack->headers, get_icmpv4_hdr(pack->headers, 0), NULL) );
+		} else if ((pack->icmpv4_recalc_checksum) && (get_icmpv4_hdr(pack->headers,0))) {
+
+			icmpv4_calc_checksum(
+				get_icmpv4_hdr(pack->headers, 0),
+				get_pkt_len(pkt, pack->headers, get_icmpv4_hdr(pack->headers, 0), NULL) );
+		}
+	}
+
+	//Outer most IPv6 frame
+	void *fipv6 = get_ipv6_hdr(pack->headers, 0);
+
+	if (NULL != fipv6) {
+		if ((pack->tcp_recalc_checksum) && get_tcp_hdr(pack->headers, 0) && fipv6) {
+
+			tcpv6_calc_checksum(
+					get_tcp_hdr(pack->headers, 0),
+					*get_ipv6_src(fipv6),
+					*get_ipv6_dst(fipv6),
+					TCP_IP_PROTO,
+					get_pkt_len(pkt, pack->headers, get_tcp_hdr(pack->headers,0), NULL) ); // start at innermost IPv6 up to and including last frame
+
+		} else if ((pack->udp_recalc_checksum) && (get_udp_hdr(pack->headers, 0)) && fipv6) {
+
+			udpv6_calc_checksum(
+					get_udp_hdr(pack->headers, 0),
+					*get_ipv6_src(fipv6),
+					*get_ipv6_dst(fipv6),
+					UDP_IP_PROTO,
+					get_pkt_len(pkt, pack->headers, get_udp_hdr(pack->headers, 0), NULL) ); // start at innermost IPv6 up to and including last frame
+
+		} else if ((pack->icmpv6_recalc_checksum) && (get_icmpv6_hdr(pack->headers,0))) {
+
+			icmpv6_calc_checksum(
+					get_icmpv6_hdr(pack->headers, 0),
+					*get_ipv6_src(fipv6),
+					*get_ipv6_dst(fipv6),
+					ICMPV6_IP_PROTO,
+					get_pkt_len(pkt, pack->headers, get_icmpv6_hdr(pack->headers, 0), NULL) );
+		}
 	}
 
 

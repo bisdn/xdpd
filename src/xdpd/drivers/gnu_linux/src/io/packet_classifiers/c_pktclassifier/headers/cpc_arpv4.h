@@ -114,7 +114,7 @@ uint32_t* get_arpv4_ip_src(void *hdr){
 };
 
 inline static
-void set_arpv4_ip_src(void *hdr, uint16_t ip_src){
+void set_arpv4_ip_src(void *hdr, uint32_t ip_src){
 	((cpc_arpv4_hdr_t*)hdr)->ip_src = ip_src;
 };
 
@@ -124,7 +124,7 @@ uint32_t* get_arpv4_ip_dst(void *hdr){
 };
 
 inline static
-void set_arpv4_ip_dst(void *hdr, uint16_t ip_dst){
+void set_arpv4_ip_dst(void *hdr, uint32_t ip_dst){
 	((cpc_arpv4_hdr_t*)hdr)->ip_dst = ip_dst;
 };
 #endif //_CPC_ARPV4_H_

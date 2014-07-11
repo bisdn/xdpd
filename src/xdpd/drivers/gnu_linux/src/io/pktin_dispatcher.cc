@@ -37,6 +37,8 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 	static unsigned int pending_to_read=0;
 	packet_matches_t matches;
 	
+	memset(&matches, 0, sizeof(matches));
+
 	//Recover platform state
 	switch_platform_state_t* ls_int = (switch_platform_state_t*)sw->platform_state;
 

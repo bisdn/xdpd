@@ -435,6 +435,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch (...) {}
 
+#ifdef EXPERIMENTAL
 	/* Extensions */
 	try {
 		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code oxm_pppoe_code(
@@ -550,6 +551,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	} catch(...) {}
 
 	/* End of extensions */
+#endif
 }
 
 
@@ -853,6 +855,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 			}
 				break;
 			case rofl::openflow13::OFPXMC_EXPERIMENTER: {
+#ifdef EXPERIMENTAL
 				switch (oxm.get_oxm_field()) {
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_CODE: {
 					field.u8 = oxm.get_u8value();
@@ -919,7 +922,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_3, field, 0x0);
 				}break;
 				}
-
+#endif
 			}
 				break;
 			default:
@@ -934,7 +937,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 		}
 			break;
 		case rofl::openflow13::OFPAT_EXPERIMENTER: {
-
+#ifdef EXPERIMENTAL
 			switch (actions.get_action_experimenter(index).get_exp_id()) {
 			case rofl::openflow::experimental::pppoe::PPPOE_EXP_ID: {
 				rofl::openflow::experimental::pppoe::cofaction_experimenter_pppoe action_pppoe(actions.get_action_experimenter(index));
@@ -997,7 +1000,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 				}
 			} break;
 			}
-
+#endif
 		}
 			break;
 		}
@@ -1210,7 +1213,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_IPV6_EXTHDR:
 				match.set_ipv6_exthdr(of1x_get_match_value16(m));
 				break;
-
+#ifdef EXPERIMENTAL
 			/* Experimental */
 			case OF1X_MATCH_PPPOE_CODE:
 				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(of1x_get_match_value8(m)));
@@ -1263,7 +1266,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			default:
 				break;
 		}
-
+#endif
 		m = m->next;
 	}
 
@@ -1518,6 +1521,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		case OF1X_AT_POP_PBB: {
 			actions.add_action_pop_pbb(index);
 		} break;
+#ifdef EXPERIMENTAL
 		/* Extensions */
 		case OF1X_AT_POP_WLAN: {
 			rofl::openflow::experimental::wlan::cofaction_pop_wlan action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
@@ -1568,6 +1572,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
 		} break;
 		/* End of extensions */
+#endif
 		case OF1X_AT_PUSH_PBB: {
 			actions.add_action_push_pbb(index).set_eth_type(of1x_get_packet_action_field16(of1x_action));
 		} break;
@@ -1730,7 +1735,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 #endif
 			break;
 	
-#if 0
+#ifdef EXPERIMENTAL
 		/* Extensions */
 		case OF1X_AT_SET_FIELD_PPPOE_CODE: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(of1x_get_packet_action_field8(of1x_action)));
@@ -1744,7 +1749,6 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		case OF1X_AT_SET_FIELD_PPP_PROT: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(of1x_get_packet_action_field16(of1x_action)));
 		} break;
-#endif
 		case OF1X_AT_SET_FIELD_GTP_MSG_TYPE: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(of1x_get_packet_action_field8(of1x_action)));
 		} break;
@@ -1760,7 +1764,32 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		case OF1X_AT_SET_FIELD_CAPWAP_FLAGS: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_flags(of1x_get_packet_action_field8(of1x_action)));
 		} break;
+		case OF1X_AT_SET_FIELD_WLAN_FC: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_fc(of1x_get_packet_action_field16(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_WLAN_TYPE: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_type(of1x_get_packet_action_field8(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_WLAN_SUBTYPE: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_subtype(of1x_get_packet_action_field8(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_WLAN_DIRECTION: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_direction(of1x_get_packet_action_field8(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_WLAN_ADDRESS_1: {
+			uint64_t mac = of1x_get_packet_action_field64(of1x_action);
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_1(cmacaddr(mac)));
+		} break;
+		case OF1X_AT_SET_FIELD_WLAN_ADDRESS_2: {
+			uint64_t mac = of1x_get_packet_action_field64(of1x_action);
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_2(cmacaddr(mac)));
+		} break;
+		case OF1X_AT_SET_FIELD_WLAN_ADDRESS_3: {
+			uint64_t mac = of1x_get_packet_action_field64(of1x_action);
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3(cmacaddr(mac)));
+		} break;
 		/* End of extensions */
+#endif
 
 		case OF1X_AT_GROUP: {
 			actions.add_action_group(index).set_group_id(of1x_get_packet_action_field32(of1x_action));
@@ -1906,7 +1935,10 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches_get_ipv6_exthdr_value(pm))
 		match.set_ipv6_exthdr(packet_matches_get_ipv6_exthdr_value(pm));
 
-	//Extensions
+#ifdef EXPERIMENTAL
+	/*
+	 * Extensions
+	 */
 
 	//PPPoE
 	if(packet_matches_get_pppoe_code_value(pm))
@@ -1923,7 +1955,7 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(packet_matches_get_gtp_msg_type_value(pm)));
 	if(packet_matches_get_gtp_teid_value(pm))
 		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(packet_matches_get_gtp_teid_value(pm)));
-#ifdef EXPERIMENTAL
+
 	//CAPWAP
 	if(packet_matches_get_capwap_wbid_value(pm))
 		match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid(packet_matches_get_capwap_wbid_value(pm)));

@@ -10,8 +10,11 @@ then
 	AC_MSG_ERROR("xdpd version file has been updated($XDPD_VERSION => $FILE_VERSION). Please regenerate Autoconf state by calling autogen.sh again.")
 fi
 
-
 AC_CHECK_PROG(ff_git,git,yes,no)
+
+XDPD_VERSION_NORMALIZED=`echo $XDPD_VERSION | sed s/dev//g | sed s/RC.*//g | tr -d v`
+
+AC_SUBST([XDPD_VERSION_NORMALIZED], ["$XDPD_VERSION_NORMALIZED"])
 
 if test $ff_git = no
 then

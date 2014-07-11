@@ -114,11 +114,11 @@ void udpv6_calc_checksum(void* hdr, uint128__t ip_src, uint128__t ip_dst, uint8_
 	* part -I- (IPv6 pseudo header)
 	*/
 	for (i = 0; i < 8; i++) {
-		sum += *((uint16_t*)&(ip_src.val[2*i]));
+		sum += (((uint16_t)ip_src.val[2*i]) << 0) + (((uint16_t)ip_src.val[2*i+1]) << 8);
 	}
 
 	for (i = 0; i < 8; i++) {
-		sum += *((uint16_t*)&(ip_dst.val[2*i]));
+		sum += (((uint16_t)ip_dst.val[2*i]) << 0) + (((uint16_t)ip_dst.val[2*i+1]) << 8);
 	}
 
 	sum += htobe16(ip_proto);

@@ -68,11 +68,6 @@ openflow_switch* switch_manager::create_switch(
 			break;
 	
 		case OF_VERSION_13:
-#if ! defined(EXPERIMENTAL)
-			ROFL_ERR("[xdpd][switch_manager] ERROR: OF1.3 is experimental (i.e. alpha state). Compile xdpd enabling experimental code to test this feature. Don't forget to make clean\n"); 
-			pthread_mutex_unlock(&switch_manager::mutex);
-			throw eOfSmExperimentalNotSupported(); 
-#endif
 			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
 
 			break;

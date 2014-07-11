@@ -1463,6 +1463,12 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 		}
 	}
 
+	if ((pack->sctp_recalc_checksum) && get_sctp_hdr(pack->headers, 0)) {
+
+			sctp_calc_checksum(
+					get_sctp_hdr(pack->headers, 0),
+					get_pkt_len(pkt, pack->headers, get_sctp_hdr(pack->headers,0), NULL) );
+	}
 
 	//flood_meta_port is a static variable defined in the physical_switch
 	//the meta_port

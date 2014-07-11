@@ -750,6 +750,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					field.u8 = oxm.get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_BOS, field, 0x0);
 				}
+					break;
 				case rofl::openflow13::OFPXMT_OFB_VLAN_VID:
 				{
 					field.u16 = oxm.get_u16value();

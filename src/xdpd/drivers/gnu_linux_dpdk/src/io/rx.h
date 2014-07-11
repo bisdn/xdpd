@@ -70,8 +70,7 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		assert(port_state->kni != NULL);
 		
 		assert(!rte_mempool_full(pool_direct));
-		if(rte_mempool_count(pool_direct) <= 2*IO_IFACE_MAX_PKT_BURST)
-			ROFL_INFO("**********************\n");		
+		if(rte_mempool_count(pool_direct) <= 2*IO_IFACE_MAX_PKT_BURST)	
 		burst_len = rte_kni_rx_burst(port_state->kni, pkts_burst, IO_IFACE_MAX_PKT_BURST);
 		
 #if DEBUG
@@ -127,11 +126,9 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		switch_port_t *tmp_port;
 #ifdef GNU_LINUX_DPDK_ENABLE_PEX	
 		if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY) {
-			//IVANO - FIXME: not sure that the mapping is needed
-			tmp_port = pex_port_mapping[mbuf->pkt.in_port];
+			tmp_port = port;
 		}
-		else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
-		{
+		else if(port->type == PORT_TYPE_PEX_DPDK_KNI) {
 			tmp_port=port;
 		}else{
 #endif

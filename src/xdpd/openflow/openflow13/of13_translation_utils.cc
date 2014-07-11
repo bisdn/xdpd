@@ -1263,10 +1263,10 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_WLAN_ADDRESS_3:
 				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3(cmacaddr(of1x_get_match_value64(m)), cmacaddr(of1x_get_match_mask64(m))));
 				break;
+#endif
 			default:
 				break;
 		}
-#endif
 		m = m->next;
 	}
 

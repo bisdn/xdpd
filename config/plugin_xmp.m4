@@ -6,6 +6,7 @@ AC_DEFINE(WITH_MGMT_XMP)
 #Add files
 AC_CONFIG_FILES([
 	src/xdpd/management/plugins/xmp/Makefile
-	src/xdpd/management/plugins/xmp/tools/Makefile
+	src/xdpd/management/plugins/xmp/xdpd_xmp.pc
+	src/xdpd/management/plugins/xmp/xdpd_xmp_client.pc
 ])
 

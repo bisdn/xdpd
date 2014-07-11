@@ -1996,308 +1996,291 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 
 void of13_translation_utils::of13_map_bitmap_matches(bitmap128_t* bitmap, rofl::openflow::coftable_feature_prop_oxm& matches)
 {
-
-#if 0
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IN_PORT))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IN_PORT))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IN_PORT);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IN_PHY_PORT))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IN_PHY_PORT))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IN_PHY_PORT);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_METADATA))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_METADATA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_METADATA);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ETH_DST))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ETH_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_DST);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ETH_SRC))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ETH_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_SRC);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ETH_TYPE))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ETH_TYPE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_TYPE);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_VLAN_VID))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_VLAN_VID))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_VLAN_VID);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_VLAN_PCP))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_VLAN_PCP))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_VLAN_PCP);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_MPLS_LABEL))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_MPLS_LABEL))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_LABEL);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_MPLS_BOS))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_MPLS_BOS))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_BOS);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_MPLS_TC))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_MPLS_TC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_TC);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_OP))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_OP))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_OP);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_SPA))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_SPA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_SPA);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_TPA))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_TPA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_TPA);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_SHA))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_SHA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_SHA);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ARP_THA))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_THA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_THA);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IP_DSCP))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IP_DSCP))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_DSCP);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IP_ECN))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IP_ECN))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_ECN);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IP_PROTO))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IP_PROTO))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_PROTO);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV4_SRC))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV4_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV4_SRC);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV4_DST))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV4_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV4_DST);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_SRC))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_SRC);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_DST))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_DST);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_FLABEL))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_FLABEL))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_FLABEL);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ICMPV6_TYPE))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV6_TYPE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV6_TYPE);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ICMPV6_CODE))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV6_CODE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV6_CODE);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_ND_TARGET))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_ND_TARGET))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_TARGET);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_ND_SLL))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_ND_SLL))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_SLL);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_ND_TLL))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_ND_TLL))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_TLL);
 #if 0
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_IPV6_EXTHDR))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_EXTHDR))
 		mapped_bitmap |= ( UINT64_C(1) <<  rofl::openflow13::OFPXMT_OFB_IPV6_EXTHDR);
 #endif
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_TCP_SRC))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_TCP_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TCP_SRC);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_TCP_DST))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_TCP_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TCP_DST);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_UDP_SRC))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_UDP_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_UDP_SRC);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_UDP_DST))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_UDP_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_UDP_DST);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_SCTP_SRC))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_SCTP_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_SCTP_SRC);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_SCTP_DST))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_SCTP_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_SCTP_DST);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ICMPV4_TYPE))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV4_TYPE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV4_TYPE);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_ICMPV4_CODE))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV4_CODE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV4_CODE);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_PBB_ISID))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_PBB_ISID))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_PBB_ISID);
 
-	if(*bitmap & ( UINT64_C(1) << OF1X_MATCH_TUNNEL_ID))
+	if(bitmap128_is_bit_set(bitmap, OF1X_MATCH_TUNNEL_ID))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TUNNEL_ID);
-
-#endif
 }
 
 void of13_translation_utils::of13_map_bitmap_set_fields(bitmap128_t* bitmap, rofl::openflow::coftable_feature_prop_oxm& matches)
 {
-
-#if 0
-	if (*bitmap & (1UL << OF1X_MATCH_ETH_DST))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ETH_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_DST);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ETH_SRC))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ETH_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_SRC);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ETH_TYPE))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ETH_TYPE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ETH_TYPE);
 
-	if (*bitmap & (1UL << OF1X_MATCH_MPLS_LABEL))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_MPLS_LABEL))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_LABEL);
 
-	if (*bitmap & (1UL << OF1X_MATCH_MPLS_TC))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_MPLS_TC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_TC);
 
-	if (*bitmap & (1UL << OF1X_MATCH_MPLS_BOS))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_MPLS_BOS))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_MPLS_BOS);
 
-	if (*bitmap & (1UL << OF1X_MATCH_VLAN_VID))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_VLAN_VID))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_VLAN_VID);
 
-	if (*bitmap & (1UL << OF1X_MATCH_VLAN_PCP))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_VLAN_PCP))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_VLAN_PCP);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ARP_OP))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_OP))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_OP);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ARP_SHA))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_SHA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_SHA);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ARP_SPA))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_SPA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_SPA);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ARP_THA))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_THA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_THA);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ARP_TPA))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ARP_TPA))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ARP_TPA);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IP_DSCP))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IP_DSCP))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_DSCP);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IP_ECN))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IP_ECN))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_ECN);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IP_PROTO))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IP_PROTO))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IP_PROTO);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV4_SRC))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV4_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV4_SRC);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV4_DST))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV4_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV4_DST);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV6_SRC))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_SRC);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV6_DST))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_DST);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV6_FLABEL))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_FLABEL))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_FLABEL);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV6_ND_TARGET))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_ND_TARGET))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_TARGET);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV6_ND_SLL))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_ND_SLL))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_SLL);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV6_ND_TLL))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_ND_TLL))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_ND_TLL);
 
-	if (*bitmap & (1UL << OF1X_MATCH_IPV6_EXTHDR))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_IPV6_EXTHDR))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_IPV6_EXTHDR);
 
-	if (*bitmap & (1UL << OF1X_MATCH_TCP_SRC))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_TCP_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TCP_SRC);
 
-	if (*bitmap & (1UL << OF1X_MATCH_TCP_DST))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_TCP_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TCP_DST);
 
-	if (*bitmap & (1UL << OF1X_MATCH_UDP_SRC))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_UDP_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_UDP_SRC);
 
-	if (*bitmap & (1UL << OF1X_MATCH_UDP_DST))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_UDP_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_UDP_DST);
 
-	if (*bitmap & (1UL << OF1X_MATCH_SCTP_SRC))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_SCTP_SRC))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_SCTP_SRC);
 
-	if (*bitmap & (1UL << OF1X_MATCH_SCTP_DST))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_SCTP_DST))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_SCTP_DST);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ICMPV4_TYPE))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV4_TYPE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV4_TYPE);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ICMPV4_CODE))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV4_CODE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV4_CODE);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ICMPV6_TYPE))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV6_TYPE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV6_TYPE);
 
-	if (*bitmap & (1UL << OF1X_MATCH_ICMPV6_CODE))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_ICMPV6_CODE))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_ICMPV6_CODE);
 
-	if (*bitmap & (1UL << OF1X_MATCH_PBB_ISID))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_PBB_ISID))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_PBB_ISID);
 
-	if (*bitmap & (1UL << OF1X_MATCH_TUNNEL_ID))
+	if (bitmap128_is_bit_set(bitmap, OF1X_MATCH_TUNNEL_ID))
 		matches.add_oxm(rofl::openflow::OXM_TLV_BASIC_TUNNEL_ID);
-
-#endif
 }
 
 
 void of13_translation_utils::of13_map_bitmap_actions(bitmap128_t *bitmap, rofl::openflow::coftable_feature_prop_actions& actions)
 {
-	
-#if 0
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_COPY_TTL_IN))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_COPY_TTL_IN))
 		actions.add_action(rofl::openflow13::OFPAT_COPY_TTL_IN, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_POP_VLAN))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_POP_VLAN))
 		actions.add_action(rofl::openflow13::OFPAT_POP_VLAN, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_POP_MPLS))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_POP_MPLS))
 		actions.add_action(rofl::openflow13::OFPAT_POP_MPLS, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_POP_PBB))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_POP_PBB))
 		actions.add_action(rofl::openflow13::OFPAT_POP_PBB, 4);
 
-	// TODO: POP_PPPOE
-	// TODO: POP_GTP
-
-	// TODO: PUSH_GTP
-	// TODO: PUSH_PPPOE
-
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_PBB))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_PUSH_PBB))
 		actions.add_action(rofl::openflow13::OFPAT_PUSH_PBB, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_MPLS))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_PUSH_MPLS))
 		actions.add_action(rofl::openflow13::OFPAT_PUSH_MPLS, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_PUSH_VLAN))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_PUSH_VLAN))
 		actions.add_action(rofl::openflow13::OFPAT_PUSH_VLAN, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_COPY_TTL_OUT))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_COPY_TTL_OUT))
 		actions.add_action(rofl::openflow13::OFPAT_COPY_TTL_OUT, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_DEC_NW_TTL))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_DEC_NW_TTL))
 		actions.add_action(rofl::openflow13::OFPAT_DEC_NW_TTL, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_DEC_MPLS_TTL))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_DEC_MPLS_TTL))
 		actions.add_action(rofl::openflow13::OFPAT_DEC_MPLS_TTL, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_MPLS_TTL))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_SET_MPLS_TTL))
 		actions.add_action(rofl::openflow13::OFPAT_SET_MPLS_TTL, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_NW_TTL))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_SET_NW_TTL))
 		actions.add_action(rofl::openflow13::OFPAT_SET_NW_TTL, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_QUEUE))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_SET_QUEUE))
 		actions.add_action(rofl::openflow13::OFPAT_SET_QUEUE, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_GROUP))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_GROUP))
 		actions.add_action(rofl::openflow13::OFPAT_GROUP, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_OUTPUT))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_OUTPUT))
 		actions.add_action(rofl::openflow13::OFPAT_OUTPUT, 4);
 
-	if (*bitmap & (1 << rofl::openflow13::OFPAT_SET_FIELD))
+	if (bitmap128_is_bit_set(bitmap, rofl::openflow13::OFPAT_SET_FIELD))
 		actions.add_action(rofl::openflow13::OFPAT_SET_FIELD, 4);
-#endif
 }
 
 void of13_translation_utils::of13_map_bitmap_instructions(uint32_t* bitmap, rofl::openflow::coftable_feature_prop_instructions& instructions)
@@ -2320,8 +2303,4 @@ void of13_translation_utils::of13_map_bitmap_instructions(uint32_t* bitmap, rofl
 	if(*bitmap & ( 1 << OF1X_IT_METER))
 		instructions.add_instruction(rofl::openflow::OFPIT_METER, 4);
 
-#if 0
-	if(*bitmap & ( 1 << OF1X_IT_METER))
-		instructions.add_instruction(rofl::openflow::OFPIT_METER, 4);
-#endif
 }

@@ -1065,6 +1065,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 						match.set_vlan_vid(value | rofl::openflow13::OFPVID_PRESENT);
 					} else {
 						match.set_vlan_vid(value, mask);
+						//match.set_vlan_vid(value | rofl::openflow13::OFPVID_PRESENT, mask);
 					}
 
 					//match.set_vlan_vid(of1x_get_match_value16(m), of1x_get_match_mask16(m));
@@ -1614,7 +1615,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_eth_type(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		case OF1X_AT_SET_FIELD_VLAN_VID: {
-			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_vlan_vid(of1x_get_packet_action_field16(of1x_action)));
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_vlan_vid(of1x_get_packet_action_field16(of1x_action) | rofl::openflow13::OFPVID_PRESENT));
 		} break;
 		case OF1X_AT_SET_FIELD_VLAN_PCP: 
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_vlan_pcp(of1x_get_packet_action_field8(of1x_action)));

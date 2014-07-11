@@ -1508,7 +1508,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_action(
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_eth_type(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		case OF1X_AT_SET_FIELD_VLAN_VID: {
-			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_vlan_vid(of1x_get_packet_action_field16(of1x_action)));
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_vlan_vid(of1x_get_packet_action_field16(of1x_action) | rofl::openflow12::OFPVID_PRESENT));
 		} break;
 		case OF1X_AT_SET_FIELD_VLAN_PCP: 
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_vlan_pcp(of1x_get_packet_action_field8(of1x_action)));

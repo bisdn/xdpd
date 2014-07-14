@@ -32,6 +32,7 @@ class cxmpclient :
 	rofl::csocket*		socket;
 	rofl::cparams		socket_params;
 	rofl::csockaddr		dest;
+	rofl::cmemory*		mem;
 
 	enum cxmpclient_timer_t {
 		TIMER_XMPCLNT_EXIT 		= 1,
@@ -97,13 +98,13 @@ protected:
 	handle_accept_refused(rofl::csocket& socket) {};
 
 	virtual void
-	handle_connected(rofl::csocket& socket) {};
+	handle_connected(rofl::csocket& socket);
 
 	virtual void
-	handle_connect_refused(rofl::csocket& socket) {};
+	handle_connect_refused(rofl::csocket& socket);
 
 	virtual void
-	handle_connect_failed(rofl::csocket& socket) {};
+	handle_connect_failed(rofl::csocket& socket);
 
 	virtual void
 	handle_write(rofl::csocket& socket) {};

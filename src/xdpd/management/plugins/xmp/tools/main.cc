@@ -7,6 +7,9 @@
 int 
 main(int argc, char** argv)
 {
+	rofl::logging::init();
+	rofl::logging::set_debug_level(rofl::logging::DBG);
+
 	xdpd::mgmt::protocol::cxmpclient xmpclient;
 
 
@@ -38,6 +41,8 @@ main(int argc, char** argv)
 	}
 
 	xmpclient.run();
+
+	sleep(2);
 
 	return 0;
 }

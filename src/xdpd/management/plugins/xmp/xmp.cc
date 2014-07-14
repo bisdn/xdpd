@@ -13,83 +13,200 @@ using namespace xdpd::mgmt::protocol;
 
 
 xmp::xmp() :
-		socket(NULL)
+		socket(NULL),
+		socket_type(rofl::csocket::SOCKET_TYPE_PLAIN),
+		fragment(NULL),
+		msg_bytes_read(0)
 {
-	socket = rofl::csocket::csocket_factory(rofl::csocket::SOCKET_TYPE_PLAIN, this);
-
 	socket_params = rofl::csocket::get_default_params(rofl::csocket::SOCKET_TYPE_PLAIN);
 
 	socket_params.set_param(rofl::csocket::PARAM_KEY_LOCAL_HOSTNAME).set_string(MGMT_PORT_UDP_ADDR);
 	socket_params.set_param(rofl::csocket::PARAM_KEY_LOCAL_PORT).set_string(MGMT_PORT_UDP_PORT);
 	socket_params.set_param(rofl::csocket::PARAM_KEY_DOMAIN).set_string("inet");
-	socket_params.set_param(rofl::csocket::PARAM_KEY_TYPE).set_string("dgram");
-	socket_params.set_param(rofl::csocket::PARAM_KEY_PROTOCOL).set_string("udp");
+	socket_params.set_param(rofl::csocket::PARAM_KEY_TYPE).set_string("stream");
+	socket_params.set_param(rofl::csocket::PARAM_KEY_PROTOCOL).set_string("tcp");
 }
-
 
 xmp::~xmp()
 {
-
+	if (socket) {
+		socket->close();
+		delete socket;
+	}
+	for (std::set<rofl::csocket*>::iterator
+			it = workers.begin(); it != workers.end(); ++it) {
+		(*(*it)).close();
+		delete (*it);
+	}
 }
-
-
 
 void
 xmp::init()
 {
-	rofl::logging::error << "[xdpd][plugin][xmp] initializing ..." << std::endl;
-	socket->listen(socket_params);
+	if (socket) {
+		socket->close();
+		delete socket;
+		socket = (rofl::csocket*)0;
+	}
+	(socket = rofl::csocket::csocket_factory(socket_type, this))->listen(socket_params);
 }
 
+void
+xmp::handle_listen(
+		rofl::csocket& socket,
+		int newsd)
+{
+	rofl::logging::info << "[xdpd][plugin][xmp]" << __PRETTY_FUNCTION__ << std::endl;
 
+	rofl::csocket* worker;
+	(worker = rofl::csocket::csocket_factory(socket_type, this))->accept(socket_params, newsd);
+}
+
+void
+xmp::handle_accepted(
+		rofl::csocket& socket)
+{
+	rofl::logging::info << "[xdpd][plugin][xmp]" << __PRETTY_FUNCTION__ << std::endl;
+
+	rofl::csocket* worker = &socket;
+	workers.insert(worker);
+}
+
+void
+xmp::handle_accept_refused(
+		rofl::csocket& socket)
+{
+	rofl::logging::info << "[xdpd][plugin][xmp]" << __PRETTY_FUNCTION__ << std::endl;
+
+	rofl::csocket* worker = &socket;
+	delete worker;
+}
+
+void
+xmp::handle_closed(
+		rofl::csocket& socket)
+{
+	rofl::logging::info << "[xdpd][plugin][xmp]" << __PRETTY_FUNCTION__ << std::endl;
+	rofl::csocket* worker = &socket;
+	workers.erase(worker);
+	delete worker;
+}
 
 void
 xmp::handle_timeout(
 		int opaque, void *data)
 {
+	rofl::logging::info << "[xdpd][plugin][xmp]" << __PRETTY_FUNCTION__ << std::endl;
 	switch (opaque) {
 	default:
 		;;
 	}
 }
 
-
 void
 xmp::handle_read(
 		csocket& socket)
 {
-	cmemory mem(128);
+	rofl::logging::info << "[xdpd][plugin][xmp]" << __PRETTY_FUNCTION__ << std::endl;
 
-	int nbytes = socket.recv(mem.somem(), mem.memlen());
+	try {
 
-	if (nbytes == 0) {
-		// socket closed
-		rofl::logging::error << "[xdpd][plugin][xmp] reading xmp socket failed, errno:"
-				<< errno << " (" << strerror(errno) << ")" << std::endl;
-		return;
-	} else if (nbytes < 0) {
-		rofl::logging::error << "[xdpd][plugin][xmp] reading xmp socket failed, errno:"
-				<< errno << " (" << strerror(errno) << ")" << std::endl;
-		return;
-	}
+		if (0 == fragment) {
+			fragment = new rofl::cmemory(sizeof(struct xmp_header_t));
+			msg_bytes_read = 0;
+		}
 
-	if ((unsigned int)nbytes < sizeof(struct xmp_header_t)) {
-		rofl::logging::error << "[xdpd][plugin][xmp] short packet rcvd, rc:" << nbytes << std::endl;
-		return;
-	}
+		while (true) {
+			uint16_t msg_len = 0;
 
-	struct xmp_header_t *hdr = (struct xmp_header_t*)mem.somem();
-	cxmpmsg msg(mem.somem(), nbytes);
+			// how many bytes do we have to read?
+			if (msg_bytes_read < sizeof(struct xmp_header_t)) {
+				msg_len = sizeof(struct xmp_header_t);
+			} else {
+				struct xmp_header_t *header = (struct xmp_header_t*)fragment->somem();
+				msg_len = be16toh(header->len);
+			}
 
-	switch (hdr->type) {
-	case XMPT_REQUEST: {
-		handle_request(msg);
-	} break;
-	case XMPT_REPLY:
-	case XMPT_NOTIFICATION:
-	default: {
-		rofl::logging::error << "[xdpd][plugin][xmp] unknown message rcvd" << std::endl;
-	};
+			// sanity check: 8 <= msg_len <= 2^16
+			if (msg_len < sizeof(struct xmp_header_t)) {
+				logging::warn << "[xdpd][plugin][xmp] received message with invalid length field, closing socket." << std::endl;
+				socket.close();
+				workers.erase(&socket);
+				return;
+			}
+
+			// resize msg buffer, if necessary
+			if (fragment->memlen() < msg_len) {
+				fragment->resize(msg_len);
+			}
+
+			// read from socket more bytes, at most "msg_len - msg_bytes_read"
+			int nbytes = socket.recv((void*)(fragment->somem() + msg_bytes_read), msg_len - msg_bytes_read);
+
+			msg_bytes_read += nbytes;
+
+			// minimum message length received, check completeness of message
+			if (fragment->memlen() >= sizeof(struct xmp_header_t)) {
+				struct xmp_header_t *header = (struct xmp_header_t*)fragment->somem();
+				uint16_t msg_len = be16toh(header->len);
+
+				// ok, message was received completely
+				if (msg_len == msg_bytes_read) {
+					rofl::cmemory *mem = fragment;
+					fragment = NULL; // just in case, we get an exception from parse_message()
+					msg_bytes_read = 0;
+
+					cxmpmsg msg(mem->somem(), msg_len);
+					handle_request(msg);
+
+					switch (header->type) {
+					case XMPT_REQUEST:
+					{
+						handle_request(msg);
+					}
+						break;
+					case XMPT_REPLY:
+					case XMPT_NOTIFICATION:
+					default:
+					{
+						rofl::logging::error
+								<< "[xdpd][plugin][xmp] unknown message rcvd"
+								<< std::endl;
+					}
+						;
+					}
+
+					return;
+				}
+			}
+		}
+
+	} catch (rofl::eSocketRxAgain& e) {
+
+		// more bytes are needed, keep pointer to msg in "fragment"
+		rofl::logging::debug << "[xdpd][plugin][xmp] read again" << std::endl;
+
+	} catch (rofl::eSysCall& e) {
+
+		rofl::logging::warn << "[xdpd][plugin][xmp] closing socket: " << e << std::endl;
+
+		if (fragment) {
+			delete fragment; fragment = (rofl::cmemory*)0;
+		}
+
+		// close socket, as it seems, we are out of sync
+		socket.close();
+
+	} catch (rofl::RoflException& e) {
+
+		rofl::logging::warn << "[xdpd][plugin][xmp] dropping invalid message: " << e << std::endl;
+
+		if (fragment) {
+			delete fragment; fragment = (rofl::cmemory*)0;
+		}
+
+		// close socket, as it seems, we are out of sync
+		socket.close();
 	}
 }
 
@@ -296,6 +413,3 @@ xmp::handle_port_disable(
 
 	}
 }
-
-
-

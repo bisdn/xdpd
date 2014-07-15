@@ -82,7 +82,7 @@ public:
 	* Get port information (snapshot)
 	* @param snapshot Snapshot of the switch port to be filled in. 
 	*/
-	static void get_port_info(std::string& name, port_snapshot& snapshot);
+	static void get_port_info(const std::string& name, port_snapshot& snapshot);
 	
 	//TODO: Add more fine-grained "up/down states" here...
 	

@@ -19,14 +19,10 @@ libxdpd_wrap_la_LIBADD = \
 sbin_PROGRAMS = xdpd
 xdpd_SOURCES = cmm.cc xdpd.cc
 xdpd_LDADD = \
-	libxdpd_wrap.la\
-	$(LIBS)\
-	openflow/libxdpd_openflow.la\
+	libxdpd_wrap.la \
+	openflow/libxdpd_openflow.la \
 	-lrofl_pipeline \
-	$(FM_LIB)\
-	-lpthread \
-	-lrofl \
-	-ldl
+	$(FM_LIB)
 
 #The .a is a workaround to prevent libtool to strip it...
 

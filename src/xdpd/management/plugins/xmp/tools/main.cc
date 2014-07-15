@@ -15,8 +15,15 @@ main(int argc, char** argv)
 
 	if ((argc >= 2) && (std::string(argv[1]) == std::string("port"))) {
 
+		if ((argc >= 3) && (std::string(argv[2]) == std::string("list"))) {
+			if (argc == 4) {
+				xmpclient.port_list(strtol(argv[3], NULL, 0));
+			} else {
+				xmpclient.port_list();
+			}
+
 		// xmpclient port attach <dpid> <portname>
-		if ((argc == 5) && (std::string(argv[2]) == std::string("attach"))) {
+		} else if ((argc == 5) && (std::string(argv[2]) == std::string("attach"))) {
 			xmpclient.port_attach(strtol(argv[3], NULL, 0), std::string(argv[4]));
 
 		// xmpclient port detach <dpid> <portname>
@@ -41,8 +48,6 @@ main(int argc, char** argv)
 	}
 
 	xmpclient.run();
-
-	sleep(2);
 
 	return 0;
 }

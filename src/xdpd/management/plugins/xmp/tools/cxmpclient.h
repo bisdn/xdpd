@@ -33,6 +33,9 @@ class cxmpclient :
 	rofl::cparams		socket_params;
 	rofl::csockaddr		dest;
 	rofl::cmemory*		mem;
+	rofl::cmemory*		fragment;
+	unsigned int		msg_bytes_read;
+
 
 	enum cxmpclient_timer_t {
 		TIMER_XMPCLNT_EXIT 		= 1,
@@ -52,6 +55,12 @@ public:
 	~cxmpclient();
 
 public:
+
+	void
+	port_list();
+
+	void
+	port_list(uint64_t dpid);
 
 	/**
 	 *
@@ -80,6 +89,9 @@ public:
 	void
 	port_disable(
 			std::string const& portname);
+
+	void
+	handle_reply(cxmpmsg& msg);
 
 protected:
 
@@ -110,10 +122,10 @@ protected:
 	handle_write(rofl::csocket& socket) {};
 
 	virtual void
-	handle_read(rofl::csocket& socket) {};
+	handle_read(rofl::csocket& socket);
 
 	virtual void
-	handle_closed(rofl::csocket& socket) {};
+	handle_closed(rofl::csocket& socket);
 };
 
 }; // end of namespace protocol

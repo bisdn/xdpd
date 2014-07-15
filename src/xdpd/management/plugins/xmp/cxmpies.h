@@ -22,6 +22,7 @@ extern "C" {
 #include "cxmpie_command.h"
 #include "cxmpie_portname.h"
 #include "cxmpie_dpid.h"
+#include "cxmpie_multipart.h"
 #include "xdpd_mgmt_protocol.h"
 #include "rofl/common/croflexception.h"
 
@@ -176,6 +177,24 @@ public:
 	bool
 	has_ie_dpid() const;
 
+	/*
+	 * information element: multipart
+	 */
+	cxmpie_multipart&
+	add_ie_multipart();
+
+	cxmpie_multipart&
+	set_ie_multipart();
+
+	cxmpie_multipart const&
+	get_ie_multipart() const;
+
+	void
+	drop_ie_multipart();
+
+	bool
+	has_ie_multipart() const;
+
 private:
 
 	/**
@@ -205,6 +224,9 @@ public:
 			} break;
 			case XMPIET_DPID: {
 				os << "  " << dynamic_cast<cxmpie_dpid const&>( *(it->second) );
+			} break;
+			case XMPIET_MULTIPART: {
+				os << "  " << dynamic_cast<cxmpie_multipart const&>( *(it->second) );
 			} break;
 			default: {
 				os << "  " << *(it->second);

@@ -129,6 +129,10 @@ cxmpies::map_and_insert(
 	case XMPIET_DPID: {
 		xmpmap[XMPIET_DPID] = new cxmpie_dpid(xmpie);
 	} break;
+	case XMPIET_MULTIPART: {
+		xmpmap[XMPIET_MULTIPART] = new cxmpie_multipart(xmpie);
+		break;
+	}
 	default: {
 		xmpmap[xmpie.get_type()] = new cxmpie(xmpie);
 	};
@@ -282,4 +286,46 @@ cxmpies::has_ie_dpid() const
 	return (xmpmap.find(XMPIET_DPID) != xmpmap.end());
 }
 
+cxmpie_multipart&
+cxmpies::add_ie_multipart()
+{
+	if (xmpmap.find(XMPIET_MULTIPART) != xmpmap.end()) {
+		delete xmpmap[XMPIET_MULTIPART];
+	}
+	xmpmap[XMPIET_MULTIPART] = new cxmpie_multipart();
+	return *(dynamic_cast<cxmpie_multipart*>( xmpmap[XMPIET_MULTIPART] ));
+}
 
+cxmpie_multipart&
+cxmpies::set_ie_multipart()
+{
+	if (xmpmap.find(XMPIET_MULTIPART) == xmpmap.end()) {
+		xmpmap[XMPIET_MULTIPART] = new cxmpie_multipart();
+	}
+	return *(dynamic_cast<cxmpie_multipart*>( xmpmap[XMPIET_MULTIPART] ));
+}
+
+cxmpie_multipart const&
+cxmpies::get_ie_multipart() const
+{
+	if (xmpmap.find(XMPIET_MULTIPART) == xmpmap.end()) {
+		throw eXmpIEsNotFound();
+	}
+	return *(dynamic_cast<cxmpie_multipart const*>( xmpmap.at(XMPIET_MULTIPART) ));
+}
+
+void
+cxmpies::drop_ie_multipart()
+{
+	if (xmpmap.find(XMPIET_MULTIPART) == xmpmap.end()) {
+		return;
+	}
+	delete xmpmap[XMPIET_MULTIPART];
+	xmpmap.erase(XMPIET_MULTIPART);
+}
+
+bool
+cxmpies::has_ie_multipart() const
+{
+	return (xmpmap.find(XMPIET_MULTIPART) != xmpmap.end());
+}

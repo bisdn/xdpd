@@ -20,18 +20,21 @@ extern "C" {
 #define PORTNAMESIZE 32
 
 enum xmp_msg_t {
-	XMPT_REQUEST		= 1,
-	XMPT_REPLY			= 2,
-	XMPT_NOTIFICATION	= 3,
+	XMPT_ERROR				= 0,
+	XMPT_REQUEST			= 1,
+	XMPT_REPLY				= 2,
+	XMPT_NOTIFICATION		= 3,
+	XMPT_REPLY_MULTIPART	= 4,
 };
 
 // message command types (MCT)
 enum xmpie_command_t {
 	XMPIEMCT_NONE				= 0,
-	XMPIEMCT_PORT_ATTACH,		// = 1,
-	XMPIEMCT_PORT_DETACH,		// = 2,
-	XMPIEMCT_PORT_ENABLE,		// = 3,
-	XMPIEMCT_PORT_DISABLE,		// = 4,
+	XMPIEMCT_PORT_ATTACH		= 1,
+	XMPIEMCT_PORT_DETACH		= 2,
+	XMPIEMCT_PORT_ENABLE		= 3,
+	XMPIEMCT_PORT_DISABLE		= 4,
+	XMPIEMCT_PORT_LIST			= 5,
 };
 
 struct xmp_header_t {
@@ -56,10 +59,11 @@ struct xmp_msg_port_attachment_t {
 
 // information element types
 enum xmpie_type_t {
-	XMPIET_NONE				= 0,
-	XMPIET_COMMAND,			// = 1,
-	XMPIET_PORTNAME,		// = 2,
-	XMPIET_DPID,			// = 3,
+	XMPIET_NONE			= 0,
+	XMPIET_COMMAND		= 1,
+	XMPIET_PORTNAME		= 2,
+	XMPIET_DPID			= 3,
+	XMPIET_MULTIPART	= 4
 };
 
 struct xmp_ie_header_t {

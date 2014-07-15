@@ -95,8 +95,7 @@ protected:
 private:
 
 	void
-	handle_request(
-			cxmpmsg& msg);
+	handle_request(rofl::csocket& socket, cxmpmsg& msg);
 
 	void
 	handle_port_attach(
@@ -115,7 +114,7 @@ private:
 			cxmpmsg& msg);
 
 	void
-	handle_port_list(cxmpmsg& msg);
+	handle_port_list(rofl::csocket& socket, cxmpmsg& msg);
 };
 
 }; // end of namespace protocol

@@ -235,6 +235,9 @@ xmp::handle_request(
 	case XMPIEMCT_PORT_DISABLE: {
 		handle_port_disable(msg);
 	} break;
+	case XMPIEMCT_PORT_LIST: {
+		handle_port_list(msg);
+	} break;
 	case XMPIEMCT_NONE:
 	default: {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp request with unknown command:"
@@ -412,4 +415,52 @@ xmp::handle_port_disable(
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed" << std::endl;
 
 	}
+}
+
+
+void
+xmp::handle_port_list(cxmpmsg& msg)
+{
+	bool query_all_dp = true;
+	uint64_t dpid = 0;
+
+	if (msg.get_xmpies().has_ie_dpid()) {
+		query_all_dp = false;
+		dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
+	}
+
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+
+	// get all ports
+	std::list<std::string> all_ports = port_manager::list_available_port_names();
+
+	for (std::list<std::string>::const_iterator iter = all_ports.begin(); iter != all_ports.end(); ++iter) {
+		port_snapshot snapshot;
+		try {
+			port_manager::get_port_info((*iter), snapshot);
+		} catch(ePmInvalidPort &e) {
+			// skip if port was removed in this short time
+			continue;
+		}
+
+		// only ports attached to dpid?
+		if (not query_all_dp && snapshot.attached_sw_dpid != dpid) {
+			continue;
+		}
+
+		//
+
+	}
+
+
+
+
+
+//	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_ENABLE);
+//	msg.get_xmpies().add_ie_portname().set_portname(portname);
+//
+//	std::cerr << "[xmpclient] sending Port-Enable request:" << std::endl << msg;
+//
+//	mem = new rofl::cmemory(msg.length());
+//	msg.pack(mem->somem(), mem->memlen());
 }

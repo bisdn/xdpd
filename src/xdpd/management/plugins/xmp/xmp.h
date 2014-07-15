@@ -113,6 +113,9 @@ private:
 	void
 	handle_port_disable(
 			cxmpmsg& msg);
+
+	void
+	handle_port_list(cxmpmsg& msg);
 };
 
 }; // end of namespace protocol

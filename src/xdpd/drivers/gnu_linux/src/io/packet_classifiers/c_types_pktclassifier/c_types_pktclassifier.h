@@ -673,6 +673,9 @@ void classify_packet(classifier_state_t* clas_state, uint8_t* data, size_t len, 
 	clas_state->port_in = port_in;
 	clas_state->phy_port_in = phy_port_in;
 
+	//TODO improve this (single uint8)	
+	clas_state->ipv4_recalc_checksum = clas_state->tcp_recalc_checksum = clas_state->udp_recalc_checksum = clas_state->sctp_recalc_checksum = clas_state->icmpv4_recalc_checksum = clas_state->icmpv6_recalc_checksum = false;
+
 	//Determine packet type	
 	parse_ethernet(clas_state, data, len);
 }

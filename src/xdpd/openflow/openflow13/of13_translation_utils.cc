@@ -971,31 +971,31 @@ of13_translation_utils::of13_map_flow_entry_actions(
 				}
 			} break;
 			case rofl::openflow::experimental::capwap::CAPWAP_EXP_ID: {
-				rofl::openflow::experimental::capwap::cofaction_experimenter_capwap action_capwap(actions.get_action_experimenter(index));
-				switch (action_capwap.get_exp_type()) {
+				rofl::openflow::experimental::capwap::cofaction_exp_body_capwap exp_body_capwap(actions.get_action_experimenter(index).get_exp_body());
+				switch (exp_body_capwap.get_exp_type()) {
 				case rofl::openflow::experimental::capwap::CAPWAP_ACTION_PUSH_CAPWAP:{
-					rofl::openflow::experimental::capwap::cofaction_push_capwap action_capwap_push(action_capwap);
-					field.u16 = action_capwap_push.get_ether_type();
+					rofl::openflow::experimental::capwap::cofaction_exp_body_push_capwap exp_body_push_capwap(exp_body_capwap);
+					field.u16 = exp_body_push_capwap.get_ether_type();
 					action = of1x_init_packet_action( OF1X_AT_PUSH_CAPWAP, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::capwap::CAPWAP_ACTION_POP_CAPWAP:{
-					rofl::openflow::experimental::capwap::cofaction_pop_capwap action_capwap_pop(action_capwap);
-					field.u16 = action_capwap_pop.get_ether_type();
+					rofl::openflow::experimental::capwap::cofaction_exp_body_pop_capwap exp_body_pop_capwap(exp_body_capwap);
+					field.u16 = exp_body_pop_capwap.get_ether_type();
 					action = of1x_init_packet_action( OF1X_AT_POP_CAPWAP, field, 0x0);
 				}break;
 				}
 			} break;
 			case rofl::openflow::experimental::wlan::WLAN_EXP_ID: {
-				rofl::openflow::experimental::wlan::cofaction_experimenter_wlan action_wlan(actions.get_action_experimenter(index));
-				switch (action_wlan.get_exp_type()) {
+				rofl::openflow::experimental::wlan::cofaction_exp_body_wlan exp_body_wlan(actions.get_action_experimenter(index).get_exp_body());
+				switch (exp_body_wlan.get_exp_type()) {
 				case rofl::openflow::experimental::wlan::WLAN_ACTION_PUSH_WLAN:{
-					rofl::openflow::experimental::wlan::cofaction_push_wlan action_wlan_push(action_wlan);
-					field.u16 = action_wlan_push.get_ether_type();
+					rofl::openflow::experimental::wlan::cofaction_exp_body_push_wlan exp_body_push_wlan(exp_body_wlan);
+					field.u16 = exp_body_push_wlan.get_ether_type();
 					action = of1x_init_packet_action( OF1X_AT_PUSH_WLAN, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::wlan::WLAN_ACTION_POP_WLAN:{
-					rofl::openflow::experimental::wlan::cofaction_pop_wlan action_wlan_pop(action_wlan);
-					field.u16 = action_wlan_pop.get_ether_type();
+					rofl::openflow::experimental::wlan::cofaction_exp_body_pop_wlan exp_body_pop_wlan(exp_body_wlan);
+					field.u16 = exp_body_pop_wlan.get_ether_type();
 					action = of1x_init_packet_action( OF1X_AT_POP_WLAN, field, 0x0);
 				}break;
 				}
@@ -1526,10 +1526,10 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 #ifdef EXPERIMENTAL
 		/* Extensions */
 		case OF1X_AT_POP_WLAN: {
-			rofl::openflow::experimental::wlan::cofaction_pop_wlan action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
-			rofl::cmemory body(action.length());
-			action.pack(body.somem(), body.memlen());
-			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).
+					set_exp_id(rofl::openflow::experimental::wlan::WLAN_EXP_ID);
+			actions.set_action_experimenter(index).
+					set_exp_body(rofl::openflow::experimental::wlan::cofaction_exp_body_pop_wlan(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		case OF1X_AT_POP_PPPOE: {
 			actions.add_action_experimenter(index).
@@ -1544,16 +1544,16 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 					set_exp_body(rofl::openflow::experimental::gtp::cofaction_exp_body_pop_gtp(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		case OF1X_AT_POP_CAPWAP: {
-			rofl::openflow::experimental::capwap::cofaction_pop_capwap action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
-			rofl::cmemory body(action.length());
-			action.pack(body.somem(), body.memlen());
-			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).
+					set_exp_id(rofl::openflow::experimental::capwap::CAPWAP_EXP_ID);
+			actions.set_action_experimenter(index).
+					set_exp_body(rofl::openflow::experimental::capwap::cofaction_exp_body_pop_capwap(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		case OF1X_AT_PUSH_CAPWAP: {
-			rofl::openflow::experimental::capwap::cofaction_push_capwap action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
-			rofl::cmemory body(action.length());
-			action.pack(body.somem(), body.memlen());
-			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).
+					set_exp_id(rofl::openflow::experimental::capwap::CAPWAP_EXP_ID);
+			actions.set_action_experimenter(index).
+					set_exp_body(rofl::openflow::experimental::capwap::cofaction_exp_body_push_capwap(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		case OF1X_AT_PUSH_GTP: {
 			actions.add_action_experimenter(index).
@@ -1568,10 +1568,10 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 					set_exp_body(rofl::openflow::experimental::pppoe::cofaction_exp_body_push_pppoe(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		case OF1X_AT_PUSH_WLAN: {
-			rofl::openflow::experimental::wlan::cofaction_push_wlan action(actions.get_version(), of1x_get_packet_action_field16(of1x_action));
-			rofl::cmemory body(action.length());
-			action.pack(body.somem(), body.memlen());
-			actions.add_action_experimenter(index).unpack(body.somem(), body.memlen());
+			actions.add_action_experimenter(index).
+					set_exp_id(rofl::openflow::experimental::wlan::WLAN_EXP_ID);
+			actions.set_action_experimenter(index).
+					set_exp_body(rofl::openflow::experimental::wlan::cofaction_exp_body_push_wlan(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		/* End of extensions */
 #endif

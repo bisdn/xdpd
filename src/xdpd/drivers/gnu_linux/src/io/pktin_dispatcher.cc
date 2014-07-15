@@ -71,7 +71,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
         	rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_x86->pktin_table_id, 	
 						pkt_x86->pktin_reason, 	
-						pkt_x86->in_port, 
+						pkt_x86->clas_state.port_in, 
 						id, 	
 						pkt_x86->get_buffer(), 
 						pkt_x86->pktin_send_len,

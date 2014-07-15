@@ -29,7 +29,6 @@
 #include "./headers/cpc_sctp.h"
 #include "./headers/cpc_vlan.h"
 
-//#include "pkt_types_mockup.h"
 #include "autogen_pkt_types.h"
 
 /**
@@ -39,27 +38,32 @@
 *
 * @brief Interface for the C classifiers
 */
-typedef struct classify_state{
-	bool is_classified;
-	
+typedef struct classifier_state{
 	//Packet type
 	pkt_types_t type;
-	
-	//Pointer + len	
-	uint8_t* base;	
+
+	//Pointer + len 
+	uint8_t* base;  
 	size_t len;
 	
 	//Port in and phy port
 	uint32_t port_in;
 	uint32_t phy_port_in;
 
-}classify_state_t;
+	//Checksum flags
+	bool ipv4_recalc_checksum;
+	bool tcp_recalc_checksum;
+	bool udp_recalc_checksum;
+	bool sctp_recalc_checksum;
+	bool icmpv4_recalc_checksum;
+	bool icmpv6_recalc_checksum;
+}classifier_state_t;
 
 ROFL_BEGIN_DECLS
 
 //inline function implementations
 static inline 
-void* get_ether_hdr(classify_state_t* clas_state, int idx){
+void* get_ether_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ETHERNET);
 	if(!tmp)
@@ -68,21 +72,21 @@ void* get_ether_hdr(classify_state_t* clas_state, int idx){
 }
 
 static inline
-void* get_vlan_hdr(classify_state_t* clas_state, int idx){
+void* get_vlan_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_VLAN); 
 	return tmp; 
 }
 
 static inline
-void* get_pbb_isid_hdr(classify_state_t* clas_state, int idx){
+void* get_pbb_isid_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ISID); 
 	return tmp; 
 }
 
 static inline
-void* get_mpls_hdr(classify_state_t* clas_state, int idx){
+void* get_mpls_hdr(classifier_state_t* clas_state, int idx){
 	
 	uint8_t* tmp;
 	
@@ -110,49 +114,49 @@ void* get_mpls_hdr(classify_state_t* clas_state, int idx){
 }
 
 static inline
-void* get_arpv4_hdr(classify_state_t* clas_state, int idx){
+void* get_arpv4_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ARPV4); 
 	return tmp; 
 }
 
 static inline
-void* get_ipv4_hdr(classify_state_t* clas_state, int idx){
+void* get_ipv4_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_IPV4); 
 	return tmp; 
 }
 
 static inline
-void* get_icmpv4_hdr(classify_state_t* clas_state, int idx){
+void* get_icmpv4_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV4); 
 	return tmp; 
 }
 
 static inline
-void* get_ipv6_hdr(classify_state_t* clas_state, int idx){
+void* get_ipv6_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_IPV6); 
 	return tmp; 
 }
 
 static inline
-void* get_icmpv6_hdr(classify_state_t* clas_state, int idx){
+void* get_icmpv6_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6); 
 	return tmp; 
 }
 
 static inline
-void* get_icmpv6_opt_hdr(classify_state_t* clas_state, int idx){
+void* get_icmpv6_opt_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS); 
 	return tmp; 
 }
 
 static inline
-void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){
+void* get_icmpv6_opt_lladr_source_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_SRC);
 	if (NULL == tmp)
@@ -165,7 +169,7 @@ void* get_icmpv6_opt_lladr_source_hdr(classify_state_t* clas_state, int idx){
 }
 
 static inline
-void* get_icmpv6_opt_lladr_target_hdr(classify_state_t* clas_state, int idx){
+void* get_icmpv6_opt_lladr_target_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_LLADR_TGT);
 	if (NULL == tmp)
@@ -174,49 +178,49 @@ void* get_icmpv6_opt_lladr_target_hdr(classify_state_t* clas_state, int idx){
 }
 
 static inline
-void* get_icmpv6_opt_prefix_info_hdr(classify_state_t* clas_state, int idx){
+void* get_icmpv6_opt_prefix_info_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_ICMPV6_OPTS_PREFIX_INFO); 
 	return tmp; 
 }
 
 static inline
-void* get_sctp_hdr(classify_state_t* clas_state, int idx){
+void* get_sctp_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_SCTP);
 	return tmp;
 }
 
 static inline
-void* get_udp_hdr(classify_state_t* clas_state, int idx){
+void* get_udp_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_UDP); 
 	return tmp;
 }
 
 static inline
-void* get_tcp_hdr(classify_state_t* clas_state, int idx){
+void* get_tcp_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_TCP); 
 	return tmp;
 }
 
 static inline
-void* get_pppoe_hdr(classify_state_t* clas_state, int idx){
+void* get_pppoe_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_PPPOE); 
 	return tmp;
 }
 
 static inline
-void* get_ppp_hdr(classify_state_t* clas_state, int idx){
+void* get_ppp_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_PPP); 
 	return tmp;
 }
 
 static inline
-void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
+void* get_gtpu_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
 	PT_GET_HDR(tmp, clas_state, PT_PROTO_GTPU); 
 	return tmp;
@@ -227,20 +231,20 @@ void* get_gtpu_hdr(classify_state_t* clas_state, int idx){
 //
 
 static inline
-void parse_tcp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_tcp(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 	PT_CLASS_ADD_PROTO(clas_state, TCP);	
 	//No further parsing
 }
 
 static inline
-void parse_gtp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_gtp(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	if (unlikely(datalen < sizeof(cpc_gtphu_t))) { return; }
 	PT_CLASS_ADD_PROTO(clas_state, GTPU);
 	//No further parsing
 }
 static inline
-void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_udp(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	cpc_udp_hdr_t *udp = (cpc_udp_hdr_t*)data; 
 	
@@ -265,26 +269,26 @@ void parse_udp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 static inline
-void parse_sctp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_sctp(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 	PT_CLASS_ADD_PROTO(clas_state, SCTP);
 	//No further parsing
 }
 
 static inline
-void parse_arpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_arpv4(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 	PT_CLASS_ADD_PROTO(clas_state, ARPV4);	
 	//No further parsing
 	assert(clas_state->type != PT_INVALID);
 }
 static inline
-void parse_icmpv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_icmpv4(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 	PT_CLASS_ADD_PROTO(clas_state, ICMPV4);	
 	//No further parsing
 	assert(clas_state->type != PT_INVALID);
 }
 
 static inline
-void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_ipv4(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	unsigned header_len_bytes, num_of_options;
 	//Set reference
@@ -327,7 +331,7 @@ void parse_ipv4(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 	}
 }
 static inline
-void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_icmpv6_opts(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 	
 	/*So far we only parse optionsICMPV6_OPT_LLADDR_TARGET, ICMPV6_OPT_LLADDR_SOURCE and ICMPV6_OPT_PREFIX_INFO*/
 	cpc_icmpv6_option_hdr_t* icmpv6_options = (cpc_icmpv6_option_hdr_t*)data;
@@ -351,7 +355,7 @@ void parse_icmpv6_opts(classify_state_t* clas_state, uint8_t *data, size_t datal
 }
 
 static inline
-void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_icmpv6(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	cpc_icmpv6_hdr_t* icmpv6 = (cpc_icmpv6_hdr_t*)data;
 	
@@ -444,7 +448,7 @@ void parse_icmpv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 static inline
-void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_ipv6(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 	
 	//Set reference
 	cpc_ipv6_hdr_t *ipv6 = (cpc_ipv6_hdr_t*)data; 
@@ -485,7 +489,7 @@ void parse_ipv6(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 static inline
-void parse_mpls(classify_state_t* clas_state, uint8_t* data, size_t datalen)
+void parse_mpls(classifier_state_t* clas_state, uint8_t* data, size_t datalen)
 {
 	
 	//Determine the number of MPLS stacked tags
@@ -507,7 +511,7 @@ void parse_mpls(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 }
 
 static inline
-void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_ppp(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	PT_CLASS_ADD_PROTO(clas_state, PPP);	
 	assert(clas_state->type != PT_INVALID);
@@ -516,7 +520,7 @@ void parse_ppp(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 static inline
-void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen, uint16_t eth_type){
+void parse_pppoe(classifier_state_t* clas_state, uint8_t *data, size_t datalen, uint16_t eth_type){
 
 	PT_CLASS_ADD_PROTO(clas_state, PPPOE);
 	assert(clas_state->type != PT_INVALID);
@@ -539,7 +543,7 @@ void parse_pppoe(classify_state_t* clas_state, uint8_t *data, size_t datalen, ui
 }
 
 static inline
-void parse_pbb_isid(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_pbb_isid(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	//Special parsing schema
 	clas_state->type = PT_ETHERNET_ISID_ETHERNET;
@@ -551,7 +555,7 @@ void parse_pbb_isid(classify_state_t* clas_state, uint8_t *data, size_t datalen)
 
 
 static inline
-void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
+void parse_vlan(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	//Data pointer	
 	cpc_vlan_hdr_t* vlan;
@@ -601,7 +605,7 @@ void parse_vlan(classify_state_t* clas_state, uint8_t *data, size_t datalen){
 }
 
 static inline 
-void parse_ethernet(classify_state_t* clas_state, uint8_t* data, size_t datalen){
+void parse_ethernet(classifier_state_t* clas_state, uint8_t* data, size_t datalen){
 
 	//Data pointer	
 	cpc_eth_hdr_t* ether = (cpc_eth_hdr_t *)data;
@@ -652,7 +656,7 @@ void parse_ethernet(classify_state_t* clas_state, uint8_t* data, size_t datalen)
 // Ethertype: get it regardless of the packet type (inner ETH_TYPE)
 //
 static inline
-uint16_t* classifier_get_eth_type(classify_state_t* clas_state){
+uint16_t* classifier_get_eth_type(classifier_state_t* clas_state){
 	return (uint16_t*) (clas_state->base + eth_type_offsets[clas_state->type]);
 }
 
@@ -661,12 +665,7 @@ uint16_t* classifier_get_eth_type(classify_state_t* clas_state){
 //
 
 static inline
-void reset_classifier(classify_state_t* clas_state){
-	clas_state->is_classified = false;
-}
-
-static inline
-void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, uint32_t port_in, uint32_t phy_port_in){
+void classify_packet(classifier_state_t* clas_state, uint8_t* data, size_t len, uint32_t port_in, uint32_t phy_port_in){
 	
 	//Set basic 
 	clas_state->base = data;
@@ -676,9 +675,6 @@ void classify_packet(classify_state_t* clas_state, uint8_t* data, size_t len, ui
 
 	//Determine packet type	
 	parse_ethernet(clas_state, data, len);
-	
-	//Mark it as classified
-	clas_state->is_classified = true;
 }
 
 

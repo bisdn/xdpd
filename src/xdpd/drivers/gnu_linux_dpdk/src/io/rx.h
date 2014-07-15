@@ -28,6 +28,8 @@
 #include "../pipeline-imp/lock.h"
 #include "../pipeline-imp/packet.h"
 
+#include <iostream>
+
 //Now include pp headers
 #include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 
@@ -70,9 +72,8 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		assert(port_state->kni != NULL);
 		
 		assert(!rte_mempool_full(pool_direct));
-		if(rte_mempool_count(pool_direct) <= 2*IO_IFACE_MAX_PKT_BURST)	
 		burst_len = rte_kni_rx_burst(port_state->kni, pkts_burst, IO_IFACE_MAX_PKT_BURST);
-		
+			
 #if DEBUG
 		if(burst_len != 0)
 		{

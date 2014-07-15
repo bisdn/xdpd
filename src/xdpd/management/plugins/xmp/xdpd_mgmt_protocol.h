@@ -28,10 +28,10 @@ enum xmp_msg_t {
 // message command types (MCT)
 enum xmpie_command_t {
 	XMPIEMCT_NONE				= 0,
-	XMPIEMCT_PORT_ATTACH		= 1,
-	XMPIEMCT_PORT_DETACH		= 2,
-	XMPIEMCT_PORT_ENABLE		= 3,
-	XMPIEMCT_PORT_DISABLE		= 4,
+	XMPIEMCT_PORT_ATTACH,		// = 1,
+	XMPIEMCT_PORT_DETACH,		// = 2,
+	XMPIEMCT_PORT_ENABLE,		// = 3,
+	XMPIEMCT_PORT_DISABLE,		// = 4,
 };
 
 struct xmp_header_t {
@@ -57,9 +57,9 @@ struct xmp_msg_port_attachment_t {
 // information element types
 enum xmpie_type_t {
 	XMPIET_NONE				= 0,
-	XMPIET_COMMAND			= 1,
-	XMPIET_PORTNAME			= 2,
-	XMPIET_DPID				= 3,
+	XMPIET_COMMAND,			// = 1,
+	XMPIET_PORTNAME,		// = 2,
+	XMPIET_DPID,			// = 3,
 };
 
 struct xmp_ie_header_t {

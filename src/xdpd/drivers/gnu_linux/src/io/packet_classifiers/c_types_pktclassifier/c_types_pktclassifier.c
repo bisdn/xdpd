@@ -17,8 +17,6 @@ void pop_pbb(datapacket_t* pkt, classifier_state_t* clas_state){
 
 	//Set new type and base(move right)
 	clas_state->type = new; // NEU
-	//clas_state->base += sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t);
-	//clas_state->len -= sizeof(cpc_eth_hdr_t)+sizeof(cpc_pbb_isid_hdr_t); 
 
 	//reclassify
 	parse_ethernet(clas_state, clas_state->base, clas_state->len);
@@ -38,8 +36,6 @@ void pop_vlan(datapacket_t* pkt, classifier_state_t* clas_state){
 
 	//Set new type and base(move right)
 	clas_state->type = new;
-	//clas_state->base += sizeof(cpc_vlan_hdr_t);
-	//clas_state->len -= sizeof(cpc_vlan_hdr_t); // NEU
 
 	//Set ether_type of new frame
 	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
@@ -54,8 +50,6 @@ void pop_mpls(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_
 
 	//Set new type and base(move right)
 	clas_state->type = new;
-	//clas_state->base += sizeof(cpc_mpls_hdr_t);
-	//clas_state->len -= sizeof(cpc_mpls_hdr_t); //NEU
 
 	set_ether_type(get_ether_hdr(clas_state,0), ether_type);
 
@@ -78,8 +72,6 @@ void pop_pppoe(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 				return;
 			//Set new type and base(move right)
 			clas_state->type = new;
-			//clas_state->base += sizeof(cpc_pppoe_hdr_t); 
-			//clas_state->len -= sizeof(cpc_pppoe_hdr_t); 
 		}
 			break;
 
@@ -96,8 +88,6 @@ void pop_pppoe(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 
 			//Set new type and base(move right)
 			clas_state->type = new;
-			//clas_state->base += sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t);
-			//clas_state->len -= sizeof(cpc_pppoe_hdr_t) + sizeof(cpc_ppp_hdr_t);
 		}
 		break;
 	}
@@ -131,8 +121,6 @@ void* push_pbb(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 
 	//Set new type and base(move left)
 	clas_state->type = new;
-	//clas_state->base -= offset; 
-	//clas_state->len += offset;
 
 	//Set new pkt type
 	ether_header = get_ether_hdr(clas_state, 0);    
@@ -166,8 +154,6 @@ void* push_vlan(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ethe
 	
 	//Set new type and base(move left)
 	clas_state->type = new;
-	//clas_state->base -= sizeof(cpc_vlan_hdr_t);
-	//clas_state->len += sizeof(cpc_vlan_hdr_t);
 
 	//Set new pkt type
 	cpc_vlan_hdr_t* vlan_header = get_vlan_hdr(clas_state, 0);
@@ -211,8 +197,6 @@ void* push_mpls(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ethe
 	
 	//Set new type and base(move left)
 	clas_state->type = new;
-	//clas_state->base -= sizeof(cpc_mpls_hdr_t);
-	//clas_state->len += sizeof(cpc_mpls_hdr_t);
 
 	ether_header=get_ether_hdr(clas_state, 0);
 	set_ether_type(ether_header, ether_type);
@@ -270,8 +254,6 @@ void* push_pppoe(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t eth
 			clas_state->type = new;
 			clas_state->type = PT_PUSH_PROTO(clas_state, PPP);
 			assert(clas_state->type != PT_INVALID);
-			//clas_state->base -= bytes_to_insert; 
-			//clas_state->len += bytes_to_insert; 
 
 			/*
 			 * adjust ether(0): move one pppoe tag to the left
@@ -297,8 +279,6 @@ void* push_pppoe(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t eth
 			}
 			//Set new pkt type
 			clas_state->type = new;
-			//clas_state->base -= bytes_to_insert; 
-			//clas_state->len += bytes_to_insert; 
 
 			set_ether_type(get_ether_hdr(clas_state, 0), ETH_TYPE_PPPOE_DISCOVERY);
 

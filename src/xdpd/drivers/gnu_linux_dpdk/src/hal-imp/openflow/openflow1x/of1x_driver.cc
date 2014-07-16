@@ -291,7 +291,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 
 	//Reclassify the packet
 	datapacket_dpdk_t* pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
-	classify_packet(pkt_dpdk->headers, get_buffer_dpdk(pkt_dpdk), get_buffer_length_dpdk(pkt_dpdk), in_port, 0);
+	classify_packet(&pkt_dpdk->clas_state, get_buffer_dpdk(pkt_dpdk), get_buffer_length_dpdk(pkt_dpdk), in_port, 0);
 
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	

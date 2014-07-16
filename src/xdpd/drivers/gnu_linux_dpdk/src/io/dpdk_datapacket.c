@@ -2,17 +2,11 @@
 
 datapacket_dpdk_t* create_datapacket_dpdk(datapacket_t* pkt){
 	datapacket_dpdk_t* dpkt = (datapacket_dpdk_t*) malloc(sizeof(datapacket_dpdk_t));
-	dpkt->headers = init_classifier(pkt);
-	dpkt->icmpv4_recalc_checksum = false;
-	dpkt->ipv4_recalc_checksum = false;
-	dpkt->tcp_recalc_checksum = false;
-	dpkt->udp_recalc_checksum = false;
 	dpkt->packet_in_bufferpool = false;
 	return dpkt;
 }
 
 void destroy_datapacket_dpdk(datapacket_dpdk_t* dpkt){
-	destroy_classifier(dpkt->headers);
 	free(dpkt);
 }
 

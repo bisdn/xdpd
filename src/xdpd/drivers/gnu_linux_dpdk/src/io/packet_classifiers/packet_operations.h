@@ -34,23 +34,7 @@ static inline rofl_result_t pkt_pop(datapacket_t* pkt, uint8_t* pop_point, unsig
 	else
 		return pop_datapacket_offset(pkt_state, offset, num_of_bytes);
 }
-static inline size_t get_pkt_buffer_length(datapacket_t* pkt){
-	datapacket_dpdk_t *dpkt = (datapacket_dpdk_t*)(pkt->platform_state);
-	return rte_pktmbuf_pkt_len(dpkt->mbuf);
-}
 
-static inline uint8_t *get_pkt_buffer(datapacket_t* pkt){
-	datapacket_dpdk_t *dpkt = (datapacket_dpdk_t*)(pkt->platform_state);
-	return (uint8_t *)rte_pktmbuf_mtod(dpkt->mbuf, uint8_t*);
-}
-static inline uint32_t get_pkt_in_port(datapacket_t* pkt){
-	datapacket_dpdk_t *dpkt = (datapacket_dpdk_t*)(pkt->platform_state);
-	return dpkt->in_port;
-}
-static inline uint32_t get_pkt_in_phy_port(datapacket_t* pkt){
-	datapacket_dpdk_t *dpkt = (datapacket_dpdk_t*)(pkt->platform_state);
-	return dpkt->in_phy_port;
-}
 
 ROFL_END_DECLS
 

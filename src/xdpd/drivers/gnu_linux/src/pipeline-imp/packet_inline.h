@@ -25,13 +25,13 @@
 
 
 //
-// Configuration to include packet_inline_classifier.h 
+// Configuration to include packet_proto_meta_imp.h
 //
 
 #define GET_CLAS_STATE_PTR(PKT)\
  	( &( ( (xdpd::gnu_linux::datapacketx86*) PKT ->platform_state) ->clas_state) )
 
-#include "packet_inline_classifier.h"
+#include "packet_proto_meta_imp.h"
 
 //
 // Driver specific functions

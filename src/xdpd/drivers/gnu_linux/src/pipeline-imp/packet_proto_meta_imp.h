@@ -2,7 +2,7 @@
 #define PACKET_IMPL_INLINE_CLASSIFIER__
 
 /**
-* @file packet_inline_classifier.h 
+* @file packet_proto_meta_imp.h 
 * @author Marc Sune<marc.sune (at) bisdn.de>
 *
 * @brief This file contains the basic platform_packet_ getters and setters

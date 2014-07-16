@@ -98,7 +98,7 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 					table_id, 	
 					reason, 	
-					pkt_x86->in_port, 
+					pkt_x86->clas_state.port_in, 
 					id, 	
 					pkt_x86->get_buffer(), 
 					send_len,

@@ -38,6 +38,25 @@
 *
 * @brief Interface for the C classifiers
 */
+
+
+/**
+* Checksum enumeration
+*/
+
+enum calculate_checksum {
+	RESET_CHECKSUM_IN_SW_FLAGS		= 0,
+	RECALCULATE_IPV4_CHECKSUM_IN_SW		= 1,
+	RECALCULATE_TCP_CHECKSUM_IN_SW		= 2,
+	RECALCULATE_UDP_CHECKSUM_IN_SW		= 3,
+	RECALCULATE_SCTP_CHECKSUM_IN_SW		= 4,
+	RECALCULATE_ICMPV4_CHECKSUM_IN_SW	= 5,
+	RECALCULATE_ICMPV6_CHECKSUM_IN_SW	= 6
+};
+
+/**
+* Classifier state
+*/
 typedef struct classifier_state{
 	//Packet type
 	pkt_types_t type;
@@ -50,16 +69,39 @@ typedef struct classifier_state{
 	uint32_t port_in;
 	uint32_t phy_port_in;
 
-	//Checksum flags
-	bool ipv4_recalc_checksum;
-	bool tcp_recalc_checksum;
-	bool udp_recalc_checksum;
-	bool sctp_recalc_checksum;
-	bool icmpv4_recalc_checksum;
-	bool icmpv6_recalc_checksum;
+	//Checksum calculation in sw bitmap 
+	uint32_t calculate_checksums_in_sw;
 }classifier_state_t;
 
 ROFL_BEGIN_DECLS
+
+//
+// Checksums helpers
+//
+
+/**
+* Set checksum calculation flags
+*/
+static inline void set_recalculate_checksum(classifier_state_t* clas_state, enum calculate_checksum type){
+#ifndef DONT_CALCULATE_ANY_CHECKSUM_IN_SW
+	clas_state->calculate_checksums_in_sw |= ( 1 << type );
+#endif
+}
+
+/**
+* Set checksum calculation flags
+*/
+static inline bool is_recalculate_checksum_flag_set(classifier_state_t* clas_state, enum calculate_checksum type){
+#ifndef DONT_CALCULATE_ANY_CHECKSUM_IN_SW
+	return ( clas_state->calculate_checksums_in_sw & ( 1 << type ) ) > 0;
+#else
+	return false;
+#endif
+}
+
+//
+// Network protocol headers
+//
 
 //inline function implementations
 static inline 
@@ -673,9 +715,11 @@ void classify_packet(classifier_state_t* clas_state, uint8_t* data, size_t len, 
 	clas_state->port_in = port_in;
 	clas_state->phy_port_in = phy_port_in;
 
-	//TODO improve this (single uint8)	
-	clas_state->ipv4_recalc_checksum = clas_state->tcp_recalc_checksum = clas_state->udp_recalc_checksum = clas_state->sctp_recalc_checksum = clas_state->icmpv4_recalc_checksum = clas_state->icmpv6_recalc_checksum = false;
-
+#ifndef DONT_CALCULATE_ANY_CHECKSUM_IN_SW
+	//Reset checksums calculation in sw flags
+	clas_state->calculate_checksums_in_sw = RESET_CHECKSUM_IN_SW_FLAGS;
+#endif
+	
 	//Determine packet type	
 	parse_ethernet(clas_state, data, len);
 }

@@ -2,74 +2,153 @@
 #define PACKET_IMPL_INLINE_CLASSIFIER__
 
 /**
-* This file contains TODO: 
+* @file packet_inline_classifier.h 
+* @author Marc Sune<marc.sune (at) bisdn.de>
+*
+* @brief This file contains the basic platform_packet_ getters and setters
+*        related to network protocol headers to be used in conjunction with the reference classifier.
+*
+* Overview
+* =========
+*
+* This file is a piece of code that can be reused across different drivers that use the classifier
+* provided by the gnu-linux reference driver. It binds rofl-pipeline platform_packet_ getters and setters
+* as well as actions (push/pop) that relate to network protocol headers, directly with the classifier code. It
+* can also provide an empty set of platform_packet_ getters and setters, if instructed to do so (no PP API).
+*
+* Note that this piece of code is by no means mandatory to be used. rofl-pipeline can be used independently
+* without this file (or the classifier provided by gnu-linux reference driver), and even the classifier can be
+* used without this file.
+*
+* The procedure to use it is:
+*  - **Symlink** this file in your driver, in for example, pipeline-imp/ folder, and:
+*    a) If you want empty packet matches (no PP API used), define EMPTY_PACKET_PROCESSING_ROUTINES prior to the
+*      inclusion of it in your code
+*    b) or define GET_CLAS_STATE_PTR(PKT) MACRO prior to the inclusion of this file, if PP API is used.
+*
+* For more information, always take example and gnu-linux drivers as references.
+*
+* Other information
+* =================
+*
+* Mandatory MACROs:
+*  - GET_CLAS_STATE_PTR(PKT) : This MACRO must be defined by the users that include this file, and shall return a pointer
+*    to the classifier state struct. The only exception is when EMPTY_PACKET_PROCESSING_ROUTINES is defined
+*
+* Useful MACROS: 
+*  - EMPTY_PACKET_PROCESSING_ROUTINES: define this macro if you want to define empty platform_packet_* (PP APIs).
+*    There is no need to include any classifier header.
+*  
+*
+* Optimization and advanced MACROs:
+*  - To disable completely checksum calculations in software (including flags), define DONT_CALCULATE_ANY_CHECKSUM_IN_SW. The classifier
+*    must ALSO be compiled with this MACRO defined.
+*
+*  - Checksums: define these MACROs prior to include this file to disable individual SW checksum calculations.
+*    - DONT_CALCULATE_IPV4_CHECKSUM_IN_SW
+*    - DONT_CALCULATE_TCP_CHECKSUM_IN_SW
+*    - DONT_CALCULATE_UDP_CHECKSUM_IN_SW
+*    - DONT_CALCULATE_SCTP_CHECKSUM_IN_SW
+*    - DONT_CALCULATE_ICMPV4_CHECKSUM_IN_SW
+*    - DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW
 */
 
-
 //
-// Check that the getter is defined
+// Preprocessor
 //
-
 
 //Make it easy for users
 #ifndef STATIC_PACKET_INLINE__
 	#define STATIC_PACKET_INLINE__
-#endif
+#endif /* inline */
 
-
+//Checksums
+#ifdef DONT_CALCULATE_ANY_CHECKSUM_IN_SW
+	#ifndef DONT_CALCULATE_IPV4_CHECKSUM_IN_SW
+		#define DONT_CALCULATE_IPV4_CHECKSUM_IN_SW
+	#endif
+	#ifndef DONT_CALCULATE_TCP_CHECKSUM_IN_SW
+		#define DONT_CALCULATE_TCP_CHECKSUM_IN_SW
+	#endif
+	#ifndef DONT_CALCULATE_UDP_CHECKSUM_IN_SW
+		#define DONT_CALCULATE_UDP_CHECKSUM_IN_SW
+	#endif
+	#ifndef DONT_CALCULATE_SCTP_CHECKSUM_IN_SW
+		#define DONT_CALCULATE_SCTP_CHECKSUM_IN_SW
+	#endif
+	#ifndef DONT_CALCULATE_ICMPV4_CHECKSUM_IN_SW
+		#define DONT_CALCULATE_ICMPV4_CHECKSUM_IN_SW
+	#endif
+	#ifndef DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW
+		#define DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW
+	#endif
+#endif /* Checksums */
 
 //Check for the existance of GET_CLAS_STATE_PTR() MACRO
-#ifndef GET_CLAS_STATE_PTR
+#if ! defined(GET_CLAS_STATE_PTR) && ! defined(EMPTY_PACKET_PROCESSING_ROUTINES)
 	#error You cannot use packet_inline_classifier.h without defining GET_CLAS_STATE_PTR() MACRO
-#else //Avoid infinite errors 
+#else //Avoid infinite error list 
 
+//
+// Routines 
+//
 
 //Checksums calculator
 static inline
 void calculate_checksums_in_software(datapacket_t* pkt){
 
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	
+	void *fipv4 = get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0);
+	void *fipv6 = get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0);
+	
 	//IP Checksum recalculation
-	if( GET_CLAS_STATE_PTR(pkt) ->ipv4_recalc_checksum){
-		if(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0))	
-			ipv4_calc_checksum(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0));
+	if( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_IPV4_CHECKSUM_IN_SW) && fipv4 ){
+		#ifndef DONT_CALCULATE_IPV4_CHECKSUM_IN_SW
+		ipv4_calc_checksum(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0));
+		#endif /* DONT_CALCULATE_IPV4_CHECKSUM_IN_SW */
 	}
 
 	//Outer most IPv4 frame
-	void *fipv4 = get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0);
 
-	if (NULL != fipv4) {
-		if (( GET_CLAS_STATE_PTR(pkt) ->tcp_recalc_checksum) && get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0) && fipv4) {
+	if (fipv4) {
+		if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW ) && get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
 
+			#ifndef DONT_CALCULATE_TCP_CHECKSUM_IN_SW
 			tcpv4_calc_checksum(
 					get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 					*get_ipv4_src(fipv4),
 					*get_ipv4_dst(fipv4),
 					*get_ipv4_proto(fipv4),
 					get_pkt_len(pkt, GET_CLAS_STATE_PTR(pkt) , get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) ,0), NULL) ); // start at innermost IPv4 up to and including last frame
+			#endif /* DONT_CALCULATE_TCP_CHECKSUM_IN_SW */
 
-		} else if (( GET_CLAS_STATE_PTR(pkt) ->udp_recalc_checksum) && (get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) && fipv4) {
+		} else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW ) && (get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) {
 
+			#ifndef DONT_CALCULATE_UDP_CHECKSUM_IN_SW
 			udpv4_calc_checksum(
 					get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 					*get_ipv4_src(fipv4),
 					*get_ipv4_dst(fipv4),
 					*get_ipv4_proto(fipv4),
 					get_pkt_len(pkt, GET_CLAS_STATE_PTR(pkt) , get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) ); // start at innermost IPv4 up to and including last frame
+			#endif /* DONT_CALCULATE_UDP_CHECKSUM_IN_SW */
 
-		} else if (( GET_CLAS_STATE_PTR(pkt) ->icmpv4_recalc_checksum) && (get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) ,0))) {
+		} else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV4_CHECKSUM_IN_SW ) && (get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) ,0))) {
 
+			#ifndef DONT_CALCULATE_ICMPV4_CHECKSUM_IN_SW
 			icmpv4_calc_checksum(
 				get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 				get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) );
+			#endif /* DONT_CALCULATE_ICMPV4_CHECKSUM_IN_SW */
 		}
 	}
 
 	//Outer most IPv6 frame
-	void *fipv6 = get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0);
+	if (fipv6) {
+		if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW ) && get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
 
-	if (NULL != fipv6) {
-		if (( GET_CLAS_STATE_PTR(pkt) ->tcp_recalc_checksum) && get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0) && fipv6) {
-
+			#ifndef DONT_CALCULATE_TCP_CHECKSUM_IN_SW
 			tcpv6_calc_checksum(
 					get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 					*get_ipv6_src(fipv6),
@@ -77,32 +156,44 @@ void calculate_checksums_in_software(datapacket_t* pkt){
 					TCP_IP_PROTO,
 					get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) ,0), NULL) ); // start at innermost IPv6 up to and including last frame
 
-		} else if (( GET_CLAS_STATE_PTR(pkt) ->udp_recalc_checksum) && (get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) && fipv6) {
+			#endif /* DONT_CALCULATE_TCP_CHECKSUM_IN_SW */
 
+		} else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW ) && (get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) {
+
+			#ifndef DONT_CALCULATE_UDP_CHECKSUM_IN_SW
 			udpv6_calc_checksum(
 					get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 					*get_ipv6_src(fipv6),
 					*get_ipv6_dst(fipv6),
 					UDP_IP_PROTO,
 					get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) ); // start at innermost IPv6 up to and including last frame
+			#endif /* DONT_CALCULATE_UDP_CHECKSUM_IN_SW */
 
-		} else if (( GET_CLAS_STATE_PTR(pkt) ->icmpv6_recalc_checksum) && (get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) ,0))) {
+		} else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV6_CHECKSUM_IN_SW ) && (get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) ,0))) {
 
+			#ifndef DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW
 			icmpv6_calc_checksum(
 					get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 					*get_ipv6_src(fipv6),
 					*get_ipv6_dst(fipv6),
 					ICMPV6_IP_PROTO,
 					get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) );
+			#endif /* DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW */
 		}
 	}
 
-	if (( GET_CLAS_STATE_PTR(pkt) ->sctp_recalc_checksum) && get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
+	//SCTP
+	if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_SCTP_CHECKSUM_IN_SW ) && get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
+				
+			#ifndef DONT_CALCULATE_SCTP_CHECKSUM_IN_SW
 
 			sctp_calc_checksum(
 					get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 					get_pkt_len(pkt, GET_CLAS_STATE_PTR(pkt) , get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) ,0), NULL) );
+			#endif /* DONT_CALCULATE_SCTP_CHECKSUM_IN_SW */
 	}
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
 }
 
 //Getters
@@ -1020,8 +1111,7 @@ void platform_packet_dec_nw_ttl(datapacket_t* pkt)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if(NULL != get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0)){
 		dec_ipv4_ttl(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0));
-		GET_CLAS_STATE_PTR(pkt) ->ipv4_recalc_checksum = true;
-
+		set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_IPV4_CHECKSUM_IN_SW );
 	}
 	if(NULL != get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0)){
 		dec_ipv6_hop_limit(get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0));
@@ -1065,7 +1155,7 @@ void platform_packet_set_nw_ttl(datapacket_t* pkt, uint8_t new_ttl)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if (NULL != get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0)){
 		set_ipv4_ttl(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), new_ttl);
-		GET_CLAS_STATE_PTR(pkt) ->ipv4_recalc_checksum = true;
+		set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_IPV4_CHECKSUM_IN_SW );
 	}
 	if (NULL != get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0)){
 		set_ipv6_hop_limit(get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), new_ttl);
@@ -1213,7 +1303,7 @@ void platform_packet_set_ip_dscp(datapacket_t* pkt, uint8_t ip_dscp)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if (NULL != get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
 		set_ipv4_dscp(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ip_dscp);
-		GET_CLAS_STATE_PTR(pkt) ->ipv4_recalc_checksum = true;
+		set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_IPV4_CHECKSUM_IN_SW );
 	}
 	if (NULL != get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
 		set_ipv6_dscp(get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ip_dscp);
@@ -1232,7 +1322,7 @@ void platform_packet_set_ip_ecn(datapacket_t* pkt, uint8_t ip_ecn)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if (NULL != get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0)){
 		set_ipv4_ecn(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ip_ecn);
-		GET_CLAS_STATE_PTR(pkt) ->ipv4_recalc_checksum = true;
+		set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_IPV4_CHECKSUM_IN_SW );
 	}
 	if (NULL != get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0)){
 		set_ipv6_ecn(get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ip_ecn);
@@ -1250,7 +1340,7 @@ void platform_packet_set_ip_proto(datapacket_t* pkt, uint8_t ip_proto)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if (NULL != get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
 		set_ipv4_proto(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ip_proto);
-		GET_CLAS_STATE_PTR(pkt) ->ipv4_recalc_checksum = true;
+		set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_IPV4_CHECKSUM_IN_SW );
 	}
 	if (NULL != get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
 		set_ipv6_next_header(get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ip_proto);
@@ -1268,9 +1358,10 @@ void platform_packet_set_ipv4_src(datapacket_t* pkt, uint32_t ip_src)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_ipv4_src(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ip_src);
-	GET_CLAS_STATE_PTR(pkt) ->ipv4_recalc_checksum = true;
-	GET_CLAS_STATE_PTR(pkt) ->tcp_recalc_checksum = true;
-	GET_CLAS_STATE_PTR(pkt) ->udp_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_IPV4_CHECKSUM_IN_SW );
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW );
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1284,9 +1375,10 @@ void platform_packet_set_ipv4_dst(datapacket_t* pkt, uint32_t ip_dst)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_ipv4_dst(get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ip_dst);
-	GET_CLAS_STATE_PTR(pkt) ->ipv4_recalc_checksum = true;
-	GET_CLAS_STATE_PTR(pkt) ->tcp_recalc_checksum = true;
-	GET_CLAS_STATE_PTR(pkt) ->udp_recalc_checksum = true;
+
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_IPV4_CHECKSUM_IN_SW );
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW );
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1300,8 +1392,9 @@ void platform_packet_set_ipv6_src(datapacket_t* pkt, uint128__t ipv6_src)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_ipv6_src(get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ipv6_src);
-	GET_CLAS_STATE_PTR(pkt) ->tcp_recalc_checksum = true;
-	GET_CLAS_STATE_PTR(pkt) ->udp_recalc_checksum = true;
+
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW );
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1315,8 +1408,9 @@ void platform_packet_set_ipv6_dst(datapacket_t* pkt, uint128__t ipv6_dst)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_ipv6_dst(get_ipv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ipv6_dst);
-	GET_CLAS_STATE_PTR(pkt) ->tcp_recalc_checksum = true;
-	GET_CLAS_STATE_PTR(pkt) ->udp_recalc_checksum = true;
+
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW );
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1343,7 +1437,8 @@ void platform_packet_set_ipv6_nd_target(datapacket_t* pkt, uint128__t ipv6_nd_ta
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_icmpv6_neighbor_taddr(get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), ipv6_nd_target);
-	GET_CLAS_STATE_PTR(pkt) ->icmpv6_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV6_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1358,7 +1453,8 @@ void platform_packet_set_ipv6_nd_sll(datapacket_t* pkt, uint64_t ipv6_nd_sll)
 	void *lla_opt_hdr;
 	if ( NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_source_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) ) return;
 	set_icmpv6_ll_saddr(lla_opt_hdr, ipv6_nd_sll);
-	GET_CLAS_STATE_PTR(pkt) ->icmpv6_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV6_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1373,7 +1469,8 @@ void platform_packet_set_ipv6_nd_tll(datapacket_t* pkt, uint64_t ipv6_nd_tll)
 	void *lla_opt_hdr;
 	if ( (NULL == (lla_opt_hdr = get_icmpv6_opt_lladr_target_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) ) return;
 	set_icmpv6_ll_taddr(lla_opt_hdr,ipv6_nd_tll);
-	GET_CLAS_STATE_PTR(pkt) ->icmpv6_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV6_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1399,7 +1496,8 @@ void platform_packet_set_icmpv6_type(datapacket_t* pkt, uint8_t icmpv6_type)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_icmpv6_type(get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), icmpv6_type);
-	GET_CLAS_STATE_PTR(pkt) ->icmpv6_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV6_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1413,7 +1511,8 @@ void platform_packet_set_icmpv6_code(datapacket_t* pkt, uint8_t icmpv6_code)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_icmpv6_code(get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), icmpv6_code);
-	GET_CLAS_STATE_PTR(pkt) ->icmpv6_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV6_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1427,7 +1526,8 @@ void platform_packet_set_tcp_src(datapacket_t* pkt, uint16_t tcp_src)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_tcp_sport(get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0), tcp_src);
-	GET_CLAS_STATE_PTR(pkt) ->tcp_recalc_checksum = true;
+
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1441,7 +1541,8 @@ void platform_packet_set_tcp_dst(datapacket_t* pkt, uint16_t tcp_dst)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_tcp_dport(get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0), tcp_dst);
-	GET_CLAS_STATE_PTR(pkt) ->tcp_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1455,7 +1556,8 @@ void platform_packet_set_udp_src(datapacket_t* pkt, uint16_t udp_src)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_udp_sport(get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0), udp_src);
-	GET_CLAS_STATE_PTR(pkt) ->udp_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1469,7 +1571,8 @@ void platform_packet_set_udp_dst(datapacket_t* pkt, uint16_t udp_dst)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_udp_dport(get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0), udp_dst);
-	GET_CLAS_STATE_PTR(pkt) ->udp_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1483,7 +1586,8 @@ void platform_packet_set_sctp_src(datapacket_t* pkt, uint16_t sctp_src)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_sctp_sport(get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) , 0), sctp_src);
-	GET_CLAS_STATE_PTR(pkt) ->sctp_recalc_checksum = true;
+
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_SCTP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1497,7 +1601,8 @@ void platform_packet_set_sctp_dst(datapacket_t* pkt, uint16_t sctp_dst)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_sctp_dport(get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) , 0), sctp_dst);
-	GET_CLAS_STATE_PTR(pkt) ->sctp_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_SCTP_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1511,7 +1616,8 @@ void platform_packet_set_icmpv4_type(datapacket_t* pkt, uint8_t type)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_icmpv4_type(get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), type);
-	GET_CLAS_STATE_PTR(pkt) ->icmpv4_recalc_checksum = true;
+
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV4_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1525,7 +1631,8 @@ void platform_packet_set_icmpv4_code(datapacket_t* pkt, uint8_t code)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	if ((NULL == get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
 	set_icmpv4_code(get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), code);
-	GET_CLAS_STATE_PTR(pkt) ->icmpv4_recalc_checksum = true;
+	
+	set_recalculate_checksum( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_ICMPV4_CHECKSUM_IN_SW );
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */

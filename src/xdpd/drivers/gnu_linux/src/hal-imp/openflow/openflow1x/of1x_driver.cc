@@ -311,7 +311,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	
 	//Reclassify the packet
 	pktx86 = (datapacketx86*)pkt->platform_state;
-	classify_packet(&pktx86->clas_state, pktx86->get_buffer(), pktx86->get_buffer_length(), pktx86->clas_state.port_in, 0);
+	classify_packet(&pktx86->clas_state, pktx86->get_buffer(), pktx86->get_buffer_length(), in_port, 0);
 
 	ROFL_DEBUG_VERBOSE(DRIVER_NAME" Getting packet out [%p]\n",pkt);	
 	

@@ -19,6 +19,14 @@ namespace mgmt {
 namespace protocol {
 
 class cxmpie_multipart : public cxmpie {
+	union {
+		uint8_t						*xmpu_generic;
+		struct xmp_ie_header_t		*xmpu_multipart;
+	} xmpie_xmpu;
+
+#define xmpie_generic	xmpie_xmpu.xmpu_generic
+#define xmpie_multipart	xmpie_xmpu.xmpu_multipart
+
 public:
 	cxmpie_multipart();
 	~cxmpie_multipart();
@@ -45,9 +53,14 @@ public:
 	friend std::ostream&
 	operator<< (std::ostream& os, cxmpie_multipart const& elem) {
 		os << dynamic_cast<cxmpie const&>( elem );
-		os << rofl::indent(2) << "<cxmpie-multipart ";
-			os << " not yet implemented ";
+		os << rofl::indent(2) << "<cxmpie-multipart";
+		os << " #IE=" << elem.ies.size();
 		os << ">" << std::endl;
+		rofl::indent::inc(2);
+		for(std::deque<cxmpie*>::const_iterator iter = elem.ies.begin(); iter != elem.ies.end(); ++iter) {
+			os << **iter;
+		}
+
 		return os;
 	};
 

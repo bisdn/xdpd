@@ -19,12 +19,15 @@ namespace protocol {
 cxmpie_multipart::cxmpie_multipart() :
 		cxmpie(XMPIET_MULTIPART, sizeof(struct xmp_ie_header_t))
 {
+	xmpie_xmpu.xmpu_generic = somem();
 }
 
 cxmpie_multipart::cxmpie_multipart(cxmpie_multipart const &elem) :
 		cxmpie(elem)
 {
+	cxmpie::operator= (elem);
 	copy_ies(elem.ies);
+	xmpie_generic = somem();
 }
 
 cxmpie_multipart::cxmpie_multipart(cxmpie const& elem) :
@@ -32,7 +35,9 @@ cxmpie_multipart::cxmpie_multipart(cxmpie const& elem) :
 {
 	if (XMPIET_MULTIPART != elem.get_type()) throw eXmpIeInval();
 
-	copy_ies(static_cast<cxmpie_multipart const &>(elem).ies);
+	unpack(elem.somem(), elem.memlen());
+	xmpie_generic = somem();
+
 }
 
 cxmpie_multipart&
@@ -42,7 +47,9 @@ cxmpie_multipart::operator =(cxmpie_multipart const &rhs)
 
 	if (this == &rhs) return *this;
 
+	cxmpie::operator= (rhs);
 	copy_ies(rhs.ies);
+	xmpie_generic = somem();
 
 	return *this;
 }
@@ -55,7 +62,7 @@ cxmpie_multipart::~cxmpie_multipart()
 size_t
 cxmpie_multipart::length() const
 {
-	size_t len = sizeof(struct xmp_header_t);
+	size_t len = sizeof(struct xmp_ie_header_t);
 	for (std::deque<cxmpie*>::const_iterator it = ies.begin(); it != ies.end();
 			++it) {
 		len += (*it)->length();
@@ -67,6 +74,13 @@ void
 cxmpie_multipart::pack(uint8_t* buf, size_t buflen)
 {
 	if (buflen < length()) throw eXmpIeInval();
+
+	// only pack the header
+	cxmpie::pack(buf, buflen);
+	buf += sizeof(struct xmp_ie_header_t);
+	buflen -= sizeof(struct xmp_ie_header_t);
+
+	// now the rest
 	for (std::deque<cxmpie*>::const_iterator it = ies.begin(); it != ies.end();
 			++it) {
 		assert(buflen >= 0);
@@ -80,6 +94,12 @@ void
 cxmpie_multipart::unpack(uint8_t* buf, size_t buflen)
 {
 	clear();
+
+	cxmpie::unpack(buf, sizeof(struct xmp_ie_header_t));
+	xmpie_generic = somem();
+
+	buf += sizeof(struct xmp_ie_header_t);
+	buflen -= sizeof(struct xmp_ie_header_t);
 
 	while (buflen > sizeof(struct xmp_ie_header_t)) {
 		struct xmp_ie_header_t *hdr = (struct xmp_ie_header_t*) buf;

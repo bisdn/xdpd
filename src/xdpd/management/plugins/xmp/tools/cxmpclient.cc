@@ -113,7 +113,6 @@ cxmpclient::handle_read(rofl::csocket& socket)
 
 					switch (header->type) {
 					case XMPT_REPLY:
-					case XMPT_REPLY_MULTIPART:
 					{
 						handle_reply(msg);
 					} break;
@@ -189,10 +188,7 @@ cxmpclient::handle_reply(cxmpmsg& msg)
 {
 	rofl::logging::info << "[xdpd][plugin][xmp] rcvd message:" << std::endl << msg;
 
-	if (not msg.get_xmpies().has_ie_command()) {
-		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp request without -COMMAND- IE, dropping message." << std::endl;
-		return;
-	}
+
 }
 
 
@@ -202,10 +198,9 @@ cxmpclient::port_list()
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_LIST);
 
-	std::cerr << "[xmpclient] sending Port-Attach request:" << std::endl << msg;
+	std::cerr << "[xmpclient] sending Port-List request:" << std::endl << msg;
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
-
 }
 
 void

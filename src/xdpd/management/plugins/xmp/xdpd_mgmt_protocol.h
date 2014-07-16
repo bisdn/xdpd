@@ -24,7 +24,6 @@ enum xmp_msg_t {
 	XMPT_REQUEST			= 1,
 	XMPT_REPLY				= 2,
 	XMPT_NOTIFICATION		= 3,
-	XMPT_REPLY_MULTIPART	= 4,
 };
 
 // message command types (MCT)
@@ -91,6 +90,7 @@ struct xmp_ie_portname_t {
 	uint16_t	len;	// including header and payload
 	char		portname[XMPIE_PORTNAME_SIZE];
 } __attribute__((packed));
+
 
 #endif /* MGMT_PROTOCOL_H_ */
 

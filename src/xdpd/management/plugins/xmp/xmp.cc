@@ -172,7 +172,6 @@ xmp::handle_read(
 					}
 						break;
 					case XMPT_REPLY:
-					case XMPT_REPLY_MULTIPART:
 					case XMPT_NOTIFICATION:
 					default:
 					{
@@ -439,7 +438,7 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 		rofl::logging::debug << "[xdpd][plugin][xmp] only ports of dpid=" << dpid << std::endl;
 	}
 
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY_MULTIPART);
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
 	reply.set_xid(msg.get_xid());
 
 	// get all ports
@@ -465,9 +464,12 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portname(snapshot.name));
 	}
 
+	rofl::logging::debug << "[xdpd][plugin][xmp] length: " << reply.length();
+
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
 	cmemory *mem = new cmemory(reply.length());
 	reply.pack(mem->somem(), mem->memlen());
+
 	socket.send(mem);
 }

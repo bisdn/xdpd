@@ -29,7 +29,7 @@
 //
 
 #define GET_CLAS_STATE_PTR(PKT)\
-	((xdpd::gnu_linux::datapacketx86*) PKT ->platform_state)
+ 	( &( ( (xdpd::gnu_linux::datapacketx86*) PKT ->platform_state) ->clas_state) )
 
 #include "packet_inline_classifier.h"
 
@@ -146,93 +146,17 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 	of_switch_t const* sw;
 	datapacketx86* pack;
 
-	if(!output_port){
+	if( unlikely(output_port == NULL) ){
 		assert(0);
 		return;
 	}
 
 	//Check whether dpx86 is NULL
-	if (NULL == (pack = (datapacketx86*) (pkt->platform_state))){
-		//TODO: in DEBUG do an EXIT(-1)
-		assert(0);
-		return;
-	}
+	pack = (datapacketx86*) (pkt->platform_state);
+	assert(pack != NULL);
 
-	//IP Checksum recalculation
-	if(pack->clas_state.ipv4_recalc_checksum){
-		if(get_ipv4_hdr(&pack->clas_state, 0))	
-			ipv4_calc_checksum(get_ipv4_hdr(&pack->clas_state, 0));
-	}
-
-	//Outer most IPv4 frame
-	void *fipv4 = get_ipv4_hdr(&pack->clas_state, 0);
-
-	if (NULL != fipv4) {
-		if ((pack->clas_state.tcp_recalc_checksum) && get_tcp_hdr(&pack->clas_state, 0) && fipv4) {
-
-			tcpv4_calc_checksum(
-					get_tcp_hdr(&pack->clas_state, 0),
-					*get_ipv4_src(fipv4),
-					*get_ipv4_dst(fipv4),
-					*get_ipv4_proto(fipv4),
-					get_pkt_len(pkt, &pack->clas_state, get_tcp_hdr(&pack->clas_state,0), NULL) ); // start at innermost IPv4 up to and including last frame
-
-		} else if ((pack->clas_state.udp_recalc_checksum) && (get_udp_hdr(&pack->clas_state, 0)) && fipv4) {
-
-			udpv4_calc_checksum(
-					get_udp_hdr(&pack->clas_state, 0),
-					*get_ipv4_src(fipv4),
-					*get_ipv4_dst(fipv4),
-					*get_ipv4_proto(fipv4),
-					get_pkt_len(pkt, &pack->clas_state, get_udp_hdr(&pack->clas_state, 0), NULL) ); // start at innermost IPv4 up to and including last frame
-
-		} else if ((pack->clas_state.icmpv4_recalc_checksum) && (get_icmpv4_hdr(&pack->clas_state,0))) {
-
-			icmpv4_calc_checksum(
-				get_icmpv4_hdr(&pack->clas_state, 0),
-				get_pkt_len(pkt, &pack->clas_state, get_icmpv4_hdr(&pack->clas_state, 0), NULL) );
-		}
-	}
-
-	//Outer most IPv6 frame
-	void *fipv6 = get_ipv6_hdr(&pack->clas_state, 0);
-
-	if (NULL != fipv6) {
-		if ((pack->clas_state.tcp_recalc_checksum) && get_tcp_hdr(&pack->clas_state, 0) && fipv6) {
-
-			tcpv6_calc_checksum(
-					get_tcp_hdr(&pack->clas_state, 0),
-					*get_ipv6_src(fipv6),
-					*get_ipv6_dst(fipv6),
-					TCP_IP_PROTO,
-					get_pkt_len(pkt, &pack->clas_state, get_tcp_hdr(&pack->clas_state,0), NULL) ); // start at innermost IPv6 up to and including last frame
-
-		} else if ((pack->clas_state.udp_recalc_checksum) && (get_udp_hdr(&pack->clas_state, 0)) && fipv6) {
-
-			udpv6_calc_checksum(
-					get_udp_hdr(&pack->clas_state, 0),
-					*get_ipv6_src(fipv6),
-					*get_ipv6_dst(fipv6),
-					UDP_IP_PROTO,
-					get_pkt_len(pkt, &pack->clas_state, get_udp_hdr(&pack->clas_state, 0), NULL) ); // start at innermost IPv6 up to and including last frame
-
-		} else if ((pack->clas_state.icmpv6_recalc_checksum) && (get_icmpv6_hdr(&pack->clas_state,0))) {
-
-			icmpv6_calc_checksum(
-					get_icmpv6_hdr(&pack->clas_state, 0),
-					*get_ipv6_src(fipv6),
-					*get_ipv6_dst(fipv6),
-					ICMPV6_IP_PROTO,
-					get_pkt_len(pkt, &pack->clas_state, get_icmpv6_hdr(&pack->clas_state, 0), NULL) );
-		}
-	}
-
-	if ((pack->clas_state.sctp_recalc_checksum) && get_sctp_hdr(&pack->clas_state, 0)) {
-
-			sctp_calc_checksum(
-					get_sctp_hdr(&pack->clas_state, 0),
-					get_pkt_len(pkt, &pack->clas_state, get_sctp_hdr(&pack->clas_state,0), NULL) );
-	}
+	//Recalculate checksums
+	calculate_checksums_in_software(pkt);
 
 	//flood_meta_port is a static variable defined in the physical_switch
 	//the meta_port

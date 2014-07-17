@@ -5,6 +5,8 @@
 #ifndef _CPC_UDP_H_
 #define _CPC_UDP_H_
 
+#include <rofl/datapath/pipeline/common/endianness.h>
+
 /**
 * @file cpc_udp.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
@@ -49,8 +51,8 @@ void udpv4_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip
 	sum += *(word16+1);
 	sum += *(word16);
 
-	sum += htobe16(ip_proto);
-	sum += htobe16(length); 
+	sum += HTONB16(ip_proto);
+	sum += HTONB16(length); 
 #else
 	word16 = (uint16_t*)(&((uint8_t*)&ip_src)[0]);
 	sum += *word16;
@@ -67,9 +69,9 @@ void udpv4_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip
 	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
 #endif
 
-	sum += htobe16((uint16_t)ip_proto);
+	sum += HTONB16((uint16_t)ip_proto);
 	//fprintf(stderr, "sum: 0x%08x\n", sum);
-	sum += htobe16(length);
+	sum += HTONB16(length);
 	//fprintf(stderr, "sum: 0x%08x\n", sum);
 
 
@@ -121,8 +123,8 @@ void udpv6_calc_checksum(void* hdr, uint128__t ip_src, uint128__t ip_dst, uint8_
 		sum += (((uint16_t)ip_dst.val[2*i]) << 0) + (((uint16_t)ip_dst.val[2*i+1]) << 8);
 	}
 
-	sum += htobe16(ip_proto);
-	sum += htobe16(length);
+	sum += HTONB16(ip_proto);
+	sum += HTONB16(length);
 
 	/*
 	* part -II- (TCP header + payload)

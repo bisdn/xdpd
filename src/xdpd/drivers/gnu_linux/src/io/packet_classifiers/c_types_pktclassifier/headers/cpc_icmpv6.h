@@ -6,6 +6,7 @@
 #define _CPC_ICMPV6_H_
 
 #include <rofl/datapath/pipeline/common/large_types.h>
+#include <rofl/datapath/pipeline/common/endianness.h>
 #include "cpc_ethernet.h"
 #include "../../../../util/likely.h"
 #include "../../../../util/compiler_assert.h"
@@ -167,8 +168,8 @@ void icmpv6_calc_checksum(void* hdr, uint128__t ip_src, uint128__t ip_dst, uint8
 		sum += (((uint16_t)ip_dst.val[2*i]) << 0) + (((uint16_t)ip_dst.val[2*i+1]) << 8);
 	}
 
-	sum += htobe16(ip_proto);
-	sum += htobe16(length);
+	sum += HTONB16(ip_proto);
+	sum += HTONB16(length);
 
 	/*
 	* part -II- (TCP header + payload)

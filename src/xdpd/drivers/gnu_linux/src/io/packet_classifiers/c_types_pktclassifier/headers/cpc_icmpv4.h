@@ -53,7 +53,7 @@ inline static
 void icmpv4_calc_checksum(void * hdr,uint16_t length){
 	int i;
 	//initialize();
-	((cpc_icmpv4_hdr_t *)hdr)->checksum = 0; //htobe16(0x0000);
+	((cpc_icmpv4_hdr_t *)hdr)->checksum = 0; //HTOBE16(0x0000);
 
 	// ICMPv4 header
 

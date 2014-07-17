@@ -5,6 +5,8 @@
 #ifndef _CPC_SCTP_H_
 #define _CPC_SCTP_H_
 
+#include <rofl/datapath/pipeline/common/endianness.h>
+
 #define CRC32C_POLY 0x1EDC6F41
 #define CRC32C(c,d) (c=(c>>8)^cpc_crc_c[(c^(d))&0xFF])
 
@@ -141,7 +143,7 @@ void sctp_calc_checksum(void* hdr, uint16_t length){
 	((cpc_sctp_hdr_t*)hdr)->checksum = 0x0;
 	uint32_t crc32 = generate_crc32c((uint8_t*)hdr, length);
 
-	((cpc_sctp_hdr_t*)hdr)->checksum = htobe32(crc32);
+	((cpc_sctp_hdr_t*)hdr)->checksum = HTONB32(crc32);
 }
 
 inline static

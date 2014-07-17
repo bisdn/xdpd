@@ -5,6 +5,8 @@
 #ifndef _CPC_TCP_H_
 #define _CPC_TCP_H_
 
+#include <rofl/datapath/pipeline/common/endianness.h>
+
 /**
 * @file cpc_tcp.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
@@ -66,7 +68,7 @@ uint16_t ietf_rfc1071_checksum_hbo(uint8_t* buf, size_t buflen)
 
    //fprintf(stderr, "complemented sum (hbo): 0x%08x\n", checksum);
 
-   checksum = htobe16(checksum);
+   checksum = HTONB16(checksum);
 
    //fprintf(stderr, "complemented sum (nbo): 0x%08x\n", checksum);
 
@@ -142,9 +144,9 @@ void tcpv4_calc_checksum(void* hdr, /*nbo*/uint32_t ip_src, /*nbo*/uint32_t ip_d
 	sum += *word16;
 	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
 
-	sum += htobe16((uint16_t)ip_proto);
+	sum += HTONB16((uint16_t)ip_proto);
 	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x (ip-proto)\n", ip_proto, sum);
-	sum += htobe16(length);
+	sum += HTONB16(length);
 	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x (length)\n", length, sum);
 
 	/*
@@ -196,8 +198,8 @@ void tcpv6_calc_checksum(void* hdr, uint128__t ip_src, uint128__t ip_dst, uint8_
 		sum += (((uint16_t)ip_dst.val[2*i]) << 0) + (((uint16_t)ip_dst.val[2*i+1]) << 8);
 	}
 
-	sum += htobe16((uint16_t)ip_proto);
-	sum += htobe16(length); 
+	sum += HTONB16((uint16_t)ip_proto);
+	sum += HTONB16(length); 
 
 	/*
 	* part -II- (TCP header + payload)

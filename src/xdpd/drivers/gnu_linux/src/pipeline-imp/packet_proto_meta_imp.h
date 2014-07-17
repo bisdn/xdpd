@@ -814,8 +814,6 @@ uint32_t* platform_packet_get_gtp_teid(datapacket_t * const pkt)
 {
 
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
-	TM_STAMP_STAGE(pkt, TM_S4);
-
 	if ((NULL == get_gtpu_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return NULL;
 	return get_gtpu_teid(get_gtpu_hdr( GET_CLAS_STATE_PTR(pkt) , 0));
 #else

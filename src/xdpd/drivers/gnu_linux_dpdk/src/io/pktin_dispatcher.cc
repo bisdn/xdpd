@@ -95,7 +95,7 @@ static void* process_packet_ins(void* param){
 		rv = hal_cmm_process_of1x_packet_in(sw->dpid, 
 						pkt_dpdk->pktin_table_id, 	
 						pkt_dpdk->pktin_reason, 	
-						pkt_dpdk->in_port, 
+						pkt_dpdk->clas_state.port_in, 
 						id, 	
 						get_buffer_dpdk(pkt_dpdk), 
 						pkt_dpdk->pktin_send_len, 

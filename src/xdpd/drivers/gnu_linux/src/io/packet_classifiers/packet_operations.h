@@ -18,12 +18,17 @@
 
 ROFL_BEGIN_DECLS
 
+/**
+* Push num_of_bytes 
+* @warning: the base and len of the classification state MUST be changed appropriately
+*/
 rofl_result_t pkt_push(datapacket_t* pkt, uint8_t* push_point, unsigned int offset, unsigned int num_of_bytes);
+
+/**
+* Pop num_of_bytes 
+* @warning: the base and len of the classification state MUST be changed appropriately
+*/
 rofl_result_t pkt_pop(datapacket_t* pkt, uint8_t* pop_point, unsigned int offset, unsigned int num_of_bytes);
-size_t get_pkt_buffer_length(datapacket_t* pkt);
-uint8_t *get_pkt_buffer(datapacket_t* pkt);
-uint32_t get_pkt_in_port(datapacket_t* pkt);
-uint32_t get_pkt_in_phy_port(datapacket_t* pkt);
 
 ROFL_END_DECLS
 

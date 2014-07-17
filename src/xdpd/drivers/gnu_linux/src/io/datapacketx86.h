@@ -58,27 +58,14 @@ public:
 
 	//Incomming packet information
 	of_switch_t* lsw;
-	uint32_t in_port;
-	uint32_t in_phy_port;
-	
+
 	//Output queue
 	uint32_t output_queue;
-
-	//Checksum flags
-	bool ipv4_recalc_checksum;
-	bool tcp_recalc_checksum;
-	bool udp_recalc_checksum;
-	bool sctp_recalc_checksum;
-	bool icmpv4_recalc_checksum;
-	bool icmpv6_recalc_checksum;
 
 	//Temporary store for pkt_in information
 	uint8_t pktin_table_id;
 	of_packet_in_reason_t pktin_reason;	
 	uint16_t pktin_send_len;
-
-	//Opaque pointer
-	void* extra;
 
 	//Time profiling
 	TM_PKT_STATE;
@@ -94,20 +81,20 @@ public: // methods
 	/*
 	* Return pointer to the buffer, regardless of where is right now (NIC or USER_SPACE). For memory on USER_SPACE returns pointer to the FIRST packet bytes.
 	*/
-	inline uint8_t* get_buffer(){ return (uint8_t*)buffer.iov_base; }
-	inline size_t get_buffer_length(){ return buffer.iov_len; }
+	inline uint8_t* get_buffer(){ return (uint8_t*)clas_state.base; }
+	inline size_t get_buffer_length(){ return clas_state.len; }
 	inline x86buffering_status_t get_buffering_status(){ return buffering_status; }
 
 	//Transfer buffer to user-space
 	rofl_result_t transfer_to_user_space(void);
 
 	//Header packet classification
-	struct classify_state* headers;
+	struct classifier_state clas_state;
 
 	//Other	
 	friend std::ostream& operator<<(std::ostream& os, datapacketx86& pack);
 	inline void dump(void) {
-		dump_pkt_classifier(headers); //headers->dump();
+		dump_pkt_classifier(&clas_state);
 	}
 
 	/*
@@ -124,11 +111,6 @@ private:
 	static const unsigned int PRE_GUARD_BYTES  = 256;
 	static const unsigned int FRAME_SIZE_BYTES = 9000;
 	static const unsigned int POST_GUARD_BYTES = 64;
-
-	/*
-	* Pointer to buffer, either on NIC or on USER_SPACE pointer. It ALWAYS points to the first byte of the packet.
-	*/
-	struct iovec buffer;
 
 	/*
 	 * real memory area
@@ -160,8 +142,8 @@ public:
 //			os << "buffer-id:" << (std::hex) << pkt.buffer_id << (std::dec) << " ";
 //			os << "internal-buffer-id:" << (std::hex) << pkt.internal_buffer_id << (std::dec) << " ";
 			os << "lsw:" << (int*)(pkt.lsw) << " ";
-			os << "in-port:" << pkt.in_port << " ";
-			os << "in-phy-port:" << pkt.in_phy_port << " ";
+			os << "in-port:" << pkt.clas_state.port_in << " ";
+			os << "in-phy-port:" << pkt.clas_state.phy_port_in << " ";
 			os << "output-queue:" << pkt.output_queue << " ";
 			os << "pktin-table-id:" << pkt.pktin_table_id << " ";
 			os << "pktin-reason:" << pkt.pktin_reason << " ";
@@ -183,8 +165,8 @@ inline void datapacketx86::init_internal_buffer_location_defaults(x86buffering_s
 			slot.iov_base = 0;
 			slot.iov_len = 0;
 
-			buffer.iov_base = buf;
-			buffer.iov_len = buflen;
+			clas_state.base = buf;
+			clas_state.len = buflen;
 			buffering_status = X86_DATAPACKET_BUFFERED_IN_NIC;
 			break;
 
@@ -195,8 +177,8 @@ inline void datapacketx86::init_internal_buffer_location_defaults(x86buffering_s
 			// not really necessary, but makes debugging a little bit easier
 			platform_memset(slot.iov_base, 0x00, slot.iov_len);
 #endif
-			buffer.iov_base = user_space_buffer + PRE_GUARD_BYTES;
-			buffer.iov_len = buflen; // set to requested length
+			clas_state.base = user_space_buffer + PRE_GUARD_BYTES;
+			clas_state.len = buflen; // set to requested length
 			buffering_status = X86_DATAPACKET_BUFFERED_IN_USER_SPACE;
 			break;
 
@@ -227,12 +209,12 @@ rofl_result_t datapacketx86::init(
 		return ROFL_FAILURE;
 	}
 
-	if( copy_packet_to_internal_buffer) {
+	if( copy_packet_to_internal_buffer ) {
 
 		init_internal_buffer_location_defaults(X86_DATAPACKET_BUFFERED_IN_USER_SPACE, NULL, buflen);
 
 		if(buf)
-			platform_memcpy(buffer.iov_base, buf, buflen);
+			platform_memcpy(clas_state.base, buf, buflen);
 	}else{
 		if(!buf)
 			return ROFL_FAILURE;
@@ -242,18 +224,13 @@ rofl_result_t datapacketx86::init(
 
 	//Fill in
 	this->lsw = sw;
-	this->in_port = in_port;
-	this->in_phy_port = in_phy_port;
-	//this->eth_type 		= 0;
-
 	this->output_queue = 0;
-
 	//Timestamp S1	
 	TM_STAMP_STAGE_DPX86(this, TM_S1);
 	
 	//Classify the packet
 	if(classify)
-		classify_packet(headers, get_buffer(), get_buffer_length(), in_port, 0);
+		classify_packet(&clas_state, get_buffer(), get_buffer_length(), in_port, 0);
 
 	return ROFL_SUCCESS;
 }
@@ -262,18 +239,11 @@ rofl_result_t datapacketx86::init(
 
 void datapacketx86::destroy(void){
 
-	reset_classifier(headers);
-
 	if (X86_DATAPACKET_BUFFERED_IN_USER_SPACE == get_buffering_status()){
 #ifndef NDEBUG
 		// not really necessary, but makes debugging a little bit easier
 		platform_memset(slot.iov_base, 0x00, slot.iov_len);
 #endif
-
-		slot.iov_base 	= 0;
-		slot.iov_len 	= 0;
-		buffer.iov_base = 0;
-		buffer.iov_len 	= 0;
 
 		buffering_status = X86_DATAPACKET_BUFFER_IS_EMPTY;
 	}

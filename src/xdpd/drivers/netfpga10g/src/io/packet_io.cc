@@ -53,7 +53,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 		sw->dpid,
 		pack->pktin_table_id,
 		pack->pktin_reason,
-		pack->in_port,
+		pack->clas_state.port_in,
 		storage_id,
 		pack->get_buffer(),
 		pack->pktin_send_len,

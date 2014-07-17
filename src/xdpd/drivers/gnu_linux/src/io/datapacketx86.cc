@@ -14,27 +14,16 @@ typedef struct classify_state pktclassifier;
 //Constructor
 datapacketx86::datapacketx86(datapacket_t*const pkt) :
 	lsw(0),
-	in_port(0),
-	in_phy_port(0),
-	output_queue(0),
-	ipv4_recalc_checksum(false),
-	tcp_recalc_checksum(false),
-	udp_recalc_checksum(false),
-	sctp_recalc_checksum(false),
-	icmpv4_recalc_checksum(false),
-	icmpv6_recalc_checksum(false),
 	pktin_table_id(0),
 	pktin_reason(0),
-	extra(NULL),
 	buffering_status(X86_DATAPACKET_BUFFER_IS_EMPTY){
 
-	headers = init_classifier(pkt);
 }
 
 
 
 datapacketx86::~datapacketx86(){
-	destroy_classifier(headers);
+
 }
 
 
@@ -51,18 +40,18 @@ rofl_result_t datapacketx86::transfer_to_user_space(){
 			// not really necessary, but makes debugging a little bit easier
 			platform_memset(slot.iov_base, 0x00, slot.iov_len);
 #endif
-			// safety check for buffer.iov_len <= FRAME_SIZE_BYTES was done in datapacketx86::init() already
-			platform_memcpy((uint8_t*)slot.iov_base + PRE_GUARD_BYTES, buffer.iov_base, buffer.iov_len);
+			// safety check for clas_state.len <= FRAME_SIZE_BYTES was done in datapacketx86::init() already
+			platform_memcpy((uint8_t*)slot.iov_base + PRE_GUARD_BYTES, clas_state.base, clas_state.len);
 
-			buffer.iov_base = (uint8_t*)slot.iov_base + PRE_GUARD_BYTES;
-			// buffer.iov_len stays as it is
+			clas_state.base = (uint8_t*)slot.iov_base + PRE_GUARD_BYTES;
+			// clas_state.len stays as it is
 			
 			// set buffering flag
 			buffering_status = X86_DATAPACKET_BUFFERED_IN_USER_SPACE;
 			
 			//Re-classify 
 			//TODO: use offsets instead of fixed pointers for frames to avoid re-classification here
-			classify_packet(headers, get_buffer(), get_buffer_length(), in_port, 0);
+			clas_state.base = get_buffer();
 			
 			//Copy done
 		} return ROFL_SUCCESS;
@@ -88,12 +77,12 @@ rofl_result_t datapacketx86::push(unsigned int offset, unsigned int num_of_bytes
 		transfer_to_user_space();
 	}
 	
-	if (offset > buffer.iov_len){
+	if (offset > clas_state.len){
 		return ROFL_FAILURE;
 	}
 
-	size_t free_space_head = (uint8_t*)buffer.iov_base - (uint8_t*)slot.iov_base;
-	size_t free_space_tail = slot.iov_len - (free_space_head + buffer.iov_len);
+	size_t free_space_head = (uint8_t*)clas_state.base - (uint8_t*)slot.iov_base;
+	size_t free_space_tail = slot.iov_len - (free_space_head + clas_state.len);
 
 	/*
 	 * this is the safe sanity check for both head and tail space
@@ -110,14 +99,14 @@ rofl_result_t datapacketx86::push(unsigned int offset, unsigned int num_of_bytes
 	}
 
 	// move header num_of_bytes backward
-	platform_memmove((uint8_t*)buffer.iov_base - num_of_bytes, buffer.iov_base, offset);
+	platform_memmove((uint8_t*)clas_state.base - num_of_bytes, clas_state.base, offset);
 #ifndef NDEBUG
 	// initialize new pushed memory area with 0x00
-	platform_memset((uint8_t*)buffer.iov_base - num_of_bytes + offset, 0x00, num_of_bytes);
+	platform_memset((uint8_t*)clas_state.base - num_of_bytes + offset, 0x00, num_of_bytes);
 #endif
 
-	buffer.iov_base = (uint8_t*)buffer.iov_base - num_of_bytes;
-	buffer.iov_len += num_of_bytes;
+	clas_state.base = (uint8_t*)clas_state.base - num_of_bytes;
+	clas_state.len += num_of_bytes;
 
 
 	return ROFL_SUCCESS;
@@ -136,25 +125,25 @@ rofl_result_t datapacketx86::pop(unsigned int offset, unsigned int num_of_bytes)
 	}
 
 	// sanity check: start of area to be deleted must not be before start of buffer
-	if (offset > buffer.iov_len){
+	if (offset > clas_state.len){
 		return ROFL_FAILURE;
 	}
 
 	// sanity check: end of area to be deleted must not be behind end of buffer
-	if ((offset + num_of_bytes) > buffer.iov_len){
+	if ((offset + num_of_bytes) > clas_state.len){
 		return ROFL_FAILURE;
 	}
 
 	// move first bytes backward
-	platform_memmove((uint8_t*)buffer.iov_base + num_of_bytes, buffer.iov_base, offset);
+	platform_memmove((uint8_t*)clas_state.base + num_of_bytes, clas_state.base, offset);
 
 #ifndef NDEBUG
 	// set now unused bytes to 0x00 for easier debugging
-	platform_memset(buffer.iov_base, 0x00, num_of_bytes);
+	platform_memset(clas_state.base, 0x00, num_of_bytes);
 #endif
 
-	buffer.iov_base = (uint8_t*)buffer.iov_base + num_of_bytes;
-	buffer.iov_len -= num_of_bytes;
+	clas_state.base = (uint8_t*)clas_state.base + num_of_bytes;
+	clas_state.len -= num_of_bytes;
 
 	// re-parse_ether() here? yes, we have to, but what about the costs?
 
@@ -171,16 +160,16 @@ rofl_result_t datapacketx86::push(uint8_t* push_point, unsigned int num_of_bytes
 		transfer_to_user_space();
 	}
 	
-	if (push_point < buffer.iov_base){
+	if (push_point < clas_state.base){
 		return ROFL_FAILURE;
 	}
 
-	if (((uint8_t*)push_point + num_of_bytes) > ((uint8_t*)buffer.iov_base + buffer.iov_len)){
+	if (((uint8_t*)push_point + num_of_bytes) > ((uint8_t*)clas_state.base + clas_state.len)){
 		return ROFL_FAILURE;
 	}
 
-	//size_t offset = ((uint8_t*)buffer.iov_base - push_point);
-	size_t offset = (push_point - (uint8_t*)buffer.iov_base);
+	//size_t offset = ((uint8_t*)clas_state.base - push_point);
+	size_t offset = (push_point - (uint8_t*)clas_state.base);
 
 	return push(offset, num_of_bytes);
 }
@@ -189,16 +178,16 @@ rofl_result_t datapacketx86::push(uint8_t* push_point, unsigned int num_of_bytes
 
 rofl_result_t datapacketx86::pop(uint8_t* pop_point, unsigned int num_of_bytes){
 
-	if (pop_point < buffer.iov_base){
+	if (pop_point < clas_state.base){
 		return ROFL_FAILURE;
 	}
 
-	if (((uint8_t*)pop_point + num_of_bytes) > ((uint8_t*)buffer.iov_base + buffer.iov_len)){
+	if (((uint8_t*)pop_point + num_of_bytes) > ((uint8_t*)clas_state.base + clas_state.len)){
 		return ROFL_FAILURE;
 	}
 
-	//size_t offset = ((uint8_t*)buffer.iov_base - pop_point);
-	size_t offset = ((uint8_t*)buffer.iov_base - pop_point);
+	//size_t offset = ((uint8_t*)clas_state.base - pop_point);
+	size_t offset = ((uint8_t*)clas_state.base - pop_point);
 
 	return pop(offset, num_of_bytes);
 }

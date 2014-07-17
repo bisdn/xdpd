@@ -26,6 +26,7 @@ size_t get_pkt_buffer_length(datapacket_t* pkt){
 uint8_t *get_pkt_buffer(datapacket_t* pkt){
        return ((xdpd::gnu_linux::datapacketx86*)pkt->platform_state)->get_buffer();
 }
+#if 0
 
 uint32_t get_pkt_in_port(datapacket_t* pkt){
        return ((xdpd::gnu_linux::datapacketx86*)pkt->platform_state)->in_port;
@@ -34,3 +35,4 @@ uint32_t get_pkt_in_port(datapacket_t* pkt){
 uint32_t get_pkt_in_phy_port(datapacket_t* pkt){
        return ((xdpd::gnu_linux::datapacketx86*)pkt->platform_state)->in_phy_port;
 }
+#endif

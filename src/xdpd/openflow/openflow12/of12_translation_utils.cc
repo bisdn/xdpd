@@ -531,11 +531,11 @@ of12_translation_utils::of12_map_flow_entry_actions(
 		of1x_action_group_t *apply_actions,
 		of1x_write_actions_t *write_actions)
 {
-	for (std::map<unsigned int, unsigned int>::const_iterator
+	for (std::map<rofl::cindex, unsigned int>::const_iterator
 			jt = actions.get_actions_index().begin();
 				jt != actions.get_actions_index().end(); ++jt)
 	{
-		const unsigned int& index	= jt->first;
+		const rofl::cindex& index	= jt->first;
 		const unsigned int& type	= jt->second;
 
 		of1x_packet_action_t *action = NULL;
@@ -1227,7 +1227,7 @@ void of12_translation_utils::of12_map_reverse_bucket_list(
 	for(of1x_bucket_t *bu_it=bucket_list->head;bu_it;bu_it=bu_it->next){
 		//cofbucket single_bucket;
 
-		unsigned int index = 0;
+		rofl::cindex index;
 		rofl::openflow::cofactions actions(rofl::openflow12::OFP_VERSION);
 
 		for (of1x_packet_action_t *action_it = bu_it->actions->head; action_it != NULL; action_it = action_it->next) {
@@ -1294,7 +1294,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_instruction_apply_actions(
 	switch (inst->type) {
 	case OF1X_IT_APPLY_ACTIONS: {
 		instruction = rofl::openflow::cofinstruction_apply_actions(rofl::openflow12::OFP_VERSION);
-		unsigned int index = 0;
+		rofl::cindex index;
 		for (of1x_packet_action_t *of1x_action = inst->apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
 				continue;
@@ -1335,7 +1335,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_instruction_write_actions(
 	switch (inst->type) {
 	case OF1X_IT_WRITE_ACTIONS: {
 		instruction = rofl::openflow::cofinstruction_write_actions(rofl::openflow12::OFP_VERSION);
-		unsigned int index = 0;
+		rofl::cindex index;
 		for (unsigned int i = 0; i < inst->write_actions->num_of_actions; i++) {
 			if (OF1X_AT_NO_ACTION == inst->write_actions->actions[i].type)
 				continue;
@@ -1407,7 +1407,7 @@ of12_translation_utils::of12_map_reverse_flow_entry_instruction_goto_table(
 void
 of12_translation_utils::of12_map_reverse_flow_entry_action(
 		of1x_packet_action_t* of1x_action,
-		unsigned int index,
+		const rofl::cindex& index,
 		rofl::openflow::cofactions& actions)
 {
 	switch (of1x_action->type) {

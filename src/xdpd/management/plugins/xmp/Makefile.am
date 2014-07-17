@@ -40,9 +40,12 @@ libxdpd_xmp_la_HEADERS = \
 
 libxdpd_xmp_client_ladir=$(includedir)/xdpd/xmp/client
 libxdpd_xmp_client_la_HEADERS = \
+	tools/cxmpobserver.h \
 	tools/cxmpclient.h
 
 libxdpd_xmp_client_la_SOURCES = \
+	tools/cxmpobserver.h \
+	tools/cxmpobserver.cc \
 	tools/cxmpclient.h \
 	tools/cxmpclient.cc
 

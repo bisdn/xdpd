@@ -14,7 +14,8 @@ cxmpclient::cxmpclient() :
 		dest(AF_INET, "127.0.0.1", 8444),
 		mem(NULL),
 		fragment(NULL),
-		msg_bytes_read(0)
+		msg_bytes_read(0),
+		observer(NULL)
 {
 	socket = rofl::csocket::csocket_factory(rofl::csocket::SOCKET_TYPE_PLAIN, this);
 
@@ -41,6 +42,7 @@ cxmpclient::handle_connected(rofl::csocket& socket)
 {
 	rofl::logging::debug << __PRETTY_FUNCTION__ << std::endl;
 	assert(this->socket == &socket);
+	assert(mem);
 
 	socket.send(mem, dest);
 	register_timer(TIMER_XMPCLNT_EXIT, 1);
@@ -188,9 +190,18 @@ cxmpclient::handle_reply(cxmpmsg& msg)
 {
 	rofl::logging::info << "[xdpd][plugin][xmp] rcvd message:" << std::endl << msg;
 
-
+	if (NULL != observer) {
+		observer->notify(msg);
+	}
 }
 
+void
+cxmpclient::register_observer(cxmpobserver *observer)
+{
+	assert(observer);
+	if (NULL != this->observer)
+		this->observer = observer;
+}
 
 void
 cxmpclient::port_list()

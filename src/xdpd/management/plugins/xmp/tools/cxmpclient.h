@@ -20,6 +20,7 @@ extern "C" {
 #include "rofl/common/cmemory.h"
 #include "rofl/common/csocket.h"
 #include "../cxmpmsg.h"
+#include "cxmpobserver.h"
 
 namespace xdpd {
 namespace mgmt {
@@ -35,6 +36,7 @@ class cxmpclient :
 	rofl::cmemory*		mem;
 	rofl::cmemory*		fragment;
 	unsigned int		msg_bytes_read;
+	cxmpobserver *observer;
 
 
 	enum cxmpclient_timer_t {
@@ -92,6 +94,9 @@ public:
 
 	void
 	handle_reply(cxmpmsg& msg);
+
+	void
+	register_observer(cxmpobserver *observer);
 
 protected:
 

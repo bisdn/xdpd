@@ -57,7 +57,7 @@ How to run it
 Copy the example.cfg: 
 
 	sh# cd build/src/xdpd  
-	sh# cp src/xdpd/management/plugins/config/example.cfg .  
+	sh# cp ../../../src/xdpd/management/plugins/config/example.cfg .  
 
 Now edit the configuration. Make sure ports attached to the Logical Switch Instance (LSI) exist in the system.
 

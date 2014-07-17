@@ -118,11 +118,6 @@ void pop_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_t
 	classify_packet(clas_state, get_pkt_buffer(pkt), get_pkt_buffer_length(pkt),get_pkt_in_port(pkt), get_pkt_in_phy_port(pkt));
 }
 
-void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
-	//TODO
-	return;
-}
-
 void* push_pbb(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
 	void *ether_header, *inner_ether_header;
 
@@ -330,7 +325,269 @@ void* push_pppoe(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether
 }
 
 void* push_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
+	void* ether_header;
+	cpc_gtphu_t* gtp_header = (cpc_gtphu_t*)0;
+	cpc_udp_hdr_t* udp_header = (cpc_udp_hdr_t*)0;
+	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)get_ipv4_hdr(clas_state, 0);
+	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)get_ipv6_hdr(clas_state, 0);
+	uint8_t ip_default_ttl = 64;
+	size_t payloadlen = 0;
+
+	/* sanity check and get IPv4/IPv6 payload length */
+	if (ipv4_header)
+		payloadlen = get_pkt_len(pkt, clas_state, ipv4_header, 0);
+	else
+	if (ipv6_header)
+		payloadlen = get_pkt_len(pkt, clas_state, ipv6_header, 0);
+	else
+		return 0;
+
+	/*
+	 * 1. push GTP header
+	 */
+	pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU);
+	if(unlikely(new == PT_INVALID))
+		return NULL;
+
+	//Recover the ether(0)
+	ether_header = get_ether_hdr(clas_state, 0);
+
+	/*
+	 * this invalidates ether(0), as it shifts ether(0) to the left
+	 */
+	if (pkt_push(pkt, (void*)(ether_header + sizeof(cpc_eth_hdr_t)),0 , sizeof(cpc_gtphu_t)) == ROFL_FAILURE){
+		// TODO: log error
+		return 0;
+	}
+
+	//Set new type and base(move left)
+	clas_state->type = new;
+	clas_state->base -= sizeof(cpc_gtphu_t);
+	clas_state->len += sizeof(cpc_gtphu_t);
+
+	ether_header=get_ether_hdr(clas_state, 0);
+	set_ether_type(ether_header, ether_type);
+
+	//Set default values
+	gtp_header = get_gtpu_hdr(clas_state, 0);
+	set_gtpu_version(gtp_header, 0);
+	set_gtpu_pt_flag(gtp_header, 0);
+	set_gtpu_e_flag(gtp_header, 0);
+	set_gtpu_s_flag(gtp_header, 0);
+	set_gtpu_pn_flag(gtp_header, 0);
+	set_gtpu_msg_type(gtp_header, 0);
+	set_gtpu_length(gtp_header, HTONB16(payloadlen)); // with GTP options, without 8byte GTP default header
+	set_gtpu_teid(gtp_header, 0);
+	set_gtpu_seq_no(gtp_header, 0);
+	set_gtpu_npdu_no(gtp_header, 0);
+	set_gtpu_ext_type(gtp_header, 0);
+
+	/*
+	 * 2. push UDP header
+	 */
+	new = PT_PUSH_PROTO(clas_state, UDP);
+	if(unlikely(new == PT_INVALID))
+		return NULL;
+
+	//Recover the ether(0)
+	ether_header = get_ether_hdr(clas_state, 0);
+
+	/*
+	 * this invalidates ether(0), as it shifts ether(0) to the left
+	 */
+	if (pkt_push(pkt, (void*)(ether_header + sizeof(cpc_eth_hdr_t)),0 , sizeof(cpc_udp_hdr_t)) == ROFL_FAILURE){
+		// TODO: log error
+		return 0;
+	}
+
+	//Set new type and base(move left)
+	clas_state->type = new;
+	clas_state->base -= sizeof(cpc_udp_hdr_t);
+	clas_state->len += sizeof(cpc_udp_hdr_t);
+
+	ether_header=get_ether_hdr(clas_state, 0);
+	set_ether_type(ether_header, ether_type);
+
+	//Set default values
+	udp_header = get_udp_hdr(clas_state, 0);
+	set_udp_sport(udp_header, 0);
+	set_udp_dport(udp_header, UDP_DST_PORT_GTPU);
+	set_udp_length(udp_header, HTONB16(sizeof(cpc_gtphu_t) + payloadlen));
+
+
+	/*
+	 * 3. push IPv4/IPv6 header
+	 */
+	switch (ether_type) {
+	case ETH_TYPE_IPV4: {
+		new = PT_PUSH_PROTO(clas_state, IPV4_noptions_0);
+		if(unlikely(new == PT_INVALID))
+			return NULL;
+
+		//Recover the ether(0)
+		ether_header = get_ether_hdr(clas_state, 0);
+
+		/*
+		 * this invalidates ether(0), as it shifts ether(0) to the left
+		 */
+		if (pkt_push(pkt, (void*)(ether_header + sizeof(cpc_eth_hdr_t)),0 , sizeof(cpc_ipv4_hdr_t)) == ROFL_FAILURE){
+			// TODO: log error
+			return 0;
+		}
+
+		//Set new type and base(move left)
+		clas_state->type = new;
+		clas_state->base -= sizeof(cpc_ipv4_hdr_t);
+		clas_state->len += sizeof(cpc_ipv4_hdr_t);
+
+		ether_header=get_ether_hdr(clas_state, 0);
+		set_ether_type(ether_header, ether_type);
+
+		//Set default values: here, no options in the IPv4 header
+		ipv4_header = get_ipv4_hdr(clas_state, 0);
+		set_ipv4_src(ipv4_header, 0);
+		set_ipv4_dst(ipv4_header, 0);
+		set_ipv4_dscp(ipv4_header, 0);
+		set_ipv4_ecn(ipv4_header, 0);
+		set_ipv4_ihl(ipv4_header, 5);
+		set_ipv4_length(ipv4_header, get_pkt_len(pkt, clas_state, udp_header, 0));
+		set_ipv4_proto(ipv4_header, UDP_IP_PROTO);
+		set_ipv4_ttl(ipv4_header, ip_default_ttl);
+		set_ipv4_version(ipv4_header, IPV4_IP_PROTO);
+
+	} return ipv4_header;
+	case ETH_TYPE_IPV6: {
+		new = PT_PUSH_PROTO(clas_state, IPV6);
+		if(unlikely(new == PT_INVALID))
+			return NULL;
+
+		//Recover the ether(0)
+		ether_header = get_ether_hdr(clas_state, 0);
+
+		/*
+		 * this invalidates ether(0), as it shifts ether(0) to the left
+		 */
+		if (pkt_push(pkt, (void*)(ether_header + sizeof(cpc_eth_hdr_t)),0 , sizeof(cpc_ipv6_hdr_t)) == ROFL_FAILURE){
+			// TODO: log error
+			return 0;
+		}
+
+		//Set new type and base(move left)
+		clas_state->type = new;
+		clas_state->base -= sizeof(cpc_ipv6_hdr_t);
+		clas_state->len += sizeof(cpc_ipv6_hdr_t);
+
+		ether_header=get_ether_hdr(clas_state, 0);
+		set_ether_type(ether_header, ether_type);
+
+		//Set default values
+		ipv6_header = get_ipv6_hdr(clas_state, 0);
+		//set_ipv6_src(ipv6_header, 0);
+		//set_ipv6_dst(ipv6_header, 0);
+		set_ipv6_dscp(ipv6_header, 0);
+		set_ipv6_ecn(ipv6_header, 0);
+		set_ipv6_flow_label(ipv6_header, 0);
+		set_ipv6_hop_limit(ipv6_header, ip_default_ttl);
+		set_ipv6_next_header(ipv6_header, UDP_IP_PROTO);
+		set_ipv6_payload_length(ipv6_header, get_pkt_len(pkt, clas_state, udp_header, 0));
+		set_ipv6_traffic_class(ipv6_header, 0);
+		set_ipv6_version(ipv6_header, IPV6_IP_PROTO);
+
+	} return ipv6_header;
+	}
+
 	return NULL;
+}
+
+void pop_gtp(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
+
+	cpc_eth_hdr_t* ether_header = (cpc_eth_hdr_t*)0;
+	cpc_gtphu_t* gtp_header = (cpc_gtphu_t*)0;
+	uint16_t* current_ether_type = (uint16_t*)0;
+
+	ether_header = get_ether_hdr(clas_state, 0);
+	gtp_header = get_gtpu_hdr(clas_state, 0);
+
+	if (!gtp_header) {
+		// TODO: log error
+		return;
+	}
+
+	/*
+	 * 1. pop IPv4/IPv6 header
+	 */
+	current_ether_type = get_ether_type(ether_header);
+	if (!current_ether_type) {
+		// TODO: log error
+		return;
+	}
+	switch (*current_ether_type) {
+	case ETH_TYPE_IPV4: {
+		pkt_types_t new = PT_POP_PROTO(clas_state, IPV4_noptions_0); // TODO: options
+		if(unlikely(new == PT_INVALID))
+			return;
+
+		//Take header out from packet
+		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv4_hdr_t));
+
+		//Set new type and base(move right)
+		clas_state->type = new;
+		clas_state->base += sizeof(cpc_ipv4_hdr_t);
+		clas_state->len -= sizeof(cpc_ipv4_hdr_t);
+
+	} break;
+	case ETH_TYPE_IPV6: {
+		pkt_types_t new = PT_POP_PROTO(clas_state, IPV6); // TODO: options
+		if(unlikely(new == PT_INVALID))
+			return;
+
+		//Take header out from packet
+		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv6_hdr_t));
+
+		//Set new type and base(move right)
+		clas_state->type = new;
+		clas_state->base += sizeof(cpc_ipv6_hdr_t);
+		clas_state->len -= sizeof(cpc_ipv6_hdr_t);
+
+	} break;
+	}
+
+	/*
+	 * 2. pop UDP header
+	 */
+	pkt_types_t new = PT_POP_PROTO(clas_state, UDP);
+	if(unlikely(new == PT_INVALID))
+		return;
+
+	//Take header out from packet
+	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_udp_hdr_t));
+
+	//Set new type and base(move right)
+	clas_state->type = new;
+	clas_state->base += sizeof(cpc_udp_hdr_t);
+	clas_state->len -= sizeof(cpc_udp_hdr_t);
+
+	/*
+	 * 3. pop GTP header
+	 */
+	new = PT_POP_PROTO(clas_state, GTPU);
+	if(unlikely(new == PT_INVALID))
+		return;
+
+	//Take header out from packet
+	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_gtphu_t));
+
+	//Set new type and base(move right)
+	clas_state->type = new;
+	clas_state->base += sizeof(cpc_gtphu_t);
+	clas_state->len -= sizeof(cpc_gtphu_t);
+
+
+	//Set ether_type of new frame
+	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
+
+	//reclassify
+	parse_ethernet(clas_state, clas_state->base, clas_state->len);
 }
 
 void dump_pkt_classifier(classify_state_t* clas_state){

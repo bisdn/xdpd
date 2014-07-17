@@ -122,7 +122,7 @@ public:
 	/**
 	*
 	*/
-	static void of13_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, unsigned int index, rofl::openflow::cofactions& actions);
+	static void of13_map_reverse_flow_entry_action(of1x_packet_action_t* of1x_action, const rofl::cindex& index, rofl::openflow::cofactions& actions);
 
 	/**
 	*

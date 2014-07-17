@@ -1263,14 +1263,24 @@ void platform_packet_set_wlan_address_3(datapacket_t* pkt, uint64_t address_3)
 
 
 STATIC_PACKET_INLINE__
-void platform_packet_pop_gtp(datapacket_t* pkt)
+void platform_packet_pop_gtp(datapacket_t* pkt, uint16_t ether_type)
 {
-	//TODO: implement
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if (NULL == pack) return;
+	pop_gtp(pkt, pack->headers, ether_type);
 }
 STATIC_PACKET_INLINE__
-void platform_packet_push_gtp(datapacket_t* pkt)
+void platform_packet_push_gtp(datapacket_t* pkt, uint16_t ether_type)
 {
-	//TODO: implement
+	datapacketx86 *pack = (datapacketx86*)pkt->platform_state;
+	if (NULL == pack) return;
+	push_gtp(pkt, pack->headers, ether_type);
+	switch (ether_type) {
+	case ETH_TYPE_IPV4:{
+		pack->ipv4_recalc_checksum = true;
+	}break;
+	}
+	pack->udp_recalc_checksum = true;
 }
 
 

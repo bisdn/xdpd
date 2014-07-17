@@ -12,6 +12,17 @@ v0.5.0
 
 [+][CMM] Added per LSI Packet In Rate Limiter(PIRL) functionality and config plugin support.
 
+
+v0.4.3
+
+[B][CMM] OF1.2/OF1.3 added mask value for ARP_SPA 
+[B][CMM] OF1.2/OF1.3 implemented WRITE_METADATA instruction parsing
+
+[B][gnu-linux] pktclassifier: fixed bug handling unknown ICMPv6 options
+
+[B][gnu-linux-dpdk] Fixing invalid release of buffers that were not in the bufferpool (core datapacket_t)
+[B][gnu-linux-dpdk] Preventing double RX/TX queue setup #24 
+
 v0.4.2 
 
 [B] Fixing deadlock in switch_manager #16

@@ -312,7 +312,8 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 			
 		//discard the original packet always (has been replicated)
 		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
-		xdpd::gnu_linux::bufferpool::release_buffer(pkt);
+		if( ((datapacket_dpdk_t*)pkt->platform_state)->packet_in_bufferpool )
+			xdpd::gnu_linux::bufferpool::release_buffer(pkt);
 	}else if(output_port == in_port_meta_port){
 		
 		//In port

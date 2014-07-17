@@ -17,33 +17,7 @@ typedef struct cpc_tcp_hdr {
 	uint16_t dport;
 	uint32_t seqno;
 	uint32_t ackno;
-#ifdef __BIG_ENDIAN
-	uint16_t offset   : 4; // =5 => 5 32bit words (= 20 bytes), >5 => options appended
-	uint16_t reserved : 3;
-	uint16_t ns       : 1;
-	/* byte */
-	uint16_t cwr      : 1;
-	uint16_t ece	  : 1;
-	uint16_t urg	  : 1;
-	uint16_t ack	  : 1;
-	uint16_t psh	  : 1;
-	uint16_t rst	  : 1;
-	uint16_t syn	  : 1;
-	uint16_t fin	  : 1;
-#elif __LITTLE_ENDIAN
-	uint16_t cwr      : 1;
-	uint16_t ece	  : 1;
-	uint16_t urg	  : 1;
-	uint16_t ack	  : 1;
-	uint16_t psh	  : 1;
-	uint16_t rst	  : 1;
-	uint16_t syn	  : 1;
-	uint16_t fin	  : 1;
-	/* byte */
-	uint16_t offset   : 4; // =5 => 5 32bit words (= 20 bytes), >5 => options appended
-	uint16_t reserved : 3;
-	uint16_t ns       : 1;
-#endif
+	uint16_t flags; // flags, offset, reserved, ... 
 	uint16_t wnd;
 	uint16_t checksum;
 	uint16_t urgent;

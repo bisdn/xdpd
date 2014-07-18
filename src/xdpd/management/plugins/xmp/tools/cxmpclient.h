@@ -30,6 +30,10 @@ class cxmpclient :
 	public rofl::ciosrv,
 	public rofl::csocket_owner
 {
+	enum cxmpclient_event_t {
+		WANT_SEND = 1,
+	};
+
 	rofl::csocket*		socket;
 	rofl::cparams		socket_params;
 	rofl::csockaddr		dest;
@@ -106,6 +110,9 @@ protected:
 protected:
 
 	virtual void
+	handle_event(rofl::cevent const& ev);
+
+	virtual void
 	handle_listen(rofl::csocket& socket, int newsd) {};
 
 	virtual void
@@ -124,13 +131,16 @@ protected:
 	handle_connect_failed(rofl::csocket& socket);
 
 	virtual void
-	handle_write(rofl::csocket& socket) {};
+	handle_write(rofl::csocket& socket);
 
 	virtual void
 	handle_read(rofl::csocket& socket);
 
 	virtual void
 	handle_closed(rofl::csocket& socket);
+
+	void
+	handle_send();
 };
 
 }; // end of namespace protocol

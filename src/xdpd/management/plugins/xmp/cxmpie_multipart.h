@@ -44,6 +44,11 @@ public:
 	virtual size_t
 	length() const;
 
+	const std::deque<cxmpie*> &
+	get_ies() const {
+		return ies;
+	};
+
 	virtual void
 	pack(uint8_t *buf, size_t buflen);
 

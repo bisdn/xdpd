@@ -28,13 +28,13 @@ cxmpclient::cxmpclient() :
 	socket_params.set_param(rofl::csocket::PARAM_KEY_PROTOCOL).set_string("tcp");
 
 	socket->connect(socket_params);
-
 }
-
 
 cxmpclient::~cxmpclient()
 {
-
+	cancel_all_events();
+	cancel_all_timers();
+	socket->close();
 }
 
 void
@@ -42,10 +42,10 @@ cxmpclient::handle_connected(rofl::csocket& socket)
 {
 	rofl::logging::debug << __PRETTY_FUNCTION__ << std::endl;
 	assert(this->socket == &socket);
-	assert(mem);
 
-	socket.send(mem, dest);
-	register_timer(TIMER_XMPCLNT_EXIT, 1);
+	if (mem) {
+		notify(WANT_SEND);
+	}
 }
 
 void
@@ -164,9 +164,27 @@ cxmpclient::handle_read(rofl::csocket& socket)
 }
 
 void
+cxmpclient::handle_write(rofl::csocket& socket)
+{
+	rofl::logging::debug << __PRETTY_FUNCTION__ << std::endl;
+}
+
+void
 cxmpclient::handle_closed(rofl::csocket& socket)
 {
 	rofl::logging::debug << __PRETTY_FUNCTION__ << std::endl;
+}
+
+void
+cxmpclient::handle_event(rofl::cevent const& ev)
+{
+	switch (ev.cmd) {
+		case WANT_SEND:
+			handle_send();
+			break;
+		default:
+			break;
+	}
 }
 
 void
@@ -186,11 +204,20 @@ cxmpclient::handle_timeout(
 }
 
 void
+cxmpclient::handle_send()
+{
+	assert(mem);
+	// todo delay send?
+	socket->send(mem);
+}
+
+void
 cxmpclient::handle_reply(cxmpmsg& msg)
 {
 	rofl::logging::info << "[xdpd][plugin][xmp] rcvd message:" << std::endl << msg;
 
 	if (NULL != observer) {
+		rofl::logging::info << "[xdpd][plugin][xmp] call observer:" << std::endl;
 		observer->notify(msg);
 	}
 }
@@ -198,10 +225,12 @@ cxmpclient::handle_reply(cxmpmsg& msg)
 void
 cxmpclient::register_observer(cxmpobserver *observer)
 {
+	rofl::logging::info << "[xdpd][plugin][xmp] register observer:" << observer << std::endl;
 	assert(observer);
-	if (NULL != this->observer)
-		this->observer = observer;
+	this->observer = observer;
 }
+
+/* commands */
 
 void
 cxmpclient::port_list()
@@ -212,6 +241,10 @@ cxmpclient::port_list()
 	std::cerr << "[xmpclient] sending Port-List request:" << std::endl << msg;
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
 }
 
 void
@@ -224,6 +257,10 @@ cxmpclient::port_list(uint64_t dpid)
 	std::cerr << "[xmpclient] sending Port-Attach request:" << std::endl << msg;
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
 }
 
 void
@@ -240,6 +277,10 @@ cxmpclient::port_attach(
 
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
 }
 
 
@@ -257,6 +298,10 @@ cxmpclient::port_detach(
 
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
 }
 
 
@@ -273,6 +318,10 @@ cxmpclient::port_enable(
 
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
 }
 
 
@@ -289,4 +338,8 @@ cxmpclient::port_disable(
 
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
 }

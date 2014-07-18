@@ -464,7 +464,7 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portname(snapshot.name));
 	}
 
-	rofl::logging::debug << "[xdpd][plugin][xmp] length: " << reply.length();
+	rofl::logging::debug << "[xdpd][plugin][xmp] length: " << reply.length() << std::endl;
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 

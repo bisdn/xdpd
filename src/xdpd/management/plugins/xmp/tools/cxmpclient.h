@@ -46,6 +46,7 @@ class cxmpclient :
 	unsigned int		msg_bytes_read;
 	cxmpobserver *observer;
 
+	bool auto_exit;
 	const int exit_timeout;
 
 public:
@@ -102,6 +103,18 @@ public:
 
 	void
 	register_observer(cxmpobserver *observer);
+
+	bool
+	is_auto_exit() const
+	{
+		return auto_exit;
+	}
+
+	void
+	set_auto_exit(bool autoExit)
+	{
+		auto_exit = autoExit;
+	}
 
 protected:
 

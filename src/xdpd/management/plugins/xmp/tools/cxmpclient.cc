@@ -16,6 +16,7 @@ cxmpclient::cxmpclient() :
 		fragment(NULL),
 		msg_bytes_read(0),
 		observer(NULL),
+		auto_exit(true),
 		exit_timeout(2)
 {
 	socket = rofl::csocket::csocket_factory(rofl::csocket::SOCKET_TYPE_PLAIN, this);
@@ -48,7 +49,9 @@ cxmpclient::handle_connected(rofl::csocket& socket)
 		notify(WANT_SEND);
 	}
 
-	register_timer(TIMER_XMPCLNT_EXIT, exit_timeout);
+	if (auto_exit) {
+		register_timer(TIMER_XMPCLNT_EXIT, exit_timeout);
+	}
 }
 
 void

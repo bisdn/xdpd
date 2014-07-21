@@ -34,6 +34,10 @@ class cxmpclient :
 		WANT_SEND = 1,
 	};
 
+	enum cxmpclient_timer_t {
+		TIMER_XMPCLNT_EXIT 		= 1,
+	};
+
 	rofl::csocket*		socket;
 	rofl::cparams		socket_params;
 	rofl::csockaddr		dest;
@@ -42,10 +46,7 @@ class cxmpclient :
 	unsigned int		msg_bytes_read;
 	cxmpobserver *observer;
 
-
-	enum cxmpclient_timer_t {
-		TIMER_XMPCLNT_EXIT 		= 1,
-	};
+	const int exit_timeout;
 
 public:
 

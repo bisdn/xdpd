@@ -15,7 +15,8 @@ cxmpclient::cxmpclient() :
 		mem(NULL),
 		fragment(NULL),
 		msg_bytes_read(0),
-		observer(NULL)
+		observer(NULL),
+		exit_timeout(2)
 {
 	socket = rofl::csocket::csocket_factory(rofl::csocket::SOCKET_TYPE_PLAIN, this);
 
@@ -46,18 +47,22 @@ cxmpclient::handle_connected(rofl::csocket& socket)
 	if (mem) {
 		notify(WANT_SEND);
 	}
+
+	register_timer(TIMER_XMPCLNT_EXIT, exit_timeout);
 }
 
 void
 cxmpclient::handle_connect_refused(rofl::csocket& socket)
 {
 	rofl::logging::debug << __PRETTY_FUNCTION__ << std::endl;
+	exit(-1);
 }
 
 void
 cxmpclient::handle_connect_failed(rofl::csocket& socket)
 {
 	rofl::logging::debug << __PRETTY_FUNCTION__ << std::endl;
+	exit(-1);
 }
 
 void
@@ -109,6 +114,7 @@ cxmpclient::handle_read(rofl::csocket& socket)
 				if (msg_len == msg_bytes_read) {
 					rofl::cmemory *mem = fragment;
 					fragment = NULL; // just in case, we get an exception from parse_message()
+
 					msg_bytes_read = 0;
 
 					cxmpmsg msg(mem->somem(), msg_len);
@@ -128,6 +134,9 @@ cxmpclient::handle_read(rofl::csocket& socket)
 					}
 						;
 					}
+
+
+					delete mem;
 
 					return;
 				}
@@ -195,7 +204,7 @@ cxmpclient::handle_timeout(
 
 	switch (opaque) {
 	case TIMER_XMPCLNT_EXIT: {
-		// exit(0);
+		exit(0);
 	} break;
 	default: {
 

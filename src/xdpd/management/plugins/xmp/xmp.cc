@@ -182,6 +182,8 @@ xmp::handle_read(
 						;
 					}
 
+					delete mem;
+
 					return;
 				}
 			}
@@ -197,7 +199,8 @@ xmp::handle_read(
 		rofl::logging::warn << "[xdpd][plugin][xmp] closing socket: " << e << std::endl;
 
 		if (fragment) {
-			delete fragment; fragment = (rofl::cmemory*)0;
+			delete fragment;
+			fragment = NULL;
 		}
 
 		// close socket, as it seems, we are out of sync
@@ -208,7 +211,8 @@ xmp::handle_read(
 		rofl::logging::warn << "[xdpd][plugin][xmp] dropping invalid message: " << e << std::endl;
 
 		if (fragment) {
-			delete fragment; fragment = (rofl::cmemory*)0;
+			delete fragment;
+			fragment = NULL;
 		}
 
 		// close socket, as it seems, we are out of sync

@@ -56,7 +56,6 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 	//Read a burst
 	burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
 
-	//XXX: statistics
 
 	//ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 
@@ -68,15 +67,21 @@ process_port_rx(switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkt
 	//Process them 
 	for(i=0;i<burst_len;++i){
 		mbuf = pkts_burst[i];		
-	
+
+#ifdef DEBUG	
 		if(unlikely(sw == NULL)){
 			rte_pktmbuf_free(mbuf);
 			continue;
 		}
+#endif
 
 		//set mbuf pointer in the state so that it can be recovered afterwards when going
 		//out from the pipeline
 		pkt_state->mbuf = mbuf;
+
+		//Increment port RX statistics
+		port->stats.rx_packets++;
+		port->stats.rx_bytes += mbuf->pkt.pkt_len;
 
 #if DEBUG
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?

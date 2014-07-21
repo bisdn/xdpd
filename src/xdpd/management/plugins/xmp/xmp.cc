@@ -449,23 +449,26 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 	std::list<std::string> all_ports = port_manager::list_available_port_names();
 
 	for (std::list<std::string>::const_iterator iter = all_ports.begin(); iter != all_ports.end(); ++iter) {
-		rofl::logging::debug << "[xdpd][plugin][xmp] check port " << *iter << std::endl;
-		port_snapshot snapshot;
-		try {
-			port_manager::get_port_info((*iter), snapshot);
-		} catch(ePmInvalidPort &e) {
-			// skip if port was removed in this short time
-			rofl::logging::error << "[xdpd][plugin][xmp] failed to retrieve snapshot of port" << *iter << std::endl;
-			continue;
+
+		if (not query_all_dp) {
+			rofl::logging::debug << "[xdpd][plugin][xmp] check port " << *iter << std::endl;
+			port_snapshot snapshot;
+			try {
+				port_manager::get_port_info((*iter), snapshot);
+			} catch(ePmInvalidPort &e) {
+				// skip if port was removed in this short time
+				rofl::logging::error << "[xdpd][plugin][xmp] failed to retrieve snapshot of port" << *iter << std::endl;
+				continue;
+			}
+
+			// only ports attached to dpid?
+			if (not query_all_dp && snapshot.attached_sw_dpid != dpid) {
+				rofl::logging::debug << "[xdpd][plugin][xmp] skip port " << *iter << std::endl;
+				continue;
+			}
 		}
 
-		// only ports attached to dpid?
-		if (not query_all_dp && snapshot.attached_sw_dpid != dpid) {
-			rofl::logging::debug << "[xdpd][plugin][xmp] skip port " << *iter << std::endl;
-			continue;
-		}
-
-		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portname(snapshot.name));
+		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portname(*iter));
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] length: " << reply.length() << std::endl;

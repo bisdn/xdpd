@@ -266,7 +266,22 @@ cxmpclient::port_list(uint64_t dpid)
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_LIST);
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
-	std::cerr << "[xmpclient] sending Port-Attach request:" << std::endl << msg;
+	std::cerr << "[xmpclient] sending Port-List request:" << std::endl << msg;
+	mem = new rofl::cmemory(msg.length());
+	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
+}
+
+void
+cxmpclient::port_info()
+{
+	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
+	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_INFO);
+
+	std::cerr << "[xmpclient] sending Port-Info request:" << std::endl << msg;
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
 

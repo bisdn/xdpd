@@ -70,6 +70,9 @@ public:
 	void
 	port_list(uint64_t dpid);
 
+	void
+	port_info();
+
 	/**
 	 *
 	 */

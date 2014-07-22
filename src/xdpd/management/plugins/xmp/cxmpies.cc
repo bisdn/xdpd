@@ -128,6 +128,11 @@ cxmpies::map_and_insert(
 	} break;
 	case XMPIET_DPID: {
 		xmpmap[XMPIET_DPID] = new cxmpie_dpid(xmpie);
+
+	} break;
+	case XMPIET_PORTINFO: {
+		xmpmap[XMPIET_PORTINFO] = new cxmpie_portinfo(xmpie);
+
 	} break;
 	case XMPIET_MULTIPART: {
 		xmpmap[XMPIET_MULTIPART] = new cxmpie_multipart(xmpie);
@@ -235,6 +240,50 @@ bool
 cxmpies::has_ie_portname() const
 {
 	return (xmpmap.find(XMPIET_PORTNAME) != xmpmap.end());
+}
+
+cxmpie_portinfo&
+cxmpies::add_ie_portinfo()
+{
+	if (xmpmap.find(XMPIET_PORTINFO) != xmpmap.end()) {
+		delete xmpmap[XMPIET_PORTINFO];
+	}
+	xmpmap[XMPIET_PORTINFO] = new cxmpie_portinfo();
+	return *(dynamic_cast<cxmpie_portinfo*>(xmpmap[XMPIET_PORTINFO]));
+}
+
+cxmpie_portinfo&
+cxmpies::set_ie_portinfo()
+{
+	if (xmpmap.find(XMPIET_PORTINFO) == xmpmap.end()) {
+		xmpmap[XMPIET_PORTINFO] = new cxmpie_portinfo();
+	}
+	return *(dynamic_cast<cxmpie_portinfo*>(xmpmap[XMPIET_PORTINFO]));
+}
+
+cxmpie_portinfo const&
+cxmpies::get_ie_portinfo() const
+{
+	if (xmpmap.find(XMPIET_PORTINFO) == xmpmap.end()) {
+		throw eXmpIEsNotFound();
+	}
+	return *(dynamic_cast<cxmpie_portinfo const*>(xmpmap.at(XMPIET_PORTINFO)));
+}
+
+void
+cxmpies::drop_ie_portinfo()
+{
+	if (xmpmap.find(XMPIET_PORTINFO) == xmpmap.end()) {
+		return;
+	}
+	delete xmpmap[XMPIET_PORTINFO];
+	xmpmap.erase(XMPIET_PORTINFO);
+}
+
+bool
+cxmpies::has_ie_portinfo() const
+{
+	return (xmpmap.find(XMPIET_PORTINFO) != xmpmap.end());
 }
 
 

@@ -115,6 +115,9 @@ private:
 
 	void
 	handle_port_list(rofl::csocket& socket, cxmpmsg& msg);
+
+	void
+	handle_port_info(rofl::csocket& socket, cxmpmsg& msg);
 };
 
 }; // end of namespace protocol

@@ -963,29 +963,31 @@ void platform_packet_copy_ttl_in(datapacket_t* pkt)
 	void* mpls_hdr_inner = get_mpls_hdr( GET_CLAS_STATE_PTR(pkt) , 1);
 	if(mpls_hdr){
 		if(mpls_hdr_inner){
-
-
 			set_mpls_ttl(mpls_hdr_inner, *get_mpls_ttl(mpls_hdr));
+		}else{
+			/**
+			* This is one of the indefinitions of OF. At this stage
+			* with the label still in, there is no way to know what is there
+			* within the MPLS payload (note that pop flowmods can well
+			* be in other tables, for instance)
+			*
+			* The strategy is simply to guess whether the frame is IPv4/IPv6
+			* by checking IP version
+			*
+			* WARNING: It is up to the control plane to not screw packets
+			*/
+			
+			//Just guess
+			void* ip_hdr = ((uint8_t*)mpls_hdr)+sizeof(cpc_mpls_hdr_t);
+			uint8_t ip_version = (*get_ipv4_version(ip_hdr)) >> 4;	
+
+			//Set 
+			if(ip_version == 4)
+				set_ipv4_ttl(ip_hdr, *get_mpls_ttl(mpls_hdr));
+			else if(ip_version == 6)
+				set_ipv6_hop_limit(ip_hdr, *get_mpls_ttl(mpls_hdr));
 
 		}
-
-		/**
-		* So this is theoretically what the spec says, but there is NO way for the classification to go beyond MPLs without implicitly assume IPv4/IPv6 frames... 
-		*/
-
-		#if 0
-		else{
-
-			void* ipv4_hdr = get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0);
-			void* ipv6_hdr = get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0);
-		
-			if(ipv4_hdr)
-				set_ipv4_ttl(ipv4_hdr, *get_mpls_ttl(mpls_hdr));
-			if(ipv6_hdr)
-				set_ipv6_hop_limit(ipv6_hdr, *get_mpls_ttl(mpls_hdr));
-
-		}
-		#endif
 	}	
 #else
 	return;
@@ -1078,23 +1080,29 @@ void platform_packet_copy_ttl_out(datapacket_t* pkt)
 	if(mpls_hdr){
 		if(mpls_hdr_inner){
 			set_mpls_ttl(mpls_hdr, *get_mpls_ttl(mpls_hdr_inner));
-		}
-		/**
-		* So this is theoretically what the spec says, but there is NO way for the classification to go beyond MPLs without implicitly assume IPv4/IPv6 frames... 
-		*/
-		
-		#if 0
-		else{
-			void* ipv4_hdr = get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0);
-			void* ipv6_hdr = get_ipv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0);
-		
-			if(ipv4_hdr)
-				set_mpls_ttl(mpls_hdr, *get_ipv4_ttl(ipv4_hdr));
-			if(ipv6_hdr)
-				set_mpls_ttl(mpls_hdr, *get_ipv6_hop_limit(ipv6_hdr));
+		}else{
+			/**
+			* This is one of the indefinitions of OF. At this stage
+			* with the label still in, there is no way to know what is there
+			* within the MPLS payload (note that pop flowmods can well
+			* be in other tables, for instance)
+			*
+			* The strategy is simply to guess whether the frame is IPv4/IPv6
+			* by checking IP version
+			*
+			* WARNING: It is up to the control plane to not screw packets
+			*/
+			
+			//Just guess
+			void* ip_hdr = ((uint8_t*)mpls_hdr)+sizeof(cpc_mpls_hdr_t);
+			uint8_t ip_version = (*get_ipv4_version(ip_hdr)) >> 4;	
 
+			//Set 
+			if(ip_version == 4)
+				set_mpls_ttl(mpls_hdr, *get_ipv4_ttl(ip_hdr));
+			else if(ip_version == 6)
+				set_mpls_ttl(mpls_hdr, *get_ipv6_hop_limit(ip_hdr));
 		}
-		#endif	
 	}	
 #else
 	return;

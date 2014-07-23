@@ -433,8 +433,7 @@ xmp::handle_port_disable(
 void
 xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 {
-	rofl::logging::info<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__ << std::endl;
-	rofl::logging::debug << "class socket: " << socket << std::endl;
+	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
 
 	bool query_all_dp = true;
 	uint64_t dpid = 0;
@@ -454,7 +453,7 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 	for (std::list<std::string>::const_iterator iter = all_ports.begin(); iter != all_ports.end(); ++iter) {
 
 		if (not query_all_dp) {
-			rofl::logging::debug << "[xdpd][plugin][xmp] check port " << *iter << std::endl;
+			rofl::logging::trace << "[xdpd][plugin][xmp] check port " << *iter << std::endl;
 			port_snapshot snapshot;
 			try {
 				port_manager::get_port_info((*iter), snapshot);
@@ -474,8 +473,6 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portname(*iter));
 	}
 
-	rofl::logging::debug << "[xdpd][plugin][xmp] length: " << reply.length() << std::endl;
-
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
 	cmemory *mem = new cmemory(reply.length());
@@ -487,17 +484,7 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 void
 xmp::handle_port_info(csocket& socket, cxmpmsg& msg)
 {
-	rofl::logging::info<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__ << std::endl;
-	rofl::logging::debug << "class socket: " << socket << std::endl;
-
-//	bool query_all_dp = true;
-//	uint64_t dpid = 0;
-
-//	if (msg.get_xmpies().has_ie_dpid()) {
-//		query_all_dp = false;
-//		dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
-//		rofl::logging::debug << "[xdpd][plugin][xmp] only ports of dpid=" << dpid << std::endl;
-//	}
+	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
 
 	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
 	reply.set_xid(msg.get_xid());
@@ -506,7 +493,7 @@ xmp::handle_port_info(csocket& socket, cxmpmsg& msg)
 	std::list<std::string> all_ports = port_manager::list_available_port_names();
 
 	for (std::list<std::string>::const_iterator iter = all_ports.begin(); iter != all_ports.end(); ++iter) {
-		rofl::logging::debug << "[xdpd][plugin][xmp] check port " << *iter << std::endl;
+		rofl::logging::trace << "[xdpd][plugin][xmp] check port " << *iter << std::endl;
 		port_snapshot snapshot;
 		try {
 			port_manager::get_port_info((*iter), snapshot);
@@ -516,16 +503,9 @@ xmp::handle_port_info(csocket& socket, cxmpmsg& msg)
 			continue;
 		}
 
-//		// only ports attached to dpid?
-//		if (not query_all_dp && snapshot.attached_sw_dpid != dpid) {
-//			rofl::logging::debug << "[xdpd][plugin][xmp] skip port " << *iter << std::endl;
-//			continue;
-//		}
 
 		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portinfo(snapshot));
 	}
-
-	rofl::logging::debug << "[xdpd][plugin][xmp] length: " << reply.length() << std::endl;
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 

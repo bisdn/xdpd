@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 #include <rofl/datapath/hal/cmm.h>
 #include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>

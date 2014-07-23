@@ -21,7 +21,9 @@ extern "C" {
 #include "cxmpie.h"
 #include "cxmpie_command.h"
 #include "cxmpie_portname.h"
+#include "cxmpie_portinfo.h"
 #include "cxmpie_dpid.h"
+#include "cxmpie_multipart.h"
 #include "xdpd_mgmt_protocol.h"
 #include "rofl/common/croflexception.h"
 
@@ -158,6 +160,25 @@ public:
 	has_ie_portname() const;
 
 	/*
+	 * information element: portinfo
+	 */
+
+	cxmpie_portinfo&
+	add_ie_portinfo();
+
+	cxmpie_portinfo&
+	set_ie_portinfo();
+
+	cxmpie_portinfo const&
+	get_ie_portinfo() const;
+
+	void
+	drop_ie_portinfo();
+
+	bool
+	has_ie_portinfo() const;
+
+	/*
 	 * information element: dpid
 	 */
 
@@ -175,6 +196,24 @@ public:
 
 	bool
 	has_ie_dpid() const;
+
+	/*
+	 * information element: multipart
+	 */
+	cxmpie_multipart&
+	add_ie_multipart();
+
+	cxmpie_multipart&
+	set_ie_multipart();
+
+	cxmpie_multipart const&
+	get_ie_multipart() const;
+
+	void
+	drop_ie_multipart();
+
+	bool
+	has_ie_multipart() const;
 
 private:
 
@@ -203,8 +242,14 @@ public:
 			case XMPIET_PORTNAME: {
 				os << "  " << dynamic_cast<cxmpie_portname const&>( *(it->second) );
 			} break;
+			case XMPIET_PORTINFO: {
+				os << "  " << dynamic_cast<cxmpie_portinfo const&>( *(it->second) );
+			} break;
 			case XMPIET_DPID: {
 				os << "  " << dynamic_cast<cxmpie_dpid const&>( *(it->second) );
+			} break;
+			case XMPIET_MULTIPART: {
+				os << "  " << dynamic_cast<cxmpie_multipart const&>( *(it->second) );
 			} break;
 			default: {
 				os << "  " << *(it->second);

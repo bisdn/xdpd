@@ -162,9 +162,10 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, 
 	
 	ROFL_INFO("[xdpd][port_manager] Port %s attached to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
 
+
 	//Recover current snapshot
 	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(port_name.c_str());
-
+	
 	//Notify switch
 	switch_manager::__notify_port_attached(port_snapshot);
 		

@@ -250,9 +250,13 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	for(i=0;i<sw->max_ports;i++){
 
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
-			if(sw->logical_ports[i].port->type != PORT_TYPE_VIRTUAL)	
-				//Desechdule only non-virtual ports
+			if(sw->logical_ports[i].port->type == PORT_TYPE_PEX_DPDK_SECONDARY || sw->logical_ports[i].port->type == PORT_TYPE_PEX_DPDK_KNI)
+				//Deschedule a PEX port
+				processing_deschedule_pex_port(sw->logical_ports[i].port);
+			else if(sw->logical_ports[i].port->type != PORT_TYPE_VIRTUAL)	
+				//Deschedule a physical port
 				processing_deschedule_port(sw->logical_ports[i].port);
+			//Do not deschedule virtual ports
 		}
 	}	
 
@@ -359,7 +363,6 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 			return HAL_FAILURE;
 		}
 	}else{
-
 		if(physical_switch_attach_port_to_logical_switch_at_port_num(port,lsw,*of_port_num) == ROFL_FAILURE){
 			assert(0);
 			return HAL_FAILURE;
@@ -371,7 +374,15 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 		* Virtual link
 		*/
 		//Do nothing
-	}else{
+	}else if (port->type == PORT_TYPE_PEX_DPDK_SECONDARY || port->type == PORT_TYPE_PEX_DPDK_KNI) {
+		/*
+		*	Port connected to a PEX (the type of the PEX does not matter
+		*/
+		if(processing_schedule_pex_port(port) != ROFL_SUCCESS) {
+			assert(0);
+			return HAL_FAILURE;
+		}
+	}else {
 		/*
 		*  PHYSICAL
 		*/
@@ -466,7 +477,7 @@ hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name){
 	of_switch_t* lsw;
 	switch_port_t *port, *port_pair;
-	switch_port_snapshot_t *port_snapshot=NULL, *port_pair_snapshot=NULL;
+	switch_port_snapshot_t *port_snapshot=NULL, *port_pair_snapshot=NULL;	
 	
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
 	if(!lsw)
@@ -521,7 +532,17 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 			goto DRIVER_DETACH_ERROR;
 			
 		}
-	}else{
+	}
+	else if (port->type == PORT_TYPE_PEX_DPDK_SECONDARY || port->type == PORT_TYPE_PEX_DPDK_KNI) {
+        /*
+        *       Port connected to a PEX
+        */
+        if(processing_deschedule_pex_port(port) != ROFL_SUCCESS) {
+                assert(0);
+                return HAL_FAILURE;
+        }
+	}
+	else{
 		/*
 		*  PHYSICAL
 		*/

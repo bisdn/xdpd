@@ -5,6 +5,10 @@
 #ifndef _PORT_STATE_H_
 #define _PORT_STATE_H_
 
+#include <rte_ring.h>
+#include <semaphore.h>
+#include <inttypes.h>
+
 #include "../config.h"
 
 struct dpdk_port_state{
@@ -18,6 +22,88 @@ struct dpdk_port_state{
 	unsigned int port_id;
 }__rte_cache_aligned;
 
-typedef struct dpdk_port_state dpdk_port_state_t;  
+typedef struct dpdk_port_state dpdk_port_state_t;
+
+/**
+* @author Ivano Cerrato<ivano.cerrato (at) polito.it>
+*
+* @brief Represent the state of a DPDK SECONDARY PEX port
+*/
+struct pex_port_state_dpdk
+{
+	/**
+	* @brief queue used to send packets to a PEX
+	*/
+	struct rte_ring *to_pex_queue;
+	
+	/**
+	* @brief queue used to receive packets from a PEX
+	*/
+	struct rte_ring *to_xdpd_queue;
+	
+	/**
+	* @brief POSIX named semaphore used to implement batching towards the PEX
+	*/
+	sem_t *semaphore;
+	
+	/**
+	* @brief Count the number of packets inserted after the last sem_post
+	*	(this counter does not consider the sem_post called for the expiration
+	*	of the timeout)
+	*/
+	uint32_t counter_from_last_flush; 
+	
+	/**
+	* @brief Core attachement information
+	*/
+	bool scheduled;
+	unsigned int core_id;
+	unsigned int core_port_slot;
+	
+	/**
+	* @brief Identifier of the PEX port
+	*/
+	unsigned int pex_id;
+	
+}__rte_cache_aligned;
+
+typedef struct pex_port_state_dpdk pex_port_state_dpdk_t;  
+
+
+
+/**
+* @author Ivano Cerrato<ivano.cerrato (at) polito.it>
+*
+* @brief Represent the state of a DPDK KNI PEX port
+*/
+struct pex_port_state_kni
+{
+	/**
+	*	@brief: KNI context
+	*/
+	struct rte_kni *kni;
+	
+	/**
+	*	@brief: flag to used to avoid a double
+	*		notification to the CMM when the
+	*		port is created
+	*/
+	bool just_created;
+	
+	/**
+	* @brief Core attachement information
+	*/
+	bool scheduled;
+	unsigned int core_id;
+	unsigned int core_port_slot;
+	
+	/**
+	* @brief Identifier of the PEX port
+	*/
+	unsigned int pex_id;
+	
+}__rte_cache_aligned;
+
+typedef struct pex_port_state_kni pex_port_state_kni_t;  
 
 #endif //_PORT_STATE_H_

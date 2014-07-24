@@ -7,8 +7,10 @@
 int 
 main(int argc, char** argv)
 {
+#ifdef DEBUG
 	rofl::logging::init();
 	rofl::logging::set_debug_level(rofl::logging::DBG);
+#endif
 
 	xdpd::mgmt::protocol::cxmpclient xmpclient;
 

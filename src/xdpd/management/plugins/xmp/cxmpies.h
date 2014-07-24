@@ -198,6 +198,25 @@ public:
 	has_ie_dpid() const;
 
 	/*
+	 * information element: lsiname
+	 */
+
+	cxmpie_name&
+	add_ie_lsiname();
+
+	cxmpie_name&
+	set_ie_lsiname();
+
+	cxmpie_name const&
+	get_ie_lsiname() const;
+
+	void
+	drop_ie_lsiname();
+
+	bool
+	has_ie_lsiname() const;
+
+	/*
 	 * information element: multipart
 	 */
 	cxmpie_multipart&

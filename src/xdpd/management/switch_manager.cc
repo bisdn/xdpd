@@ -237,7 +237,7 @@ bool switch_manager::exists_by_name(std::string& name){
 	return found; 
 }
 
-uint64_t switch_manager::get_switch_dpid(std::string& name){
+uint64_t switch_manager::get_switch_dpid(std::string const& name){
 
 	uint64_t dpid=0x0ULL;
 	bool found=false;

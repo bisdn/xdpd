@@ -134,7 +134,7 @@ public:
 	/**
 	 * Return the dpid of the switch 
 	 */
-	static uint64_t get_switch_dpid(std::string& name);
+	static uint64_t get_switch_dpid(std::string const& name);
 
 	/**
 	* Get switch information (snapshot)

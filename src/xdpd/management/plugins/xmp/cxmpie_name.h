@@ -1,12 +1,12 @@
 /*
- * cxmpie_portname.h
+ * cxmpie_name.h
  *
  *  Created on: 12.01.2014
  *      Author: andreas
  */
 
-#ifndef CXMPIE_PORTNAME_H_
-#define CXMPIE_PORTNAME_H_
+#ifndef CXMPIE_NAME_H_
+#define CXMPIE_NAME_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,54 +23,53 @@ namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class cxmpie_portname :
+class cxmpie_name :
 		public cxmpie
 {
 	union {
 		uint8_t						*xmpu_generic;
-		struct xmp_ie_portname_t	*xmpu_portname;
+		struct xmp_ie_name_t		*xmpu_name;
 	} xmpie_xmpu;
 
 #define xmpie_generic	xmpie_xmpu.xmpu_generic
-#define xmpie_portname	xmpie_xmpu.xmpu_portname
+#define xmpie_name		xmpie_xmpu.xmpu_name
 
 public:
 
 	/**
 	 *
 	 */
-	cxmpie_portname(
-			std::string const& portname = std::string(""));
+	cxmpie_name(enum xmpie_type_t type,	std::string const& portname = std::string(""));
 
 	/**
 	 *
 	 */
-	cxmpie_portname(
+	cxmpie_name(
 			uint8_t *buf, size_t buflen);
 
 	/**
 	 *
 	 */
-	cxmpie_portname(
-			cxmpie_portname const& elem);
+	cxmpie_name(
+			cxmpie_name const& elem);
 
 	/**
 	 *
 	 */
-	cxmpie_portname&
+	cxmpie_name&
 	operator= (
-			cxmpie_portname const& elem);
+			cxmpie_name const& elem);
 
 	/**
 	 *
 	 */
-	cxmpie_portname(
+	cxmpie_name(
 			cxmpie const& elem);
 
 	/**
 	 *
 	 */
-	cxmpie_portname&
+	cxmpie_name&
 	operator= (
 			cxmpie const& elem);
 
@@ -78,7 +77,7 @@ public:
 	 *
 	 */
 	virtual
-	~cxmpie_portname();
+	~cxmpie_name();
 
 public:
 
@@ -115,21 +114,21 @@ public:
 	 *
 	 */
 	std::string
-	get_portname() const;
+	get_name() const;
 
 	/**
 	 *
 	 */
 	void
-	set_portname(std::string const& portname);
+	set_name(std::string const& name);
 
 public:
 
 	friend std::ostream&
-	operator<< (std::ostream& os, cxmpie_portname const& elem) {
+	operator<< (std::ostream& os, cxmpie_name const& elem) {
 		os << dynamic_cast<cxmpie const&>( elem );
 		os << rofl::indent(2) << "<cxmpie-portname ";
-			os << "portname:" << elem.get_portname() << " ";
+			os << "portname:" << elem.get_name() << " ";
 		os << ">" << std::endl;
 		return os;
 	};
@@ -139,4 +138,4 @@ public:
 }; // end of namespace mgmt
 }; // end of namespace xdpd
 
-#endif /* CXMPIE_PORTNAME_H_ */
+#endif /* CXMPIE_NAME_H_ */

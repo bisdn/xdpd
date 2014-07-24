@@ -68,7 +68,7 @@ cxmpie_portinfo::operator=(cxmpie const& elem)
 	if (this == &elem) return *this;
 
 	if (XMPIET_PORTINFO != elem.get_type()) throw eXmpIeInval();
-	if (elem.length() < sizeof(struct xmp_ie_portname_t)) throw eXmpIeInval();
+	if (elem.length() < sizeof(struct xmp_ie_name_t)) throw eXmpIeInval();
 
 	cxmpie::operator=(elem);
 
@@ -125,16 +125,16 @@ std::string
 cxmpie_portinfo::get_portname() const
 {
 	return std::string(xmpie_portinfo->portname,
-			strnlen(xmpie_portinfo->portname, XMPIE_PORTNAME_SIZE));
+			strnlen(xmpie_portinfo->portname, XMPIE_NAME_SIZE));
 }
 
 void
 cxmpie_portinfo::set_portname(const std::string& portname)
 {
 	size_t len =
-			(portname.length() < XMPIE_PORTNAME_SIZE) ?
-					portname.length() : XMPIE_PORTNAME_SIZE;
-	memset(xmpie_portinfo->portname, 0, XMPIE_PORTNAME_SIZE);
+			(portname.length() < XMPIE_NAME_SIZE) ?
+					portname.length() : XMPIE_NAME_SIZE;
+	memset(xmpie_portinfo->portname, 0, XMPIE_NAME_SIZE);
 	memcpy(xmpie_portinfo->portname, portname.c_str(), len);
 }
 

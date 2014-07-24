@@ -20,7 +20,7 @@ extern "C" {
 
 #include "cxmpie.h"
 #include "cxmpie_command.h"
-#include "cxmpie_portname.h"
+#include "cxmpie_name.h"
 #include "cxmpie_portinfo.h"
 #include "cxmpie_dpid.h"
 #include "cxmpie_multipart.h"
@@ -144,13 +144,13 @@ public:
 	 * information element: portname
 	 */
 
-	cxmpie_portname&
+	cxmpie_name&
 	add_ie_portname();
 
-	cxmpie_portname&
+	cxmpie_name&
 	set_ie_portname();
 
-	cxmpie_portname const&
+	cxmpie_name const&
 	get_ie_portname() const;
 
 	void
@@ -240,7 +240,7 @@ public:
 				os << "  " << dynamic_cast<cxmpie_command const&>( *(it->second) );
 			} break;
 			case XMPIET_PORTNAME: {
-				os << "  " << dynamic_cast<cxmpie_portname const&>( *(it->second) );
+				os << "  " << dynamic_cast<cxmpie_name const&>( *(it->second) );
 			} break;
 			case XMPIET_PORTINFO: {
 				os << "  " << dynamic_cast<cxmpie_portinfo const&>( *(it->second) );

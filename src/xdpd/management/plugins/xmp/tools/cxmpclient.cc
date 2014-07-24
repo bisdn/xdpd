@@ -297,7 +297,7 @@ cxmpclient::port_attach(
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_ATTACH);
-	msg.get_xmpies().add_ie_portname().set_portname(portname);
+	msg.get_xmpies().add_ie_portname().set_name(portname);
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
 	std::cerr << "[xmpclient] sending Port-Attach request:" << std::endl << msg;
@@ -318,7 +318,7 @@ cxmpclient::port_detach(
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_DETACH);
-	msg.get_xmpies().add_ie_portname().set_portname(portname);
+	msg.get_xmpies().add_ie_portname().set_name(portname);
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
 	std::cerr << "[xmpclient] sending Port-Detach request:" << std::endl << msg;
@@ -339,7 +339,7 @@ cxmpclient::port_enable(
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_ENABLE);
-	msg.get_xmpies().add_ie_portname().set_portname(portname);
+	msg.get_xmpies().add_ie_portname().set_name(portname);
 
 	std::cerr << "[xmpclient] sending Port-Enable request:" << std::endl << msg;
 
@@ -359,10 +359,25 @@ cxmpclient::port_disable(
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_DISABLE);
-	msg.get_xmpies().add_ie_portname().set_portname(portname);
+	msg.get_xmpies().add_ie_portname().set_name(portname);
 
 	std::cerr << "[xmpclient] sending Port-Disable request:" << std::endl << msg;
 
+	mem = new rofl::cmemory(msg.length());
+	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
+}
+
+void
+cxmpclient::lsi_list()
+{
+	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
+	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_LIST);
+
+	std::cerr << "[xmpclient] sending Lsi-List request:" << std::endl << msg;
 	mem = new rofl::cmemory(msg.length());
 	msg.pack(mem->somem(), mem->memlen());
 

@@ -73,6 +73,9 @@ public:
 	void
 	port_info();
 
+	void
+	lsi_list();
+
 	/**
 	 *
 	 */

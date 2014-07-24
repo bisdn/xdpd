@@ -35,6 +35,7 @@ enum xmpie_command_t {
 	XMPIEMCT_PORT_DISABLE		= 4,
 	XMPIEMCT_PORT_LIST			= 5,
 	XMPIEMCT_PORT_INFO			= 6,
+	XMPIEMCT_LSI_LIST			= 7,
 };
 
 struct xmp_header_t {
@@ -65,6 +66,7 @@ enum xmpie_type_t {
 	XMPIET_DPID			= 3,
 	XMPIET_MULTIPART	= 4,
 	XMPIET_PORTINFO		= 5,
+	XMPIET_LSINAME		= 6,
 };
 
 struct xmp_ie_header_t {
@@ -85,19 +87,27 @@ struct xmp_ie_dpid_t {
 	uint64_t	dpid;
 } __attribute__((packed));
 
-#define XMPIE_PORTNAME_SIZE 32
+#define XMPIE_NAME_SIZE 32
 
-struct xmp_ie_portname_t {
+struct xmp_ie_name_t {
 	uint16_t	type;
 	uint16_t	len;	// including header and payload
-	char		portname[XMPIE_PORTNAME_SIZE];
+	char		name[XMPIE_NAME_SIZE];
+} __attribute__((packed));
+
+#define XMPIE_LSINAME_SIZE 32
+
+struct xmp_ie_lsiname_t {
+	uint16_t	type;
+	uint16_t	len;	// including header and payload
+	char		lsiname[XMPIE_LSINAME_SIZE];
 } __attribute__((packed));
 
 struct xmp_ie_portinfo_t {
 	uint16_t	type;
 	uint16_t	len;	// including header and payload
 	uint32_t	of_port_num;
-	char		portname[XMPIE_PORTNAME_SIZE];
+	char		portname[XMPIE_NAME_SIZE];
 
 	/* see port_features_t in rofl-core/src/rofl/datapath/pipeline/switch_port.h */
 	uint32_t	feat_curr;			/* Current features. */

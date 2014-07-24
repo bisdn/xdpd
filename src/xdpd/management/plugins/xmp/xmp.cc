@@ -250,6 +250,9 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 	case XMPIEMCT_PORT_INFO: {
 		handle_port_info(socket, msg);
 	} break;
+	case XMPIEMCT_LSI_LIST: {
+		handle_lsi_list(socket, msg);
+	} break;
 	case XMPIEMCT_NONE:
 	default: {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp request with unknown command:"
@@ -278,7 +281,7 @@ xmp::handle_port_attach(
 			return;
 		}
 
-		portname = msg.get_xmpies().get_ie_portname().get_portname();
+		portname = msg.get_xmpies().get_ie_portname().get_name();
 		dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
 
 		unsigned int of_port_num = 0;
@@ -329,7 +332,7 @@ xmp::handle_port_detach(
 			return;
 		}
 
-		portname = msg.get_xmpies().get_ie_portname().get_portname();
+		portname = msg.get_xmpies().get_ie_portname().get_name();
 		dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
 
 		port_manager::detach_port_from_switch(dpid, portname);
@@ -376,7 +379,7 @@ xmp::handle_port_enable(
 			return;
 		}
 
-		portname = msg.get_xmpies().get_ie_portname().get_portname();
+		portname = msg.get_xmpies().get_ie_portname().get_name();
 
 		port_manager::bring_up(portname);
 		rofl::logging::error << "[xdpd][plugin][xmp] brought port:" << portname <<" up"<< std::endl;
@@ -409,7 +412,7 @@ xmp::handle_port_disable(
 			return;
 		}
 
-		portname = msg.get_xmpies().get_ie_portname().get_portname();
+		portname = msg.get_xmpies().get_ie_portname().get_name();
 
 		port_manager::bring_down(portname);
 		rofl::logging::error << "[xdpd][plugin][xmp] brought port:" << portname <<" down"<< std::endl;
@@ -470,7 +473,7 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 			}
 		}
 
-		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portname(*iter));
+		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_name(XMPIET_PORTNAME, *iter));
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
@@ -505,6 +508,30 @@ xmp::handle_port_info(csocket& socket, cxmpmsg& msg)
 
 
 		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portinfo(snapshot));
+	}
+
+	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
+
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
+}
+
+void
+xmp::handle_lsi_list(rofl::csocket& socket, cxmpmsg& msg)
+{
+	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
+
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
+	// get all ports
+	std::list<std::string> all_lsi = switch_manager::list_sw_names();
+
+	for (std::list<std::string>::const_iterator iter = all_lsi.begin(); iter != all_lsi.end(); ++iter) {
+		rofl::logging::trace << "[xdpd][plugin][xmp] got lsi " << *iter << std::endl;
+		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_name(XMPIET_LSINAME, *iter));
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;

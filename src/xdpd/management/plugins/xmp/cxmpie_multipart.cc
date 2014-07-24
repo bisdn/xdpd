@@ -9,7 +9,7 @@
 
 #include "cxmpie_command.h"
 #include "cxmpie_dpid.h"
-#include "cxmpie_portname.h"
+#include "cxmpie_name.h"
 #include "cxmpie_portinfo.h"
 #include "xdpd_mgmt_protocol.h"
 
@@ -151,8 +151,9 @@ cxmpie_multipart::bakery(cxmpie *ref)
 	case XMPIET_COMMAND:
 		return new cxmpie_command(*ref);
 		break;
+	case XMPIET_LSINAME:
 	case XMPIET_PORTNAME:
-		return new cxmpie_portname(*ref);
+		return new cxmpie_name(*ref);
 		break;
 	case XMPIET_DPID:
 		return new cxmpie_dpid(*ref);

@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <rofl/common/cmemory.h>
 #include <rofl/datapath/pipeline/common/large_types.h>
-#include "io/packet_classifiers/c_pktclassifier/headers/cpc_tcp.h"
+#include "io/packet_classifiers/c_types_pktclassifier/headers/cpc_tcp.h"
 
 
 using namespace std;

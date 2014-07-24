@@ -253,6 +253,9 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 	case XMPIEMCT_LSI_LIST: {
 		handle_lsi_list(socket, msg);
 	} break;
+	case XMPIEMCT_LSI_INFO: {
+		handle_lsi_info(socket, msg);
+	} break;
 	case XMPIEMCT_NONE:
 	default: {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp request with unknown command:"
@@ -532,6 +535,40 @@ xmp::handle_lsi_list(rofl::csocket& socket, cxmpmsg& msg)
 	for (std::list<std::string>::const_iterator iter = all_lsi.begin(); iter != all_lsi.end(); ++iter) {
 		rofl::logging::trace << "[xdpd][plugin][xmp] got lsi " << *iter << std::endl;
 		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_name(XMPIET_LSINAME, *iter));
+	}
+
+	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
+
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
+}
+
+void
+xmp::handle_lsi_info(rofl::csocket& socket, cxmpmsg& msg)
+{
+	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
+
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
+	// get all ports
+	std::list<std::string> all_lsi = switch_manager::list_sw_names();
+
+	for (std::list<std::string>::const_iterator iter = all_lsi.begin(); iter != all_lsi.end(); ++iter) {
+
+		rofl::logging::trace << "[xdpd][plugin][xmp] got lsi " << *iter << std::endl;
+
+		xdpd::openflow_switch_snapshot snapshot;
+		try {
+			switch_manager::get_switch_info(switch_manager::get_switch_dpid((*iter)), snapshot);
+		} catch (eOfSmDoesNotExist &e) {
+			// skip if lsi was removed in this short time
+			rofl::logging::error << "[xdpd][plugin][xmp] failed to retrieve snapshot of lsi " << *iter << std::endl;
+			continue;
+		}
+		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_lsiinfo(snapshot));
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;

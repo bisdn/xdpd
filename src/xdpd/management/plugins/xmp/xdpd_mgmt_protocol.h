@@ -36,6 +36,7 @@ enum xmpie_command_t {
 	XMPIEMCT_PORT_LIST			= 5,
 	XMPIEMCT_PORT_INFO			= 6,
 	XMPIEMCT_LSI_LIST			= 7,
+	XMPIEMCT_LSI_INFO			= 8,
 };
 
 struct xmp_header_t {
@@ -67,6 +68,7 @@ enum xmpie_type_t {
 	XMPIET_MULTIPART	= 4,
 	XMPIET_PORTINFO		= 5,
 	XMPIET_LSINAME		= 6,
+	XMPIET_LSIINFO		= 7,
 };
 
 struct xmp_ie_header_t {
@@ -110,6 +112,18 @@ struct xmp_ie_portinfo_t {
 	uint64_t	max_speed;			/* Max port bitrate in kbps */
 
 	uint32_t	state;				/* see port_state_t in rofl-core/src/rofl/datapath/pipeline/switch_port.h */
+} __attribute__((packed));
+
+struct xmp_ie_lsiinfo_t {
+	uint16_t	type;
+	uint16_t	len;	// including header and payload
+	char		lsiname[XMPIE_NAME_SIZE];
+
+	/* see enum of1x_capabilities in rofl-core/src/rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h */
+	uint32_t	capabilities;		/* Current features. */
+	uint32_t	num_of_buffers;
+	uint32_t	max_ports;
+	uint8_t		max_tables;
 } __attribute__((packed));
 
 

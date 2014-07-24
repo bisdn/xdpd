@@ -396,3 +396,19 @@ cxmpclient::lsi_list()
 		notify(WANT_SEND);
 	}
 }
+
+void
+cxmpclient::lsi_info()
+{
+	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
+	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_INFO);
+
+	std::cerr << "[xmpclient] sending Lsi-Info request:" << std::endl << msg;
+	mem = new rofl::cmemory(msg.length());
+	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
+}
+

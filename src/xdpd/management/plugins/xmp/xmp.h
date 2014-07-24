@@ -121,6 +121,9 @@ private:
 
 	void
 	handle_lsi_list(rofl::csocket& socket, cxmpmsg& msg);
+
+	void
+	handle_lsi_info(rofl::csocket& socket, cxmpmsg& msg);
 };
 
 }; // end of namespace protocol

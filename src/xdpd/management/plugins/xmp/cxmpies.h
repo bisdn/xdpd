@@ -23,6 +23,7 @@ extern "C" {
 #include "cxmpie_name.h"
 #include "cxmpie_portinfo.h"
 #include "cxmpie_dpid.h"
+#include "cxmpie_lsiinfo.h"
 #include "cxmpie_multipart.h"
 #include "xdpd_mgmt_protocol.h"
 #include "rofl/common/croflexception.h"
@@ -215,6 +216,24 @@ public:
 
 	bool
 	has_ie_lsiname() const;
+
+	/*
+	 * information element: lsiinfo
+	 */
+	cxmpie_lsiinfo&
+	add_ie_lsiinfo();
+
+	cxmpie_lsiinfo&
+	set_ie_lsiinfo();
+
+	cxmpie_lsiinfo const&
+	get_ie_lsiinfo() const;
+
+	void
+	drop_ie_lsiinfo();
+
+	bool
+	has_ie_lsiinfo() const;
 
 	/*
 	 * information element: multipart

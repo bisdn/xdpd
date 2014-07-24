@@ -16,12 +16,12 @@ namespace mgmt {
 namespace protocol {
 
 cxmpie_lsiinfo::cxmpie_lsiinfo() :
-		cxmpie(XMPIET_PORTINFO, sizeof(struct xmp_ie_lsiinfo_t))
+		cxmpie(XMPIET_LSIINFO, sizeof(struct xmp_ie_lsiinfo_t))
 {
 }
 
 cxmpie_lsiinfo::cxmpie_lsiinfo(xdpd::openflow_switch_snapshot const &snapshot) :
-		cxmpie(XMPIET_PORTINFO, sizeof(struct xmp_ie_lsiinfo_t))
+		cxmpie(XMPIET_LSIINFO, sizeof(struct xmp_ie_lsiinfo_t))
 {
 	xmpie_generic = somem();
 	set_lsiname(snapshot.name);
@@ -64,7 +64,7 @@ cxmpie_lsiinfo::operator=(cxmpie const& elem)
 {
 	if (this == &elem) return *this;
 
-	if (XMPIET_PORTINFO != elem.get_type()) throw eXmpIeInval();
+	if (XMPIET_LSIINFO != elem.get_type()) throw eXmpIeInval();
 	if (elem.length() < sizeof(struct xmp_ie_name_t)) throw eXmpIeInval();
 
 	cxmpie::operator=(elem);

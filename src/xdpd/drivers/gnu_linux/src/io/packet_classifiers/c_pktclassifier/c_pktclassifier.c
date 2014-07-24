@@ -52,6 +52,10 @@ void pop_header(classify_state_t* clas_state, enum header_type type, unsigned in
 	clas_state->num_of_headers[type]--;	
 }
 
+void pop_pbb(datapacket_t* pkt, classify_state_t* clas_state){
+	// TODO: implement
+}
+
 void pop_vlan(datapacket_t* pkt, classify_state_t* clas_state){
 	//cpc_eth_hdr_t* ether_header;
 	
@@ -218,6 +222,11 @@ void push_header(classify_state_t* clas_state, enum header_type type, unsigned i
 	
 	//Increment header type counter	
 	clas_state->num_of_headers[type]++;	
+}
+
+void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){
+	// TODO: implement
+	return NULL;
 }
 
 void* push_vlan(datapacket_t* pkt, classify_state_t* clas_state, uint16_t ether_type){

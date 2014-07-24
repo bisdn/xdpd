@@ -16,8 +16,10 @@
 
 #include "../openflow_switch.h"
 
-#include <rofl/common/openflow/experimental/matches/pppoe_matches.h>
 #include <rofl/common/openflow/experimental/actions/pppoe_actions.h>
+#include <rofl/common/openflow/experimental/actions/gtp_actions.h>
+#include <rofl/common/openflow/experimental/actions/capwap_actions.h>
+#include <rofl/common/openflow/experimental/actions/wlan_actions.h>
 
 /**
 * @file of13_translation_utils.h

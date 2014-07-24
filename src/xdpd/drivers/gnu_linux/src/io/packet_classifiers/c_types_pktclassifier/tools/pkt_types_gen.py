@@ -11,6 +11,7 @@ protocols = OrderedDict(
 	("8023", 22), 
 	("MPLS", 4), 
 	("VLAN", 4), 
+	("ISID", 4), 
 	("PPPOE", 6), 
 	("PPP", 2), 
 	("ARPV4", 28), 
@@ -18,6 +19,16 @@ protocols = OrderedDict(
 	("ICMPV4", 4), 
 	("IPV6", 40), 
 	("ICMPV6", 4), 
+	("ICMPV6_RTR_SOL", 4),
+	("ICMPV6_RTR_SOL_OPTS_LLADR_SRC", 8),
+	("ICMPV6_RTR_ADV", 12), 
+	("ICMPV6_RTR_ADV_OPTS_LLADR_SRC", 8),
+	("ICMPV6_NEIGH_SOL", 20),
+	("ICMPV6_NEIGH_SOL_OPTS_LLADR_SRC", 8),
+	("ICMPV6_NEIGH_ADV", 20), 
+	("ICMPV6_NEIGH_ADV_OPTS_LLADR_TGT", 8),
+	("ICMPV6_REDIRECT", 36),
+	("ICMPV6_REDIRECT_OPTS_LLADR_TGT", 8),
 	("ICMPV6_OPTS", 20), 
 	("ICMPV6_OPTS_LLADR_SRC", 20), 
 	("ICMPV6_OPTS_LLADR_TGT", 20), 
@@ -35,7 +46,7 @@ unrolled_protocols = OrderedDict()
 # Packet types (using a notation similar to scapy)
 #
 pkt_types = [ 
-	"L2", #This is ETHERNET or 8023 or ETHERNET/VLAN or 8023/VLAN or ETHERNET/VLAN/VLAN or 8023/VLAN/VLAN
+	"L2", #This is ETHERNET or 8023 or ETHERNET/VLAN or 8023/VLAN or ETHERNET/VLAN/VLAN or 8023/VLAN/VLAN and all the PBB stuff
 
 	#MPLS - no parsing beyond 	
 	"L2/MPLS",
@@ -70,6 +81,14 @@ pkt_types = [
 	"L2/IPV6/ICMPV6/ICMPV6_OPTS_LLADR_SRC",
 	"L2/IPV6/ICMPV6/ICMPV6_OPTS_LLADR_TGT",
 	"L2/IPV6/ICMPV6/ICMPV6_OPTS_PREFIX_INFO",
+	"L2/IPV6/ICMPV6/ICMPV6_RTR_SOL",
+	"L2/IPV6/ICMPV6/ICMPV6_RTR_ADV",
+	"L2/IPV6/ICMPV6/ICMPV6_NEIGH_SOL",
+	"L2/IPV6/ICMPV6/ICMPV6_NEIGH_ADV",
+	"L2/IPV6/ICMPV6/ICMPV6_RTR_SOL/ICMPV6_RTR_SOL_OPTS_LLADR_SRC",
+	"L2/IPV6/ICMPV6/ICMPV6_RTR_ADV/ICMPV6_RTR_ADV_OPTS_LLADR_SRC",
+	"L2/IPV6/ICMPV6/ICMPV6_NEIGH_SOL/ICMPV6_NEIGH_SOL_OPTS_LLADR_SRC",
+	"L2/IPV6/ICMPV6/ICMPV6_NEIGH_ADV/ICMPV6_NEIGH_ADV_OPTS_LLADR_TGT",
 
 	"L2/IPV6/TCP",
 	"L2/IPV6/UDP",
@@ -84,7 +103,7 @@ pkt_types_unrolled = [ ]
 
 #Unroll parameters 
 ipv4_max_options_words = 15 #15 Inclusive 15x4bytes=60bytes 
-mpls_max_depth=16 #Maximum
+mpls_max_depth=32 #Maximum
 vlan_max=2 #Maximum
 
 ##
@@ -110,12 +129,20 @@ def unroll_pkt_types():
 		#Add without optional
 		tmp = type__.replace("L2","ETHERNET")
 		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET")
+		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET")
+		unrolled_types.append(tmp)
 		#Add 802.3
 		tmp = type__.replace("L2","8023")
 		unrolled_types.append(tmp)
 		
 		#Add ETHERNET+VLAN 
 		tmp = type__.replace("L2","ETHERNET/VLAN")
+		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET/VLAN")
+		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET/VLAN")
 		unrolled_types.append(tmp)
 		#Add 802.3+VLAN
 		tmp = type__.replace("L2","8023/VLAN")
@@ -124,10 +151,19 @@ def unroll_pkt_types():
 		#Add ETHERNET+VLAN+VLAN 
 		tmp = type__.replace("L2","ETHERNET/VLAN/VLAN")
 		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET/VLAN/VLAN")
+		unrolled_types.append(tmp)
+		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET/VLAN/VLAN")
+		unrolled_types.append(tmp)
+
 		#Add 802.3+VLAN+VLAN
 		tmp = type__.replace("L2","8023/VLAN/VLAN")
 		unrolled_types.append(tmp)
-			
+		
+
+		#for t in unrolled_types:
+		#	print t+"\n"
+	
 		#Loop over all "unrolled types
 		for type_ in unrolled_types:
 			if "IPV4" in type_:
@@ -232,9 +268,12 @@ def packet_offsets(f):
 		row=[]
 		for proto in protocols:
 			row.append(-1)
-	
+
+		parsed_isid=False	
 		for proto in type_.split("/"):
-			row[ protocols.keys().index(filter_pkt_type(proto))] = calc_inner_len_pkt_type(len, proto) 
+			if row[ protocols.keys().index(filter_pkt_type(proto))] == -1:
+				row[ protocols.keys().index(filter_pkt_type(proto))] = len #calc_inner_len_pkt_type(len, proto) 
+			#row[ protocols.keys().index(filter_pkt_type(proto))] = calc_inner_len_pkt_type(len, proto) 
 			len += calc_len_pkt_type(proto)
 
 		f.write("\n\t/* "+type_+" */ {")
@@ -250,6 +289,54 @@ def packet_offsets(f):
 		
 	f.write("\n};\n\n")
 	
+def eth_type_offsets_fwd(f):
+	
+	f.write("//Array of eth_type offsets from the first byte of the buffer.\n")
+	f.write("extern const int eth_type_offsets[PT_MAX__];\n\n")
+
+
+def eth_type_offsets(f):
+	
+	f.write("//Array of eth_type offsets from the first byte of the buffer.\n")
+	f.write("const int eth_type_offsets[PT_MAX__] = {\n")
+
+	first_type = True 
+	
+	
+	#Real rows
+	for type_ in pkt_types_unrolled:
+	
+		#Comment to help identifying the protocols
+		f.write("\t/* {"+str(type_)+"} */ ")	
+		
+		offset=0
+		
+		#Calculate the ethertype
+		if "ISID" in type_:
+			if "VLAN/ISID" in type_:
+				offset = protocols["ETHERNET"]+protocols["VLAN"]-2 
+			else:
+				offset = protocols["ETHERNET"]-2
+		elif "VLAN/VLAN" in type_:
+			if "ETHERNET/VLAN" in type_:
+				offset = protocols["ETHERNET"]+(protocols["VLAN"]*2)-2 
+			else:
+				offset = protocols["8023"]+(protocols["VLAN"]*2)-2 
+		elif "VLAN" in type_:
+			if "ETHERNET/VLAN" in type_:
+				offset = protocols["ETHERNET"]+protocols["VLAN"]-2
+			else:
+				offset = protocols["8023"]+protocols["VLAN"]-2
+		else:
+			if "ETHERNET" in type_:
+				offset = protocols["ETHERNET"]-2
+			else:
+				offset = protocols["8023"]-2 
+				
+		f.write(str(offset)+",\n")
+		
+	f.write("\n};\n\n")
+
 def parse_transitions_fwd(f):
 
 	##
@@ -365,7 +452,12 @@ def push_transitions(f):
 		row=[]
 		for proto in unrolled_protocols:
 			new_type=""
-			if "MPLS" in proto:
+			if "ISID" in proto or "ISID" in  type_:
+				if "ISID" in proto and "ISID" not in type_: 
+					row.append("ETHERNET/ISID/ETHERNET") #type_.replace("ETHERNET","ETHERNET/ISID/ETHERNET"))
+				else:
+					row.append("-1")
+			elif "MPLS" in proto:
 				if "MPLS" in type_:
 					#If there is already an MPLS add to the end
 					n_labels = int(type_.split("MPLS_nlabels_")[1])+1
@@ -386,7 +478,12 @@ def push_transitions(f):
 						new_type +="-1"
 				row.append(new_type)
 			elif "VLAN" in proto:
-				if "VLAN/VLAN" in type_:
+				if "ISID" in type_:
+					if "ISID/VLAN" not in type_:
+						new_type=type_.replace("ISID", "ISID/VLAN")
+					else:
+						new_type ="-1"
+				elif "VLAN/VLAN" in type_:
 					new_type="-1"
 				elif "VLAN" in type_:
 					new_type=type_.replace("VLAN", "VLAN/VLAN")
@@ -395,7 +492,7 @@ def push_transitions(f):
 				elif "8023" in type_:
 					new_type=type_.replace("8023", "8023/VLAN")
 				else:
-					new_type +="-1"
+					new_type ="-1"
 
 				row.append(new_type)
 			elif "PPPOE" in proto:
@@ -474,7 +571,12 @@ def pop_transitions(f):
 		row=[]
 		for proto in unrolled_protocols:
 			new_type=""
-			if "MPLS" in proto:
+			if "ISID" in proto or "ISID" in  type_:
+				if "ISID" in proto and "ISID" in type_ and "VLAN/ISID" not in type_: 
+					row.append(type_.replace("ETHERNET/ISID/", ""))
+				else:
+					row.append("-1")
+			elif "MPLS" in proto:
 				if "MPLS" in type_:
 					#If there is already an MPLS add to the end
 					n_labels = int(type_.split("MPLS_nlabels_")[1])
@@ -486,7 +588,9 @@ def pop_transitions(f):
 					new_type +="-1"
 				row.append(new_type)
 			elif "VLAN" in proto:
-				if "/VLAN/VLAN" in type_:
+				if "/ISID/VLAN" in type_:
+					new_type=type_.replace("/ISID/VLAN", "/ISID")
+				elif "/VLAN/VLAN" in type_:
 					new_type=type_.replace("/VLAN/VLAN", "/VLAN")
 				elif "/VLAN" in type_:
 					new_type=type_.replace("/VLAN", "")
@@ -525,11 +629,51 @@ def pop_transitions(f):
 def get_hdr_macro(f):
 	f.write("\n#define PT_GET_HDR(tmp, state, proto)\\\n\tdo{\\\n\t\ttmp = state->base + protocol_offsets_bt[ state->type ][ proto ];\\\n\t\tif(tmp < state->base )\\\n\t\t\ttmp = NULL;\\\n\t}while(0)\n\n")
 
+#
+# MPLS stuff
+#
+
+def mpls_tables_fwd(f):
+	"""
+	MPLS forward decls.
+	"""
+
+	f.write("//Num of headers. \n")
+	f.write("extern const int mpls_num_of_labels[PT_MAX__];\n\n")
+
+def mpls_tables(f):
+	"""
+	MPLS forward decls.
+	"""
+	f.write("//Num of MPLS labels. \n")
+	f.write("const int mpls_num_of_labels[PT_MAX__] = {\n")
+
+	#Real rows
+	first_type = True 
+	for type_ in pkt_types_unrolled:
+		
+		if not first_type:
+			f.write(",")
+		first_type = False
+
+		n_labels = 0
+		if "MPLS" in type_:
+			#If there is already an MPLS add to the end
+			n_labels = int(type_.split("MPLS_nlabels_")[1])
+		
+		f.write("\n\t/* "+type_+" */"+str(n_labels))
+	f.write("\n};\n\n")
+
+	
+def mpls_macros(f):
+	#none for the moment
+	pass
+
 def add_class_type_macro(f):
 	#Add main Macro
 	f.write("\n#define PT_CLASS_ADD_PROTO(state, PROTO_TYPE) do{\\\n")
 	f.write("\tpkt_types_t next_header = (pkt_types_t)parse_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ];\\\n")
-	f.write("\tif( unlikely(next_header == 0) ){ assert(0); return; }else{ state->type = next_header;  }\\\n")
+	f.write("\tif( unlikely(next_header == PT_INVALID) ){ assert(0); return; }else{ state->type = next_header;  }\\\n")
 	f.write("}while(0)\n")
 	
 	#Add IPv4 options macro
@@ -543,6 +687,9 @@ def add_class_type_macro(f):
 def push_macro(f):
 	f.write("\n#define PT_PUSH_PROTO(state, PROTO_TYPE)\\\n")
 	f.write("\t(pkt_types_t)push_transitions[state->type][ __UNROLLED_PT_PROTO_##PROTO_TYPE ]\n")
+	
+	#Nice usage
+	f.write("\n#define PBB__ ISID\n\n");
 
 def pop_macro(f):
 	f.write("\n#define PT_POP_PROTO(state, PROTO_TYPE)\\\n")
@@ -581,6 +728,9 @@ def main():
 		#Offsets in bytes
 		packet_offsets_fwd(header)
 
+		#Offsets in bytes
+		eth_type_offsets_fwd(header)
+
 		#Transitions
 		parse_transitions_fwd(header)
 
@@ -590,11 +740,15 @@ def main():
 		#Pop
 		pop_transitions_fwd(header)
 
+		#MPLS
+		mpls_tables_fwd(header)
+
 		#Macros
 		get_hdr_macro(header)
 		add_class_type_macro(header)	
 		push_macro(header)	
 		pop_macro(header)	
+		mpls_macros(header)
 
 		#End of guards
 		end_guard(header)
@@ -607,6 +761,10 @@ def main():
 		#Offsets in bytes
 		packet_offsets(c_file)
 
+		#Offsets in bytes
+		eth_type_offsets(c_file)
+
+
 		#Transitions
 		parse_transitions(c_file)
 
@@ -616,6 +774,8 @@ def main():
 		#Pop
 		pop_transitions(c_file)
 
+		#MPLS
+		mpls_tables(c_file)
 
 if __name__ == "__main__":
 	main()

@@ -482,6 +482,66 @@ uint32_t* platform_packet_get_gtp_teid(datapacket_t * const pkt)
 	return get_gtpu_teid(get_gtpu_hdr(pack->headers, 0));
 }
 
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_capwap_wbid(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_capwap_rid(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint16_t* platform_packet_get_capwap_flags(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint16_t* platform_packet_get_wlan_fc(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_wlan_type(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_wlan_subtype(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint8_t* platform_packet_get_wlan_direction(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint64_t* platform_packet_get_wlan_address_1(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint64_t* platform_packet_get_wlan_address_2(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+uint64_t* platform_packet_get_wlan_address_3(datapacket_t * const pkt)
+{
+	return NULL; // TODO: to be implemented ...
+}
+
 
 
 
@@ -919,7 +979,7 @@ STATIC_PACKET_INLINE__ void platform_packet_set_tunnel_id(datapacket_t*pkt, uint
 {
 	//TODO: implement
 }
-STATIC_PACKET_INLINE__ void platform_packet_pop_pbb(datapacket_t* pkt, uint16_t ether_type)
+STATIC_PACKET_INLINE__ void platform_packet_pop_pbb(datapacket_t* pkt)
 {
 	//TODO: implement
 }
@@ -982,6 +1042,85 @@ STATIC_PACKET_INLINE__ void platform_packet_pop_gtp(datapacket_t* pkt)
 STATIC_PACKET_INLINE__ void platform_packet_push_gtp(datapacket_t* pkt)
 {
 	//TODO: implement
+}
+
+STATIC_PACKET_INLINE__ void platform_packet_pop_capwap(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+STATIC_PACKET_INLINE__ void platform_packet_push_capwap(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
+STATIC_PACKET_INLINE__ void platform_packet_pop_wlan(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+STATIC_PACKET_INLINE__ void platform_packet_push_wlan(datapacket_t* pkt)
+{
+	//TODO: implement
+}
+
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_capwap_wbid(datapacket_t* pkt, uint8_t wbid)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_capwap_rid(datapacket_t* pkt, uint8_t rid)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_capwap_flags(datapacket_t* pkt, uint16_t flags)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_fc(datapacket_t* pkt, uint16_t fc)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_type(datapacket_t* pkt, uint8_t type)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_subtype(datapacket_t* pkt, uint8_t subtype)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_direction(datapacket_t* pkt, uint8_t direction)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_address_1(datapacket_t* pkt, uint64_t address_1)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_address_2(datapacket_t* pkt, uint64_t address_2)
+{
+	// TODO: to be implemented ...
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_wlan_address_3(datapacket_t* pkt, uint64_t address_3)
+{
+	// TODO: to be implemented ...
 }
 
 

@@ -19,12 +19,16 @@ void destroy_classifier(struct classify_state* clas_state);
 //void reset_classifier(struct classify_state* clas_state);
 
 //push & pop
+void pop_pbb(datapacket_t* pkt, struct classify_state* clas_state);
 void pop_vlan(datapacket_t* pkt, struct classify_state* clas_state);
+void pop_pbb(datapacket_t* pkt, struct classify_state* clas_state);
 void pop_mpls(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
 void pop_pppoe(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
 void pop_gtp(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
 
+void* push_pbb(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
 void* push_vlan(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
+void* push_pbb(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
 void* push_mpls(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
 void* push_pppoe(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);
 void* push_gtp(datapacket_t* pkt, struct classify_state* clas_state, uint16_t ether_type);

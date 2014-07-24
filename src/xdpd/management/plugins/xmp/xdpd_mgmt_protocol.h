@@ -95,14 +95,6 @@ struct xmp_ie_name_t {
 	char		name[XMPIE_NAME_SIZE];
 } __attribute__((packed));
 
-#define XMPIE_LSINAME_SIZE 32
-
-struct xmp_ie_lsiname_t {
-	uint16_t	type;
-	uint16_t	len;	// including header and payload
-	char		lsiname[XMPIE_LSINAME_SIZE];
-} __attribute__((packed));
-
 struct xmp_ie_portinfo_t {
 	uint16_t	type;
 	uint16_t	len;	// including header and payload

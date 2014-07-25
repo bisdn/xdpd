@@ -29,18 +29,8 @@ typedef struct datapacket_dpdk{
 	uint64_t buffer_id;		//Unique "non-reusable" buffer id
 	uint64_t internal_buffer_id;	//IO subsystem buffer ID
 
-	//Incomming packet information
-	uint32_t in_port;
-	uint32_t in_phy_port;
-	
 	//Output queue
 	uint32_t output_queue;
-
-	//Checksum flags
-	bool ipv4_recalc_checksum;
-	bool tcp_recalc_checksum;
-	bool udp_recalc_checksum;
-	bool icmpv4_recalc_checksum;
 
 	//Temporary store for pkt_in information
 	uint8_t pktin_table_id;
@@ -51,7 +41,7 @@ typedef struct datapacket_dpdk{
 	TM_PKT_STATE;
 	
 	//Header packet classification
-	struct classify_state* headers;
+	classifier_state_t clas_state;
 	
 	// Pointer to the buffer
 	struct rte_mbuf* mbuf;
@@ -89,21 +79,17 @@ static inline rofl_result_t init_datapacket_dpdk(datapacket_dpdk_t *dpkt, struct
 #endif
 
 	//Fill the structure
-	dpkt->in_port = in_port;
-	dpkt->in_phy_port = in_phy_port;
 	dpkt->output_queue = 0;
 	dpkt->mbuf = mbuf;
 	dpkt->packet_in_bufferpool = packet_is_in_bufferpool;
 
 	//Classify the packet
 	if(likely(classify))
-		classify_packet(dpkt->headers, get_buffer_dpdk(dpkt), get_buffer_length_dpdk(dpkt), in_port, in_phy_port);
+		classify_packet(&dpkt->clas_state, get_buffer_dpdk(dpkt), get_buffer_length_dpdk(dpkt), in_port, in_phy_port);
 
 	return ROFL_SUCCESS;
 }
-static inline void reset_datapacket_dpdk(datapacket_dpdk_t *dpkt){
-	reset_classifier(dpkt->headers);
-}
+
 
 // Push & Pop raw operations. To be used ONLY by classifiers
 rofl_result_t push_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset, unsigned int num_of_bytes);

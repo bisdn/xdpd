@@ -86,19 +86,15 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 				ROFL_DEBUG_VERBOSE("#%d length: %d\n",i,tmp_len);	
 				ROFL_DEBUG_VERBOSE("#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
 			}	
-#endif
 		}
-	}
-	else{
 #endif
+	}else
+#endif
+	{
 		//Physical port - pkts received through an ethernet port
 		unsigned int port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 		burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
-#ifdef GNU_LINUX_DPDK_ENABLE_PEX	
 	}
-#endif
-
-	//XXX: statistics
 
 	//ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 
@@ -109,15 +105,21 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 	//Process them 
 	for(i=0;i<burst_len;++i){
 		mbuf = pkts_burst[i];		
-	
+
+#ifdef DEBUG	
 		if(unlikely(sw == NULL)){
 			rte_pktmbuf_free(mbuf);
 			continue;
 		}
+#endif
 
 		//set mbuf pointer in the state so that it can be recovered afterwards when going
 		//out from the pipeline
 		pkt_state->mbuf = mbuf;
+
+		//Increment port RX statistics
+		port->stats.rx_packets++;
+		port->stats.rx_bytes += mbuf->pkt.pkt_len;
 
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
 		assert(mbuf->pkt.nb_segs == 1);
@@ -131,12 +133,11 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 		}
 		else if(port->type == PORT_TYPE_PEX_DPDK_KNI) {
 			tmp_port=port;
-		}else{
+		}else
 #endif
+		{
 			tmp_port = phy_port_mapping[mbuf->pkt.in_port];
-#ifdef GNU_LINUX_DPDK_ENABLE_PEX
 		}
-#endif
 
 		if(unlikely(!tmp_port)){
 			//Not attached

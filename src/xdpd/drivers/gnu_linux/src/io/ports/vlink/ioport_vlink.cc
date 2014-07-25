@@ -137,7 +137,7 @@ datapacket_t* ioport_vlink::read(){
 		deferred_drain_rx++;
 		empty_pipe(rx_notify_pipe, &deferred_drain_rx);
 		//FIXME statistics
-		pkt_x86->in_port = of_port_state->of_port_num;
+		pkt_x86->clas_state.port_in = of_port_state->of_port_num;
 
 		//Increment statistics&return
 		of_port_state->stats.rx_packets++;

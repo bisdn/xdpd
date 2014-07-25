@@ -30,6 +30,7 @@ libxdpd_driver_gnu_linux_dpdk_src_la_LIBADD = \
 		-lrte_ring\
 		-lrte_timer\
 		-lrte_pmd_ring\
-		-lrte_eal
+		-lrte_eal\
+		-ldl
 
 library_include_HEADERS=

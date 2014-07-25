@@ -205,11 +205,11 @@ of10_translation_utils::of1x_map_flow_entry_actions(
 		of1x_action_group_t *apply_actions,
 		of1x_write_actions_t *write_actions)
 {
-	for (std::map<unsigned int, unsigned int>::const_iterator
+	for (std::map<rofl::cindex, unsigned int>::const_iterator
 			jt = actions.get_actions_index().begin();
 					jt != actions.get_actions_index().end(); ++jt) {
 
-		const unsigned int& index 	= jt->first;
+		const rofl::cindex& index 	= jt->first;
 		const unsigned int& type	= jt->second;
 
 		of1x_packet_action_t *action = NULL;
@@ -466,7 +466,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_actions(
 		if(!group->instructions[i].apply_actions)
 			continue;
 
-		unsigned int index = 0;
+		rofl::cindex index;
 
 		for (of1x_packet_action_t *of1x_action = group->instructions[i].apply_actions->head; of1x_action != NULL; of1x_action = of1x_action->next) {
 			if (OF1X_AT_NO_ACTION == of1x_action->type)
@@ -493,7 +493,7 @@ of10_translation_utils::of1x_map_reverse_flow_entry_actions(
 void
 of10_translation_utils::of1x_map_reverse_flow_entry_action(
 		of1x_packet_action_t* of1x_action,
-		unsigned int index,
+		const rofl::cindex& index,
 		rofl::openflow::cofactions& actions,
 		uint16_t pipeline_miss_send_len)
 {

@@ -65,7 +65,7 @@ std::list<std::string> port_manager::list_available_port_names(){
 	return port_name_list; 
 }
 
-void port_manager::get_port_info(std::string& name, port_snapshot& snapshot){
+void port_manager::get_port_info(const std::string& name, port_snapshot& snapshot){
 
 	(void)get_port_info; //Prevent unused warning
 	

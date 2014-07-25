@@ -21,13 +21,18 @@ namespace xdpd {
 namespace mgmt {
 namespace protocol {
 
-class xmp :
-		public rofl::ciosrv,
+class xmp : public rofl::ciosrv,
 		public rofl::csocket_owner,
 		public plugin
 {
-	rofl::csocket*			socket;			// listening socket
-	rofl::cparams			socket_params;
+	rofl::csocket*						socket;			// listening socket
+	rofl::cparams						socket_params;
+	enum rofl::csocket::socket_type_t 	socket_type;
+
+	std::set<rofl::csocket*>			workers;	// socket instances for doing work
+	rofl::cmemory						*fragment;
+	unsigned int						msg_bytes_read;
+
 
 #define MGMT_PORT_UDP_ADDR	"127.0.0.1"
 #define MGMT_PORT_UDP_PORT	"8444"
@@ -61,13 +66,13 @@ protected:
 	 */
 
 	virtual void
-	handle_listen(rofl::csocket& socket, int newsd) {};
+	handle_listen(rofl::csocket& socket, int newsd);
 
 	virtual void
-	handle_accepted(rofl::csocket& socket) {};
+	handle_accepted(rofl::csocket& socket);
 
 	virtual void
-	handle_accept_refused(rofl::csocket& socket) {};
+	handle_accept_refused(rofl::csocket& socket);
 
 	virtual void
 	handle_connected(rofl::csocket& socket) {};
@@ -85,13 +90,12 @@ protected:
 	handle_read(rofl::csocket& socket);
 
 	virtual void
-	handle_closed(rofl::csocket& socket) {};
+	handle_closed(rofl::csocket& socket);
 
 private:
 
 	void
-	handle_request(
-			cxmpmsg& msg);
+	handle_request(rofl::csocket& socket, cxmpmsg& msg);
 
 	void
 	handle_port_attach(
@@ -108,6 +112,15 @@ private:
 	void
 	handle_port_disable(
 			cxmpmsg& msg);
+
+	void
+	handle_port_list(rofl::csocket& socket, cxmpmsg& msg);
+
+	void
+	handle_port_info(rofl::csocket& socket, cxmpmsg& msg);
+
+	void
+	handle_lsi_list(rofl::csocket& socket, cxmpmsg& msg);
 };
 
 }; // end of namespace protocol

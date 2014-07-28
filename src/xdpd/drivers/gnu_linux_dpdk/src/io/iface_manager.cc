@@ -691,6 +691,7 @@ static switch_port_t* configure_pex_port_dpdk(const char *pex_name, const char *
 		return NULL;
 	}
 
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	//semaphore	
 	ps->semaphore = sem_open(pex_name, O_CREAT , 0644, 0);
 	
@@ -700,6 +701,7 @@ static switch_port_t* configure_pex_port_dpdk(const char *pex_name, const char *
 		assert(0);
 		return NULL;
 	}
+#endif
 
 	ps->counter_from_last_flush = 0;
 	ps->pex_id = pex_id;
@@ -841,9 +843,11 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 
 		//According to http://dpdk.info/ml/archives/dev/2014-January/001120.html,
 		//rte_rings connot be destroyed
-	
+
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE	
 		sem_unlink(port_name);
 		sem_close(port_state->semaphore);
+#endif
 
 		if(physical_switch_remove_port(port_name) != ROFL_SUCCESS)
 		{

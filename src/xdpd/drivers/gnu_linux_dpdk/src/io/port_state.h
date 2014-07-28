@@ -6,7 +6,9 @@
 #define _PORT_STATE_H_
 
 #include <rte_ring.h>
-#include <semaphore.h>
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
+	#include <semaphore.h>
+#endif	
 #include <inttypes.h>
 
 #include "../config.h"
@@ -41,10 +43,12 @@ struct pex_port_state_dpdk
 	*/
 	struct rte_ring *to_xdpd_queue;
 	
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	/**
 	* @brief POSIX named semaphore used to implement batching towards the PEX
 	*/
 	sem_t *semaphore;
+#endif
 	
 	/**
 	* @brief Count the number of packets inserted after the last sem_post

@@ -24,8 +24,16 @@
 //Enable PEX capability
 #define GNU_LINUX_DPDK_ENABLE_PEX
 
-//IVANO - FIXME: write a meaningfull value
-#define PKT_TO_PEX_THRESHOLD 	200
+/**
+*	Uncomment the following line to enable the samaphore and implement a batch
+*	meachanism in the DPDK secondary processes PEX
+*/
+//#define ENABLE_DPDK_SECONDARY_SEMAPHORE
+
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
+	//IVANO - FIXME: write a meaningfull value
+	#define PKT_TO_PEX_THRESHOLD 	200
+#endif
 
 
 /*
@@ -96,7 +104,7 @@
 
 //DPDK defines
 #define RTE_CORE_MASK 0x00000003 //2 cores(1 doing I/O)
-#define RTE_MEM_CHANNELS 2
+#define RTE_MEM_CHANNELS 8
 #define SOCKET0 0
 #define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
 #define NB_MBUF   3*8192

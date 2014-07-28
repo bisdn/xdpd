@@ -170,7 +170,9 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 	assert(port->type == PORT_TYPE_PEX_DPDK_SECONDARY);
 
 	int ret;
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	uint32_t tmp, next_tmp;
+#endif
 	pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 	struct rte_mbuf* mbuf;
 	
@@ -179,6 +181,7 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 
 	ret = rte_ring_mp_enqueue(port_state->to_pex_queue, (void *) mbuf);
 	if( likely((ret == 0) || (ret == -EDQUOT)) ){
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 		//The packet has been enqueued
 		
 		//XXX port_statistics[port].tx++;
@@ -198,6 +201,7 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 			//Notify that pkts are available
 			sem_post(port_state->semaphore);
 		}		
+#endif
 	}else{
 			//The queue is full, and the pkt must be dropped
 		
@@ -207,6 +211,7 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 	}
 }
 
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 void inline
 flush_dpdk_pex_port(switch_port_t *port)
 {	
@@ -214,6 +219,7 @@ flush_dpdk_pex_port(switch_port_t *port)
 	pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 	sem_post(port_state->semaphore);
 }
+#endif
 
 /*
 *	KNI

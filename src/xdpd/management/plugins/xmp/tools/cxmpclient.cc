@@ -129,6 +129,10 @@ cxmpclient::handle_read(rofl::csocket& socket)
 					{
 						handle_reply(msg);
 					} break;
+					case XMPT_ERROR:
+					{
+						handle_error(msg);
+					} break;
 					case XMPT_NOTIFICATION:
 					case XMPT_REQUEST:
 					default:
@@ -232,6 +236,17 @@ void
 cxmpclient::handle_reply(cxmpmsg& msg)
 {
 	rofl::logging::info << "[xdpd][plugin][xmp] rcvd message:" << std::endl << msg;
+
+	if (NULL != observer) {
+		rofl::logging::info << "[xdpd][plugin][xmp] call observer:" << std::endl;
+		observer->notify(msg);
+	}
+}
+
+void
+cxmpclient::handle_error(cxmpmsg& msg)
+{
+	rofl::logging::error << "[xdpd][plugin][xmp] rcvd error message:" << std::endl << msg;
 
 	if (NULL != observer) {
 		rofl::logging::info << "[xdpd][plugin][xmp] call observer:" << std::endl;
@@ -412,3 +427,19 @@ cxmpclient::lsi_info()
 	}
 }
 
+void
+cxmpclient::lsi_create(uint64_t dpid, std::string const& lsi_name)
+{
+	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
+	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_CREATE);
+	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
+	msg.get_xmpies().add_ie_lsiname().set_name(lsi_name);
+
+	std::cerr << "[xmpclient] sending Lsi-Create request:" << std::endl << msg;
+	mem = new rofl::cmemory(msg.length());
+	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
+}

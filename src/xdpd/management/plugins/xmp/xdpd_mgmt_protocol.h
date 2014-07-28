@@ -37,6 +37,7 @@ enum xmpie_command_t {
 	XMPIEMCT_PORT_INFO			= 6,
 	XMPIEMCT_LSI_LIST			= 7,
 	XMPIEMCT_LSI_INFO			= 8,
+	XMPIEMCT_LSI_CREATE			= 9,
 };
 
 struct xmp_header_t {

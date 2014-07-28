@@ -7,6 +7,12 @@
 
 #include "xmp.h"
 
+#include <rofl/common/csocket.h>
+
+#include "../../switch_manager.h"
+
+
+
 using namespace rofl; 
 using namespace xdpd::mgmt::protocol;
 
@@ -255,6 +261,9 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 	} break;
 	case XMPIEMCT_LSI_INFO: {
 		handle_lsi_info(socket, msg);
+	} break;
+	case XMPIEMCT_LSI_CREATE: {
+		handle_lsi_create(socket, msg);
 	} break;
 	case XMPIEMCT_NONE:
 	default: {
@@ -569,6 +578,57 @@ xmp::handle_lsi_info(rofl::csocket& socket, cxmpmsg& msg)
 			continue;
 		}
 		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_lsiinfo(snapshot));
+	}
+
+	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
+
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
+}
+
+void
+xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
+{
+	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
+
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
+	if (not msg.get_xmpies().has_ie_dpid()) {
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -DPID- IE, dropping message." << std::endl;
+		reply.set_type(XMPT_ERROR);
+	} else if (not msg.get_xmpies().has_ie_lsiname()) {
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -LSINAME- IE, dropping message." << std::endl;
+		reply.set_type(XMPT_ERROR);
+	} else {
+
+		of_version_t version = OF_VERSION_13;
+		uint64_t dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
+		std::string dpname(msg.get_xmpies().get_ie_lsiname().get_name());
+		unsigned int num_of_tables = 8;
+		int ma_list[OF1X_MAX_FLOWTABLES] = { 0 }; /* todo currently it is only first ma for all tables */
+		int reconnect_start_timeout = 5;
+		enum rofl::csocket::socket_type_t socket_type = csocket::SOCKET_TYPE_PLAIN;
+		cparams socket_params(csocket::get_default_params(socket_type)); /* fixme connection should be added later */
+
+		try {
+			switch_manager::create_switch(version, dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
+		} catch (xdpd::eOfSmVersionNotSupported &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmVersionNotSupported: " << e << std::endl;
+			reply.set_type(XMPT_ERROR);
+		} catch (eOfSmExists &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmExists: " << e << std::endl;
+			reply.set_type(XMPT_ERROR);
+		} catch (eOfSmErrorOnCreation &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmErrorOnCreation: " << e << std::endl;
+			reply.set_type(XMPT_ERROR);
+		} catch (...) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
+			reply.set_type(XMPT_ERROR);
+		}
+
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;

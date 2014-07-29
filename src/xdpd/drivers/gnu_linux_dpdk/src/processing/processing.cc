@@ -214,11 +214,13 @@ int processing_core_process_packets(void* not_used){
 					if(own_port)		
 						transmit_kni_pex_port_burst(pex_port_mapping[i],i, pkt_burst);
 				}
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 				else
 				{
 					assert(pex_port_mapping[i]->type == PORT_TYPE_PEX_DPDK_SECONDARY);
 					flush_dpdk_pex_port(pex_port_mapping[i]);
 				}				
+#endif
 			}
 #endif
 		}

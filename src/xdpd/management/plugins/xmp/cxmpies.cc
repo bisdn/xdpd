@@ -128,16 +128,13 @@ cxmpies::map_and_insert(
 	} break;
 	case XMPIET_DPID: {
 		xmpmap[XMPIET_DPID] = new cxmpie_dpid(xmpie);
-
 	} break;
 	case XMPIET_PORTINFO: {
 		xmpmap[XMPIET_PORTINFO] = new cxmpie_portinfo(xmpie);
-
 	} break;
 	case XMPIET_MULTIPART: {
 		xmpmap[XMPIET_MULTIPART] = new cxmpie_multipart(xmpie);
-		break;
-	}
+	} break;
 	case XMPIET_LSINAME: {
 		xmpmap[XMPIET_LSINAME] = new cxmpie_name(xmpie);
 	} break;

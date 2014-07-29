@@ -163,7 +163,7 @@ string MessageHandler::createLSI(string message)
         		bool foundPorts = false;
         		list<string> ports;
 				string name;
-				PexType nfType;
+				PexType nfType = DPDK_KNI; //XXX this is done to avoid a warning in the compiler
 
 				for( Object::const_iterator j = nfs.begin(); j != nfs.end(); ++j )
 				{

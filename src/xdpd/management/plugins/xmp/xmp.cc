@@ -239,16 +239,16 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 
 	switch (msg.get_xmpies().get_ie_command().get_command()) {
 	case XMPIEMCT_PORT_ATTACH: {
-		handle_port_attach(msg);
+		handle_port_attach(socket, msg);
 	} break;
 	case XMPIEMCT_PORT_DETACH: {
-		handle_port_detach(msg);
+		handle_port_detach(socket, msg);
 	} break;
 	case XMPIEMCT_PORT_ENABLE: {
-		handle_port_enable(msg);
+		handle_port_enable(socket, msg);
 	} break;
 	case XMPIEMCT_PORT_DISABLE: {
-		handle_port_disable(msg);
+		handle_port_disable(socket, msg);
 	} break;
 	case XMPIEMCT_PORT_LIST: {
 		handle_port_list(socket, msg);
@@ -276,9 +276,11 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 
 
 void
-xmp::handle_port_attach(
-		cxmpmsg& msg)
+xmp::handle_port_attach(csocket& socket, cxmpmsg& msg)
 {
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
 	std::string portname;
 	uint64_t dpid = 0;
 
@@ -305,31 +307,42 @@ xmp::handle_port_attach(
 	} catch(eOfSmDoesNotExist& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed, LSI does not exist" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed (ePmInvalidPort)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(ePmUnknownError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed (ePmUnknownError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed (eOfSmGeneralError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed" << std::endl;
-
+		reply.set_type(XMPT_ERROR);
 	}
+
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
 }
 
 
 void
-xmp::handle_port_detach(
-		cxmpmsg& msg)
+xmp::handle_port_detach(csocket& socket, cxmpmsg& msg)
 {
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
 	std::string portname;
 	uint64_t dpid = 0;
 
@@ -354,35 +367,46 @@ xmp::handle_port_detach(
 	} catch(eOfSmDoesNotExist& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed, LSI does not exist (eOfSmDoesNotExist)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmInvalidPort)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(ePmPortNotAttachedError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmPortNotAttachedError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(ePmUnknownError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmUnknownError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed (eOfSmGeneralError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed." << std::endl;
-
+		reply.set_type(XMPT_ERROR);
 	}
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
 }
 
 
 void
-xmp::handle_port_enable(
-		cxmpmsg& msg)
+xmp::handle_port_enable(csocket& socket, cxmpmsg& msg)
 {
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
 	std::string portname;
 
 	try {
@@ -398,24 +422,33 @@ xmp::handle_port_enable(
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (ePmInvalidPort)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(ePmUnknownError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (ePmUnknownError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (eOfSmGeneralError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed" << std::endl;
-
+		reply.set_type(XMPT_ERROR);
 	}
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
 }
 
 
 void
-xmp::handle_port_disable(
-		cxmpmsg& msg)
+xmp::handle_port_disable(csocket& socket, cxmpmsg& msg)
 {
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
 	std::string portname;
 
 	try {
@@ -431,17 +464,25 @@ xmp::handle_port_disable(
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (ePmInvalidPort)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(ePmUnknownError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (ePmUnknownError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (eOfSmGeneralError)" << std::endl;
+		reply.set_type(XMPT_ERROR);
 
 	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed" << std::endl;
-
+		reply.set_type(XMPT_ERROR);
 	}
+
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
 }
 
 

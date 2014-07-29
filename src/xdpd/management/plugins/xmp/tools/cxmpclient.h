@@ -174,6 +174,9 @@ protected:
 
 	void
 	handle_send();
+
+	void
+	send_message(cxmpmsg &msg);
 };
 
 }; // end of namespace protocol

@@ -144,9 +144,7 @@ cxmpclient::handle_read(rofl::csocket& socket)
 						;
 					}
 
-
 					delete mem;
-
 					return;
 				}
 			}
@@ -230,6 +228,22 @@ cxmpclient::handle_send()
 	assert(mem);
 	// todo delay send?
 	socket->send(mem);
+	mem = NULL;
+}
+
+void
+cxmpclient::send_message(cxmpmsg &msg)
+{
+	if(this->mem) {
+		delete this->mem;
+	}
+
+	mem = new rofl::cmemory(msg.length());
+	msg.pack(mem->somem(), mem->memlen());
+
+	if (socket->is_established()) {
+		notify(WANT_SEND);
+	}
 }
 
 void
@@ -277,12 +291,7 @@ cxmpclient::port_list()
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_LIST);
 
 	std::cerr << "[xmpclient] sending Port-List request:" << std::endl << msg;
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
 void
@@ -293,12 +302,7 @@ cxmpclient::port_list(uint64_t dpid)
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
 	std::cerr << "[xmpclient] sending Port-List request:" << std::endl << msg;
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
 void
@@ -308,17 +312,11 @@ cxmpclient::port_info()
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_INFO);
 
 	std::cerr << "[xmpclient] sending Port-Info request:" << std::endl << msg;
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
 void
-cxmpclient::port_attach(
-		uint64_t dpid, std::string const& portname)
+cxmpclient::port_attach(uint64_t dpid, std::string const& portname)
 {
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 
@@ -327,19 +325,11 @@ cxmpclient::port_attach(
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
 	std::cerr << "[xmpclient] sending Port-Attach request:" << std::endl << msg;
-
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
-
 void
-cxmpclient::port_detach(
-		uint64_t dpid, std::string const& portname)
+cxmpclient::port_detach(uint64_t dpid, std::string const& portname)
 {
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 
@@ -348,19 +338,11 @@ cxmpclient::port_detach(
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
 	std::cerr << "[xmpclient] sending Port-Detach request:" << std::endl << msg;
-
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
-
 void
-cxmpclient::port_enable(
-		std::string const& portname)
+cxmpclient::port_enable(std::string const& portname)
 {
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 
@@ -368,19 +350,11 @@ cxmpclient::port_enable(
 	msg.get_xmpies().add_ie_portname().set_name(portname);
 
 	std::cerr << "[xmpclient] sending Port-Enable request:" << std::endl << msg;
-
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
-
 void
-cxmpclient::port_disable(
-		std::string const& portname)
+cxmpclient::port_disable(std::string const& portname)
 {
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 
@@ -388,13 +362,7 @@ cxmpclient::port_disable(
 	msg.get_xmpies().add_ie_portname().set_name(portname);
 
 	std::cerr << "[xmpclient] sending Port-Disable request:" << std::endl << msg;
-
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
 void
@@ -404,12 +372,7 @@ cxmpclient::lsi_list()
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_LIST);
 
 	std::cerr << "[xmpclient] sending Lsi-List request:" << std::endl << msg;
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
 void
@@ -419,12 +382,7 @@ cxmpclient::lsi_info()
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_INFO);
 
 	std::cerr << "[xmpclient] sending Lsi-Info request:" << std::endl << msg;
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }
 
 void
@@ -436,10 +394,5 @@ cxmpclient::lsi_create(uint64_t dpid, std::string const& lsi_name)
 	msg.get_xmpies().add_ie_lsiname().set_name(lsi_name);
 
 	std::cerr << "[xmpclient] sending Lsi-Create request:" << std::endl << msg;
-	mem = new rofl::cmemory(msg.length());
-	msg.pack(mem->somem(), mem->memlen());
-
-	if (socket->is_established()) {
-		notify(WANT_SEND);
-	}
+	send_message(msg);
 }

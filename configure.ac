@@ -35,7 +35,7 @@ AC_DEFINE(__STDC_CONSTANT_MACROS)
 AC_CHECK_LIB(pthread, pthread_kill,,AC_MSG_ERROR([pthread library not found])) 
 AC_CHECK_LIB(rt, clock_gettime,,[AC_MSG_ERROR([rt library not found])]) 
 
-PKG_CHECK_MODULES([ROFL], [rofl >= 0.5.0], [have_rofl=yes], AC_MSG_ERROR([Revised OpenFlow Libraries(ROFL) not found]))
+PKG_CHECK_MODULES([ROFL], [rofl >= 0.6.0], [have_rofl=yes], AC_MSG_ERROR([Revised OpenFlow Libraries(ROFL) not found]))
 if (test "${have_rofl}" = "yes"); then
         CPPFLAGS+="$ROFL_CFLAGS"
         LIBS+="$ROFL_LIBS"

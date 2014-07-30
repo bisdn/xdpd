@@ -68,12 +68,12 @@ void tcp_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip_p
 	* part -I- (IPv4 pseudo header)
 	*/
 	word16 = (uint16_t*)(void*)&ip_src;
-	sum += *(word16+1);
-	sum += *(word16);
+	sum += (*(word16+1));
+	sum += (*word16);
 	
 	word16 = (uint16_t*)(void*)&ip_dst;
-	sum += *(word16+1);
-	sum += *(word16);
+	sum += (*(word16+1));
+	sum += (*word16);
 	sum += htobe16(ip_proto);
 	
 	sum += htobe16(length); 

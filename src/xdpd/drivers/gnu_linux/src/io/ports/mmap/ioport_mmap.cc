@@ -241,7 +241,11 @@ next:
 	pkt_x86 = (datapacketx86*) pkt->platform_state;
 
 	//Fill packet
+	#ifdef TP_STATUS_VLAN_VALID
 	if(hdr->tp_status&TP_STATUS_VLAN_VALID){
+	#else
+	if(hdr->tp_vlan_tci != 0) {
+        #endif			
 		//There is a VLAN
 		fill_vlan_pkt(hdr, pkt_x86);	
 	}else{

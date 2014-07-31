@@ -66,6 +66,12 @@ public:
 	void
 	set_lsiname(std::string const& lsiname);
 
+	uint64_t
+	get_dpid() const;
+
+	void
+	set_dpid(uint64_t dpid);
+
 	uint32_t
 	get_capabilities() const;
 

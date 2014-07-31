@@ -25,6 +25,7 @@ cxmpie_lsiinfo::cxmpie_lsiinfo(xdpd::openflow_switch_snapshot const &snapshot) :
 {
 	xmpie_generic = somem();
 	set_lsiname(snapshot.name);
+	set_dpid(snapshot.dpid);
 	set_capabilities(snapshot.capabilities);
 	set_num_of_buffers(snapshot.num_of_buffers);
 	set_max_ports(512); // fixme not yet exported
@@ -121,6 +122,18 @@ cxmpie_lsiinfo::set_lsiname(const std::string& lsiname)
 					lsiname.length() : XMPIE_NAME_SIZE;
 	memset(xmpie_lsiinfo->lsiname, 0, XMPIE_NAME_SIZE);
 	memcpy(xmpie_lsiinfo->lsiname, lsiname.c_str(), len);
+}
+
+uint64_t
+cxmpie_lsiinfo::get_dpid() const
+{
+	return be64toh(xmpie_lsiinfo->dpid);
+}
+
+void
+cxmpie_lsiinfo::set_dpid(uint64_t dpid)
+{
+	xmpie_lsiinfo->dpid = htobe64(dpid);
 }
 
 uint32_t

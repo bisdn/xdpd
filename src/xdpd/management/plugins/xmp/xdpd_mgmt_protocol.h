@@ -120,6 +120,8 @@ struct xmp_ie_lsiinfo_t {
 	uint16_t	len;	// including header and payload
 	char		lsiname[XMPIE_NAME_SIZE];
 
+	uint64_t	dpid;
+
 	/* see enum of1x_capabilities in rofl-core/src/rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h */
 	uint32_t	capabilities;		/* Current features. */
 	uint32_t	num_of_buffers;

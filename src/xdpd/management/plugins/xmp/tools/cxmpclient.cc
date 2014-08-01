@@ -212,7 +212,7 @@ cxmpclient::handle_timeout(
 
 	switch (opaque) {
 	case TIMER_XMPCLNT_EXIT: {
-		exit(0);
+		ciosrv::stop();
 	} break;
 	default: {
 

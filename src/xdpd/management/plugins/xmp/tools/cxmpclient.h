@@ -32,6 +32,7 @@ class cxmpclient :
 {
 	enum cxmpclient_event_t {
 		WANT_SEND = 1,
+		WANT_EXIT
 	};
 
 	enum cxmpclient_timer_t {
@@ -121,6 +122,9 @@ public:
 	{
 		auto_exit = autoExit;
 	}
+
+	void
+	terminate_client();
 
 protected:
 

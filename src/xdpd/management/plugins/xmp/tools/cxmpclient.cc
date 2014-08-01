@@ -34,9 +34,11 @@ cxmpclient::cxmpclient() :
 
 cxmpclient::~cxmpclient()
 {
-	cancel_all_events();
-	cancel_all_timers();
-	socket->close();
+	delete socket;
+
+	if (mem) {
+		delete mem;
+	}
 }
 
 void
@@ -194,6 +196,9 @@ cxmpclient::handle_event(rofl::cevent const& ev)
 		case WANT_SEND:
 			handle_send();
 			break;
+		case WANT_EXIT:
+			ciosrv::stop();
+			break;
 		default:
 			break;
 	}
@@ -240,6 +245,12 @@ cxmpclient::register_observer(cxmpobserver *observer)
 	rofl::logging::info << "[xdpd][plugin][xmp] register observer:" << observer << std::endl;
 	assert(observer);
 	this->observer = observer;
+}
+
+void
+cxmpclient::terminate_client()
+{
+	notify(WANT_EXIT);
 }
 
 /* commands */

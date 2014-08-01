@@ -290,6 +290,9 @@ public:
 			case XMPIET_MULTIPART: {
 				os << "  " << dynamic_cast<cxmpie_multipart const&>( *(it->second) );
 			} break;
+			case XMPIET_LSIINFO: {
+				os << "  " << dynamic_cast<cxmpie_lsiinfo const&>( *(it->second) );
+			} break;
 			default: {
 				os << "  " << *(it->second);
 			};

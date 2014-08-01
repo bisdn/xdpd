@@ -265,6 +265,9 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 	case XMPIEMCT_LSI_CREATE: {
 		handle_lsi_create(socket, msg);
 	} break;
+	case XMPIEMCT_LSI_DESTROY: {
+		handle_lsi_destroy(socket, msg);
+	} break;
 	case XMPIEMCT_NONE:
 	default: {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp request with unknown command:"
@@ -670,6 +673,43 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 			reply.set_type(XMPT_ERROR);
 		}
 
+	}
+
+	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
+
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
+}
+
+void
+xdpd::mgmt::protocol::xmp::handle_lsi_destroy(rofl::csocket& socket, cxmpmsg& msg)
+{
+	rofl::logging::trace << "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__ << ": socket=" << socket << std::endl;
+
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
+	if (not msg.get_xmpies().has_ie_dpid()) {
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -DPID- IE, dropping message." << std::endl;
+		reply.set_type(XMPT_ERROR);
+	} else {
+
+		uint64_t dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
+
+		try {
+			switch_manager::destroy_switch(dpid);
+		} catch (xdpd::eOfSmDoesNotExist &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmDoesNotExist: " << e << std::endl;
+			reply.set_type(XMPT_ERROR);
+		} catch (eOfSmGeneralError &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmGeneralError: " << e << std::endl;
+			reply.set_type(XMPT_ERROR);
+		} catch (...) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
+			reply.set_type(XMPT_ERROR);
+		}
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;

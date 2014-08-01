@@ -38,6 +38,7 @@ enum xmpie_command_t {
 	XMPIEMCT_LSI_LIST			= 7,
 	XMPIEMCT_LSI_INFO			= 8,
 	XMPIEMCT_LSI_CREATE			= 9,
+	XMPIEMCT_LSI_DESTROY		= 10,
 };
 
 struct xmp_header_t {

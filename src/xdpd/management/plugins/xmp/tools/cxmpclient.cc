@@ -396,3 +396,14 @@ cxmpclient::lsi_create(uint64_t dpid, std::string const& lsi_name)
 	std::cerr << "[xmpclient] sending Lsi-Create request:" << std::endl << msg;
 	send_message(msg);
 }
+
+void
+cxmpclient::lsi_destroy(const uint64_t dpid)
+{
+	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
+	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_DESTROY);
+	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
+
+	std::cerr << "[xmpclient] sending Lsi-Destroy request:" << std::endl << msg;
+	send_message(msg);
+}

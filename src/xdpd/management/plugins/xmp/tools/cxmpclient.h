@@ -83,6 +83,9 @@ public:
 	void
 	lsi_create(uint64_t dpid, std::string const& lsi_name);
 
+	void
+	lsi_destroy(const uint64_t dpid);
+
 	/**
 	 *
 	 */

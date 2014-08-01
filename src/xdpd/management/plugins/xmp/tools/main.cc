@@ -68,6 +68,12 @@ main(int argc, char** argv)
 
 	xmpclient.run();
 
+	//Logging
+	rofl::logging::close();
+
+	//Release ciosrv loop resources
+	rofl::cioloop::shutdown();
+
 	return 0;
 }
 

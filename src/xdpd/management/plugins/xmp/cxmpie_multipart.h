@@ -61,7 +61,7 @@ public:
 		os << rofl::indent(2) << "<cxmpie-multipart";
 		os << " #IE=" << elem.ies.size();
 		os << ">" << std::endl;
-		rofl::indent::inc(2);
+		rofl::indent i(4);
 		for(std::deque<cxmpie*>::const_iterator iter = elem.ies.begin(); iter != elem.ies.end(); ++iter) {
 			os << **iter;
 		}

@@ -239,6 +239,7 @@ public:
 			case XMPIET_COMMAND: {
 				os << "  " << dynamic_cast<cxmpie_command const&>( *(it->second) );
 			} break;
+			case XMPIET_LSINAME:
 			case XMPIET_PORTNAME: {
 				os << "  " << dynamic_cast<cxmpie_name const&>( *(it->second) );
 			} break;

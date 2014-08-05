@@ -8,6 +8,12 @@ Legend:
 Change log
 ==========
 
+v0.4.4
+
+[B][CMM] Fixed dead-lock during destroy LSI in multi-LSI scenarios with high rate of PKT_INs. #31
+[B] Fix compile errors on older gcc (e.g. v4.4) and old kernels (up to 2.6) where TP_STATUS_VLAN_VALID was not defined
+
+
 v0.4.3
 
 [B][CMM] OF1.2/OF1.3 added mask value for ARP_SPA 

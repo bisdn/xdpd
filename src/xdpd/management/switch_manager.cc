@@ -142,21 +142,25 @@ void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
 			throw;
 		}
 	}
-	
+
+	//WRITE lock only the access to the switchs map
+	//during erase	
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
 	//Get switch instance 
 	openflow_switch* dp = switch_manager::switchs[dpid];
 	switch_manager::switchs.erase(dpid);
 
-	ROFL_INFO("[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
+	pthread_rwlock_unlock(&switch_manager::rwlock);
 
 	//Destroy element
 	delete dp;	
-	
+	ROFL_INFO("[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
+
+	//Reset	
 	dpid_under_destruction = 0x0;
-	
-	pthread_rwlock_unlock(&switch_manager::rwlock);
+
+	//Allow other operations to happen	
 	pthread_mutex_unlock(&switch_manager::mutex);
 
 	//Destroy snapshot

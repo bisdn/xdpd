@@ -73,7 +73,7 @@ void NodeOrchestrator::handle_write(rofl::csocket& socket)
 
 void NodeOrchestrator::handle_read(rofl::csocket& socket)
 {		
-	cmemory mem(2048);
+	cmemory mem(BUFFER_SIZE);
 		
 	int ReadBytes;
 	
@@ -92,7 +92,7 @@ void NodeOrchestrator::handle_read(rofl::csocket& socket)
 		return;
 	}
 	
-	char DataBuffer[1024];
+	char DataBuffer[BUFFER_SIZE];
 	memcpy(DataBuffer,(char*)mem.somem(),ReadBytes);
 	DataBuffer[ReadBytes] = '\0';
 
@@ -104,7 +104,6 @@ void NodeOrchestrator::handle_read(rofl::csocket& socket)
 	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Answer to be sent: %s\n",answer);
 
-	//rofl::caddress const& raddr = socket.get_raddr();
 	rofl::csockaddr const& raddr = socket.get_raddr();
 
 	cmemory *mem2 = new cmemory((uint8_t*)answer,message.length());

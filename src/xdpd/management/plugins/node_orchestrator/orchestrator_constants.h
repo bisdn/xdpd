@@ -24,6 +24,8 @@
 #define MGMT_ADDR			"127.0.0.1"
 #define MGMT_PORT			"2525"
 
+#define BUFFER_SIZE			20480	//XXX this value might need to be increased
+
 /*
 *	Messages and answers from/to the
 *	node orchestrator

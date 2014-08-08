@@ -203,8 +203,8 @@ of12_endpoint::handle_table_stats_request(
 		tablestatsarray.set_table_stats(table_id).set_config(tc->table_miss_config);
 		tablestatsarray.set_table_stats(table_id).set_max_entries(table->max_entries);
 		tablestatsarray.set_table_stats(table_id).set_active_count(table->num_of_entries);
-		tablestatsarray.set_table_stats(table_id).set_lookup_count(table->stats.lookup_count);
-		tablestatsarray.set_table_stats(table_id).set_matched_count(table->stats.matched_count);
+		tablestatsarray.set_table_stats(table_id).set_lookup_count(table->stats.s.counters.lookup_count);
+		tablestatsarray.set_table_stats(table_id).set_matched_count(table->stats.s.counters.matched_count);
 	}
 
 	//Destroy the snapshot
@@ -1081,8 +1081,8 @@ of12_endpoint::process_flow_removed(
 				nsec,
 				entry->timer_info.idle_timeout,
 				entry->timer_info.hard_timeout,
-				entry->stats.packet_count,
-				entry->stats.byte_count);
+				entry->stats.s.counters.packet_count,
+				entry->stats.s.counters.byte_count);
 
 		return ROFL_SUCCESS;
 

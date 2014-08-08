@@ -369,7 +369,7 @@ hal_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 			return HAL_FAILURE; //TODO: return really failure?
 		}
 
-		of_process_packet_pipeline((of_switch_t*)lsw,pkt);
+		of_process_packet_pipeline(ROFL_PIPELINE_LOCKED_TID, (of_switch_t*)lsw,pkt);
 	}
 
 
@@ -419,7 +419,7 @@ hal_result_t hal_driver_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 			return HAL_FAILURE; //TODO: return really failure?
 		}
 
-		of_process_packet_pipeline((of_switch_t*)lsw,pkt);
+		of_process_packet_pipeline(ROFL_PIPELINE_LOCKED_TID, (of_switch_t*)lsw,pkt);
 	}
 
 

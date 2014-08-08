@@ -42,8 +42,8 @@ public:
 			config_metadata_write(table->config.metadata_write),
 			config_instructions(table->config.instructions),
 			config_table_miss_config(table->config.table_miss_config),
-			stats_lookup(table->stats.lookup_count),
-			stats_matched(table->stats.matched_count)		
+			stats_lookup(table->stats.s.counters.lookup_count),
+			stats_matched(table->stats.s.counters.matched_count)		
 	{};
 
 	//Dumping operator

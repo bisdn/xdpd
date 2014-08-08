@@ -232,7 +232,7 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 				if(pg->running_ports->contains(port)){
 					//Port is already UP!
 					pthread_mutex_unlock(&mutex);
-					return ROFL_FAILURE;
+					return ROFL_SUCCESS;
 				}
 			
 				//Bring up port

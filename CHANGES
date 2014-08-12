@@ -24,6 +24,7 @@ v0.5.0
 [+][gnu-linux][gnu-linux-dpdk] Added PBB support 
 [+][gnu-linux][gnu-linux-dpdk] Increased default supported num. of MPLS labels to 32
 
+[B][gnu-linux][gnu-linux-dpdk] Fixed bug during replication of packets
 
 v0.4.4
 

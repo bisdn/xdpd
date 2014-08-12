@@ -316,7 +316,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	ROFL_DEBUG_VERBOSE(DRIVER_NAME" Getting packet out [%p]\n",pkt);	
 	
 	//Instruct pipeline to process actions. This may reinject the packet	
-	of1x_process_packet_out_pipeline((of1x_switch_t*)lsw, pkt, action_group);
+	of1x_process_packet_out_pipeline(ROFL_PIPELINE_LOCKED_TID, (of1x_switch_t*)lsw, pkt, action_group);
 	
 	return HAL_SUCCESS;
 }

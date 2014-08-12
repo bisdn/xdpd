@@ -7,6 +7,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_async_events_hooks.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
+#include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_group_table.h>
 #include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/common/utils/c_logger.h>
@@ -54,21 +55,24 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 	//Set the actions and matches supported by this platform
 	for(i=0; i<sw->pipeline.num_of_tables; i++){
 		of1x_flow_table_config_t *config = &(sw->pipeline.tables[i].config);
+		of1x_group_table_config_t *group_config = &(sw->pipeline.groups->config);
 
-		//Lets set to zero the unssuported matches and actions.
-		bitmap128_unset(&config->apply_actions, OF1X_AT_COPY_TTL_OUT);
-		bitmap128_unset(&config->write_actions, OF1X_AT_COPY_TTL_OUT);
-		
-		bitmap128_unset(&config->match, OF1X_MATCH_SCTP_SRC);
-		bitmap128_unset(&config->wildcards, OF1X_MATCH_SCTP_SRC);
-		
-		bitmap128_unset(&config->match, OF1X_MATCH_SCTP_DST);
-		bitmap128_unset(&config->wildcards, OF1X_MATCH_SCTP_DST);
-		
+		//Lets set to zero the unssuported matches
 		bitmap128_unset(&config->match, OF1X_MATCH_IPV6_EXTHDR);
 		bitmap128_unset(&config->wildcards, OF1X_MATCH_IPV6_EXTHDR);
+		
+		bitmap128_unset(&config->match, OF1X_MATCH_TUNNEL_ID);
+		bitmap128_unset(&config->wildcards, OF1X_MATCH_TUNNEL_ID);
 
-		//TODO: PBB, TUNNEL_ID zero them when they are set to 1 in ROFL_pipeline
+		//Lets set to zero the unssuported actions
+		bitmap128_unset(&config->apply_actions, OF1X_AT_SET_FIELD_IPV6_EXTHDR);	
+		bitmap128_unset(&config->apply_actions, OF1X_AT_SET_FIELD_TUNNEL_ID);	
+		bitmap128_unset(&config->apply_actions, OF1X_AT_EXPERIMENTER);
+		
+		//Lets set to zero the unssuported group table actions
+		bitmap128_unset(&group_config->supported_actions, OF1X_AT_SET_FIELD_IPV6_EXTHDR);
+		bitmap128_unset(&group_config->supported_actions, OF1X_AT_SET_FIELD_TUNNEL_ID);
+		bitmap128_unset(&group_config->supported_actions, OF1X_AT_EXPERIMENTER);
 	}
 
 	return ROFL_SUCCESS;

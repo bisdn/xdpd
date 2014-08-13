@@ -10,9 +10,9 @@ Change log
 
 v0.4.4
 
-[B][CMM] Fixed dead-lock during destroy LSI in multi-LSI scenarios with high rate of PKT_INs. #31
 [B] Fix compile errors on older gcc (e.g. v4.4) and old kernels (up to 2.6) where TP_STATUS_VLAN_VALID was not defined
 
+[B][CMM] Fixed dead-lock during destroy LSI in multi-LSI scenarios with high rate of PKT_INs. #31
 
 v0.4.3
 

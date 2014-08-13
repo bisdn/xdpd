@@ -309,17 +309,3 @@ of1x_stats_group_msg_t * hal_driver_of1x_get_group_stats(uint64_t dpid, uint32_t
 	
 	return NULL; 
 }
-
-/**
- * @name    hal_driver_of1x_get_group_all_stats
- * @brief   Instructs driver to fetch the GROUP statistics from all the groups
- * @ingroup of1x_driver_async_event_processing
- *
- * @param dpid 		Datapath ID of the switch where the GROUPS are
- */
-of1x_stats_group_msg_t * hal_driver_of1x_get_group_all_stats(uint64_t dpid, uint32_t id){
-	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
-	
-	return NULL;
-}

@@ -688,12 +688,7 @@ of13_endpoint::handle_group_stats_request(
 
 	uint32_t group_id = msg.get_group_stats().get_group_id();
 	
-	if(group_id==openflow13::OFPG_ALL){
-		g_msg_all = hal_driver_of1x_get_group_all_stats(sw->dpid, group_id);
-	}
-	else{
-		g_msg_all = hal_driver_of1x_get_group_stats(sw->dpid, group_id);
-	}
+	g_msg_all = hal_driver_of1x_get_group_stats(sw->dpid, group_id);
 	
 	if(g_msg_all==NULL){
 		//TODO handle error

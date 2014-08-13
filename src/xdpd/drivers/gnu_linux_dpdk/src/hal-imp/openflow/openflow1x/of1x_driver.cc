@@ -613,22 +613,3 @@ of1x_stats_group_msg_t * hal_driver_of1x_get_group_stats(uint64_t dpid, uint32_t
 	
 	return of1x_get_group_stats(&lsw->pipeline,id);
 }
-
-/**
- * @name    hal_driver_of1x_get_group_all_stats
- * @brief   Instructs driver to fetch the GROUP statistics from all the groups
- * @ingroup of1x_driver_async_event_processing
- *
- * @param dpid 		Datapath ID of the switch where the GROUPS are
- */
-of1x_stats_group_msg_t * hal_driver_of1x_get_group_all_stats(uint64_t dpid, uint32_t id){
-		
-	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
-
-	if(!lsw){
-		assert(0);
-		return NULL;
-	}
-
-	return of1x_get_group_all_stats(&lsw->pipeline,id);
-}

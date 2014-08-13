@@ -575,26 +575,21 @@ rofl_of1x_gm_result_t hal_driver_of1x_group_mod_delete(uint64_t dpid, uint32_t i
 }
 
 /**
- * @name    hal_driver_of1x_group_search
- * @brief   Instructs driver to search the GROUP with identification ID
- * @ingroup of1x_driver_async_event_processing
- *
- * @param dpid 		Datapath ID of the switch to search the GROUP
+ * @ingroup core_of1x
+ * Retrieves a copy of the group and bucket structure
+ * @return of1x_stats_group_desc_msg_t instance that must be destroyed using of1x_destroy_group_desc_stats()
  */
-hal_result_t hal_driver_of1x_fetch_group_table(uint64_t dpid, of1x_group_table_t *group_table){
-		
+of1x_stats_group_desc_msg_t *hal_driver_of1x_get_group_desc_stats(uint64_t dpid){
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
 	
 	if(!lsw){
 		assert(0);
-		return HAL_FAILURE;
+		return NULL;
 	}
 	
-	if(of1x_fetch_group_table(&lsw->pipeline,group_table)!=ROFL_SUCCESS)
-		return HAL_FAILURE;
-	
-	return HAL_SUCCESS;
+	return of1x_get_group_desc_stats(&lsw->pipeline);
 }
+
 /**
  * @name    hal_driver_of1x_get_group_stats
  * @brief   Instructs driver to fetch the GROUP statistics

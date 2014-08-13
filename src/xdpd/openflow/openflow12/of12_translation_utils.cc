@@ -1220,11 +1220,11 @@ of12_translation_utils::of12_map_bucket_list(
 
 void of12_translation_utils::of12_map_reverse_bucket_list(
 		rofl::openflow::cofbuckets& of_buckets,
-		of1x_bucket_list_t* bucket_list){
+		of1x_stats_bucket_desc_msg* bucket_list){
 	
 	uint32_t bucket_id = 0;
 
-	for(of1x_bucket_t *bu_it=bucket_list->head;bu_it;bu_it=bu_it->next){
+	for(of1x_stats_bucket_desc_msg *bu_it=bucket_list;bu_it;bu_it=bu_it->next){
 		//cofbucket single_bucket;
 
 		rofl::cindex index;

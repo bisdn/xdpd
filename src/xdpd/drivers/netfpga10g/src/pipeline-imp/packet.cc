@@ -156,10 +156,6 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 			pcap_t* pcap_fd=state->pcap_fd;
 			output_single_packet(pack->get_buffer(), pcap_fd,pack->get_buffer_length());
 		}
-
-#ifdef DEBUG
-		dump_packet_matches(pkt, false);
-#endif
 			
 		//discard the original packet always (has been replicated)
 		bufferpool::release_buffer(pkt);

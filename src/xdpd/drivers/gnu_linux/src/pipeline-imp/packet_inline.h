@@ -84,9 +84,6 @@ void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_port_t*
 	if(likely(port && port->platform_port_state) && port->up && port->forward_packets){
 		
 		ROFL_DEBUG(DRIVER_NAME"[pkt][%s] OUTPUT packet(%p)\n", port->name, pkt);
-#ifdef DEBUG
-		dump_packet_matches(pkt, false);
-#endif
 
 		TM_STAMP_STAGE(pkt, TM_SA5_PRE);
 		
@@ -196,10 +193,6 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 			//send the replica
 			output_single_packet(replica, replica_pack, port_it);
 		}
-
-#ifdef DEBUG
-		dump_packet_matches(pkt, false);
-#endif
 			
 		//discard the original packet always (has been replicated)
 		bufferpool::release_buffer(pkt);

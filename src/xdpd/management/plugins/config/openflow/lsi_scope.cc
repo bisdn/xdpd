@@ -100,7 +100,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 
 	//TODO: improve conf file to be able to control the OF port number when attaching
 
-	std::list<std::string> platform_ports = port_manager::list_available_port_names();	
+	std::set<std::string> platform_ports = port_manager::list_available_port_names();	
 
 	if(!setting.exists(LSI_PORTS) || !setting[LSI_PORTS].isList()){
  		ROFL_ERR(CONF_PLUGIN_ID "%s: missing or unable to parse port attachment list.\n", setting.getPath().c_str());

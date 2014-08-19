@@ -21,6 +21,15 @@ hal_result_t hal_cmm_notify_port_add(switch_port_snapshot_t* port_snapshot){
 	if(!port_snapshot)
 		return HAL_FAILURE;
 
+	
+	//Check if blacklisted
+	std::string port_name(port_snapshot->name);
+	if(port_manager::is_blacklisted(port_name)){
+		//We don't care about this port; destroy&return
+		switch_port_destroy_snapshot(port_snapshot);
+		return result;
+	}	
+
 	//Notify port manager
 	port_manager::__notify_port_added(port_snapshot);
 
@@ -45,6 +54,14 @@ hal_result_t hal_cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 	if (!port_snapshot)
 		return HAL_FAILURE;
 
+	//Check if blacklisted
+	std::string port_name(port_snapshot->name);
+	if(port_manager::is_blacklisted(port_name)){
+		//We don't care about this port; destroy&return
+		switch_port_destroy_snapshot(port_snapshot);
+		return result;
+	}	
+
 	//Notify port manager
 	port_manager::__notify_port_deleted(port_snapshot);
 
@@ -68,6 +85,14 @@ hal_result_t hal_cmm_notify_port_status_changed(switch_port_snapshot_t* port_sna
 	
 	if (!port_snapshot)
 		return HAL_FAILURE;
+
+	//Check if blacklisted
+	std::string port_name(port_snapshot->name);
+	if(port_manager::is_blacklisted(port_name)){
+		//We don't care about this port; destroy&return
+		switch_port_destroy_snapshot(port_snapshot);
+		return result;
+	}
 
 	//Notify port manager
 	port_manager::__notify_port_status_changed(port_snapshot);

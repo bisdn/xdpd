@@ -44,9 +44,14 @@ void clone_pkt_contents(datapacket_t* src, datapacket_t* dst){
 	//Initialize the buffer and copy but do not classify
 	pack_dst->init(pack_src->get_buffer(), pack_src->get_buffer_length(), pack_src->lsw, pack_src->clas_state.port_in, pack_src->clas_state.phy_port_in, false, true);
 
-	//Copy classification state and 
+	//Copy output_queue
 	pack_dst->output_queue = pack_src->output_queue;
-	pack_dst->clas_state = pack_src->clas_state;
+	//Copy classification state
+	pack_dst->clas_state.type = pack_src->clas_state.type;
+	// do not overwrite clas_state.base and clas_state.len, as they are pointing to pack_src and were set already when calling pack_dst->init(...)
+	pack_dst->clas_state.port_in = pack_src->clas_state.port_in;
+	pack_dst->clas_state.phy_port_in = pack_src->clas_state.phy_port_in;
+	pack_dst->clas_state.calculate_checksums_in_sw = pack_src->clas_state.calculate_checksums_in_sw;
 }
 
 void platform_packet_set_queue(datapacket_t* pkt, uint32_t queue)
@@ -151,10 +156,6 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 			pcap_t* pcap_fd=state->pcap_fd;
 			output_single_packet(pack->get_buffer(), pcap_fd,pack->get_buffer_length());
 		}
-
-#ifdef DEBUG
-		dump_packet_matches(pkt, false);
-#endif
 			
 		//discard the original packet always (has been replicated)
 		bufferpool::release_buffer(pkt);

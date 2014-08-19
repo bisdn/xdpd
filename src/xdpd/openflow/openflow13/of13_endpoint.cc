@@ -688,12 +688,7 @@ of13_endpoint::handle_group_stats_request(
 
 	uint32_t group_id = msg.get_group_stats().get_group_id();
 	
-	if(group_id==openflow13::OFPG_ALL){
-		g_msg_all = hal_driver_of1x_get_group_all_stats(sw->dpid, group_id);
-	}
-	else{
-		g_msg_all = hal_driver_of1x_get_group_stats(sw->dpid, group_id);
-	}
+	g_msg_all = hal_driver_of1x_get_group_stats(sw->dpid, group_id);
 	
 	if(g_msg_all==NULL){
 		//TODO handle error
@@ -738,23 +733,26 @@ of13_endpoint::handle_group_desc_stats_request(
 		rofl::openflow::cofmsg_group_desc_stats_request& msg)
 {
 	rofl::openflow::cofgroupdescstatsarray groupdescs(ctl.get_version());
+	
+	of1x_stats_group_desc_msg_t *grp_dsc, *group_it;
 
-	of1x_group_table_t group_table;
-	of1x_group_t *group_it;
-	if(hal_driver_of1x_fetch_group_table(sw->dpid,&group_table)!=HAL_SUCCESS){
-
+	grp_dsc = hal_driver_of1x_get_group_desc_stats(sw->dpid);
+	if ( grp_dsc == NULL ){
+		return;
 		//TODO throw rofl::exeption
 	}
 	
-	for(group_it=group_table.head;group_it;group_it=group_it->next){
+	for(group_it=grp_dsc;group_it;group_it=group_it->next){
 		rofl::openflow::cofbuckets bclist(ctl.get_version());
-		of13_translation_utils::of13_map_reverse_bucket_list(bclist,group_it->bc_list);
-		
-		groupdescs.set_group_desc_stats(group_it->id).set_group_type(group_it->type);
-		groupdescs.set_group_desc_stats(group_it->id).set_group_id(group_it->id);
-		groupdescs.set_group_desc_stats(group_it->id).set_buckets(bclist);
+		of13_translation_utils::of13_map_reverse_bucket_list(bclist,group_it->bucket);
+
+		groupdescs.set_group_desc_stats(group_it->group_id).set_group_type(group_it->type);
+		groupdescs.set_group_desc_stats(group_it->group_id).set_group_id(group_it->group_id);
+		groupdescs.set_group_desc_stats(group_it->group_id).set_buckets(bclist);
 	}
 
+	of1x_destroy_group_desc_stats(grp_dsc);
+	
 	ctl.send_group_desc_stats_reply(auxid, msg.get_xid(), groupdescs);
 }
 

@@ -50,9 +50,14 @@ void clone_pkt_contents(datapacket_t* src, datapacket_t* dst){
 	//Initialize the buffer and copy but do not classify
 	pack_dst->init(pack_src->get_buffer(), pack_src->get_buffer_length(), pack_src->lsw, pack_src->clas_state.port_in, pack_src->clas_state.phy_port_in, false, true);
 
-	//Copy classification state and 
+	//Copy output_queue
 	pack_dst->output_queue = pack_src->output_queue;
-	pack_dst->clas_state = pack_src->clas_state;
+	//Copy classification state
+	pack_dst->clas_state.type = pack_src->clas_state.type;
+	// do not overwrite clas_state.base and clas_state.len, as they are pointing to pack_src and were set already when calling pack_dst->init(...)
+	pack_dst->clas_state.port_in = pack_src->clas_state.port_in;
+	pack_dst->clas_state.phy_port_in = pack_src->clas_state.phy_port_in;
+	pack_dst->clas_state.calculate_checksums_in_sw = pack_src->clas_state.calculate_checksums_in_sw;
 }
 
 STATIC_PACKET_INLINE__
@@ -79,9 +84,6 @@ void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_port_t*
 	if(likely(port && port->platform_port_state) && port->up && port->forward_packets){
 		
 		ROFL_DEBUG(DRIVER_NAME"[pkt][%s] OUTPUT packet(%p)\n", port->name, pkt);
-#ifdef DEBUG
-		dump_packet_matches(pkt, false);
-#endif
 
 		TM_STAMP_STAGE(pkt, TM_SA5_PRE);
 		
@@ -191,10 +193,6 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 			//send the replica
 			output_single_packet(replica, replica_pack, port_it);
 		}
-
-#ifdef DEBUG
-		dump_packet_matches(pkt, false);
-#endif
 			
 		//discard the original packet always (has been replicated)
 		bufferpool::release_buffer(pkt);

@@ -77,7 +77,7 @@ public:
 	/**
 	 * Reverse maps a bucket list 
 	 */
-	static void of13_map_reverse_bucket_list(	rofl::openflow::cofbuckets& of_buckets, of1x_bucket_list_t* bucket_list);
+	static void of13_map_reverse_bucket_list(	rofl::openflow::cofbuckets& of_buckets, of1x_stats_bucket_desc_msg* bucket_list);
 	
 	/**
 	*

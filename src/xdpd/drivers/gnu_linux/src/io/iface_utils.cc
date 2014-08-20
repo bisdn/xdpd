@@ -271,10 +271,12 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	edata.cmd = ETHTOOL_GSET;
 	ifr.ifr_data = (char *) &edata;
 
+	//Discard loopback
+	if(strncmp("lo",ifa->ifa_name,2) == 0)
+		return NULL;
+
 	if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
-		//FIXME change this messages into warnings "Unable to discover mac address of interface %s"
-		if(strncmp("lo",ifa->ifa_name,2) != 0)
-			ROFL_WARN(DRIVER_NAME"[ports] WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
+		ROFL_WARN(DRIVER_NAME"[ports] WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
 	}
 	
 	//Init the port
@@ -348,6 +350,9 @@ rofl_result_t discover_physical_ports(){
 
 		//Fill port
 		port = fill_port(sock, ifa);
+
+		if(!port)
+			continue;
 
 		//Adding the 
 		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
@@ -649,7 +654,7 @@ rofl_result_t update_physical_ports(){
 		//Fill port
 		port = fill_port(sock,  it->second);
 		if(!port){
-			ROFL_ERR(DRIVER_NAME"[ports] Unable to initialize newly discovered interface %s\n", it->first.c_str());
+			//ROFL_ERR(DRIVER_NAME"[ports] Unable to initialize newly discovered interface %s\n", it->first.c_str());
 			continue;
 		}		
 

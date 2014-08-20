@@ -98,12 +98,17 @@ inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t* pkt_c
 	pkt_copy->is_replica = true;
 	pkt_copy->sw = pkt->sw;
 
-	//Initialize replica buffer and classify  //TODO: classification state could be copied
-	init_datapacket_dpdk(pkt_dpdk_copy, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->clas_state.port_in, 0, true, true);
+	//Initialize the buffer and copy but do not classify
+	init_datapacket_dpdk(pkt_dpdk_copy, mbuf, (of_switch_t*)pkt->sw, pkt_dpdk->clas_state.port_in, 0, false, true);
 
-	//Copy classification state and output queue 
-	pkt_dpdk->output_queue = pkt_dpdk_copy->output_queue;
-	pkt_dpdk->clas_state = pkt_dpdk_copy->clas_state;
+	//Copy output_queue
+	pkt_dpdk_copy->output_queue = pkt_dpdk->output_queue;
+	//Copy classification state
+	pkt_dpdk_copy->clas_state.type = pkt_dpdk->clas_state.type;
+	// do not overwrite clas_state.base and clas_state.len, as they are pointing to pkt_dpdk and were set already when calling pkt_dpdk_copy->init(...)
+	pkt_dpdk_copy->clas_state.port_in = pkt_dpdk->clas_state.port_in;
+	pkt_dpdk_copy->clas_state.phy_port_in = pkt_dpdk->clas_state.phy_port_in;
+	pkt_dpdk_copy->clas_state.calculate_checksums_in_sw = pkt_dpdk->clas_state.calculate_checksums_in_sw;
 }
 
 /**
@@ -218,9 +223,7 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 	if(likely(port && port->platform_port_state) && port->up && port->forward_packets){
 		
 		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
-#ifdef DEBUG
-		dump_packet_matches(pkt, false);
-#endif
+
 		if(port->type == PORT_TYPE_VIRTUAL){
 			/*
 			* Virtual link
@@ -321,10 +324,6 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 			//send the replica
 			output_single_packet(replica, replica_pack, port_it);
 		}
-
-#ifdef DEBUG
-		dump_packet_matches(pkt, false);
-#endif
 			
 		//discard the original packet always (has been replicated)
 		rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);

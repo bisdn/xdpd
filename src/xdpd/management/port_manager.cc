@@ -116,9 +116,12 @@ void port_manager::blacklist(std::string& port_name){
 	}
 	
 	//Add it to the list
+	blacklisted.insert(port_name);
 	
 	//Release mutex	
 	pthread_mutex_unlock(&port_manager::mutex);
+		
+	ROFL_INFO("[xdpd][port_manager] Port %s blacklisted\n", port_name.c_str());
 }
 
 void port_manager::whitelist(std::string& port_name){
@@ -139,10 +142,12 @@ void port_manager::whitelist(std::string& port_name){
 	pthread_mutex_lock(&port_manager::mutex);
 
 	//Remove from the list
+	blacklisted.erase(port_name);
 
 	//Release mutex	
 	pthread_mutex_unlock(&port_manager::mutex);
 
+	ROFL_INFO("[xdpd][port_manager] Port %s whitelisted\n", port_name.c_str());
 }
 
 //

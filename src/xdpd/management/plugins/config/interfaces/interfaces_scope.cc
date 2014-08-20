@@ -53,7 +53,6 @@ void interfaces_scope::__pre_execute(libconfig::Setting& setting, bool dry_run){
 			//If it is not dry run, then really blacklist it
 			if(!dry_run){
 				port_manager::blacklist(port);	
-				port_manager::whitelist(port);	
 			}	
 		}
 	}

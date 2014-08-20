@@ -798,7 +798,7 @@ static switch_port_t* configure_pex_port_kni(const char *pex_name, const char *p
 
 rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *pex_port, port_type_t pex_port_type)
 {
-	switch_port_t* port;
+	switch_port_t* port = NULL;
 	
 	ROFL_INFO(DRIVER_NAME"[port_manager] Creating a PEX port named '%s'\n",pex_port);
 	

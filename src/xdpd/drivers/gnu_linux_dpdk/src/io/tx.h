@@ -260,10 +260,7 @@ flush_kni_pex_port_burst(switch_port_t* port, unsigned int port_id, struct mbuf_
 		return;
 	}
 		
-	//Enqueue to the lcore (if it'd we us, we could probably call to transmit directly)
-	pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
-		
-	assert(port_state != NULL);
+	assert((pex_port_state_kni_t*)port->platform_port_state != NULL);
 	
 	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Trying to flush burst(enqueue in lcore ring) on KNI port %s\n", port->name, queue->len);
 	

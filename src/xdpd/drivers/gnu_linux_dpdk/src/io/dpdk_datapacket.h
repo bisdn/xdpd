@@ -84,9 +84,14 @@ static inline rofl_result_t init_datapacket_dpdk(datapacket_dpdk_t *dpkt, struct
 	dpkt->packet_in_bufferpool = packet_is_in_bufferpool;
 
 	//Classify the packet
-	if(likely(classify))
+	if(likely(classify)){
 		classify_packet(&dpkt->clas_state, get_buffer_dpdk(dpkt), get_buffer_length_dpdk(dpkt), in_port, in_phy_port);
-
+	}else{
+		//Just initialize the base and len pointers in the classification state
+		dpkt->clas_state.base = get_buffer_dpdk(dpkt);
+		dpkt->clas_state.len = get_buffer_length_dpdk(dpkt);
+	}
+	
 	return ROFL_SUCCESS;
 }
 

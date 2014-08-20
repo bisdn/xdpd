@@ -41,8 +41,23 @@ void scope::register_parameter(std::string _name, bool mandatory){
 }
 
 
-void scope::execute(libconfig::Setting& setting, bool dry_run){
+void scope::__pre_execute(libconfig::Setting& setting, bool dry_run){
+
+	this->pre_execute(setting, dry_run);
 	
+	std::vector<scope*>::iterator scope_iter;
+	scope* sc;
+
+	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
+		sc = *scope_iter;
+		if(setting.exists(sc->name))
+			sc->__pre_execute(setting[sc->name], dry_run);
+	}
+
+}
+
+void scope::execute(libconfig::Setting& setting, bool dry_run){
+
 	//Call pre-hook
 	pre_validate(setting, dry_run);
 
@@ -103,8 +118,26 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 	post_validate(setting, dry_run);
 }
 
+
+void scope::__pre_execute(libconfig::Config& config, bool dry_run){
+
+	this->pre_execute(config, dry_run);
+	
+	std::vector<scope*>::iterator scope_iter;
+	scope* sc;
+
+	for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
+		sc = *scope_iter;
+		if(config.exists(sc->name))
+			sc->__pre_execute(config.lookup(sc->name), dry_run);
+	}
+}
+
 void scope::execute(libconfig::Config& config, bool dry_run){
 
+	//First execute all pre_execute hooks
+	__pre_execute(config, dry_run);
+	
 	//Call pre-hook
 	pre_validate(config, dry_run);
 

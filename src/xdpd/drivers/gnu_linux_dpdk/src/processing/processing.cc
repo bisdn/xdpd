@@ -199,7 +199,7 @@ int processing_core_process_packets(void* not_used){
 				port_id = ((dpdk_port_state_t*)port->platform_port_state)->port_id;
 
 				//Process RX&pipeline 
-				process_port_rx(port, port_id, pkt_burst, &pkt, pkt_state);
+				process_port_rx(core_id, port, port_id, pkt_burst, &pkt, pkt_state);
 			}
 		}
 	}

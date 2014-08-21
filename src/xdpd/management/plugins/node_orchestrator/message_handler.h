@@ -64,6 +64,7 @@ protected:
 				"port" : "6653"
 			},
 		"ports" : ["ge0","ge1"],
+		"wireless" : "wlan0",
 		"network-functions" : [
 			 {
 		        "name" : "VPN",
@@ -105,6 +106,7 @@ protected:
 				"id" : "0x2"
 			}	
 		],
+		"wireless" : "0x3",
 		"network-functions" : [
 			{
 		        "name" : "VPN",
@@ -146,13 +148,13 @@ protected:
 	}
 */
 	static string createLSI(string message);
-	static string createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links);
+	static string createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links, bool wireless = false, unsigned int wirelessPortID = 0);
 
 /**
 *	Example of command to destroy an LSI
 *
 	{
-		"command" : "create-lsi",
+		"command" : "destroy-lsi",
 		"lsi-id" : "0x200"
 	}
 *

@@ -100,6 +100,9 @@ string MessageHandler::createLSI(string message)
 	list< pair<string,list<string> > > networkFunctions; //list <nf name, list <port name> >
 	map<string,PexType> nfTypes; //list of <nf_name, nf type>
 	map<string,map<string,uint32_t> > nfPorts; //map <nf name, map <port name, port id> >
+	string wirelessPort;
+	
+	bool foundWireless = false;
 	
 	string controllerAddress;
 	string controllerPort;
@@ -149,6 +152,11 @@ string MessageHandler::createLSI(string message)
 			{
 				physicalPorts.push_back( ports_array[i].getString() );
 			}
+        }
+        else if ( name == "wireless" )
+        {
+        	foundWireless = true;
+        	wirelessPort = value.getString();
         }
         else if( name == "network-functions")
     	{
@@ -255,6 +263,29 @@ string MessageHandler::createLSI(string message)
 	}
 	
 	list<string> names;
+	
+	unsigned int wirelessPortID;
+	if(foundWireless)
+	{
+		//xDPd does not support directly wireless interfaces. Hence, a KNI port is created, which can be attached
+		//to a bridge, in turn attached with the wireless interface (note that this is not done by xDPd; it just
+		//creates the KNI interface.
+		try
+		{
+			stringstream wirelessPortName;
+			wirelessPortName << lsi.getDpid() << "_" << wirelessPort;
+			wirelessPortID = NodeOrchestrator::createNfPort(lsi.getDpid(), wirelessPort, wirelessPortName.str(),DPDK_KNI);
+			
+			names.push_back(wirelessPortName.str());
+		}catch(...)
+	 	{
+	 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Command \"create-lsi\" failed");
+			stringstream ss;
+			ss << "An error occurred while creating the wireless port " << wirelessPort;
+			return createErrorMessage(string(CREATE_LSI), ss.str());	
+	 	}
+	}
+	
 	for(list< pair<string,list<string> > >::iterator it = networkFunctions.begin(); it != networkFunctions.end(); it++)
  	{	
  		stringstream nfName;
@@ -299,10 +330,10 @@ string MessageHandler::createLSI(string message)
 	 	virtual_links.push_back(ids);
     }
  	 
-	return createLSIAnswer(lsi,nfPorts,virtual_links);
+	return createLSIAnswer(lsi,nfPorts,virtual_links, foundWireless, wirelessPortID);
 }
 
-string MessageHandler::createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links)
+string MessageHandler::createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> > nfPorts,list<pair<unsigned int, unsigned int> > virtual_links, bool wireless, unsigned int wirelessPortID)
 {
 	Object json;
 	
@@ -323,6 +354,9 @@ string MessageHandler::createLSIAnswer(LSI lsi, map<string,map<string,uint32_t> 
 	}	
 	if(ports.size() > 0)
 		json["ports"] = ports_array;
+		
+	if(wireless)
+		json["wireless"] = wirelessPortID;
 	
 	Array nfs_array;
 	map<string,map<string,uint32_t> >::iterator nf = nfPorts.begin();

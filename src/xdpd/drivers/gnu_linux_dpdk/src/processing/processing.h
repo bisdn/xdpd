@@ -44,6 +44,8 @@ typedef struct core_tasks{
 	bool available;
 	bool active;
 	unsigned int num_of_rx_ports;
+	unsigned int running_hash;
+	
 	switch_port_t* port_list[PROCESSING_MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
 	
 	//This are the TX-queues for ALL ports in the system; index is port_id
@@ -71,6 +73,12 @@ extern unsigned int total_num_of_phy_ports;
 * Total number of PEX ports (scheduled, so usable by the I/O)
 */
 extern unsigned int total_num_of_pex_ports;
+
+/**
+* Running hash
+*/
+extern unsigned int running_hash; 
+
 
 //C++ extern C
 ROFL_BEGIN_DECLS

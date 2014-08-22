@@ -268,7 +268,7 @@ int processing_core_process_packets(void* not_used){
 rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	unsigned int i, index, *num_of_ports;
-	unsigned int agnostic_port_id;
+	unsigned int port_id;
 
 	
 	rte_spinlock_lock(&mutex);
@@ -341,7 +341,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			port_state->core_port_slot = *num_of_ports;
 		
 			
-			agnostic_port_id = port_state->port_id;
+			port_id = port_state->port_id;
 
 			//Increment total counter
 			total_num_of_phy_ports++;
@@ -357,7 +357,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			port_state->core_id = current_core_index; 
 			port_state->core_port_slot = *num_of_ports;
 
-			agnostic_port_id = port_state->pex_id;
+			port_id = port_state->pex_id;
 
 			//Increment total counter
 			total_num_of_pex_ports++;
@@ -374,7 +374,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			port_state->core_id = current_core_index; 
 			port_state->core_port_slot = *num_of_ports;
 
-			agnostic_port_id = port_state->pex_id;
+			port_id = port_state->pex_id;
 		
 			//Increment total counter
 			total_num_of_pex_ports++;
@@ -395,8 +395,22 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	//Mark port as present (and scheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_core_tasks[i].phy_ports[agnostic_port_id].present = true;
-		processing_core_tasks[i].phy_ports[agnostic_port_id].core_id = index;
+
+		switch(port->type){
+			case PORT_TYPE_PHYSICAL: 
+				processing_core_tasks[i].phy_ports[port_id].present = true;
+				processing_core_tasks[i].phy_ports[port_id].core_id = index;
+				break;
+				
+			case PORT_TYPE_PEX_DPDK_SECONDARY:	
+			case PORT_TYPE_PEX_DPDK_KNI:
+				processing_core_tasks[i].pex_ports[port_id].present = true;
+				processing_core_tasks[i].pex_ports[port_id].core_id = index;
+				break;
+		
+			default: assert(0);
+				return ROFL_FAILURE;
+		}
 	}
 
 
@@ -661,8 +675,22 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	
 	//Mark port as NOT present anymore (descheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
-		processing_core_tasks[i].phy_ports[*port_id].present = false;
-		processing_core_tasks[i].phy_ports[*port_id].core_id = 0xFFFFFFFF;
+
+		switch(port->type){
+			case PORT_TYPE_PHYSICAL: 
+				processing_core_tasks[i].phy_ports[*port_id].present = false;
+				processing_core_tasks[i].phy_ports[*port_id].core_id = 0xFFFFFFFF;
+				break;
+				
+			case PORT_TYPE_PEX_DPDK_SECONDARY:	
+			case PORT_TYPE_PEX_DPDK_KNI:
+				processing_core_tasks[i].pex_ports[*port_id].present = false;
+				processing_core_tasks[i].pex_ports[*port_id].core_id = 0xFFFFFFFF;
+				break;
+		
+			default: assert(0);
+				return ROFL_FAILURE;
+		}
 	}
 
 	//Increment the hash counter

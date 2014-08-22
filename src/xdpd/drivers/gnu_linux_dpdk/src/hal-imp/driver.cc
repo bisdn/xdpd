@@ -368,7 +368,6 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 		* Virtual link
 		*/
 		//Do nothing
-		assert(0);
 	}else{
 		//Schedule the port in the I/O subsystem
 		if(processing_schedule_port(port) != ROFL_SUCCESS){

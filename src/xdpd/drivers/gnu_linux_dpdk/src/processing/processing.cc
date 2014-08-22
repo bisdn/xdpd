@@ -620,8 +620,8 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	//This loop copies from descheduled port, all the rest of the ports
 	//one up, so that list of ports is contiguous (0...N-1)
 
-	for(i=(core_task->num_of_rx_ports-1); i > *core_port_slot; i--)
-		core_task->port_list[i-1] = core_task->port_list[i];	
+	for(i=*core_port_slot; i<core_task->num_of_rx_ports; i++)
+		core_task->port_list[i] = core_task->port_list[i+1];	
 	
 	//Cleanup the last position
 	core_task->num_of_rx_ports--;

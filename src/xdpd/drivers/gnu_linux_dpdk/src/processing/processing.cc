@@ -24,6 +24,7 @@ static rte_spinlock_t mutex;
 core_tasks_t processing_core_tasks[RTE_MAX_LCORE];
 unsigned int total_num_of_phy_ports = 0;
 unsigned int total_num_of_pex_ports = 0;
+unsigned int running_hash = 0;
 
 static void processing_dump_cores_state(void){
 
@@ -129,6 +130,17 @@ rofl_result_t processing_destroy(void){
 	return ROFL_SUCCESS;
 }
 
+//Synchronization code
+static void processing_wait_for_cores_to_sync(){
+
+	unsigned int i;
+
+	for(i=0;i<RTE_MAX_LCORE;++i){
+		if(processing_core_tasks[i].active){
+			while(processing_core_tasks[i].running_hash != running_hash);
+		}	
+	}
+}
 
 int processing_core_process_packets(void* not_used){
 
@@ -162,6 +174,9 @@ int processing_core_process_packets(void* not_used){
 	prev_tsc = 0;
 
 	while(likely(tasks->active)){
+
+		//Update running_hash
+		tasks->running_hash = running_hash;
 
 		//Calc diff
 		diff_tsc = prev_tsc - rte_rdtsc();  
@@ -385,6 +400,9 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	}
 
 
+	//Increment the hash counter
+	running_hash++;
+	
 	rte_spinlock_unlock(&mutex);
 
 	if(!processing_core_tasks[index].active){
@@ -504,6 +522,9 @@ rofl_result_t processing_schedule_pex_port(switch_port_t* port)
 
 	//Increment total counter
 	total_num_of_pex_ports++;
+	
+	//Increment the hash counter
+	running_hash++;
 	
 	rte_spinlock_unlock(&mutex);
 
@@ -644,6 +665,12 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 		processing_core_tasks[i].phy_ports[*port_id].core_id = 0xFFFFFFFF;
 	}
 
+	//Increment the hash counter
+	running_hash++;
+	
+	//Wait for all the active cores to sync
+	processing_wait_for_cores_to_sync();
+
 	rte_spinlock_unlock(&mutex);	
 	
 	*scheduled = false;
@@ -711,6 +738,12 @@ rofl_result_t processing_deschedule_pex_port(switch_port_t* port)
 			processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = 0xFFFFFFFF;
 		}
 
+		//Increment the hash counter
+		running_hash++;
+		
+		//Wait for all the active cores to sync
+		processing_wait_for_cores_to_sync();
+
 		rte_spinlock_unlock(&mutex);	
 	
 		port_state->scheduled = false;
@@ -766,6 +799,12 @@ rofl_result_t processing_deschedule_pex_port(switch_port_t* port)
 			processing_core_tasks[i].pex_ports[port_state->pex_id].present = false;
 			processing_core_tasks[i].pex_ports[port_state->pex_id].core_id = 0xFFFFFFFF;
 		}
+
+		//Increment the hash counter
+		running_hash++;
+		
+		//Wait for all the active cores to sync
+		processing_wait_for_cores_to_sync();
 
 		rte_spinlock_unlock(&mutex);	
 	

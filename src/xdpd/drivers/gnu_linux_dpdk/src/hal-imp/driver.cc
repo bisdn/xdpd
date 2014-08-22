@@ -250,13 +250,7 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	for(i=0;i<sw->max_ports;i++){
 
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
-			if(sw->logical_ports[i].port->type == PORT_TYPE_PEX_DPDK_SECONDARY || sw->logical_ports[i].port->type == PORT_TYPE_PEX_DPDK_KNI)
-				//Deschedule a PEX port
-				processing_deschedule_pex_port(sw->logical_ports[i].port);
-			else if(sw->logical_ports[i].port->type != PORT_TYPE_VIRTUAL)	
-				//Deschedule a physical port
-				processing_deschedule_port(sw->logical_ports[i].port);
-			//Do not deschedule virtual ports
+			hal_driver_detach_port_from_switch(dpid, sw->logical_ports[i].port->name);
 		}
 	}	
 
@@ -374,18 +368,8 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 		* Virtual link
 		*/
 		//Do nothing
-	}else if (port->type == PORT_TYPE_PEX_DPDK_SECONDARY || port->type == PORT_TYPE_PEX_DPDK_KNI) {
-		/*
-		*	Port connected to a PEX (the type of the PEX does not matter
-		*/
-		if(processing_schedule_pex_port(port) != ROFL_SUCCESS) {
-			assert(0);
-			return HAL_FAILURE;
-		}
-	}else {
-		/*
-		*  PHYSICAL
-		*/
+		assert(0);
+	}else{
 		//Schedule the port in the I/O subsystem
 		if(processing_schedule_port(port) != ROFL_SUCCESS){
 			assert(0);
@@ -532,21 +516,8 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 			goto DRIVER_DETACH_ERROR;
 			
 		}
-	}
-	else if (port->type == PORT_TYPE_PEX_DPDK_SECONDARY || port->type == PORT_TYPE_PEX_DPDK_KNI) {
-        /*
-        *       Port connected to a PEX
-        */
-        if(processing_deschedule_pex_port(port) != ROFL_SUCCESS) {
-                assert(0);
-                return HAL_FAILURE;
-        }
-	}
-	else{
-		/*
-		*  PHYSICAL
-		*/
-		//Deschedule port from processing (physical port)
+	}else{
+		//Deschedule port from processing (physical or PEX port)
 		processing_deschedule_port(port);
 	}
 

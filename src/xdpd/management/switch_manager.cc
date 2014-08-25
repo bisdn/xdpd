@@ -336,7 +336,15 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 		of1x_destroy_flow_entry(entry);	
 }
 
-
+void switch_manager::get_switch_group_table(uint64_t dpid, openflow_group_table_snapshot& gt){
+	of1x_stats_group_desc_msg_t* group_table_desc = NULL;
+	group_table_desc = hal_driver_of1x_get_group_desc_stats(dpid);
+	
+	gt = openflow_group_table_snapshot(group_table_desc);
+	
+	if (group_table_desc)
+		of1x_destroy_group_desc_stats(group_table_desc);
+}
 
 void
 switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){

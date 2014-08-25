@@ -31,6 +31,7 @@ void example::handle_timeout(int opaque, void *data){
 		std::list<std::string> list = switch_manager::list_sw_names();
 		std::list<flow_entry_snapshot> flows;
 		openflow_switch_snapshot sw;
+		openflow_group_table gt;
 
 		for(std::list<std::string>::iterator it = list.begin(); it != list.end(); ++it){
 
@@ -55,6 +56,16 @@ void example::handle_timeout(int opaque, void *data){
 				for(k=0; f_it != flows.end(); ++f_it, ++k)
 					ss <<"\t\t["<<k<<"]"<< *f_it;
 			}
+			
+			//Dump group table
+			switch_manager::get_group_table(switch_manager::get_switch_dpid(*it), gt);
+			for(j=0;j<gt.num_of_buckets;j++){
+				switch_manager::get_group_table_buckets();
+				
+				//ss << 
+				
+			}
+			
 		}
 		
 		//Ending trace

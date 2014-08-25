@@ -32,6 +32,7 @@
 //Snapshot
 #include "snapshots/switch_snapshot.h"
 #include "snapshots/flow_entry_snapshot.h"
+#include "snapshots/group_table_snapshot.h"
 
 /**
 * @file switch_manager.h

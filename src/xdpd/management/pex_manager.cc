@@ -24,7 +24,7 @@ void pex_manager::create_pex_port(std::string& pex_name, std::string& pex_port_n
 	pthread_mutex_lock(&pex_manager::mutex);
 	
 	// The PEX port must not exist
-	if(port_manager::port_exists(pex_port_name))
+	if(port_manager::exists(pex_port_name))
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
 		ROFL_ERR("%s ERROR: Attempting to create an existent PEX port %s\n", MODULE_NAME, pex_port_name.c_str());
@@ -53,7 +53,7 @@ void pex_manager::destroy_pex_port(std::string& pex_port_name)
 	pthread_mutex_lock(&pex_manager::mutex);
 	
 	// The PEX must exist
-	if(!port_manager::port_exists(pex_port_name))
+	if(!port_manager::exists(pex_port_name))
 	{
 		pthread_mutex_unlock(&pex_manager::mutex);
 		ROFL_ERR("%s ERROR: Attempting to destroy a non-existent PEX port %s\n", MODULE_NAME, pex_port_name.c_str());

@@ -246,7 +246,7 @@ int processing_core_process_packets(void* not_used){
 			port = tasks->port_list[i];
 			if(likely(port != NULL) && likely(port->up)){ //This CAN happen while deschedulings
 				//Process RX&pipeline 
-				process_port_rx(core_id, port, port_id, pkt_burst, &pkt, pkt_state);
+				process_port_rx(core_id, port, pkt_burst, &pkt, pkt_state);
 			}
 		}
 	}

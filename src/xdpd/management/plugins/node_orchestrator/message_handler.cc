@@ -1019,7 +1019,7 @@ string MessageHandler::destroyVirtualLinks(string message)
 
 string MessageHandler::discoverPhyPorts(string message)
 {
-	list<string> ports = NodeOrchestrator::discoverPhyPorts();
+	set<string> ports = NodeOrchestrator::discoverPhyPorts();
 	
 	Object json;
 	
@@ -1027,7 +1027,7 @@ string MessageHandler::discoverPhyPorts(string message)
 	json["status"] = "ok";	
 	
 	Array ports_array;
-	for(list<string>::iterator p = ports.begin(); p != ports.end(); p++)
+	for(set<string>::iterator p = ports.begin(); p != ports.end(); p++)
 	{
 		if(portSide.count(*p) != 0)
 		{

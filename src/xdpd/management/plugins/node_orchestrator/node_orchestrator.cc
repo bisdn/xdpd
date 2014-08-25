@@ -163,10 +163,10 @@ LSI NodeOrchestrator::createLSI(list<string> phyPorts, string controllerAddress,
 	return LSI(dpid,ports);
 }
 
-list<string> NodeOrchestrator::discoverPhyPorts()
+set<string> NodeOrchestrator::discoverPhyPorts()
 {
-	list<string> availablePorts =  port_manager::list_available_port_names();
-	list<string>::iterator port = availablePorts.begin();
+	set<string> availablePorts =  port_manager::list_available_port_names();
+	set<string>::iterator port = availablePorts.begin();
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Number of ports available: %d\n", availablePorts.size());
 	for(; port != availablePorts.end(); port++)
 	{

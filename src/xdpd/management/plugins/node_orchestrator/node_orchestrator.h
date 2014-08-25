@@ -82,7 +82,7 @@ protected:
 	static bool detachPort(uint64_t dpid, uint64_t portID, bool vlink);
 	static bool detachPort(uint64_t dpid, string port, bool vlink);
 	
-	static list<string> discoverPhyPorts();
+	static set<string> discoverPhyPorts();
 	
 	static uint64_t nextDpid;
 

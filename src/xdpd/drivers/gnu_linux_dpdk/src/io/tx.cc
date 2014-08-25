@@ -15,13 +15,14 @@
 void xdpd::gnu_linux_dpdk::tx_pkt_vlink(switch_port_t* vlink, datapacket_t* pkt){
 	switch_port_t* vlink_pair = (switch_port_t*)vlink->platform_port_state;
 	of_switch_t* sw;
+	unsigned int core_id = rte_lcore_id();
 
 	assert(vlink->type == PORT_TYPE_VIRTUAL);
 	
 	if( likely( vlink_pair!= NULL) ){
 		sw = vlink_pair->attached_sw;
 		if( likely(sw != NULL) ){	
-			of_process_packet_pipeline(sw, pkt);
+			of_process_packet_pipeline(core_id, sw, pkt);
 			return;
 		}
 	}

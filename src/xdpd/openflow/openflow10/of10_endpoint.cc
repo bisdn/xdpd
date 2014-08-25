@@ -211,8 +211,8 @@ of10_endpoint::handle_table_stats_request(
 		//Other information
 		tablestatsarray.set_table_stats(table_id).set_max_entries(of10switch->pipeline.tables[n].max_entries);
 		tablestatsarray.set_table_stats(table_id).set_active_count(of10switch->pipeline.tables[n].num_of_entries);
-		tablestatsarray.set_table_stats(table_id).set_lookup_count(of10switch->pipeline.tables[n].stats.lookup_count);
-		tablestatsarray.set_table_stats(table_id).set_matched_count(of10switch->pipeline.tables[n].stats.matched_count);
+		tablestatsarray.set_table_stats(table_id).set_lookup_count(of10switch->pipeline.tables[n].stats.s.counters.lookup_count);
+		tablestatsarray.set_table_stats(table_id).set_matched_count(of10switch->pipeline.tables[n].stats.s.counters.matched_count);
 	}
 
 	//Destroy the snapshot
@@ -604,7 +604,7 @@ of10_endpoint::handle_packet_out(
 							msg.get_buffer_id(),
 							msg.get_in_port(),
 							action_group,
-							msg.get_packet().soframe(), msg.get_packet().framelen())){
+							msg.get_packet().soframe(), msg.get_packet().length())){
 		// log error
 		//FIXME: send error
 	}
@@ -999,8 +999,8 @@ of10_endpoint::process_flow_removed(
 				nsec,
 				entry->timer_info.idle_timeout,
 				entry->timer_info.hard_timeout,
-				entry->stats.packet_count,
-				entry->stats.byte_count);
+				entry->stats.s.counters.packet_count,
+				entry->stats.s.counters.byte_count);
 
 		return ROFL_SUCCESS;
 

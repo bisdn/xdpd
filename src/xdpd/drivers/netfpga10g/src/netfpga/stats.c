@@ -44,14 +44,9 @@ rofl_result_t netfpga_update_entry_stats(of1x_flow_entry_t* entry){
 	netfpga_read_reg(nfpga, NETFPGA_OF_STATS_BASE_REG+1,(aux+1));
 
 	//Update main entry and return
-/*struct nf2_of_counters {
-uint32_t pkt_count:25; ->correction by shiftiing
-uint8_t last_seen:7; -> ignore
-uint32_t byte_count;
-};
-*/
-	entry->stats.packet_count = stats.pkt_counter>>7;  
-	entry->stats.byte_count = stats.byte_counter;  
+	
+	entry->stats.s.counters.packet_count = stats.pkt_counter;  
+	entry->stats.s.counters.byte_count = stats.byte_counter;  
 	//ROFL_DEBUG("\n entry stats: %x, %x",stats.pkt_counter,stats.byte_counter );
 
 

@@ -57,6 +57,15 @@ protected:
 		}
 		return NULL;
 	}
+
+	//Pre-execute hooks	
+	virtual void __pre_execute(libconfig::Config& config, bool dry_run);
+	virtual void __pre_execute(libconfig::Setting& setting, bool dry_run);
+	
+
+	//Pre-execute hooks	
+	virtual void pre_execute(libconfig::Config& config, bool dry_run){};
+	virtual void pre_execute(libconfig::Setting& setting, bool dry_run){};
 	
 	//Allow actions before and after parameter and scope validation	
 	virtual void pre_validate(libconfig::Config& config, bool dry_run){};

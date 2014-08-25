@@ -9,10 +9,11 @@
 
 #include "../config.h"
 
-
 using namespace xdpd;
 using namespace rofl;
 
+//Constants
+#define BLACKLIST "blacklist"
 #define VIF_VIF "vif"
 #define VIF_LINK "link"
 #define VIF_LSI "lsi"
@@ -22,7 +23,7 @@ using namespace rofl;
 interfaces_scope::interfaces_scope(std::string name, bool mandatory):scope(name, mandatory){
 	
 	//Register parameters
-	//None for the moment
+	register_parameter(BLACKLIST);
 
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook
@@ -30,6 +31,32 @@ interfaces_scope::interfaces_scope(std::string name, bool mandatory):scope(name,
 
 }
 
+void interfaces_scope::__pre_execute(libconfig::Setting& setting, bool dry_run){
+	
+	//Update cache
+	blacklisted.clear();
+
+	//If the configuration has a blacklist port	
+	if(setting.exists(BLACKLIST)){	
+		for(int i=0; i<setting[BLACKLIST].getLength(); ++i){
+			std::string port = setting[BLACKLIST][i];
+
+			//Check for port existance		
+			if(port_manager::exists(port) == false){
+				ROFL_ERR(CONF_PLUGIN_ID "%s: attempting to blacklist an invalid port '%s'. Port does not exist!\n", setting.getPath().c_str(), port.c_str());
+				throw eConfParseError(); 	
+			}
+
+			//Blacklist
+			blacklisted.insert(port);
+			
+			//If it is not dry run, then really blacklist it
+			if(!dry_run){
+				port_manager::blacklist(port);	
+			}	
+		}
+	}
+}
 
 virtual_ifaces_scope::virtual_ifaces_scope(std::string name, bool mandatory):scope(name, mandatory){
 	

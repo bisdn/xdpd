@@ -9,8 +9,9 @@ using namespace xdpd;
 pthread_mutex_t port_manager::mutex = PTHREAD_MUTEX_INITIALIZER; //Serialize operations 
 pthread_rwlock_t port_manager::rwlock = PTHREAD_RWLOCK_INITIALIZER; //Used to protect the vlink cache 
 std::map<std::string, std::string> port_manager::vlinks;
+std::set<std::string> port_manager::blacklisted;
 
-bool port_manager::port_exists(std::string& port_name){
+bool port_manager::exists(std::string& port_name){
 	return hal_driver_port_exists(port_name.c_str());
 }
 
@@ -43,12 +44,13 @@ std::string port_manager::get_vlink_pair(std::string& port_name){
 	return pair; 
 }
 
-std::list<std::string> port_manager::list_available_port_names(){
+std::set<std::string> port_manager::list_available_port_names(bool include_blacklisted){
 
 	unsigned int i;
 	switch_port_name_list_t* port_names;
-	std::list<std::string> port_name_list;
-	
+	std::set<std::string> port_name_list;
+	std::string port_name;
+
 	//Call the driver to list the ports
 	port_names = hal_driver_get_all_port_names();
 	
@@ -56,8 +58,11 @@ std::list<std::string> port_manager::list_available_port_names(){
 		throw eOfSmGeneralError();
 
 	//Run over the ports and get the name
-	for(i=0;i<port_names->num_of_ports;i++)
-		port_name_list.push_back(std::string(port_names->names[i].name));
+	for(i=0;i<port_names->num_of_ports;i++){
+		port_name = std::string(port_names->names[i].name);
+		if(include_blacklisted == true ||  is_blacklisted(port_name) == false)
+			port_name_list.insert(port_name);
+	}
 
 	//Destroy the list of ports
 	switch_port_name_list_destroy(port_names);
@@ -79,18 +84,89 @@ void port_manager::get_port_info(const std::string& name, port_snapshot& snapsho
 }
 
 //
+//Blacklisting
+//
+std::set<std::string> port_manager::get_blacklisted_port_names(void){
+	return blacklisted;
+}
+
+bool port_manager::is_blacklisted(std::string& port_name){
+	return blacklisted.find(port_name) != blacklisted.end();
+}
+
+void port_manager::blacklist(std::string& port_name){
+	
+	//Check first if it exists
+	if(! exists(port_name)){
+		ROFL_ERR("[xdpd][port_manager] ERROR: attempting to blacklist a non-existent port %s\n", port_name.c_str());
+		throw ePmInvalidPort();
+	}
+	
+	//Check if already blacklisted
+	if(is_blacklisted(port_name))
+		return;
+	
+	//Serialize
+	pthread_mutex_lock(&port_manager::mutex);
+
+	//First check if it is attached
+	if(is_attached(port_name)){
+		ROFL_ERR("[xdpd][port_manager] ERROR: attempting to blacklist port %s which is attached to an LSI\n", port_name.c_str());
+		throw ePmInvalidPort(); 	
+	}
+	
+	//Add it to the list
+	blacklisted.insert(port_name);
+	
+	//Release mutex	
+	pthread_mutex_unlock(&port_manager::mutex);
+		
+	ROFL_INFO("[xdpd][port_manager] Port %s blacklisted\n", port_name.c_str());
+}
+
+void port_manager::whitelist(std::string& port_name){
+
+	
+	//Check first if it exists
+	if(! exists(port_name)){
+		ROFL_ERR("[xdpd][port_manager] ERROR: attempting to whitelist a non-existent port %s\n", port_name.c_str());
+		throw ePmInvalidPort();
+	}
+
+
+	//Check if already whitelisted
+	if(! is_blacklisted(port_name))
+		return;
+	
+	//Serialize
+	pthread_mutex_lock(&port_manager::mutex);
+
+	//Remove from the list
+	blacklisted.erase(port_name);
+
+	//Release mutex	
+	pthread_mutex_unlock(&port_manager::mutex);
+
+	ROFL_INFO("[xdpd][port_manager] Port %s whitelisted\n", port_name.c_str());
+}
+
+//
 //Port operations
 //
 void port_manager::bring_up(std::string& name){
 
 	hal_result_t result;
 
+	//Check if blacklisted
+	if(is_blacklisted(name) == true)
+		return;
+
 	//Serialize . This is not strictly necessary, but prevents
 	//inconvenient interlacing of notifications in case of concurrency.
 	pthread_mutex_lock(&port_manager::mutex);
 
 	//Check port existance
-	if(!port_exists(name)){
+	if(!exists(name)){
 		pthread_mutex_unlock(&port_manager::mutex);
 		throw ePmInvalidPort();
 	}
@@ -109,12 +185,16 @@ void port_manager::bring_down(std::string& name){
 
 	hal_result_t result;
 
+	//Check if blacklisted
+	if(is_blacklisted(name) == true)
+		return;
+
 	//Serialize . This is not strictly necessary, but prevents
 	//inconvenient interlacing of notifications in case of concurrency.
 	pthread_mutex_lock(&port_manager::mutex);
 
 	//Check port existance
-	if(!port_exists(name)){
+	if(!exists(name)){
 		pthread_mutex_unlock(&port_manager::mutex);
 		throw ePmInvalidPort();
 	}
@@ -136,11 +216,15 @@ void port_manager::bring_down(std::string& name){
 
 void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, unsigned int* of_port_num){
 
+	//Check if blacklisted
+	if(is_blacklisted(port_name) == true)
+		throw ePmBlacklistedPort();
+
 	//Serialize
 	pthread_mutex_lock(&port_manager::mutex);
 
 	//Check port existance
-	if(!port_exists(port_name)){
+	if(!exists(port_name)){
 		pthread_mutex_unlock(&port_manager::mutex);
 		ROFL_ERR("[xdpd][port_manager] ERROR: Attempting to attach a non-existent port %s to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
 		throw ePmInvalidPort();
@@ -165,7 +249,16 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, 
 
 	//Recover current snapshot
 	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(port_name.c_str());
-	
+
+	if(port_snapshot == NULL ){
+		assert(0);
+		ROFL_ERR("[xdpd][port_manager] ERROR: Driver was unable to generate a port_snapshot for port %s during attachment; out of memory? The port may become unusable\n", port_name.c_str());
+		//TODO: detach?
+		pthread_mutex_unlock(&port_manager::mutex);
+		throw ePmUnknownError(); 
+	}
+
+
 	//Notify switch
 	switch_manager::__notify_port_attached(port_snapshot);
 		
@@ -266,7 +359,7 @@ void port_manager::detach_port_from_switch(uint64_t dpid, std::string& port_name
 	* need to notify switch_manager and plugin_manager; the driver must 
 	* notify it via port_delete message
 	*/
-	if(!port_exists(port_name))
+	if(!exists(port_name))
 		goto DETACH_RETURN;
 
 	//Notify switch
@@ -323,7 +416,7 @@ void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int po
 	* notify it via port_delete message
 	*/
 	std::string port_name(port_snapshot->name);
-	if(!port_exists(port_name))
+	if(!exists(port_name))
 		goto DETACH_BY_NUM_RETURN;
 	
 	//Notify switch

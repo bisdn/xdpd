@@ -246,7 +246,7 @@ int processing_core_process_packets(void* not_used){
 			port = tasks->port_list[i];
 			if(likely(port != NULL) && likely(port->up)){ //This CAN happen while deschedulings
 				//Process RX&pipeline 
-				process_port_rx(port, pkt_burst, &pkt, pkt_state);
+				process_port_rx(core_id, port, port_id, pkt_burst, &pkt, pkt_state);
 			}
 		}
 	}
@@ -637,9 +637,8 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	for(i=*core_port_slot; i<core_task->num_of_rx_ports; i++)
 		core_task->port_list[i] = core_task->port_list[i+1];	
 	
-	//Cleanup the last position
+	//Decrement counter
 	core_task->num_of_rx_ports--;
-	core_task->port_list[core_task->num_of_rx_ports] = NULL;
 
 	//There are no more ports, so simply stop core
 	if(core_task->num_of_rx_ports == 0){

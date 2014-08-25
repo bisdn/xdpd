@@ -451,9 +451,9 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 	reply.set_xid(msg.get_xid());
 
 	// get all ports
-	std::list<std::string> all_ports = port_manager::list_available_port_names();
+	std::set<std::string> all_ports = port_manager::list_available_port_names();
 
-	for (std::list<std::string>::const_iterator iter = all_ports.begin(); iter != all_ports.end(); ++iter) {
+	for (std::set<std::string>::const_iterator iter = all_ports.begin(); iter != all_ports.end(); ++iter) {
 
 		if (not query_all_dp) {
 			rofl::logging::trace << "[xdpd][plugin][xmp] check port " << *iter << std::endl;
@@ -493,9 +493,9 @@ xmp::handle_port_info(csocket& socket, cxmpmsg& msg)
 	reply.set_xid(msg.get_xid());
 
 	// get all ports
-	std::list<std::string> all_ports = port_manager::list_available_port_names();
+	std::set<std::string> all_ports = port_manager::list_available_port_names();
 
-	for (std::list<std::string>::const_iterator iter = all_ports.begin(); iter != all_ports.end(); ++iter) {
+	for (std::set<std::string>::const_iterator iter = all_ports.begin(); iter != all_ports.end(); ++iter) {
 		rofl::logging::trace << "[xdpd][plugin][xmp] check port " << *iter << std::endl;
 		port_snapshot snapshot;
 		try {

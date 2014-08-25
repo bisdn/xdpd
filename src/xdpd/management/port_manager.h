@@ -5,7 +5,7 @@
 #ifndef PORT_MANAGER_H
 #define PORT_MANAGER_H 
 
-#include <list>
+#include <set>
 #include <map>
 #include <string>
 #include <stdbool.h>
@@ -32,6 +32,7 @@ class ePmBase			: public rofl::RoflException {};	// base error class for all por
 class ePmInvalidPort		: public ePmBase {};
 class ePmUnknownError		: public ePmBase {};
 class ePmPortNotAttachedError	: public ePmBase {};
+class ePmBlacklistedPort	: public ePmBase {};
 
 /**
 * @brief Port management API.
@@ -55,7 +56,7 @@ public:
  	/**
 	 * @brief Retrieves the port named port_name
 	 */
-	static bool port_exists(std::string& port_name);
+	static bool exists(std::string& port_name);
 
  	/**
 	 * @brief Is a vlink port 
@@ -71,8 +72,32 @@ public:
 	/**
 	* @brief List the names of the system ports (regardless of the nature) available. 
 	*/
-	static std::list<std::string> list_available_port_names(void);
+	static std::set<std::string> list_available_port_names(bool include_blacklisted=false);
 
+	//
+	// Blacklisting
+	//
+	
+	/**
+	* @brief Get the list of the currently blacklisted ports 
+	*/
+	static std::set<std::string> get_blacklisted_port_names(void);
+
+	/**
+	* @brief Returns true if the port is in the blacklist
+	*/
+	static bool is_blacklisted(std::string& port_name);
+
+
+	/**
+	* @brief Add port_name to the list of blacklisted ports
+	*/
+	static void blacklist(std::string& port_name);
+
+	/**
+	* @brief Remove port_name to the list of blacklisted ports
+	*/
+	static void whitelist(std::string& port_name);
 
 	//
 	//Port operations
@@ -133,6 +158,13 @@ public:
 	* Log a port addition in the system event
 	*/
 	static inline void __notify_port_added(const switch_port_snapshot_t* port_snapshot){
+
+		std::string port_name(port_snapshot->name);
+
+		//Check if blacklisted
+		if(is_blacklisted(port_name) == true)
+			return;
+
 		if(port_snapshot->is_attached_to_sw)
 			ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] added to the system and attached; admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 		else
@@ -144,18 +176,27 @@ public:
 	*/
 	static inline void __notify_port_status_changed(const switch_port_snapshot_t* port_snapshot){
 
-	if(port_snapshot->is_attached_to_sw)
-		ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
-	else
-		ROFL_INFO("[xdpd][port_manager][%s] admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+		std::string port_name(port_snapshot->name);
+
+		//Check if blacklisted
+		if(is_blacklisted(port_name) == true)
+			return;
+
+		if(port_snapshot->is_attached_to_sw)
+			ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+		else
+			ROFL_INFO("[xdpd][port_manager][%s] admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 	};
 	
 	/**
 	* Log a port deletion in the system event
 	*/
 	static inline void __notify_port_deleted(const switch_port_snapshot_t* port_snapshot){
-	
 		std::string port_name(port_snapshot->name);
+
+		//Check if blacklisted
+		if(is_blacklisted(port_name) == true)
+			return;
 
 		//Notify
 		if(port_snapshot->is_attached_to_sw)
@@ -173,6 +214,24 @@ public:
 	
 private:
 
+	//TODO: this could be cached here in port_manager
+	static bool is_attached(std::string& port_name){
+		bool is_attached;
+
+		switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(port_name.c_str());
+	
+		if(port_snapshot == NULL ){
+			assert(0);
+			throw ePmUnknownError(); 
+		}
+	
+		//Recover the flag only and destroy
+		is_attached = port_snapshot->is_attached_to_sw; 
+		switch_port_destroy_snapshot(port_snapshot);	
+
+		return is_attached;
+	}
+	
 	//Add port and pair from the cache
 	static void add_vlink(std::string& port1, std::string& port2){
 
@@ -195,6 +254,9 @@ private:
 	//Virtual link cache
 	static std::map<std::string, std::string> vlinks;
 
+	//List of blacklisted port names
+	static std::set<std::string> blacklisted;
+	
 	static pthread_mutex_t mutex;	
 	static pthread_rwlock_t rwlock;
 };

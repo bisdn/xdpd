@@ -86,7 +86,7 @@ protected:
 
 	/* Methods */
 	//WRR
-	static inline bool process_port_rx(ioport* port);
+	static inline bool process_port_rx(unsigned int tid, ioport* port);
 	static inline int process_port_tx(ioport* port);
 
 	//EPOLL related	
@@ -115,7 +115,7 @@ private:
 /*
 * Call port based on scheduling algorithm 
 */
-inline bool epoll_ioscheduler::process_port_rx(ioport* port){
+inline bool epoll_ioscheduler::process_port_rx(unsigned tid, ioport* port){
 
 	unsigned int i;
 	datapacket_t* pkt;
@@ -148,7 +148,7 @@ inline bool epoll_ioscheduler::process_port_rx(ioport* port){
 				*/
 				//Process it through the pipeline
 				TM_STAMP_STAGE(pkt, TM_S3);
-				of_process_packet_pipeline(sw, pkt);
+				of_process_packet_pipeline(tid, sw, pkt);
 					
 #ifdef DEBUG
 			}
@@ -200,6 +200,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 	portgroup_state* pg = (portgroup_state*)grp;
 	ioport* port;
 	safevector<ioport*> ports;	//Ports of the group currently performing I/O operations
+	unsigned int tid;
 	
 	//Init epoll fd set
 	epfd = -1;
@@ -213,6 +214,15 @@ void* epoll_ioscheduler::process_io(void* grp){
 	//Set scheduling and priority
 	set_kernel_scheduling();
 
+	//Set tid
+	if(pg->id < ROFL_PIPELINE_MAX_TIDS){
+		tid = pg->id;
+	}else{
+		//Warn the user that we will have to use locking
+		if(is_rx)
+			ROFL_ERR(DRIVER_NAME"[epoll_ioscheduler] WARNING: RX portgroup within I/O thread: #%u, with ID %u will have to use locking within rofl-pipeline (ROFL_PIPELINE_LOCKED_TID), since %u >= ROFL_PIPELINE_MAX_TIDS(%u). You should probably compile the pipeline with the support of more running threads or decrease the number of threads in RX/TX groups \n", pthread_self(), pg->id, pg->id, ROFL_PIPELINE_MAX_TIDS);
+		tid = ROFL_PIPELINE_LOCKED_TID;
+	}
 	/*
 	* Infinite loop unless group is stopped. e.g. all ports detached
 	*/
@@ -234,7 +244,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 					port = ((epoll_event_data_t*)events[i].data.ptr)->port;
 					
 					if(is_rx)
-						epoll_ioscheduler::process_port_rx(port);
+						epoll_ioscheduler::process_port_rx(tid, port);
 					else
 						epoll_ioscheduler::process_port_tx(port);
 				}

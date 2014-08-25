@@ -47,7 +47,7 @@ namespace gnu_linux_dpdk {
 * Processes RX in a specific port. The function will process up to MAX_BURST_SIZE 
 */
 inline void
-process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t* pkt, datapacket_dpdk_t* pkt_state){
+process_port_rx(unsigned int core_id, switch_port_t* port, unsigned int port_id, struct rte_mbuf** pkts_burst, datapacket_t* pkt, datapacket_dpdk_t* pkt_state){
 	
 	unsigned int i, burst_len = 0;
 	of_switch_t* sw = port->attached_sw;
@@ -153,7 +153,7 @@ process_port_rx(switch_port_t* port, struct rte_mbuf** pkts_burst, datapacket_t*
 			rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[i+1], void *));
 
 		//Send to process
-		of_process_packet_pipeline(sw, pkt);
+		of_process_packet_pipeline(core_id, sw, pkt);
 	}	
 }
 

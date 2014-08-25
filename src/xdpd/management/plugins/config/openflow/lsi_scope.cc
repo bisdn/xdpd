@@ -100,7 +100,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 
 	//TODO: improve conf file to be able to control the OF port number when attaching
 
-	std::list<std::string> platform_ports = port_manager::list_available_port_names();	
+	std::set<std::string> platform_ports = port_manager::list_available_port_names();	
 
 	if(!setting.exists(LSI_PORTS) || !setting[LSI_PORTS].isList()){
  		ROFL_ERR(CONF_PLUGIN_ID "%s: missing or unable to parse port attachment list.\n", setting.getPath().c_str());
@@ -111,6 +111,12 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 	for(int i=0; i<setting[LSI_PORTS].getLength(); ++i){
 		std::string port = setting[LSI_PORTS][i];
 		if(port != ""){
+			//Check if blacklisted to print a nice trace
+			if(port_manager::is_blacklisted(port)){
+				ROFL_ERR(CONF_PLUGIN_ID "%s: invalid port '%s'. Port is BLACKLISTED!\n", setting.getPath().c_str(), port.c_str());
+				throw eConfParseError(); 	
+			
+			}
 			//Check if exists
 			if((std::find(platform_ports.begin(), platform_ports.end(), port) == platform_ports.end())){
 				ROFL_ERR(CONF_PLUGIN_ID "%s: invalid port '%s'. Port does not exist!\n", setting.getPath().c_str(), port.c_str());

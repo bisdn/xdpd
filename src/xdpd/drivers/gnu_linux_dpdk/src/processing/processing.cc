@@ -333,7 +333,7 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	for(i=port_state->core_port_slot; i<core_task->num_of_rx_ports; i++){
 		core_task->port_list[i] = core_task->port_list[i+1];
 		if(core_task->port_list[i]){
-			((dpdk_port_state_t*)core_task->port_list[i]->platform_port_state)->core_id = i;
+			((dpdk_port_state_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
 		}
 	}
 	

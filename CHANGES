@@ -18,6 +18,8 @@ v0.5.0
 [+][drivers] Added packet_proto_meta_imp.h to increase code re-usage (to be used with the default classifier)
 [+][drivers] Implemented new optimized c_types_pktclassifier for sw drivers
 
+[+][gnu-linux] Filtering loopback interface from available interfaces list #33
+
 [+][gnu-linux][gnu-linux-dpdk] Performance optimizations 
 [+][gnu-linux][gnu-linux-dpdk] Implemented COPY_TTL_IN/COPY_TTL_OUT between IP and MPLS
 [+][gnu-linux][gnu-linux-dpdk] Added SCTP support 

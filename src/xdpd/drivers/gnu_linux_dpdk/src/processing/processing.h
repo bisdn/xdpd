@@ -44,7 +44,7 @@ typedef struct core_tasks{
 	bool available;
 	bool active;
 	unsigned int num_of_rx_ports;
-	unsigned int running_hash;
+	volatile unsigned int running_hash;
 	
 	switch_port_t* port_list[PROCESSING_MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
 	

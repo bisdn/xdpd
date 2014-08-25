@@ -633,9 +633,24 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 
 	//This loop copies from descheduled port, all the rest of the ports
 	//one up, so that list of ports is contiguous (0...N-1)
-
-	for(i=*core_port_slot; i<core_task->num_of_rx_ports; i++)
-		core_task->port_list[i] = core_task->port_list[i+1];	
+	for(i=*core_port_slot; i<core_task->num_of_rx_ports; i++){
+		core_task->port_list[i] = core_task->port_list[i+1];
+		if(core_task->port_list[i]){
+			switch(core_task->port_list[i]->type){
+				case PORT_TYPE_PHYSICAL: 
+					((dpdk_port_state_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
+					break;
+				case PORT_TYPE_PEX_DPDK_SECONDARY:	
+					((pex_port_state_dpdk_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
+					break;
+				case PORT_TYPE_PEX_DPDK_KNI:
+					((pex_port_state_kni_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
+					break;
+				default: assert(0); //Can never happen
+					return ROFL_FAILURE;
+			}
+		}
+	}
 	
 	//Decrement counter
 	core_task->num_of_rx_ports--;

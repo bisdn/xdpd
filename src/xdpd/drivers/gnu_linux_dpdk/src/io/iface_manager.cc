@@ -832,14 +832,14 @@ rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *pex
 rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 {
 	switch_port_t *port = physical_switch_get_port_by_name(port_name);
+		
+	pthread_rwlock_wrlock(&rwlock);
 	
 	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
 	{	
 		pex_port_state_dpdk_t *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
 
-		pthread_rwlock_wrlock(&rwlock);
 		pex_port_mapping[port_state->pex_id] = NULL;
-		pthread_rwlock_unlock(&rwlock);
 
 		//According to http://dpdk.info/ml/archives/dev/2014-January/001120.html,
 		//rte_rings connot be destroyed
@@ -853,6 +853,7 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 		{
 			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot remove PEX port '%s' from the physical switch\n", port->name);
 			assert(0);
+			pthread_rwlock_unlock(&rwlock);
 			return ROFL_FAILURE;
 		}
 		rte_free(port_state);
@@ -861,9 +862,7 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 	{
 		pex_port_state_kni_t *port_state = (pex_port_state_kni_t*)port->platform_port_state;
 
-		pthread_rwlock_wrlock(&rwlock);
 		pex_port_mapping[port_state->pex_id] = NULL;
-		pthread_rwlock_unlock(&rwlock);
 		
 		rte_kni_release(port_state->kni);	
 		port_state->kni = NULL;
@@ -872,10 +871,13 @@ rofl_result_t port_manager_destroy_pex_port(const char *port_name)
 		{
 			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot remove PEX port '%s' from the physical switch\n", port->name);
 			assert(0);
+			pthread_rwlock_unlock(&rwlock);
 			return ROFL_FAILURE;
 		}
 		rte_free(port_state);
 	}
+			
+	pthread_rwlock_unlock(&rwlock);
 		
 	return ROFL_SUCCESS;
 }

@@ -33,7 +33,7 @@ public:
 	uint64_t byte_count;
 	
 	bucket_snapshot(of1x_stats_bucket_t* stats, rofl::openflow::cofbucket& bucket);
-	rofl_result_t map_bucket_list(of_version_t ver, unsigned int num_of_buckets, of1x_stats_bucket_t* stats, of1x_stats_bucket_desc_msg_t* desc, std::list<bucket_snapshot>& buckets);
+	static rofl_result_t map_bucket_list(of_version_t ver, int num_of_buckets, of1x_stats_bucket_t* stats, of1x_stats_bucket_desc_msg_t* desc, std::list<bucket_snapshot>& buckets);
 	
 	//Dumping operator
 	friend std::ostream& operator<<(std::ostream& os, const bucket_snapshot& b)
@@ -65,12 +65,12 @@ public:
 	uint64_t byte_count;
 	
 	openflow_group_mod_snapshot(of_version_t ver, of1x_stats_group_msg_t* stats, of1x_stats_group_desc_msg_t* desc);
-	rofl_result_t map_group_mods_msg(of_version_t ver, of1x_stats_group_msg_t* stats, of1x_stats_group_desc_msg_t* desc, std::list<openflow_group_mod_snapshot>& group_mods);
+	static rofl_result_t map_group_mods_msg(of_version_t ver, of1x_stats_group_msg_t* stats, of1x_stats_group_desc_msg_t* desc, std::list<openflow_group_mod_snapshot>& group_mods);
 	
 	//Dumping operator
 	friend std::ostream& operator<<(std::ostream& os, const openflow_group_mod_snapshot& g)
 	{
-		std::list<bucket_snapshot>::iterator b_it;
+		std::list<bucket_snapshot>::const_iterator b_it;
 		
 		os << " id:"<< g.group_id<<" type:"<<g.type<<" # buckets:"<<g.num_of_buckets
 		<<" packet count:"<<g.packet_count<<" byte count:"<<g.byte_count;

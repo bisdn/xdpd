@@ -15,8 +15,8 @@ bucket_snapshot::bucket_snapshot(of1x_stats_bucket_t* stats, rofl::openflow::cof
 }
 
 rofl_result_t
-bucket_snapshot::map_bucket_list(of_version_t ver, unsigned int num_of_buckets, of1x_stats_bucket_t* stats, of1x_stats_bucket_desc_msg_t* desc, std::list<bucket_snapshot>& buckets){
-	unsigned int i;
+bucket_snapshot::map_bucket_list(of_version_t ver, int num_of_buckets, of1x_stats_bucket_t* stats, of1x_stats_bucket_desc_msg_t* desc, std::list<bucket_snapshot>& buckets){
+	int i;
 	of1x_stats_bucket_t* stats_ptr=stats;
 	std::map<uint32_t, rofl::openflow::cofbucket>::iterator bu_it;
 	rofl::openflow::cofbuckets bclist(ver);
@@ -58,8 +58,8 @@ openflow_group_mod_snapshot::openflow_group_mod_snapshot(of_version_t ver, of1x_
 		byte_count(stats->byte_count)
 {
 	//create bucket snapshots
-	if(bucket_snapshot::map_bucket_list(ver, stats->num_of_buckets, stats->bucket_stats, desc->bucket, &buckets)!=ROFL_SUCCESS){
-		throw eOfSmGeneralError;
+	if(bucket_snapshot::map_bucket_list(ver, stats->num_of_buckets, stats->bucket_stats, desc->bucket, buckets)!=ROFL_SUCCESS){
+		//TODO throw eOfSmGeneralError;
 	}
 }
 
@@ -71,7 +71,7 @@ openflow_group_mod_snapshot::map_group_mods_msg(of_version_t ver, of1x_stats_gro
 	try{ 
 		//Translate group mods
 		for(stats_it = stats, desc_it = desc; (stats_it && desc_it); stats_it=stats_it->next, desc_it=desc_it->next){
-			group_mods.push_back(openflow_group_mod_snapshot(ver, desc_it, stats_it));
+			group_mods.push_back(openflow_group_mod_snapshot(ver, stats_it, desc_it));
 	}
 	}catch(...){
 		assert(0);

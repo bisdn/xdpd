@@ -124,7 +124,7 @@ of13_endpoint::handle_packet_out(
 							msg.get_buffer_id(),
 							msg.get_in_port(),
 							action_group,
-							msg.get_packet().soframe(), msg.get_packet().framelen())){
+							msg.get_packet().soframe(), msg.get_packet().length())){
 		// log error
 		//FIXME: send error
 	}

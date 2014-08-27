@@ -1,0 +1,48 @@
+How to port your driver from 0.4 to 0.5
+=======================================
+
+Please take always GNU/Linux driver as a reference for any port to 0.5. There have been some minor changes to the HAL API
+from 0.4 to 0.5
+
+1) Adapting to the new HAL API 
+-----------------------------------
+
+The following functions have been removed:
+
+	-hal_result_t hal_driver_of1x_fetch_group_table(uint64_t dpid, of1x_group_table_t *group_table);
+	-of1x_stats_group_msg_t* hal_driver_of1x_get_group_all_stats(uint64_t dpid, uint32_t id);
+
+And are replaced for this one:
+
+	+of1x_stats_group_desc_msg_t *hal_driver_of1x_get_group_desc_stats(uint64_t dpid);
+
+2) Adapting to the new ROFL-pipeline behaviour for capabilities
+----------------------------------------------------------------
+
+The ROFL-pipeline now by default marks ALL supported capabilities by the table matching algorithm
+in the table configuration (matches&wildcards). The driver MUST unset the ones not supported in
+platform_post_init_of1x_switch(), like this:
+
+
+
+	for(i=0; i<sw->pipeline.num_of_tables; i++){
+		of1x_flow_table_config_t *config = &(sw->pipeline.tables[i].config);
+		of1x_group_table_config_t *group_config = &(sw->pipeline.groups->config);
+
+		/*
+		* Lets set to zero the unssuported matches and actions.
+		*/
+
+		//Matches
+		bitmap128_unset(&config->match, OF1X_MATCH_IPV6_EXTHDR);
+		bitmap128_unset(&config->wildcards, OF1X_MATCH_IPV6_EXTHDR);
+	
+
+From that point on, the built-in flowmod and groupmod validation will reject any flowmod which is
+not supported by the table.
+
+Related projects
+----------
+
+ROFL-pipeline: http://www.roflibs.org/doc/rofl-pipeline/ 
+ROFL-HAL: http://www.roflibs.org/doc/rofl-hal/

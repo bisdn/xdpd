@@ -336,14 +336,38 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 		of1x_destroy_flow_entry(entry);	
 }
 
-void switch_manager::get_switch_group_table(uint64_t dpid, openflow_group_table_snapshot& gt){
-	of1x_stats_group_desc_msg_t* group_table_desc = NULL;
-	group_table_desc = hal_driver_of1x_get_group_desc_stats(dpid);
+void switch_manager::get_switch_group_mods(uint64_t dpid, std::list<openflow_group_mod_snapshot>& group_mods){
+	of1x_stats_group_desc_msg_t* group_table_desc = hal_driver_of1x_get_group_desc_stats(dpid);
+	of1x_stats_group_msg_t* group_table_stats = hal_driver_of1x_get_group_stats(dpid, OF1X_GROUP_ALL/*??!!*/);
 	
-	gt = openflow_group_table_snapshot(group_table_desc);
+	//Make sure 	
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
+
+	//Recover the switch
+	openflow_switch* sw = __get_switch_by_dpid(dpid);
+	
+	if(!sw){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmDoesNotExist();
+	}
+	
+	if( !group_table_desc || !group_table_stats ){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmGeneralError();
+	}
+	
+	if(openflow_group_mod_snapshot::map_group_mods_msg(sw->version, group_table_desc, group_table_stats, group_mods)!= ROFL_SUCCESS){
+		assert(0);
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmGeneralError();
+	}
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
 	
 	if (group_table_desc)
 		of1x_destroy_group_desc_stats(group_table_desc);
+	if (group_table_stats)
+		of1x_destroy_stats_group_msg(group_table_stats);
 }
 
 void

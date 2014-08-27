@@ -338,7 +338,7 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 
 void switch_manager::get_switch_group_mods(uint64_t dpid, std::list<openflow_group_mod_snapshot>& group_mods){
 	of1x_stats_group_desc_msg_t* group_table_desc = hal_driver_of1x_get_group_desc_stats(dpid);
-	of1x_stats_group_msg_t* group_table_stats = hal_driver_of1x_get_group_stats(dpid, OF1X_GROUP_ALL/*??!!*/);
+	of1x_stats_group_msg_t* group_table_stats = hal_driver_of1x_get_group_stats(dpid, OF1X_GROUP_ALL);
 	
 	//Make sure 	
 	pthread_rwlock_rdlock(&switch_manager::rwlock);
@@ -353,7 +353,7 @@ void switch_manager::get_switch_group_mods(uint64_t dpid, std::list<openflow_gro
 	
 	if( !group_table_desc || !group_table_stats ){
 		pthread_rwlock_unlock(&switch_manager::rwlock);
-		throw eOfSmGeneralError();
+		return;
 	}
 	
 	if(openflow_group_mod_snapshot::map_group_mods_msg(sw->version, group_table_stats, group_table_desc, group_mods)!= ROFL_SUCCESS){

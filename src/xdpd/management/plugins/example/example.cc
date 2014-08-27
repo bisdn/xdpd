@@ -57,6 +57,9 @@ void example::handle_timeout(int opaque, void *data){
 					ss <<"\t\t["<<k<<"]"<< *f_it;
 			}
 			
+			//Dump Group table info
+			ss << sw.group_table;
+
 			//Get group table entries
 			switch_manager::get_switch_group_mods(switch_manager::get_switch_dpid(*it), group_mods);
 			

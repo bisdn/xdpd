@@ -22,15 +22,11 @@ libxdpd_driver_gnu_linux_dpdk_src_la_LIBADD = \
 		-lrte_malloc\
 		-lrte_mbuf\
 		-lrte_mempool\
-		-lrte_pmd_e1000\
-		-lrte_pmd_ixgbe\
-		-lrte_pmd_vmxnet3_uio\
-		-lrte_pmd_virtio_uio\
 		-lrte_power\
 		-lrte_ring\
 		-lrte_timer\
-		-lrte_pmd_ring\
 		-lrte_eal\
+		-lrte_kvargs\
 		-ldl
 
 library_include_HEADERS=

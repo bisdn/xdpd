@@ -33,6 +33,19 @@ if ( test "$HW" = "gnu-linux-dpdk");then
 	AC_DEFINE(HW_GNU_LINUX_DPDK)
 	PLATFORM=gnu_linux_dpdk
 	AC_CONFIG_SUBDIRS([src/xdpd/drivers/gnu_linux_dpdk])
+#In DPDK-1.7, Poll Mode Drivers (PMD) register with DPDK from static constructors. If linker decides
+#not to include the corresponding object file (which is usually the case since PMDs mostly contain
+#static functions, only accessed indirectly), then the PMD is not registered.
+#To fix this, PMDs have to be linked in using the --whole-archive linker flag.
+#Unfortunately, autoconf+libtool don't seem to provide a way to include these extra linker flags in
+#the .la file. Hence, they have to be provided here at the top-level...
+	xdpd_HW_LDFLAGS=" -Wl,--whole-archive \
+		-Wl,-lrte_pmd_e1000 \
+		-Wl,-lrte_pmd_ixgbe \
+		-Wl,-lrte_pmd_vmxnet3_uio \
+		-Wl,-lrte_pmd_ring \
+		-Wl,-lrte_pmd_virtio_uio \
+		-Wl,--no-whole-archive"
 fi
 if( test "$HW" = "bcm");then
 	msg="$msg Broadcom"
@@ -67,6 +80,7 @@ fi
 
 #Print fancy message
 AC_MSG_RESULT($msg)
-AC_SUBST(PLATFORM)
 
+AC_SUBST(PLATFORM)
+AC_SUBST(xdpd_HW_LDFLAGS)
 

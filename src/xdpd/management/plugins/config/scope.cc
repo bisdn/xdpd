@@ -121,7 +121,6 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 
 void scope::__pre_execute(libconfig::Config& config, bool dry_run){
 
-	this->pre_execute(config, dry_run);
 	
 	std::vector<scope*>::iterator scope_iter;
 	scope* sc;
@@ -131,6 +130,8 @@ void scope::__pre_execute(libconfig::Config& config, bool dry_run){
 		if(config.exists(sc->name))
 			sc->__pre_execute(config.lookup(sc->name), dry_run);
 	}
+	
+	this->pre_execute(config, dry_run);
 }
 
 void scope::execute(libconfig::Config& config, bool dry_run){

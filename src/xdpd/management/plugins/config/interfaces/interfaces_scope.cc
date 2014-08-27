@@ -7,6 +7,8 @@
 #include "../../../port_manager.h"
 #include "../../../../openflow/openflow_switch.h"
 
+#include "nf_scope.h"
+
 #include "../config.h"
 
 using namespace xdpd;
@@ -14,6 +16,7 @@ using namespace rofl;
 
 //Constants
 #define BLACKLIST "blacklist"
+#define NF "nf"
 #define VIF_VIF "vif"
 #define VIF_LINK "link"
 #define VIF_LSI "lsi"
@@ -27,7 +30,9 @@ interfaces_scope::interfaces_scope(std::string name, bool mandatory):scope(name,
 
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook
+	register_subscope(new nf_scope());	
 	register_subscope(new virtual_ifaces_scope());	
+	
 
 }
 

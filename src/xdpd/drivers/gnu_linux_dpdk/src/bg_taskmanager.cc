@@ -155,7 +155,7 @@ void* x86_background_tasks_routine(void* param){
 		}
 		
 		//Handle commands for KNI ports
-#ifdef GNU_LINUX_DPDK_ENABLE_PEX
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
 		if(get_time_difference_ms(&now, &last_time_kni_commands_handled)>=BG_HANDLE_KNI_COMMANDS_MS)
 		{
 			iface_manager_handle_kni_commands();

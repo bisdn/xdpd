@@ -29,23 +29,23 @@ typedef struct dpdk_port_state dpdk_port_state_t;
 /**
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
 *
-* @brief Represent the state of a DPDK SECONDARY PEX port
+* @brief Represent the state of a DPDK SECONDARY NF port
 */
-struct pex_port_state_dpdk
+struct nf_port_state_dpdk
 {
 	/**
-	* @brief queue used to send packets to a PEX
+	* @brief queue used to send packets to a NF
 	*/
-	struct rte_ring *to_pex_queue;
+	struct rte_ring *to_nf_queue;
 	
 	/**
-	* @brief queue used to receive packets from a PEX
+	* @brief queue used to receive packets from a NF
 	*/
 	struct rte_ring *to_xdpd_queue;
 	
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	/**
-	* @brief POSIX named semaphore used to implement batching towards the PEX
+	* @brief POSIX named semaphore used to implement batching towards the NF
 	*/
 	sem_t *semaphore;
 #endif
@@ -65,22 +65,22 @@ struct pex_port_state_dpdk
 	unsigned int core_port_slot;
 	
 	/**
-	* @brief Identifier of the PEX port
+	* @brief Identifier of the NF port
 	*/
-	unsigned int pex_id;
+	unsigned int nf_id;
 	
 }__rte_cache_aligned;
 
-typedef struct pex_port_state_dpdk pex_port_state_dpdk_t;  
+typedef struct nf_port_state_dpdk nf_port_state_dpdk_t;  
 
 
 
 /**
 * @author Ivano Cerrato<ivano.cerrato (at) polito.it>
 *
-* @brief Represent the state of a DPDK KNI PEX port
+* @brief Represent the state of a DPDK KNI NF port
 */
-struct pex_port_state_kni
+struct nf_port_state_kni
 {
 	/**
 	*	@brief: KNI context
@@ -102,12 +102,12 @@ struct pex_port_state_kni
 	unsigned int core_port_slot;
 	
 	/**
-	* @brief Identifier of the PEX port
+	* @brief Identifier of the NF port
 	*/
-	unsigned int pex_id;
+	unsigned int nf_id;
 	
 }__rte_cache_aligned;
 
-typedef struct pex_port_state_kni pex_port_state_kni_t;  
+typedef struct nf_port_state_kni nf_port_state_kni_t;  
 
 #endif //_PORT_STATE_H_

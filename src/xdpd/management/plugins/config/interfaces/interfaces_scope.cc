@@ -30,7 +30,7 @@ interfaces_scope::interfaces_scope(std::string name, bool mandatory):scope(name,
 
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook
-	register_subscope(new nf_scope());	
+	//register_subscope(new nf_scope());	
 	register_subscope(new virtual_ifaces_scope());	
 	
 

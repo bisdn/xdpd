@@ -1,14 +1,13 @@
 #include "iface_manager.h"
 #include <rofl/datapath/hal/cmm.h>
-#include <rofl/datapath/hal/pex/pex_driver.h>
+#include <rofl/datapath/hal/nf/nf_driver.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 
 #include "port_state.h"
-
-#include "../config.h"
+#include "nf_iface_manager.h"
 
 #include <assert.h> 
 #include <rte_common.h> 
@@ -19,13 +18,10 @@
 
 extern struct rte_mempool *pool_direct;
 switch_port_t* phy_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
-switch_port_t* pex_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES] = {{NULL}};
-struct rte_ring* port_tx_pex_lcore_queue[PORT_MANAGER_MAX_PORTS] = {NULL};
 
-pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
+pthread_rwlock_t iface_manager_rwlock = PTHREAD_RWLOCK_INITIALIZER;
 
-unsigned int pex_id = 0;
 
 //Initializes the pipeline structure and launches the port 
 static switch_port_t* configure_port(unsigned int port_id){
@@ -363,32 +359,32 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 			port_pair->state |= PORT_STATE_LINK_DOWN;
 		}
 	}
-	else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
+	else if(port->type == PORT_TYPE_NF_SHMEM)
 	{
 		/*
-		*  DPDK SECONDARY PEX
+		*  DPDK SECONDARY NF
 		*/
 		if(!port->up)
 		{
 			//Was down
-			if(hal_driver_pex_start_pex_port(port->name,port->type) != HAL_SUCCESS)
+			if(nf_iface_manager_bring_up_port(port) != ROFL_SUCCESS)
 			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK SECONDARY PEX port: %s\n",port->name);
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK SECONDARY NF port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
 		}
-	}else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
+	}else if(port->type == PORT_TYPE_NF_EXTERNAL)
 	{
 		/*
-		*	DPDK KNI PEX
+		*	DPDK KNI NF
 		*/
 		if(!port->up)
 		{
 			//Was down
-			if(hal_driver_pex_start_pex_port(port->name,port->type) != HAL_SUCCESS)
+			if(nf_iface_manager_bring_up_port(port) != ROFL_SUCCESS)
 			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK KNI PEX port: %s\n",port->name);
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK KNI NF port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
@@ -437,25 +433,25 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 		port->state |= PORT_STATE_LINK_DOWN;
 		port_pair->state |= PORT_STATE_LINK_DOWN;
 	}
-	else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY) {
+	else if(port->type == PORT_TYPE_NF_SHMEM) {
 		/*
-		* PEX port
+		* NF port
 		*/
 		if(port->up) {
-			if(hal_driver_pex_stop_pex_port(port->name,port->type) != HAL_SUCCESS) {
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK SECONDARY PEX port: %s\n",port->name);
+			if(nf_iface_manager_bring_down_port(port) != ROFL_SUCCESS) {
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK SECONDARY NF port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
 		}		
 		port->up = false;
-	}else if(port->type == PORT_TYPE_PEX_DPDK_KNI) {
+	}else if(port->type == PORT_TYPE_NF_EXTERNAL) {
 		/*
-		*	KNI PEX
+		*	KNI NF
 		*/
 		if(port->up){
-			if(hal_driver_pex_stop_pex_port(port->name,port->type) != HAL_SUCCESS) {
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK KNI PEX port: %s\n",port->name);
+			if(nf_iface_manager_bring_down_port(port) != ROFL_SUCCESS) {
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK KNI NF port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
@@ -494,7 +490,7 @@ rofl_result_t iface_manager_destroy(void){
 	for(i=0;i<num_of_ports;++i){
 		rte_eth_dev_stop(i);
 		rte_eth_dev_close(i);
-		//IVANO - TODO: destroy also PEX ports
+		//IVANO - TODO: destroy also NF ports
 	}	
 
 	return ROFL_SUCCESS;
@@ -580,304 +576,3 @@ void iface_manager_update_stats(){
 
 }
 
-/*
-*	Handle commands for KNI ports
-*/
-void iface_manager_handle_kni_commands()
-{
-	switch_port_t* port;
-
-	for(int i=0;i<PORT_MANAGER_MAX_PORTS;i++)
-	{
-		pthread_rwlock_rdlock(&rwlock);
-		port = pex_port_mapping[i];
-		if(unlikely(port != NULL))
-		{
-			if(port->type == PORT_TYPE_PEX_DPDK_KNI)
-			{
-				pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
-				rte_kni_handle_request(port_state->kni);
-			}
-		}
-		pthread_rwlock_unlock(&rwlock);
-	}
-
-}
-
-/* 
-*	Handle an external request to bring up/down a KNI interface
-*/
-static int kni_config_network_interface(uint8_t port_id, uint8_t if_up)
-{
-	switch_port_t* port = pex_port_mapping[port_id];
-	
-	pex_port_state_kni_t *port_state = (pex_port_state_kni_t*)port->platform_port_state;
-	if(port_state->just_created)
-	{
-		port_state->just_created = false;
-		return !if_up;
-	}
-	
-	switch_port_snapshot_t* port_snapshot;
-
-	assert(port != NULL);
-
-	if(!port || !port->platform_port_state)
-		return HAL_FAILURE;
-
-	ROFL_INFO(DRIVER_NAME"[port_manager] Putting the KNI interface \"%s\" %s...\n", port->name,(if_up)?"UP":"DOWN");
-
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	hal_cmm_notify_port_status_changed(port_snapshot);
-	
-	port->up = (if_up == 1)? true : false;
-	
-	return !if_up;
-}
-
-/****************************************************************************
-*						Funtions specific for PEX ports						*
-*****************************************************************************/
-
-//Initializes the pipeline structure and launches the (DPDK) PEX port 
-static switch_port_t* configure_pex_port_dpdk(const char *pex_name, const char *pex_port)
-{
-	switch_port_t* port;
-	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
-	
-	//Initialize pipeline port
-	port = switch_port_init((char*)pex_port, false, PORT_TYPE_PEX_DPDK_SECONDARY, PORT_STATE_NONE);
-	if(!port)
-		return NULL; 
-
-	//Generate port state
-	pex_port_state_dpdk_t* ps = (pex_port_state_dpdk_t*)rte_malloc(NULL,sizeof(pex_port_state_dpdk_t),0);
-	
-	if(!ps)
-	{
-		switch_port_destroy(port);
-		return NULL;
-	}
-		
-	//Create rofl-pipeline queue state	
-	if(switch_port_add_queue(port, 0, (char*)&pex_port, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
-	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
-		assert(0);
-		return NULL;
-	}
-
-	// Create the state of the PEX port
-	
-	//queue xDPD -> PEX
-	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-to-nf", pex_port);
-
-	ps->to_pex_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
-	if(unlikely( ps->to_pex_queue == NULL ))
-	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name,pex_port);
-		assert(0);
-		return NULL;
-	}
-	
-	//queue PEX -> xDPD
-	snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s-to-xdpd", pex_port);
-		
-	ps->to_xdpd_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SP_ENQ);
-	if(unlikely( ps->to_xdpd_queue == NULL ))
-	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name, pex_port);
-		assert(0);
-		return NULL;
-	}
-
-#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
-	//semaphore	
-	ps->semaphore = sem_open(pex_name, O_CREAT , 0644, 0);
-	
-	if(ps->semaphore == SEM_FAILED)
-	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create semaphore '%s' for queue in port: %s\n", pex_port, pex_port);
-		assert(0);
-		return NULL;
-	}
-#endif
-
-	ps->counter_from_last_flush = 0;
-	ps->pex_id = pex_id;
-
-	ps->scheduled = false;
-	port->platform_port_state = (platform_port_state_t*)ps;
-	
-	//Set the port in the pex_port_mapping
-	pex_port_mapping[pex_id] = port;
-	
-	pex_id++;
-	
-	ROFL_INFO(DRIVER_NAME"[port_manager] Created (PEX) port '%s'\n", pex_port);
-
-	return port;
-}
-
-//Initializes the pipeline structure and launches the (KNI) PEX port 
-static switch_port_t* configure_pex_port_kni(const char *pex_name, const char *pex_port)
-{
-	switch_port_t* port;
-	
-	//Initialize pipeline port
-	port = switch_port_init((char*)pex_port, false, PORT_TYPE_PEX_DPDK_KNI, PORT_STATE_NONE);
-	if(!port)
-		return NULL; 
-
-	//Generate port state
-	pex_port_state_kni_t* ps = (pex_port_state_kni_t*)rte_malloc(NULL,sizeof(pex_port_state_kni_t),0);
-	
-	if(!ps)
-	{
-		switch_port_destroy(port);
-		return NULL;
-	}
-	
-	//Add TX queue to the pipeline
-			
-	//Create rofl-pipeline queue state	
-	if(switch_port_add_queue(port, 0, (char*)&pex_port, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
-	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
-		assert(0);
-		return NULL;
-	}
-		
-	//Add port_tx_pex_lcore_queue
-	port_tx_pex_lcore_queue[pex_id] = rte_ring_create(port->name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
-
-	if(unlikely(port_tx_pex_lcore_queue[pex_id] == NULL ))
-	{
-		ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
-		assert(0);
-		return NULL;
-	}	
-
-	// Create the state of the PEX port
-	
-	struct rte_kni_conf conf;
-	struct rte_kni_ops ops;
-
-	memset(&conf, 0, sizeof(conf));
-	memset(&ops, 0, sizeof(ops));
-	
-	sprintf(conf.name,"%s", pex_port);
-	conf.mbuf_size = IO_MAX_PACKET_SIZE;
-
-	ops.port_id = pex_id;
-	ops.config_network_if = kni_config_network_interface;
-
-	ps->kni = rte_kni_alloc(pool_direct, &conf, &ops);
-
-	if (ps->kni == NULL)
-	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create KNI context for port: %s\n",pex_port);
-		assert(0);
-		return NULL;
-	}
-	ps->pex_id = pex_id;
-
-	ps->just_created = true;
-	ps->scheduled = false;
-	port->platform_port_state = (platform_port_state_t*)ps;
-	
-	//Set the port in the pex_port_mapping
-	pex_port_mapping[pex_id] = port;
-	
-	pex_id++;
-	
-	ROFL_INFO(DRIVER_NAME"[port_manager] Created (PEX) port '%s'\n", pex_port);
-
-	return port;
-}
-
-rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *pex_port, port_type_t pex_port_type)
-{
-	switch_port_t* port = NULL;
-	
-	ROFL_INFO(DRIVER_NAME"[port_manager] Creating a PEX port named '%s'\n",pex_port);
-	
-	if(pex_port_type == PORT_TYPE_PEX_DPDK_SECONDARY)
-	{
-		if(! ( port = configure_pex_port_dpdk(pex_name,pex_port) ) )
-		{
-			ROFL_ERR(DRIVER_NAME"[port_manager] Unable to initialize DPDK PEX port %s\n", pex_port);
-			return ROFL_FAILURE;
-		}
-	}
-	else if(pex_port_type == PORT_TYPE_PEX_DPDK_KNI)
-	{
-		if(! ( port = configure_pex_port_kni(pex_name,pex_port) ) )
-		{
-			ROFL_ERR(DRIVER_NAME"[port_manager] Unable to initialize KNI PEX port %s\n", pex_port);
-			return ROFL_FAILURE;
-		}
-	}
-	
-	//Add port to the pipeline
-	if( physical_switch_add_port(port) != ROFL_SUCCESS )
-	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Unable to add the switch (PEX) port to physical switch; perhaps there are no more physical port slots available?\n");
-		return ROFL_FAILURE;
-	}
-
-	return ROFL_SUCCESS;
-}
-
-rofl_result_t port_manager_destroy_pex_port(const char *port_name)
-{
-	switch_port_t *port = physical_switch_get_port_by_name(port_name);
-		
-	pthread_rwlock_wrlock(&rwlock);
-	
-	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
-	{	
-		pex_port_state_dpdk_t *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
-
-		pex_port_mapping[port_state->pex_id] = NULL;
-
-		//According to http://dpdk.info/ml/archives/dev/2014-January/001120.html,
-		//rte_rings connot be destroyed
-
-#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE	
-		sem_unlink(port_name);
-		sem_close(port_state->semaphore);
-#endif
-
-		if(physical_switch_remove_port(port_name) != ROFL_SUCCESS)
-		{
-			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot remove PEX port '%s' from the physical switch\n", port->name);
-			assert(0);
-			pthread_rwlock_unlock(&rwlock);
-			return ROFL_FAILURE;
-		}
-		rte_free(port_state);
-	}
-	else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
-	{
-		pex_port_state_kni_t *port_state = (pex_port_state_kni_t*)port->platform_port_state;
-
-		pex_port_mapping[port_state->pex_id] = NULL;
-		
-		rte_kni_release(port_state->kni);	
-		port_state->kni = NULL;
-	
-		if(physical_switch_remove_port(port_name) != ROFL_SUCCESS)
-		{
-			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot remove PEX port '%s' from the physical switch\n", port->name);
-			assert(0);
-			pthread_rwlock_unlock(&rwlock);
-			return ROFL_FAILURE;
-		}
-		rte_free(port_state);
-	}
-			
-	pthread_rwlock_unlock(&rwlock);
-		
-	return ROFL_SUCCESS;
-}

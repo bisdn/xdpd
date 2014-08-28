@@ -157,7 +157,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 }
 
 /****************************************************************************
-*						Funtions specific for PEX ports						*
+*						Funtions specific for NF ports						*
 *****************************************************************************/
 
 /*
@@ -165,21 +165,21 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 */
 
 inline void
-tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
+tx_pkt_dpdk_nf_port(switch_port_t* port, datapacket_t* pkt)
 {
-	assert(port->type == PORT_TYPE_PEX_DPDK_SECONDARY);
+	assert(port->type == PORT_TYPE_NF_SHMEM);
 
 	int ret;
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	uint32_t tmp, next_tmp;
 #endif
-	pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
+	nf_port_state_dpdk *port_state = (nf_port_state_dpdk_t*)port->platform_port_state;
 	struct rte_mbuf* mbuf;
 	
 	//Get mbuf pointer
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 
-	ret = rte_ring_mp_enqueue(port_state->to_pex_queue, (void *) mbuf);
+	ret = rte_ring_mp_enqueue(port_state->to_nf_queue, (void *) mbuf);
 	if( likely((ret == 0) || (ret == -EDQUOT)) ){
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 		//The packet has been enqueued
@@ -190,7 +190,7 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 		//from the last sem_post
 		do{
 			tmp = port_state->counter_from_last_flush;
-			if(tmp == (PKT_TO_PEX_THRESHOLD - 1))
+			if(tmp == (PKT_TO_NF_THRESHOLD - 1))
 				//Reset the counter
 				next_tmp = 0;
 			else
@@ -213,10 +213,10 @@ tx_pkt_dpdk_pex_port(switch_port_t* port, datapacket_t* pkt)
 
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 void inline
-flush_dpdk_pex_port(switch_port_t *port)
+flush_dpdk_nf_port(switch_port_t *port)
 {	
 	assert(port != NULL);
-	pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
+	nf_port_state_dpdk *port_state = (nf_port_state_dpdk_t*)port->platform_port_state;
 	sem_post(port_state->semaphore);
 }
 #endif
@@ -226,22 +226,22 @@ flush_dpdk_pex_port(switch_port_t *port)
 */
 
 inline void
-transmit_kni_pex_port_burst(switch_port_t* port, unsigned int port_id, struct rte_mbuf** burst)
+transmit_kni_nf_port_burst(switch_port_t* port, unsigned int port_id, struct rte_mbuf** burst)
 {	
 	unsigned int ret, len;
 
 	//Dequeue a burst from the TX ring	
-	len = rte_ring_mc_dequeue_burst(port_tx_pex_lcore_queue[port_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);      
+	len = rte_ring_mc_dequeue_burst(port_tx_nf_lcore_queue[port_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);      
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Trying to transmit burst on KNI port %s of length %u\n",pex_port_mapping[port_id]->name, len);
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Trying to transmit burst on KNI port %s of length %u\n",nf_port_mapping[port_id]->name, len);
 
 	//Send burst
-	pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
+	nf_port_state_kni *port_state = (nf_port_state_kni_t*)port->platform_port_state;
 	ret = rte_kni_tx_burst(port_state->kni, burst, len);
 	
 	//XXX port_statistics[port].tx += ret;
 	if(ret > 0)
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Transmited %u pkts, on port %s\n", ret, pex_port_mapping[port_id]->name);
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Transmited %u pkts, on port %s\n", ret, nf_port_mapping[port_id]->name);
 
 	if (unlikely(ret < len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -252,7 +252,7 @@ transmit_kni_pex_port_burst(switch_port_t* port, unsigned int port_id, struct rt
 }
 
 inline void
-flush_kni_pex_port_burst(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue)
+flush_kni_nf_port_burst(switch_port_t* port, unsigned int port_id, struct mbuf_burst* queue)
 {
 	unsigned ret;
 
@@ -260,12 +260,12 @@ flush_kni_pex_port_burst(switch_port_t* port, unsigned int port_id, struct mbuf_
 		return;
 	}
 		
-	assert((pex_port_state_kni_t*)port->platform_port_state != NULL);
+	assert((nf_port_state_kni_t*)port->platform_port_state != NULL);
 	
 	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][KNI] Trying to flush burst(enqueue in lcore ring) on KNI port %s\n", port->name, queue->len);
 	
 	
-	ret = rte_ring_mp_enqueue_burst(port_tx_pex_lcore_queue[port_id], (void **)queue->burst, queue->len);
+	ret = rte_ring_mp_enqueue_burst(port_tx_nf_lcore_queue[port_id], (void **)queue->burst, queue->len);
 						
 	//XXX port_statistics[port].tx += ret;
 	
@@ -284,7 +284,7 @@ flush_kni_pex_port_burst(switch_port_t* port, unsigned int port_id, struct mbuf_
 }
 
 inline void 
-tx_pkt_kni_pex_port(switch_port_t* port, datapacket_t* pkt)
+tx_pkt_kni_nf_port(switch_port_t* port, datapacket_t* pkt)
 {
 	struct rte_mbuf* mbuf;
 	struct mbuf_burst* pkt_burst;
@@ -292,7 +292,7 @@ tx_pkt_kni_pex_port(switch_port_t* port, datapacket_t* pkt)
 
 	//Get mbuf pointer
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
-	port_id = ((pex_port_state_kni_t*)port->platform_port_state)->pex_id;
+	port_id = ((nf_port_state_kni_t*)port->platform_port_state)->nf_id;
 	
 #ifdef DEBUG
 	if(unlikely(!mbuf)){
@@ -305,7 +305,7 @@ tx_pkt_kni_pex_port(switch_port_t* port, datapacket_t* pkt)
 	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
 	
 	//Recover burst container (cache)
-	pkt_burst = &tasks->pex_ports[port_id].tx_queues_burst[0];	
+	pkt_burst = &tasks->nf_ports[port_id].tx_queues_burst[0];	
 
 #if DEBUG	
 	if(unlikely(!pkt_burst)){
@@ -327,7 +327,7 @@ tx_pkt_kni_pex_port(switch_port_t* port, datapacket_t* pkt)
 	{ 
 		//If buffer is full or mgmt core
 		pkt_burst->len = len;
-		flush_kni_pex_port_burst(port, port_id, pkt_burst);
+		flush_kni_nf_port_burst(port, port_id, pkt_burst);
 		return;
 	}
 

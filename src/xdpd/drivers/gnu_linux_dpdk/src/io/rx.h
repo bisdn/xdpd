@@ -58,17 +58,17 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		return;
 		
 	//Read a burst
-#ifdef GNU_LINUX_DPDK_ENABLE_PEX	
-	if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY) 
+#ifdef GNU_LINUX_DPDK_ENABLE_NF	
+	if(port->type == PORT_TYPE_NF_SHMEM) 
 	{
-		//DPDK PEX port - pkts received through an rte_ring
-		pex_port_state_dpdk *port_state = (pex_port_state_dpdk_t*)port->platform_port_state;
+		//DPDK NF port - pkts received through an rte_ring
+		nf_port_state_dpdk *port_state = (nf_port_state_dpdk_t*)port->platform_port_state;
 		burst_len = rte_ring_mc_dequeue_burst(port_state->to_xdpd_queue, (void **)pkts_burst, IO_IFACE_MAX_PKT_BURST);
 	}
-	else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
+	else if(port->type == PORT_TYPE_NF_EXTERNAL)
 	{		
-		//KNI PEX port - pkts received through a KNI interface
-		pex_port_state_kni *port_state = (pex_port_state_kni_t*)port->platform_port_state;
+		//KNI NF port - pkts received through a KNI interface
+		nf_port_state_kni *port_state = (nf_port_state_kni_t*)port->platform_port_state;
 		assert(port_state->kni != NULL);
 		
 		assert(!rte_mempool_full(pool_direct));
@@ -127,11 +127,11 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		//tmp_port is used to avoid to repeat code for both kinds of port
 		//(note that the port_mapping used is different
 		switch_port_t *tmp_port;
-#ifdef GNU_LINUX_DPDK_ENABLE_PEX	
-		if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY) {
+#ifdef GNU_LINUX_DPDK_ENABLE_NF	
+		if(port->type == PORT_TYPE_NF_SHMEM) {
 			tmp_port = port;
 		}
-		else if(port->type == PORT_TYPE_PEX_DPDK_KNI) {
+		else if(port->type == PORT_TYPE_NF_EXTERNAL) {
 			tmp_port=port;
 		}else
 #endif

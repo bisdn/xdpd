@@ -19,20 +19,20 @@
 #define DRIVER_NAME "[xdpd][dpdk]"
 
 /*
-*	PEX stuffs
+*	NF stuffs
 */
-//Enable PEX capability
-#define GNU_LINUX_DPDK_ENABLE_PEX
+//Enable NF capability
+#define GNU_LINUX_DPDK_ENABLE_NF
 
 /**
 *	Uncomment the following line to enable the samaphore and implement a batch
-*	meachanism in the DPDK secondary processes PEX
+*	meachanism in the DPDK secondary processes NF
 */
 //#define ENABLE_DPDK_SECONDARY_SEMAPHORE
 
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	//IVANO - FIXME: write a meaningfull value
-	#define PKT_TO_PEX_THRESHOLD 	200
+	#define PKT_TO_NF_THRESHOLD 	200
 #endif
 
 

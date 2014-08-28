@@ -516,7 +516,7 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 			
 		}
 	}else{
-		//Deschedule port from processing (physical or PEX port)
+		//Deschedule port from processing (physical or NF port)
 		processing_deschedule_port(port);
 	}
 

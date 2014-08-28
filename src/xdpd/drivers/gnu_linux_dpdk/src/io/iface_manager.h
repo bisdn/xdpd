@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _PORT_MGMT_H_
-#define _PORT_MGMT_H_
+#ifndef _IFACE_MANAGER_H_
+#define _IFACE_MANAGER_H_
 
 #include <rofl.h>
 #include "../config.h"
@@ -18,6 +18,7 @@
 #include <rte_ring.h>
 #include <rte_launch.h>
 #include <rte_kni.h>
+
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
@@ -28,33 +29,26 @@
 
 #include "port_state.h"
 #include "../processing/processing.h"
+#include "nf_iface_manager.h"
 
 //Maximum number of ports (preallocation of port_mapping)
 #define PORT_MANAGER_MAX_PORTS PROCESSING_MAX_PORTS 
 
 /**
- *	Identifier of PEX ports
- */
- extern unsigned int pex_id;
-
-/**
  *  Port mappings (port_id -> struct switch_port)
  */
-extern switch_port_t* phy_port_mapping[PORT_MANAGER_MAX_PORTS];
-extern switch_port_t* pex_port_mapping[PORT_MANAGER_MAX_PORTS];
+extern switch_port_t* phy_port_mapping[]; //PORT_MANAGER_MAX_PORTS
+
+/**
+ *  NF Port mappings (port_id -> struct switch_port)
+ */
+extern switch_port_t* nf_port_mapping[]; //PORT_MANAGER_MAX_PORTS
+
 
 /**
 * TX ring per port queue. TX is served only by the port lcore. The other lcores shall enqueue packets in this queue when they need to be flushed.
 */
 extern struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES];
-
-/**
-* TX is served only by the port lcore. The other lcores shall enqueue packets in this queue when they need to be flushed.
-* This array is similar to the previous one but, for each port, it defines a single queue. In fact, PEX ports (DPDK and
-* KNI) does not have many queues
-*/
-extern struct rte_ring* port_tx_pex_lcore_queue[PORT_MANAGER_MAX_PORTS];
-
 
 //C++ extern C
 ROFL_BEGIN_DECLS
@@ -99,46 +93,7 @@ void iface_manager_update_links(void);
 */
 void iface_manager_update_stats(void);
 
-/**
-* Handle commands for KNI ports
-*/
-void iface_manager_handle_kni_commands(void);
-
-/****************************************************************************
-*						Funtions specific for PEX ports						*
-*****************************************************************************/
-
-/**
-* @file port_manager.h
-* @author Ivano Cerrato<ivano.cerrato (at) polito.it>
-*
-* @brief Functions related to PEX ports.
-*/
-
-/**
- * @brief: used to prevent seg fault when a PEX DPDK KNI port is descheduled
- */
-extern pthread_rwlock_t rwlock;
-
-/**
- * @name port_manager_create_pex_port
- * @brief Create and initializes (including rofl-pipeline state) a PEX port
- * 
- * @param pex_name		Name of the PEX associated with the port to be created
- * @param port_name		Name of the port to be created
- * @param pex_type		Type of the PEX to be created
- */
-rofl_result_t port_manager_create_pex_port(const char *pex_name, const char *port_name, port_type_t pex_port_type);
-
-/**
- * @name port_manager_destroy_pex_port
- * @brief Destroy a PEX port, and its rofl-pipeline state
- * 
- * @param port_name		Name of the port to be destroyed
- */
-rofl_result_t port_manager_destroy_pex_port(const char *port_name);
-
 //C++ extern C
 ROFL_END_DECLS
 
-#endif //_PORT_MGMT_H_
+#endif //_IFACE_MANAGER_H_

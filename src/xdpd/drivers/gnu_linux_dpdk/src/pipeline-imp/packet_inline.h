@@ -234,19 +234,19 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 			xdpd::gnu_linux_dpdk::tx_pkt_vlink(port, pkt);
 			return;
 		}
-#ifdef GNU_LINUX_DPDK_ENABLE_PEX		
-		else if(port->type == PORT_TYPE_PEX_DPDK_SECONDARY)
+#ifdef GNU_LINUX_DPDK_ENABLE_NF		
+		else if(port->type == PORT_TYPE_NF_SHMEM)
 		{
 			/*
-			* DPDK PEX port
+			* DPDK NF port
 			*/
-			xdpd::gnu_linux_dpdk::tx_pkt_dpdk_pex_port(port, pkt);
-		}else if(port->type == PORT_TYPE_PEX_DPDK_KNI)
+			xdpd::gnu_linux_dpdk::tx_pkt_dpdk_nf_port(port, pkt);
+		}else if(port->type == PORT_TYPE_NF_EXTERNAL)
 		{
 			/*
-			* KNI PEX port
+			* KNI NF port
 			*/
-			xdpd::gnu_linux_dpdk::tx_pkt_kni_pex_port(port, pkt);
+			xdpd::gnu_linux_dpdk::tx_pkt_kni_nf_port(port, pkt);
 		}
 #endif		
 		else{

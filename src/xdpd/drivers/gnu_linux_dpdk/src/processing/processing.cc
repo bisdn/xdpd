@@ -330,8 +330,12 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 
 	//This loop copies from descheduled port, all the rest of the ports
 	//one up, so that list of ports is contiguous (0...N-1)
-	for(i=port_state->core_port_slot; i<core_task->num_of_rx_ports; i++)
-		core_task->port_list[i] = core_task->port_list[i+1];	
+	for(i=port_state->core_port_slot; i<core_task->num_of_rx_ports; i++){
+		core_task->port_list[i] = core_task->port_list[i+1];
+		if(core_task->port_list[i]){
+			((dpdk_port_state_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
+		}
+	}
 	
 	//Decrement counter
 	core_task->num_of_rx_ports--;

@@ -53,7 +53,7 @@ of10_translation_utils::of1x_map_flow_entry(
 	entry->priority 		= msg->get_flowmod().get_priority();
 	entry->cookie 			= msg->get_flowmod().get_cookie();
 	entry->cookie_mask 		= 0xFFFFFFFFFFFFFFFFULL;
-	entry->timer_info.idle_timeout	= msg->get_flowmod().get_idle_timeout(); // these timers must be activated some time, when?
+	entry->timer_info.idle_timeout	= msg->get_flowmod().get_idle_timeout();
 	entry->timer_info.hard_timeout	= msg->get_flowmod().get_hard_timeout();
 
 	try{

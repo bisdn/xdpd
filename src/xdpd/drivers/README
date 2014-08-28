@@ -74,10 +74,10 @@ If you are using the software packet processing API of ROFL-pipeline (as a softw
 
 9) If you wish, contribute back your platform port so that the community can benefit fro your work.
 
-How to port your driver from 0.3 to 0.4
+How to port your driver to 0.5
 ---------------------------------------
 
-Refer to README_0.4-port
+Refer to README_0.4-port and README_0.5-port
 
 Related projects
 ----------

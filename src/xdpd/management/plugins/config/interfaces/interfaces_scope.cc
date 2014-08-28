@@ -30,13 +30,13 @@ interfaces_scope::interfaces_scope(scope* parent):scope("interfaces", parent, fa
 
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook
-	register_subscope(new nf_scope(this));	
+	register_priority_subscope(new nf_scope(this), 2, false);	
 	register_subscope(new virtual_ifaces_scope(this));	
 	
 
 }
 
-void interfaces_scope::__pre_execute(libconfig::Setting& setting, bool dry_run){
+void interfaces_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	
 	//Update cache
 	blacklisted.clear();

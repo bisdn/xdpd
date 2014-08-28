@@ -25,7 +25,7 @@ public:
 		return blacklisted.find(port_name) != blacklisted.end();
 	}
 protected:
-	virtual void __pre_execute(libconfig::Setting& setting, bool dry_run);
+	virtual void post_validate(libconfig::Setting& setting, bool dry_run);
 	std::set<std::string> blacklisted;
 };
 

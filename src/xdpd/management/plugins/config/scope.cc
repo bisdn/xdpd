@@ -20,6 +20,35 @@ scope::~scope(){
 	sub_scopes.clear();
 		
 }
+
+
+scope* scope::get_scope_abs_path(const std::string& abs_path){
+	
+	//First recover the root scope
+	scope* root = __get_root();
+	scope* curr = NULL;
+
+	assert(root != NULL);
+
+	//Check if there is only one level
+	std::stringstream ss(abs_path);
+	std::string item;
+	char delim = '.';
+        
+	//Split the absolute path
+	while (std::getline(ss, item, delim)) {
+		if(!curr){
+			curr = root->get_subscope(item);
+		}else{
+			curr = curr->get_subscope(item);
+		}
+		if(!curr)
+			return NULL;	
+	} 
+
+	return curr;	
+}
+
 		
 void scope::register_subscope(std::string _name, scope* sc){
 

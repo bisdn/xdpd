@@ -1,6 +1,7 @@
 #ifndef CONFIG_SCOPE_PLUGIN_H
 #define CONFIG_SCOPE_PLUGIN_H 
 
+#include <assert.h>
 #include <libconfig.h++> 
 #include <map> 
 #include <sstream> 
@@ -39,6 +40,27 @@ public:
 
 	std::string name;
 protected:
+
+	//Scope types
+	typedef enum { 
+		//Normal scope, to be executed in the same order
+		//as added
+		SCOPE_NORMAL,
+		
+		//Specially ordered scope, to be executed before
+		//any normal scope. Does not propagate to subscopes
+		SCOPE_ORDERED,
+		
+		//Specially ordered scope, to be executed before
+		//any normal scope. It does propagate to NORMAL subscopes
+		SCOPE_ORDERED_TRANS_SUB,				
+	}scope_types_t;
+
+	//Type of scope
+	scope_types_t type;
+
+	//Processed flag
+	bool processed;
 	
 	//Is scope really mandatory
 	bool mandatory;
@@ -56,7 +78,7 @@ protected:
 	void register_parameter(std::string name, bool mandatory=false);
 
 	//Geters
-	scope* get_subscope(std::string name){
+	scope* get_subscope(const std::string& name){
 		std::vector<scope*>::iterator scope_iter;
 	
 		for (scope_iter = sub_scopes.begin(); scope_iter != sub_scopes.end(); ++scope_iter) {
@@ -66,6 +88,18 @@ protected:
 		return NULL;
 	}
 
+	//Get the very initial root scope(internal)
+	scope* __get_root(){
+		if(parent)
+			return parent->__get_root();
+		return this;
+	}
+	
+	//Get scope object by its absolute path
+	//x.y.z
+	scope* get_scope_abs_path(const std::string& abs_path);
+
+	//Get our path
 	std::string get_path(){
 		std::stringstream ss("");
 		

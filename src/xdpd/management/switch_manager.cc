@@ -310,7 +310,7 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 	if(!hal_flows || !sw_snapshot){
 		assert(0);
 		pthread_rwlock_unlock(&switch_manager::rwlock);
-		//FIXME throw exception
+		throw eOfSmGeneralError(); 	
 	}
 
 	//Clear original
@@ -320,8 +320,7 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 	if(flow_entry_snapshot::map_flow_stats_msg(sw_snapshot->of_ver, sw_snapshot->pipeline.miss_send_len, hal_flows, flows) != ROFL_SUCCESS){
 		assert(0);
 		pthread_rwlock_unlock(&switch_manager::rwlock);
-		//FIXME throw exception
-			
+		throw eOfSmGeneralError(); 	
 	}
 		
 	pthread_rwlock_unlock(&switch_manager::rwlock);

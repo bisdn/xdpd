@@ -3,9 +3,7 @@
 using namespace xdpd;
 using namespace rofl;
 
-#ifndef CONF_PLUGIN_ID
-	#define CONF_PLUGIN_ID ""
-#endif
+#include "config.h"
 
 scope::scope(std::string scope_name, scope* parent, bool mandatory){
 	this->name = scope_name;
@@ -60,6 +58,7 @@ void scope::__pre_execute(libconfig::Setting& setting, bool dry_run){
 void scope::execute(libconfig::Setting& setting, bool dry_run){
 
 	//Call pre-hook
+	ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'pre_validate()'\n", get_path().c_str());
 	pre_validate(setting, dry_run);
 
 	//Detect invalid paramaters if they are fixed
@@ -111,11 +110,14 @@ void scope::execute(libconfig::Setting& setting, bool dry_run){
 			throw eConfMandatoryParameterNotPresent();
 		}
 		
-		if(setting.exists(sc->name))
+		if(setting.exists(sc->name)){
+			ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'execute()'\n", sc->get_path().c_str());
 			sc->execute(setting[sc->name], dry_run);
+		}
 	}
 
 	//Call post-hook
+	ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'post_validate()'\n", get_path().c_str());
 	post_validate(setting, dry_run);
 }
 
@@ -138,9 +140,11 @@ void scope::__pre_execute(libconfig::Config& config, bool dry_run){
 void scope::execute(libconfig::Config& config, bool dry_run){
 
 	//First execute all pre_execute hooks
+	ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'pre_execute()'\n", get_path().c_str());
 	__pre_execute(config, dry_run);
 	
 	//Call pre-hook
+	ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'pre_validate()'\n", get_path().c_str());
 	pre_validate(config, dry_run);
 
 	//Go through parameters and validate if mandatory
@@ -170,12 +174,15 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 	
 			throw eConfMandatoryParameterNotPresent();
 		}
-		if(config.exists(sc->name))
+		if(config.exists(sc->name)){
+			ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'pre_validate()'\n", sc->get_path().c_str());
 			sc->execute(config.lookup(sc->name), dry_run);
+		}
 	}
 
 	
 	//Call post-hook
+	ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'post_validate()'\n", get_path().c_str());
 	post_validate(config, dry_run);
 }
 

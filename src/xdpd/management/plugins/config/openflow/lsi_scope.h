@@ -20,7 +20,7 @@ namespace xdpd {
 class lsi_scope:public scope {
 	
 public:
-	lsi_scope(std::string scope_name, bool mandatory=false);
+	lsi_scope(std::string scope_name, scope* parent);
 		
 protected:
 	virtual void post_validate(libconfig::Setting& setting, bool dry_run);

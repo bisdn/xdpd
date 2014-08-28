@@ -3,6 +3,7 @@
 
 #include <libconfig.h++> 
 #include <map> 
+#include <sstream> 
 #include <vector> 
 #include <rofl/common/croflexception.h>
 #include <rofl/common/utils/c_logger.h>
@@ -30,7 +31,7 @@ class eConfUnknownElement: public rofl::RoflException {};
 class scope {
 	
 public:
-	scope(std::string scope_name, bool mandatory=false);
+	scope(std::string scope_name, scope* parent, bool mandatory=false);
 	virtual ~scope();
 	
 	void execute(libconfig::Setting& setting, bool dry_run=false);
@@ -38,7 +39,14 @@ public:
 
 	std::string name;
 protected:
+	
+	//Is scope really mandatory
 	bool mandatory;
+	
+	//Parent pointer
+	scope* parent;
+	
+	//Contents of the scope
 	std::vector<scope*> sub_scopes;
 	std::map<std::string, bool> parameters;
 
@@ -56,6 +64,17 @@ protected:
 				return *scope_iter;
 		}
 		return NULL;
+	}
+
+	std::string get_path(){
+		std::stringstream ss("");
+		
+		if(parent)
+			ss<<parent->get_path()<<".";
+	
+		ss << this->name;
+		
+		return ss.str();
 	}
 
 	//Pre-execute hooks	

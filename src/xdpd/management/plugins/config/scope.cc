@@ -7,8 +7,9 @@ using namespace rofl;
 	#define CONF_PLUGIN_ID ""
 #endif
 
-scope::scope(std::string scope_name, bool mandatory){
+scope::scope(std::string scope_name, scope* parent, bool mandatory){
 	this->name = scope_name;
+	this->parent = parent;
 	this->mandatory = mandatory;
 }
 

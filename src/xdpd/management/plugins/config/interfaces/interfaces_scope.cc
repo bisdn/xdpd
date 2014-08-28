@@ -23,15 +23,15 @@ using namespace rofl;
 #define VIF_DESCRIPTION "description"
 
 
-interfaces_scope::interfaces_scope(std::string name, bool mandatory):scope(name, mandatory){
+interfaces_scope::interfaces_scope(scope* parent):scope("interfaces", parent, false){
 	
 	//Register parameters
 	register_parameter(BLACKLIST);
 
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook
-	register_subscope(new nf_scope());	
-	register_subscope(new virtual_ifaces_scope());	
+	register_subscope(new nf_scope(this));	
+	register_subscope(new virtual_ifaces_scope(this));	
 	
 
 }
@@ -63,7 +63,7 @@ void interfaces_scope::__pre_execute(libconfig::Setting& setting, bool dry_run){
 	}
 }
 
-virtual_ifaces_scope::virtual_ifaces_scope(std::string name, bool mandatory):scope(name, mandatory){
+virtual_ifaces_scope::virtual_ifaces_scope(scope* parent):scope("virtual", parent, false){
 	
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook

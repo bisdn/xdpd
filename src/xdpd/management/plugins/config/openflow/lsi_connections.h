@@ -27,15 +27,16 @@ public:
 class lsi_connection_scope:public scope {
 
 public:
-	lsi_connection_scope(std::string scope_name);
+	lsi_connection_scope(std::string scope_name, scope* parent);
 };
 
 class lsi_connections_scope:public scope {
 	
 public:
-	lsi_connections_scope(std::string scope_name=SCOPE_NAME, bool mandatory=true);
-	std::vector<lsi_connection> get_parsed_connections(void){ return parsed_connections;};
+	lsi_connections_scope(scope* parent);
 
+	std::vector<lsi_connection> get_parsed_connections(void){ return parsed_connections;};
+	
 	static const std::string SCOPE_NAME;
 protected:
 	std::vector<lsi_connection> parsed_connections;

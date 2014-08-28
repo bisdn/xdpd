@@ -26,14 +26,14 @@ using namespace rofl;
 #define LSI_TABLES_MATCHING_ALGORITHM "tables-matching-algorithm"
 #define LSI_PORTS "ports" 
 
-lsi_scope::lsi_scope(std::string name, bool mandatory):scope(name, mandatory){
+lsi_scope::lsi_scope(std::string name, scope* parent):scope(name, parent, false){
 
 	register_parameter(LSI_DPID, true);
 	register_parameter(LSI_VERSION, true);
 	register_parameter(LSI_DESCRIPTION);
 
 	//Register connections subscope
-	register_subscope(new lsi_connections_scope());	
+	register_subscope(new lsi_connections_scope(this));	
 	
 	//Reconnect time
 	register_parameter(LSI_RECONNECT_TIME);

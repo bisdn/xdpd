@@ -44,7 +44,9 @@ void config::init(){
 	Config* cfg = new Config;
 	root_scope* root = new root_scope();
 
+
 	//Dry run
+	ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "Starting dry-run\n");
 	get_config_file_contents(cfg);
 	root->execute(*cfg,true);
 
@@ -58,6 +60,8 @@ void config::init(){
 		root = new root_scope();
 
 		get_config_file_contents(cfg);
+		
+		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "Starting real execution\n");
 		root->execute(*cfg);
 		delete cfg;
 		delete root;

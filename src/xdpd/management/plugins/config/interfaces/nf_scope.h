@@ -18,7 +18,7 @@ namespace xdpd {
 class nf_scope:public scope {
 	
 public:
-	nf_scope(std::string scope_name="nf", bool mandatory=false);
+	nf_scope(scope* parent);
 	
 protected:
 

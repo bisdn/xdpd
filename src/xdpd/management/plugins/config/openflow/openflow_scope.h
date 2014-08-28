@@ -16,7 +16,7 @@ namespace xdpd {
 class openflow_scope:public scope {
 	
 public:
-	openflow_scope(std::string scope_name="openflow", bool mandatory=true);
+	openflow_scope(scope* parent);
 		
 protected:
 	
@@ -25,7 +25,7 @@ protected:
 class of_lsis_scope:public scope {
 	
 public:
-	of_lsis_scope(std::string scope_name="logical-switches", bool mandatory=true);
+	of_lsis_scope(scope* parent);
 		
 protected:
 	

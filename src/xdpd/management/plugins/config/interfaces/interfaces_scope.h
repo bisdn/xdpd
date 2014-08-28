@@ -18,7 +18,7 @@ namespace xdpd {
 class interfaces_scope:public scope {
 	
 public:
-	interfaces_scope(std::string scope_name="interfaces", bool mandatory=false);
+	interfaces_scope(scope* parent);
 	
 	//This is cached during dry-runs
 	bool is_blacklisted(std::string& port_name){
@@ -32,7 +32,7 @@ protected:
 class virtual_ifaces_scope:public scope {
 	
 public:
-	virtual_ifaces_scope(std::string scope_name="virtual", bool mandatory=false);
+	virtual_ifaces_scope(scope* parent);
 		
 protected:
 	

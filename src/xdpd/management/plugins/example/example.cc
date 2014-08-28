@@ -66,7 +66,7 @@ void example::handle_timeout(int opaque, void *data){
 			//Dump
 			std::list<openflow_group_mod_snapshot>::iterator g_it = group_mods.begin();
 			for(j=0; g_it != group_mods.end(); ++g_it, ++j)
-				ss <<"\t\t["<<j<<"]"<< *g_it;
+				ss << "\t\t[group-mod:" <<j<< " {" << *g_it;
 			
 		}
 		

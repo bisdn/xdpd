@@ -38,11 +38,11 @@ public:
 	//Dumping operator
 	friend std::ostream& operator<<(std::ostream& os, const bucket_snapshot& b)
 	{
-		os << " weight:"<< b.get_weight()<<" group:"<<b.get_watch_group()<<" port:"<<b.get_watch_port()
-		<<" packet count:"<<b.packet_count<<" byte count:"<<b.byte_count;
+		os << " weight:"<< b.get_weight()<<", group:"<<b.get_watch_group()<<", port:"<<b.get_watch_port()
+		<<", stats{packets:"<<b.packet_count<<", bytes:"<<b.byte_count<<"}";
 
 		//TODO: use (non-exisiting yet) single line dumpers
-		os << " {, actions"; 
+		os << "\n\t\t\t\t { actions: "; 
 		os << b.get_actions();
 		os << " }\n";
 		
@@ -70,19 +70,36 @@ public:
 	//Dumping operator
 	friend std::ostream& operator<<(std::ostream& os, const openflow_group_mod_snapshot& g)
 	{
+		int i;
 		std::list<bucket_snapshot>::const_iterator b_it;
 		
-		os << " id:"<< g.group_id<<" type:"<<g.type<<" # buckets:"<<g.num_of_buckets
-		<<" packet count:"<<g.packet_count<<" byte count:"<<g.byte_count;
+		os << " id:"<< g.group_id<<", type:"<<g.get_type_str()<<", # buckets:"<<g.num_of_buckets
+		<<", stats{packets:"<<g.packet_count<<", bytes:"<<g.byte_count<<"}}]";
 		
 		//TODO: use (non-exisiting yet) single line dumpers
-		os << " {buckets";
-		for(b_it=g.buckets.begin(); b_it!=g.buckets.end(); b_it++){
-			os << *b_it;
+		os << "\n";
+		for(b_it=g.buckets.begin(), i=0; b_it!=g.buckets.end(); b_it++, i++){
+			os << "\t\t\t[bucket:" <<i<< "]" << *b_it;
 		}
-		os << " }\n";
+		os << "\n";
 		
 		return os;
+	}
+	
+	std::string get_type_str() const{
+		switch(type){
+			case OF1X_GROUP_TYPE_ALL:
+				return std::string("ALL");
+			case OF1X_GROUP_TYPE_SELECT:
+				return std::string("SEL");
+			case OF1X_GROUP_TYPE_INDIRECT:
+				return std::string("IND");
+			case OF1X_GROUP_TYPE_FF:
+				return std::string("FF ");
+			default: 
+				assert(0);
+				return std::string("Unknown");
+		}
 	}
 };
 

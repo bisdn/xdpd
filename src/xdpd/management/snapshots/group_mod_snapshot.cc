@@ -11,7 +11,7 @@ bucket_snapshot::bucket_snapshot(of1x_stats_bucket_t* stats, rofl::openflow::cof
 		packet_count(stats->packet_count),
 		byte_count(stats->byte_count)
 {
-	
+		set_actions() = bucket.get_actions();
 }
 
 rofl_result_t
@@ -59,6 +59,7 @@ openflow_group_mod_snapshot::openflow_group_mod_snapshot(of_version_t ver, of1x_
 {
 	//create bucket snapshots
 	if(bucket_snapshot::map_bucket_list(ver, stats->num_of_buckets, stats->bucket_stats, desc->bucket, buckets)!=ROFL_SUCCESS){
+		assert(0);
 		//TODO throw eOfSmGeneralError;
 	}
 }

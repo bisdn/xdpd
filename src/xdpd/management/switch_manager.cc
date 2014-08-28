@@ -337,8 +337,8 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 }
 
 void switch_manager::get_switch_group_mods(uint64_t dpid, std::list<openflow_group_mod_snapshot>& group_mods){
-	of1x_stats_group_desc_msg_t* group_table_desc = hal_driver_of1x_get_group_desc_stats(dpid);
-	of1x_stats_group_msg_t* group_table_stats = hal_driver_of1x_get_group_stats(dpid, OF1X_GROUP_ALL);
+	of1x_stats_group_desc_msg_t* group_table_desc = NULL;
+	of1x_stats_group_msg_t* group_table_stats = NULL;
 	
 	//Make sure 	
 	pthread_rwlock_rdlock(&switch_manager::rwlock);
@@ -351,23 +351,30 @@ void switch_manager::get_switch_group_mods(uint64_t dpid, std::list<openflow_gro
 		throw eOfSmDoesNotExist();
 	}
 	
-	if( !group_table_desc || !group_table_stats ){
+	group_table_desc = hal_driver_of1x_get_group_desc_stats(dpid);
+	if( !group_table_desc ){
 		pthread_rwlock_unlock(&switch_manager::rwlock);
 		return;
 	}
-	
-	if(openflow_group_mod_snapshot::map_group_mods_msg(sw->version, group_table_stats, group_table_desc, group_mods)!= ROFL_SUCCESS){
-		assert(0);
+
+	group_table_stats = hal_driver_of1x_get_group_stats(dpid, OF1X_GROUP_ALL);
+	if( !group_table_stats ){
 		pthread_rwlock_unlock(&switch_manager::rwlock);
+		of1x_destroy_group_desc_stats(group_table_desc);
+		return;
+	 }
+	 
+	if(openflow_group_mod_snapshot::map_group_mods_msg(sw->version, group_table_stats, group_table_desc, group_mods)!= ROFL_SUCCESS){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		of1x_destroy_group_desc_stats(group_table_desc);
+		of1x_destroy_stats_group_msg(group_table_stats);
+		assert(0);
 		throw eOfSmGeneralError();
 	}
 	
 	pthread_rwlock_unlock(&switch_manager::rwlock);
-	
-	if (group_table_desc)
-		of1x_destroy_group_desc_stats(group_table_desc);
-	if (group_table_stats)
-		of1x_destroy_stats_group_msg(group_table_stats);
+	of1x_destroy_group_desc_stats(group_table_desc);
+	of1x_destroy_stats_group_msg(group_table_stats);
 }
 
 void

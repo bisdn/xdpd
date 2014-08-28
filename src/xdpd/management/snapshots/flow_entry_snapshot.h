@@ -48,7 +48,7 @@ public:
 		//TODO: use (non-exisiting yet) single line dumpers
 
 		os << f.get_match();
-
+		os << " }\n";
 		if(f.get_version() != 0x1){
 			os << " {, instructions"; 
 				os << f.get_instructions();	

@@ -19,10 +19,13 @@ class nf_scope:public scope {
 	
 public:
 	nf_scope(scope* parent);
-	
+
+	bool is_nf_port(std::string& port_name){
+		return nf_interfaces.find(port_name) != nf_interfaces.end();
+	}	
 protected:
 
-	virtual void __pre_execute(libconfig::Setting& setting, bool dry_run);
+	virtual void post_validate(libconfig::Setting& setting, bool dry_run);
 
 	std::set<std::string> nf_interfaces;
 };

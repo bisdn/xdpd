@@ -10,6 +10,7 @@
 #include "../../../../openflow/pirl/pirl.h"
 
 #include "../config.h"
+#include "../interfaces/nf_scope.h"
 #include "lsi_connections.h"
 
 using namespace xdpd;
@@ -118,7 +119,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 			
 			}
 			//Check if exists
-			if((std::find(platform_ports.begin(), platform_ports.end(), port) == platform_ports.end())){
+			if(port_manager::exists(port) == false && ((nf_scope*)get_scope_abs_path("config.interfaces.nf"))->is_nf_port(port)){
 				ROFL_ERR(CONF_PLUGIN_ID "%s: invalid port '%s'. Port does not exist!\n", setting.getPath().c_str(), port.c_str());
 				throw eConfParseError(); 	
 			

@@ -15,7 +15,7 @@ void nf_port_manager::create_nf_port(std::string& nf_name, std::string& nf_port_
 {
 	if(nf_type == PORT_TYPE_NF_NATIVE)
 	{
-		ROFL_ERR("%s ERROR: only DPDK_SECONDARY and DPDK_KNI types are currently implemented\n", MODULE_NAME);
+		ROFL_ERR("%s ERROR: only SHMEM or EXTERNAL types are currently implemented\n", MODULE_NAME);
 		throw eNFPMmInvalidNF();	
 	}
 
@@ -37,8 +37,8 @@ void nf_port_manager::create_nf_port(std::string& nf_name, std::string& nf_port_
 		ROFL_ERR("%s ERROR: Driver was unable to create the NF port\n", MODULE_NAME, nf_port_name.c_str());
 		throw eNFPMmUnknownError(); 
 	}
-	
-	ROFL_INFO("%s NF port %s created\n", MODULE_NAME, nf_port_name.c_str());
+
+	ROFL_INFO("%s Successfully created NF port %s of type %s, {%s}\n", MODULE_NAME, nf_port_name.c_str(), (nf_type == PORT_TYPE_NF_SHMEM)? "SHMEM": "EXTERNAL", nf_name.c_str() );
 
 	//TODO: notify the creation to the plugins?
 

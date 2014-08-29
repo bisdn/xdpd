@@ -36,7 +36,8 @@ protocols = OrderedDict(
 	("TCP", 32), 
 	("UDP", 8), 
 	("SCTP", 12),
-	("GTPU", 20)
+	("GTPU4", 20),
+	("GTPU6", 20)
 	)
 )
 
@@ -68,7 +69,7 @@ pkt_types = [
 	
 	"L2/IPV4/TCP",
 	"L2/IPV4/UDP",
-	"L2/IPV4/UDP/GTPU",
+	"L2/IPV4/UDP/GTPU4",
 	"L2/IPV4/SCTP",
 
 	##########
@@ -92,7 +93,7 @@ pkt_types = [
 
 	"L2/IPV6/TCP",
 	"L2/IPV6/UDP",
-	"L2/IPV6/UDP/GTPU",
+	"L2/IPV6/UDP/GTPU6",
 	"L2/IPV6/SCTP",
 ]
 
@@ -521,6 +522,11 @@ def push_transitions(f):
 					row.append("-1")
 			else:
 				row.append("-1")
+		if "GTPU" in type_:
+			if "GTPU4" in proto and "GTPU" not in type_:
+				type_.replace("GTPU4", "IPV4/UDP/GTPU4") 
+			elif "GTPU6" in proto and "GTPU" not in type_:
+				type_.replace("GTPU6", "IPV6/UDP/GTPU6")
 		f.write("\n\t/* "+type_+" */ {")
 
 		first_proto = True
@@ -609,8 +615,13 @@ def pop_transitions(f):
 					row.append(type_.replace("/PPPOE/PPP", "/PPPOE"))
 				else:
 					row.append("-1")
-			else:
-				row.append("-1")
+			elif "GTPU" in proto:
+				if "GTPU4" in type_:
+					row.append(type_.replace("/IPV4/UDP/GTPU4", ""))
+				elif "GTPU6" in type_:
+					row.append(type_.replace("/IPV6/UDP/GTPU6", ""))
+				else:
+					row.append("-1")
 		f.write("\n\t/* "+type_+" */ {")
 
 		first_proto = True

@@ -304,11 +304,6 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	uint8_t ip_default_ttl = 64;
 	size_t payloadlen = clas_state->len - sizeof(cpc_eth_hdr_t);
 
-	pkt_types_t new0 = PT_PUSH_PROTO(clas_state, IPV4_noptions_0);
-	pkt_types_t new1 = PT_PUSH_PROTO(clas_state, UDP);
-	pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU);
-	if(unlikely(new == PT_INVALID))
-		return NULL;
 
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);
@@ -318,6 +313,10 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	switch (ether_type) {
 		case ETH_TYPE_IPV4:
 		{
+			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU4);
+			if(unlikely(new == PT_INVALID))
+				return NULL;
+
 			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t);
 
 			/*
@@ -329,7 +328,6 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			}
 			//Set new pkt type
 			clas_state->type = new;
-			clas_state->type = PT_PUSH_PROTO(clas_state, GTPU);
 			assert(clas_state->type != PT_INVALID);
 
 			/*
@@ -352,6 +350,10 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			break;
 		case ETH_TYPE_IPV6:
 		{
+			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU6);
+			if(unlikely(new == PT_INVALID))
+				return NULL;
+
 			unsigned int bytes_to_insert = sizeof(cpc_ipv6_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t);
 
 			/*
@@ -363,7 +365,6 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			}
 			//Set new pkt type
 			clas_state->type = new;
-			clas_state->type = PT_PUSH_PROTO(clas_state, GTPU);
 			assert(clas_state->type != PT_INVALID);
 
 			/*
@@ -430,9 +431,6 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 		return;
 	}
 
-	/*
-	 * 1. pop IPv4/IPv6 header
-	 */
 	current_ether_type = get_ether_type(ether_header);
 	if (!current_ether_type) {
 		// TODO: log error
@@ -440,17 +438,17 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 	}
 	switch (*current_ether_type) {
 	case ETH_TYPE_IPV4: {
-		pkt_types_t new = PT_POP_PROTO(clas_state, IPV4_noptions_0); // TODO: options
+		pkt_types_t new = PT_POP_PROTO(clas_state, GTPU4);
 		if(unlikely(new == PT_INVALID))
 			return;
 
 		//Take header out from packet
-		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv4_hdr_t));
+		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t));
 
 		//Set new type and base(move right)
 		clas_state->type = new;
-		clas_state->base += sizeof(cpc_ipv4_hdr_t);
-		clas_state->len -= sizeof(cpc_ipv4_hdr_t);
+		clas_state->base += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		clas_state->len -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 
 	} break;
 	case ETH_TYPE_IPV6: {
@@ -459,46 +457,15 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 			return;
 
 		//Take header out from packet
-		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv6_hdr_t));
+		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t));
 
 		//Set new type and base(move right)
 		clas_state->type = new;
-		clas_state->base += sizeof(cpc_ipv6_hdr_t);
-		clas_state->len -= sizeof(cpc_ipv6_hdr_t);
+		clas_state->base += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		clas_state->len -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 
 	} break;
 	}
-
-	/*
-	 * 2. pop UDP header
-	 */
-	pkt_types_t new = PT_POP_PROTO(clas_state, UDP);
-	if(unlikely(new == PT_INVALID))
-		return;
-
-	//Take header out from packet
-	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_udp_hdr_t));
-
-	//Set new type and base(move right)
-	clas_state->type = new;
-	clas_state->base += sizeof(cpc_udp_hdr_t);
-	clas_state->len -= sizeof(cpc_udp_hdr_t);
-
-	/*
-	 * 3. pop GTP header
-	 */
-	new = PT_POP_PROTO(clas_state, GTPU);
-	if(unlikely(new == PT_INVALID))
-		return;
-
-	//Take header out from packet
-	pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_gtphu_t));
-
-	//Set new type and base(move right)
-	clas_state->type = new;
-	clas_state->base += sizeof(cpc_gtphu_t);
-	clas_state->len -= sizeof(cpc_gtphu_t);
-
 
 	//Set ether_type of new frame
 	set_ether_type(get_ether_hdr(clas_state,0),ether_type);

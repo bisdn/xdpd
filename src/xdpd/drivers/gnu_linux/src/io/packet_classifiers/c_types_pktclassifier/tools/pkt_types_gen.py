@@ -520,13 +520,16 @@ def push_transitions(f):
 					row.append(type_.replace("PPPOE", "PPPOE/PPP"))
 				else:
 					row.append("-1")
+			elif "GTPU" in proto:
+				if "GTPU4" in proto and "GTPU" not in type_:
+					type_.replace("GTPU4", "IPV4_noptions_0/UDP/GTPU4") 
+				elif "GTPU6" in proto and "GTPU" not in type_:
+					type_.replace("GTPU6", "IPV6/UDP/GTPU6")
+				else:
+					row.append("-1")
 			else:
 				row.append("-1")
-		if "GTPU" in type_:
-			if "GTPU4" in proto and "GTPU" not in type_:
-				type_.replace("GTPU4", "IPV4/UDP/GTPU4") 
-			elif "GTPU6" in proto and "GTPU" not in type_:
-				type_.replace("GTPU6", "IPV6/UDP/GTPU6")
+		
 		f.write("\n\t/* "+type_+" */ {")
 
 		first_proto = True
@@ -617,11 +620,13 @@ def pop_transitions(f):
 					row.append("-1")
 			elif "GTPU" in proto:
 				if "GTPU4" in type_:
-					row.append(type_.replace("/IPV4/UDP/GTPU4", ""))
+					row.append(type_.replace("/IPV4_noptions_0/UDP/GTPU4", ""))
 				elif "GTPU6" in type_:
 					row.append(type_.replace("/IPV6/UDP/GTPU6", ""))
 				else:
 					row.append("-1")
+			else:
+				row.append("-1")
 		f.write("\n\t/* "+type_+" */ {")
 
 		first_proto = True

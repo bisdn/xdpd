@@ -341,7 +341,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv4_ihl(ipv4_header, sizeof(cpc_ipv4_hdr_t)/sizeof(uint32_t));
 			set_ipv4_dscp(ipv4_header, 0);
 			set_ipv4_ecn(ipv4_header, 0);
-			set_ipv4_length(ipv4_header, sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen);
+			set_ipv4_length(ipv4_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen));
 			set_ipv4_proto(ipv4_header, IP_PROTO_UDP);
 			set_ipv4_src(ipv4_header, 0); // TODO: from inner header
 			set_ipv4_dst(ipv4_header, 0); // TODO: from inner header

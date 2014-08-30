@@ -337,7 +337,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ether_type(ether_header, ETH_TYPE_IPV4);
 
 			ipv4_header = (cpc_ipv4_hdr_t*)get_ipv4_hdr(clas_state, 0);
-			set_ipv4_version(ipv4_header, 4);
+			set_ipv4_version(ipv4_header, 4 << 4);
 			set_ipv4_ihl(ipv4_header, sizeof(cpc_ipv4_hdr_t)/sizeof(uint32_t));
 			set_ipv4_dscp(ipv4_header, 0);
 			set_ipv4_ecn(ipv4_header, 0);
@@ -377,7 +377,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			memset(null_addr.val, 0, sizeof(null_addr));
 
 			ipv6_header = (cpc_ipv6_hdr_t*)get_ipv6_hdr(clas_state, 0);
-			set_ipv6_version(ipv6_header, 6);
+			set_ipv6_version(ipv6_header, 6 << 4);
 			set_ipv6_dscp(ipv6_header, 0);
 			set_ipv6_ecn(ipv6_header, 0);
 			set_ipv6_dst(ipv6_header, null_addr);

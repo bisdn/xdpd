@@ -313,18 +313,21 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	switch (ether_type) {
 		case ETH_TYPE_IPV4:
 		{
-			payloadlen = clas_state->len - (get_ipv4_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0));
+			//unsigned int offset = get_ipv4_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0);
+			unsigned int offset = sizeof(cpc_eth_hdr_t);
+			payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU4);
 			if(unlikely(new == PT_INVALID))
 				return NULL;
+
 
 			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t);
 
 			/*
 			 * this invalidates ether(0), as it shifts ether(0) to the left
 			 */
-			if (pkt_push(pkt, NULL, sizeof(cpc_eth_hdr_t), bytes_to_insert) == ROFL_FAILURE){
+			if (pkt_push(pkt, NULL, offset, bytes_to_insert) == ROFL_FAILURE){
 				// TODO: log error
 				return NULL;
 			}
@@ -354,7 +357,9 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			break;
 		case ETH_TYPE_IPV6:
 		{
-			payloadlen = clas_state->len - (get_ipv6_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0));
+			//unsigned int offset = get_ipv6_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0);
+			unsigned int offset = sizeof(cpc_eth_hdr_t);
+			payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU6);
 			if(unlikely(new == PT_INVALID))
@@ -365,7 +370,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			/*
 			 * this invalidates ether(0), as it shifts ether(0) to the left
 			 */
-			if (pkt_push(pkt, NULL, sizeof(cpc_eth_hdr_t), bytes_to_insert) == ROFL_FAILURE){
+			if (pkt_push(pkt, NULL, offset, bytes_to_insert) == ROFL_FAILURE){
 				// TODO: log error
 				return NULL;
 			}

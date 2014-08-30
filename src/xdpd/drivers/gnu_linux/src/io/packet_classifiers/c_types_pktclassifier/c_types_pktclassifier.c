@@ -414,6 +414,9 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	set_gtpu_teid(gtp_header, 0);
 	set_gtpu_version(gtp_header, 1);
 
+	// re-classify packet with new header
+	classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);
+
 	return NULL;
 }
 

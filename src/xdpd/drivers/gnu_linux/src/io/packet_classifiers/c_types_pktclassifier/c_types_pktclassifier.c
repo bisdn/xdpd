@@ -455,8 +455,10 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 		//Set new type and base(move right)
 		clas_state->type = new;
-		clas_state->base += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
-		clas_state->len -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		// TODO: question: setting clas_state->base/len seems to be necessary for DPDK, but
+		// gnu_linux is manipulating these parameters automatically.
+		//clas_state->base += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		//clas_state->len -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 
 	} break;
 	case ETH_TYPE_IPV6: {
@@ -469,8 +471,8 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 		//Set new type and base(move right)
 		clas_state->type = new;
-		clas_state->base += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
-		clas_state->len -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		//clas_state->base += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		//clas_state->len -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 
 	} break;
 	}

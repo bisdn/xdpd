@@ -328,6 +328,8 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			}
 			//Set new pkt type
 			clas_state->type = new;
+			clas_state->base -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+			clas_state->len += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 			assert(clas_state->type != PT_INVALID);
 
 			/*
@@ -365,6 +367,8 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			}
 			//Set new pkt type
 			clas_state->type = new;
+			clas_state->base -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+			clas_state->len += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 			assert(clas_state->type != PT_INVALID);
 
 			/*
@@ -415,7 +419,8 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	set_gtpu_version(gtp_header, 1);
 
 	//reclassify
-	classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);
+	//classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);
+	parse_ethernet(clas_state, clas_state->base, clas_state->len);
 
 	return NULL;
 }
@@ -450,8 +455,8 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 		//Set new type and base(move right)
 		clas_state->type = new;
-		//clas_state->base += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
-		//clas_state->len -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		clas_state->base += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		clas_state->len -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 
 	} break;
 	case ETH_TYPE_IPV6: {
@@ -464,8 +469,8 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 		//Set new type and base(move right)
 		clas_state->type = new;
-		//clas_state->base += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
-		//clas_state->len -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		clas_state->base += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		clas_state->len -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 
 	} break;
 	}
@@ -474,7 +479,8 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
 
 	//reclassify
-	classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);
+	//classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);
+	parse_ethernet(clas_state, clas_state->base, clas_state->len);
 }
 
 void dump_pkt_classifier(classifier_state_t* clas_state){

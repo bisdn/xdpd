@@ -520,7 +520,7 @@ def push_transitions(f):
 					row.append(type_.replace("PPPOE", "PPPOE/PPP"))
 				else:
 					row.append("-1")
-			elif "GTPU" in proto and ("IPV4_noptions_0" in type_ or "IPV6" in type_) and "MPLS" not in type_ and "PPPOE" not in type_ and "GTPU" not in type_:
+			elif "GTPU" in proto and ("IPV4_noptions_0" in type_ or "IPV6" in type_) and "MPLS" not in type_ and "PPPOE" not in type_ and "GTPU" not in type_ and "VLAN" not in type_:
 				new_type = type_.split("IP")[0]+proto # take everything before the IPV4/IPV6 payload				
 				if "GTPU4" in proto:
 					#print "AAAA[4]: "+type_+" => "+new_type.replace("GTPU4", "IPV4_noptions_0/UDP/GTPU4")

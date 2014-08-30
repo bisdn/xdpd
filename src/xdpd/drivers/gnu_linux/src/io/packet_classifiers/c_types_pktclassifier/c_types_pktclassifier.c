@@ -430,10 +430,19 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 	cpc_eth_hdr_t* ether_header = (cpc_eth_hdr_t*)0;
 	cpc_gtphu_t* gtp_header = (cpc_gtphu_t*)0;
 	uint16_t* current_ether_type = (uint16_t*)0;
+	uint64_t* eth_dst = (uint64_t*)0;
+	uint64_t* eth_src = (uint64_t*)0;
 
 	ether_header = get_ether_hdr(clas_state, 0);
-	gtp_header = get_gtpu_hdr(clas_state, 0);
+	if (!ether_header) {
+		// TODO: log error
+		return;
+	}
 
+	eth_dst = get_ether_dl_dst(ether_header);
+	eth_src = get_ether_dl_src(ether_header);
+
+	gtp_header = get_gtpu_hdr(clas_state, 0);
 	if (!gtp_header) {
 		// TODO: log error
 		return;
@@ -479,6 +488,8 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 	//Set ether_type of new frame
 	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
+	set_ether_dl_dst(get_ether_hdr(clas_state, 0),*eth_dst);
+	set_ether_dl_src(get_ether_hdr(clas_state, 0),*eth_src);
 
 	//reclassify
 	//classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);

@@ -384,7 +384,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv6_src(ipv6_header, null_addr);
 			set_ipv6_flow_label(ipv6_header, 0);
 			set_ipv6_hop_limit(ipv6_header, ip_default_ttl);
-			set_ipv6_payload_length(ipv6_header, sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen);
+			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen));
 			set_ipv6_traffic_class(ipv6_header, 0);
 			set_ipv6_next_header(ipv6_header, IP_PROTO_UDP);
 		}
@@ -397,7 +397,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	udp_header = get_udp_hdr(clas_state,0);
 	set_udp_dport(udp_header, 0);
 	set_udp_sport(udp_header, 0);
-	set_udp_length(udp_header, sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen); // TODO: from where?
+	set_udp_length(udp_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen));
 
 	/*
 	 * set default values in GTPU tag

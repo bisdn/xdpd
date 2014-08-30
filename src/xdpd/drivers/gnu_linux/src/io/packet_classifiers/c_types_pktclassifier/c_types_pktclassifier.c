@@ -317,7 +317,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			if(unlikely(new == PT_INVALID))
 				return NULL;
 
-			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t);
+			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t);
 
 			/*
 			 * this invalidates ether(0), as it shifts ether(0) to the left
@@ -328,8 +328,8 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			}
 			//Set new pkt type
 			clas_state->type = new;
-			clas_state->base -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
-			clas_state->len += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+			//clas_state->base -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+			//clas_state->len += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
 			assert(clas_state->type != PT_INVALID);
 
 			/*
@@ -343,7 +343,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv4_ihl(ipv4_header, sizeof(cpc_ipv4_hdr_t)/sizeof(uint32_t));
 			set_ipv4_dscp(ipv4_header, 0);
 			set_ipv4_ecn(ipv4_header, 0);
-			set_ipv4_length(ipv4_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen));
+			set_ipv4_length(ipv4_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t) + payloadlen));
 			set_ipv4_proto(ipv4_header, IP_PROTO_UDP);
 			set_ipv4_src(ipv4_header, 0); // TODO: from inner header
 			set_ipv4_dst(ipv4_header, 0); // TODO: from inner header
@@ -356,7 +356,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			if(unlikely(new == PT_INVALID))
 				return NULL;
 
-			unsigned int bytes_to_insert = sizeof(cpc_ipv6_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t);
+			unsigned int bytes_to_insert = sizeof(cpc_ipv6_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t);
 
 			/*
 			 * this invalidates ether(0), as it shifts ether(0) to the left
@@ -367,8 +367,8 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			}
 			//Set new pkt type
 			clas_state->type = new;
-			clas_state->base -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
-			clas_state->len += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+			//clas_state->base -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(struct cpc_gtpu_base_hdr_t);
+			//clas_state->len += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(struct cpc_gtpu_base_hdr_t);
 			assert(clas_state->type != PT_INVALID);
 
 			/*
@@ -388,7 +388,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv6_src(ipv6_header, null_addr);
 			set_ipv6_flow_label(ipv6_header, 0);
 			set_ipv6_hop_limit(ipv6_header, ip_default_ttl);
-			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen));
+			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t) + payloadlen));
 			set_ipv6_traffic_class(ipv6_header, 0);
 			set_ipv6_next_header(ipv6_header, IP_PROTO_UDP);
 		}
@@ -401,7 +401,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	udp_header = get_udp_hdr(clas_state,0);
 	set_udp_dport(udp_header, be16toh(2152)); // necessary for re-classifying this packet (see below)
 	set_udp_sport(udp_header, be16toh(2152));
-	set_udp_length(udp_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(cpc_gtphu_t) + payloadlen));
+	set_udp_length(udp_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t) + payloadlen));
 
 	/*
 	 * set default values in GTPU tag
@@ -451,7 +451,7 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 			return;
 
 		//Take header out from packet
-		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t));
+		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(struct cpc_gtpu_base_hdr_t));
 
 		//Set new type and base(move right)
 		clas_state->type = new;
@@ -467,7 +467,7 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 			return;
 
 		//Take header out from packet
-		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t));
+		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(struct cpc_gtpu_base_hdr_t));
 
 		//Set new type and base(move right)
 		clas_state->type = new;

@@ -408,7 +408,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	 */
 	gtp_header = get_gtpu_hdr(clas_state,0);
 	set_gtpu_e_flag(gtp_header, 0);
-	set_gtpu_length(gtp_header, payloadlen);
+	set_gtpu_length(gtp_header, htobe16(payloadlen));
 	set_gtpu_msg_type(gtp_header, 0);
 	set_gtpu_npdu_no(gtp_header, 0);
 	set_gtpu_pn_flag(gtp_header, 0);

@@ -520,11 +520,22 @@ def push_transitions(f):
 					row.append(type_.replace("PPPOE", "PPPOE/PPP"))
 				else:
 					row.append("-1")
-			elif "GTPU" in proto:
+			elif "GTPU" in proto and ("IPV4_noptions_0" in type_ or "IPV6" in type_):
+				if "VLAN/VLAN" in type_:
+					print "VLAN/VLAN => "+type_+" => "+proto		
+				elif "VLAN" in type_:
+					print "VLAN => "+type_+" => "+proto
+				else:
+					print "ETHERNET or 8023 => "+type_+" => "+proto
+				
+				new_type = type_.split("IP")[0]+proto # take everything before the IPV4/IPV6 payload
+				
 				if "GTPU4" in proto and "GTPU" not in type_:
-					type_.replace("GTPU4", "IPV4_noptions_0/UDP/GTPU4") 
+					print "AAAA[4]: "+type_+" => "+new_type.replace("GTPU4", "IPV4_noptions_0/UDP/GTPU4")
+					row.append(new_type.replace("GTPU4", "IPV4_noptions_0/UDP/GTPU4"))
 				elif "GTPU6" in proto and "GTPU" not in type_:
-					type_.replace("GTPU6", "IPV6/UDP/GTPU6")
+					print "AAAA[6]: "+type_+" => "+new_type.replace("GTPU6", "IPV6/UDP/GTPU6")
+					row.append(new_type.replace("GTPU6", "IPV6/UDP/GTPU6"))
 				else:
 					row.append("-1")
 			else:
@@ -533,12 +544,15 @@ def push_transitions(f):
 		f.write("\n\t/* "+type_+" */ {")
 
 		first_proto = True
-		for next_proto in row: 
+		for next_proto in row:
 			if not first_proto:
 				f.write(",")
 			first_proto = False
 			if next_proto != "-1":
 				f.write("PT_"+sanitize_pkt_type(next_proto))
+				#if "GTPU" in type_ or "GTPU" in next_proto:
+				if "GTPU" not in type_ and "GTPU" in next_proto:
+					print "PT_"+sanitize_pkt_type(type_)+" => "+"PT_"+sanitize_pkt_type(next_proto)
 			else:
 				f.write(next_proto)
 		f.write("}")

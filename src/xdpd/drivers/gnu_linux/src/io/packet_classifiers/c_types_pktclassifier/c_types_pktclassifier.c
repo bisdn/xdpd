@@ -302,7 +302,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)0;
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
 	uint8_t ip_default_ttl = 64;
-	size_t payloadlen = clas_state->len - sizeof(cpc_eth_hdr_t);
+	size_t payloadlen = 0;
 
 
 	//Recover the ether(0)
@@ -313,6 +313,8 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	switch (ether_type) {
 		case ETH_TYPE_IPV4:
 		{
+			payloadlen = clas_state->len - (get_ipv4_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0));
+
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU4);
 			if(unlikely(new == PT_INVALID))
 				return NULL;
@@ -352,6 +354,8 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			break;
 		case ETH_TYPE_IPV6:
 		{
+			payloadlen = clas_state->len - (get_ipv6_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0));
+
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU6);
 			if(unlikely(new == PT_INVALID))
 				return NULL;

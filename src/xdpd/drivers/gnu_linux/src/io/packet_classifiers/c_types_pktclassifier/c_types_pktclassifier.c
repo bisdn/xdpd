@@ -414,7 +414,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	set_gtpu_teid(gtp_header, 0);
 	set_gtpu_version(gtp_header, 1);
 
-	// re-classify packet with new header
+	//reclassify
 	classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);
 
 	return NULL;
@@ -455,7 +455,7 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 	} break;
 	case ETH_TYPE_IPV6: {
-		pkt_types_t new = PT_POP_PROTO(clas_state, IPV6); // TODO: options
+		pkt_types_t new = PT_POP_PROTO(clas_state, GTPU6);
 		if(unlikely(new == PT_INVALID))
 			return;
 
@@ -474,7 +474,7 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
 
 	//reclassify
-	parse_ethernet(clas_state, clas_state->base, clas_state->len);
+	classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);
 }
 
 void dump_pkt_classifier(classifier_state_t* clas_state){

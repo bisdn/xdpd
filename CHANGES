@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.5.1
+
+[+][gnu-linux][gnu-linux-dpdk] GTP push/pop actions revised
+
 v0.5.0
 
 [+] OF1.3 support marked as stable

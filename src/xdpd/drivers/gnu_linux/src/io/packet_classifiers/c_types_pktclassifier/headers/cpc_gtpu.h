@@ -23,7 +23,7 @@ enum gtpu_flag_t {
 };
 
 // full GTP-Uv1 header with E, S, PN flags set to 1
-struct cpc_gtpu_e_hdr_t {
+typedef struct {
 	uint8_t 	flags;		// version, PT, T, E, S, PN
 	uint8_t		msgtype;
 	uint16_t	len;
@@ -32,10 +32,10 @@ struct cpc_gtpu_e_hdr_t {
 	uint8_t		n_pdu_no;	// N-PDU number
 	uint8_t		exthdr;		// next extension header type
 	uint8_t		data[0];	// pointer to start of data
-}__attribute__((packed));
+}__attribute__((packed)) cpc_gtpu_e_hdr_t;
 
 // shortened GTP-Uv1 header with S and PN flags set to 1 only
-struct cpc_gtpu_pn_hdr_t {
+typedef struct {
 	uint8_t 	flags;		// version, PT, T, E, S, PN
 	uint8_t		msgtype;
 	uint16_t	len;
@@ -43,33 +43,33 @@ struct cpc_gtpu_pn_hdr_t {
 	uint16_t	seqno;
 	uint8_t		n_pdu_no;	// N-PDU number
 	uint8_t		data[0];	// pointer to start of data
-}__attribute__((packed));
+}__attribute__((packed)) cpc_gtpu_pn_hdr_t;
 
 // shortened GTP-Uv1 header with S flag set to 1 only
-struct cpc_gtpu_s_hdr_t {
+typedef struct {
 	uint8_t 	flags;		// version, PT, T, E, S, PN
 	uint8_t		msgtype;
 	uint16_t	len;
 	uint32_t	teid;
 	uint16_t	seqno;
 	uint8_t		data[0];	// pointer to start of data
-}__attribute__((packed));
+}__attribute__((packed)) cpc_gtpu_s_hdr_t;
 
 // shortened GTP-Uv1 header with S, PN, E flags set to 0
-struct cpc_gtpu_base_hdr_t {
+typedef struct {
 	uint8_t 	flags;		// version, PT, T, E, S, PN
 	uint8_t		msgtype;
 	uint16_t	len;
 	uint32_t	teid;
 	uint8_t		data[0];	// pointer to start of data
-}__attribute__((packed));
+}__attribute__((packed)) cpc_gtpu_base_hdr_t;
 
 typedef union cpc_gtphu{
 	uint8_t				cpc_gtpu_hdr;
-	struct cpc_gtpu_e_hdr_t 	cpc_gtpu_e_hdr;
-	struct cpc_gtpu_pn_hdr_t	cpc_gtpu_pn_hdr;
-	struct cpc_gtpu_s_hdr_t 	cpc_gtpu_s_hdr;
-	struct cpc_gtpu_base_hdr_t 	cpc_gtpu_short_hdr;
+	cpc_gtpu_e_hdr_t 	cpc_gtpu_e_hdr;
+	cpc_gtpu_pn_hdr_t	cpc_gtpu_pn_hdr;
+	cpc_gtpu_s_hdr_t 	cpc_gtpu_s_hdr;
+	cpc_gtpu_base_hdr_t cpc_gtpu_base_hdr;
 }cpc_gtphu_t;
 
 
@@ -77,106 +77,82 @@ typedef union cpc_gtphu{
 
 inline static
 uint8_t* get_gtpu_version(void *hdr){
-	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags;
+	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags;
 };
 
 inline static
 void set_gtpu_version(void *hdr, uint8_t version){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_3MSBITS_MASK) | (version & OF1X_3MSBITS_MASK);
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags & ~OF1X_3MSBITS_MASK) | (version & OF1X_3MSBITS_MASK);
 };
 
 inline static
 uint8_t* get_gtpu_pt_flag(void *hdr){
-	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags; 
+	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags;
 };
 
 inline static
 void set_gtpu_pt_flag(void *hdr, uint8_t pt_flag){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_BIT4_MASK) | (pt_flag & OF1X_BIT4_MASK);
-#if 0
-	if (pt)
-		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags |=  GTPU_PT_FLAG;
-	else
-		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags &= ~GTPU_PT_FLAG;
-#endif
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags & ~OF1X_BIT4_MASK) | (pt_flag & OF1X_BIT4_MASK);
 };
 
 inline static
 uint8_t* get_gtpu_e_flag(void *hdr){
-	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags; 
+	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags;
 };
 
 inline static
 void set_gtpu_e_flag(void *hdr, uint8_t ext_flag){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_BIT2_MASK) | (ext_flag & OF1X_BIT2_MASK);
-#if 0
-	if (e)
-		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags |=  GTPU_E_FLAG;
-	else
-		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags &= ~GTPU_E_FLAG;
-#endif
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags & ~OF1X_BIT2_MASK) | (ext_flag & OF1X_BIT2_MASK);
 };
 
 inline static
 uint8_t* get_gtpu_s_flag(void *hdr){
-	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags;
+	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags;
 };
 
 inline static
 void set_gtpu_s_flag(void *hdr, uint8_t seqno_flag){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_BIT1_MASK) | (seqno_flag & OF1X_BIT1_MASK);
-#if 0
-	if (s)
-		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags |=  GTPU_S_FLAG;
-	else
-		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags &= ~GTPU_S_FLAG;
-#endif
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags & ~OF1X_BIT1_MASK) | (seqno_flag & OF1X_BIT1_MASK);
 };
 
 inline static
 uint8_t* get_gtpu_pn_flag(void *hdr){
-	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags; 
+	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags;
 };
 
 inline static
 void set_gtpu_pn_flag(void *hdr, uint8_t npdu_flag){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_BIT0_MASK) | (npdu_flag & OF1X_BIT0_MASK);
-#if 0
-	if (pn)
-		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags |=  GTPU_PN_FLAG;
-	else
-		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags &= ~GTPU_PN_FLAG;
-#endif
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.flags & ~OF1X_BIT0_MASK) | (npdu_flag & OF1X_BIT0_MASK);
 };
 
 inline static
 uint8_t* get_gtpu_msg_type(void *hdr){
-	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.msgtype;
+	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.msgtype;
 };
 
 inline static
 void set_gtpu_msg_type(void *hdr, uint8_t msgtype){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.msgtype = msgtype;
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.msgtype = msgtype;
 };
 
 inline static
 uint16_t* get_gtpu_length(void *hdr){
-	return &((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr.len;
+	return &((cpc_gtphu_t*)hdr)->cpc_gtpu_base_hdr.len;
 };
 
 inline static
 void set_gtpu_length(void *hdr, uint16_t length){
-	((cpc_gtphu_t*)hdr)->cpc_gtpu_short_hdr.len = length;
+	((cpc_gtphu_t*)hdr)->cpc_gtpu_base_hdr.len = length;
 };
 
 inline static
 uint32_t* get_gtpu_teid(void *hdr){
-	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.teid;
+	return &((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.teid;
 };
 
 inline static
 void set_gtpu_teid(void *hdr, uint32_t teid){
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.teid = teid;
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_base_hdr.teid = teid;
 };
 
 inline static

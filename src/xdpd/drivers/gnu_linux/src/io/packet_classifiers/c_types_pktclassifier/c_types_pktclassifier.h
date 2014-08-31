@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <rofl/datapath/pipeline/common/protocol_constants.h>
 #include "../pktclassifier.h"
 
 //Headers

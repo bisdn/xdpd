@@ -304,25 +304,22 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	uint8_t ip_default_ttl = 64;
 	size_t payloadlen = 0;
 
-
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);
-	//current_length = ether_header->framelen();
-
 
 	switch (ether_type) {
 		case ETH_TYPE_IPV4:
 		{
 			//unsigned int offset = get_ipv4_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0);
 			unsigned int offset = sizeof(cpc_eth_hdr_t);
+			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) +
+											sizeof(cpc_udp_hdr_t) +
+											sizeof(struct cpc_gtpu_base_hdr_t);
 			payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU4);
 			if(unlikely(new == PT_INVALID))
 				return NULL;
-
-
-			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t);
 
 			/*
 			 * this invalidates ether(0), as it shifts ether(0) to the left
@@ -348,24 +345,29 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv4_ihl(ipv4_header, sizeof(cpc_ipv4_hdr_t)/sizeof(uint32_t));
 			set_ipv4_dscp(ipv4_header, 0);
 			set_ipv4_ecn(ipv4_header, 0);
-			set_ipv4_length(ipv4_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t) + payloadlen));
+			set_ipv4_length(ipv4_header, htobe16(sizeof(cpc_udp_hdr_t) +
+													sizeof(struct cpc_gtpu_base_hdr_t) +
+													payloadlen));
 			set_ipv4_proto(ipv4_header, IP_PROTO_UDP);
-			set_ipv4_src(ipv4_header, 0); // TODO: from inner header
-			set_ipv4_dst(ipv4_header, 0); // TODO: from inner header
+			set_ipv4_src(ipv4_header, 0);
+			set_ipv4_dst(ipv4_header, 0);
 			set_ipv4_ttl(ipv4_header, ip_default_ttl); // TODO: from inner header
+
+			set_recalculate_checksum(clas_state, RECALCULATE_IPV4_CHECKSUM_IN_SW);
 		}
 			break;
 		case ETH_TYPE_IPV6:
 		{
 			//unsigned int offset = get_ipv6_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0);
 			unsigned int offset = sizeof(cpc_eth_hdr_t);
+			unsigned int bytes_to_insert = sizeof(cpc_ipv6_hdr_t) +
+											sizeof(cpc_udp_hdr_t) +
+											sizeof(struct cpc_gtpu_base_hdr_t);
 			payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU6);
 			if(unlikely(new == PT_INVALID))
 				return NULL;
-
-			unsigned int bytes_to_insert = sizeof(cpc_ipv6_hdr_t) + sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t);
 
 			/*
 			 * this invalidates ether(0), as it shifts ether(0) to the left
@@ -381,7 +383,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			assert(clas_state->type != PT_INVALID);
 
 			/*
-			 * adjust ether(0): move one IPV4/UDP/GTPU tag to the left
+			 * adjust ether(0): move one IPV6/UDP/GTPU tag to the left
 			 */
 			ether_header-=bytes_to_insert; //We change also the local pointer
 			set_ether_type(ether_header, ETH_TYPE_IPV6);
@@ -397,9 +399,13 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv6_src(ipv6_header, null_addr);
 			set_ipv6_flow_label(ipv6_header, 0);
 			set_ipv6_hop_limit(ipv6_header, ip_default_ttl);
-			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t) + payloadlen));
+			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_udp_hdr_t) +
+															sizeof(struct cpc_gtpu_base_hdr_t) +
+															payloadlen));
 			set_ipv6_traffic_class(ipv6_header, 0);
 			set_ipv6_next_header(ipv6_header, IP_PROTO_UDP);
+
+			// no checksum in IPv6
 		}
 			break;
 	}
@@ -408,9 +414,10 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	 * set default values in UDP tag
 	 */
 	udp_header = get_udp_hdr(clas_state,0);
-	set_udp_dport(udp_header, be16toh(2152)); // necessary for re-classifying this packet (see below)
-	set_udp_sport(udp_header, be16toh(2152));
+	set_udp_dport(udp_header, htobe16(UDP_DST_PORT_GTPU)); // necessary for re-classifying this packet (see below)
+	set_udp_sport(udp_header, htobe16(UDP_DST_PORT_GTPU));
 	set_udp_length(udp_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t) + payloadlen));
+	set_recalculate_checksum(clas_state, RECALCULATE_UDP_CHECKSUM_IN_SW);
 
 	/*
 	 * set default values in GTPU tag

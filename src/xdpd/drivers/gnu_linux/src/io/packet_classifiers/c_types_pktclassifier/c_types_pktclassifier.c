@@ -301,7 +301,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	cpc_udp_hdr_t* udp_header = (cpc_udp_hdr_t*)0;
 	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)0;
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
-	uint8_t ip_default_ttl = 64;
+	uint8_t ip_ttl = 0;
 	size_t payloadlen = 0;
 
 	//Recover the ether(0)
@@ -313,6 +313,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	case ETH_TYPE_IPV4:{
 		if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
 			payloadlen = be16toh(*get_ipv4_length(ipv4_header)); // no options supported
+			ip_ttl = *get_ipv4_ttl(ipv4_header);
 		}else{
 			return NULL;
 		}
@@ -320,6 +321,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	case ETH_TYPE_IPV6:{
 		if ((ipv6_header = get_ipv6_hdr(clas_state, 0)) != NULL) {
 			payloadlen = be16toh(*get_ipv6_payload_length(ipv6_header)) + sizeof(cpc_ipv6_hdr_t); // no extension headers
+			ip_ttl = *get_ipv6_hop_limit(ipv6_header);
 		} else {
 			return NULL;
 		}
@@ -377,7 +379,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv4_ident(ipv4_header, ident);
 			set_ipv4_src(ipv4_header, 0);
 			set_ipv4_dst(ipv4_header, 0);
-			set_ipv4_ttl(ipv4_header, ip_default_ttl); // TODO: from inner header
+			set_ipv4_ttl(ipv4_header, ip_ttl);
 
 			set_recalculate_checksum(clas_state, RECALCULATE_IPV4_CHECKSUM_IN_SW);
 
@@ -425,7 +427,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv6_dst(ipv6_header, null_addr);
 			set_ipv6_src(ipv6_header, null_addr);
 			set_ipv6_flow_label(ipv6_header, 0);
-			set_ipv6_hop_limit(ipv6_header, ip_default_ttl);
+			set_ipv6_hop_limit(ipv6_header, ip_ttl);
 			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_udp_hdr_t) +
 															sizeof(cpc_gtpu_base_hdr_t) +
 															payloadlen));

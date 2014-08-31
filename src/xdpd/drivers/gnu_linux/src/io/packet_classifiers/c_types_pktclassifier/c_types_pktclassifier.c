@@ -414,8 +414,8 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	 * set default values in UDP tag
 	 */
 	udp_header = get_udp_hdr(clas_state,0);
-	set_udp_dport(udp_header, htobe16(UDP_DST_PORT_GTPU)); // necessary for re-classifying this packet (see below)
-	set_udp_sport(udp_header, htobe16(UDP_DST_PORT_GTPU));
+	set_udp_dport(udp_header, UDP_DST_PORT_GTPU); // necessary for re-classifying this packet (see below)
+	set_udp_sport(udp_header, UDP_DST_PORT_GTPU);
 	set_udp_length(udp_header, htobe16(sizeof(cpc_udp_hdr_t) + sizeof(struct cpc_gtpu_base_hdr_t) + payloadlen));
 	set_recalculate_checksum(clas_state, RECALCULATE_UDP_CHECKSUM_IN_SW);
 

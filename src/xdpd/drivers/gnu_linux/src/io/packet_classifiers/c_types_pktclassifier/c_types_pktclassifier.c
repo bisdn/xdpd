@@ -303,6 +303,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
 	uint8_t ip_ttl = 0;
 	size_t payloadlen = 0;
+	int DF_flag = false;
 
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);
@@ -312,8 +313,10 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	switch (*current_ether_type) {
 	case ETH_TYPE_IPV4:{
 		if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
-			payloadlen = be16toh(*get_ipv4_length(ipv4_header)); // no options supported
+			payloadlen = be16toh(*get_ipv4_length(ipv4_header)); // no options supported,
+			// contrary to IPv6, IPv4 length field includes IPv4 header itself
 			ip_ttl = *get_ipv4_ttl(ipv4_header);
+			DF_flag = has_ipv4_DF_bit_set(ipv4_header);
 		}else{
 			return NULL;
 		}
@@ -380,6 +383,9 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv4_src(ipv4_header, 0);
 			set_ipv4_dst(ipv4_header, 0);
 			set_ipv4_ttl(ipv4_header, ip_ttl);
+			if (DF_flag) {
+				set_ipv4_DF_bit(ipv4_header);
+			}
 
 			set_recalculate_checksum(clas_state, RECALCULATE_IPV4_CHECKSUM_IN_SW);
 

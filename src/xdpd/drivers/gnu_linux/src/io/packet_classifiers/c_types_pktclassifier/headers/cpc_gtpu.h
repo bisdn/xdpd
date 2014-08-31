@@ -82,8 +82,7 @@ uint8_t* get_gtpu_version(void *hdr){
 
 inline static
 void set_gtpu_version(void *hdr, uint8_t version){
-	//((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_3MSBITS_MASK) | (version & OF1X_3MSBITS_MASK);
-	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_BIT4_MASK) | (version & OF1X_BIT4_MASK);
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_3MSBITS_MASK) | (version & OF1X_3MSBITS_MASK);
 };
 
 inline static

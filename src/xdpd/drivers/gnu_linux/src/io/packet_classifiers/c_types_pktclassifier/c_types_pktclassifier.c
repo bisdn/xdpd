@@ -312,7 +312,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	switch (*current_ether_type) {
 	case ETH_TYPE_IPV4:{
 		if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
-			payloadlen = be16toh(*get_ipv4_length(ipv4_header)) + sizeof(cpc_ipv4_hdr_t); // no options supported
+			payloadlen = be16toh(*get_ipv4_length(ipv4_header)); // no options supported
 		}else{
 			return NULL;
 		}

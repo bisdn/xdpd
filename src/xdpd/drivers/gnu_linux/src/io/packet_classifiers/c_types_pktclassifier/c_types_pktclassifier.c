@@ -304,6 +304,15 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	uint8_t ip_default_ttl = 64;
 	size_t payloadlen = 0;
 
+	if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
+		payloadlen = *get_ipv4_length(ipv4_header) + sizeof(cpc_ipv4_hdr_t); // no options supported
+	} else
+	if ((ipv6_header = get_ipv6_hdr(clas_state, 0)) != NULL) {
+		payloadlen = *get_ipv6_payload_length(ipv6_header) + sizeof(cpc_ipv6_hdr_t); // no extension headers
+	} else {
+		return NULL;
+	}
+
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);
 
@@ -316,7 +325,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 											sizeof(cpc_udp_hdr_t) +
 											sizeof(cpc_gtpu_base_hdr_t);
 			uint16_t ident = *get_ipv4_ident(get_ipv4_hdr(clas_state, 0));
-			payloadlen = clas_state->len - offset;
+			//payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU4);
 			if(unlikely(new == PT_INVALID))
@@ -365,7 +374,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			unsigned int bytes_to_insert = sizeof(cpc_ipv6_hdr_t) +
 											sizeof(cpc_udp_hdr_t) +
 											sizeof(cpc_gtpu_base_hdr_t);
-			payloadlen = clas_state->len - offset;
+			//payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU6);
 			if(unlikely(new == PT_INVALID))

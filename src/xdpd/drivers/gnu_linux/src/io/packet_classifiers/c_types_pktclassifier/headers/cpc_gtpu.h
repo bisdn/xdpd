@@ -15,15 +15,8 @@
 * @brief Structure definitions and inline getters and setters for GTP
 */
 
-enum gtpu_flag_t {
-	GTPU_PT_FLAG = (1 << 4),
-	GTPU_E_FLAG  = (1 << 2),
-	GTPU_S_FLAG  = (1 << 1),
-	GTPU_PN_FLAG = (1 << 0),
-};
-
 // full GTP-Uv1 header with E, S, PN flags set to 1
-typedef struct {
+struct cpc_gtpu_e_hdr {
 	uint8_t 	flags;		// version, PT, T, E, S, PN
 	uint8_t		msgtype;
 	uint16_t	len;
@@ -32,10 +25,11 @@ typedef struct {
 	uint8_t		n_pdu_no;	// N-PDU number
 	uint8_t		exthdr;		// next extension header type
 	uint8_t		data[0];	// pointer to start of data
-}__attribute__((packed)) cpc_gtpu_e_hdr_t;
+}__attribute__((packed));
+typedef struct cpc_gtpu_e_hdr cpc_gtpu_e_hdr_t;
 
 // shortened GTP-Uv1 header with S and PN flags set to 1 only
-typedef struct {
+struct cpc_gtpu_pn_hdr {
 	uint8_t 	flags;		// version, PT, T, E, S, PN
 	uint8_t		msgtype;
 	uint16_t	len;
@@ -43,26 +37,29 @@ typedef struct {
 	uint16_t	seqno;
 	uint8_t		n_pdu_no;	// N-PDU number
 	uint8_t		data[0];	// pointer to start of data
-}__attribute__((packed)) cpc_gtpu_pn_hdr_t;
+}__attribute__((packed));
+typedef struct cpc_gtpu_pn_hdr cpc_gtpu_pn_hdr_t;
 
 // shortened GTP-Uv1 header with S flag set to 1 only
-typedef struct {
+struct cpc_gtpu_s_hdr {
 	uint8_t 	flags;		// version, PT, T, E, S, PN
 	uint8_t		msgtype;
 	uint16_t	len;
 	uint32_t	teid;
 	uint16_t	seqno;
 	uint8_t		data[0];	// pointer to start of data
-}__attribute__((packed)) cpc_gtpu_s_hdr_t;
+}__attribute__((packed));
+typedef struct cpc_gtpu_s_hdr cpc_gtpu_s_hdr_t;
 
 // shortened GTP-Uv1 header with S, PN, E flags set to 0
-typedef struct {
+struct cpc_gtpu_base_hdr {
 	uint8_t 	flags;		// version, PT, T, E, S, PN
 	uint8_t		msgtype;
 	uint16_t	len;
 	uint32_t	teid;
 	uint8_t		data[0];	// pointer to start of data
-}__attribute__((packed)) cpc_gtpu_base_hdr_t;
+}__attribute__((packed));
+typedef struct cpc_gtpu_base_hdr cpc_gtpu_base_hdr_t;
 
 typedef union cpc_gtphu{
 	uint8_t				cpc_gtpu_hdr;

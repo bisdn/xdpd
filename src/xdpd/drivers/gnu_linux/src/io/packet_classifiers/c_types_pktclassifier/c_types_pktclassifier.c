@@ -447,7 +447,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_type){
 
 	cpc_eth_hdr_t* ether_header = (cpc_eth_hdr_t*)0;
-	cpc_gtphu_t* gtp_header = (cpc_gtphu_t*)0;
+	cpc_gtpu_base_hdr_t* gtp_header = (cpc_gtpu_base_hdr_t*)0;
 	uint16_t* current_ether_type = (uint16_t*)0;
 	uint64_t* eth_dst = (uint64_t*)0;
 	uint64_t* eth_src = (uint64_t*)0;

@@ -304,18 +304,32 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	uint8_t ip_default_ttl = 64;
 	size_t payloadlen = 0;
 
-	if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
-		payloadlen = *get_ipv4_length(ipv4_header) + sizeof(cpc_ipv4_hdr_t); // no options supported
-	} else
-	if ((ipv6_header = get_ipv6_hdr(clas_state, 0)) != NULL) {
-		payloadlen = *get_ipv6_payload_length(ipv6_header) + sizeof(cpc_ipv6_hdr_t); // no extension headers
-	} else {
-		return NULL;
-	}
-
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);
 
+	//retrieve the current payload length
+	uint16_t* current_ether_type = get_ether_type(ether_header);
+	switch (*current_ether_type) {
+	case ETH_TYPE_IPV4:{
+		if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
+			payloadlen = *get_ipv4_length(ipv4_header) + sizeof(cpc_ipv4_hdr_t); // no options supported
+		}else{
+			return NULL;
+		}
+	}break;
+	case ETH_TYPE_IPV6:{
+		if ((ipv6_header = get_ipv6_hdr(clas_state, 0)) != NULL) {
+			payloadlen = *get_ipv6_payload_length(ipv6_header) + sizeof(cpc_ipv6_hdr_t); // no extension headers
+		} else {
+			return NULL;
+		}
+	}break;
+	default:{
+		return NULL;
+	};
+	}
+
+	//ether_type defines the new header to be pushed: IPV4/UDP/GTPU or IPV6/UDP/GTPU
 	switch (ether_type) {
 		case ETH_TYPE_IPV4:
 		{

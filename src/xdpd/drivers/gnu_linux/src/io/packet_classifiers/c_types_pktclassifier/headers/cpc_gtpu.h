@@ -91,11 +91,14 @@ uint8_t* get_gtpu_pt_flag(void *hdr){
 };
 
 inline static
-void set_gtpu_pt_flag(void *hdr, bool pt){
+void set_gtpu_pt_flag(void *hdr, uint8_t pt_flag){
+	((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags = (((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags & ~OF1X_BIT4_MASK) | (pt_flag & OF1X_BIT4_MASK);
+#if 0
 	if (pt)
 		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags |=  GTPU_PT_FLAG;
 	else
 		((cpc_gtphu_t *)hdr)->cpc_gtpu_short_hdr.flags &= ~GTPU_PT_FLAG;
+#endif
 };
 
 inline static

@@ -426,7 +426,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	 */
 	gtp_header = get_gtpu_hdr(clas_state,0);
 	set_gtpu_version(gtp_header, /*GTPU_VERSION_1=*/(1 << 5));
-	set_gtpu_pt_flag(gtp_header, /*true=*/1);
+	set_gtpu_pt_flag(gtp_header, /*PT flag at bit 4=*/(1 << 4));
 	set_gtpu_pn_flag(gtp_header, /*false=*/0);
 	set_gtpu_s_flag(gtp_header, /*false=*/0);
 	set_gtpu_e_flag(gtp_header, /*false=*/0);

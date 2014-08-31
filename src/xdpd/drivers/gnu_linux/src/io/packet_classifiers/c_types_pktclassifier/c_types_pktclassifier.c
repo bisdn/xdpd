@@ -315,6 +315,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) +
 											sizeof(cpc_udp_hdr_t) +
 											sizeof(struct cpc_gtpu_base_hdr_t);
+			uint16_t ident = *get_ipv4_ident(get_ipv4_hdr(clas_state, 0));
 			payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GTPU4);
@@ -349,6 +350,7 @@ void* push_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 													sizeof(struct cpc_gtpu_base_hdr_t) +
 													payloadlen));
 			set_ipv4_proto(ipv4_header, IP_PROTO_UDP);
+			set_ipv4_ident(ipv4_header, ident);
 			set_ipv4_src(ipv4_header, 0);
 			set_ipv4_dst(ipv4_header, 0);
 			set_ipv4_ttl(ipv4_header, ip_default_ttl); // TODO: from inner header

@@ -266,6 +266,13 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		if(!pkt){
 			return HAL_FAILURE; /* TODO: add specific error */
 		}
+
+		//Reclassify the packet
+		datapacket_dpdk_t* pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
+		//keep checksum_calculation flags
+		uint32_t calculate_checksums_in_sw = pkt_dpdk->clas_state.calculate_checksums_in_sw;
+		classify_packet(&pkt_dpdk->clas_state, get_buffer_dpdk(pkt_dpdk), get_buffer_length_dpdk(pkt_dpdk), in_port, 0);
+		pkt_dpdk->clas_state.calculate_checksums_in_sw |= calculate_checksums_in_sw;
 	}else{
 		//Retrieve a free buffer	
 		pkt = bufferpool::get_free_buffer_nonblocking();
@@ -287,11 +294,12 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		
 		init_datapacket_dpdk(((datapacket_dpdk_t*)pkt->platform_state), mbuf, lsw, in_port, 0, true, true);
 		pkt->sw = lsw;
+
+		//Reclassify the packet
+		datapacket_dpdk_t* pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
+		classify_packet(&pkt_dpdk->clas_state, get_buffer_dpdk(pkt_dpdk), get_buffer_length_dpdk(pkt_dpdk), in_port, 0);
 	}
 
-	//Reclassify the packet
-	datapacket_dpdk_t* pkt_dpdk = (datapacket_dpdk_t*)pkt->platform_state;
-	classify_packet(&pkt_dpdk->clas_state, get_buffer_dpdk(pkt_dpdk), get_buffer_length_dpdk(pkt_dpdk), in_port, 0);
 
 	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	

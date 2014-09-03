@@ -303,9 +303,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		pktx86 = (datapacketx86*)pkt->platform_state;
 		//keep checksum_calculation flags
 		uint32_t calculate_checksums_in_sw = pktx86->clas_state.calculate_checksums_in_sw;
-
 		classify_packet(&pktx86->clas_state, pktx86->get_buffer(), pktx86->get_buffer_length(), in_port, 0);
-
 		pktx86->clas_state.calculate_checksums_in_sw |= calculate_checksums_in_sw;
 
 	}else{

@@ -11,6 +11,7 @@ Change log
 v0.5.1
 
 [+][gnu-linux][gnu-linux-dpdk] GTP push/pop actions revised
+[B][gnu-linux][gnu-linux-dpdk] preserve checksum calculation flags in function hal_driver_of1x_process_packet_out
 
 v0.5.0
 

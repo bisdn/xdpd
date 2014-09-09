@@ -13,7 +13,6 @@ bool MessageHandler::parseConfigFile(string conf_file)
 	
 	const libconfig::Setting& root = cfg->getRoot();
 
-	// Output a list of all books in the inventory.
 	try
 	{
 		const libconfig::Setting &ports = root["ports"];
@@ -98,7 +97,7 @@ string MessageHandler::createLSI(string message)
 {
 	list<string> physicalPorts;
 	list< pair<string,list<string> > > networkFunctions; //list <nf name, list <port name> >
-	map<string,PexType> nfTypes; //list of <nf_name, nf type>
+	map<string,port_type_t> nfTypes; //list of <nf_name, nf type>
 	map<string,map<string,uint32_t> > nfPorts; //map <nf name, map <port name, port id> >
 	string wirelessPort;
 	
@@ -171,7 +170,7 @@ string MessageHandler::createLSI(string message)
         		bool foundPorts = false;
         		list<string> ports;
 				string name;
-				PexType nfType = DPDK_KNI; //XXX this is done to avoid a warning in the compiler
+				port_type_t nfType = PORT_TYPE_NF_EXTERNAL; //XXX this is done to avoid a warning in the compiler
 
 				for( Object::const_iterator j = nfs.begin(); j != nfs.end(); ++j )
 				{
@@ -192,7 +191,7 @@ string MessageHandler::createLSI(string message)
 						return createErrorMessage(string(CREATE_LSI), string(" Received command \"create-lsi\" with a network function with a wrong \"type\""));
 						}
 						
-						nfType = (tmp == "dpdk")? DPDK_SECONDARY : DPDK_KNI;
+						nfType = (tmp == "dpdk")? PORT_TYPE_NF_SHMEM : PORT_TYPE_NF_EXTERNAL;
 						foundType = true;
 					}
 					else if(nf_name == "ports")
@@ -264,7 +263,7 @@ string MessageHandler::createLSI(string message)
 	
 	list<string> names;
 	
-	unsigned int wirelessPortID;
+	unsigned int wirelessPortID = 0;
 	if(foundWireless)
 	{
 		//xDPd does not support directly wireless interfaces. Hence, a KNI port is created, which can be attached
@@ -274,7 +273,7 @@ string MessageHandler::createLSI(string message)
 		{
 			stringstream wirelessPortName;
 			wirelessPortName << lsi.getDpid() << "_" << wirelessPort;
-			wirelessPortID = NodeOrchestrator::createNfPort(lsi.getDpid(), wirelessPort, wirelessPortName.str(),DPDK_KNI);
+			wirelessPortID = NodeOrchestrator::createNfPort(lsi.getDpid(), wirelessPort, wirelessPortName.str(),PORT_TYPE_NF_EXTERNAL);
 			
 			names.push_back(wirelessPortName.str());
 		}catch(...)
@@ -605,7 +604,7 @@ string MessageHandler::detachPhyPorts(string message)
 string MessageHandler::createNFPorts(string message)
 {
 	list< pair<string,list<string> > > networkFunctions; //list <nf name, list <port name> >
-	map<string,PexType> nfTypes; //list of <nf_name, nf type>
+	map<string,port_type_t> nfTypes; //list of <nf_name, nf type>
 	map<string,map<string,uint32_t> > nfPorts; //map <nf name, map <port name, port id> >
 
 	bool foundLsiID = false;
@@ -642,7 +641,7 @@ string MessageHandler::createNFPorts(string message)
         		bool foundPorts = false;
         		list<string> ports;
 				string name;
-				PexType nfType;
+				port_type_t nfType = PORT_TYPE_NF_EXTERNAL;
 
 				for( Object::const_iterator j = nfs.begin(); j != nfs.end(); ++j )
 				{
@@ -663,7 +662,7 @@ string MessageHandler::createNFPorts(string message)
 						return createErrorMessage(string(CREATE_NF_PORTS), string(" Received command \"create-lsi\" with a network function with a wrong \"type\""));
 						}
 						
-						nfType = (tmp == "dpdk")? DPDK_SECONDARY : DPDK_SECONDARY;
+						nfType = (tmp == "dpdk")? PORT_TYPE_NF_SHMEM : PORT_TYPE_NF_EXTERNAL;
 						foundType = true;
 					}
 					else if(nf_name == "ports")

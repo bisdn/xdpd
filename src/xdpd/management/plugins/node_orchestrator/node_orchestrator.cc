@@ -223,13 +223,13 @@ pair<unsigned int, unsigned int> NodeOrchestrator::createVirtualLink(uint64_t dp
 	return make_pair(port_a,port_b);
 }
 
-unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string NfPortName, PexType type)
+unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string NfPortName, port_type_t type)
 {
 	unsigned int port_number = 0;
 
 	try
 	{
-		pex_manager::create_pex_port(NfName, NfPortName,type);	
+		nf_port_manager::create_nf_port(NfName, NfPortName,type);	
 	}catch(...)
 	{
 		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create the NF port %s",NfPortName.c_str());
@@ -241,7 +241,7 @@ unsigned int NodeOrchestrator::createNfPort(uint64_t dpid, string NfName, string
 		port_manager::attach_port_to_switch(dpid, NfPortName, &port_number);
 	}catch(...)
 	{
-		pex_manager::destroy_pex_port(NfPortName);
+		nf_port_manager::destroy_nf_port(NfPortName);
 		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to attach the NF port %s to the switch %d",NfPortName.c_str(),dpid);
 		throw;
 	}
@@ -286,7 +286,7 @@ bool NodeOrchestrator::destroyNfPort(uint64_t dpid, string NfPortName, bool deta
 	try
 	{
 		//Destroy the port
-		pex_manager::destroy_pex_port(NfPortName);
+		nf_port_manager::destroy_nf_port(NfPortName);
 	}catch(...)
 	{
 		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to destroy port '%s'. Unknown error.\n", NfPortName.c_str());

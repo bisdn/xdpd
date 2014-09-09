@@ -33,9 +33,6 @@ using namespace xdpd;
 #ifdef WITH_MGMT_REST
 	#include "rest/rest.h"
 #endif
-#ifdef WITH_MGMT_RUN_PEX
-	#include "run_pex/run_pex.h"
-#endif
 #ifdef WITH_MGMT_NODE_ORCHESTRATOR
 	#include "node_orchestrator/node_orchestrator.h"
 #endif
@@ -67,12 +64,7 @@ void plugin_manager::pre_init(){
 		//Register example plugin
 		register_plugin(new rest());	
 	#endif
-	
-	#ifdef WITH_MGMT_RUN_PEX
-		//Register run_pex plugin
-		register_plugin(new runPEX());
-	#endif
-	
+
 	#ifdef WITH_MGMT_NODE_ORCHESTRATOR
 	//Register NODE_ORCHESTRATOR
 	register_plugin(new NodeOrchestrator());

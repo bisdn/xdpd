@@ -1,5 +1,0 @@
-#Always add the library CONDITIONALLY
-
-if WITH_MGMT_RUN_PEX
-libxdpd_mgmt_plugins_la_LIBADD += run_pex/libxdpd_mgmt_run_pex.la
-endif

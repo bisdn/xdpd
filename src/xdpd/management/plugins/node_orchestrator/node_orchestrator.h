@@ -5,7 +5,7 @@
 
 #include "../../plugin_manager.h"
 #include "../../port_manager.h"
-#include "../../pex_manager.h"
+#include "../../nf_port_manager.h"
 #include "../../switch_manager.h"
 #include "../../system_manager.h"
 
@@ -73,7 +73,7 @@ protected:
 	
 	static unsigned int attachPhyPort(uint64_t dpid, string port);
 	
-	static unsigned int createNfPort(uint64_t dpid, string NfName, string NfPortName, PexType type);
+	static unsigned int createNfPort(uint64_t dpid, string NfName, string NfPortName, port_type_t type);
 	static bool destroyNfPort(uint64_t dpid, string NfPortName, bool detach = true);
 
 	static pair<unsigned int, unsigned int> createVirtualLink(uint64_t dpid_a,uint64_t dpid_b);

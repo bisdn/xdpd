@@ -71,7 +71,6 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		nf_port_state_kni *port_state = (nf_port_state_kni_t*)port->platform_port_state;
 		assert(port_state->kni != NULL);
 		
-		assert(!rte_mempool_full(pool_direct));
 		burst_len = rte_kni_rx_burst(port_state->kni, pkts_burst, IO_IFACE_MAX_PKT_BURST);
 			
 #if DEBUG

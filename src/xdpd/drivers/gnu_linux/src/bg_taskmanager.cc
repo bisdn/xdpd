@@ -146,11 +146,13 @@ static rofl_result_t read_netlink_message(int fd){
 				if(!if_indextoname(ifi->ifi_index, name))
 					continue; //Unable to map interface
 				
-				ROFL_DEBUG_VERBOSE(DRIVER_NAME" [bg] Interface changed status %s (%u)\n",name, ifi->ifi_index);
+				ROFL_DEBUG_VERBOSE(DRIVER_NAME" [bg] Interface changed status %s (%u) flags=0x%x change=0x%x\n",name, ifi->ifi_index, ifi->ifi_flags, ifi->ifi_change);
 				
-				// HERE change the status to the port structure
-				if(update_port_status(name)!=ROFL_SUCCESS)
-					return ROFL_FAILURE;
+				if (ifi->ifi_change & IFF_UP) {
+					// HERE change the status to the port structure
+					if(update_port_status(name)!=ROFL_SUCCESS)
+						return ROFL_FAILURE;
+				}
 	    }else{
 		//Likely triggered by an addition of a port
 		return update_physical_ports();

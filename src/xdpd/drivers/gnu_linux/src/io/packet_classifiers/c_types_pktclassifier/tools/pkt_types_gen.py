@@ -36,7 +36,8 @@ protocols = OrderedDict(
 	("TCP", 32), 
 	("UDP", 8), 
 	("SCTP", 12),
-	("GTPU", 20)
+	("GTPU4", 20),
+	("GTPU6", 20)
 	)
 )
 
@@ -68,7 +69,7 @@ pkt_types = [
 	
 	"L2/IPV4/TCP",
 	"L2/IPV4/UDP",
-	"L2/IPV4/UDP/GTPU",
+	"L2/IPV4/UDP/GTPU4",
 	"L2/IPV4/SCTP",
 
 	##########
@@ -92,7 +93,7 @@ pkt_types = [
 
 	"L2/IPV6/TCP",
 	"L2/IPV6/UDP",
-	"L2/IPV6/UDP/GTPU",
+	"L2/IPV6/UDP/GTPU6",
 	"L2/IPV6/SCTP",
 ]
 
@@ -519,17 +520,29 @@ def push_transitions(f):
 					row.append(type_.replace("PPPOE", "PPPOE/PPP"))
 				else:
 					row.append("-1")
+			elif "GTPU" in proto and ("IPV4_noptions_0" in type_ or "IPV6" in type_) and "MPLS" not in type_ and "PPPOE" not in type_ and "GTPU" not in type_ and "VLAN" not in type_:
+				new_type = type_.split("IP")[0]+proto # take everything before the IPV4/IPV6 payload				
+				if "GTPU4" in proto:
+					row.append(new_type.replace("GTPU4", "IPV4_noptions_0/UDP/GTPU4"))
+				elif "GTPU6" in proto:
+					row.append(new_type.replace("GTPU6", "IPV6/UDP/GTPU6"))
+				else:
+					row.append("-1")
 			else:
 				row.append("-1")
+		
 		f.write("\n\t/* "+type_+" */ {")
 
 		first_proto = True
-		for next_proto in row: 
+		for next_proto in row:
 			if not first_proto:
 				f.write(",")
 			first_proto = False
 			if next_proto != "-1":
 				f.write("PT_"+sanitize_pkt_type(next_proto))
+				#if "GTPU" in type_ or "GTPU" in next_proto:
+				if "GTPU" not in type_ and "GTPU" in next_proto:
+					print "PT_"+sanitize_pkt_type(type_)+" => "+"PT_"+sanitize_pkt_type(next_proto)
 			else:
 				f.write(next_proto)
 		f.write("}")
@@ -607,6 +620,13 @@ def pop_transitions(f):
 			elif "PPP" in proto:
 				if "/PPPOE/PPP" in type_:
 					row.append(type_.replace("/PPPOE/PPP", "/PPPOE"))
+				else:
+					row.append("-1")
+			elif "GTPU" in proto:
+				if "GTPU4" in type_:
+					row.append(type_.replace("/IPV4_noptions_0/UDP/GTPU4", ""))
+				elif "GTPU6" in type_:
+					row.append(type_.replace("/IPV6/UDP/GTPU6", ""))
 				else:
 					row.append("-1")
 			else:

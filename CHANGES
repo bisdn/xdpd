@@ -8,6 +8,12 @@ Legend:
 Change log
 ==========
 
+v0.6.0
+
+[O][gnu-linux-dpdk] Moved platform driver to DPDK v1.7 (thanks D. Verbeiren)
+
+
+
 v0.5.1
 
 [+][gnu-linux][gnu-linux-dpdk] GTP push/pop actions revised

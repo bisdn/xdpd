@@ -548,6 +548,175 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 	parse_ethernet(clas_state, clas_state->base, clas_state->len);
 }
 
+void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_type){
+
+	void* ether_header;
+	cpc_gre_hdr_t* gre_header = (cpc_gre_hdr_t*)0;
+	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)0;
+	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
+	uint16_t ether_type_payload = 0;
+	uint8_t ip_ttl = 0;
+	size_t payloadlen = 0;
+	int DF_flag = false;
+
+	//Recover the ether(0)
+	ether_header = get_ether_hdr(clas_state, 0);
+
+	//retrieve the current payload length
+	uint16_t* current_ether_type = get_ether_type(ether_header);
+	switch (*current_ether_type) {
+	case ETH_TYPE_IPV4:{
+		if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
+			payloadlen = be16toh(*get_ipv4_length(ipv4_header)); // no options supported,
+			// contrary to IPv6, IPv4 length field includes IPv4 header itself
+			ip_ttl = *get_ipv4_ttl(ipv4_header);
+			DF_flag = has_ipv4_DF_bit_set(ipv4_header);
+			ether_type_payload = ETH_TYPE_IPV4;
+		}else{
+			return NULL;
+		}
+	}break;
+	case ETH_TYPE_IPV6:{
+		if ((ipv6_header = get_ipv6_hdr(clas_state, 0)) != NULL) {
+			payloadlen = be16toh(*get_ipv6_payload_length(ipv6_header)) + sizeof(cpc_ipv6_hdr_t); // no extension headers
+			ip_ttl = *get_ipv6_hop_limit(ipv6_header);
+			ether_type_payload = ETH_TYPE_IPV6;
+		} else {
+			return NULL;
+		}
+	}break;
+	default:{
+		return NULL;
+	};
+	}
+
+	//ether_type defines the new header to be pushed: IPV4/UDP/GTPU or IPV6/UDP/GTPU
+	switch (ether_type) {
+		case ETH_TYPE_IPV4:
+		{
+			//unsigned int offset = get_ipv4_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0);
+			unsigned int offset = sizeof(cpc_eth_hdr_t);
+			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) +
+											sizeof(cpc_gre_key_hdr_t); // no seqno!
+			uint16_t ident = *get_ipv4_ident(get_ipv4_hdr(clas_state, 0));
+			//payloadlen = clas_state->len - offset;
+
+			pkt_types_t new = PT_PUSH_PROTO(clas_state, GRE4);
+			if(unlikely(new == PT_INVALID))
+				return NULL;
+
+			/*
+			 * this invalidates ether(0), as it shifts ether(0) to the left
+			 */
+			if (pkt_push(pkt, NULL, offset, bytes_to_insert) == ROFL_FAILURE){
+				// TODO: log error
+				return NULL;
+			}
+			//Set new pkt type
+			clas_state->type = new;
+			//clas_state->base -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+			//clas_state->len += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+			assert(clas_state->type != PT_INVALID);
+
+			/*
+			 * adjust ether(0): move one IPV4/UDP/GTPU tag to the left
+			 */
+			ether_header-=bytes_to_insert; //We change also the local pointer
+			set_ether_type(ether_header, ETH_TYPE_IPV4);
+
+			ipv4_header = (cpc_ipv4_hdr_t*)get_ipv4_hdr(clas_state, 0);
+			set_ipv4_version(ipv4_header, 4 << 4);
+			set_ipv4_ihl(ipv4_header, sizeof(cpc_ipv4_hdr_t)/sizeof(uint32_t));
+			set_ipv4_dscp(ipv4_header, 0);
+			set_ipv4_ecn(ipv4_header, 0);
+			set_ipv4_length(ipv4_header, htobe16(sizeof(cpc_ipv4_hdr_t) +
+													sizeof(cpc_gre_key_hdr_t) + // no seqno!
+													payloadlen));
+			set_ipv4_proto(ipv4_header, IP_PROTO_GRE);
+			set_ipv4_ident(ipv4_header, ident);
+			set_ipv4_src(ipv4_header, 0);
+			set_ipv4_dst(ipv4_header, 0);
+			set_ipv4_ttl(ipv4_header, ip_ttl);
+			if (DF_flag) {
+				set_ipv4_DF_bit(ipv4_header);
+			}
+
+			set_recalculate_checksum(clas_state, RECALCULATE_IPV4_CHECKSUM_IN_SW);
+
+		}
+			break;
+		case ETH_TYPE_IPV6:
+		{
+			//unsigned int offset = get_ipv6_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0);
+			unsigned int offset = sizeof(cpc_eth_hdr_t);
+			unsigned int bytes_to_insert = sizeof(cpc_ipv6_hdr_t) +
+											sizeof(cpc_gre_hdr_t);
+			//payloadlen = clas_state->len - offset;
+
+			pkt_types_t new = PT_PUSH_PROTO(clas_state, GRE6);
+			if(unlikely(new == PT_INVALID))
+				return NULL;
+
+			/*
+			 * this invalidates ether(0), as it shifts ether(0) to the left
+			 */
+			if (pkt_push(pkt, NULL, offset, bytes_to_insert) == ROFL_FAILURE){
+				// TODO: log error
+				return NULL;
+			}
+			//Set new pkt type
+			clas_state->type = new;
+			//clas_state->base -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(struct cpc_gtpu_base_hdr_t);
+			//clas_state->len += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(struct cpc_gtpu_base_hdr_t);
+			assert(clas_state->type != PT_INVALID);
+
+			/*
+			 * adjust ether(0): move one IPV6/UDP/GTPU tag to the left
+			 */
+			ether_header-=bytes_to_insert; //We change also the local pointer
+			set_ether_type(ether_header, ETH_TYPE_IPV6);
+
+			uint128__t null_addr;
+			memset(null_addr.val, 0, sizeof(null_addr));
+
+			ipv6_header = (cpc_ipv6_hdr_t*)get_ipv6_hdr(clas_state, 0);
+			set_ipv6_version(ipv6_header, 6 << 4);
+			set_ipv6_dscp(ipv6_header, 0);
+			set_ipv6_ecn(ipv6_header, 0);
+			set_ipv6_dst(ipv6_header, null_addr);
+			set_ipv6_src(ipv6_header, null_addr);
+			set_ipv6_flow_label(ipv6_header, 0);
+			set_ipv6_hop_limit(ipv6_header, ip_ttl);
+			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_gre_key_hdr_t) + payloadlen));
+			set_ipv6_traffic_class(ipv6_header, 0);
+			set_ipv6_next_header(ipv6_header, IP_PROTO_GRE);
+
+			// no checksum in IPv6
+		}
+			break;
+	}
+
+	/*
+	 * set default values in GRE tag
+	 */
+	gre_header = get_gre_hdr(clas_state,0);
+	set_gre_csum_flag(gre_header, GRE_CSUM_FLAG_MASK);
+	set_gre_key_flag(gre_header, GRE_KEY_FLAG_MASK);
+	set_gre_seqno_flag(gre_header, 0); // no seqno!
+	set_gre_prot_type(gre_header, ether_type_payload);
+	set_gre_key(gre_header, 0);
+
+	set_recalculate_checksum(clas_state, RECALCULATE_GRE_CHECKSUM_IN_SW);
+
+	// do not re-classify, unnecessary
+
+	return NULL;
+}
+
+void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_type){
+
+}
+
 void dump_pkt_classifier(classifier_state_t* clas_state){
 	ROFL_DEBUG(DRIVER_NAME" [c_types_pktclassifier] Dump packet state(%p) TODO!!\n",clas_state);
 }

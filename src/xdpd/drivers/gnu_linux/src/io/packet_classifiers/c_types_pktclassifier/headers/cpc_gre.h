@@ -50,6 +50,16 @@ typedef struct cpc_gre_csum_hdr {
 	uint8_t data[0];
 } __attribute__((packed)) cpc_gre_csum_hdr_t;
 
+/* full GRE header according to IETF RFC 2784 including checksum and reserved field */
+typedef struct cpc_gre_key_hdr {
+	uint16_t word0;
+	uint16_t prot_type;
+	uint16_t checksum;
+	uint16_t reserved1;
+	uint32_t key;
+	uint8_t data[0];
+} __attribute__((packed)) cpc_gre_key_hdr_t;
+
 /* full GRE header according to IETF RFC 2890 including checksum, reserved field, key and sequence number */
 typedef struct cpc_gre_hdr {
 	uint16_t word0;

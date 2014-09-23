@@ -25,6 +25,7 @@ void pop_pbb(datapacket_t* pkt, struct classifier_state* clas_state);
 void pop_mpls(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
 void pop_pppoe(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
 void pop_gtp(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
+void pop_gre(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
 
 void* push_pbb(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
 void* push_vlan(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
@@ -32,6 +33,7 @@ void* push_pbb(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t 
 void* push_mpls(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
 void* push_pppoe(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
 void* push_gtp(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
+void* push_gre(datapacket_t* pkt, struct classifier_state* clas_state, uint16_t ether_type);
 
 void dump_pkt_classifier(struct classifier_state* clas_state);
 size_t get_pkt_len(datapacket_t* pkt, struct classifier_state* clas_state, void *from, void *to);

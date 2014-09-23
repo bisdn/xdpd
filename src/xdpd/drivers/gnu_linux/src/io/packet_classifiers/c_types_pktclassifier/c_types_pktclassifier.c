@@ -551,7 +551,7 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_type){
 
 	void* ether_header;
-	cpc_gre_hdr_t* gre_header = (cpc_gre_hdr_t*)0;
+	cpc_gre_key_hdr_t* gre_header = (cpc_gre_key_hdr_t*)0;
 	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)0;
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
 	uint16_t ether_type_payload = 0;
@@ -715,6 +715,101 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 
 void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_type){
 
+	cpc_eth_hdr_t* ether_header = (cpc_eth_hdr_t*)0;
+	cpc_gre_key_hdr_t* gre_header = (cpc_gre_key_hdr_t*)0;
+	uint16_t* current_ether_type = (uint16_t*)0;
+	uint64_t* eth_dst = (uint64_t*)0;
+	uint64_t* eth_src = (uint64_t*)0;
+
+	ether_header = get_ether_hdr(clas_state, 0);
+	if (!ether_header) {
+		// TODO: log error
+		return;
+	}
+
+	eth_dst = get_ether_dl_dst(ether_header);
+	eth_src = get_ether_dl_src(ether_header);
+
+	gre_header = get_gre_hdr(clas_state, 0);
+	if (!gre_header) {
+		// TODO: log error
+		return;
+	}
+
+	current_ether_type = get_ether_type(ether_header);
+	if (!current_ether_type) {
+		// TODO: log error
+		return;
+	}
+	switch (*current_ether_type) {
+	case ETH_TYPE_IPV4: {
+		pkt_types_t new = PT_POP_PROTO(clas_state, GRE4);
+		if(unlikely(new == PT_INVALID))
+			return;
+
+		// TODO: check for RFC1701 compatibility mode
+
+		unsigned int num_of_bytes = sizeof(cpc_ipv4_hdr_t);
+
+		if ((*get_gre_csum_flag(gre_header)) & GRE_CSUM_FLAG_MASK) {
+			num_of_bytes += sizeof(uint32_t);
+		}
+		if ((*get_gre_key_flag(gre_header)) & GRE_KEY_FLAG_MASK) {
+			num_of_bytes += sizeof(uint32_t);
+		}
+		if ((*get_gre_seqno_flag(gre_header)) & GRE_SEQNO_FLAG_MASK) {
+			num_of_bytes += sizeof(uint32_t);
+		}
+
+		//Take header out from packet
+		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), num_of_bytes);
+
+		//Set new type and base(move right)
+		clas_state->type = new;
+		// TODO: question: setting clas_state->base/len seems to be necessary for DPDK, but
+		// gnu_linux is manipulating these parameters automatically.
+		//clas_state->base += sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		//clas_state->len -= sizeof(cpc_ipv4_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+
+	} break;
+	case ETH_TYPE_IPV6: {
+		pkt_types_t new = PT_POP_PROTO(clas_state, GRE6);
+		if(unlikely(new == PT_INVALID))
+			return;
+
+		// TODO: check for RFC1701 compatibility mode
+
+		unsigned int num_of_bytes = sizeof(cpc_ipv6_hdr_t);
+
+		if ((*get_gre_csum_flag(gre_header)) & GRE_CSUM_FLAG_MASK) {
+			num_of_bytes += sizeof(uint32_t);
+		}
+		if ((*get_gre_key_flag(gre_header)) & GRE_KEY_FLAG_MASK) {
+			num_of_bytes += sizeof(uint32_t);
+		}
+		if ((*get_gre_seqno_flag(gre_header)) & GRE_SEQNO_FLAG_MASK) {
+			num_of_bytes += sizeof(uint32_t);
+		}
+
+		//Take header out from packet
+		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), num_of_bytes);
+
+		//Set new type and base(move right)
+		clas_state->type = new;
+		//clas_state->base += sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+		//clas_state->len -= sizeof(cpc_ipv6_hdr_t)+sizeof(cpc_udp_hdr_t)+sizeof(cpc_gtphu_t);
+
+	} break;
+	}
+
+	//Set ether_type of new frame
+	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
+	set_ether_dl_dst(get_ether_hdr(clas_state, 0),*eth_dst);
+	set_ether_dl_src(get_ether_hdr(clas_state, 0),*eth_src);
+
+	//reclassify
+	//classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);
+	parse_ethernet(clas_state, clas_state->base, clas_state->len);
 }
 
 void dump_pkt_classifier(classifier_state_t* clas_state){

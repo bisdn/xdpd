@@ -29,6 +29,7 @@
 #include "./headers/cpc_udp.h"
 #include "./headers/cpc_sctp.h"
 #include "./headers/cpc_vlan.h"
+#include "./headers/cpc_gre.h"
 
 #include "autogen_pkt_types.h"
 
@@ -52,7 +53,8 @@ enum calculate_checksum {
 	RECALCULATE_UDP_CHECKSUM_IN_SW		= 3,
 	RECALCULATE_SCTP_CHECKSUM_IN_SW		= 4,
 	RECALCULATE_ICMPV4_CHECKSUM_IN_SW	= 5,
-	RECALCULATE_ICMPV6_CHECKSUM_IN_SW	= 6
+	RECALCULATE_ICMPV6_CHECKSUM_IN_SW	= 6,
+	RECALCULATE_GRE_CHECKSUM_IN_SW		= 7
 };
 
 /**

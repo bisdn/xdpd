@@ -700,6 +700,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	 * set default values in GRE tag
 	 */
 	gre_header = get_gre_hdr(clas_state,0);
+	set_gre_version(gre_header, 0);
 	set_gre_csum_flag(gre_header, GRE_CSUM_FLAG_MASK);
 	set_gre_key_flag(gre_header, GRE_KEY_FLAG_MASK);
 	set_gre_seqno_flag(gre_header, 0); // no seqno!

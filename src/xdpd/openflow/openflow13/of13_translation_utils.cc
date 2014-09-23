@@ -550,6 +550,27 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
+	try {
+		rofl::openflow::experimental::gre::coxmatch_ofx_gre_version oxm_gre_version(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_VERSION));
+		match = of1x_init_gre_version_match(oxm_gre_version.get_u16value());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
+	try {
+		rofl::openflow::experimental::gre::coxmatch_ofx_gre_prot_type oxm_gre_prot_type(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_PROT_TYPE));
+		match = of1x_init_gre_prot_type_match(oxm_gre_prot_type.get_u16value());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
+	try {
+		rofl::openflow::experimental::gre::coxmatch_ofx_gre_key oxm_gre_key(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY));
+		match = of1x_init_gre_key_match(oxm_gre_key.get_u32value());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
 	/* End of extensions */
 #endif
 }

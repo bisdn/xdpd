@@ -683,7 +683,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	set_gre_csum_flag(gre_header, GRE_CSUM_FLAG_MASK);
 	set_gre_key_flag(gre_header, GRE_KEY_FLAG_MASK);
 	set_gre_seqno_flag(gre_header, 0); // no seqno!
-	set_gre_prot_type(gre_header, GRE_PROT_TYPE_TRANSPARENT_BRIDGING); // 0x6558, TODO: support IP over GRE
+	set_gre_prot_type(gre_header, GRE_PROT_TYPE_TRANSPARENT_ETHERNET_BRIDGING); // 0x6558, TODO: support IP over GRE
 	set_gre_key(gre_header, 0);
 
 	set_recalculate_checksum(clas_state, RECALCULATE_GRE_CHECKSUM_IN_SW);
@@ -711,7 +711,7 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 		return;
 	}
 
-	if (unlikely(*get_gre_prot_type(gre_header) != GRE_PROT_TYPE_TRANSPARENT_BRIDGING))
+	if (unlikely(*get_gre_prot_type(gre_header) != GRE_PROT_TYPE_TRANSPARENT_ETHERNET_BRIDGING))
 		return;
 
 	current_ether_type = get_ether_type(ether_header);

@@ -554,24 +554,24 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	cpc_gre_key_hdr_t* gre_header = (cpc_gre_key_hdr_t*)0;
 	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)0;
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
-	uint16_t ether_type_payload = 0;
 	uint8_t ip_ttl = 0;
 	size_t payloadlen = 0;
 	int DF_flag = false;
 
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);
+	uint64_t dl_dst = *get_ether_dl_dst(ether_header);
+	uint64_t dl_src = *get_ether_dl_src(ether_header);
+	uint16_t current_ether_type = *get_ether_type(ether_header);
 
 	//retrieve the current payload length
-	uint16_t* current_ether_type = get_ether_type(ether_header);
-	switch (*current_ether_type) {
+	switch (current_ether_type) {
 	case ETH_TYPE_IPV4:{
 		if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
 			payloadlen = be16toh(*get_ipv4_length(ipv4_header)); // no options supported,
 			// contrary to IPv6, IPv4 length field includes IPv4 header itself
 			ip_ttl = *get_ipv4_ttl(ipv4_header);
 			DF_flag = has_ipv4_DF_bit_set(ipv4_header);
-			ether_type_payload = ETH_TYPE_IPV4;
 		}else{
 			return NULL;
 		}
@@ -580,7 +580,6 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 		if ((ipv6_header = get_ipv6_hdr(clas_state, 0)) != NULL) {
 			payloadlen = be16toh(*get_ipv6_payload_length(ipv6_header)) + sizeof(cpc_ipv6_hdr_t); // no extension headers
 			ip_ttl = *get_ipv6_hop_limit(ipv6_header);
-			ether_type_payload = ETH_TYPE_IPV6;
 		} else {
 			return NULL;
 		}
@@ -595,8 +594,9 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 		case ETH_TYPE_IPV4:
 		{
 			//unsigned int offset = get_ipv4_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0);
-			unsigned int offset = sizeof(cpc_eth_hdr_t);
-			unsigned int bytes_to_insert = sizeof(cpc_ipv4_hdr_t) +
+			unsigned int offset = 0;
+			unsigned int bytes_to_insert = sizeof(cpc_eth_hdr_t) +
+											sizeof(cpc_ipv4_hdr_t) +
 											sizeof(cpc_gre_key_hdr_t); // no seqno!
 			uint16_t ident = *get_ipv4_ident(get_ipv4_hdr(clas_state, 0));
 			//payloadlen = clas_state->len - offset;
@@ -622,6 +622,8 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			 * adjust ether(0): move one IPV4/UDP/GTPU tag to the left
 			 */
 			ether_header-=bytes_to_insert; //We change also the local pointer
+			set_ether_dl_dst(ether_header, dl_dst);
+			set_ether_dl_src(ether_header, dl_src);
 			set_ether_type(ether_header, ETH_TYPE_IPV4);
 
 			ipv4_header = (cpc_ipv4_hdr_t*)get_ipv4_hdr(clas_state, 0);
@@ -648,8 +650,9 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 		case ETH_TYPE_IPV6:
 		{
 			//unsigned int offset = get_ipv6_hdr(clas_state, 0) - get_ether_hdr(clas_state, 0);
-			unsigned int offset = sizeof(cpc_eth_hdr_t);
-			unsigned int bytes_to_insert = sizeof(cpc_ipv6_hdr_t) +
+			unsigned int offset = 0;
+			unsigned int bytes_to_insert = sizeof(cpc_eth_hdr_t) +
+											sizeof(cpc_ipv6_hdr_t) +
 											sizeof(cpc_gre_hdr_t);
 			//payloadlen = clas_state->len - offset;
 
@@ -674,6 +677,8 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			 * adjust ether(0): move one IPV6/UDP/GTPU tag to the left
 			 */
 			ether_header-=bytes_to_insert; //We change also the local pointer
+			set_ether_dl_dst(ether_header, dl_dst);
+			set_ether_dl_src(ether_header, dl_src);
 			set_ether_type(ether_header, ETH_TYPE_IPV6);
 
 			uint128__t null_addr;
@@ -704,7 +709,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	set_gre_csum_flag(gre_header, GRE_CSUM_FLAG_MASK);
 	set_gre_key_flag(gre_header, GRE_KEY_FLAG_MASK);
 	set_gre_seqno_flag(gre_header, 0); // no seqno!
-	set_gre_prot_type(gre_header, ether_type_payload);
+	set_gre_prot_type(gre_header, GRE_PROT_TYPE_TRANSPARENT_BRIDGING); // 0x6558, TODO: support IP over GRE
 	set_gre_key(gre_header, 0);
 
 	set_recalculate_checksum(clas_state, RECALCULATE_GRE_CHECKSUM_IN_SW);
@@ -719,8 +724,6 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 	cpc_eth_hdr_t* ether_header = (cpc_eth_hdr_t*)0;
 	cpc_gre_key_hdr_t* gre_header = (cpc_gre_key_hdr_t*)0;
 	uint16_t* current_ether_type = (uint16_t*)0;
-	uint64_t* eth_dst = (uint64_t*)0;
-	uint64_t* eth_src = (uint64_t*)0;
 
 	ether_header = get_ether_hdr(clas_state, 0);
 	if (!ether_header) {
@@ -728,14 +731,14 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 		return;
 	}
 
-	eth_dst = get_ether_dl_dst(ether_header);
-	eth_src = get_ether_dl_src(ether_header);
-
 	gre_header = get_gre_hdr(clas_state, 0);
 	if (!gre_header) {
 		// TODO: log error
 		return;
 	}
+
+	if (unlikely(*get_gre_prot_type(gre_header) != GRE_PROT_TYPE_TRANSPARENT_BRIDGING))
+		return;
 
 	current_ether_type = get_ether_type(ether_header);
 	if (!current_ether_type) {
@@ -750,7 +753,7 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 		// TODO: check for RFC1701 compatibility mode
 
-		unsigned int num_of_bytes = sizeof(cpc_ipv4_hdr_t);
+		unsigned int num_of_bytes = sizeof(cpc_eth_hdr_t) + sizeof(cpc_ipv4_hdr_t) + sizeof(cpc_gre_base_hdr_t);
 
 		if ((*get_gre_csum_flag(gre_header)) & GRE_CSUM_FLAG_MASK) {
 			num_of_bytes += sizeof(uint32_t);
@@ -763,7 +766,7 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 		}
 
 		//Take header out from packet
-		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), num_of_bytes);
+		pkt_pop(pkt, NULL,/*offset=*/0, num_of_bytes);
 
 		//Set new type and base(move right)
 		clas_state->type = new;
@@ -780,7 +783,7 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 		// TODO: check for RFC1701 compatibility mode
 
-		unsigned int num_of_bytes = sizeof(cpc_ipv6_hdr_t);
+		unsigned int num_of_bytes = sizeof(cpc_eth_hdr_t) + sizeof(cpc_ipv6_hdr_t) + sizeof(cpc_gre_base_hdr_t);
 
 		if ((*get_gre_csum_flag(gre_header)) & GRE_CSUM_FLAG_MASK) {
 			num_of_bytes += sizeof(uint32_t);
@@ -793,7 +796,7 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 		}
 
 		//Take header out from packet
-		pkt_pop(pkt, NULL,/*offset=*/sizeof(cpc_eth_hdr_t), num_of_bytes);
+		pkt_pop(pkt, NULL,/*offset=*/0, num_of_bytes);
 
 		//Set new type and base(move right)
 		clas_state->type = new;
@@ -802,11 +805,6 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 
 	} break;
 	}
-
-	//Set ether_type of new frame
-	set_ether_type(get_ether_hdr(clas_state,0),ether_type);
-	set_ether_dl_dst(get_ether_hdr(clas_state, 0),*eth_dst);
-	set_ether_dl_src(get_ether_hdr(clas_state, 0),*eth_src);
 
 	//reclassify
 	//classify_packet(clas_state, clas_state->base, clas_state->len, clas_state->port_in, clas_state->phy_port_in);

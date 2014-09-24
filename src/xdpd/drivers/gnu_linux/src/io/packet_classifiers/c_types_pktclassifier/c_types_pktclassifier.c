@@ -555,7 +555,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)0;
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
 	uint8_t ip_ttl = 0;
-	size_t payloadlen = 0;
+	size_t payloadlen = clas_state->len;
 	int DF_flag = false;
 
 	//Recover the ether(0)
@@ -563,31 +563,6 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	uint64_t dl_dst = *get_ether_dl_dst(ether_header);
 	uint64_t dl_src = *get_ether_dl_src(ether_header);
 	uint16_t current_ether_type = *get_ether_type(ether_header);
-
-	//retrieve the current payload length
-	switch (current_ether_type) {
-	case ETH_TYPE_IPV4:{
-		if ((ipv4_header = get_ipv4_hdr(clas_state, 0)) != NULL) {
-			payloadlen = be16toh(*get_ipv4_length(ipv4_header)); // no options supported,
-			// contrary to IPv6, IPv4 length field includes IPv4 header itself
-			ip_ttl = *get_ipv4_ttl(ipv4_header);
-			DF_flag = has_ipv4_DF_bit_set(ipv4_header);
-		}else{
-			return NULL;
-		}
-	}break;
-	case ETH_TYPE_IPV6:{
-		if ((ipv6_header = get_ipv6_hdr(clas_state, 0)) != NULL) {
-			payloadlen = be16toh(*get_ipv6_payload_length(ipv6_header)) + sizeof(cpc_ipv6_hdr_t); // no extension headers
-			ip_ttl = *get_ipv6_hop_limit(ipv6_header);
-		} else {
-			return NULL;
-		}
-	}break;
-	default:{
-		return NULL;
-	};
-	}
 
 	//ether_type defines the new header to be pushed: IPV4/UDP/GTPU or IPV6/UDP/GTPU
 	switch (ether_type) {

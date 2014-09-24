@@ -196,7 +196,9 @@ static switch_port_t* configure_nf_port_kni(const char *nf_name, const char *nf_
 	}
 		
 	//Add port_tx_nf_lcore_queue
-	port_tx_nf_lcore_queue[nf_id] = rte_ring_create(port->name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
+	port_tx_nf_lcore_queue[nf_id] = rte_ring_lookup (port->name);
+	if(!port_tx_nf_lcore_queue[nf_id])
+		port_tx_nf_lcore_queue[nf_id] = rte_ring_create(port->name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
 
 	if(unlikely(port_tx_nf_lcore_queue[nf_id] == NULL ))
 	{

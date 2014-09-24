@@ -10,7 +10,7 @@
 
 /**
 * @file cpc_gtpu.h
-* @author Victor Alvarez<victor.alvarez (at) bisdn.de>
+* @author Andreas Koepsel<andreas.koepsel (at) bisdn.de>
 *
 * @brief Structure definitions and inline getters and setters for GTP
 */

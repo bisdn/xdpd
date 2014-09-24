@@ -292,6 +292,20 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		
 		//Mark as pkt out (ignore counters, slow path)	
 		TM_STAMP_PKT_OUT(pkt);
+
+		/*
+		 * remark: do not overwrite clas_state.calculate_checksums_in_sw, as these flags may
+		 * have been altered by previous tables in the pipeline. A simple reclassification
+		 * suppresses necessary recalculations for IPv4, UDP, TCP, etc.
+		 */
+
+		//Reclassify the packet
+		pktx86 = (datapacketx86*)pkt->platform_state;
+		//keep checksum_calculation flags
+		uint32_t calculate_checksums_in_sw = pktx86->clas_state.calculate_checksums_in_sw;
+		classify_packet(&pktx86->clas_state, pktx86->get_buffer(), pktx86->get_buffer_length(), in_port, 0);
+		pktx86->clas_state.calculate_checksums_in_sw |= calculate_checksums_in_sw;
+
 	}else{
 		//Retrieve a free buffer	
 		pkt = bufferpool::get_free_buffer_nonblocking();
@@ -307,12 +321,12 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		//Initialize the packet and copy
 		((datapacketx86*)pkt->platform_state)->init(buffer, buffer_size, lsw, true);
 		pkt->sw = lsw;
+
+		//Reclassify the packet
+		pktx86 = (datapacketx86*)pkt->platform_state;
+		classify_packet(&pktx86->clas_state, pktx86->get_buffer(), pktx86->get_buffer_length(), in_port, 0);
 	}
 	
-	//Reclassify the packet
-	pktx86 = (datapacketx86*)pkt->platform_state;
-	classify_packet(&pktx86->clas_state, pktx86->get_buffer(), pktx86->get_buffer_length(), in_port, 0);
-
 	ROFL_DEBUG_VERBOSE(DRIVER_NAME" Getting packet out [%p]\n",pkt);	
 	
 	//Instruct pipeline to process actions. This may reinject the packet	

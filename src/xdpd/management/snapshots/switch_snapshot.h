@@ -158,6 +158,34 @@ public:
 		
 };
 
+class openflow_switch_group_table_snapshot{
+
+public:
+	openflow_switch_group_table_snapshot(void){};
+	
+	openflow_switch_group_table_snapshot(of1x_group_table_t* group):
+			num_of_entries(group->num_of_entries),
+			config(group->config)
+	{};
+
+	//Dumping operator
+	friend std::ostream& operator<<(std::ostream& os, openflow_switch_group_table_snapshot const& g)
+	{
+		os << "\t[Group table, # entries:"<<g.num_of_entries <<", config:0x"<<g.config.supported_actions.__submap[1]<<"]\n"<<std::dec;
+		return os;
+	}
+
+	/**
+	* Number of entries installed
+	*/
+	unsigned int num_of_entries;
+
+	/**
+	* Group Table configuration 
+	*/
+	of1x_group_table_config_t config;
+};
+
 /**
 * @brief C++ switch snapshot 
 * @ingroup cmm_mgmt
@@ -180,7 +208,8 @@ public:
 		num_of_buffers = snapshot->pipeline.num_of_buffers; 
 		miss_send_len = snapshot->pipeline.miss_send_len; 
 		capabilities = snapshot->pipeline.capabilities; 
-	
+		group_table = openflow_switch_group_table_snapshot(snapshot->pipeline.groups);
+
 		//Construct 
 		for(unsigned int i=0;i<num_of_tables;i++)
 			tables.push_back(openflow_switch_table_snapshot(&snapshot->pipeline.tables[i]));
@@ -257,8 +286,12 @@ public:
 	* Openflow tables
 	*/ 
 	std::list<openflow_switch_table_snapshot> tables; 
-	
-	//FIXME: add groups
+
+	/**
+	* Openflow group table
+	*/ 
+	openflow_switch_group_table_snapshot group_table; 
+
 	
 };
 

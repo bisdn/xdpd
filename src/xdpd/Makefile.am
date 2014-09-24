@@ -23,6 +23,7 @@ xdpd_LDADD = \
 	openflow/libxdpd_openflow.la \
 	-lrofl_pipeline \
 	$(FM_LIB)
+xdpd_LDFLAGS = $(xdpd_HW_LDFLAGS)
 
 #The .a is a workaround to prevent libtool to strip it...
 

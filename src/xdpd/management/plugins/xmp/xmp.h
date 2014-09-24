@@ -98,20 +98,16 @@ private:
 	handle_request(rofl::csocket& socket, cxmpmsg& msg);
 
 	void
-	handle_port_attach(
-			cxmpmsg& msg);
+	handle_port_attach(rofl::csocket& socket, cxmpmsg& msg);
 
 	void
-	handle_port_detach(
-			cxmpmsg& msg);
+	handle_port_detach(rofl::csocket& socket, cxmpmsg& msg);
 
 	void
-	handle_port_enable(
-			cxmpmsg& msg);
+	handle_port_enable(rofl::csocket& socket, cxmpmsg& msg);
 
 	void
-	handle_port_disable(
-			cxmpmsg& msg);
+	handle_port_disable(rofl::csocket& socket, cxmpmsg& msg);
 
 	void
 	handle_port_list(rofl::csocket& socket, cxmpmsg& msg);
@@ -121,6 +117,15 @@ private:
 
 	void
 	handle_lsi_list(rofl::csocket& socket, cxmpmsg& msg);
+
+	void
+	handle_lsi_info(rofl::csocket& socket, cxmpmsg& msg);
+
+	void
+	handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg);
+
+	void
+	handle_lsi_destroy(rofl::csocket& socket, cxmpmsg& msg);
 };
 
 }; // end of namespace protocol

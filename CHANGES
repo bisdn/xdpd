@@ -8,9 +8,21 @@ Legend:
 Change log
 ==========
 
+v0.6.0
+
+[O][gnu-linux-dpdk] Moved platform driver to DPDK v1.7 (thanks D. Verbeiren)
+
+
+
+v0.5.1
+
+[+][gnu-linux][gnu-linux-dpdk] GTP push/pop actions revised
+[B][gnu-linux][gnu-linux-dpdk] preserve checksum calculation flags in function hal_driver_of1x_process_packet_out
+
 v0.5.0
 
 [+] OF1.3 support marked as stable
+[+] Changed default logging level from NOTICE(5) to ERROR (3)
 [+][CMM] Added per LSI Packet In Rate Limiter(PIRL) functionality and config plugin support.
 [+][CMM] Added switch_manager::get_switch_table_flows() to switch_manager #21 
 [+][CMM] Adding port_manager::is_vlink(), port_manager::get_port_info() and port_manager::get_vlink_pair() #17 

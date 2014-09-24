@@ -24,6 +24,8 @@ libxdpd_xmp_la_SOURCES = \
 	cxmpie_name.cc \
 	cxmpie_portinfo.h \
 	cxmpie_portinfo.cc \
+	cxmpie_lsiinfo.h \
+	cxmpie_lsiinfo.cc \
 	cxmpie_multipart.cc \
 	cxmpie_multipart.h \
 	cxmpies.h \
@@ -36,8 +38,9 @@ libxdpd_xmp_la_HEADERS = \
 	cxmpie.h             \
 	cxmpie_command.h     \
 	cxmpie_dpid.h        \
-	cxmpie_name.h    \
+	cxmpie_name.h        \
 	cxmpie_portinfo.h    \
+	cxmpie_lsiinfo.h     \
 	cxmpie_multipart.h   \
 	cxmpies.h
 

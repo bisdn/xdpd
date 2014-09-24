@@ -14,3 +14,5 @@ libxdpd_mgmt_config_la_LIBADD = \
 	openflow/libxdpd_mgmt_config_openflow.la\
 	system/libxdpd_mgmt_config_system.la\
 	-lconfig++
+
+sysconf_DATA = xdpd.conf

@@ -25,6 +25,7 @@
 #include <rofl/common/protocols/fpppoeframe.h>
 #include <rofl/common/protocols/fpppframe.h>
 #include <rofl/common/protocols/fipv4frame.h>
+#include <rofl/common/protocols/fudpframe.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "io/datapacketx86.h"
 //#include "io/packet_classifiers/c_pktclassifier/c_pktclassifier.h"

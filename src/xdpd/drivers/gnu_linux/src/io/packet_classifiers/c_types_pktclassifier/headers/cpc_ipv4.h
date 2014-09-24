@@ -167,6 +167,16 @@ uint16_t* get_ipv4_length(void *hdr){
 };
 
 inline static
+void set_ipv4_ident(void *hdr, uint16_t ident){
+	((cpc_ipv4_hdr_t*)hdr)->ident = ident;
+};
+
+inline static
+uint16_t* get_ipv4_ident(void *hdr){
+	return &((cpc_ipv4_hdr_t*)hdr)->ident;
+};
+
+inline static
 void set_ipv4_DF_bit(void *hdr){
 	((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] =  ((cpc_ipv4_hdr_t*)hdr)->offset_flags[0] | OF1X_BIT6_MASK;
 };

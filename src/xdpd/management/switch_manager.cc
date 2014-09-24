@@ -310,7 +310,7 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 	if(!hal_flows || !sw_snapshot){
 		assert(0);
 		pthread_rwlock_unlock(&switch_manager::rwlock);
-		//FIXME throw exception
+		throw eOfSmGeneralError(); 	
 	}
 
 	//Clear original
@@ -320,8 +320,7 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 	if(flow_entry_snapshot::map_flow_stats_msg(sw_snapshot->of_ver, sw_snapshot->pipeline.miss_send_len, hal_flows, flows) != ROFL_SUCCESS){
 		assert(0);
 		pthread_rwlock_unlock(&switch_manager::rwlock);
-		//FIXME throw exception
-			
+		throw eOfSmGeneralError(); 	
 	}
 		
 	pthread_rwlock_unlock(&switch_manager::rwlock);
@@ -336,7 +335,46 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 		of1x_destroy_flow_entry(entry);	
 }
 
+void switch_manager::get_switch_group_mods(uint64_t dpid, std::list<openflow_group_mod_snapshot>& group_mods){
+	of1x_stats_group_desc_msg_t* group_table_desc = NULL;
+	of1x_stats_group_msg_t* group_table_stats = NULL;
+	
+	//Make sure 	
+	pthread_rwlock_rdlock(&switch_manager::rwlock);
 
+	//Recover the switch
+	openflow_switch* sw = __get_switch_by_dpid(dpid);
+	
+	if(!sw){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		throw eOfSmDoesNotExist();
+	}
+	
+	group_table_desc = hal_driver_of1x_get_group_desc_stats(dpid);
+	if( !group_table_desc ){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		return;
+	}
+
+	group_table_stats = hal_driver_of1x_get_group_stats(dpid, OF1X_GROUP_ALL);
+	if( !group_table_stats ){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		of1x_destroy_group_desc_stats(group_table_desc);
+		return;
+	 }
+	 
+	if(openflow_group_mod_snapshot::map_group_mods_msg(sw->version, group_table_stats, group_table_desc, group_mods)!= ROFL_SUCCESS){
+		pthread_rwlock_unlock(&switch_manager::rwlock);
+		of1x_destroy_group_desc_stats(group_table_desc);
+		of1x_destroy_stats_group_msg(group_table_stats);
+		assert(0);
+		throw eOfSmGeneralError();
+	}
+	
+	pthread_rwlock_unlock(&switch_manager::rwlock);
+	of1x_destroy_group_desc_stats(group_table_desc);
+	of1x_destroy_stats_group_msg(group_table_stats);
+}
 
 void
 switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){

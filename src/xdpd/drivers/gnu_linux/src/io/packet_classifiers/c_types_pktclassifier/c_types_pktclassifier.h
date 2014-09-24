@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <rofl/datapath/pipeline/common/protocol_constants.h>
 #include "../pktclassifier.h"
 
 //Headers
@@ -264,8 +265,13 @@ void* get_ppp_hdr(classifier_state_t* clas_state, int idx){
 static inline
 void* get_gtpu_hdr(classifier_state_t* clas_state, int idx){
 	uint8_t* tmp;
-	PT_GET_HDR(tmp, clas_state, PT_PROTO_GTPU); 
-	return tmp;
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_GTPU4);
+	if (tmp != NULL)
+		return tmp;
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_GTPU6);
+	if (tmp != NULL)
+		return tmp;
+	return NULL;
 }
 
 //
@@ -280,11 +286,19 @@ void parse_tcp(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 static inline
 void parse_gtp(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
-
+	uint8_t* tmp;
 	if (unlikely(datalen < sizeof(cpc_gtphu_t))) { return; }
-	PT_CLASS_ADD_PROTO(clas_state, GTPU);
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_IPV4);
+	if(tmp != NULL) {
+		PT_CLASS_ADD_PROTO(clas_state, GTPU4); return;
+	}
+	PT_GET_HDR(tmp, clas_state, PT_PROTO_IPV6);
+	if (tmp != NULL) {
+		PT_CLASS_ADD_PROTO(clas_state, GTPU6); return;
+	}
 	//No further parsing
 }
+
 static inline
 void parse_udp(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 

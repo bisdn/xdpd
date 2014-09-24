@@ -138,6 +138,9 @@ cxmpies::map_and_insert(
 	case XMPIET_LSINAME: {
 		xmpmap[XMPIET_LSINAME] = new cxmpie_name(xmpie);
 	} break;
+	case XMPIET_LSIINFO: {
+		xmpmap[XMPIET_LSIINFO] = new cxmpie_lsiinfo(xmpie);
+	} break;
 	default: {
 		xmpmap[xmpie.get_type()] = new cxmpie(xmpie);
 	};
@@ -334,6 +337,91 @@ cxmpies::has_ie_dpid() const
 {
 	return (xmpmap.find(XMPIET_DPID) != xmpmap.end());
 }
+
+cxmpie_name&
+cxmpies::add_ie_lsiname()
+{
+	if (xmpmap.find(XMPIET_LSINAME) != xmpmap.end()) {
+		delete xmpmap[XMPIET_LSINAME];
+	}
+	xmpmap[XMPIET_LSINAME] = new cxmpie_name(XMPIET_LSINAME);
+	return *(dynamic_cast<cxmpie_name*>( xmpmap[XMPIET_LSINAME] ));
+}
+
+cxmpie_name&
+cxmpies::set_ie_lsiname()
+{
+	if (xmpmap.find(XMPIET_LSINAME) == xmpmap.end()) {
+		xmpmap[XMPIET_LSINAME] = new cxmpie_name(XMPIET_LSINAME);
+	}
+	return *(dynamic_cast<cxmpie_name*>( xmpmap[XMPIET_LSINAME] ));
+}
+
+cxmpie_name const&
+cxmpies::get_ie_lsiname() const
+{
+	if (xmpmap.find(XMPIET_LSINAME) == xmpmap.end()) {
+		throw eXmpIEsNotFound();
+	}
+	return *(dynamic_cast<cxmpie_name const*>( xmpmap.at(XMPIET_LSINAME) ));
+}
+
+void
+cxmpies::drop_ie_lsiname()
+{
+	if (xmpmap.find(XMPIET_LSINAME) == xmpmap.end()) {
+		return;
+	}
+	delete xmpmap[XMPIET_LSINAME];
+	xmpmap.erase(XMPIET_LSINAME);
+}
+
+
+cxmpie_lsiinfo&
+cxmpies::add_ie_lsiinfo()
+{
+	if (xmpmap.find(XMPIET_LSIINFO) != xmpmap.end()) {
+		delete xmpmap[XMPIET_LSIINFO];
+	}
+	xmpmap[XMPIET_LSIINFO] = new cxmpie_lsiinfo();
+	return *(dynamic_cast<cxmpie_lsiinfo*>( xmpmap[XMPIET_LSIINFO] ));
+}
+
+cxmpie_lsiinfo&
+cxmpies::set_ie_lsiinfo()
+{
+	if (xmpmap.find(XMPIET_LSIINFO) == xmpmap.end()) {
+		xmpmap[XMPIET_LSIINFO] = new cxmpie_lsiinfo();
+	}
+	return *(dynamic_cast<cxmpie_lsiinfo*>( xmpmap[XMPIET_LSIINFO] ));
+}
+
+cxmpie_lsiinfo const&
+cxmpies::get_ie_lsiinfo() const
+{
+	if (xmpmap.find(XMPIET_LSIINFO) == xmpmap.end()) {
+		throw eXmpIEsNotFound();
+	}
+	return *(dynamic_cast<cxmpie_lsiinfo const*>( xmpmap.at(XMPIET_LSIINFO) ));
+}
+
+void
+cxmpies::drop_ie_lsiinfo()
+{
+	if (xmpmap.find(XMPIET_LSIINFO) == xmpmap.end()) {
+		return;
+	}
+	delete xmpmap[XMPIET_LSIINFO];
+	xmpmap.erase(XMPIET_LSIINFO);
+}
+
+
+bool
+cxmpies::has_ie_lsiname() const
+{
+	return (xmpmap.find(XMPIET_LSINAME) != xmpmap.end());
+}
+
 
 cxmpie_multipart&
 cxmpies::add_ie_multipart()

@@ -32,6 +32,7 @@
 //Snapshot
 #include "snapshots/switch_snapshot.h"
 #include "snapshots/flow_entry_snapshot.h"
+#include "snapshots/group_mod_snapshot.h"
 
 /**
 * @file switch_manager.h
@@ -147,7 +148,13 @@ public:
 	* @param flows List of flows installed. 
 	*/
 	static void get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TODO: Add filtering */, std::list<flow_entry_snapshot>& flows);
-
+	
+	/**
+	* Get list of switch group table entries currently installed 
+	* @param flows List of group mods installed. 
+	*/
+	static void get_switch_group_mods(uint64_t dpid, std::list<openflow_group_mod_snapshot>& group_mods);
+	
 	/**
 	 * List available matching algorithms
 	 */

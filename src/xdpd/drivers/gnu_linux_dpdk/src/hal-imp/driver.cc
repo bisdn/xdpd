@@ -54,13 +54,12 @@ using namespace xdpd::gnu_linux;
 * @ingroup driver_management
 */
 
-#define EAL_ARGS 6
 
 hal_result_t hal_driver_init(const char* extra_params){
 
 	int ret;
-	const char* argv_fake[EAL_ARGS] = {"xdpd", "-c", XSTR(RTE_CORE_MASK), "-n", XSTR(RTE_MEM_CHANNELS), NULL};
-	
+	const char* argv_fake[] = {"xdpd", "-c", XSTR(RTE_CORE_MASK), "-n", XSTR(RTE_MEM_CHANNELS), NULL};
+	const int EAL_ARGS = sizeof(argv_fake)/sizeof(*argv_fake);
 	
 	ROFL_INFO(DRIVER_NAME" Initializing...\n");
 	
@@ -96,12 +95,6 @@ hal_result_t hal_driver_init(const char* extra_params){
 			rte_pktmbuf_init, NULL,
 			SOCKET0, 0);
 	
-	/* init driver(s) */
-	if (rte_pmd_init_all() < 0)
-		rte_exit(EXIT_FAILURE, "Cannot init pmd\n");
-	if (rte_eal_pci_probe() < 0)
-		rte_exit(EXIT_FAILURE, "Cannot probe PCI\n");
-
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
 
@@ -113,8 +106,10 @@ hal_result_t hal_driver_init(const char* extra_params){
 		return HAL_FAILURE;
 
 	//Discover and initialize rofl-pipeline state
-	if(iface_manager_discover_system_ports() != ROFL_SUCCESS)
+	if(iface_manager_discover_system_ports() != ROFL_SUCCESS) {
+		ROFL_ERR(DRIVER_NAME"ERROR: Failed to discover system ports - Aborting\n");
 		return HAL_FAILURE;
+	}
 
 	//Initialize processing
 	if(processing_init() != ROFL_SUCCESS)

@@ -562,7 +562,6 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	ether_header = get_ether_hdr(clas_state, 0);
 	uint64_t dl_dst = *get_ether_dl_dst(ether_header);
 	uint64_t dl_src = *get_ether_dl_src(ether_header);
-	uint16_t current_ether_type = *get_ether_type(ether_header);
 
 	//ether_type defines the new header to be pushed: IPV4/UDP/GTPU or IPV6/UDP/GTPU
 	switch (ether_type) {

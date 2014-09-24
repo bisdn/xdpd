@@ -71,42 +71,8 @@ void grev4_calc_checksum(void* hdr, uint32_t ip_src, uint32_t ip_dst, uint8_t ip
 	((cpc_gre_hdr_t*)hdr)->word2 = 0x0;
 
 	/*
-	* part -I- (IPv4 pseudo header)
-	*/
-
-#if 0
-	// this seems to be wrong ...
-	word16 = (uint16_t*)(void*)&ip_src;
-	sum += *(word16+1);
-	sum += *(word16);
-
-	word16 = (uint16_t*)(void*)&ip_dst;
-	sum += *(word16+1);
-	sum += *(word16);
-
-	sum += HTONB16(ip_proto);
-	sum += HTONB16(length);
-#else
-	word16 = (uint16_t*)(&((uint8_t*)&ip_src)[0]);
-	sum += *word16;
-	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
-	word16 = (uint16_t*)(&((uint8_t*)&ip_src)[2]);
-	sum += *word16;
-	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
-
-	word16 = (uint16_t*)(&((uint8_t*)&ip_dst)[0]);
-	sum += *word16;
-	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
-	word16 = (uint16_t*)(&((uint8_t*)&ip_dst)[2]);
-	sum += *word16;
-	//fprintf(stderr, "uint16_t: 0x%04x sum: 0x%08x\n", *word16, sum);
-#endif
-
-	sum += HTONB16((uint16_t)ip_proto);
-	//fprintf(stderr, "sum: 0x%08x\n", sum);
-	sum += HTONB16(length);
-	//fprintf(stderr, "sum: 0x%08x\n", sum);
-
+	 * no IPv4 pseudo header for GRE!!!
+	 */
 
 	/*
 	* part -II- (GRE header + payload)
@@ -146,18 +112,8 @@ void grev6_calc_checksum(void* hdr, uint128__t ip_src, uint128__t ip_dst, uint8_
 	((cpc_gre_hdr_t*)hdr)->word2 = 0x0;
 
 	/*
-	* part -I- (IPv6 pseudo header)
+	* no IPv6 pseudo header for GRE!
 	*/
-	for (i = 0; i < 8; i++) {
-		sum += (((uint16_t)ip_src.val[2*i]) << 0) + (((uint16_t)ip_src.val[2*i+1]) << 8);
-	}
-
-	for (i = 0; i < 8; i++) {
-		sum += (((uint16_t)ip_dst.val[2*i]) << 0) + (((uint16_t)ip_dst.val[2*i+1]) << 8);
-	}
-
-	sum += HTONB16(ip_proto);
-	sum += HTONB16(length);
 
 	/*
 	* part -II- (GRE header + payload)

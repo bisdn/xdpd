@@ -556,7 +556,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
 	uint8_t ip_ttl = 64;
 	size_t payloadlen = clas_state->len;
-	int DF_flag = false;
+	int DF_flag = true;
 
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);

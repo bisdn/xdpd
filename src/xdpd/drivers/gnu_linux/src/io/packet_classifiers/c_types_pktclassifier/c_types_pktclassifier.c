@@ -554,7 +554,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 	cpc_gre_key_hdr_t* gre_header = (cpc_gre_key_hdr_t*)0;
 	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)0;
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
-	uint8_t ip_ttl = 0;
+	uint8_t ip_ttl = 64;
 	size_t payloadlen = clas_state->len;
 	int DF_flag = false;
 
@@ -593,10 +593,11 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			/*
 			 * adjust ether(0): move one IPV4/UDP/GTPU tag to the left
 			 */
-			ether_header-=bytes_to_insert; //We change also the local pointer
+			ether_header = get_ether_hdr(clas_state, 0);
 			set_ether_dl_dst(ether_header, dl_dst);
 			set_ether_dl_src(ether_header, dl_src);
-			set_ether_type(ether_header, ETH_TYPE_IPV4);
+			//Never use set_ether_type => now is 0x0, and will interpret frame as 802.3
+			*((uint16_t*)((uint8_t*)ether_header+12)) = ether_type;
 
 			ipv4_header = (cpc_ipv4_hdr_t*)get_ipv4_hdr(clas_state, 0);
 			set_ipv4_version(ipv4_header, 4 << 4);
@@ -648,10 +649,11 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			/*
 			 * adjust ether(0): move one IPV6/UDP/GTPU tag to the left
 			 */
-			ether_header-=bytes_to_insert; //We change also the local pointer
+			ether_header = get_ether_hdr(clas_state, 0);
 			set_ether_dl_dst(ether_header, dl_dst);
 			set_ether_dl_src(ether_header, dl_src);
-			set_ether_type(ether_header, ETH_TYPE_IPV6);
+			//Never use set_ether_type => now is 0x0, and will interpret frame as 802.3
+			*((uint16_t*)((uint8_t*)ether_header+12)) = ether_type;
 
 			uint128__t null_addr;
 			memset(null_addr.val, 0, sizeof(null_addr));

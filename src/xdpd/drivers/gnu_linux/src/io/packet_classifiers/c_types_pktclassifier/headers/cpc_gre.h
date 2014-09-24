@@ -276,22 +276,38 @@ void set_gre_reserved1(void *hdr, uint16_t reserved1){
 
 inline static
 uint32_t* get_gre_key(void *hdr){
-	return &((cpc_gre_hdr_t*)hdr)->key;
+	if (((cpc_gre_base_hdr_t*)hdr)->word0 & GRE_KEY_FLAG_MASK) {
+		return &((cpc_gre_hdr_t*)hdr)->key;
+	}else{
+		return NULL;
+	}
 }
 
 inline static
 void set_gre_key(void *hdr, uint32_t key){
-	((cpc_gre_hdr_t*)hdr)->key = key;
+	if (((cpc_gre_base_hdr_t*)hdr)->word0 & GRE_KEY_FLAG_MASK) {
+		((cpc_gre_hdr_t*)hdr)->key = key;
+	}else{
+		return;
+	}
 }
 
 inline static
 uint32_t* get_gre_seqno(void *hdr){
-	return &((cpc_gre_hdr_t*)hdr)->seqno;
+	if (((cpc_gre_base_hdr_t*)hdr)->word0 & GRE_SEQNO_FLAG_MASK) {
+		return &((cpc_gre_hdr_t*)hdr)->seqno;
+	}else{
+		return NULL;
+	}
 }
 
 inline static
 void set_gre_seqno(void *hdr, uint32_t seqno){
-	((cpc_gre_hdr_t*)hdr)->seqno = seqno;
+	if (((cpc_gre_base_hdr_t*)hdr)->word0 & GRE_SEQNO_FLAG_MASK) {
+		((cpc_gre_hdr_t*)hdr)->seqno = seqno;
+	}else{
+		return;
+	}
 }
 
 #endif /* CPC_GRE_H_ */

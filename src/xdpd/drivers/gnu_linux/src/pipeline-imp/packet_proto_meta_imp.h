@@ -82,6 +82,9 @@
 	#ifndef DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW
 		#define DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW
 	#endif
+	#ifndef DONT_CALCULATE_GRE_CHECKSUM_IN_SW
+		#define DONT_CALCULATE_GRE_CHECKSUM_IN_SW
+	#endif
 #endif /* Checksums */
 
 //Check for the existance of GET_CLAS_STATE_PTR() MACRO
@@ -141,6 +144,18 @@ void calculate_checksums_in_software(datapacket_t* pkt){
 				get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 				get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) );
 			#endif /* DONT_CALCULATE_ICMPV4_CHECKSUM_IN_SW */
+
+		} else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_GRE_CHECKSUM_IN_SW ) && get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
+
+			#ifndef DONT_CALCULATE_GRE_CHECKSUM_IN_SW
+
+			grev4_calc_checksum(
+								get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
+								*get_ipv4_src(fipv4),
+								*get_ipv4_dst(fipv4),
+								*get_ipv4_proto(fipv4),
+								get_pkt_len(pkt, GET_CLAS_STATE_PTR(pkt) , get_gre_hdr( GET_CLAS_STATE_PTR(pkt) ,0), NULL) );
+			#endif /* DONT_CALCULATE_GRE_CHECKSUM_IN_SW */
 		}
 	}
 
@@ -179,6 +194,17 @@ void calculate_checksums_in_software(datapacket_t* pkt){
 					ICMPV6_IP_PROTO,
 					get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) );
 			#endif /* DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW */
+
+		} else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_GRE_CHECKSUM_IN_SW ) && (get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) {
+
+			#ifndef DONT_CALCULATE_GRE_CHECKSUM_IN_SW
+			grev6_calc_checksum(
+					get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
+					*get_ipv6_src(fipv6),
+					*get_ipv6_dst(fipv6),
+					GRE_IP_PROTO,
+					get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) );
+			#endif /* DONT_CALCULATE_GRE_CHECKSUM_IN_SW */
 		}
 	}
 

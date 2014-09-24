@@ -46,7 +46,7 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct
 
 	//Calculate tx bytes
 	for(i=0, tx_bytes=0;i<len;++i){
-		tx_bytes += burst[i]->pkt.pkt_len;
+		tx_bytes += burst[i]->pkt_len;
 	}
 
 	//Send burst
@@ -70,8 +70,8 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct
 			//unfortunately there is no other way of efficiently do so
 			//since the rte_eth_tx_burst() does not return the amount of bytes
 			//TXed	
-			port->stats.tx_bytes -= burst[ret]->pkt.pkt_len ;
-			port->queues[queue_id].stats.tx_bytes -= burst[ret]->pkt.pkt_len;
+			port->stats.tx_bytes -= burst[ret]->pkt_len ;
+			port->queues[queue_id].stats.tx_bytes -= burst[ret]->pkt_len;
 		
 			//Now release the mbuf
 			rte_pktmbuf_free(burst[ret]);

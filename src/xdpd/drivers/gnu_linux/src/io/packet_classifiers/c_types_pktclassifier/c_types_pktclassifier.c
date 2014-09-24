@@ -551,7 +551,7 @@ void pop_gtp(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_type){
 
 	void* ether_header;
-	cpc_gre_key_hdr_t* gre_header = (cpc_gre_key_hdr_t*)0;
+	cpc_gre_hdr_t* gre_header = (cpc_gre_hdr_t*)0;
 	cpc_ipv4_hdr_t* ipv4_header = (cpc_ipv4_hdr_t*)0;
 	cpc_ipv6_hdr_t* ipv6_header = (cpc_ipv6_hdr_t*)0;
 	uint8_t ip_ttl = 64;
@@ -571,7 +571,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			unsigned int offset = 0;
 			unsigned int bytes_to_insert = sizeof(cpc_eth_hdr_t) +
 											sizeof(cpc_ipv4_hdr_t) +
-											sizeof(cpc_gre_key_hdr_t); // no seqno!
+											sizeof(cpc_gre_base_hdr_t) + 2*sizeof(uint32_t); // basehdr+csum+key, no seqno!
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GRE4);
 			if(unlikely(new == PT_INVALID))
@@ -605,7 +605,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv4_dscp(ipv4_header, 0);
 			set_ipv4_ecn(ipv4_header, 0);
 			set_ipv4_length(ipv4_header, htobe16(sizeof(cpc_ipv4_hdr_t) +
-													sizeof(cpc_gre_key_hdr_t) + // no seqno!
+													sizeof(cpc_gre_base_hdr_t) + 2*sizeof(uint32_t) + // basehdr+csum+key, no seqno!
 													payloadlen));
 			set_ipv4_proto(ipv4_header, IP_PROTO_GRE);
 			set_ipv4_ident(ipv4_header, 0);
@@ -626,7 +626,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			unsigned int offset = 0;
 			unsigned int bytes_to_insert = sizeof(cpc_eth_hdr_t) +
 											sizeof(cpc_ipv6_hdr_t) +
-											sizeof(cpc_gre_hdr_t);
+											sizeof(cpc_gre_base_hdr_t) + 2*sizeof(uint32_t); // basehdr+csum+key, no seqno!
 			//payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GRE6);
@@ -666,7 +666,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			set_ipv6_src(ipv6_header, null_addr);
 			set_ipv6_flow_label(ipv6_header, 0);
 			set_ipv6_hop_limit(ipv6_header, ip_ttl);
-			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_gre_key_hdr_t) + payloadlen));
+			set_ipv6_payload_length(ipv6_header, htobe16(sizeof(cpc_gre_base_hdr_t) + 2*sizeof(uint32_t) + payloadlen)); // basehdr+csum+key, no seqno!
 			set_ipv6_traffic_class(ipv6_header, 0);
 			set_ipv6_next_header(ipv6_header, IP_PROTO_GRE);
 
@@ -696,7 +696,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_type){
 
 	cpc_eth_hdr_t* ether_header = (cpc_eth_hdr_t*)0;
-	cpc_gre_key_hdr_t* gre_header = (cpc_gre_key_hdr_t*)0;
+	cpc_gre_hdr_t* gre_header = (cpc_gre_hdr_t*)0;
 	uint16_t* current_ether_type = (uint16_t*)0;
 
 	ether_header = get_ether_hdr(clas_state, 0);

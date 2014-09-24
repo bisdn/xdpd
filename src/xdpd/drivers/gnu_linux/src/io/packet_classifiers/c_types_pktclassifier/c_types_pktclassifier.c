@@ -572,8 +572,6 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 			unsigned int bytes_to_insert = sizeof(cpc_eth_hdr_t) +
 											sizeof(cpc_ipv4_hdr_t) +
 											sizeof(cpc_gre_key_hdr_t); // no seqno!
-			uint16_t ident = *get_ipv4_ident(get_ipv4_hdr(clas_state, 0));
-			//payloadlen = clas_state->len - offset;
 
 			pkt_types_t new = PT_PUSH_PROTO(clas_state, GRE4);
 			if(unlikely(new == PT_INVALID))
@@ -609,7 +607,7 @@ void* push_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether
 													sizeof(cpc_gre_key_hdr_t) + // no seqno!
 													payloadlen));
 			set_ipv4_proto(ipv4_header, IP_PROTO_GRE);
-			set_ipv4_ident(ipv4_header, ident);
+			set_ipv4_ident(ipv4_header, 0);
 			set_ipv4_src(ipv4_header, 0);
 			set_ipv4_dst(ipv4_header, 0);
 			set_ipv4_ttl(ipv4_header, ip_ttl);

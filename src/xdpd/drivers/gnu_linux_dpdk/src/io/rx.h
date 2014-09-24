@@ -118,7 +118,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 
 		//Increment port RX statistics
 		port->stats.rx_packets++;
-		port->stats.rx_bytes += mbuf->pkt.pkt_len;
+		port->stats.rx_bytes += mbuf->pkt_len;
 
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
 		assert(mbuf->pkt.nb_segs == 1);
@@ -135,7 +135,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		}else
 #endif
 		{
-			tmp_port = phy_port_mapping[mbuf->pkt.in_port];
+			tmp_port = phy_port_mapping[mbuf->pkt.port];
 		}
 
 		if(unlikely(!tmp_port)){

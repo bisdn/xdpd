@@ -82,6 +82,9 @@
 	#ifndef DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW
 		#define DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW
 	#endif
+	#ifndef DONT_CALCULATE_GRE_CHECKSUM_IN_SW
+		#define DONT_CALCULATE_GRE_CHECKSUM_IN_SW
+	#endif
 #endif /* Checksums */
 
 //Check for the existance of GET_CLAS_STATE_PTR() MACRO
@@ -141,6 +144,18 @@ void calculate_checksums_in_software(datapacket_t* pkt){
 				get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
 				get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_icmpv4_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) );
 			#endif /* DONT_CALCULATE_ICMPV4_CHECKSUM_IN_SW */
+
+		} else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_GRE_CHECKSUM_IN_SW ) && get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
+
+			#ifndef DONT_CALCULATE_GRE_CHECKSUM_IN_SW
+
+			grev4_calc_checksum(
+								get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
+								*get_ipv4_src(fipv4),
+								*get_ipv4_dst(fipv4),
+								*get_ipv4_proto(fipv4),
+								get_pkt_len(pkt, GET_CLAS_STATE_PTR(pkt) , get_gre_hdr( GET_CLAS_STATE_PTR(pkt) ,0), NULL) );
+			#endif /* DONT_CALCULATE_GRE_CHECKSUM_IN_SW */
 		}
 	}
 
@@ -179,6 +194,17 @@ void calculate_checksums_in_software(datapacket_t* pkt){
 					ICMPV6_IP_PROTO,
 					get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_icmpv6_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) );
 			#endif /* DONT_CALCULATE_ICMPV6_CHECKSUM_IN_SW */
+
+		} else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_GRE_CHECKSUM_IN_SW ) && (get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) {
+
+			#ifndef DONT_CALCULATE_GRE_CHECKSUM_IN_SW
+			grev6_calc_checksum(
+					get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0),
+					*get_ipv6_src(fipv6),
+					*get_ipv6_dst(fipv6),
+					GRE_IP_PROTO,
+					get_pkt_len(pkt,  GET_CLAS_STATE_PTR(pkt) , get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0), NULL) );
+			#endif /* DONT_CALCULATE_GRE_CHECKSUM_IN_SW */
 		}
 	}
 
@@ -946,6 +972,45 @@ uint64_t* platform_packet_get_wlan_address_3(datapacket_t * const pkt)
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	//TODO implement
 	return NULL;
+#else
+	return NULL;
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
+}
+
+STATIC_PACKET_INLINE__
+uint16_t* platform_packet_get_gre_version(datapacket_t * const pkt)
+{
+
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	if ((NULL == get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return NULL;
+	return get_gre_version(get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0));
+#else
+	return NULL;
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
+}
+
+STATIC_PACKET_INLINE__
+uint16_t* platform_packet_get_gre_prot_type(datapacket_t * const pkt)
+{
+
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	if ((NULL == get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return NULL;
+	return get_gre_prot_type(get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0));
+#else
+	return NULL;
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
+}
+
+STATIC_PACKET_INLINE__
+uint32_t* platform_packet_get_gre_key(datapacket_t * const pkt)
+{
+
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	if ((NULL == get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return NULL;
+	return get_gre_key(get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0));
 #else
 	return NULL;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
@@ -1926,6 +1991,45 @@ void platform_packet_set_wlan_address_3(datapacket_t* pkt, uint64_t address_3)
 
 }
 
+STATIC_PACKET_INLINE__
+void platform_packet_set_gre_version(datapacket_t* pkt, uint16_t version)
+{
+
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	if ((NULL == get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
+	set_gre_version(get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0), version);
+#else
+	return;
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_gre_prot_type(datapacket_t* pkt, uint16_t prot_type)
+{
+
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	if ((NULL == get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
+	set_gre_prot_type(get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0), prot_type);
+#else
+	return;
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_set_gre_key(datapacket_t* pkt, uint32_t key)
+{
+
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	if ((NULL == get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) return;
+	set_gre_key(get_gre_hdr( GET_CLAS_STATE_PTR(pkt) , 0), key);
+#else
+	return;
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
+}
+
 
 STATIC_PACKET_INLINE__
 void platform_packet_pop_gtp(datapacket_t* pkt, uint16_t ether_type)
@@ -2000,6 +2104,29 @@ void platform_packet_push_wlan(datapacket_t* pkt)
 
 #ifndef EMPTY_PACKET_PROCESSING_ROUTINES
 	//TODO: implement
+#else
+	return;
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_pop_gre(datapacket_t* pkt, uint16_t ether_type)
+{
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	pop_gre(pkt, GET_CLAS_STATE_PTR(pkt), ether_type);
+#else
+	return;
+#endif /* EMPTY_PACKET_PROCESSING_ROUTINES */
+
+}
+
+STATIC_PACKET_INLINE__
+void platform_packet_push_gre(datapacket_t* pkt, uint16_t ether_type)
+{
+
+#ifndef EMPTY_PACKET_PROCESSING_ROUTINES
+	push_gre(pkt, GET_CLAS_STATE_PTR(pkt), ether_type);
 #else
 	return;
 #endif /* EMPTY_PACKET_PROCESSING_ROUTINES */

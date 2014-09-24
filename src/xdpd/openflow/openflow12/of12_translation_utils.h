@@ -20,6 +20,7 @@
 #include <rofl/common/openflow/experimental/actions/gtp_actions.h>
 #include <rofl/common/openflow/experimental/actions/capwap_actions.h>
 #include <rofl/common/openflow/experimental/actions/wlan_actions.h>
+#include <rofl/common/openflow/experimental/actions/gre_actions.h>
 
 /**
 * @file of12_translation_utils.h

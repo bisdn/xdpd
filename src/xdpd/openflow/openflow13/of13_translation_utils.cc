@@ -550,6 +550,27 @@ of13_translation_utils::of13_map_flow_entry_matches(
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
+	try {
+		rofl::openflow::experimental::gre::coxmatch_ofx_gre_version oxm_gre_version(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_VERSION));
+		match = of1x_init_gre_version_match(oxm_gre_version.get_u16value());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
+	try {
+		rofl::openflow::experimental::gre::coxmatch_ofx_gre_prot_type oxm_gre_prot_type(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_PROT_TYPE));
+		match = of1x_init_gre_prot_type_match(oxm_gre_prot_type.get_u16value());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
+	try {
+		rofl::openflow::experimental::gre::coxmatch_ofx_gre_key oxm_gre_key(
+				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY));
+		match = of1x_init_gre_key_match(oxm_gre_key.get_u32value());
+		of1x_add_match_to_entry(entry, match);
+	} catch(...) {}
+
 	/* End of extensions */
 #endif
 }
@@ -922,6 +943,18 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					field.u64 = oxm.get_u48value().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_3, field, 0x0);
 				}break;
+				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_VERSION: {
+					field.u16 = oxm.get_u16value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_VERSION, field, 0x0);
+				}break;
+				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_PROT_TYPE: {
+					field.u16 = oxm.get_u16value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_PROT_TYPE, field, 0x0);
+				}break;
+				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_KEY: {
+					field.u32 = oxm.get_u32value();
+					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_KEY, field, 0x0);
+				}break;
 				}
 #endif
 			}
@@ -997,6 +1030,21 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					rofl::openflow::experimental::wlan::cofaction_exp_body_pop_wlan exp_body_pop_wlan(exp_body_wlan);
 					field.u16 = exp_body_pop_wlan.get_ether_type();
 					action = of1x_init_packet_action( OF1X_AT_POP_WLAN, field, 0x0);
+				}break;
+				}
+			} break;
+			case rofl::openflow::experimental::gre::GRE_EXP_ID: {
+				rofl::openflow::experimental::gre::cofaction_exp_body_gre exp_body_gre(actions.get_action_experimenter(index).get_exp_body());
+				switch (exp_body_gre.get_exp_type()) {
+				case rofl::openflow::experimental::gre::GRE_ACTION_PUSH_GRE:{
+					rofl::openflow::experimental::gre::cofaction_exp_body_push_gre exp_body_push_gre(exp_body_gre);
+					field.u16 = exp_body_push_gre.get_ether_type();
+					action = of1x_init_packet_action( OF1X_AT_PUSH_GRE, field, 0x0);
+				}break;
+				case rofl::openflow::experimental::gre::GRE_ACTION_POP_GRE:{
+					rofl::openflow::experimental::gre::cofaction_exp_body_pop_gre exp_body_pop_gre(exp_body_gre);
+					field.u16 = exp_body_pop_gre.get_ether_type();
+					action = of1x_init_packet_action( OF1X_AT_POP_GRE, field, 0x0);
 				}break;
 				}
 			} break;
@@ -1265,6 +1313,15 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_WLAN_ADDRESS_3:
 				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3(cmacaddr(of1x_get_match_value64(m)), cmacaddr(of1x_get_match_mask64(m))));
 				break;
+			case OF1X_MATCH_GRE_VERSION:
+				match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_version(of1x_get_match_value16(m)));
+				break;
+			case OF1X_MATCH_GRE_PROT_TYPE:
+				match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_prot_type(of1x_get_match_value16(m)));
+				break;
+			case OF1X_MATCH_GRE_KEY:
+				match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_key(of1x_get_match_value32(m)));
+				break;
 #endif
 			default:
 				break;
@@ -1525,6 +1582,12 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		} break;
 #ifdef EXPERIMENTAL
 		/* Extensions */
+		case OF1X_AT_POP_GRE: {
+			actions.add_action_experimenter(index).
+					set_exp_id(rofl::openflow::experimental::gre::GRE_EXP_ID);
+			actions.set_action_experimenter(index).
+					set_exp_body(rofl::openflow::experimental::gre::cofaction_exp_body_pop_gre(of1x_get_packet_action_field16(of1x_action)));
+		} break;
 		case OF1X_AT_POP_WLAN: {
 			actions.add_action_experimenter(index).
 					set_exp_id(rofl::openflow::experimental::wlan::WLAN_EXP_ID);
@@ -1572,6 +1635,12 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 					set_exp_id(rofl::openflow::experimental::wlan::WLAN_EXP_ID);
 			actions.set_action_experimenter(index).
 					set_exp_body(rofl::openflow::experimental::wlan::cofaction_exp_body_push_wlan(of1x_get_packet_action_field16(of1x_action)));
+		} break;
+		case OF1X_AT_PUSH_GRE: {
+			actions.add_action_experimenter(index).
+					set_exp_id(rofl::openflow::experimental::gre::GRE_EXP_ID);
+			actions.set_action_experimenter(index).
+					set_exp_body(rofl::openflow::experimental::gre::cofaction_exp_body_push_gre(of1x_get_packet_action_field16(of1x_action)));
 		} break;
 		/* End of extensions */
 #endif
@@ -1790,6 +1859,15 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 			uint64_t mac = of1x_get_packet_action_field64(of1x_action);
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3(cmacaddr(mac)));
 		} break;
+		case OF1X_AT_SET_FIELD_GRE_VERSION: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::gre::coxmatch_ofx_gre_version(of1x_get_packet_action_field16(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_GRE_PROT_TYPE: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::gre::coxmatch_ofx_gre_prot_type(of1x_get_packet_action_field16(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_GRE_KEY: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::gre::coxmatch_ofx_gre_key(of1x_get_packet_action_field32(of1x_action)));
+		} break;
 		/* End of extensions */
 #endif
 
@@ -1987,6 +2065,14 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 		uint64_t mac = packet_matches_get_wlan_address_3_value(pm);
 		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3(cmacaddr(mac)));
 	}
+
+	//GRE
+	if(packet_matches_get_gre_version_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_version(packet_matches_get_gre_version_value(pm)));
+	if(packet_matches_get_gre_prot_type_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_prot_type(packet_matches_get_gre_prot_type_value(pm)));
+	if(packet_matches_get_gre_key_value(pm))
+		match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_key(packet_matches_get_gre_key_value(pm)));
 #endif
 }
 

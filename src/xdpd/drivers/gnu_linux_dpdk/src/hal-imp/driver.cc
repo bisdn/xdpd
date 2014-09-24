@@ -98,6 +98,10 @@ hal_result_t hal_driver_init(const char* extra_params){
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
 
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
+	rte_kni_init(GNU_LINUX_DPDK_ENABLE_MAX_KNI_IFACES);
+#endif
+
 	//Init bufferpool
 	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
 

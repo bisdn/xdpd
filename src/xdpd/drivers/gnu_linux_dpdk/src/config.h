@@ -24,6 +24,8 @@
 //Enable NF capability
 #define GNU_LINUX_DPDK_ENABLE_NF
 
+#define GNU_LINUX_DPDK_ENABLE_MAX_KNI_IFACES 4
+
 /**
 *	Uncomment the following line to enable the samaphore and implement a batch
 *	meachanism in the DPDK secondary processes NF

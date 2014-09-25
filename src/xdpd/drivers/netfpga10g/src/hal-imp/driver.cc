@@ -35,7 +35,7 @@ static of_switch_t* sw=NULL;
 * @brief   Initializes driver. Before using the HAL_DRIVER routines, higher layers must allow driver to initialize itself
 * @ingroup driver_management
 */
-hal_result_t hal_driver_init(const char* extra_params){
+hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_params){
 
 	ROFL_INFO("["DRIVER_NAME"] calling hal_driver_init()\n");
 	ROFL_ERR("["DRIVER_NAME"] !!!!!!!!! WARNING: NetFPGA 10G driver is experimental. Be advised. !!!!!!!!!\n");
@@ -63,8 +63,9 @@ hal_result_t hal_driver_init(const char* extra_params){
 	//Initialize some form of background task manager
 	launch_background_tasks_manager();
 	
-	//And initialize or setup any other state your platform needs...	
-	
+	//We don't support any HAL extension
+	memset(extensions, 0, sizeof(hal_extension_ops_t));
+
 	return HAL_SUCCESS; 
 }
 

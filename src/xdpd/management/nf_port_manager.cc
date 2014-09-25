@@ -1,5 +1,6 @@
 #include "nf_port_manager.h"
 #include <assert.h>
+#include "system_manager.h"
  
 using namespace rofl;
 using namespace xdpd;
@@ -13,6 +14,12 @@ pthread_mutex_t nf_port_manager::mutex = PTHREAD_MUTEX_INITIALIZER;
 //
 void nf_port_manager::create_nf_port(std::string& nf_name, std::string& nf_port_name, port_type_t nf_type)
 {
+
+	hal_extension_ops_t* ops = system_manager::__get_driver_hal_extension_ops();
+	
+	if(!ops->nf_ports.create_nf_port)
+		throw eNFPMmNotsupportedByDriver(); 
+
 	if(nf_type == PORT_TYPE_NF_NATIVE)
 	{
 		ROFL_ERR("%s ERROR: only SHMEM or EXTERNAL types are currently implemented\n", MODULE_NAME);
@@ -30,7 +37,7 @@ void nf_port_manager::create_nf_port(std::string& nf_name, std::string& nf_port_
 		throw eNFPMmInvalidNF();
 	}
 	
-	if(hal_driver_nf_create_nf_port(nf_name.c_str(), nf_port_name.c_str(), nf_type) != HAL_SUCCESS)
+	if((*ops->nf_ports.create_nf_port)(nf_name.c_str(), nf_port_name.c_str(), nf_type) != HAL_SUCCESS)
 	{
 		pthread_mutex_unlock(&nf_port_manager::mutex);
 		assert(0);
@@ -48,6 +55,11 @@ void nf_port_manager::create_nf_port(std::string& nf_name, std::string& nf_port_
 
 void nf_port_manager::destroy_nf_port(std::string& nf_port_name)
 {
+
+	hal_extension_ops_t* ops = system_manager::__get_driver_hal_extension_ops();
+	
+	if(!ops->nf_ports.destroy_nf_port)
+		throw eNFPMmNotsupportedByDriver();
 	// Serialize
 	pthread_mutex_lock(&nf_port_manager::mutex);
 	
@@ -59,7 +71,7 @@ void nf_port_manager::destroy_nf_port(std::string& nf_port_name)
 		throw eNFPMmInvalidNF();
 	}
 	
-	if(hal_driver_nf_destroy_nf_port(nf_port_name.c_str()) != HAL_SUCCESS)
+	if((*ops->nf_ports.destroy_nf_port)(nf_port_name.c_str()) != HAL_SUCCESS)
 	{
 		pthread_mutex_unlock(&nf_port_manager::mutex);
 		assert(0);

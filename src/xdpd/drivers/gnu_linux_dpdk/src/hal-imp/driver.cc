@@ -31,6 +31,10 @@
 #include "../io/pktin_dispatcher.h"
 #include "../processing/processing.h"
 
+//Extensions
+#include "nf_extensions.h"
+//+] Add more here...
+
 extern int optind; 
 struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
 
@@ -55,7 +59,7 @@ using namespace xdpd::gnu_linux;
 */
 
 
-hal_result_t hal_driver_init(const char* extra_params){
+hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_params){
 
 	int ret;
 	const char* argv_fake[] = {"xdpd", "-c", XSTR(RTE_CORE_MASK), "-n", XSTR(RTE_MEM_CHANNELS), NULL};
@@ -127,6 +131,10 @@ hal_result_t hal_driver_init(const char* extra_params){
 	if(launch_background_tasks_manager() != ROFL_SUCCESS){
 		return HAL_FAILURE;
 	}
+
+	//Add extensions
+	extensions->nf_ports.create_nf_port = hal_driver_dpdk_nf_create_nf_port;
+	extensions->nf_ports.destroy_nf_port = hal_driver_dpdk_nf_destroy_nf_port;
 
 	return HAL_SUCCESS; 
 }

@@ -1,4 +1,0 @@
-MAINTAINERCLEANFILES = Makefile.in
-
-noinst_LTLIBRARIES = libxdpd_driver_gnu_linux_dpdk_hal_imp_nf.la
-libxdpd_driver_gnu_linux_dpdk_hal_imp_nf_la_SOURCES = nf_driver.cc

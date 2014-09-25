@@ -1,6 +1,5 @@
 #include "iface_manager.h"
 #include <rofl/datapath/hal/cmm.h>
-#include <rofl/datapath/hal/nf/nf_driver.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>

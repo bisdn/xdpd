@@ -153,10 +153,21 @@ public:
 		return std::string(info.extra_params);
 	}	
 
+	/**
+	* Retrieve the HAL ops for extensions. This function
+	* shall NEVER by called by management plugins directly 
+	*/
+	static hal_extension_ops_t* __get_driver_hal_extension_ops(void){
+		return &hal_extension_ops; 
+	}	
+
 private:
 
 	//Prevent double initializations
 	static bool inited;	
+
+	//HAL extension ops
+	static hal_extension_ops_t hal_extension_ops;
 
 	//Identification number (e.g. Serial number)
 	static std::string id;

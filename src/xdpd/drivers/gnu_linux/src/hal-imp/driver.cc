@@ -53,7 +53,7 @@ using namespace xdpd::gnu_linux;
 * @brief   Initializes driver. Before using the HAL_DRIVER routines, higher layers must allow driver to initialize itself
 * @ingroup driver_management
 */
-hal_result_t hal_driver_init(const char* extra_params){
+hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_params){
 
 	ROFL_INFO(DRIVER_NAME" Initializing driver...\n");
 	
@@ -75,6 +75,9 @@ hal_result_t hal_driver_init(const char* extra_params){
 	if(launch_background_tasks_manager() != ROFL_SUCCESS){
 		return HAL_FAILURE;
 	}
+
+	//We don't support any HAL extension
+	memset(extensions, 0, sizeof(hal_extension_ops_t));
 
 	return HAL_SUCCESS; 
 }

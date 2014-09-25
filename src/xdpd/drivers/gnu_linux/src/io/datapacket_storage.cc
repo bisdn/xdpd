@@ -1,6 +1,8 @@
 #include "datapacket_storage.h"
 #include <assert.h>
 #include <rofl/common/thread_helper.h>
+#include <rofl/datapath/pipeline/platform/packet.h>
+
 #include "../util/likely.h"
 
 using namespace xdpd::gnu_linux;
@@ -15,6 +17,13 @@ datapacket_storage::datapacket_storage(uint16_t size, uint16_t expiration) :
 
 datapacket_storage::~datapacket_storage()
 {
+	datapacket_t* pkt;
+	std::list<store_mapping>::iterator it;
+	for(it=store.begin();it!=store.end();it++){     
+		pkt = (*it).pkt; 
+		if(pkt)
+			platform_packet_drop(pkt);      
+	}
 	pthread_mutex_destroy(&lock);
 }
 

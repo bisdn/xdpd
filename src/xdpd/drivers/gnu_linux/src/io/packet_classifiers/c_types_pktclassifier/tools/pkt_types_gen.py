@@ -549,7 +549,7 @@ def push_transitions(f):
 				elif "ETHERNET" in type_:
 					new_type=type_.replace("ETHERNET", "ETHERNET/IPV4_noptions_0/GRE4")
 				elif "8023" in type_:
-					new_type=type_.replace("8023", "8023/IPV4_noptions_0/GRE4")
+					new_type=type_.replace("8023", "ETHERNET/IPV4_noptions_0/GRE4")
 				else:
 					new_type +="-1"
 					
@@ -564,7 +564,7 @@ def push_transitions(f):
 				elif "ETHERNET" in type_:
 					new_type=type_.replace("ETHERNET", "ETHERNET/IPV6/GRE6")
 				elif "8023" in type_:
-					new_type=type_.replace("8023", "8023/IPV6/GRE6")
+					new_type=type_.replace("8023", "ETHERNET/IPV6/GRE6")
 				else:
 					new_type +="-1"
 					

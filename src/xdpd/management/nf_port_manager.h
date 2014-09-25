@@ -11,8 +11,6 @@
 
 #include <rofl/common/croflexception.h>
 #include <rofl/common/utils/c_logger.h>
-#include <rofl/datapath/hal/nf/nf_driver.h>
-
 #include "port_manager.h"
 
 /**
@@ -25,8 +23,9 @@
 namespace xdpd {
 
 class eNFPMmBase			: public rofl::RoflException {};
-class eNFPMmInvalidNF	: public eNFPMmBase {};
-class eNFPMmUnknownError : public eNFPMmBase {};
+class eNFPMmInvalidNF			: public eNFPMmBase {};
+class eNFPMmNotsupportedByDriver	: public eNFPMmBase {};
+class eNFPMmUnknownError 		: public eNFPMmBase {};
 
 
 /**

@@ -21,10 +21,12 @@
 /*
 *	NF stuffs
 */
-//Enable NF capability
+
+//Enable NF extensions
 #define GNU_LINUX_DPDK_ENABLE_NF
 
-#define GNU_LINUX_DPDK_ENABLE_MAX_KNI_IFACES 4
+//Maximum number of KNI interfaces 
+#define GNU_LINUX_DPDK_MAX_KNI_IFACES 4
 
 /**
 *	Uncomment the following line to enable the samaphore and implement a batch

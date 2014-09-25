@@ -16,7 +16,10 @@ v0.6.0
 
 v0.5.1
 
+[+] Distributing default xdpd.conf during `make install`
+
 [+][gnu-linux][gnu-linux-dpdk] GTP push/pop actions revised
+[B][gnu-linux][gnu-linux-dpdk] Fixed stored buffer leak during LSI destruction
 [B][gnu-linux][gnu-linux-dpdk] preserve checksum calculation flags in function hal_driver_of1x_process_packet_out
 
 v0.5.0

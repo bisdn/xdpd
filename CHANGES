@@ -37,6 +37,9 @@ v0.5.0
 
 [B][gnu-linux][gnu-linux-dpdk] Fixed bug during replication of packets
 
+
+v0.4.6
+v0.4.5
 v0.4.4
 
 [B] Fix compile errors on older gcc (e.g. v4.4) and old kernels (up to 2.6) where TP_STATUS_VLAN_VALID was not defined

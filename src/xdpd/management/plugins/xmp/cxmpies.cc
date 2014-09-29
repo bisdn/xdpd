@@ -331,12 +331,12 @@ cxmpies::drop_ie_dpid()
 	xmpmap.erase(XMPIET_DPID);
 }
 
-
 bool
 cxmpies::has_ie_dpid() const
 {
 	return (xmpmap.find(XMPIET_DPID) != xmpmap.end());
 }
+
 
 cxmpie_name&
 cxmpies::add_ie_lsiname()
@@ -374,6 +374,12 @@ cxmpies::drop_ie_lsiname()
 	}
 	delete xmpmap[XMPIET_LSINAME];
 	xmpmap.erase(XMPIET_LSINAME);
+}
+
+bool
+cxmpies::has_ie_lsiname() const
+{
+	return (xmpmap.find(XMPIET_LSINAME) != xmpmap.end());
 }
 
 
@@ -415,11 +421,10 @@ cxmpies::drop_ie_lsiinfo()
 	xmpmap.erase(XMPIET_LSIINFO);
 }
 
-
 bool
-cxmpies::has_ie_lsiname() const
+cxmpies::has_ie_lsiinfo() const
 {
-	return (xmpmap.find(XMPIET_LSINAME) != xmpmap.end());
+	return (xmpmap.find(XMPIET_LSIINFO) != xmpmap.end());
 }
 
 

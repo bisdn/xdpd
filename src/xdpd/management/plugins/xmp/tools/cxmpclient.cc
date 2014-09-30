@@ -17,7 +17,7 @@ cxmpclient::cxmpclient() :
 		msg_bytes_read(0),
 		observer(NULL),
 		auto_exit(true),
-		exit_timeout(2)
+		exit_timeout(5)
 {
 	socket = rofl::csocket::csocket_factory(rofl::csocket::SOCKET_TYPE_PLAIN, this);
 
@@ -386,12 +386,18 @@ cxmpclient::lsi_info()
 }
 
 void
-cxmpclient::lsi_create(uint64_t dpid, std::string const& lsi_name)
+cxmpclient::lsi_create(uint64_t dpid, std::string const& lsi_name, std::list<struct xdpd::mgmt::protocol::controller>& controller)
 {
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_CREATE);
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 	msg.get_xmpies().add_ie_lsiname().set_name(lsi_name);
+
+	assert(controller.size()); // enforce at least one controller
+
+	for (std::list<struct xdpd::mgmt::protocol::controller>::const_iterator iter = controller.begin(); iter != controller.end(); ++iter) {
+		msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_controller(*iter));
+	}
 
 	std::cerr << "[xmpclient] sending Lsi-Create request:" << std::endl << msg;
 	send_message(msg);

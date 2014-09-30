@@ -81,7 +81,7 @@ public:
 	lsi_info();
 
 	void
-	lsi_create(uint64_t dpid, std::string const& lsi_name);
+	lsi_create(uint64_t dpid, std::string const& lsi_name, std::list<struct xdpd::mgmt::protocol::controller>& controller);
 
 	void
 	lsi_destroy(const uint64_t dpid);

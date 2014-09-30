@@ -12,6 +12,7 @@
 #include "cxmpie_name.h"
 #include "cxmpie_portinfo.h"
 #include "cxmpie_lsiinfo.h"
+#include "cxmpie_controller.h"
 #include "xdpd_mgmt_protocol.h"
 
 namespace xdpd {
@@ -164,6 +165,9 @@ cxmpie_multipart::bakery(cxmpie *ref)
 		break;
 	case XMPIET_LSIINFO:
 		return new cxmpie_lsiinfo(*ref);
+		break;
+	case XMPIET_CONTROLLER:
+		return new cxmpie_controller(*ref);
 		break;
 	case XMPIET_MULTIPART:
 		// todo do we wanna have multipart in multipart?

@@ -8,13 +8,8 @@
 #ifndef MGMT_PROTOCOL_H_
 #define MGMT_PROTOCOL_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <inttypes.h>
-#ifdef __cplusplus
-}
-#endif
+#include <netinet/in.h>
 
 #define XMP_VERSION 1
 #define PORTNAMESIZE 32
@@ -71,6 +66,7 @@ enum xmpie_type_t {
 	XMPIET_PORTINFO		= 5,
 	XMPIET_LSINAME		= 6,
 	XMPIET_LSIINFO		= 7,
+	XMPIET_CONTROLLER	= 8,
 };
 
 struct xmp_ie_header_t {
@@ -130,6 +126,17 @@ struct xmp_ie_lsiinfo_t {
 	uint8_t		max_tables;
 } __attribute__((packed));
 
+struct xmp_ie_controller_t {
+	uint16_t	type;
+	uint16_t	len;	// including header and payload
+
+	char 		id[64];	// in yang its a int:uri, hence length is unspecified; todo do we need this?
+	char 		proto[4];
+
+	uint8_t		ip_domain;
+	uint32_t 	ip_address[4];
+	uint16_t 	port;
+} __attribute__((packed));
 
 #endif /* MGMT_PROTOCOL_H_ */
 

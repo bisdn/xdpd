@@ -141,6 +141,9 @@ cxmpies::map_and_insert(
 	case XMPIET_LSIINFO: {
 		xmpmap[XMPIET_LSIINFO] = new cxmpie_lsiinfo(xmpie);
 	} break;
+	case XMPIET_CONTROLLER: {
+		xmpmap[XMPIET_CONTROLLER] = new cxmpie_controller(xmpie);
+	} break;
 	default: {
 		xmpmap[xmpie.get_type()] = new cxmpie(xmpie);
 	};
@@ -425,6 +428,51 @@ bool
 cxmpies::has_ie_lsiinfo() const
 {
 	return (xmpmap.find(XMPIET_LSIINFO) != xmpmap.end());
+}
+
+
+cxmpie_controller&
+cxmpies::add_ie_controller()
+{
+	if (xmpmap.find(XMPIET_CONTROLLER) != xmpmap.end()) {
+		delete xmpmap[XMPIET_CONTROLLER];
+	}
+	xmpmap[XMPIET_CONTROLLER] = new cxmpie_controller();
+	return *(dynamic_cast<cxmpie_controller*>( xmpmap[XMPIET_CONTROLLER] ));
+}
+
+cxmpie_controller&
+cxmpies::set_ie_controller()
+{
+	if (xmpmap.find(XMPIET_CONTROLLER) == xmpmap.end()) {
+		xmpmap[XMPIET_CONTROLLER] = new cxmpie_controller();
+	}
+	return *(dynamic_cast<cxmpie_controller*>( xmpmap[XMPIET_CONTROLLER] ));
+}
+
+cxmpie_controller const&
+cxmpies::get_ie_controller() const
+{
+	if (xmpmap.find(XMPIET_CONTROLLER) == xmpmap.end()) {
+		throw eXmpIEsNotFound();
+	}
+	return *(dynamic_cast<cxmpie_controller const*>( xmpmap.at(XMPIET_CONTROLLER) ));
+}
+
+void
+cxmpies::drop_ie_controller()
+{
+	if (xmpmap.find(XMPIET_CONTROLLER) == xmpmap.end()) {
+		return;
+	}
+	delete xmpmap[XMPIET_CONTROLLER];
+	xmpmap.erase(XMPIET_CONTROLLER);
+}
+
+bool
+cxmpies::has_ie_controller() const
+{
+	return (xmpmap.find(XMPIET_CONTROLLER) != xmpmap.end());
 }
 
 

@@ -646,6 +646,13 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 	} else if (not msg.get_xmpies().has_ie_lsiname()) {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -LSINAME- IE, dropping message." << std::endl;
 		reply.set_type(XMPT_ERROR);
+
+	} else if (not msg.get_xmpies().has_ie_multipart() ||
+			not msg.get_xmpies().get_ie_multipart().get_ies().size() ||
+			XMPIET_CONTROLLER != msg.get_xmpies().get_ie_multipart().get_ies().front()->get_type() ) {
+
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
+		reply.set_type(XMPT_ERROR);
 	} else {
 
 		of_version_t version = OF_VERSION_13;
@@ -654,8 +661,44 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 		unsigned int num_of_tables = 8;
 		int ma_list[OF1X_MAX_FLOWTABLES] = { 0 }; /* todo currently it is only first ma for all tables */
 		int reconnect_start_timeout = 5;
+
+
+		const std::deque<cxmpie*> & ies = msg.get_xmpies().get_ie_multipart().get_ies();
+
+		cxmpie_controller* controller = dynamic_cast<cxmpie_controller*>(ies.front());
+
 		enum rofl::csocket::socket_type_t socket_type = csocket::SOCKET_TYPE_PLAIN;
+		if (0 == controller->get_proto().compare(std::string("tcp"))) {
+			// keep socket type plain
+#ifdef ROFL_HAVE_OPENSSL
+		} else if (0 == controller->get_proto().compare(std::string("tls"))) {
+			socket_type = csocket::SOCKET_TYPE_OPENSSL;
+#endif
+		} else {
+
+			rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
+			reply.set_type(XMPT_ERROR);
+
+			assert(0); // fixme send reply
+		}
+
 		cparams socket_params(csocket::get_default_params(socket_type)); /* fixme connection should be added later */
+
+		std::cerr << "asdf" << std::endl;
+		if (AF_INET == controller->get_ip_domain()) {
+			socket_params.set_param(csocket::PARAM_KEY_DOMAIN) = std::string("inet");
+			caddress tmp(controller->get_ip_address());
+			socket_params.set_param(csocket::PARAM_KEY_REMOTE_HOSTNAME) = static_cast<const caddress_in4&>(tmp).str();
+		} else if (AF_INET6 == controller->get_ip_domain()) {
+			socket_params.set_param(csocket::PARAM_KEY_DOMAIN) = std::string("inet6");
+			caddress tmp(controller->get_ip_address());
+			socket_params.set_param(csocket::PARAM_KEY_REMOTE_HOSTNAME) = static_cast<const caddress_in6&>(tmp).str();
+		} else {
+			assert(0);
+		}
+
+		// todo move to c++11 and use to_string
+		socket_params.set_param(csocket::PARAM_KEY_REMOTE_PORT) = dynamic_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << controller->get_port() ) ).str();
 
 		try {
 			switch_manager::create_switch(version, dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
@@ -672,6 +715,8 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
 			reply.set_type(XMPT_ERROR);
 		}
+
+		// fixme attach other controllers
 
 	}
 

@@ -24,6 +24,7 @@ extern "C" {
 #include "cxmpie_portinfo.h"
 #include "cxmpie_dpid.h"
 #include "cxmpie_lsiinfo.h"
+#include "cxmpie_controller.h"
 #include "cxmpie_multipart.h"
 #include "xdpd_mgmt_protocol.h"
 #include "rofl/common/croflexception.h"
@@ -236,6 +237,24 @@ public:
 	has_ie_lsiinfo() const;
 
 	/*
+	 * information element: controller
+	 */
+	cxmpie_controller&
+	add_ie_controller();
+
+	cxmpie_controller&
+	set_ie_controller();
+
+	cxmpie_controller const&
+	get_ie_controller() const;
+
+	void
+	drop_ie_controller();
+
+	bool
+	has_ie_controller() const;
+
+	/*
 	 * information element: multipart
 	 */
 	cxmpie_multipart&
@@ -292,6 +311,9 @@ public:
 			} break;
 			case XMPIET_LSIINFO: {
 				os << "  " << dynamic_cast<cxmpie_lsiinfo const&>( *(it->second) );
+			} break;
+			case XMPIET_CONTROLLER: {
+				os << "  " << dynamic_cast<cxmpie_controller const&>( *(it->second) );
 			} break;
 			default: {
 				os << "  " << *(it->second);

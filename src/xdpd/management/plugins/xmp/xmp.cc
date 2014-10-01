@@ -272,6 +272,11 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 	default: {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp request with unknown command:"
 				<< (int)msg.get_xmpies().get_ie_command().get_command() << ", dropping message." << std::endl;
+
+		cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_ERROR);
+		reply->set_xid(msg.get_xid());
+
+		socket.send(reply);
 		return;
 	};
 	}

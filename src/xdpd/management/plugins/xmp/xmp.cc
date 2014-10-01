@@ -646,7 +646,7 @@ xmp::controller_connect(uint64_t dpid, std::deque<cxmpie*>::const_iterator iter,
 			return -1;
 		}
 
-		cparams socket_params(csocket::get_default_params(socket_type)); /* fixme connection should be added later */
+		cparams socket_params(csocket::get_default_params(socket_type));
 
 		if (AF_INET == controller->get_ip_domain()) {
 			socket_params.set_param(csocket::PARAM_KEY_DOMAIN) = std::string("inet");
@@ -720,7 +720,7 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 			return;
 		}
 
-		cparams socket_params(csocket::get_default_params(socket_type)); /* fixme connection should be added later */
+		cparams socket_params(csocket::get_default_params(socket_type));
 
 		if (AF_INET == controller->get_ip_domain()) {
 			socket_params.set_param(csocket::PARAM_KEY_DOMAIN) = std::string("inet");

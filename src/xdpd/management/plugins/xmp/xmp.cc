@@ -286,8 +286,8 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 void
 xmp::handle_port_attach(csocket& socket, cxmpmsg& msg)
 {
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	std::string portname;
 	uint64_t dpid = 0;
@@ -315,41 +315,38 @@ xmp::handle_port_attach(csocket& socket, cxmpmsg& msg)
 	} catch(eOfSmDoesNotExist& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed, LSI does not exist" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed (ePmInvalidPort)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(ePmUnknownError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed (ePmUnknownError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed (eOfSmGeneralError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 	}
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	socket.send(reply);
 }
 
 
 void
 xmp::handle_port_detach(csocket& socket, cxmpmsg& msg)
 {
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	std::string portname;
 	uint64_t dpid = 0;
@@ -375,45 +372,42 @@ xmp::handle_port_detach(csocket& socket, cxmpmsg& msg)
 	} catch(eOfSmDoesNotExist& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed, LSI does not exist (eOfSmDoesNotExist)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmInvalidPort)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(ePmPortNotAttachedError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmPortNotAttachedError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(ePmUnknownError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed, port does not exist (ePmUnknownError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed (eOfSmGeneralError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] detaching port:" << portname
 				<< " from dpid:" << (unsigned long long)dpid << " failed." << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 	}
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	socket.send(reply);
 }
 
 
 void
 xmp::handle_port_enable(csocket& socket, cxmpmsg& msg)
 {
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	std::string portname;
 
@@ -430,32 +424,29 @@ xmp::handle_port_enable(csocket& socket, cxmpmsg& msg)
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (ePmInvalidPort)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(ePmUnknownError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (ePmUnknownError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed (eOfSmGeneralError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " up failed" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 	}
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	socket.send(reply);
 }
 
 
 void
 xmp::handle_port_disable(csocket& socket, cxmpmsg& msg)
 {
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	std::string portname;
 
@@ -472,25 +463,22 @@ xmp::handle_port_disable(csocket& socket, cxmpmsg& msg)
 
 	} catch(ePmInvalidPort& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (ePmInvalidPort)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(ePmUnknownError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (ePmUnknownError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch(eOfSmGeneralError& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed (eOfSmGeneralError)" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} catch (...) {
 		rofl::logging::error << "[xdpd][plugin][xmp] bringing port:" << portname << " down failed" << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 	}
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	socket.send(reply);
 }
 
 
@@ -508,8 +496,8 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 		rofl::logging::debug << "[xdpd][plugin][xmp] only ports of dpid=" << dpid << std::endl;
 	}
 
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	// get all ports
 	std::set<std::string> all_ports = port_manager::list_available_port_names();
@@ -534,15 +522,14 @@ xmp::handle_port_list(csocket& socket, cxmpmsg& msg)
 			}
 		}
 
-		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_name(XMPIET_PORTNAME, *iter));
+		reply->get_xmpies().set_ie_multipart().push_back(new cxmpie_name(XMPIET_PORTNAME, *iter));
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	reply->resize(reply->length());
+	reply->pack(reply->somem(), reply->memlen());
+	socket.send(reply);
 }
 
 void
@@ -550,8 +537,8 @@ xmp::handle_port_info(csocket& socket, cxmpmsg& msg)
 {
 	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
 
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	// get all ports
 	std::set<std::string> all_ports = port_manager::list_available_port_names();
@@ -568,15 +555,14 @@ xmp::handle_port_info(csocket& socket, cxmpmsg& msg)
 		}
 
 
-		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_portinfo(snapshot));
+		reply->get_xmpies().set_ie_multipart().push_back(new cxmpie_portinfo(snapshot));
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	reply->resize(reply->length());
+	reply->pack(reply->somem(), reply->memlen());
+	socket.send(reply);
 }
 
 void
@@ -584,23 +570,22 @@ xmp::handle_lsi_list(rofl::csocket& socket, cxmpmsg& msg)
 {
 	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
 
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	// get all ports
 	std::list<std::string> all_lsi = switch_manager::list_sw_names();
 
 	for (std::list<std::string>::const_iterator iter = all_lsi.begin(); iter != all_lsi.end(); ++iter) {
 		rofl::logging::trace << "[xdpd][plugin][xmp] got lsi " << *iter << std::endl;
-		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_name(XMPIET_LSINAME, *iter));
+		reply->get_xmpies().set_ie_multipart().push_back(new cxmpie_name(XMPIET_LSINAME, *iter));
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	reply->resize(reply->length());
+	reply->pack(reply->somem(), reply->memlen());
+	socket.send(reply);
 }
 
 void
@@ -608,8 +593,8 @@ xmp::handle_lsi_info(rofl::csocket& socket, cxmpmsg& msg)
 {
 	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
 
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	// get all ports
 	std::list<std::string> all_lsi = switch_manager::list_sw_names();
@@ -626,15 +611,14 @@ xmp::handle_lsi_info(rofl::csocket& socket, cxmpmsg& msg)
 			rofl::logging::error << "[xdpd][plugin][xmp] failed to retrieve snapshot of lsi " << *iter << std::endl;
 			continue;
 		}
-		reply.get_xmpies().set_ie_multipart().push_back(new cxmpie_lsiinfo(snapshot));
+		reply->get_xmpies().set_ie_multipart().push_back(new cxmpie_lsiinfo(snapshot));
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	reply->resize(reply->length());
+	reply->pack(reply->somem(), reply->memlen());
+	socket.send(reply);
 }
 
 void
@@ -642,22 +626,22 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 {
 	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
 
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	if (not msg.get_xmpies().has_ie_dpid()) {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -DPID- IE, dropping message." << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 	} else if (not msg.get_xmpies().has_ie_lsiname()) {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -LSINAME- IE, dropping message." << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} else if (not msg.get_xmpies().has_ie_multipart() ||
 			not msg.get_xmpies().get_ie_multipart().get_ies().size() ||
 			XMPIET_CONTROLLER != msg.get_xmpies().get_ie_multipart().get_ies().front()->get_type() ) {
 
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 	} else {
 
 		of_version_t version = OF_VERSION_13;
@@ -682,7 +666,7 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 		} else {
 
 			rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 
 			assert(0); // fixme send reply
 		}
@@ -708,16 +692,16 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 			switch_manager::create_switch(version, dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
 		} catch (xdpd::eOfSmVersionNotSupported &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmVersionNotSupported: " << e << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		} catch (eOfSmExists &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmExists: " << e << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		} catch (eOfSmErrorOnCreation &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmErrorOnCreation: " << e << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		} catch (...) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		}
 
 		// fixme attach other controllers
@@ -726,10 +710,7 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	socket.send(reply);
 }
 
 void
@@ -737,12 +718,12 @@ xdpd::mgmt::protocol::xmp::handle_lsi_destroy(rofl::csocket& socket, cxmpmsg& ms
 {
 	rofl::logging::trace << "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__ << ": socket=" << socket << std::endl;
 
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	if (not msg.get_xmpies().has_ie_dpid()) {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -DPID- IE, dropping message." << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 	} else {
 
 		uint64_t dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
@@ -751,22 +732,19 @@ xdpd::mgmt::protocol::xmp::handle_lsi_destroy(rofl::csocket& socket, cxmpmsg& ms
 			switch_manager::destroy_switch(dpid);
 		} catch (xdpd::eOfSmDoesNotExist &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmDoesNotExist: " << e << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		} catch (eOfSmGeneralError &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmGeneralError: " << e << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		} catch (...) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		}
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	socket.send(reply);
 }
 
 
@@ -775,19 +753,19 @@ xmp::handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg)
 {
 	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
 
-	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
-	reply.set_xid(msg.get_xid());
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
 
 	if (not msg.get_xmpies().has_ie_dpid()) {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -DPID- IE, dropping message." << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 
 	} else if (not msg.get_xmpies().has_ie_multipart() ||
 			not msg.get_xmpies().get_ie_multipart().get_ies().size() ||
 			XMPIET_CONTROLLER != msg.get_xmpies().get_ie_multipart().get_ies().front()->get_type() ) {
 
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
-		reply.set_type(XMPT_ERROR);
+		reply->set_type(XMPT_ERROR);
 	} else {
 
 		try {
@@ -809,7 +787,7 @@ xmp::handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg)
 				} else {
 
 					rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
-					reply.set_type(XMPT_ERROR);
+					reply->set_type(XMPT_ERROR);
 
 					assert(0); // fixme send reply
 				}
@@ -836,23 +814,20 @@ xmp::handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg)
 
 		} catch (xdpd::eOfSmVersionNotSupported &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmVersionNotSupported: " << e << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		} catch (eOfSmExists &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmExists: " << e << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		} catch (eOfSmErrorOnCreation &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmErrorOnCreation: " << e << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		} catch (...) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
-			reply.set_type(XMPT_ERROR);
+			reply->set_type(XMPT_ERROR);
 		}
 	}
 
 	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
 
-	cmemory *mem = new cmemory(reply.length());
-	reply.pack(mem->somem(), mem->memlen());
-
-	socket.send(mem);
+	socket.send(reply);
 }

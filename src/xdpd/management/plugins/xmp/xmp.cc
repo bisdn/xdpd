@@ -671,7 +671,8 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 			rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
 			reply->set_type(XMPT_ERROR);
 
-			assert(0); // fixme send reply
+			socket.send(reply);
+			return;
 		}
 
 		cparams socket_params(csocket::get_default_params(socket_type)); /* fixme connection should be added later */

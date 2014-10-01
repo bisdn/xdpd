@@ -10,6 +10,7 @@
 
 #include <inttypes.h>
 #include <rofl/common/csocket.h>
+#include <deque>
 
 #include "../../switch_manager.h"
 #include "../../port_manager.h"
@@ -129,6 +130,9 @@ private:
 
 	void
 	handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg);
+
+	int
+	controller_connect(uint64_t dpid, std::deque<cxmpie*>::const_iterator iter, std::deque<cxmpie*>::const_iterator end);
 };
 
 }; // end of namespace protocol

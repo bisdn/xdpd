@@ -268,6 +268,9 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 	case XMPIEMCT_LSI_DESTROY: {
 		handle_lsi_destroy(socket, msg);
 	} break;
+	case XMPIEMCT_LSI_CONTROLLER_CONNECT: {
+		handle_lsi_connect_to_controller(socket, msg);
+	} break;
 	case XMPIEMCT_NONE:
 	default: {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp request with unknown command:"

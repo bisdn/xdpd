@@ -386,7 +386,7 @@ cxmpclient::lsi_info()
 }
 
 void
-cxmpclient::lsi_create(uint64_t dpid, std::string const& lsi_name, std::list<struct xdpd::mgmt::protocol::controller>& controller)
+cxmpclient::lsi_create(uint64_t dpid, std::string const& lsi_name, const std::list<struct xdpd::mgmt::protocol::controller>& controller)
 {
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_CREATE);
@@ -411,5 +411,22 @@ cxmpclient::lsi_destroy(const uint64_t dpid)
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
 	std::cerr << "[xmpclient] sending Lsi-Destroy request:" << std::endl << msg;
+	send_message(msg);
+}
+
+void
+xdpd::mgmt::protocol::cxmpclient::lsi_connect_to_controller(uint64_t dpid, const std::list<struct xdpd::mgmt::protocol::controller>& controller)
+{
+	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
+	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_CONTROLLER_CONNECT);
+	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
+
+	assert(controller.size());  // enforce at least one controller
+
+	for (std::list<struct xdpd::mgmt::protocol::controller>::const_iterator iter = controller.begin(); iter != controller.end(); ++iter) {
+		msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_controller(*iter));
+	}
+
+	std::cerr << "[xmpclient] sending Lsi-Create request:" << std::endl << msg;
 	send_message(msg);
 }

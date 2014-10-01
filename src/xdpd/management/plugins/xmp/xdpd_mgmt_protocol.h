@@ -34,6 +34,7 @@ enum xmpie_command_t {
 	XMPIEMCT_LSI_INFO			= 8,
 	XMPIEMCT_LSI_CREATE			= 9,
 	XMPIEMCT_LSI_DESTROY		= 10,
+	XMPIEMCT_LSI_CONTROLLER_CONNECT = 11,
 };
 
 struct xmp_header_t {

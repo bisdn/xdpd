@@ -684,7 +684,6 @@ xmp::handle_lsi_create(rofl::csocket& socket, cxmpmsg& msg)
 
 		cparams socket_params(csocket::get_default_params(socket_type)); /* fixme connection should be added later */
 
-		std::cerr << "asdf" << std::endl;
 		if (AF_INET == controller->get_ip_domain()) {
 			socket_params.set_param(csocket::PARAM_KEY_DOMAIN) = std::string("inet");
 			caddress tmp(controller->get_ip_address());
@@ -750,6 +749,94 @@ xdpd::mgmt::protocol::xmp::handle_lsi_destroy(rofl::csocket& socket, cxmpmsg& ms
 			reply.set_type(XMPT_ERROR);
 		} catch (eOfSmGeneralError &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmGeneralError: " << e << std::endl;
+			reply.set_type(XMPT_ERROR);
+		} catch (...) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
+			reply.set_type(XMPT_ERROR);
+		}
+	}
+
+	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
+
+	cmemory *mem = new cmemory(reply.length());
+	reply.pack(mem->somem(), mem->memlen());
+
+	socket.send(mem);
+}
+
+
+void
+xmp::handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg)
+{
+	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
+
+	cxmpmsg reply(XMP_VERSION, XMPT_REPLY);
+	reply.set_xid(msg.get_xid());
+
+	if (not msg.get_xmpies().has_ie_dpid()) {
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -DPID- IE, dropping message." << std::endl;
+		reply.set_type(XMPT_ERROR);
+
+	} else if (not msg.get_xmpies().has_ie_multipart() ||
+			not msg.get_xmpies().get_ie_multipart().get_ies().size() ||
+			XMPIET_CONTROLLER != msg.get_xmpies().get_ie_multipart().get_ies().front()->get_type() ) {
+
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
+		reply.set_type(XMPT_ERROR);
+	} else {
+
+		try {
+			uint64_t dpid = msg.get_xmpies().get_ie_dpid().get_dpid();
+			const std::deque<cxmpie*> & ies = msg.get_xmpies().get_ie_multipart().get_ies();
+
+			for (std::deque<cxmpie*>::const_iterator iter = ies.begin(); iter != ies.end(); ++iter) {
+
+				cxmpie_controller* controller = dynamic_cast<cxmpie_controller*>(*iter);
+				assert(controller);
+
+				enum rofl::csocket::socket_type_t socket_type = csocket::SOCKET_TYPE_PLAIN;
+				if (0 == controller->get_proto().compare(std::string("tcp"))) {
+					// keep socket type plain
+#ifdef ROFL_HAVE_OPENSSL
+				} else if (0 == controller->get_proto().compare(std::string("tls"))) {
+					socket_type = csocket::SOCKET_TYPE_OPENSSL;
+#endif
+				} else {
+
+					rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
+					reply.set_type(XMPT_ERROR);
+
+					assert(0); // fixme send reply
+				}
+
+				cparams socket_params(csocket::get_default_params(socket_type)); /* fixme connection should be added later */
+
+				if (AF_INET == controller->get_ip_domain()) {
+					socket_params.set_param(csocket::PARAM_KEY_DOMAIN) = std::string("inet");
+					caddress tmp(controller->get_ip_address());
+					socket_params.set_param(csocket::PARAM_KEY_REMOTE_HOSTNAME) = static_cast<const caddress_in4&>(tmp).str();
+				} else if (AF_INET6 == controller->get_ip_domain()) {
+					socket_params.set_param(csocket::PARAM_KEY_DOMAIN) = std::string("inet6");
+					caddress tmp(controller->get_ip_address());
+					socket_params.set_param(csocket::PARAM_KEY_REMOTE_HOSTNAME) = static_cast<const caddress_in6&>(tmp).str();
+				} else {
+					assert(0);
+				}
+
+				// todo move to c++11 and use to_string
+				socket_params.set_param(csocket::PARAM_KEY_REMOTE_PORT) = dynamic_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << controller->get_port() ) ).str();
+
+				switch_manager::rpc_connect_to_ctl(dpid, socket_type, socket_params);
+			}
+
+		} catch (xdpd::eOfSmVersionNotSupported &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmVersionNotSupported: " << e << std::endl;
+			reply.set_type(XMPT_ERROR);
+		} catch (eOfSmExists &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmExists: " << e << std::endl;
+			reply.set_type(XMPT_ERROR);
+		} catch (eOfSmErrorOnCreation &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmErrorOnCreation: " << e << std::endl;
 			reply.set_type(XMPT_ERROR);
 		} catch (...) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;

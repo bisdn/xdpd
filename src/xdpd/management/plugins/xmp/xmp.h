@@ -126,6 +126,9 @@ private:
 
 	void
 	handle_lsi_destroy(rofl::csocket& socket, cxmpmsg& msg);
+
+	void
+	handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg);
 };
 
 }; // end of namespace protocol

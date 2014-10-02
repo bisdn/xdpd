@@ -131,6 +131,9 @@ private:
 	void
 	handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg);
 
+	void
+	handle_lsi_cross_connect(rofl::csocket& socket, cxmpmsg& msg);
+
 	int
 	controller_connect(uint64_t dpid, std::deque<cxmpie*>::const_iterator iter, std::deque<cxmpie*>::const_iterator end);
 };

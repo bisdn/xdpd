@@ -415,7 +415,7 @@ cxmpclient::lsi_destroy(const uint64_t dpid)
 }
 
 void
-xdpd::mgmt::protocol::cxmpclient::lsi_connect_to_controller(uint64_t dpid, const std::list<struct xdpd::mgmt::protocol::controller>& controller)
+cxmpclient::lsi_connect_to_controller(uint64_t dpid, const std::list<struct xdpd::mgmt::protocol::controller>& controller)
 {
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_CONTROLLER_CONNECT);
@@ -427,6 +427,19 @@ xdpd::mgmt::protocol::cxmpclient::lsi_connect_to_controller(uint64_t dpid, const
 		msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_controller(*iter));
 	}
 
-	std::cerr << "[xmpclient] sending Lsi-Create request:" << std::endl << msg;
+	std::cerr << "[xmpclient] sending Lsi-Connect-To-Controller request:" << std::endl << msg;
+	send_message(msg);
+}
+
+void
+cxmpclient::lsi_cross_connect(const uint64_t dpid1, const uint64_t dpid2)
+{
+	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
+	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_XCONNNECT);
+
+	msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_dpid(dpid1));
+	msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_dpid(dpid2));
+
+	std::cerr << "[xmpclient] sending Lsi-Cross-Connect request:" << std::endl << msg;
 	send_message(msg);
 }

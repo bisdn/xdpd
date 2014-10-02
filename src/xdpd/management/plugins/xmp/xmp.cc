@@ -271,6 +271,9 @@ xmp::handle_request(csocket& socket, cxmpmsg& msg)
 	case XMPIEMCT_LSI_CONTROLLER_CONNECT: {
 		handle_lsi_connect_to_controller(socket, msg);
 	} break;
+	case XMPIEMCT_LSI_XCONNNECT: {
+		handle_lsi_cross_connect(socket, msg);
+	} break;
 	case XMPIEMCT_NONE:
 	default: {
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp request with unknown command:"
@@ -777,7 +780,7 @@ xdpd::mgmt::protocol::xmp::handle_lsi_destroy(rofl::csocket& socket, cxmpmsg& ms
 	reply->set_xid(msg.get_xid());
 
 	if (not msg.get_xmpies().has_ie_dpid()) {
-		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -DPID- IE, dropping message." << std::endl;
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Destroy request without -DPID- IE, dropping message." << std::endl;
 		reply->set_type(XMPT_ERROR);
 	} else {
 
@@ -811,14 +814,14 @@ xmp::handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg)
 	reply->set_xid(msg.get_xid());
 
 	if (not msg.get_xmpies().has_ie_dpid()) {
-		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -DPID- IE, dropping message." << std::endl;
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Connect-To-Controller request without -DPID- IE, dropping message." << std::endl;
 		reply->set_type(XMPT_ERROR);
 
 	} else if (not msg.get_xmpies().has_ie_multipart() ||
 			not msg.get_xmpies().get_ie_multipart().get_ies().size() ||
 			XMPIET_CONTROLLER != msg.get_xmpies().get_ie_multipart().get_ies().front()->get_type() ) {
 
-		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Create request without -CONTROLLER- IE, dropping message." << std::endl;
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Lsi-Connect-To-Controller request without -CONTROLLER- IE, dropping message." << std::endl;
 		reply->set_type(XMPT_ERROR);
 	} else {
 
@@ -839,6 +842,52 @@ xmp::handle_lsi_connect_to_controller(rofl::csocket& socket, cxmpmsg& msg)
 			reply->set_type(XMPT_ERROR);
 		} catch (eOfSmErrorOnCreation &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmErrorOnCreation: " << e << std::endl;
+			reply->set_type(XMPT_ERROR);
+		} catch (...) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
+			reply->set_type(XMPT_ERROR);
+		}
+	}
+
+	rofl::logging::debug << "[xdpd][plugin][xmp] sending: " << reply;
+
+	socket.send(reply);
+}
+
+void
+xmp::handle_lsi_cross_connect(rofl::csocket& socket, cxmpmsg& msg)
+{
+	rofl::logging::trace<< "[xdpd][plugin][xmp] " << __PRETTY_FUNCTION__  << ": socket=" << socket << std::endl;
+
+	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
+	reply->set_xid(msg.get_xid());
+
+	if (not msg.get_xmpies().has_ie_multipart() ||
+			2 != msg.get_xmpies().get_ie_multipart().get_ies().size() ||
+			XMPIET_DPID != msg.get_xmpies().get_ie_multipart().get_ies().front()->get_type() ||
+			XMPIET_DPID != msg.get_xmpies().get_ie_multipart().get_ies().back()->get_type()) {
+
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Cross-Connect request without two -DPID- IE, dropping message." << std::endl;
+		reply->set_type(XMPT_ERROR);
+	} else {
+
+		try {
+			uint64_t dpid1 = static_cast<cxmpie_dpid*>(msg.get_xmpies().get_ie_multipart().get_ies().front())->get_dpid();
+			uint64_t dpid2 = static_cast<cxmpie_dpid*>(msg.get_xmpies().get_ie_multipart().get_ies().back())->get_dpid();
+
+			rofl::logging::info << "[xdpd][plugin][xmp] cross-connect dpid1=" << dpid1 << " and dpid2=" << dpid2 << std::endl;
+
+			std::string port1;
+			std::string port2;
+			port_manager::connect_switches(dpid1, port1, dpid2, port2);
+
+			rofl::logging::info << "[xdpd][plugin][xmp] cross-link-ports: port1=" << port1 << " port2=" << port2 << std::endl;
+
+		} catch (xdpd::eOfSmDoesNotExist &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmVersionNotSupported: " << e << std::endl;
+			reply->set_type(XMPT_ERROR);
+		} catch (ePmUnknownError &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmExists: " << e << std::endl;
 			reply->set_type(XMPT_ERROR);
 		} catch (...) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;

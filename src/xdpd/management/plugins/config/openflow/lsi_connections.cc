@@ -22,11 +22,10 @@
 //namespace
 using namespace xdpd;
 
-//static elements
 const std::string lsi_connections_scope::SCOPE_NAME = "controller-connections";
 
 //Connection
-lsi_connection_scope::lsi_connection_scope(std::string name):scope(name, false){
+lsi_connection_scope::lsi_connection_scope(std::string name, scope* parent):scope(name, parent, false){
 
 	//Common stuff	
 	register_parameter(LSI_CONNECTION_CONTROLLER_HOSTNAME);
@@ -48,7 +47,7 @@ lsi_connection_scope::lsi_connection_scope(std::string name):scope(name, false){
 }
 
 //Connections
-lsi_connections_scope::lsi_connections_scope(std::string name, bool mandatory):scope(name, mandatory){
+lsi_connections_scope::lsi_connections_scope(scope* parent):scope(lsi_connections_scope::SCOPE_NAME, parent, true){
 
 }
 
@@ -194,13 +193,13 @@ void lsi_connections_scope::pre_validate(libconfig::Setting& setting, bool dry_r
 	
 	//Detect existing subscopes (logical switches) and register
  	for(int i = 0; i<setting.getLength(); ++i){
-		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "Found controller connection named: %s\n", setting[i].getName());
+		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Found controller connection named: %s\n", get_path().c_str(), setting[i].getName());
 
 		//Pre-Parse and add to the list of connections
 		parsed_connections.push_back(parse_connection(setting[i], dry_run));
 		
 		//Register subscope	
-		register_subscope(std::string(setting[i].getName()), new lsi_connection_scope(setting[i].getName()));
+		register_subscope(std::string(setting[i].getName()), new lsi_connection_scope(setting[i].getName(), this));
 	}
 		
 }

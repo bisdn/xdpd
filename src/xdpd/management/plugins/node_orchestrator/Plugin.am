@@ -1,0 +1,5 @@
+#Always add the library CONDITIONALLY
+
+if WITH_MGMT_NODE_ORCHESTRATOR
+libxdpd_mgmt_plugins_la_LIBADD += node_orchestrator/libxdpd_mgmt_node_orchestrator.la
+endif

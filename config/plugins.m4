@@ -66,6 +66,9 @@ ADD_PLUGIN(xmp)
 #REST
 ADD_PLUGIN(rest)
 
+#node_orchestrator
+ADD_PLUGIN(node_orchestrator)
+
 #Example
 ADD_PLUGIN(example)
 

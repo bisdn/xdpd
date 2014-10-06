@@ -16,7 +16,7 @@ using namespace libconfig;
 #define DRIVER_EXTRA_PARAMS_FULL "config.system.driver-extra-params"
 
 
-system_scope::system_scope(std::string name, bool mandatory):scope(name, mandatory){
+system_scope::system_scope(scope* parent):scope("system", parent, false){
 	
 	//Register parameters
 	register_parameter(ID);

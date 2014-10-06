@@ -31,6 +31,10 @@
 #include "../io/pktin_dispatcher.h"
 #include "../processing/processing.h"
 
+//Extensions
+#include "nf_extensions.h"
+//+] Add more here...
+
 extern int optind; 
 struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
 
@@ -55,7 +59,7 @@ using namespace xdpd::gnu_linux;
 */
 
 
-hal_result_t hal_driver_init(const char* extra_params){
+hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_params){
 
 	int ret;
 	const char* argv_fake[] = {"xdpd", "-c", XSTR(RTE_CORE_MASK), "-n", XSTR(RTE_MEM_CHANNELS), NULL};
@@ -98,6 +102,10 @@ hal_result_t hal_driver_init(const char* extra_params){
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
 
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
+	rte_kni_init(GNU_LINUX_DPDK_MAX_KNI_IFACES);
+#endif
+
 	//Init bufferpool
 	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
 
@@ -123,6 +131,10 @@ hal_result_t hal_driver_init(const char* extra_params){
 	if(launch_background_tasks_manager() != ROFL_SUCCESS){
 		return HAL_FAILURE;
 	}
+
+	//Add extensions
+	extensions->nf_ports.create_nf_port = hal_driver_dpdk_nf_create_nf_port;
+	extensions->nf_ports.destroy_nf_port = hal_driver_dpdk_nf_destroy_nf_port;
 
 	return HAL_SUCCESS; 
 }
@@ -245,9 +257,7 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	for(i=0;i<sw->max_ports;i++){
 
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
-			if(sw->logical_ports[i].port->type != PORT_TYPE_VIRTUAL)	
-				//Desechdule only non-virtual ports
-				processing_deschedule_port(sw->logical_ports[i].port);
+			hal_driver_detach_port_from_switch(dpid, sw->logical_ports[i].port->name);
 		}
 	}	
 
@@ -354,7 +364,6 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 			return HAL_FAILURE;
 		}
 	}else{
-
 		if(physical_switch_attach_port_to_logical_switch_at_port_num(port,lsw,*of_port_num) == ROFL_FAILURE){
 			assert(0);
 			return HAL_FAILURE;
@@ -367,9 +376,6 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 		*/
 		//Do nothing
 	}else{
-		/*
-		*  PHYSICAL
-		*/
 		//Schedule the port in the I/O subsystem
 		if(processing_schedule_port(port) != ROFL_SUCCESS){
 			assert(0);
@@ -461,7 +467,7 @@ hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name){
 	of_switch_t* lsw;
 	switch_port_t *port, *port_pair;
-	switch_port_snapshot_t *port_snapshot=NULL, *port_pair_snapshot=NULL;
+	switch_port_snapshot_t *port_snapshot=NULL, *port_pair_snapshot=NULL;	
 	
 	lsw = physical_switch_get_logical_switch_by_dpid(dpid);
 	if(!lsw)
@@ -517,10 +523,7 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 			
 		}
 	}else{
-		/*
-		*  PHYSICAL
-		*/
-		//Deschedule port from processing (physical port)
+		//Deschedule port from processing (physical or NF port)
 		processing_deschedule_port(port);
 	}
 

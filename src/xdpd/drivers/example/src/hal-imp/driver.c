@@ -29,7 +29,7 @@ char extra_params[DRIVER_EXTRA_PARAMS_MAX_LEN];
 * @brief   Initializes driver. Before using the HAL_DRIVER routines, higher layers must allow driver to initialize itself
 * @ingroup driver_management
 */
-hal_result_t hal_driver_init(const char* _extra_params){
+hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* _extra_params){
 
 	
 	ROFL_INFO("["DRIVER_NAME"] calling hal_driver_init()\n");
@@ -48,6 +48,10 @@ hal_result_t hal_driver_init(const char* _extra_params){
 	ROFL_INFO("["DRIVER_NAME"] This driver is an empty example. xDPd will not be able to bootstrap any configuration (LSIs) since it is not a functional driver, so it will throw a deliverately uncaught exception\n");
 	
 	strncpy(extra_params, _extra_params, DRIVER_EXTRA_PARAMS_MAX_LEN);
+
+	//We don't support any HAL extension
+	memset(extensions, 0, sizeof(hal_extension_ops_t));
+
 	return HAL_SUCCESS; 
 }
 

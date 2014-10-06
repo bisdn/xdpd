@@ -7,6 +7,8 @@
 #include "../../../port_manager.h"
 #include "../../../../openflow/openflow_switch.h"
 
+#include "nf_scope.h"
+
 #include "../config.h"
 
 using namespace xdpd;
@@ -14,24 +16,27 @@ using namespace rofl;
 
 //Constants
 #define BLACKLIST "blacklist"
+#define NF "nf"
 #define VIF_VIF "vif"
 #define VIF_LINK "link"
 #define VIF_LSI "lsi"
 #define VIF_DESCRIPTION "description"
 
 
-interfaces_scope::interfaces_scope(std::string name, bool mandatory):scope(name, mandatory){
+interfaces_scope::interfaces_scope(scope* parent):scope("interfaces", parent, false){
 	
 	//Register parameters
 	register_parameter(BLACKLIST);
 
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook
-	register_subscope(new virtual_ifaces_scope());	
+	register_priority_subscope(new nf_scope(this), 2, false);	
+	register_subscope(new virtual_ifaces_scope(this));	
+	
 
 }
 
-void interfaces_scope::__pre_execute(libconfig::Setting& setting, bool dry_run){
+void interfaces_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	
 	//Update cache
 	blacklisted.clear();
@@ -58,7 +63,7 @@ void interfaces_scope::__pre_execute(libconfig::Setting& setting, bool dry_run){
 	}
 }
 
-virtual_ifaces_scope::virtual_ifaces_scope(std::string name, bool mandatory):scope(name, mandatory){
+virtual_ifaces_scope::virtual_ifaces_scope(scope* parent):scope("virtual", parent, false){
 	
 	//Register subscopes
 	//Subscopes are logical switch elements so will be captured on pre_validate hook

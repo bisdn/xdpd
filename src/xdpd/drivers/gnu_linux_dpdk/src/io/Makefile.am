@@ -13,6 +13,8 @@ libxdpd_driver_gnu_linux_dpdk_src_io_la_SOURCES = \
 					datapacket_storage.cc\
 					iface_manager.h\
 					iface_manager.cc\
+					nf_iface_manager.h\
+					nf_iface_manager.cc\
 					pktin_dispatcher.h\
 					pktin_dispatcher.cc\
 					tx.cc\

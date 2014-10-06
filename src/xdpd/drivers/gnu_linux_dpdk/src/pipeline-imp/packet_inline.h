@@ -233,7 +233,23 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 	
 			xdpd::gnu_linux_dpdk::tx_pkt_vlink(port, pkt);
 			return;
-		}else{
+		}
+#ifdef GNU_LINUX_DPDK_ENABLE_NF		
+		else if(port->type == PORT_TYPE_NF_SHMEM)
+		{
+			/*
+			* DPDK NF port
+			*/
+			xdpd::gnu_linux_dpdk::tx_pkt_dpdk_nf_port(port, pkt);
+		}else if(port->type == PORT_TYPE_NF_EXTERNAL)
+		{
+			/*
+			* KNI NF port
+			*/
+			xdpd::gnu_linux_dpdk::tx_pkt_kni_nf_port(port, pkt);
+		}
+#endif		
+		else{
 			xdpd::gnu_linux_dpdk::tx_pkt(port, pack->output_queue, pkt);
 		}
 	}else{

@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _PORT_MGMT_H_
-#define _PORT_MGMT_H_
+#ifndef _IFACE_MANAGER_H_
+#define _IFACE_MANAGER_H_
 
 #include <rofl.h>
 #include "../config.h"
@@ -17,12 +17,19 @@
 #include <rte_ethdev.h>
 #include <rte_ring.h>
 #include <rte_launch.h>
+#include <rte_kni.h>
+
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
+#include <sys/socket.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+
 #include "port_state.h"
 #include "../processing/processing.h"
+#include "nf_iface_manager.h"
 
 //Maximum number of ports (preallocation of port_mapping)
 #define PORT_MANAGER_MAX_PORTS PROCESSING_MAX_PORTS 
@@ -30,14 +37,18 @@
 /**
  *  Port mappings (port_id -> struct switch_port)
  */
-extern switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS];
+extern switch_port_t* phy_port_mapping[]; //PORT_MANAGER_MAX_PORTS
+
+/**
+ *  NF Port mappings (port_id -> struct switch_port)
+ */
+extern switch_port_t* nf_port_mapping[]; //PORT_MANAGER_MAX_PORTS
+
 
 /**
 * TX ring per port queue. TX is served only by the port lcore. The other lcores shall enqueue packets in this queue when they need to be flushed.
 */
 extern struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES];
-
-
 
 //C++ extern C
 ROFL_BEGIN_DECLS
@@ -82,8 +93,7 @@ void iface_manager_update_links(void);
 */
 void iface_manager_update_stats(void);
 
-
 //C++ extern C
 ROFL_END_DECLS
 
-#endif //_PORT_MGMT_H_
+#endif //_IFACE_MANAGER_H_

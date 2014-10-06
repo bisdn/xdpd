@@ -6,16 +6,21 @@
 #include <rofl/datapath/pipeline/physical_switch.h>
 
 #include "port_state.h"
+#include "nf_iface_manager.h"
 
-#include "../config.h"
 #include <assert.h> 
 #include <rte_common.h> 
 #include <rte_malloc.h> 
 #include <rte_errno.h> 
 
+#include <fcntl.h>  
+
 extern struct rte_mempool *pool_direct;
-switch_port_t* port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
+switch_port_t* phy_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES] = {{NULL}};
+
+pthread_rwlock_t iface_manager_rwlock = PTHREAD_RWLOCK_INITIALIZER;
+
 
 //Initializes the pipeline structure and launches the port 
 static switch_port_t* configure_port(unsigned int port_id){
@@ -104,8 +109,8 @@ static switch_port_t* configure_port(unsigned int port_id){
 
 
 
-	//Set the port in the port_mapping
-	port_mapping[port_id] = port;
+	//Set the port in the phy_port_mapping
+	phy_port_mapping[port_id] = port;
 
 	return port;
 }
@@ -166,8 +171,8 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	}
 
 	//Set pipeline state to UP
-	if(likely(port_mapping[port_id]!=NULL)){
-		port_mapping[port_id]->up = true;
+	if(likely(phy_port_mapping[port_id]!=NULL)){
+		phy_port_mapping[port_id]->up = true;
 	}
 
 	//Set promiscuous mode
@@ -341,8 +346,52 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 	if(unlikely(!port))
 		return ROFL_FAILURE;
 
-	
-	if(port->type != PORT_TYPE_VIRTUAL){
+	if(port->type == PORT_TYPE_VIRTUAL)
+	{
+		/*
+		* Virtual link
+		*/
+		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
+		//Set link flag on both ports
+		if(port_pair->up){
+			port->state &= ~PORT_STATE_LINK_DOWN;
+			port_pair->state &= ~PORT_STATE_LINK_DOWN;
+		}else{
+			port->state |= PORT_STATE_LINK_DOWN;
+			port_pair->state |= PORT_STATE_LINK_DOWN;
+		}
+	}
+	else if(port->type == PORT_TYPE_NF_SHMEM)
+	{
+		/*
+		*  DPDK SECONDARY NF
+		*/
+		if(!port->up)
+		{
+			//Was down
+			if(nf_iface_manager_bring_up_port(port) != ROFL_SUCCESS)
+			{
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK SECONDARY NF port: %s\n",port->name);
+				assert(0);
+				return ROFL_FAILURE; 
+			}
+		}
+	}else if(port->type == PORT_TYPE_NF_EXTERNAL)
+	{
+		/*
+		*	DPDK KNI NF
+		*/
+		if(!port->up)
+		{
+			//Was down
+			if(nf_iface_manager_bring_up_port(port) != ROFL_SUCCESS)
+			{
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK KNI NF port: %s\n",port->name);
+				assert(0);
+				return ROFL_FAILURE; 
+			}
+		}
+	}else{
 		/*
 		*  PHYSICAL
 		*/
@@ -357,20 +406,8 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 				return ROFL_FAILURE; 
 			}
 		}
-	}else{
-		/*
-		* Virtual link
-		*/
-		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
-		//Set link flag on both ports
-		if(port_pair->up){
-			port->state &= ~PORT_STATE_LINK_DOWN;
-			port_pair->state &= ~PORT_STATE_LINK_DOWN;
-		}else{
-			port->state |= PORT_STATE_LINK_DOWN;
-			port_pair->state |= PORT_STATE_LINK_DOWN;
-		}
 	}
+		
 	//Mark the port as being up and return
 	port->up = true;
 		
@@ -387,7 +424,42 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 	if(unlikely(!port))
 		return ROFL_FAILURE;
 	
-	if(port->type != PORT_TYPE_VIRTUAL){
+	if(port->type == PORT_TYPE_VIRTUAL) {
+		/*
+		* Virtual link
+		*/
+		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
+		port->up = false;
+
+		//Set links as down	
+		port->state |= PORT_STATE_LINK_DOWN;
+		port_pair->state |= PORT_STATE_LINK_DOWN;
+	}
+	else if(port->type == PORT_TYPE_NF_SHMEM) {
+		/*
+		* NF port
+		*/
+		if(port->up) {
+			if(nf_iface_manager_bring_down_port(port) != ROFL_SUCCESS) {
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK SECONDARY NF port: %s\n",port->name);
+				assert(0);
+				return ROFL_FAILURE; 
+			}
+		}		
+		port->up = false;
+	}else if(port->type == PORT_TYPE_NF_EXTERNAL) {
+		/*
+		*	KNI NF
+		*/
+		if(port->up){
+			if(nf_iface_manager_bring_down_port(port) != ROFL_SUCCESS) {
+				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK KNI NF port: %s\n",port->name);
+				assert(0);
+				return ROFL_FAILURE; 
+			}
+		}
+		port->up = false;
+	}else {
 		/*
 		*  PHYSICAL
 		*/
@@ -403,16 +475,6 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 			//Was  up; stop it
 			rte_eth_dev_stop(port_id);
 		}
-	}else{
-		/*
-		* Virtual link
-		*/
-		switch_port_t* port_pair = (switch_port_t*)port->platform_port_state;
-		port->up = false;
-
-		//Set links as down	
-		port->state |= PORT_STATE_LINK_DOWN;
-		port_pair->state |= PORT_STATE_LINK_DOWN;
 	}
 
 	return ROFL_SUCCESS;
@@ -430,6 +492,7 @@ rofl_result_t iface_manager_destroy(void){
 	for(i=0;i<num_of_ports;++i){
 		rte_eth_dev_stop(i);
 		rte_eth_dev_close(i);
+		//IVANO - TODO: destroy also NF ports
 	}	
 
 	return ROFL_SUCCESS;
@@ -448,7 +511,7 @@ void iface_manager_update_links(){
 	
 	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
 		
-		port = port_mapping[i];
+		port = phy_port_mapping[i];
 		
 		if(unlikely(port != NULL)){
 			rte_eth_link_get_nowait(i,&link);
@@ -486,7 +549,7 @@ void iface_manager_update_stats(){
 	switch_port_t* port;
 	
 	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
-		port = port_mapping[i];
+		port = phy_port_mapping[i];
 		if(unlikely(port != NULL)){
 
 			//Retrieve stats
@@ -514,3 +577,4 @@ void iface_manager_update_stats(){
 	}
 
 }
+

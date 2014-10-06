@@ -16,7 +16,7 @@ namespace xdpd {
 class system_scope:public scope {
 	
 public:
-	system_scope(std::string scope_name="system", bool mandatory=false);
+	system_scope(scope* parent);
 		
 	virtual void post_validate(libconfig::Setting& setting, bool dry_run);
 	

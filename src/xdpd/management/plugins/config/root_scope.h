@@ -29,7 +29,7 @@ private:
 class config_scope : public scope {
 	
 public:
-	config_scope();
+	config_scope(scope* parent);
 	virtual ~config_scope();
 		
 private:

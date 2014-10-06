@@ -19,28 +19,6 @@
 #define DRIVER_NAME "[xdpd][dpdk]"
 
 /*
-*	NF stuffs
-*/
-
-//Enable NF extensions
-#define GNU_LINUX_DPDK_ENABLE_NF
-
-//Maximum number of KNI interfaces 
-#define GNU_LINUX_DPDK_MAX_KNI_IFACES 4
-
-/**
-*	Uncomment the following line to enable the samaphore and implement a batch
-*	meachanism in the DPDK secondary processes NF
-*/
-//#define ENABLE_DPDK_SECONDARY_SEMAPHORE
-
-#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
-	//IVANO - FIXME: write a meaningfull value
-	#define PKT_TO_NF_THRESHOLD 	200
-#endif
-
-
-/*
 * BG stuff
 */
 
@@ -112,5 +90,31 @@
 #define SOCKET0 0
 #define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
 #define NB_MBUF   3*8192
+
+
+
+/**
+* NF related parameters 
+*/
+
+//Enable NF extensions (KNI and secondary process DPDK ports)
+#define GNU_LINUX_DPDK_ENABLE_NF
+
+//Maximum number of KNI interfaces, used during preallocation
+#define GNU_LINUX_DPDK_MAX_KNI_IFACES 4
+
+/**
+* Uncomment the following line to enable the samaphore and implement a batch
+* meachanism in the DPDK secondary processes NF
+*
+* NOT recommended
+*/
+//#define ENABLE_DPDK_SECONDARY_SEMAPHORE
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
+	//IVANO - FIXME: write a meaningfull value
+	#define PKT_TO_NF_THRESHOLD 	200
+#endif
+
+
 
 #endif //XDPD_GNU_LINUX_XDPD_CONFIG_H

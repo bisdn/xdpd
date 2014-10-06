@@ -132,9 +132,12 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 		return HAL_FAILURE;
 	}
 
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
 	//Add extensions
+	memset(extensions, 0, sizeof(hal_extension_ops_t));
 	extensions->nf_ports.create_nf_port = hal_driver_dpdk_nf_create_nf_port;
 	extensions->nf_ports.destroy_nf_port = hal_driver_dpdk_nf_destroy_nf_port;
+#endif
 
 	return HAL_SUCCESS; 
 }

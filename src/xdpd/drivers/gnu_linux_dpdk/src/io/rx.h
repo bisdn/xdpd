@@ -81,7 +81,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, unsigned int port_id,
 
 		//Increment port RX statistics
 		port->stats.rx_packets++;
-		port->stats.rx_bytes += mbuf->pkt_len;
+		port->stats.rx_bytes += mbuf->pkt.pkt_len;
 
 #if DEBUG
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
@@ -95,7 +95,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, unsigned int port_id,
 #endif
 
 		//Init&classify	
-		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, port_mapping[mbuf->port]->of_port_num, 0, true, false);
+		init_datapacket_dpdk(pkt_dpdk, mbuf, sw, port_mapping[mbuf->pkt.in_port]->of_port_num, 0, true, false);
 	
 		//Prefetch next pkt
 		if( (i+1) < burst_len )

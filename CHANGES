@@ -10,8 +10,12 @@ Change log
 
 v0.6.0
 
-[O][gnu-linux-dpdk] Moved platform driver to DPDK v1.7 (thanks D. Verbeiren)
+[+][CMM] Added NF port manager extensions
 
+[+][drivers] Adapted to the new extensions-enabled HAL API
+
+[+][gnu-linux-dpdk] Added support for NF ports, KNI and secondary DPDK proc.(thanks I. Cerrato)
+[O][gnu-linux-dpdk] Moved platform driver to DPDK v1.7 (thanks D. Verbeiren)
 
 
 v0.5.1

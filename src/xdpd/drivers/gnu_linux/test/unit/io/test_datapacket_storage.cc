@@ -20,6 +20,13 @@
 using namespace std;
 using namespace xdpd::gnu_linux;
 
+extern "C"{
+
+void platform_packet_drop(datapacket_t* pkt){};
+
+}
+
+
 class DataPacketStorageTestCase : public CppUnit::TestFixture{
 	CPPUNIT_TEST_SUITE(DataPacketStorageTestCase);
 	CPPUNIT_TEST(test_basic);

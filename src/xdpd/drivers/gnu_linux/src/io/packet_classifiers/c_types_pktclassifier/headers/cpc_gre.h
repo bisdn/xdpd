@@ -232,11 +232,14 @@ uint32_t* get_gre_key(void *hdr){
 
 inline static
 void set_gre_key(void *hdr, uint32_t key){
+	uint32_t* tmp; //Avoid anti-aliasing warnings
 	if (((cpc_gre_hdr_t*)hdr)->word0 & GRE_KEY_FLAG_MASK) {
 		if (((cpc_gre_hdr_t*)hdr)->word0 & GRE_CSUM_FLAG_MASK) {
-			*((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word4)) = key;
+			tmp = ((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word4));
+			*tmp = key;
 		}else{
-			*((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word2)) = key;
+			tmp = ((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word2));
+			*tmp = key;
 		}
 	}else{
 		return;
@@ -266,18 +269,23 @@ uint32_t* get_gre_seqno(void *hdr){
 
 inline static
 void set_gre_seqno(void *hdr, uint32_t seqno){
+	uint32_t* tmp; //Avoid anti-aliasing warnings
 	if (((cpc_gre_hdr_t*)hdr)->word0 & GRE_SEQNO_FLAG_MASK) {
 		if (((cpc_gre_hdr_t*)hdr)->word0 & GRE_KEY_FLAG_MASK) {
 			if (((cpc_gre_hdr_t*)hdr)->word0 & GRE_CSUM_FLAG_MASK) {
-				*((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word6)) = seqno;
+				tmp = ((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word6));
+				*tmp = seqno;
 			}else{
-				*((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word4)) = seqno;
+				tmp = ((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word4));
+				*tmp = seqno;
 			}
 		}else{
 			if (((cpc_gre_hdr_t*)hdr)->word0 & GRE_CSUM_FLAG_MASK) {
-				*((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word4)) = seqno;
+				tmp = ((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word4));
+				*tmp = seqno;
 			}else{
-				*((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word2)) = seqno;
+				tmp = ((uint32_t*)(&((cpc_gre_hdr_t*)hdr)->word2));
+				*tmp = seqno;
 			}
 		}
 	}else{

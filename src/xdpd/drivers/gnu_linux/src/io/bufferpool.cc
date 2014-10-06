@@ -13,7 +13,6 @@ pthread_cond_t bufferpool::cond = PTHREAD_COND_INITIALIZER;
 //Constructor and destructor
 bufferpool::bufferpool(void)
 {
-
 	long long unsigned int i;
 	datapacket_t* dp;
 	datapacketx86* dpx86;
@@ -24,12 +23,7 @@ bufferpool::bufferpool(void)
 		dp = (datapacket_t*)malloc(sizeof(datapacket_t));
 		
 		if(!dp){
-			//Mark as unavailable
-			pool[i] = NULL;
-			pool_status[i] = BUFFERPOOL_SLOT_UNAVAILABLE;
-
-			//Skip
-			continue;
+			throw "Unable to allocate bufferpool; out of memory.";
 		}
 
 		//Memset datapacket
@@ -39,32 +33,29 @@ bufferpool::bufferpool(void)
 		try {
 			dpx86 = new datapacketx86(dp);
 		}catch(std::bad_alloc ex){
-
-			//Mark as unavailable
-			pool[i] = NULL;
-			pool_status[i] = BUFFERPOOL_SLOT_UNAVAILABLE;
-			
-			free(dp);
-			continue;		
+			throw "Unable to allocate bufferpool; out of memory.";
 		}		
 
 		//Assign the buffer_id
 		dp->id = i;			
-		
+				
 		//Link them
 		dp->platform_state = (platform_datapacket_state_t*)dpx86;
 
-		//Init measurements	
-		TM_INIT_PKT(dp);
-
 		//Add to the pool	
-		pool[i] = dp;
-		pool_status[i] = BUFFERPOOL_SLOT_AVAILABLE;
-	
+		pool[i].status = BUFFERPOOL_SLOT_AVAILABLE;
+		pool[i].pkt = dp;
+		if(i<capacity)
+			pool[i].next = &pool[i+1];
+		else
+			pool[i].next = NULL;
+			
 	}
 
+	//Set head
+	free_head = &pool[0];
+
 	//Set size
-	curr_index = 0;
 #ifdef DEBUG
 	used = 0;
 #endif
@@ -75,11 +66,8 @@ bufferpool::~bufferpool(){
 	unsigned long long int i;
 
 	for(i=0;i<capacity;++i){
-		if(pool[i]){
-			TM_AGGREGATE_PKT(pool[i]);	
-			delete (datapacketx86*)pool[i]->platform_state;
-			free(pool[i]);
-		}	
+		delete (datapacketx86*)pool[i].pkt->platform_state;
+		free(pool[i].pkt);
 	}
 }
 
@@ -120,23 +108,3 @@ void bufferpool::destroy(){
 
 	instance = NULL;	
 }
-
-
-void
-bufferpool::dump_state(void)
-{
-	bufferpool& bp = *(bufferpool::get_instance());
-	std::cerr << bp << std::endl;
-}
-
-
-void
-bufferpool::dump_slots(void)
-{
-	bufferpool& bp = *(bufferpool::get_instance());
-	for (long long unsigned int i = 0; i < bp.capacity; i++) {
-		std::cerr << *(static_cast<datapacketx86 const*>( bp.pool[i]->platform_state )) << std::endl;
-	}
-}
-
-

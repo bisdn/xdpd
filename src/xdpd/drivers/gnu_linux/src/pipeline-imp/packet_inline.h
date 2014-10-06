@@ -114,7 +114,7 @@ STATIC_PACKET_INLINE__
 datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 
 	//Get a free buffer
-	datapacket_t* copy = bufferpool::get_free_buffer_nonblocking();
+	datapacket_t* copy = bufferpool::get_buffer();
 	
 	if(!copy){
 		return copy;

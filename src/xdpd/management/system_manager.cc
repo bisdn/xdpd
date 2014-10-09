@@ -3,6 +3,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <sys/stat.h>
+#include <stdlib.h>
+#include <time.h>
 #include <rofl/common/ciosrv.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/util/logging.h>
@@ -144,6 +146,9 @@ void system_manager::init(int argc, char** argv){
 
 	//Set driver info cache
 	hal_driver_get_info(&info);
+
+	//Initialize srand
+	srand(time(NULL));
 
 	/* Parse arguments. Add first additional arguments */
 	env_parser = new cunixenv(argc, argv);

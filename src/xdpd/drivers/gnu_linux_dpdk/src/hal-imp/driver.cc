@@ -102,7 +102,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
 
-#ifdef GNU_LINUX_DPDK_ENABLE_NF
+#if defined(GNU_LINUX_DPDK_ENABLE_NF) && defined(DPDK_PATCHED_KNI)
 	rte_kni_init(GNU_LINUX_DPDK_MAX_KNI_IFACES);
 #endif
 

@@ -34,6 +34,9 @@ m4_include([../../../../config/verbose.m4])
 # Check for profiling mode
 m4_include([../../../../config/profiling.m4])
 
+# TODO: remove this once the patch is accepted
+AC_CHECK_LIB(rte_kni, rte_kni_init, [AC_DEFINE(DPDK_PATCHED_KNI, 1)])	
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile

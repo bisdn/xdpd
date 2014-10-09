@@ -121,7 +121,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		port->stats.rx_bytes += mbuf->pkt.pkt_len;
 
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
-		assert(mbuf->nb_segs == 1);
+		assert(mbuf->pkt.nb_segs == 1);
 
 		//tmp_port is used to avoid to repeat code for both kinds of port
 		//(note that the port_mapping used is different

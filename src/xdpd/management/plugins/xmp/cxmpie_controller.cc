@@ -135,7 +135,7 @@ cxmpie_controller::set_ip_address(const uint8_t ip_domain, const rofl::caddress&
 		xmpie_controller->ip_address[0] = ipv4.get_addr_nbo();
 		return;
 	} else if (AF_INET6 == ip_domain) {
-		const rofl::caddress_in6 &ipv6 = static_cast<const rofl::caddress_in6 &>(address);
+		rofl::caddress_in6 &ipv6 = const_cast<rofl::caddress_in6 &>(static_cast<const rofl::caddress_in6 &>(address));
 		std::cerr << "v6" << std::endl;
 		ipv6.pack((unsigned char*) xmpie_controller->ip_address, 16);
 

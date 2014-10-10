@@ -145,10 +145,10 @@ public:
 	set_ip_address(const uint8_t ip_domain, const rofl::caddress& address);
 
 	uint16_t
-	get_port() const { return xmpie_controller->port; };
+	get_port() const { return be16toh(xmpie_controller->port); };
 
 	void
-	set_port(const uint8_t port) { xmpie_controller->port = port; };
+	set_port(const uint16_t port) { xmpie_controller->port = htobe16(port); };
 
 public:
 

@@ -218,6 +218,7 @@ BUFFERPOOL_META_RELEASE_RETRY:
 */
 void bufferpool::dump(){
 	bufferpool* bp = get_instance();
+	(void)bp;
 #ifdef DEBUG
 	ROFL_DEBUG("bufferpool at %p, capacity: %llu, used: %llu\n", bp, bp->capacity, bp->used);
 #else

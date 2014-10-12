@@ -66,14 +66,14 @@ class bufferpool{
 
 public:
 	//Init 
-	static void init(void);
+	static inline void init(void);
 
 	//Public interface of the pool (static)
 	static inline datapacket_t* get_buffer(void);
 
 	static inline void release_buffer(datapacket_t* buf);
 	
-	static void destroy();
+	static inline void destroy();
 
 	//Only used in debug	
 	friend std::ostream&
@@ -224,6 +224,43 @@ void bufferpool::dump(){
 #else
 	ROFL_DEBUG("bufferpool at %p, capacity: %llu\n", bp, bp->capacity);
 #endif //DEBUG 
+}
+
+
+/*
+* Buffer pool management
+*/
+void bufferpool::init(){
+	
+	pthread_mutex_lock(&bufferpool::mutex);		
+
+	if(bufferpool::instance){
+		//Double-call to init??
+		ROFL_DEBUG(DRIVER_NAME"[bufferpool] Double call to bufferpool init!! Skipping...\n");
+		pthread_mutex_unlock(&bufferpool::mutex);
+		return;	
+	}
+	
+	ROFL_DEBUG(DRIVER_NAME"[bufferpool] Initializing bufferpool with a capacity of %d buffers...\n",capacity);
+
+	//Init 	
+	bufferpool::instance = new bufferpool();
+	
+	ROFL_DEBUG(DRIVER_NAME"[bufferpool] Initialization was successful\n");
+
+	//Wake consumers
+	pthread_cond_broadcast(&bufferpool::cond);
+
+	//Release and go!	
+	pthread_mutex_unlock(&bufferpool::mutex);		
+}
+
+void bufferpool::destroy(){
+
+	if(get_instance())
+		delete get_instance();
+
+	instance = NULL;	
 }
 	
 }// namespace xdpd::gnu_linux 

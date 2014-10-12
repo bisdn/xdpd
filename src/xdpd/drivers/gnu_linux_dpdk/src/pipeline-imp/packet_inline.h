@@ -126,7 +126,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 		return NULL;
 
 	//datapacket_t* pkt_replica;
-	pkt_replica = xdpd::gnu_linux::bufferpool::get_free_buffer(false);
+	pkt_replica = xdpd::gnu_linux::bufferpool::get_buffer();
 	
 	if(unlikely(!pkt_replica)){
 		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). No buffers left in bufferpool\n", pkt);
@@ -186,7 +186,7 @@ STATIC_PACKET_INLINE__
 datapacket_t* platform_packet_detach__(datapacket_t* pkt){
 
 	struct rte_mbuf* mbuf_origin;
-	datapacket_t* pkt_detached = xdpd::gnu_linux::bufferpool::get_free_buffer(false);
+	datapacket_t* pkt_detached = xdpd::gnu_linux::bufferpool::get_buffer();
 
 	if(unlikely( pkt_detached == NULL))
 		return NULL;

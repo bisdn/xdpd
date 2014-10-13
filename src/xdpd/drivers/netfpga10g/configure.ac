@@ -22,8 +22,10 @@ LIBTOOL="$LIBTOOL --preserve-dup-deps"
 AC_SUBST(LIBTOOL)dnl
 
 # default flags
-CFLAGS="-Werror -Wall -Wl,-export-dynamic $CFLAGS"
-CXXFLAGS="-Werror -Wall -Wl,-export-dynamic $CXXFLAGS"
+CFLAGS="-Werror -Wall $CFLAGS"
+CXXFLAGS="-Werror -Wall $CXXFLAGS"
+LDFLAGS=" -Wl,-export-dynamic"
+
 AC_DEFINE(__STDC_FORMAT_MACROS)
 
 PKG_CHECK_MODULES([ROFL], [rofl >= 0.4.0], [have_rofl=yes], [have_rofl=no])

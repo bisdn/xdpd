@@ -158,7 +158,7 @@ private:
 	 *
 	 */
 	virtual void
-	handle_experimenter_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_stats_request& pack);
+	handle_experimenter_stats_request(rofl::crofctl& ctl, const rofl::cauxid& auxid, rofl::openflow::cofmsg_experimenter_stats_request& msg);	
 
 	/** Handle OF packet-out messages. To be overwritten by derived class.
 	 *

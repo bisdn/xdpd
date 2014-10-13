@@ -571,9 +571,9 @@ of10_endpoint::handle_queue_stats_request(
 
 void
 of10_endpoint::handle_experimenter_stats_request(
-		rofl::crofctl& ctl,
-		const rofl::cauxid& auxid,
-		rofl::openflow::cofmsg_stats_request& pack)
+		rofl::crofctl& ctl, 
+		const rofl::cauxid& auxid, 
+		rofl::openflow::cofmsg_experimenter_stats_request& msg)
 {
 	//TODO: when exp are supported
 }

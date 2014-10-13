@@ -26,8 +26,10 @@ AC_SUBST(LIBTOOL)dnl
 
 
 #Default flags
-CFLAGS="-Werror -Wall -Wl,--as-needed -Wl,-export-dynamic $CFLAGS"
-CXXFLAGS="-Werror -Wall -Wl,--as-needed -Wl,-export-dynamic $CXXFLAGS"
+CFLAGS="-Werror -Wall $CFLAGS"
+CXXFLAGS="-Werror -Wall $CXXFLAGS"
+LDFLAGS="-Wl,--as-needed -Wl,-export-dynamic"
+
 AC_DEFINE(__STDC_FORMAT_MACROS)
 AC_DEFINE(__STDC_CONSTANT_MACROS)
 

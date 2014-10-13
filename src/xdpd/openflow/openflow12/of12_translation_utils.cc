@@ -1798,7 +1798,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		uint64_t mac = packet_matches_get_arp_sha_value(pm);
 		match.set_arp_sha( cmacaddr(mac) );
 	}
-	if(packet_matches_get_arp_spa_value(pm)); {
+	if(packet_matches_get_arp_spa_value(pm)){
 		caddress_in4 addr; addr.set_addr_hbo(packet_matches_get_arp_spa_value(pm));
 		match.set_arp_spa(addr);
 	}
@@ -1806,7 +1806,7 @@ void of12_translation_utils::of12_map_reverse_packet_matches(packet_matches_t* p
 		uint64_t mac = packet_matches_get_arp_tha_value(pm);
 		match.set_arp_tha(cmacaddr(mac));
 	}
-	if(packet_matches_get_arp_tpa_value(pm)); {
+	if(packet_matches_get_arp_tpa_value(pm)){
 		caddress_in4 addr; addr.set_addr_hbo(packet_matches_get_arp_tpa_value(pm));
 		match.set_arp_tpa(addr);
 	}

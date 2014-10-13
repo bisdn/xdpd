@@ -18,6 +18,10 @@ v0.6.0
 [O][gnu-linux-dpdk] Moved platform driver to DPDK v1.7 (thanks D. Verbeiren)
 
 
+v0.5.2
+
+[B][CMM] Fixing reverse packet matches bug in ARP values for OF1.2/OF1.3
+
 v0.5.1
 
 [+] Distributing default xdpd.conf during `make install`

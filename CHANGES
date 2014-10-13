@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.4.7
+
+[B][CMM] Fixing reverse packet matches bug in ARP values for OF1.2/OF1.3
+
 v0.4.6
 v0.4.5
 v0.4.4

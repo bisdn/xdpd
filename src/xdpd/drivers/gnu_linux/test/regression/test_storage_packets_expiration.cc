@@ -55,7 +55,9 @@ void DriverStoragePacketsExpirationTestCase::setUp(){
 	hal_result_t res;
 	fprintf(stderr,"<%s:%d> ************** Set up ************\n",__func__,__LINE__);
 	
-	res = hal_driver_init(NULL);//discovery of ports
+	hal_extension_ops_t hal_extension_ops;
+	
+	res = hal_driver_init(&hal_extension_ops, NULL);//discovery of ports
 	CPPUNIT_ASSERT( res == HAL_SUCCESS );
 	(void)res;
 	

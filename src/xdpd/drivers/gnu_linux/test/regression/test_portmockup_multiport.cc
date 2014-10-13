@@ -52,7 +52,9 @@ void DriverMultiPortMockupTestCase::setUp(){
 	unsigned int of_port_num=0;
 	fprintf(stderr,"<%s:%d> ************** Set up ************\n",__func__,__LINE__);
 
-	res = hal_driver_init(NULL);//discovery of ports
+	hal_extension_ops_t hal_extension_ops;
+	
+	res = hal_driver_init(&hal_extension_ops, NULL);//discovery of ports
 	
 	if( res != HAL_SUCCESS )
 		exit(-1);

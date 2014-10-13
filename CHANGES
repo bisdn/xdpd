@@ -9,9 +9,6 @@ Change log
 ==========
 
 v0.5.2
-
-[B][CMM] Fixing reverse packet matches bug in ARP values for OF1.2/OF1.3
-
 v0.5.1
 
 [+] Distributing default xdpd.conf during `make install`
@@ -41,6 +38,10 @@ v0.5.0
 
 [B][gnu-linux][gnu-linux-dpdk] Fixed bug during replication of packets
 
+
+v0.4.7
+
+[B][CMM] Fixing reverse packet matches bug in ARP values for OF1.2/OF1.3
 
 v0.4.6
 v0.4.5

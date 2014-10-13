@@ -10,6 +10,8 @@ Change log
 
 v0.6.0
 
+[+] Fixed some LLVM related warnings and errors (clang/clang++)
+
 [+][CMM] Added NF port manager extensions
 
 [+][drivers] Adapted to the new extensions-enabled HAL API

@@ -35,20 +35,24 @@ FAQ
 
 * Why are some interfaces not recognised by xDPd? By default only tested devices are compiled by DPDK's PMDs; make sure all the device IDs are enabled when compiling DPDK. e.g. (E1000_DEV_ID_82583V): 
 
-	diff --git a/lib/librte_eal/common/include/rte_pci_dev_ids.h b/lib/librte_eal/common/include/rte_pci_dev_ids.h
-	index a51c1ef..9cdc797 100644
-	--- a/lib/librte_eal/common/include/rte_pci_dev_ids.h
-	+++ b/lib/librte_eal/common/include/rte_pci_dev_ids.h
-	@@ -272,7 +272,7 @@ RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82572EI)
-	 RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82573L)
-	 RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82574L)
-	 RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82574LA)
-	-
-	+RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82583V)
-	 /******************** Physical IGB devices from e1000_hw.h ********************/
-	 
-	 #define E1000_DEV_ID_82576                      0x10C9
+        diff --git a/lib/librte_eal/common/include/rte_pci_dev_ids.h b/lib/librte_eal/common/include/rte_pci_dev_ids.h
+        index a51c1ef..9cdc797 100644
+        --- a/lib/librte_eal/common/include/rte_pci_dev_ids.h
+        +++ b/lib/librte_eal/common/include/rte_pci_dev_ids.h
+        @@ -272,7 +272,7 @@ RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82572EI)
+         RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82573L)
+         RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82574L)
+         RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82574LA)
+        -
+        +RTE_PCI_DEV_ID_DECL_EM(PCI_VENDOR_ID_INTEL, E1000_DEV_ID_82583V)
+         /******************** Physical IGB devices from e1000_hw.h ********************/
+         
+         #define E1000_DEV_ID_82576                      0x10C9
 
 
 * Which interface names are used in gnu-linux-dpdk? geXX and 10geXX. The discovered interfaces are listed on bootstrapping time.
+
+* Why do I get the error 'PANIC in hal_driver_init(): Cannot init direct mbuf pool'? 
+
+This is very likely due to insufficient hugepages memory. Try to increase the amount of hugepages memory. Alternatively you can reduce the amount of buffers allocated, by reducing `NB_MBUF` in `src/xdpd/drivers/gnu_linux_dpdk/src/config.h`.
 

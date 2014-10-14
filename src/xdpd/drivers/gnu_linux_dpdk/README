@@ -52,7 +52,5 @@ FAQ
 
 * Which interface names are used in gnu-linux-dpdk? geXX and 10geXX. The discovered interfaces are listed on bootstrapping time.
 
-* Why do I get the error 'PANIC in hal_driver_init(): Cannot init direct mbuf pool'? 
-
-This is very likely due to insufficient hugepages memory. Try to increase the amount of hugepages memory. Alternatively you can reduce the amount of buffers allocated, by reducing `NB_MBUF` in `src/xdpd/drivers/gnu_linux_dpdk/src/config.h`.
+* Why do I get the error 'PANIC in hal_driver_init(): Cannot init direct mbuf pool'? This is very likely due to insufficient hugepages memory. Try to increase the amount of hugepages memory. Alternatively you can reduce the amount of buffers allocated, by reducing `NB_MBUF` in `src/xdpd/drivers/gnu_linux_dpdk/src/config.h`.
 

@@ -26,7 +26,7 @@ namespace xdpd {
 class eSystemBase		: public rofl::RoflException {};	// base error class for all system_manager related errors
 class eSystemGeneralError	: public eSystemBase {};
 class eSystemUnknownError	: public eSystemBase {};
-class eSystemLogLevelSetviaCL	: public eSystemBase {};
+class eSystemLogLevelSetviaCLI	: public eSystemBase {};
 class eSystemLogInvalidLevel	: public eSystemBase {};
 
 /**
@@ -95,7 +95,7 @@ public:
 
 	/**
 	* Set the logging debug level for xDPd. Note that when -d is used in the CLI
-	* The call to set_logging_debug_level() will throw eSystemLogLevelSetviaCL exception
+	* The call to set_logging_debug_level() will throw eSystemLogLevelSetviaCLI exception
 	* since CLI options have always preference over runtime API.
 	*
 	* Use logging::EMERG, logging::ALERT ... defined in rofl/common/logging.h

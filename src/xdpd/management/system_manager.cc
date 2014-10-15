@@ -73,7 +73,7 @@ void system_manager::set_logging_debug_level(unsigned int level){
 	
 	if( inited && env_parser->is_arg_set("debug") ){
 		ROFL_ERR("[xdpd][system_manager] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
-		throw eSystemLogLevelSetviaCL(); 
+		throw eSystemLogLevelSetviaCLI(); 
 	}
 
 	//Validate level and map to C

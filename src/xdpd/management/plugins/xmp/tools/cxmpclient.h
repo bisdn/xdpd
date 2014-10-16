@@ -145,6 +145,12 @@ public:
 	void
 	terminate_client();
 
+	bool
+	is_established() const
+	{
+		return socket->is_established();
+	}
+
 protected:
 
 	virtual void

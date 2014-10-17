@@ -124,13 +124,13 @@ public:
 	get_id() const { return std::string(xmpie_controller->id); };
 
 	void
-	set_id(std::string const &id) { strncpy(xmpie_controller->id, id.c_str(), sizeof(xmpie_controller->id - 1)); };
+	set_id(std::string const &id) { strncpy(xmpie_controller->id, id.c_str(), sizeof(xmpie_controller->id) - 1); };
 
 	std::string
 	get_proto() const { return std::string(xmpie_controller->proto); };
 
 	void
-	set_proto(std::string const &proto) { strncpy(xmpie_controller->proto, proto.c_str(), sizeof(xmpie_controller->proto - 1)); };
+	set_proto(std::string const &proto) { strncpy(xmpie_controller->proto, proto.c_str(), sizeof(xmpie_controller->proto) - 1); };
 
 	uint8_t
 	get_ip_domain() const { return xmpie_controller->ip_domain; };

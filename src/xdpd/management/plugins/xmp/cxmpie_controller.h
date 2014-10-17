@@ -49,7 +49,7 @@ public:
 	/**
 	 *
 	 */
-	cxmpie_controller(const struct controller);
+	cxmpie_controller(const class controller &c);
 
 	/**
 	 *

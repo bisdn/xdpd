@@ -81,13 +81,13 @@ public:
 	lsi_info();
 
 	void
-	lsi_create(uint64_t dpid, std::string const& lsi_name, const std::list<struct xdpd::mgmt::protocol::controller>& controller);
+	lsi_create(uint64_t dpid, std::string const& lsi_name, const std::list<class xdpd::mgmt::protocol::controller>& controller);
 
 	void
 	lsi_destroy(const uint64_t dpid);
 
 	void
-	lsi_connect_to_controller(uint64_t dpid, const std::list<struct xdpd::mgmt::protocol::controller>& controller);
+	lsi_connect_to_controller(uint64_t dpid, const std::list<class xdpd::mgmt::protocol::controller>& controller);
 
 
 	void

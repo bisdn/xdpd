@@ -16,7 +16,7 @@ cxmpie_controller::cxmpie_controller() :
 {
 }
 
-cxmpie_controller::cxmpie_controller(const struct controller c) :
+cxmpie_controller::cxmpie_controller(const class controller &c) :
 		cxmpie(XMPIET_CONTROLLER, sizeof(struct xmp_ie_controller_t))
 {
 	xmpie_generic = somem();

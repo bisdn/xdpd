@@ -43,15 +43,15 @@ class cxmpies
 
 public: // iterators
 
-	typedef typename std::map<uint16_t, cxmpie*>::iterator iterator;
-	typedef typename std::map<uint16_t, cxmpie*>::const_iterator const_iterator;
+	typedef std::map<uint16_t, cxmpie*>::iterator iterator;
+	typedef std::map<uint16_t, cxmpie*>::const_iterator const_iterator;
 	iterator begin() { return xmpmap.begin(); }
 	iterator end() { return xmpmap.end(); }
 	const_iterator begin() const { return xmpmap.begin(); }
 	const_iterator end() const { return xmpmap.end(); }
 
-	typedef typename std::map<uint16_t, cxmpie*>::reverse_iterator reverse_iterator;
-	typedef typename std::map<uint16_t, cxmpie*>::const_reverse_iterator const_reverse_iterator;
+	typedef std::map<uint16_t, cxmpie*>::reverse_iterator reverse_iterator;
+	typedef std::map<uint16_t, cxmpie*>::const_reverse_iterator const_reverse_iterator;
 	reverse_iterator rbegin() { return xmpmap.rbegin(); }
 	reverse_iterator rend() { return xmpmap.rend(); }
 

@@ -33,8 +33,6 @@ namespace xdpd {
 **/
 class of10_endpoint : public of_endpoint {
 
-	uint64_t 		ctlid;	// controller id
-
 public:
 
 	//Main constructor

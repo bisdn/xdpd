@@ -25,7 +25,7 @@ extern int optind;
 bool system_manager::inited = false;
 hal_extension_ops_t system_manager::hal_extension_ops;
 std::string system_manager::id("000000001");
-driver_info_t system_manager::info;
+driver_info_t system_manager::driver_info;
 rofl::cunixenv* system_manager::env_parser = NULL;
 const std::string system_manager::XDPD_CLOG_FILE="./xdpd.log";
 const std::string system_manager::XDPD_LOG_FILE="/var/log/xdpd.log";
@@ -73,7 +73,7 @@ void system_manager::set_logging_debug_level(unsigned int level){
 	
 	if( inited && env_parser->is_arg_set("debug") ){
 		ROFL_ERR("[xdpd][system_manager] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
-		throw eSystemLogLevelSetviaCL(); 
+		throw eSystemLogLevelSetviaCLI(); 
 	}
 
 	//Validate level and map to C
@@ -143,7 +143,7 @@ void system_manager::init(int argc, char** argv){
 		ROFL_ERR("[xdpd][system_manager] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
 
 	//Set driver info cache
-	hal_driver_get_info(&info);
+	hal_driver_get_info(&driver_info);
 
 	/* Parse arguments. Add first additional arguments */
 	env_parser = new cunixenv(argc, argv);
@@ -309,9 +309,9 @@ std::string system_manager::get_version(){
 
 	//xDPd driver information
 	ss << "\n-- Hardware support --" << std::endl;
-	ss << "Driver code name: "<< info.code_name << std::endl;
-	ss << "Driver version: "<< info.version << std::endl;
-	ss << "Driver description: "<< info.description << std::endl;
+	ss << "Driver code name: "<< driver_info.code_name << std::endl;
+	ss << "Driver version: "<< driver_info.version << std::endl;
+	ss << "Driver description: "<< driver_info.description << std::endl;
 	
 	//Libraries info	
 	ss << "\n-- Libraries --" << std::endl;

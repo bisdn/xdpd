@@ -71,7 +71,7 @@ void system_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		//Set logging
 		try{
 			system_manager::set_logging_debug_level(logging_level);
-		}catch(eSystemLogLevelSetviaCL& e){
+		}catch(eSystemLogLevelSetviaCLI& e){
 			//Ignore. Trace is already printed by system_manager
 		}
 		

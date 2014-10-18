@@ -26,7 +26,7 @@ namespace xdpd {
 class eSystemBase		: public rofl::RoflException {};	// base error class for all system_manager related errors
 class eSystemGeneralError	: public eSystemBase {};
 class eSystemUnknownError	: public eSystemBase {};
-class eSystemLogLevelSetviaCL	: public eSystemBase {};
+class eSystemLogLevelSetviaCLI	: public eSystemBase {};
 class eSystemLogInvalidLevel	: public eSystemBase {};
 
 /**
@@ -95,12 +95,12 @@ public:
 
 	/**
 	* Set the logging debug level for xDPd. Note that when -d is used in the CLI
-	* The call to set_logging_debug_level() will throw eSystemLogLevelSetviaCL exception
+	* The call to set_logging_debug_level() will throw eSystemLogLevelSetviaCLI exception
 	* since CLI options have always preference over runtime API.
 	*
 	* Use logging::EMERG, logging::ALERT ... defined in rofl/common/logging.h
 	*/
-	static void set_logging_debug_level(unsigned int level);	
+	static void set_logging_debug_level(const unsigned int level);	
 
 	//
 	// Platform driver  
@@ -112,14 +112,14 @@ public:
 	* This method will always a valid code-name
 	*/
 	static std::string get_driver_code_name(void){
-		return std::string(info.code_name);
+		return std::string(driver_info.code_name);
 	}	
 	
 	/**
 	* Retrieve the driver usage(help)
 	*/
 	static std::string get_driver_usage(void){
-		std::string usage(info.usage);
+		std::string usage(driver_info.usage);
 		if(usage == "")
 			return std::string("not supported"); 
 		else
@@ -130,14 +130,14 @@ public:
 	* Retrieve the driver version and build number.
 	*/
 	static std::string get_driver_version(void){
-		return std::string(info.version);
+		return std::string(driver_info.version);
 	}	
 
 	/**
 	* Retrieve the driver description 
 	*/
 	static std::string get_driver_description(void){
-		return std::string(info.description);
+		return std::string(driver_info.description);
 	}	
 	
 	/**
@@ -150,7 +150,7 @@ public:
 	* deliverately driver specific.
 	*/
 	static std::string get_driver_extra_params(void){
-		return std::string(info.extra_params);
+		return std::string(driver_info.extra_params);
 	}	
 
 	/**
@@ -173,7 +173,7 @@ private:
 	static std::string id;
 	
 	//Cache platform driver information
-	static driver_info_t info;
+	static driver_info_t driver_info;
 
 	//Command line options
 	static rofl::cunixenv* env_parser;

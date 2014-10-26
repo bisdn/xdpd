@@ -18,6 +18,7 @@ v0.6.0
 
 [+][gnu-linux-dpdk] Added support for NF ports, KNI and secondary DPDK proc.(thanks I. Cerrato)
 [O][gnu-linux-dpdk] Moved platform driver to DPDK v1.7 (thanks D. Verbeiren)
+[B][gnu-linux-dpdk] Fixed functions push() and pop() in dpdk_datapacket
 
 
 v0.5.2

@@ -16,6 +16,8 @@ v0.5.1
 [+][gnu-linux][gnu-linux-dpdk] GTP push/pop actions revised
 [B][gnu-linux][gnu-linux-dpdk] Fixed stored buffer leak during LSI destruction
 [B][gnu-linux][gnu-linux-dpdk] preserve checksum calculation flags in function hal_driver_of1x_process_packet_out
+[B][gnu-linux-dpdk] Fixed functions push() and pop() in dpdk_datapacket
+
 
 v0.5.0
 

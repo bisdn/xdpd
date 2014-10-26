@@ -35,6 +35,9 @@ rofl_result_t push_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offse
 	memset(dst_ptr + offset, 0x00, num_of_bytes);
 #endif
 
+        dpkt->clas_state.base = get_buffer_dpdk(dpkt);
+        dpkt->clas_state.len = get_buffer_length_dpdk(dpkt);
+
 	return ROFL_SUCCESS;
 }
 
@@ -60,6 +63,9 @@ rofl_result_t pop_datapacket_offset(datapacket_dpdk_t *dpkt, unsigned int offset
 	// set now unused bytes to 0x00 for easier debugging
 	memset(src_ptr, 0x00, num_of_bytes);
 #endif
+
+        dpkt->clas_state.base = get_buffer_dpdk(dpkt);
+        dpkt->clas_state.len = get_buffer_length_dpdk(dpkt);
 
 	return ROFL_SUCCESS;
 }

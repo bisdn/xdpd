@@ -116,6 +116,10 @@ inline void platform_packet_copy_contents(datapacket_t* pkt, datapacket_t* pkt_c
 * the platform specific state (->platform_state) is copied 
 *  depending on the flag copy_mbuf
 */
+
+//Disable soft cloning
+#define DISABLE_SOFT_CLONE
+
 STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* pkt, bool hard_clone){
 
 	datapacket_t* pkt_replica;
@@ -135,7 +139,9 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 
 	mbuf_origin = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;	
 
+#ifndef DISABLE_SOFT_CLONE
 	if( hard_clone ){
+#endif
 		mbuf = rte_pktmbuf_alloc(pool_direct);
 		
 		if(unlikely(mbuf == NULL)){	
@@ -149,6 +155,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 		rte_memcpy(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_mtod(mbuf_origin, uint8_t*),  rte_pktmbuf_pkt_len(mbuf_origin));
 		assert( rte_pktmbuf_pkt_len(mbuf) == rte_pktmbuf_pkt_len(mbuf_origin) );
 
+#ifndef DISABLE_SOFT_CLONE
 	} else {
 		//Soft clone
 		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_indirect);
@@ -158,6 +165,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 			goto PKT_REPLICATE_ERROR;
 		}
 	}
+#endif
 
 	//Copy datapacket_t and datapacket_dpdk_t state
 	platform_packet_copy_contents(pkt, pkt_replica, mbuf);

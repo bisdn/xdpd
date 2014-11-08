@@ -9,6 +9,9 @@ Change log
 ==========
 
 v0.5.2
+
+[B][CMM] Fixed issue #40 (bug) => invalid table-features-stats messages generated
+
 v0.5.1
 
 [+] Distributing default xdpd.conf during `make install`

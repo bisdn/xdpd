@@ -266,6 +266,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	switch_port_t* port;	
 
 	//fetch interface info with ethtool
+	memset(&ifr, 0, sizeof(struct ifreq));
 	strcpy(ifr.ifr_name, ifa->ifa_name);
 	memset(&edata,0,sizeof(edata));
 	edata.cmd = ETHTOOL_GSET;

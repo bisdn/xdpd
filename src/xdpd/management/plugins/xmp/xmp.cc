@@ -791,8 +791,11 @@ xdpd::mgmt::protocol::xmp::handle_lsi_destroy(rofl::csocket& socket, cxmpmsg& ms
 		} catch (xdpd::eOfSmDoesNotExist &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmDoesNotExist: " << e << std::endl;
 			reply->set_type(XMPT_ERROR);
-		} catch (eOfSmGeneralError &e) {
+		} catch (xdpd::eOfSmGeneralError &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmGeneralError: " << e << std::endl;
+			reply->set_type(XMPT_ERROR);
+		} catch (xdpd::ePmUnknownError &e) {
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error ePmUnknownError: " << e << std::endl;
 			reply->set_type(XMPT_ERROR);
 		} catch (...) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;
@@ -884,10 +887,10 @@ xmp::handle_lsi_cross_connect(rofl::csocket& socket, cxmpmsg& msg)
 			rofl::logging::info << "[xdpd][plugin][xmp] cross-link-ports: port1=" << port1 << " port2=" << port2 << std::endl;
 
 		} catch (xdpd::eOfSmDoesNotExist &e) {
-			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmVersionNotSupported: " << e << std::endl;
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmDoesNotExist: " << e << std::endl;
 			reply->set_type(XMPT_ERROR);
 		} catch (ePmUnknownError &e) {
-			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmExists: " << e << std::endl;
+			rofl::logging::error << "[xdpd][plugin][xmp] caught error ePmUnknownError: " << e << std::endl;
 			reply->set_type(XMPT_ERROR);
 		} catch (...) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught unknown error." << std::endl;

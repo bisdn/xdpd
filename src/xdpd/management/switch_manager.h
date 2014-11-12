@@ -92,7 +92,7 @@ public:
 					int* ma_list,
 					int reconnect_start_timeout,
 					enum rofl::csocket::socket_type_t socket_type,
-					rofl::cparams const& socket_params) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported);
+					rofl::cparams const& socket_params);
 
 
 	/**
@@ -103,7 +103,7 @@ public:
 	 *
 	 * @param dpid data path element id
 	 */
-	static void destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist);
+	static void destroy_switch(uint64_t dpid);
 
 	/**
 	 * @brief	static method that deletes all switches 

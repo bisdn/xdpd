@@ -67,11 +67,11 @@ hal_result_t hal_cmm_notify_port_delete(switch_port_snapshot_t* port_snapshot){
 
 	//Notify attached sw
 	if(port_snapshot->is_attached_to_sw)
-		//Note that this typecast is valid because hal_result_t and rofl_result_t have intentionally and explicitely the same definition
-		result = (hal_result_t)switch_manager::__notify_port_detached((const switch_port_snapshot_t*)port_snapshot);
+		//Note that this typecast is valid because hal_result_t and rofl_result_t have intentionally and explicitly the same definition
+		result = (hal_result_t)switch_manager::__notify_port_detached(port_snapshot);
 
 	//Notify MGMT framework
-	plugin_manager::__notify_port_deleted((const switch_port_snapshot_t*)port_snapshot);	
+	plugin_manager::__notify_port_deleted(port_snapshot);
 
 	//Destroy the snapshot
 	switch_port_destroy_snapshot(port_snapshot);

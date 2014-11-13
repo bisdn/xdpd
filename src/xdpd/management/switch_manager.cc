@@ -36,7 +36,7 @@ openflow_switch* switch_manager::create_switch(
 		int* ma_list,
 		int reconnect_start_timeout,
 		enum rofl::csocket::socket_type_t socket_type,
-		cparams const& socket_params) throw (eOfSmExists, eOfSmErrorOnCreation, eOfSmVersionNotSupported){
+		cparams const& socket_params){
 
 	openflow_switch* dp;
 
@@ -94,7 +94,7 @@ openflow_switch* switch_manager::create_switch(
 
 
 //static
-void switch_manager::destroy_switch(uint64_t dpid) throw (eOfSmDoesNotExist){
+void switch_manager::destroy_switch(uint64_t dpid){
 
 	unsigned int i;
 	of_switch_snapshot_t* sw_snapshot;

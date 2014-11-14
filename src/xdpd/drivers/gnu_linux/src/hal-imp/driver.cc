@@ -459,12 +459,6 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	
 	//For virtual ports, remove counter port
 	if(port->type == PORT_TYPE_VIRTUAL){
-		//Snapshoting the port *before* it is detached 
-		port_snapshot = physical_switch_get_port_snapshot(port->name); 
-	
-		if(!port_snapshot)
-			return HAL_FAILURE;
-
 		switch_port_t* port_pair = get_vlink_pair(port); 
 
 		if(!port_pair){

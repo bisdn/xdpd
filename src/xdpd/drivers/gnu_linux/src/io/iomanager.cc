@@ -22,9 +22,11 @@ pthread_mutex_t iomanager::mutex = PTHREAD_MUTEX_INITIALIZER;
 std::map<uint16_t, portgroup_state*> iomanager::portgroups; 
 
 //Change this if you want to use another scheduler
-typedef epoll_ioscheduler ioscheduler_provider;
-//typedef polling_ioscheduler ioscheduler_provider;
-
+#ifdef IO_POLLING_STRATEGY
+	typedef polling_ioscheduler ioscheduler_provider;
+#else
+	typedef epoll_ioscheduler ioscheduler_provider;
+#endif
 
 
 /*

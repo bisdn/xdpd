@@ -42,9 +42,11 @@
 * - The amount of buffers: IO_BUFFERPOOL_CAPACITY defines the amount of pre-allocated buffers.
 * - The number of (soft) queues per port: IO_IFACE_NUM_QUEUES
 *
+* It is recommended that IO_RX_THREADS >= IO_TX_THREADS
+*
 */
 
-//Num of RX and processing threads
+//Num of RX(and OF processing) threads
 #define IO_RX_THREADS 2
 
 //Total number of TX threads
@@ -57,9 +59,9 @@
 //Number of output queues per interface
 #define IO_IFACE_NUM_QUEUES 8
 
-//
-// Buffer pool section
-//
+/*
+* Buffer pool section
+*/
 
 //Bufferpool reservoir(PKT_INs); ideally at least X*max_num_lsis
 #define IO_BUFFERPOOL_RESERVOIR 2048
@@ -69,14 +71,18 @@
 //Warning: changing the size of this variable can affect performance 
 #define IO_BUFFERPOOL_CAPACITY 2048*16 //32K buffers
 
-//
-// Scheduling strategy
-//
-//TODO
+/*
+* Port scheduling strategy
+*/
 
-//
-// Interface section
-//
+//Use polling_ioscheduler
+//Warning: not recommended!
+//#define IO_POLLING_STRATEGY
+
+
+/*
+* Interface section
+*/
 
 //RX/TX ring size and output queue dimensions
 //Align to a power of 2
@@ -93,9 +99,9 @@
 #define IO_IFACE_MMAP_BLOCKS 2 
 #define IO_IFACE_MMAP_BLOCK_SIZE 96
 
-//
-// Kernel scheduling section
-//
+/*
+* Kernel scheduling section
+*/
 
 //Kernel scheduling policy for I/O threads. Possible values SCHED_FIFO, SCHED_RR or SCHED_OTHER
 //Warning: change it only if you know what you are doing 

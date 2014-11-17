@@ -6,7 +6,7 @@
 #define IOMANAGER_H 1
 
 #include <pthread.h>
-#include <vector>
+#include <map>
 #include <rofl.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <semaphore.h>
@@ -31,7 +31,7 @@ namespace xdpd {
 namespace gnu_linux {
 
 #define DEFAULT_MAX_THREADS_PER_PG 5
-//WARNING: you don't want to change this, unless you really know what you are doing
+//WARNING: you don't want to change this, unless you really(really) know what you are doing
 #define DEFAULT_THREADS_PER_PG 1
 COMPILER_ASSERT( INVALID_default_threads_per_pg , (DEFAULT_THREADS_PER_PG == 1) );
 
@@ -88,7 +88,7 @@ class iomanager{
 public:
 	/* Methods */
 	//Group mgmt
-	static rofl_result_t init( unsigned int _num_of_groups = IO_TX_TOTAL_THREADS );
+	static rofl_result_t init( unsigned int _rx_groups = IO_RX_THREADS, unsigned int _tx_groups = IO_TX_THREADS);
 	static rofl_result_t destroy( void ){ return delete_all_groups(); };
 
 	/*
@@ -123,7 +123,9 @@ public:
 
 	/* Utils */ 
 	static void dump_state(bool mutex_locked);
-	static portgroup_state* get_group(int grp_id);
+	static portgroup_state* get_group(int grp_id){
+		return portgroups[grp_id];
+	};
 	static int get_group_id_by_port(ioport* port, pg_type_t type);
 protected:
 
@@ -131,19 +133,38 @@ protected:
 	static const unsigned int DEFAULT_THREADS_PER_PORTGROUP = DEFAULT_THREADS_PER_PG;
 	static const unsigned int MAX_THREADS_PER_PORTGROUP = DEFAULT_MAX_THREADS_PER_PG;
 
-	//Number of port_groups created
+	//Totla number of groupsNumber of port_groups created
 	static unsigned int num_of_groups;
-	static unsigned int curr_tx_group_sched_pointer;
+	//Total number of RX groups
+	static unsigned int num_of_rx_groups;
+	//Total number of TX groups
+	static unsigned int num_of_tx_groups;
 
-	//Number of buffers currently required by the ports to operate
-	static unsigned long long int num_of_port_buffers;
+	/*
+	* Scheduling state 
+	*/
+	static unsigned int next_rx_sched_grp_id;
+	static unsigned int next_tx_sched_grp_id;
 
 	//Portgroup state
-	//static std::vector<portgroup_state> portgroups;	
-	static safevector<portgroup_state*> portgroups;	
+	static std::map<uint16_t, portgroup_state*> portgroups;	
 	
 	//Handle mutual exclusion over the portgroup state
 	static pthread_mutex_t mutex;
+
+	/*
+	* Scheduling routines (no thread safe)
+	*/
+	static inline unsigned int rx_sched(){
+		unsigned int grp_id = next_rx_sched_grp_id;
+		next_rx_sched_grp_id = (next_rx_sched_grp_id+1)%num_of_rx_groups;
+		return grp_id;
+	}
+	static inline unsigned int tx_sched(){
+		unsigned int _grp_id = next_tx_sched_grp_id;
+		next_tx_sched_grp_id = (next_tx_sched_grp_id+1)%num_of_tx_groups;
+		return _grp_id+num_of_rx_groups;
+	}
 
 	/*
 	* Port mgmt (internal API)

@@ -118,12 +118,6 @@ public:
 #endif
 
 	/**
-	* @brief Retrieves the number of buffers required by the port to be operating at line-rate; 
-	* must be power of 2 
-	*/
-	virtual unsigned int get_required_buffers(void){ return NUM_OF_REQUIRED_BUFFERS;}; 
-	
-	/**
 	 * Sets the port administratively up. This MUST change the of_port_state appropiately
 	 */
 	virtual rofl_result_t up(void)=0;
@@ -194,8 +188,6 @@ protected:
 	*/
 	virtual void drain_queues(void);
 
-	static const unsigned int NUM_OF_REQUIRED_BUFFERS=IO_IFACE_REQUIRED_BUFFERS; /* Required buffers for the port to operate at line rate */
-	
 	//Output QoS queues
 	unsigned int num_of_queues;
 

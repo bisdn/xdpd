@@ -113,14 +113,6 @@ public:
 	*/
 	inline static void signal_as_synchronized(portgroup_state* pg){ sem_post(&pg->sync_sem); };
 
-	/*
-	* Group mgmt
-	*/
-	static int create_group(pg_type_t type, unsigned int num_of_threads=DEFAULT_THREADS_PER_PG, bool mutex_locked=false);
-	static rofl_result_t delete_group(unsigned int grp_id);
-	static rofl_result_t delete_all_groups(void);
-	
-
 	/* Utils */ 
 	static void dump_state(bool mutex_locked);
 	static portgroup_state* get_group(int grp_id){
@@ -176,6 +168,12 @@ protected:
 	static void start_portgroup_threads(portgroup_state* pg);
 	static void stop_portgroup_threads(portgroup_state* pg);
 	
+	/*
+	* Group mgmt
+	*/
+	static int create_group(pg_type_t type, unsigned int num_of_threads=DEFAULT_THREADS_PER_PG, bool mutex_locked=false);
+	static rofl_result_t delete_group(unsigned int grp_id);
+	static rofl_result_t delete_all_groups(void);
 };
 
 }// namespace xdpd::gnu_linux 

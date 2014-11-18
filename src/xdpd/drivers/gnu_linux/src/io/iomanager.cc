@@ -45,7 +45,7 @@ rofl_result_t iomanager::init( unsigned int _rx_groups, unsigned int _tx_groups)
 	}
 
 	if( unlikely(_rx_groups<0) || unlikely(_tx_groups<0) ){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Invalid RX(%u) or TX(%u) paramenters. Aborting...\n", _rx_groups, _tx_groups); 
+		ROFL_ERR(DRIVER_NAME"[iomanager] Invalid RX(%u) or TX(%u) parameters. Aborting...\n", _rx_groups, _tx_groups);
 		goto INIT_ERROR;
 	}
 		
@@ -70,7 +70,7 @@ rofl_result_t iomanager::init( unsigned int _rx_groups, unsigned int _tx_groups)
 			}
 		}	
 	}catch(...){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Unable to intialize port groups. Out of memory?\n");
+		ROFL_ERR(DRIVER_NAME"[iomanager] Unable to initialize port groups. Out of memory?\n");
 		goto INIT_ERROR;
 	}
 
@@ -387,7 +387,7 @@ int iomanager::create_group(pg_type_t type, unsigned int num_of_threads, bool mu
 		pthread_mutex_lock(&mutex);
 	}
 
-	//Add to portgroups and return position in the vector
+	//Add to portgroups and return position in the map
 	pg->id = num_of_groups;
 	portgroups[pg->id] = pg;
 	
@@ -519,7 +519,7 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 		return ROFL_FAILURE;
 	}
 
-	//Check existance of port already in any portgroup
+	//Check existence of port already in any portgroup
 	for(i=0;i<portgroups.size();++i){
 		if(!portgroups[i])
 			continue;
@@ -539,7 +539,7 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 }
 
 /*
-* Remove port to the portgroup. Removal implicitely stops the port (brings it down).
+* Remove port to the portgroup. Removal implicitly stops the port (brings it down).
 */
 rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* port, bool mutex_locked){
 	

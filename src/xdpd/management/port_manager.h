@@ -30,6 +30,7 @@ namespace xdpd {
 
 class ePmBase			: public rofl::RoflException {};	// base error class for all port_manager related errors
 class ePmInvalidPort		: public ePmBase {};
+class ePmInvalidPortNumber	: public ePmBase {};
 class ePmUnknownError		: public ePmBase {};
 class ePmPortNotAttachedError	: public ePmBase {};
 class ePmBlacklistedPort	: public ePmBase {};
@@ -129,6 +130,8 @@ public:
 	/**
 	 * @brief Attaches a port to a logical switch previously created.
 	* @param of_port_num If *of_port_num is non-zero, try to attach to of_port_num of the logical switch, otherwise try to attach to the first available port and return the result in of_port_num
+	*
+	* LOGICAL_SWITCH_MAX_LOG_PORTS is the maximum value for of_port_num
 	 */
 	static void attach_port_to_switch(uint64_t dpid, std::string& port_name, unsigned int* of_port_num);
 
@@ -138,6 +141,8 @@ public:
 	 *
 	 * @param of_port_num1 If *of_port_num is non-zero, try to attach to of_port_num of the logical switch, otherwise try to attach to the first available port and return the result in of_port_num
 	 * @param of_port_num2 If *of_port_num is non-zero, try to attach to of_port_num of the logical switch, otherwise try to attach to the first available port and return the result in of_port_num
+	 *
+	 * LOGICAL_SWITCH_MAX_LOG_PORTS is the maximum value for of_port_num
 	 */
 	static void connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1, std::string& port_name1, uint64_t dpid_lsi2, unsigned int* port_num2, std::string& port_name2);
 

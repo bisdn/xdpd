@@ -318,6 +318,8 @@ xmp::handle_port_attach(csocket& socket, cxmpmsg& msg)
 				<< " to dpid:" << (unsigned long long)dpid << " "
 				<< " port-no:" << of_port_num << std::endl;
 
+		port_manager::bring_up(portname);
+
 	} catch(eOfSmDoesNotExist& e) {
 		rofl::logging::error << "[xdpd][plugin][xmp] attaching port:" << portname
 				<< " to dpid:" << (unsigned long long)dpid << " failed, LSI does not exist" << std::endl;
@@ -885,6 +887,9 @@ xmp::handle_lsi_cross_connect(rofl::csocket& socket, cxmpmsg& msg)
 			port_manager::connect_switches(dpid1, port1, dpid2, port2);
 
 			rofl::logging::info << "[xdpd][plugin][xmp] cross-link-ports: port1=" << port1 << " port2=" << port2 << std::endl;
+
+			port_manager::bring_up(port1);
+			port_manager::bring_up(port2);
 
 		} catch (xdpd::eOfSmDoesNotExist &e) {
 			rofl::logging::error << "[xdpd][plugin][xmp] caught error eOfSmDoesNotExist: " << e << std::endl;

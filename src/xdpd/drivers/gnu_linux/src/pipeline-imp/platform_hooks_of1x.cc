@@ -78,9 +78,10 @@ rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 	switch_platform_state_t* ls_int =  (switch_platform_state_t*)sw->platform_state;
 
 	//There should NOT be any PKT_INs pending
-	if(ls_int->pkt_in_queue->size() != 0)
-		assert(0);	
-	
+	if(ls_int->pkt_in_queue->size() != 0){
+		assert(0);
+	}
+
 	//Delete ring buffers and storage (delete switch platform state)
 	for(i=0;i<IO_RX_THREADS_PER_LSI;i++){
 		delete ls_int->input_queues[i]; 

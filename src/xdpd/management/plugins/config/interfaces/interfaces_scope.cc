@@ -137,9 +137,11 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 					throw e;
 				}		
 
+				unsigned int port_num1 = 0;
+				unsigned int port_num2 = 0;
 	
 				//Call port manager API
-				port_manager::connect_switches(dpid1, port_name1, dpid2, port_name2);
+				port_manager::connect_switches(dpid1, &port_num1, port_name1, dpid2, &port_num2, port_name2);
 			}
 			
 			//Add to the list of provisioned

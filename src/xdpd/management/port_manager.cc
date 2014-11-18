@@ -216,6 +216,10 @@ void port_manager::bring_down(std::string& name){
 
 void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, unsigned int* of_port_num){
 
+	if (NULL == of_port_num || *of_port_num > LOGICAL_SWITCH_MAX_LOG_PORTS) {
+		throw ePmInvalidPortNumber();
+	}
+
 	//Check if blacklisted
 	if(is_blacklisted(port_name) == true)
 		throw ePmBlacklistedPort();
@@ -273,6 +277,14 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, 
 void port_manager::connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1, std::string& port_name1, uint64_t dpid_lsi2, unsigned int* port_num2, std::string& port_name2) {
 
 	switch_port_t *port1 = NULL, *port2 = NULL;
+
+	if (NULL == port_num1 || *port_num1 > LOGICAL_SWITCH_MAX_LOG_PORTS) {
+		throw ePmInvalidPortNumber();
+	}
+
+	if (NULL == port_num2 || *port_num2 > LOGICAL_SWITCH_MAX_LOG_PORTS) {
+		throw ePmInvalidPortNumber();
+	}
 
 	//Serialize
 	pthread_mutex_lock(&port_manager::mutex);

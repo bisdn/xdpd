@@ -135,8 +135,11 @@ public:
 	/**
 	 * @brief Creates a virtual (xDPd) internal connection between two logical switch instances. On success
 	 * the port names from both edges will contain the name of the generated port. 
+	 *
+	 * @param of_port_num1 If *of_port_num is non-zero, try to attach to of_port_num of the logical switch, otherwise try to attach to the first available port and return the result in of_port_num
+	 * @param of_port_num2 If *of_port_num is non-zero, try to attach to of_port_num of the logical switch, otherwise try to attach to the first available port and return the result in of_port_num
 	 */
-	static void connect_switches(uint64_t dpid_lsi1, std::string& port_name1, uint64_t dpid_lsi2, std::string& port_name2);
+	static void connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1, std::string& port_name1, uint64_t dpid_lsi2, unsigned int* port_num2, std::string& port_name2);
 
 	/**
 	 * @brief Detaches a port from the logical, previously attached by port name. 

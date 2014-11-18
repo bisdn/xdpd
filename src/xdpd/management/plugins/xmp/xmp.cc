@@ -884,7 +884,9 @@ xmp::handle_lsi_cross_connect(rofl::csocket& socket, cxmpmsg& msg)
 
 			std::string port1;
 			std::string port2;
-			port_manager::connect_switches(dpid1, port1, dpid2, port2);
+			unsigned int port_num1 = 0;
+			unsigned int port_num2 = 0;
+			port_manager::connect_switches(dpid1, &port_num1, port1, dpid2, &port_num2, port2);
 
 			rofl::logging::info << "[xdpd][plugin][xmp] cross-link-ports: port1=" << port1 << " port2=" << port2 << std::endl;
 

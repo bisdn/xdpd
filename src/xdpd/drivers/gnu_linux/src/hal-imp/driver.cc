@@ -68,7 +68,8 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 		return HAL_FAILURE;
 
 	//Initialize the iomanager
-	iomanager::init();
+	if(iomanager::init() != ROFL_SUCCESS)
+		return HAL_FAILURE;
 
 	//Initialize Background Tasks Manager
 	if(launch_background_tasks_manager() != ROFL_SUCCESS){

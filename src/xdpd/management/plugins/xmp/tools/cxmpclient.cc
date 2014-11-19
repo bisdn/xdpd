@@ -290,7 +290,7 @@ cxmpclient::port_list()
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_LIST);
 
-	std::cerr << "[xmpclient] sending Port-List request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Port-List request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -301,7 +301,7 @@ cxmpclient::port_list(uint64_t dpid)
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_LIST);
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
-	std::cerr << "[xmpclient] sending Port-List request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Port-List request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -311,7 +311,7 @@ cxmpclient::port_info()
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_INFO);
 
-	std::cerr << "[xmpclient] sending Port-Info request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Port-Info request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -324,7 +324,7 @@ cxmpclient::port_attach(uint64_t dpid, std::string const& portname)
 	msg.get_xmpies().add_ie_portname().set_name(portname);
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
-	std::cerr << "[xmpclient] sending Port-Attach request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Port-Attach request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -337,7 +337,7 @@ cxmpclient::port_detach(uint64_t dpid, std::string const& portname)
 	msg.get_xmpies().add_ie_portname().set_name(portname);
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
-	std::cerr << "[xmpclient] sending Port-Detach request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Port-Detach request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -349,7 +349,7 @@ cxmpclient::port_enable(std::string const& portname)
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_ENABLE);
 	msg.get_xmpies().add_ie_portname().set_name(portname);
 
-	std::cerr << "[xmpclient] sending Port-Enable request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Port-Enable request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -361,7 +361,7 @@ cxmpclient::port_disable(std::string const& portname)
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_PORT_DISABLE);
 	msg.get_xmpies().add_ie_portname().set_name(portname);
 
-	std::cerr << "[xmpclient] sending Port-Disable request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Port-Disable request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -371,7 +371,7 @@ cxmpclient::lsi_list()
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_LIST);
 
-	std::cerr << "[xmpclient] sending Lsi-List request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Lsi-List request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -381,7 +381,7 @@ cxmpclient::lsi_info()
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_INFO);
 
-	std::cerr << "[xmpclient] sending Lsi-Info request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Lsi-Info request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -399,7 +399,7 @@ cxmpclient::lsi_create(uint64_t dpid, std::string const& lsi_name, const std::li
 		msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_controller(*iter));
 	}
 
-	std::cerr << "[xmpclient] sending Lsi-Create request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Lsi-Create request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -410,7 +410,7 @@ cxmpclient::lsi_destroy(const uint64_t dpid)
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_DESTROY);
 	msg.get_xmpies().add_ie_dpid().set_dpid(dpid);
 
-	std::cerr << "[xmpclient] sending Lsi-Destroy request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Lsi-Destroy request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -427,7 +427,7 @@ cxmpclient::lsi_connect_to_controller(uint64_t dpid, const std::list<class xdpd:
 		msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_controller(*iter));
 	}
 
-	std::cerr << "[xmpclient] sending Lsi-Connect-To-Controller request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Lsi-Connect-To-Controller request:" << std::endl << msg;
 	send_message(msg);
 }
 
@@ -440,6 +440,6 @@ cxmpclient::lsi_cross_connect(const uint64_t dpid1, const uint64_t dpid2)
 	msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_dpid(dpid1));
 	msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_dpid(dpid2));
 
-	std::cerr << "[xmpclient] sending Lsi-Cross-Connect request:" << std::endl << msg;
+	rofl::logging::debug << "[xmpclient] sending Lsi-Cross-Connect request:" << std::endl << msg;
 	send_message(msg);
 }

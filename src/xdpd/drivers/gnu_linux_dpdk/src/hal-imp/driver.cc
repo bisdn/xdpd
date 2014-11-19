@@ -397,12 +397,11 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 * @param dpid_lsi1 Datapath ID of the LSI1
 * @param dpid_lsi2 Datapath ID of the LSI2 
 */
-hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, switch_port_snapshot_t** port2){
+hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, unsigned int* port_num2, switch_port_snapshot_t** port2) {
 
 	of_switch_t *lsw1, *lsw2;
 	switch_port_snapshot_t *port1_not, *port2_not;
 	switch_port_t *vport1, *vport2;
-	unsigned int port_num = 0; //We don't care about of the port
 
 	//Check existance of the dpid
 	lsw1 = physical_switch_get_logical_switch_by_dpid(dpid_lsi1);
@@ -420,12 +419,11 @@ hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, switch_port_snapsho
 	}
 
 	//Attach both ports
-	if(hal_driver_attach_port_to_switch(dpid_lsi1, vport1->name, &port_num) != HAL_SUCCESS){
+	if(hal_driver_attach_port_to_switch(dpid_lsi1, vport1->name, port_num1) != HAL_SUCCESS){
 		assert(0);
 		return HAL_FAILURE;
 	}
-	port_num=0;
-	if(hal_driver_attach_port_to_switch(dpid_lsi2, vport2->name, &port_num) != HAL_SUCCESS){
+	if(hal_driver_attach_port_to_switch(dpid_lsi2, vport2->name, port_num2) != HAL_SUCCESS){
 		assert(0);
 		return HAL_FAILURE;
 	}

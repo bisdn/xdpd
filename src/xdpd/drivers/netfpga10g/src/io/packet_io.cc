@@ -55,6 +55,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 		pack->pktin_reason,
 		pack->clas_state.port_in,
 		storage_id,
+		pkt->__cookie,
 		pack->get_buffer(),
 		pack->pktin_send_len,
 		pack->get_buffer_length(), 

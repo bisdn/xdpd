@@ -537,6 +537,7 @@ rofl_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 				uint8_t reason,
 				uint32_t in_port,
 				uint32_t buffer_id,
+				uint64_t cookie,
 				uint8_t* pkt_buffer,
 				uint32_t buf_len,
 				uint16_t total_len,
@@ -557,7 +558,7 @@ rofl_result_t switch_manager::__process_of1x_packet_in(uint64_t dpid,
 	sw = switch_manager::__get_switch_by_dpid(dpid); 
 
 	if(sw)
-		result = sw->process_and_filter_packet_in(table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);
+		result = sw->process_and_filter_packet_in(table_id, reason, in_port, buffer_id, cookie, pkt_buffer, buf_len, total_len, matches);
 	else	
 		result = ROFL_FAILURE;
 	

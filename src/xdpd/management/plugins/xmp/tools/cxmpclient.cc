@@ -225,10 +225,10 @@ cxmpclient::handle_timeout(
 void
 cxmpclient::handle_send()
 {
-	assert(mem);
-	// todo delay send?
-	socket->send(mem);
-	mem = NULL;
+	if(mem)	{
+		socket->send(mem);
+		mem = NULL;
+	}
 }
 
 void

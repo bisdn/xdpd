@@ -31,9 +31,6 @@ AC_DEFINE(__STDC_FORMAT_MACROS)
 #Debug
 m4_include([../../../../config/debug.m4])
 
-# Application verbosity 
-m4_include([../../../../config/verbose.m4])
-
 # Check for profiling mode
 m4_include([../../../../config/profiling.m4])
 

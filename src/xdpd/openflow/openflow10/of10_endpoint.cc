@@ -624,6 +624,7 @@ of10_endpoint::process_packet_in(
 		uint8_t reason,
 		uint32_t in_port,
 		uint32_t buffer_id,
+		uint64_t cookie,
 		uint8_t* pkt_buffer,
 		uint32_t buf_len,
 		uint16_t total_len,
@@ -642,7 +643,7 @@ of10_endpoint::process_packet_in(
 				total_len,
 				reason,
 				table_id,
-				/*cookie=*/0,
+				cookie,
 				in_port, // OF1.0 only
 				match,
 				pkt_buffer, len);

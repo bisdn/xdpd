@@ -109,13 +109,14 @@ hal_result_t hal_cmm_process_of1x_packet_in(uint64_t dpid,
 					uint8_t reason,
 					uint32_t in_port,
 					uint32_t buffer_id,
+					uint64_t cookie,
 					uint8_t* pkt_buffer,
 					uint32_t buf_len,
 					uint16_t total_len,
 					packet_matches_t* matches){
 	
 	//Note that this typecast is valid because hal_result_t and rofl_result_t have intentionally and explicitely the same definition
-	return (hal_result_t)switch_manager::__process_of1x_packet_in(dpid, table_id, reason, in_port, buffer_id, pkt_buffer, buf_len, total_len, matches);	
+	return (hal_result_t)switch_manager::__process_of1x_packet_in(dpid, table_id, reason, in_port, buffer_id, cookie, pkt_buffer, buf_len, total_len, matches);
 }
 
 hal_result_t hal_cmm_process_of1x_flow_removed(uint64_t dpid, uint8_t reason, of1x_flow_entry_t* removed_flow_entry){

@@ -49,6 +49,7 @@ public:
 			uint8_t reason,
 			uint32_t in_port,
 			uint32_t buffer_id,
+			uint64_t cookie,
 			uint8_t* pkt_buffer,
 			uint32_t buf_len,
 			uint16_t total_len,

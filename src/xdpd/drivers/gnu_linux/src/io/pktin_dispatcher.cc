@@ -73,6 +73,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 						pkt_x86->pktin_reason, 	
 						pkt_x86->clas_state.port_in, 
 						id, 	
+						pkt->__cookie,
 						pkt_x86->get_buffer(), 
 						pkt_x86->pktin_send_len,
 						pkt_x86->get_buffer_length(),

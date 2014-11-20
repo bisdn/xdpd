@@ -27,7 +27,6 @@ SHARED_SRC=\
 	$(top_srcdir)/src/io/ports/mmap/ioport_mmap.cc \
 	$(top_srcdir)/src/io/ports/vlink/ioport_vlink.cc \
 	$(top_srcdir)/src/io/scheduler/epoll_ioscheduler.cc \
-	$(top_srcdir)/src/processing/processingmanager.cc \
 	$(top_srcdir)/src/util/time_utils.c \
 	$(top_srcdir)/src/bg_taskmanager.cc \
 	$(top_srcdir)/src/bg_taskmanager.h \

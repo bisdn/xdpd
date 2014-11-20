@@ -11,7 +11,6 @@
 #include <rofl/datapath/hal/driver.h>
 #include "io/iomanager.h"
 #include "io/ports/mmap/ioport_mmap.h"
-#include "processing/processingmanager.h"
 
 
 #define TEST_DPID 0x1015

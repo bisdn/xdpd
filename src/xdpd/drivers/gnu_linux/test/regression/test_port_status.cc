@@ -10,7 +10,6 @@
 #include <rofl/datapath/hal/driver.h>
 #include "io/iomanager.h"
 #include "io/ports/mmap/ioport_mmap.h"
-#include "processing/processingmanager.h"
 
 /**
  * This test must check if the proper messages to hcl

@@ -11,7 +11,7 @@
 #include "io/iomanager.h"
 #include "io/datapacket_storage.h"
 #include "io/ports/mockup/ioport_mockup.h"
-#include "processing/processingmanager.h"
+#include "processing/ls_internal_state.h"
 
 
 #define TEST_DPID 0x1015
@@ -127,7 +127,7 @@ void DriverPortMockupTestCase::test_drop_packets(void )
 	
 
 	//Get ringbuffer
-	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->input_queues[0];
+	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->pkt_in_queue;
 	
 	//Enqueue packets
 	for(int i=0;i<number_of_packets;i++){
@@ -173,7 +173,7 @@ void DriverPortMockupTestCase::test_output(){
 	//Start port XXX: this should NOT be done this way. Driver
 	iomanager::bring_port_up(mport);
 	
-	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->input_queues[0];
+	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->pkt_in_queue;
 	
 	//Enqueue packets
 	for(int i=0;i<number_of_packets;i++){
@@ -237,7 +237,7 @@ void DriverPortMockupTestCase::test_bufferpool_saturation(){
 	//Initialize buffer (prevent valgrind to complain)
 	memset(buffer,0,sizeof(buffer));
 	
-	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->input_queues[0];
+	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->pkt_in_queue;
 
 	//We are going to force LS threads to be stopped and fill in the LS queue
 

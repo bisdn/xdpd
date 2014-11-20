@@ -18,22 +18,6 @@
 
 //---------------------------------------------------------//
 
-/**
-*
-* TODO: Detailed explanation
-* 
-* As a rule of thumb, try to adjust number of threads per subsystem according to
-* 
-* Ncores_system >= Nio + Tlsi*Nlsi + 2
-* 
-* Where:
-*   Ncores_system - Number of hw threads (hw cores) in the system
-*   Nio - number of threads dedicated to the TX in the I/O subsystem
-*   Tlsi - threads per LSI (RX)
-*   Nlsi - number of LSI that . The system will STILL be capable of instantiating more, perhaps with some performance penalty
-*   2 - This is a fixed number of threads, 1 for the bg and one for ctl attendance code (CMM)
-*
-*/
 
 /*
 * General parameters
@@ -45,24 +29,68 @@
 
 /*
 * I/O subsystem parameters
+*
+* The following parameters tweak the configuration of the GNU/Linux I/O subsystem. There are two major items
+* one may want to tweak:
+*
+* - The amount of threads used for doing I/O: the IO_RX/TX_THREADS defines the amount of threads that may be used
+*   for serving the ports. As a rule of thumb, one should configure: 
+*
+*                 IO_RX_THREADS+IO_TX_THREADS+1 == Number of cores or CPUs of the system
+*                 IO_RX_THREADS+IO_TX_THREADS   <= IO_MAX_THREADS  
+*
+* - The amount of buffers: IO_BUFFERPOOL_CAPACITY defines the amount of pre-allocated buffers.
+* - The number of (soft) queues per port: IO_IFACE_NUM_QUEUES
+*
+* It is recommended that IO_RX_THREADS >= IO_TX_THREADS
+*
 */
 
-//Num of RX and processing threads per LSI (Nlsi) 
-#define IO_RX_THREADS_PER_LSI 2
+//Num of RX(and OF processing) threads
+#define IO_RX_THREADS 2
 
-//Total number of TX threads (Nio)
-#define IO_TX_TOTAL_THREADS 2
+//Total number of TX threads
+#define IO_TX_THREADS 2
+
+//Maximum number of threads (pre-allocation)
+//Warning: do not modify this value unless you know what you are doing!
+#define IO_MAX_THREADS 64
 
 //Number of output queues per interface
 #define IO_IFACE_NUM_QUEUES 8
+
+/*
+* Buffer pool section
+*/
 
 //Bufferpool reservoir(PKT_INs); ideally at least X*max_num_lsis
 #define IO_BUFFERPOOL_RESERVOIR 2048
 
 //Number of buffers available for I/O. Dimension according to the 
 //the maximum number of interfaces that can run at the same time
-//Warning: changing the size of this variable can have ARNING:
+//Warning: changing the size of this variable can affect performance 
 #define IO_BUFFERPOOL_CAPACITY 2048*16 //32K buffers
+
+/*
+* Port scheduling strategy
+*/
+
+//Use polling_ioscheduler
+//Warning: not recommended!
+//#define IO_POLLING_STRATEGY
+
+
+/*
+* Interface section
+*/
+
+//RX/TX ring size and output queue dimensions
+//Align to a power of 2
+#define IO_IFACE_RING_SLOTS 2048
+
+//
+// ioport_mmap specifics
+//
 
 //Max frame size (WARNING: do not go beyond 8192 bytes, and never underneath 2048 bytes)
 //Align to a power of 2
@@ -71,18 +99,9 @@
 #define IO_IFACE_MMAP_BLOCKS 2 
 #define IO_IFACE_MMAP_BLOCK_SIZE 96
 
-//RX/TX ring size and output queue dimensions
-//Align to a power of 2
-#define IO_IFACE_RING_SLOTS 2048
-
-//Required buffers per interface
-//(bufferpool will be dimensioned to be at least Nifaces*IO_IFACE_REQUIRED_BUFFERS)
-#define IO_IFACE_REQUIRED_BUFFERS 2048
-
-//Buffer storage(PKT_IN) max buffers per LSI
-#define IO_PKT_IN_STORAGE_MAX_BUF 512
-//Buffer storage(PKT_IN) expiration time (seconds)
-#define IO_PKT_IN_STORAGE_EXPIRATION_S 10
+/*
+* Kernel scheduling section
+*/
 
 //Kernel scheduling policy for I/O threads. Possible values SCHED_FIFO, SCHED_RR or SCHED_OTHER
 //Warning: change it only if you know what you are doing 
@@ -94,22 +113,26 @@
 
 
 /*
-* Processing subsystem parameters
+* LSI parameters
+*
+* Parameters specified by logical switch instance
 */
-
-#if 0
-//Num of processing threads per Logical Switch Instance (Tlsi)
-#define PROCESSING_THREADS_PER_LSI 2
-#endif
 
 //Per thread input queue to the switch
 //Align to a power of 2
-#define PROCESSING_INPUT_QUEUE_SLOTS 1024 
+#define LSI_INPUT_QUEUE_SLOTS 1024 
 
 //Per thread input queue to the switch
 //Align to a power of 2
 //WARNING: do not over-size it or congestion can be created
-#define PROCESSING_PKT_IN_QUEUE_SLOTS 64
+#define LSI_PKT_IN_QUEUE_SLOTS 64
+
+//Buffer storage(PKT_IN) max buffers per LSI
+#define LSI_PKT_IN_STORAGE_MAX_BUF 512
+
+//Buffer storage(PKT_IN) expiration time (seconds)
+#define LSI_PKT_IN_STORAGE_EXPIRATION_S 10
+
 
 /* 
 * Other

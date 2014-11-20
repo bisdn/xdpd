@@ -4,7 +4,6 @@
 #include <rofl/common/utils/c_logger.h>
 #include "iomanager.h"
 #include "bufferpool.h"
-#include "../processing/processingmanager.h"
 
 //Add it here if you want to use another scheduler...
 #include "scheduler/epoll_ioscheduler.h"
@@ -14,46 +13,69 @@ using namespace xdpd::gnu_linux;
 
 /* Static members */
 unsigned int iomanager::num_of_groups = 0;
-unsigned int iomanager::curr_tx_group_sched_pointer = 0;
-unsigned long long int iomanager::num_of_port_buffers = 0;
+unsigned int iomanager::num_of_rx_groups = 0;
+unsigned int iomanager::num_of_tx_groups = 0;
+unsigned int iomanager::next_rx_sched_grp_id = 0;
+unsigned int iomanager::next_tx_sched_grp_id = 0;
+
 pthread_mutex_t iomanager::mutex = PTHREAD_MUTEX_INITIALIZER; 
-//std::vector<portgroup_state> iomanager::portgroups; //TODO: maybe add a pre-reserved memory here
-safevector<portgroup_state*> iomanager::portgroups; //TODO: maybe add a pre-reserved memory here
+std::map<uint16_t, portgroup_state*> iomanager::portgroups; 
 
 //Change this if you want to use another scheduler
-typedef epoll_ioscheduler ioscheduler_provider;
-//typedef polling_ioscheduler ioscheduler_provider;
-
+#ifdef IO_POLLING_STRATEGY
+	typedef polling_ioscheduler ioscheduler_provider;
+#else
+	typedef epoll_ioscheduler ioscheduler_provider;
+#endif
 
 
 /*
 ** PUBLIC APIs 
 **
 **/
-rofl_result_t iomanager::init( unsigned int _num_of_tx_groups ){
+rofl_result_t iomanager::init( unsigned int _rx_groups, unsigned int _tx_groups){
+ 
 	unsigned int i;
 
 	pthread_mutex_lock(&mutex);
-	
-	if(! (_num_of_tx_groups > 0) ){
-		goto INIT_ERROR;
-	}
 		
-	ROFL_DEBUG(DRIVER_NAME"[iomanager] Initializing iomanager with %u TX portgroups (%u total threads)\n", _num_of_tx_groups, _num_of_tx_groups*DEFAULT_THREADS_PER_PORTGROUP);
-	
 	//Check if it has been already inited before
 	if(num_of_groups != 0){
 		goto INIT_ERROR;
 	}
+
+	if( unlikely(_rx_groups<0) || unlikely(_tx_groups<0) ){
+		ROFL_ERR(DRIVER_NAME"[iomanager] Invalid RX(%u) or TX(%u) parameters. Aborting...\n", _rx_groups, _tx_groups);
+		goto INIT_ERROR;
+	}
+		
+	//Initialize the number of groups
+	num_of_rx_groups = _rx_groups;
+	num_of_tx_groups = _tx_groups;
+
+	ROFL_DEBUG(DRIVER_NAME"[iomanager] Initializing iomanager with %u RX portgroups (%u total threads), and %u TX portgroups (%u total threads)\n", _rx_groups, _rx_groups*DEFAULT_THREADS_PER_PORTGROUP, _tx_groups, _tx_groups*DEFAULT_THREADS_PER_PORTGROUP);
 	
-	for(i=0;i<_num_of_tx_groups;++i){
-		//Create the group
-		if( create_group(PG_TX, DEFAULT_THREADS_PER_PG, true) < 0 ){
-			goto INIT_ERROR;
-		}
-	}	
+	try{	
+		for(i=0;i<num_of_rx_groups;++i){
+			//Create the group
+			if( create_group(PG_RX, DEFAULT_THREADS_PER_PG, true) < 0 ){
+				goto INIT_ERROR;
+			}
+		}	
+
+		for(i=0;i<num_of_tx_groups;++i){
+			//Create the group
+			if( create_group(PG_TX, DEFAULT_THREADS_PER_PG, true) < 0 ){
+				goto INIT_ERROR;
+			}
+		}	
+	}catch(...){
+		ROFL_ERR(DRIVER_NAME"[iomanager] Unable to initialize port groups. Out of memory?\n");
+		goto INIT_ERROR;
+	}
 
 	pthread_mutex_unlock(&mutex);
+
 	return ROFL_SUCCESS;
 
 INIT_ERROR:
@@ -70,21 +92,11 @@ rofl_result_t iomanager::add_port(ioport* port){
 	int grp_id;
 
 	pthread_mutex_lock(&mutex);
-	//Determine TX group
-	grp_id = curr_tx_group_sched_pointer;
-	curr_tx_group_sched_pointer = (curr_tx_group_sched_pointer+1) % IO_TX_TOTAL_THREADS; //Only over TX groups
-	pthread_mutex_unlock(&mutex);
-	
-	ROFL_DEBUG(DRIVER_NAME"[iomanager] Adding port %s to iomanager, at portgroup TX %u\n", port->of_port_state->name, grp_id); 
-	 	
-	if(add_port_to_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Adding port %s to iomanager (TX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
-		assert(0);
-		return ROFL_FAILURE;	
-	}
 
-	//RX
-	grp_id = processingmanager::get_rx_pg_index_rr(port->of_port_state->attached_sw, port);	
+	//Determine RX group
+	grp_id = rx_sched(); 
+	
+	pthread_mutex_unlock(&mutex);
 	
 	ROFL_DEBUG(DRIVER_NAME"[iomanager] Adding port %s to iomanager, at portgroup RX %u\n", port->of_port_state->name, grp_id); 
 	
@@ -92,6 +104,21 @@ rofl_result_t iomanager::add_port(ioport* port){
 		ROFL_ERR(DRIVER_NAME"[iomanager] Adding port %s to iomanager (RX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		//FIXME remove TX
+		return ROFL_FAILURE;	
+	}
+	
+	pthread_mutex_lock(&mutex);
+
+	//Determine TX group
+	grp_id = tx_sched(); 
+	
+	pthread_mutex_unlock(&mutex);
+	
+	ROFL_DEBUG(DRIVER_NAME"[iomanager] Adding port %s to iomanager, at portgroup TX %u\n", port->of_port_state->name, grp_id); 
+	 	
+	if(add_port_to_group(grp_id, port) != ROFL_SUCCESS){
+		ROFL_ERR(DRIVER_NAME"[iomanager] Adding port %s to iomanager (TX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
+		assert(0);
 		return ROFL_FAILURE;	
 	}
 	
@@ -336,21 +363,6 @@ void iomanager::stop_portgroup_threads(portgroup_state* pg){
 }
 
 /*
-* Checks whether it exists a portgroup with grp_id. This method is NOT thread-safe 
-*/
-portgroup_state* iomanager::get_group(int grp_id){
-	
-	size_t i;
-
-	for(i=0;i<portgroups.size();++i){
-		if(portgroups[i]->id == (unsigned int)grp_id)
-			return portgroups[i];
-	}
-	
-	return NULL; 
-}
-
-/*
 * Creates an empty portgroup structure
 */
 int iomanager::create_group(pg_type_t type, unsigned int num_of_threads, bool mutex_locked){
@@ -375,9 +387,9 @@ int iomanager::create_group(pg_type_t type, unsigned int num_of_threads, bool mu
 		pthread_mutex_lock(&mutex);
 	}
 
-	//Add to portgroups and return position in the vector
-	pg->id = portgroups.size();
-	portgroups.push_back(pg);
+	//Add to portgroups and return position in the map
+	pg->id = num_of_groups;
+	portgroups[pg->id] = pg;
 	
 	num_of_groups++;
 	
@@ -395,22 +407,27 @@ int iomanager::create_group(pg_type_t type, unsigned int num_of_threads, bool mu
 /* Deletes the portgroup. If there are existing ports, they are stopped and deleted */
 rofl_result_t iomanager::delete_all_groups(){
 
+	unsigned int i;
 	portgroup_state* pg;
-	
-	do{
-		try{
-			pg = portgroups[0];
-		}catch(...){
-			//No more groups
-			break;
-		}
 
-		if(iomanager::delete_group(pg->id) != ROFL_SUCCESS){
-			assert(0);
-			break;
-		}
+	try{	
+		for(i=0;i<num_of_rx_groups;++i){
+			pg = portgroups[i];
+			if(iomanager::delete_group(pg->id) != ROFL_SUCCESS){
+				assert(0);
+			}
+		}	
 
-	}while(1);
+		for(i=0;i<num_of_tx_groups;++i){
+			pg = portgroups[i+num_of_rx_groups];
+			if(iomanager::delete_group(pg->id) != ROFL_SUCCESS){
+				assert(0);
+			}
+		}	
+	}catch(...){
+		ROFL_ERR(DRIVER_NAME"[iomanager] Warning: Unable to destroy some port groups\n");
+	}
+
 	return ROFL_SUCCESS;
 }
 
@@ -423,7 +440,7 @@ rofl_result_t iomanager::delete_group(unsigned int grp_id){
 	pthread_mutex_lock(&mutex);
 
 	//Make sure this portgroup exists
-	pg = get_group(grp_id); 
+	pg = portgroups[grp_id]; 
 	if(!pg){
 		pthread_mutex_unlock(&mutex);
 		return ROFL_FAILURE;
@@ -442,7 +459,7 @@ rofl_result_t iomanager::delete_group(unsigned int grp_id){
 	}
 
 	//Delete it from the portgroups list 
-	portgroups.erase(pg);
+	portgroups.erase(grp_id);
 
 	//Free memory 
 	delete pg->ports;
@@ -464,6 +481,9 @@ int iomanager::get_group_id_by_port(ioport* port, pg_type_t type){
 	unsigned int i,j;
 	
 	for(i=0;i<portgroups.size();++i){
+
+		if(!portgroups[i])
+			continue;
 
 		if(portgroups[i]->type != type)
 			continue;
@@ -492,26 +512,24 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 	pthread_mutex_lock(&mutex);
 
 	//Make sure this portgroup exists
-	pg = get_group(grp_id); 
+	pg = portgroups[grp_id]; 
 	if(!pg){
 		pthread_mutex_unlock(&mutex);
 		assert(0);
 		return ROFL_FAILURE;
 	}
 
-	//Check existance of port already in any portgroup
+	//Check existence of port already in any portgroup
 	for(i=0;i<portgroups.size();++i){
-		if(portgroups[i]->ports->contains(port) && get_group(i)->type == pg->type){
+		if(!portgroups[i])
+			continue;
+		if(portgroups[i]->ports->contains(port) && portgroups[i]->type == pg->type){
 			pthread_mutex_unlock(&mutex);
 			assert(0);
 			return ROFL_FAILURE;
 		}
 	}
 
-	//Pre-allocate buffers for operating at line-rate
-	num_of_port_buffers += port->get_required_buffers();
-	//bufferpool::increase_capacity(num_of_port_buffers);
-	
 	//Add to port
 	pg->ports->push_back(port);	
 
@@ -521,7 +539,7 @@ rofl_result_t iomanager::add_port_to_group(unsigned int grp_id, ioport* port){
 }
 
 /*
-* Remove port to the portgroup. Removal implicitely stops the port (brings it down).
+* Remove port to the portgroup. Removal implicitly stops the port (brings it down).
 */
 rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* port, bool mutex_locked){
 	
@@ -533,7 +551,7 @@ rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* por
 	}
 
 	//Make sure this portgroup exists
-	pg = get_group(grp_id); 
+	pg = portgroups[grp_id];
 	if(!pg){
 		if(!mutex_locked){
 			pthread_mutex_unlock(&mutex);
@@ -554,9 +572,6 @@ rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* por
 	//Bring it down
 	bring_port_down(port, true);
 	
-	//Substract buffers that were required by this port
-	num_of_port_buffers -= port->get_required_buffers();
-		
 	//Erase it
 	pg->ports->erase(port);	
 	
@@ -571,7 +586,7 @@ rofl_result_t iomanager::remove_port_from_group(unsigned int grp_id, ioport* por
 
 void iomanager::dump_state(bool mutex_locked){
 
-#ifdef DEBUG_VERBOSE	
+#ifdef DEBUG
 	unsigned int i;
 	std::stringstream s("");	
 	
@@ -583,7 +598,10 @@ void iomanager::dump_state(bool mutex_locked){
 	
 		portgroup_state* pg = portgroups[i];
 
-		s<<"\t\t\t["<<pg->id<<"("<<i<<"):";
+		if(!pg)
+			continue;
+	
+		s<<"\t\t\t["<<pg->id<<"):";
 		if (pg->type == PG_RX)
 			s << "rx { ";
 		else

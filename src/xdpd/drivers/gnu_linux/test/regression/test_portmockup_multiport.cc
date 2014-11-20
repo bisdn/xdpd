@@ -12,8 +12,7 @@
 #include <rofl/datapath/hal/driver.h>
 #include "io/iomanager.h"
 #include "io/ports/mockup/ioport_mockup.h"
-#include "processing/processingmanager.h"
-
+#include "processing/ls_internal_state.h"
 
 #define TEST_DPID 0x1015
 
@@ -144,7 +143,7 @@ void DriverMultiPortMockupTestCase::test_drop_packets(void )
 	
 
 	//srand(time(NULL)); //random seed
-	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->input_queues[0];
+	circular_queue<datapacket_t>* rbuffer = ((struct switch_platform_state*) sw->platform_state )->pkt_in_queue;
 	
 	//Enqueue packets
 	for(int i=0;i<number_of_packets;i++){

@@ -867,26 +867,23 @@ xmp::handle_lsi_cross_connect(rofl::csocket& socket, cxmpmsg& msg)
 	cxmpmsg *reply = new cxmpmsg(XMP_VERSION, XMPT_REPLY);
 	reply->set_xid(msg.get_xid());
 
-	if (not msg.get_xmpies().has_ie_multipart() ||
-			2 != msg.get_xmpies().get_ie_multipart().get_ies().size() ||
-			XMPIET_DPID != msg.get_xmpies().get_ie_multipart().get_ies().front()->get_type() ||
-			XMPIET_DPID != msg.get_xmpies().get_ie_multipart().get_ies().back()->get_type()) {
+	if (not msg.get_xmpies().has_ie_lsixlsi()) {
 
 		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Cross-Connect request without two -DPID- IE, dropping message." << std::endl;
 		reply->set_type(XMPT_ERROR);
 	} else {
 
 		try {
-			uint64_t dpid1 = static_cast<cxmpie_dpid*>(msg.get_xmpies().get_ie_multipart().get_ies().front())->get_dpid();
-			uint64_t dpid2 = static_cast<cxmpie_dpid*>(msg.get_xmpies().get_ie_multipart().get_ies().back())->get_dpid();
+			uint64_t dpid1 = msg.get_xmpies().get_ie_lsixlsi().get_dpid1();
+			uint32_t portno1 = msg.get_xmpies().get_ie_lsixlsi().get_portno1();
+			uint64_t dpid2 = msg.get_xmpies().get_ie_lsixlsi().get_dpid2();
+			uint32_t portno2 = msg.get_xmpies().get_ie_lsixlsi().get_portno2();
 
-			rofl::logging::info << "[xdpd][plugin][xmp] cross-connect dpid1=" << dpid1 << " and dpid2=" << dpid2 << std::endl;
+			rofl::logging::info << "[xdpd][plugin][xmp] cross-connect dpid1=" << dpid1 << " as portno " << portno1 << " and dpid2=" << dpid2 << " as portno2 " << portno2 << std::endl;
 
 			std::string port1;
 			std::string port2;
-			unsigned int port_num1 = 0;
-			unsigned int port_num2 = 0;
-			port_manager::connect_switches(dpid1, &port_num1, port1, dpid2, &port_num2, port2);
+			port_manager::connect_switches(dpid1, &portno1, port1, dpid2, &portno2, port2);
 
 			rofl::logging::info << "[xdpd][plugin][xmp] cross-link-ports: port1=" << port1 << " port2=" << port2 << std::endl;
 

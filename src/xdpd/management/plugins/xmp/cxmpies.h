@@ -25,6 +25,7 @@ extern "C" {
 #include "cxmpie_dpid.h"
 #include "cxmpie_lsiinfo.h"
 #include "cxmpie_controller.h"
+#include "cxmpie_lsixlsi.h"
 #include "cxmpie_multipart.h"
 #include "xdpd_mgmt_protocol.h"
 #include "rofl/common/croflexception.h"
@@ -253,6 +254,24 @@ public:
 
 	bool
 	has_ie_controller() const;
+
+	/*
+	 * information element: lsi cross connect
+	 */
+	cxmpie_lsixlsi&
+	add_ie_lsixlsi();
+
+	cxmpie_lsixlsi&
+	set_ie_lsixlsi();
+
+	cxmpie_lsixlsi const&
+	get_ie_lsixlsi() const;
+
+	void
+	drop_ie_lsixlsi();
+
+	bool
+	has_ie_lsixlsi() const;
 
 	/*
 	 * information element: multipart

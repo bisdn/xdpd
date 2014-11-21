@@ -28,6 +28,8 @@ libxdpd_xmp_la_SOURCES = \
 	cxmpie_lsiinfo.cc \
 	cxmpie_controller.h \
 	cxmpie_controller.cc \
+	cxmpie_lsixlsi.h \
+	cxmpie_lsixlsi.cc \
 	cxmpie_multipart.cc \
 	cxmpie_multipart.h \
 	cxmpies.h \

@@ -69,6 +69,7 @@ enum xmpie_type_t {
 	XMPIET_LSINAME		= 6,
 	XMPIET_LSIINFO		= 7,
 	XMPIET_CONTROLLER	= 8,
+	XMPIET_LSIXLSI		= 9
 };
 
 struct xmp_ie_header_t {
@@ -138,6 +139,15 @@ struct xmp_ie_controller_t {
 	uint8_t		ip_domain;
 	uint32_t 	ip_address[4];
 	uint16_t 	port;
+} __attribute__((packed));
+
+struct xmp_ie_lsixlsi_t {
+	uint16_t	type;
+	uint16_t	len;	// including header and payload
+	uint64_t	dpid1;
+	uint32_t	portno1;
+	uint64_t	dpid2;
+	uint32_t	portno2;
 } __attribute__((packed));
 
 #endif /* MGMT_PROTOCOL_H_ */

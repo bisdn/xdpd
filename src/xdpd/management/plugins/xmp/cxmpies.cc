@@ -144,6 +144,9 @@ cxmpies::map_and_insert(
 	case XMPIET_CONTROLLER: {
 		xmpmap[XMPIET_CONTROLLER] = new cxmpie_controller(xmpie);
 	} break;
+	case XMPIET_LSIXLSI: {
+		xmpmap[XMPIET_LSIXLSI] = new cxmpie_lsixlsi(xmpie);
+	} break;
 	default: {
 		xmpmap[xmpie.get_type()] = new cxmpie(xmpie);
 	};
@@ -473,6 +476,51 @@ bool
 cxmpies::has_ie_controller() const
 {
 	return (xmpmap.find(XMPIET_CONTROLLER) != xmpmap.end());
+}
+
+
+cxmpie_lsixlsi&
+cxmpies::add_ie_lsixlsi()
+{
+	if (xmpmap.find(XMPIET_LSIXLSI) != xmpmap.end()) {
+		delete xmpmap[XMPIET_LSIXLSI];
+	}
+	xmpmap[XMPIET_LSIXLSI] = new cxmpie_lsixlsi();
+	return *(dynamic_cast<cxmpie_lsixlsi*>( xmpmap[XMPIET_LSIXLSI] ));
+}
+
+cxmpie_lsixlsi&
+cxmpies::set_ie_lsixlsi()
+{
+	if (xmpmap.find(XMPIET_LSIXLSI) == xmpmap.end()) {
+		xmpmap[XMPIET_LSIXLSI] = new cxmpie_lsixlsi();
+	}
+	return *(dynamic_cast<cxmpie_lsixlsi*>( xmpmap[XMPIET_LSIXLSI] ));
+}
+
+cxmpie_lsixlsi const&
+cxmpies::get_ie_lsixlsi() const
+{
+	if (xmpmap.find(XMPIET_LSIXLSI) == xmpmap.end()) {
+		throw eXmpIEsNotFound();
+	}
+	return *(dynamic_cast<cxmpie_lsixlsi const*>( xmpmap.at(XMPIET_LSIXLSI) ));
+}
+
+void
+cxmpies::drop_ie_lsixlsi()
+{
+	if (xmpmap.find(XMPIET_LSIXLSI) == xmpmap.end()) {
+		return;
+	}
+	delete xmpmap[XMPIET_LSIXLSI];
+	xmpmap.erase(XMPIET_LSIXLSI);
+}
+
+bool
+cxmpies::has_ie_lsixlsi() const
+{
+	return (xmpmap.find(XMPIET_LSIXLSI) != xmpmap.end());
 }
 
 

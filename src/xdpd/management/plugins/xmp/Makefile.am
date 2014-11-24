@@ -46,6 +46,7 @@ libxdpd_xmp_la_HEADERS = \
 	cxmpie_portinfo.h    \
 	cxmpie_lsiinfo.h     \
 	cxmpie_controller.h  \
+	cxmpie_lsixlsi.h     \
 	cxmpie_multipart.h   \
 	cxmpies.h
 

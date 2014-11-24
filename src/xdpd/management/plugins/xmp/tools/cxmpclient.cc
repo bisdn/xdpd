@@ -432,13 +432,14 @@ cxmpclient::lsi_connect_to_controller(uint64_t dpid, const std::list<class xdpd:
 }
 
 void
-cxmpclient::lsi_cross_connect(const uint64_t dpid1, const uint64_t dpid2)
+cxmpclient::lsi_cross_connect(const uint64_t dpid1, const uint64_t port_no1, const uint64_t dpid2, const uint64_t port_no2)
 {
 	cxmpmsg msg(XMP_VERSION, XMPT_REQUEST);
 	msg.get_xmpies().add_ie_command().set_command(XMPIEMCT_LSI_XCONNNECT);
-
-	msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_dpid(dpid1));
-	msg.get_xmpies().set_ie_multipart().push_back(new cxmpie_dpid(dpid2));
+	msg.get_xmpies().set_ie_lsixlsi().set_dpid1(dpid1);
+	msg.get_xmpies().set_ie_lsixlsi().set_portno1(port_no1);
+	msg.get_xmpies().set_ie_lsixlsi().set_dpid2(dpid2);
+	msg.get_xmpies().set_ie_lsixlsi().set_portno2(port_no2);
 
 	rofl::logging::debug << "[xmpclient] sending Lsi-Cross-Connect request:" << std::endl << msg;
 	send_message(msg);

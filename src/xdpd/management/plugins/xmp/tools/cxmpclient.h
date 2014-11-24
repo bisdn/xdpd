@@ -91,7 +91,7 @@ public:
 
 
 	void
-	lsi_cross_connect(const uint64_t dpid1, const uint64_t dpid2);
+	lsi_cross_connect(const uint64_t dpid1, const uint64_t port_no1, const uint64_t dpid2, const uint64_t port_no2);
 
 	/**
 	 *

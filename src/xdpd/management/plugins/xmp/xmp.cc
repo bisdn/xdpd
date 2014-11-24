@@ -868,8 +868,7 @@ xmp::handle_lsi_cross_connect(rofl::csocket& socket, cxmpmsg& msg)
 	reply->set_xid(msg.get_xid());
 
 	if (not msg.get_xmpies().has_ie_lsixlsi()) {
-
-		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Cross-Connect request without two -DPID- IE, dropping message." << std::endl;
+		rofl::logging::error << "[xdpd][plugin][xmp] rcvd xmp Cross-Connect request without two -LSIXLSI- IE, dropping message." << std::endl;
 		reply->set_type(XMPT_ERROR);
 	} else {
 

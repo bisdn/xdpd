@@ -199,7 +199,7 @@ cxmpclient::handle_event(rofl::cevent const& ev)
 			handle_send();
 			break;
 		case WANT_EXIT:
-			ciosrv::stop();
+			rofl::cioloop::get_loop().stop();
 			break;
 		default:
 			break;
@@ -214,7 +214,7 @@ cxmpclient::handle_timeout(
 
 	switch (opaque) {
 	case TIMER_XMPCLNT_EXIT: {
-		ciosrv::stop();
+		rofl::cioloop::get_loop().stop();
 	} break;
 	default: {
 

@@ -40,8 +40,8 @@ const std::string system_manager::XDPD_EXTRA_PARAMS_OPT_FULL_NAME="extra-params"
 
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
-	//Only stop ciosrv 
-	ciosrv::stop();
+	//Only stop cioloop
+	rofl::cioloop::get_loop().stop();
 }
 
 
@@ -237,8 +237,8 @@ void system_manager::init(int argc, char** argv){
 
 	//If test-config is not set, launch ciosrv loop, otherwise terminate execution
 	if(!is_test_run()){
-		//ciosrv run. Only will stop in Ctrl+C
-		ciosrv::run();
+		//cioloop run. Only will stop in Ctrl+C
+		rofl::cioloop::get_loop().run();
 	}
 
 	//Printing nice trace
@@ -258,7 +258,7 @@ void system_manager::init(int argc, char** argv){
 	logging::close();
 
 	//Release ciosrv loop resources
-	rofl::cioloop::shutdown();
+	rofl::cioloop::get_loop().shutdown();
 
 	//Print a nice trace
 	ROFL_INFO("[xdpd][system_manager] Shutted down.\n");

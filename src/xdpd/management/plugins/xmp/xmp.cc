@@ -10,6 +10,7 @@
 #include <rofl/common/csocket.h>
 
 #include "../../switch_manager.h"
+#include "../../system_manager.h"
 
 
 
@@ -27,7 +28,6 @@ xmp::xmp() :
 	socket_params = rofl::csocket::get_default_params(rofl::csocket::SOCKET_TYPE_PLAIN);
 
 	socket_params.set_param(rofl::csocket::PARAM_KEY_LOCAL_HOSTNAME).set_string(MGMT_PORT_UDP_ADDR);
-	socket_params.set_param(rofl::csocket::PARAM_KEY_LOCAL_PORT).set_string(MGMT_PORT_UDP_PORT);
 	socket_params.set_param(rofl::csocket::PARAM_KEY_DOMAIN).set_string("inet");
 	socket_params.set_param(rofl::csocket::PARAM_KEY_TYPE).set_string("stream");
 	socket_params.set_param(rofl::csocket::PARAM_KEY_PROTOCOL).set_string("tcp");
@@ -52,10 +52,30 @@ xmp::init()
 	if (socket) {
 		socket->close();
 		delete socket;
-		socket = (rofl::csocket*)0;
+		socket = NULL;
 	}
+
+	if (system_manager::is_option_set("xmp-port")) {
+		socket_params.set_param(rofl::csocket::PARAM_KEY_LOCAL_PORT).set_string(system_manager::get_option_value("xmp-port"));
+	} else {
+		socket_params.set_param(rofl::csocket::PARAM_KEY_LOCAL_PORT).set_string(MGMT_PORT_UDP_PORT);
+	}
+
+
 	(socket = rofl::csocket::csocket_factory(socket_type, this))->listen(socket_params);
 }
+
+std::vector<rofl::coption>
+xdpd::mgmt::protocol::xmp::get_options(void)
+{
+	std::vector<rofl::coption> options;
+
+	//Add mandatory -c argument
+	options.push_back(rofl::coption(true, REQUIRED_ARGUMENT, 'x', "xmp-port", "listen port for xmp plugin", MGMT_PORT_UDP_PORT));
+
+	return options;
+}
+
 
 void
 xmp::handle_listen(

@@ -93,6 +93,13 @@ protected:
 	virtual void
 	handle_closed(rofl::csocket& socket);
 
+
+	/**
+	 * overloaded from plugin
+	 */
+	virtual std::vector<rofl::coption> get_options(void);
+
+
 private:
 
 	void

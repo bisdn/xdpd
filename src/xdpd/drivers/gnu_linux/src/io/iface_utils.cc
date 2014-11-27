@@ -454,7 +454,9 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	port1->hwaddr[4] = ((uint8_t*)&randnum)[0];
 	port1->hwaddr[5] = ((uint8_t*)&randnum)[1];
 
-	port1->hwaddr[0] &= 0xfe;
+	// locally administered MAC address
+	port1->hwaddr[0] &= ~(1 << 0);
+	port1->hwaddr[0] |=  (1 << 1);
 
 	//memcpy(port1->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 
@@ -474,7 +476,9 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	port2->hwaddr[4] = ((uint8_t*)&randnum)[0];
 	port2->hwaddr[5] = ((uint8_t*)&randnum)[1];
 
-	port2->hwaddr[0] &= 0xfe;
+	// locally administered MAC address
+	port2->hwaddr[0] &= ~(1 << 0);
+	port2->hwaddr[0] |=  (1 << 1);
 
 	//memcpy(port2->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 

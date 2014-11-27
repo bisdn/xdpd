@@ -263,7 +263,10 @@ rofl_result_t iface_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_p
 	randnum = (uint16_t)rand();
 	(*vport1)->hwaddr[4] = ((uint8_t*)&randnum)[0];
 	(*vport1)->hwaddr[5] = ((uint8_t*)&randnum)[1];
-	(*vport1)->hwaddr[0] &= 0xfe;
+
+	// locally administered MAC address
+	(*vport1)->hwaddr[0] &= ~(1 << 0);
+	(*vport1)->hwaddr[0] |=  (1 << 1);
 
 	//Add queues
 	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
@@ -289,8 +292,11 @@ rofl_result_t iface_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_p
 	randnum = (uint16_t)rand();
 	(*vport2)->hwaddr[4] = ((uint8_t*)&randnum)[0];
 	(*vport2)->hwaddr[5] = ((uint8_t*)&randnum)[1];
-	(*vport2)->hwaddr[0] &= 0xfe;
 	
+	// locally administered MAC address
+	(*vport2)->hwaddr[0] &= ~(1 << 0);
+	(*vport2)->hwaddr[0] |=  (1 << 1);
+
 	//Add queues
 	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
 		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);

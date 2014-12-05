@@ -1,5 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
+AUTOMAKE_OPTIONS = no-dependencies
+
 #Shared stuff
 SHARED_SRC=\
 	../of1x_cmm_mockup.c \

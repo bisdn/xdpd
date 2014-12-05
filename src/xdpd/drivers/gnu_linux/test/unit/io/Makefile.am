@@ -1,5 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
+AUTOMAKE_OPTIONS = no-dependencies
+
 SUBDIRS=packet_classifiers
 
 test_datapacket_storage_SOURCES= $(top_srcdir)/src/io/datapacket_storage.cc\

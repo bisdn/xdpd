@@ -35,6 +35,7 @@ libtool
 m4
 ar-lib
 
+build-aux
 /build/*
 /build-*
 test-driver

@@ -10,6 +10,7 @@ Change log
 
 v0.6.0
 
+[+] Workaround for automake 1.14 subdir-objects bug(13928).
 [+] Fixed some LLVM related warnings and errors (clang/clang++)
 
 [+][CMM] Added NF port manager extensions

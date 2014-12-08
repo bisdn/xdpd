@@ -103,8 +103,11 @@ test_port_status_LDADD = \
 	$(SHARED_LIBS)
 	
 	
-TESTS = \
+check_SCRIPTS = \
 	test_launcher.sh
+
+TESTS = \
+	$(check_SCRIPTS)
 
 check_PROGRAMS = \
 	test_portmockup_matchesmockup\

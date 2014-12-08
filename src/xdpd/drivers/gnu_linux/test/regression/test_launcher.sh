@@ -1,11 +1,17 @@
 #!/bin/bash
 
+# check for veth0
+ip link show veth0 >/dev/null 2>&1
+if [ 0 -ne $? ]; then
+	# create veth0/veth1
+	sudo ip link add type veth
+fi
+
 set -e
 
 ##
 #List of tests
 ##
-
 
 #Mockup
 sudo ./test_portmockup

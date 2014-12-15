@@ -302,17 +302,17 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 	if(output_port == flood_meta_port || output_port == all_meta_port){ //We don't have STP, so it is the same
 		datapacket_t* replica;
 		switch_port_t* port_it;
-		datapacket_dpdk_t* replica_pack;
 
 		//Get switch
 		sw = pkt->sw;	
-		
+#ifdef DEBUG
 		if(unlikely(!sw)){
 			// NOTE release here mbuf as well?
 			rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 			xdpd::gnu_linux::bufferpool::release_buffer(pkt);
 			return;
 		}
+#endif
 	
 		//We need to flood
 		for(unsigned i=0;i<LOGICAL_SWITCH_MAX_LOG_PORTS;++i){
@@ -324,13 +324,18 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 				continue;
 
 			//replicate packet
-			replica = platform_packet_replicate__(pkt, false); 	
-			replica_pack = (datapacket_dpdk_t*)pkt->platform_state;
+			replica = platform_packet_replicate__(pkt, false);
+
+			if(unlikely(!replica)){
+				ROFL_ERR("ERROR: Could not complete FLOOD action(%p): out of memory!\n", pkt);
+				assert(0);
+				break;
+			}
 
 			ROFL_DEBUG("[%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
 			
 			//send the replica
-			output_single_packet(replica, replica_pack, port_it);
+			output_single_packet(replica, (datapacket_dpdk_t*)pkt->platform_state, port_it);
 		}
 			
 		//discard the original packet always (has been replicated)

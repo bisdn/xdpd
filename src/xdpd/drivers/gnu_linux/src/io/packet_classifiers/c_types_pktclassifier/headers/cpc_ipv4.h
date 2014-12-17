@@ -68,6 +68,12 @@ void ipv4_calc_checksum(void *hdr){
 };
 
 inline static
+bool ipv4_is_fragment(void *hdr){
+	return 	((cpc_ipv4_hdr_t*)hdr)->offset_flags[1] |
+		(((cpc_ipv4_hdr_t*)hdr)->offset_flags[0]& ~OF1X_2MSBITS_MASK);
+};
+
+inline static
 void set_ipv4_src(void *hdr, uint32_t src){
 	((cpc_ipv4_hdr_t*)hdr)->src = src;
 };

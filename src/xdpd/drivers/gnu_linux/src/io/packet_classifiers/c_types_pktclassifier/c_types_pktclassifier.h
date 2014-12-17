@@ -361,6 +361,11 @@ void parse_ipv4(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 	if(unlikely(num_of_options < 0) || unlikely(num_of_options > 15))
 		return; 
 #endif
+
+	//We must not classify beyond IP when classifying IPv4 fragments
+	if(ipv4_is_fragment(ipv4))
+		return;
+
 	//Assign type
 	PT_CLASS_ADD_IPV4_OPTIONS(clas_state, num_of_options);
 	assert(clas_state->type != PT_INVALID);

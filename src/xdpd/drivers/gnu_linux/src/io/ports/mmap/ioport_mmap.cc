@@ -450,7 +450,7 @@ void disable_iface_checksum_offloading(int sd, struct ifreq ifr){
  */
 int check_veth_interface(int sd, struct ifreq ifr){
 	
-	int peer_id;
+	int peer_id=0;
 	struct ethtool_drvinfo drvinfo;
 	struct ethtool_gstrings *strings = NULL;
 	struct ethtool_stats* stats = NULL;
@@ -465,29 +465,31 @@ int check_veth_interface(int sd, struct ifreq ifr){
 	}
 
 	if (drvinfo.n_stats>0){
-		// create the structures that will hold the statistics (each statistic name has a length of ETH_GSTRING_LEN)
-		strings = (struct ethtool_gstrings *) calloc(1, drvinfo.n_stats*ETH_GSTRING_LEN + sizeof(struct ethtool_gstrings));
-		stats = (struct ethtool_stats*) malloc(sizeof(drvinfo.n_stats*sizeof(uint64_t) + sizeof(struct ethtool_stats)));
-		memset(stats, 0, sizeof(stats));
+		// Create the structures that will hold the statistics (each statistic name has a length of ETH_GSTRING_LEN)
 		
+		strings = (struct ethtool_gstrings *) calloc(1, drvinfo.n_stats*ETH_GSTRING_LEN + sizeof(struct ethtool_gstrings));
+		stats = (struct ethtool_stats*) calloc(1, drvinfo.n_stats*sizeof(uint64_t) + sizeof(struct ethtool_stats));
+		if (!strings || !stats){
+			ROFL_ERR(DRIVER_NAME"Error allocaing memory\n");
+			return -1;
+		}
+
 		// Request stats names
 		strings->cmd = ETHTOOL_GSTRINGS;
 		strings->string_set = ETH_SS_STATS;
 		strings->len = drvinfo.n_stats;
 		ifr.ifr_data = (caddr_t) strings;
-		//memset(strings->data, 0, sizeof(strings->data));
 		if (ioctl(sd, SIOCETHTOOL, &ifr) < 0) {
 			ROFL_WARN(DRIVER_NAME"[mmap:%s] Unable to get statistics name vector for interface\n", ifr.ifr_name);
 			free(strings);
 			free(stats);
 			return -1;
 		}
-		
+
 		// Request stats values
 		stats->cmd = ETHTOOL_GSTATS;
 		stats->n_stats = drvinfo.n_stats;
 		ifr.ifr_data = (caddr_t)stats;
-		//memset(stats->data, 0, sizeof(stats->data));//Make valgrind happy
 		if (ioctl(sd, SIOCETHTOOL, &ifr) < 0) {
 			ROFL_WARN(DRIVER_NAME"[mmap:%s] Unable to get ethtool stats feature on the NIC. Tx Checksum Offload feature won't be checked\n", ifr.ifr_name);
 			free(strings);
@@ -495,10 +497,11 @@ int check_veth_interface(int sd, struct ifreq ifr){
 			return -1;
 		}
 
-		//Look for peer_ifindex
+		// Look for peer_ifindex
 		uint16_t i;
+		char peer_id_str[] = "peer_ifindex";
 		for(i=0; i<drvinfo.n_stats; i++){
-			if( strcmp("peer_ifindex", (char *)&strings->data[i * ETH_GSTRING_LEN]) == 0 ){
+			if( strncmp(peer_id_str, (char *)&strings->data[i * ETH_GSTRING_LEN], sizeof(peer_id_str)) == 0 ){
 				//ROFL_DEBUG(DRIVER_NAME"[mmap:%s] Found %s %llu\n", ifr.ifr_name, (char *)&strings->data[i * ETH_GSTRING_LEN], stats->data[i]);
 				break;
 			}
@@ -510,13 +513,15 @@ int check_veth_interface(int sd, struct ifreq ifr){
 			// Interface is a VETH type. peer is stats->data[i]
 			peer_id = stats->data[i];
 		}
+
 		free(strings);
 		free(stats);
 		return peer_id;
 	
 	}else{
-			ROFL_WARN(DRIVER_NAME"[mmap:%s] No statistics found in interface\n", ifr.ifr_name);
+		ROFL_WARN(DRIVER_NAME"[mmap:%s] No statistics found in interface\n", ifr.ifr_name);
 	}
+
 	return 0;
 }
 

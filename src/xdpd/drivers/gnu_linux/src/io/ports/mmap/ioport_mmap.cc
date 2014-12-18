@@ -599,6 +599,7 @@ rofl_result_t ioport_mmap::up() {
 		}
 	}
 
+#if VETH_DISABLE_CHKSM_OFFLOAD
 	// Checksum Offload
 	int peer_id;
 	if ( (peer_id=check_veth_interface(sd, ifr)) > 0 ){
@@ -622,7 +623,7 @@ rofl_result_t ioport_mmap::up() {
 		disable_iface_checksum_offloading(sd, ifr);
 		close(peer_sd);
 	}
-	
+#endif	
 	
 	//Recover MTU
 	memset((void*)&ifr, 0, sizeof(ifr));

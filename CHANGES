@@ -23,6 +23,10 @@ v0.6.0
 [B][CMM] Set cookie field in Packet-In messages based on flow entry
 
 
+v0.5.3
+
+[B][gnu-linux][gnu-linux-dpdk] Prevent IPv4 fragments to be classified beyond IP
+
 v0.5.2
 
 [B][CMM] Fixed issue #40 (bug) => invalid table-features-stats messages generated

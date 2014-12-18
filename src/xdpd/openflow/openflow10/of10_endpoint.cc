@@ -22,7 +22,8 @@ of10_endpoint::of10_endpoint(
 		openflow_switch* sw,
 		int reconnect_start_timeout,
 		enum rofl::csocket::socket_type_t socket_type,
-		cparams const& socket_params) throw (eOfSmErrorOnCreation) {
+		cparams const& socket_params) throw (eOfSmErrorOnCreation) :
+				of_endpoint(versionbitmap, socket_type, socket_params) {
 
 
 	//Reference back to the sw
@@ -34,7 +35,7 @@ of10_endpoint::of10_endpoint(
 	versionbitmap.add_ofp_version(rofl::openflow10::OFP_VERSION);
 
 	//Connect to the main controller
-	crofbase::rpc_connect_to_ctl(versionbitmap, socket_type, socket_params);
+	crofbase::add_ctl(crofbase::get_idle_ctlid(), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
 }
 
 
@@ -43,6 +44,14 @@ of10_endpoint::of10_endpoint(
 * Handling endpoint messages routines
 *
 */
+
+void
+of10_endpoint::handle_ctl_close(crofctl& ctl)
+{
+	crofbase::add_ctl(crofbase::get_idle_ctlid(), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
+}
+
+
 
 void
 of10_endpoint::handle_features_request(

@@ -33,7 +33,7 @@ rofl_result_t openflow_switch::notify_port_status_changed(const switch_port_t* p
 void openflow_switch::rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){
 	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
 	versionbitmap.add_ofp_version(version);
-	endpoint->rpc_connect_to_ctl(versionbitmap, socket_type, socket_params);
+	endpoint->add_ctl(endpoint->get_idle_ctlid(), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
 }
 
 void openflow_switch::rpc_disconnect_from_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){

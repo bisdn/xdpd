@@ -49,7 +49,15 @@ class of_endpoint : public crofbase {
 
 public:
 
-	of_endpoint(rofl::openflow::cofhello_elem_versionbitmap const& versionbitmap = rofl::openflow::cofhello_elem_versionbitmap()) : crofbase(versionbitmap), sw(NULL) {};
+	of_endpoint(
+			rofl::openflow::cofhello_elem_versionbitmap const& versionbitmap,
+			enum rofl::csocket::socket_type_t socket_type,
+			const rofl::cparams& socket_params) :
+				crofbase(versionbitmap),
+				sw(NULL),
+				versionbitmap(versionbitmap),
+				socket_type(socket_type),
+				socket_params(socket_params) {};
 
 	virtual ~of_endpoint() {};
 
@@ -68,6 +76,9 @@ protected:
 	
 	//Switch to which the endpoint belongs to
 	openflow_switch* sw;	
+	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
+	enum rofl::csocket::socket_type_t socket_type;
+	cparams socket_params;
 };
 
 }// namespace rofl

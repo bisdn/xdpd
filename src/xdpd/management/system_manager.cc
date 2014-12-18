@@ -92,6 +92,10 @@ void system_manager::set_logging_debug_level(unsigned int level){
 			break;
 		case logging::DBG: c_level = DBG_LEVEL;
 			break;
+		case logging::DBG2: c_level = DBG_LEVEL;
+			break;
+		case logging::DBG3: c_level = DBG_LEVEL;
+			break;
 		case logging::TRACE: c_level = DBG_VERBOSE_LEVEL;
 			break;
 		default:

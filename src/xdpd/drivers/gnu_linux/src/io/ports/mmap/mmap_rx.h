@@ -113,7 +113,11 @@ next:
 			return hdr;
 		}else{
 			//TP_STATUS_COPY or TP_STATUS_CSUMNOTREADY (outgoing) => ignore
-			ROFL_DEBUG(DRIVER_NAME"[mmap_rx:%s] Discarding frame with status :%d, size: %d\n", devname.c_str(), hdr->tp_status,hdr->tp_len );
+			static unsigned int dropped = 0;
+
+			if( unlikely((dropped++%1000) == 0) ){
+				ROFL_ERR(DRIVER_NAME"[mmap_rx:%s] ERROR: discarded %u frames. Reason(s): %s %s (%u), length: %u. If TP_STATUS_CSUMNOTREADY is the cause, consider disabling RX/TX checksum offloading via ethtool.\n", devname.c_str(), dropped, ((hdr->tp_status&TP_STATUS_COPY) == 0)? "":"TP_STATUS_COPY", ((hdr->tp_status&TP_STATUS_CSUMNOTREADY) == 0)? "":"TP_STATUS_CSUMNOTREADY", hdr->tp_status, hdr->tp_len );
+			}
 
 			//Skip
 			hdr->tp_status = TP_STATUS_KERNEL;

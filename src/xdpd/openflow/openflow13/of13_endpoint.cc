@@ -13,17 +13,13 @@ using namespace xdpd;
 of13_endpoint::of13_endpoint(
 		openflow_switch* sw,
 		int reconnect_start_timeout,
+		const rofl::openflow::cofhello_elem_versionbitmap& versionbitmap,
 		enum rofl::csocket::socket_type_t socket_type,
 		cparams const& socket_params) throw (eOfSmErrorOnCreation) :
 				of_endpoint(versionbitmap, socket_type, socket_params) {
 
 	//Reference back to the sw
 	this->sw = sw;
-
-	//Set bitmaps
-	crofbase::get_versionbitmap().add_ofp_version(rofl::openflow13::OFP_VERSION);
-	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
-	versionbitmap.add_ofp_version(openflow13::OFP_VERSION);
 
 	//Connect to controller
 	crofbase::add_ctl(crofbase::get_idle_ctlid(), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);

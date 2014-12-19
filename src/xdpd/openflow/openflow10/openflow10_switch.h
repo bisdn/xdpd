@@ -49,6 +49,7 @@ public:
 				unsigned int num_of_tables,
 				int* ma_list,
 				int reconnect_start_timeout,
+				const rofl::openflow::cofhello_elem_versionbitmap& versionbitmap,
 				enum rofl::csocket::socket_type_t socket_type,
 				cparams const& socket_params) throw (eOfSmVersionNotSupported);
 

@@ -55,20 +55,25 @@ openflow_switch* switch_manager::create_switch(
 		throw eOfSmUnknownSocketType();
 	}
 
+	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
+
 	switch(version){
 
 		case OF_VERSION_10:
-			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
+			versionbitmap.add_ofp_version(openflow10::OFP_VERSION);
+			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params);
 
 			break;
 
 		case OF_VERSION_12:
-			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
+			versionbitmap.add_ofp_version(openflow12::OFP_VERSION);
+			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params);
 
 			break;
 	
 		case OF_VERSION_13:
-			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, socket_type, socket_params);
+			versionbitmap.add_ofp_version(openflow13::OFP_VERSION);
+			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params);
 
 			break;
 

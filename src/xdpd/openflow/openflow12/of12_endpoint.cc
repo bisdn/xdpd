@@ -22,7 +22,7 @@ of12_endpoint::of12_endpoint(
 	this->sw = sw;
 
 	//Connect to controller
-	crofbase::add_ctl(crofbase::get_idle_ctlid(), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
+	crofbase::add_ctl(rofl::cctlid(0), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
 }
 
 /*
@@ -34,7 +34,7 @@ of12_endpoint::of12_endpoint(
 void
 of12_endpoint::handle_ctl_close(crofctl& ctl)
 {
-	crofbase::add_ctl(crofbase::get_idle_ctlid(), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
+	crofbase::set_ctl(rofl::cctlid(0), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
 }
 
 

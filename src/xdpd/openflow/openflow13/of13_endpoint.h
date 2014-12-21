@@ -77,6 +77,8 @@ public:
 
 	virtual void handle_ctl_close(crofctl& ctl);
 
+	virtual void handle_conn_established(crofctl& ctl, const rofl::cauxid& auxid);
+
 private:
 
 	/* *

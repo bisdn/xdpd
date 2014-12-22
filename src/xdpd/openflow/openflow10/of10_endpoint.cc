@@ -41,12 +41,6 @@ of10_endpoint::of10_endpoint(
 *
 */
 
-void
-of10_endpoint::handle_ctl_close(crofctl& ctl)
-{
-	crofbase::set_ctl(rofl::cctlid(0), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
-}
-
 
 
 void

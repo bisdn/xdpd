@@ -31,24 +31,6 @@ of13_endpoint::of13_endpoint(
 *
 */
 
-void
-of13_endpoint::handle_ctl_close(crofctl& ctl)
-{
-	crofbase::set_ctl(rofl::cctlid(0), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
-	//crofbase::set_ctl(rofl::cctlid(0), versionbitmap).connect(rofl::cauxid(1), socket_type, socket_params);
-}
-
-
-
-void
-of13_endpoint::handle_conn_established(crofctl& ctl, const rofl::cauxid& auxid)
-{
-	if (rofl::cauxid(0) == auxid) {
-		//crofbase::set_ctl(rofl::cctlid(0), versionbitmap).connect(rofl::cauxid(1), socket_type, socket_params);
-	}
-}
-
-
 
 void
 of13_endpoint::handle_features_request(

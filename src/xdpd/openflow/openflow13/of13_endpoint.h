@@ -75,10 +75,6 @@ public:
 
 	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
 
-	virtual void handle_ctl_close(crofctl& ctl);
-
-	virtual void handle_conn_established(crofctl& ctl, const rofl::cauxid& auxid);
-
 private:
 
 	/* *

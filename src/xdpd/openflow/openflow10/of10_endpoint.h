@@ -77,8 +77,6 @@ public:
 
 	virtual rofl_result_t notify_port_status_changed(const switch_port_t* port);
 
-	virtual void handle_ctl_close(crofctl& ctl);
-
 private:
 
 	/**

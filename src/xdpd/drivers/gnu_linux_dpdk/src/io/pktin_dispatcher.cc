@@ -97,7 +97,7 @@ static void* process_packet_ins(void* param){
 						pkt_dpdk->pktin_reason, 	
 						pkt_dpdk->clas_state.port_in, 
 						id, 	
-						pkt->cookie,
+						pkt->__cookie,
 						get_buffer_dpdk(pkt_dpdk), 
 						pkt_dpdk->pktin_send_len, 
 						get_buffer_length_dpdk(pkt_dpdk),

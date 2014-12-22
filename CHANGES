@@ -10,6 +10,7 @@ Change log
 
 v0.6.0
 
+[+] Workaround for automake 1.14 subdir-objects bug(13928).
 [+] Fixed some LLVM related warnings and errors (clang/clang++)
 
 [+][CMM] Added NF port manager extensions
@@ -21,6 +22,10 @@ v0.6.0
 [B][gnu-linux-dpdk] Fixed functions push() and pop() in dpdk_datapacket
 [B][CMM] Set cookie field in Packet-In messages based on flow entry
 
+
+v0.5.3
+
+[B][gnu-linux][gnu-linux-dpdk] Prevent IPv4 fragments to be classified beyond IP
 
 v0.5.2
 

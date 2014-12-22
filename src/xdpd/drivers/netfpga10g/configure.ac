@@ -3,7 +3,7 @@ AC_INIT(xdpd - NetFPGA-10G driver, m4_esyscmd_s(cat VERSION), rofl@bisdn.de,  xd
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AC_GNU_SOURCE
 
 AC_PROG_INSTALL

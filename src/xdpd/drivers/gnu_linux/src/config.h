@@ -99,6 +99,8 @@
 #define IO_IFACE_MMAP_BLOCKS 2 
 #define IO_IFACE_MMAP_BLOCK_SIZE 96
 
+#define VETH_DISABLE_CHKSM_OFFLOAD 1
+
 /*
 * Kernel scheduling section
 */

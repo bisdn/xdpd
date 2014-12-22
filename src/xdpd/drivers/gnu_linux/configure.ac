@@ -3,11 +3,12 @@ AC_INIT(xdpd - GNU/Linux driver, m4_esyscmd_s(cat VERSION), rofl@bisdn.de, xdpd_
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AC_GNU_SOURCE
 
 AC_PROG_INSTALL
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PROG_CXX
 AC_PROG_LD
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])

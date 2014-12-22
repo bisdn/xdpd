@@ -1,5 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
+AUTOMAKE_OPTIONS = no-dependencies
+
 SUBDIRS = io 
 
 CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/c_types_pktclassifier/c_types_pktclassifier.c \
@@ -101,8 +103,11 @@ test_port_status_LDADD = \
 	$(SHARED_LIBS)
 	
 	
-TESTS = \
+check_SCRIPTS = \
 	test_launcher.sh
+
+TESTS = \
+	$(check_SCRIPTS)
 
 check_PROGRAMS = \
 	test_portmockup_matchesmockup\

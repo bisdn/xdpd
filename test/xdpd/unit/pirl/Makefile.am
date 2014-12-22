@@ -1,5 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
+AUTOMAKE_OPTIONS = no-dependencies
+
 test_pirl_SOURCES= $(top_srcdir)/src/xdpd/openflow/pirl/pirl.cc\
 		test_pirl.cc
 

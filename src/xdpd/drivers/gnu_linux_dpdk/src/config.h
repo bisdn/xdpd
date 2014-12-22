@@ -52,7 +52,7 @@
 //Buffer storage(PKT_IN) max buffers
 #define IO_PKT_IN_STORAGE_MAX_BUF 2<<9 //512
 //Buffer storage(PKT_IN) expiration time (seconds)
-#define IO_PKT_IN_STORAGE_EXPIRATION_S 180
+#define IO_PKT_IN_STORAGE_EXPIRATION_S 10
 
 /*
  * RX and TX Prefetch, Host, and Write-back threshold values should be

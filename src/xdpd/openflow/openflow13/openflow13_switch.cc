@@ -35,9 +35,6 @@ openflow13_switch::openflow13_switch(uint64_t dpid,
 
 openflow13_switch::~openflow13_switch(){
 		
-	//Destroy listening sockets and ofctl instances
-	endpoint->rpc_close_all();		
-
 	//Now safely destroy the endpoint
 	delete endpoint;	
 

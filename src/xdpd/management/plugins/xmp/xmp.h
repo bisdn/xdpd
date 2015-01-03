@@ -23,7 +23,7 @@ namespace mgmt {
 namespace protocol {
 
 class xmp : public rofl::ciosrv,
-		public rofl::csocket_owner,
+		public rofl::csocket_env,
 		public plugin
 {
 	rofl::csocket*						socket;			// listening socket

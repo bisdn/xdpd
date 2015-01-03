@@ -41,7 +41,7 @@ class eConfParamNotFound: public rofl::RoflException {};
 class NodeOrchestrator :
 	public plugin,
 	public rofl::ciosrv,
-	public rofl::csocket_owner
+	public rofl::csocket_env
 {
 	rofl::csocket*			socket;			// listening socket
 	rofl::cparams			socket_params;

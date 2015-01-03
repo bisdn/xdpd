@@ -28,7 +28,7 @@ namespace protocol {
 
 class cxmpclient :
 	public rofl::ciosrv,
-	public rofl::csocket_owner
+	public rofl::csocket_env
 {
 	enum cxmpclient_event_t {
 		WANT_SEND = 1,

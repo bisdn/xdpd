@@ -91,7 +91,10 @@
 #define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
 #define NB_MBUF   3*8192
 
-
+/*
+* Checksum offloads set in hardware by default
+*/
+#define HW_OFFLOADS 
 
 /**
 * NF related parameters 

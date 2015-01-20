@@ -30,6 +30,8 @@
 #include "../io/tx.h"
 #include "../io/bufferpool.h"
 #include "../io/dpdk_datapacket.h"
+#include "offloads_dpdk.h"
+
 
 //MBUF pool
 extern struct rte_mempool* pool_direct;
@@ -293,10 +295,13 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 	//Check whether dpx86 is NULL
 	pack = (datapacket_dpdk_t*) (pkt->platform_state);
 	assert(pack != NULL);
-
+	
 	//Recalculate checksums
+#ifdef HW_OFFLOADS	
+	set_checksums_in_hw(pkt);
+#else
 	calculate_checksums_in_software(pkt);
-
+#endif
 	//flood_meta_port is a static variable defined in the physical_switch
 	//the meta_port
 	if(output_port == flood_meta_port || output_port == all_meta_port){ //We don't have STP, so it is the same

@@ -41,7 +41,7 @@ const std::string system_manager::XDPD_EXTRA_PARAMS_OPT_FULL_NAME="extra-params"
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
 	//Only stop cioloop
-	rofl::cioloop::get_loop().stop();
+	rofl::cioloop::get_loop().shutdown();
 }
 
 
@@ -263,6 +263,8 @@ void system_manager::init(int argc, char** argv){
 
 	//Release ciosrv loop resources
 	rofl::cioloop::get_loop().shutdown();
+
+	rofl::cioloop::get_loop().cleanup_on_exit();
 
 	//Print a nice trace
 	ROFL_INFO("[xdpd][system_manager] Shutted down.\n");

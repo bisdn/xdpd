@@ -30,7 +30,6 @@
 #include "../io/tx.h"
 #include "../io/bufferpool.h"
 #include "../io/dpdk_datapacket.h"
-#include "offloads_dpdk.h"
 
 
 //MBUF pool
@@ -49,6 +48,7 @@ extern struct rte_mempool* pool_indirect;
  	( &( ( (datapacket_dpdk_t*) PKT ->platform_state) ->clas_state) )
 
 #include "packet_proto_meta_imp.h"
+#include "hw_offloads.h"
 
 //
 // Driver specific functions

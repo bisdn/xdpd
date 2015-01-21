@@ -8,7 +8,9 @@
 * @brief Function for setting the hardware to compute checksum offloads
 */
 
+
 #include <rte_byteorder.h> // For rte_be_to_cpu_16
+
 
 /*
 *
@@ -34,6 +36,7 @@ get_16b_sum(uint16_t *ptr16, uint32_t nr)
 	sum &= 0x0ffff;
 	return (uint16_t)sum;
 }
+
 
 /*
 *
@@ -62,6 +65,34 @@ get_ipv4_psd_sum (struct cpc_ipv4_hdr * ip_hdr)
 	return get_16b_sum(psd_hdr.u16_arr, sizeof(psd_hdr));
 }
 
+
+/*
+*
+*/
+static inline uint16_t
+get_ipv6_psd_sum (struct cpc_ipv6_hdr * ip_hdr)
+{
+	/* Pseudo Header for IPv6/UDP/TCP checksum */
+	union ipv6_psd_header {
+		struct {
+			uint8_t src_addr[16]; /* IP address of source host. */
+			uint8_t dst_addr[16]; /* IP address of destination host(s). */
+			uint32_t len;         /* L4 length. */
+			uint32_t proto;       /* L4 protocol - top 3 bytes must be zero */
+		} __attribute__((__packed__));
+
+		uint16_t u16_arr[0]; /* allow use as 16-bit values with safe aliasing */
+	} psd_hdr;
+
+	rte_memcpy(&psd_hdr.src_addr, ip_hdr->src,
+			sizeof(ip_hdr->src) + sizeof(ip_hdr->dst));
+	psd_hdr.len       = ip_hdr->payloadlen;
+	psd_hdr.proto     = (ip_hdr->nxthdr << 24); // ? not sure about this operation
+
+	return get_16b_sum(psd_hdr.u16_arr, sizeof(psd_hdr));
+}
+
+
 /*
 * Checksums calculator
 */
@@ -87,7 +118,7 @@ void set_checksums_in_hw(datapacket_t* pkt){
 	uint8_t l3_len;
 
 	struct cpc_ipv4_hdr  *ipv4_hdr;
-//	struct cpc_ipv6_hdr  *ipv6_hdr;
+	struct cpc_ipv6_hdr  *ipv6_hdr;
 	struct cpc_udp_hdr   *udp_hdr;
 	struct cpc_tcp_hdr   *tcp_hdr;
 	struct cpc_sctp_hdr  *sctp_hdr;
@@ -129,15 +160,14 @@ void set_checksums_in_hw(datapacket_t* pkt){
 		else if( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW ) && get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0)){
 
 			tcp_hdr = (struct cpc_tcp_hdr*) (rte_pktmbuf_mtod(mbuf_, unsigned char *) + l2_len + l3_len);
-			
 			mbuf_->ol_flags |= PKT_TX_TCP_CKSUM;
 			tcp_hdr->checksum = get_ipv4_psd_sum(ipv4_hdr);
 
 		}
 		/* SCTP */
 		else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_SCTP_CHECKSUM_IN_SW ) && (get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) ,0))) {
+			
 			sctp_hdr = (struct cpc_sctp_hdr*) (rte_pktmbuf_mtod(mbuf_,unsigned char *) + l2_len + l3_len);
-
 			mbuf_->ol_flags |= PKT_TX_SCTP_CKSUM;
 			sctp_hdr->checksum = 0;
 
@@ -151,14 +181,53 @@ void set_checksums_in_hw(datapacket_t* pkt){
 				/* CRC32c sample code available in RFC3309 */
 			}
 		}
-		/* End of L4 Handling*/
-
-	}
+		
+	}// End IPv4 handling
 
 	if(fipv6){
 
+                l2_len = (uint8_t*)fipv6 - get_buffer_dpdk(dpdk);
+                /* Do not support ipv4 option field */
+                l3_len = sizeof(struct cpc_ipv6_hdr);
+                ipv6_hdr = (struct cpc_ipv6_hdr *) (rte_pktmbuf_mtod(mbuf_, unsigned char *) + l2_len);
 
-      	}
+		/* UDP */
+		if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_TCP_CHECKSUM_IN_SW ) && get_tcp_hdr( GET_CLAS_STATE_PTR(pkt) , 0)) {
+                        udp_hdr = (struct cpc_udp_hdr*) (rte_pktmbuf_mtod(mbuf_, unsigned char *) + l2_len + l3_len);
+                        /* HW Offload */
+                        mbuf_->ol_flags |= PKT_TX_UDP_CKSUM;
+                        /* Pseudo header sum need be set properly */
+                        udp_hdr->checksum = get_ipv6_psd_sum(ipv6_hdr);
+
+
+                }
+		/* TCP */
+		else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_UDP_CHECKSUM_IN_SW ) && (get_udp_hdr( GET_CLAS_STATE_PTR(pkt) , 0))) {
+                        
+			tcp_hdr = (struct cpc_tcp_hdr*) (rte_pktmbuf_mtod(mbuf_, unsigned char *) + l2_len + l3_len);
+                        mbuf_->ol_flags |= PKT_TX_TCP_CKSUM;
+                        tcp_hdr->checksum = get_ipv6_psd_sum(ipv6_hdr);
+
+                }
+		/* SCTP*/
+		else if ( is_recalculate_checksum_flag_set( GET_CLAS_STATE_PTR(pkt) , RECALCULATE_SCTP_CHECKSUM_IN_SW ) && (get_sctp_hdr( GET_CLAS_STATE_PTR(pkt) ,0))) {
+		
+			sctp_hdr = (struct cpc_sctp_hdr*) (rte_pktmbuf_mtod(mbuf_,unsigned char *) + l2_len + l3_len);
+                        mbuf_->ol_flags |= PKT_TX_SCTP_CKSUM;
+                        sctp_hdr->checksum = 0;
+
+                        /* Sanity check, only number of 4 bytes supported */
+                        if ((rte_be_to_cpu_16(ipv6_hdr->payloadlen) % 4) != 0){
+                                printf("sctp payload must be a multiple of 4 bytes for checksum offload");
+                        }
+                        else {
+                                sctp_hdr->checksum = 0;
+                                /* CRC32c sample code available in RFC3309 */
+                        }
+
+		} 
+
+      	}// End IPv6 handling
 
 }
 

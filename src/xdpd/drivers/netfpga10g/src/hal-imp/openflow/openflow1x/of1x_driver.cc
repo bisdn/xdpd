@@ -312,8 +312,8 @@ hal_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 		datapacket_t* pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
 	
 		if(!pkt){
-			assert(0);
-			return HAL_FAILURE; //TODO: return really failure?
+			//Return failure (buffer ID was invalid/expired)
+			return HAL_FAILURE;
 		}
 
 		of_process_packet_pipeline(ROFL_PIPELINE_LOCKED_TID, (of_switch_t*)lsw,pkt);
@@ -362,8 +362,8 @@ hal_result_t hal_driver_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
 		datapacket_t* pkt = ((struct logical_switch_internals*)lsw->platform_state)->storage->get_packet(buffer_id);
 	
 		if(!pkt){
-			assert(0);
-			return HAL_FAILURE; //TODO: return really failure?
+			//Return failure (buffer ID was invalid/expired)
+			return HAL_FAILURE;
 		}
 
 		of_process_packet_pipeline(ROFL_PIPELINE_LOCKED_TID, (of_switch_t*)lsw,pkt);

@@ -952,8 +952,12 @@ of12_endpoint::flow_mod_add(
 								msg.get_flowmod().get_flags() & openflow12::OFPFF_CHECK_OVERLAP,
 								msg.get_flowmod().get_flags() & openflow12::OFPFF_RESET_COUNTS))){
 		// log error
-		rofl::logging::error << "[xdpd][of12][flow-mod-add] error inserting flow-mod on dpt:" << sw->dpname << std::endl;
-		of1x_destroy_flow_entry(entry);
+		if(entry){
+			rofl::logging::error << "[xdpd][of12][flow-mod-add] error inserting flow-mod on dpt:" << sw->dpname << std::endl;
+			of1x_destroy_flow_entry(entry);
+		}else{
+			rofl::logging::error << "[xdpd][of12][flow-mod-add] Bufferid: "<<msg.get_flowmod().get_buffer_id()<<" could not be processed for dpt:" << sw->dpname <<". Buffer ID expired or invalid" << std::endl;
+		}
 
 		if(res == HAL_FM_OVERLAP_FAILURE){
 			throw rofl::eFlowModOverlap();
@@ -1002,9 +1006,12 @@ of12_endpoint::flow_mod_modify(
 								pack.get_flowmod().get_buffer_id(),
 								strictness,
 								pack.get_flowmod().get_flags() & openflow12::OFPFF_RESET_COUNTS)){
-		rofl::logging::error << "[xdpd][of12][flow-mod-modify] error modifying flow-mod on dpt:" << sw->dpname << std::endl;
-		of1x_destroy_flow_entry(entry);
-		
+		if(entry){
+			rofl::logging::error << "[xdpd][of12][flow-mod-modify] error modifying flow-mod on dpt:" << sw->dpname << std::endl;
+			of1x_destroy_flow_entry(entry);
+		}else{
+			rofl::logging::error << "[xdpd][of12][flow-mod-modify] Bufferid: "<<pack.get_flowmod().get_buffer_id()<<" could not be processed for dpt:" << sw->dpname <<". Buffer ID expired or invalid" << std::endl;
+		}
 		throw rofl::eFlowModBase();
 	} 
 }

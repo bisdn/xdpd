@@ -869,9 +869,13 @@ of10_endpoint::flow_mod_add(
 								msg.get_flowmod().get_buffer_id(),
 								msg.get_flowmod().get_flags() & rofl::openflow10::OFPFF_CHECK_OVERLAP,
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/))){
-		// log error
-		ROFL_DEBUG("Error inserting the flowmod\n");
-		of1x_destroy_flow_entry(entry);
+
+		if(entry){
+			ROFL_DEBUG("Error inserting the flowmod\n");
+			of1x_destroy_flow_entry(entry);
+		}else{
+			ROFL_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
+		}
 
 		if(res == HAL_FM_OVERLAP_FAILURE)
 			throw rofl::eFlowModOverlap();
@@ -924,8 +928,12 @@ of10_endpoint::flow_mod_modify(
 								pack.get_flowmod().get_buffer_id(),
 								strictness,
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/)){
-		ROFL_DEBUG("Error modiying flowmod\n");
-		of1x_destroy_flow_entry(entry);
+		if(entry){
+			ROFL_DEBUG("Error modifying the flowmod\n");
+			of1x_destroy_flow_entry(entry);
+		}else{
+			ROFL_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
+		}
 	}
 
 }

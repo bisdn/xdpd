@@ -66,7 +66,7 @@ int prepare_event_socket()
 
 	memset(&addr, 0, sizeof(addr));
 	addr.nl_family = AF_NETLINK;
-	addr.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
+	addr.nl_groups = RTMGRP_LINK;
 
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1){
 		ROFL_ERR(DRIVER_NAME" [bg] couldn't bind, errno(%d): %s\n", errno, strerror(errno));
@@ -140,7 +140,7 @@ static rofl_result_t read_netlink_message(int fd){
 
 	for (; NLMSG_OK(nlh, (unsigned int)len); nlh = NLMSG_NEXT(nlh, len)) {
 
-	    if (nlh->nlmsg_type == RTM_NEWLINK){
+	    if (nlh->nlmsg_type == RTM_NEWLINK || nlh->nlmsg_type == RTM_DELLINK){
 				ifi = (struct ifinfomsg *) NLMSG_DATA(nlh);
 				
 				if(!if_indextoname(ifi->ifi_index, name))
@@ -148,7 +148,13 @@ static rofl_result_t read_netlink_message(int fd){
 				
 				ROFL_DEBUG_VERBOSE(DRIVER_NAME" [bg] Interface changed status %s (%u) flags=0x%x change=0x%x\n",name, ifi->ifi_index, ifi->ifi_flags, ifi->ifi_change);
 				
-				if (ifi->ifi_change & IFF_UP) {
+				//We are interested only in admin port status and link
+				unsigned int mask = IFF_UP|IFF_RUNNING;
+#ifdef IFF_LOWER_UP
+				mask |= IFF_LOWER_UP;
+#endif
+				//Kernel seems to send ifi_change = 0, when LINK changes
+				if (ifi->ifi_change & mask || !ifi->ifi_change) {
 					// HERE change the status to the port structure
 					if(update_port_status(name)!=ROFL_SUCCESS)
 						return ROFL_FAILURE;

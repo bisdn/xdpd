@@ -26,6 +26,7 @@ v0.6.0
 v0.5.3
 
 [B][gnu-linux][gnu-linux-dpdk] Prevent IPv4 fragments to be classified beyond IP
+[B][gnu-linux] Fixed invalid NIC link status (work-arounded kernel bug)
 
 v0.5.2
 

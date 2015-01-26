@@ -17,12 +17,12 @@
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/hal/cmm.h>
-#include "iface_utils.h" 
+#include "iface_utils.h"
 #include "iomanager.h"
 
-#include "ports/ioport.h" 
-#include "ports/mmap/ioport_mmap.h" 
-#include "ports/vlink/ioport_vlink.h" 
+#include "ports/ioport.h"
+#include "ports/mmap/ioport_mmap.h"
+#include "ports/vlink/ioport_vlink.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -30,7 +30,7 @@ using namespace xdpd::gnu_linux;
 *
 * Port management
 *
-* All of the functions related to physical port management 
+* All of the functions related to physical port management
 *
 */
 
@@ -38,10 +38,10 @@ rofl_result_t update_port_status(char * name){
 
 	struct ifreq ifr;
 	int sd, rc;
- 
+
 	switch_port_t *port;
 	switch_port_snapshot_t *port_snapshot;
-	
+
 	//Update all ports
 	if(update_physical_ports() != ROFL_SUCCESS){
 		ROFL_ERR(DRIVER_NAME"[ports] Update physical ports failed \n");
@@ -54,7 +54,7 @@ rofl_result_t update_port_status(char * name){
 		return ROFL_SUCCESS; //Port deleted
 
 	ioport* io_port = ((ioport*)port->platform_port_state);
-	
+
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
 		assert(0);
 		return ROFL_FAILURE;
@@ -70,18 +70,18 @@ rofl_result_t update_port_status(char * name){
 
 	//Make sure there are no race conditions between ioctl() calls
 	pthread_rwlock_rdlock(&io_port->rwlock);
-		
+
 	//Recover flags
-	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){ 
+	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){
 		close(sd);
 		pthread_rwlock_unlock(&io_port->rwlock);
 		assert(0);
 		return ROFL_FAILURE;
 	}
-	
+
 	//Release mutex
 	pthread_rwlock_unlock(&io_port->rwlock);
-	
+
 	ROFL_DEBUG(DRIVER_NAME"[ports] Interface %s is %s, and link is %s\n", name,( ((IFF_UP & ifr.ifr_flags) > 0) ? "up" : "down"), ( ((IFF_RUNNING & ifr.ifr_flags) > 0) ? "detected" : "not detected"));
 
 	//Update link state
@@ -92,11 +92,11 @@ rofl_result_t update_port_status(char * name){
 	}else{
 		iomanager::bring_port_down(io_port);
 	}
-	
+
 	//Notify the change of state to the CMM
-	port_snapshot = physical_switch_get_port_snapshot(port->name); 
+	port_snapshot = physical_switch_get_port_snapshot(port->name);
 	hal_cmm_notify_port_status_changed(port_snapshot);
-	
+
 	return ROFL_SUCCESS;
 }
 
@@ -106,7 +106,7 @@ static void fill_port_queues(switch_port_t* port, ioport* io_port){
 	unsigned int i;
 	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
 
-	//Filling one-by-one the queues that ioport has	
+	//Filling one-by-one the queues that ioport has
 	for(i=0;i<io_port->get_num_of_queues();i++){
 		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
 		switch_port_add_queue(port, i, (char*)&queue_name, io_port->get_queue_size(i), 0, 0);
@@ -146,7 +146,7 @@ static rofl_result_t fill_port_admin_and_link_state(switch_port_t* port){
 		port->state = PORT_STATE_LINK_DOWN;
 	}
 
-	//Close socket	
+	//Close socket
 	close(sd);
 	return ROFL_SUCCESS;
 }
@@ -177,7 +177,7 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 		supported_capabilities |= PORT_FEATURE_PAUSE;
 	if ( edata->supported & SUPPORTED_Asym_Pause )
 		supported_capabilities |= PORT_FEATURE_PAUSE_ASYM;
-	if ( edata->advertising & SUPPORTED_1000baseKX_Full ||  
+	if ( edata->advertising & SUPPORTED_1000baseKX_Full ||
 		edata->advertising & SUPPORTED_10000baseKX4_Full ||
 		edata->advertising & SUPPORTED_10000baseKR_Full ||
 		edata->advertising & SUPPORTED_10000baseR_FEC ||
@@ -188,7 +188,7 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 	if ( edata->supported & SUPPORTED_FIBRE )
 		supported_capabilities |= PORT_FEATURE_FIBER;
 	//TODO other rates & medium
-	
+
 	// Fill advertised features
 	if ( edata->advertising & ADVERTISED_10baseT_Half )
 		advertised_capabilities |= PORT_FEATURE_10MB_HD;
@@ -210,7 +210,7 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 		advertised_capabilities |= PORT_FEATURE_PAUSE;
 	if ( edata->advertising & ADVERTISED_Asym_Pause )
 		advertised_capabilities |= PORT_FEATURE_PAUSE_ASYM;
-	if ( edata->advertising & ADVERTISED_1000baseKX_Full ||  
+	if ( edata->advertising & ADVERTISED_1000baseKX_Full ||
 		edata->advertising & ADVERTISED_10000baseKX4_Full ||
 		edata->advertising & ADVERTISED_10000baseKR_Full ||
 		edata->advertising & ADVERTISED_10000baseR_FEC ||
@@ -221,36 +221,36 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 	if ( edata->advertising & ADVERTISED_FIBRE )
 		advertised_capabilities |= PORT_FEATURE_FIBER;
 	//TODO other rates & medium
-	
-	
-	//Get speed	
+
+
+	//Get speed
 	uint32_t speed = ethtool_cmd_speed(edata);
-	
+
 	if(speed >= 10 && edata->duplex == DUPLEX_FULL){
-		current_speed = PORT_FEATURE_10MB_FD; 
+		current_speed = PORT_FEATURE_10MB_FD;
 	}else if (speed >= 10 && edata->duplex == DUPLEX_HALF){
-		current_speed = PORT_FEATURE_10MB_HD; 
+		current_speed = PORT_FEATURE_10MB_HD;
 	}
 	if(speed >= 100 && edata->duplex == DUPLEX_FULL){
-		current_speed = PORT_FEATURE_100MB_FD; 
+		current_speed = PORT_FEATURE_100MB_FD;
 	}else if (speed >= 100 && edata->duplex == DUPLEX_HALF){
-		current_speed = PORT_FEATURE_100MB_HD; 
+		current_speed = PORT_FEATURE_100MB_HD;
 	}
 	if(speed >= 1000 && edata->duplex == DUPLEX_FULL){
-		current_speed = PORT_FEATURE_1GB_FD; 
+		current_speed = PORT_FEATURE_1GB_FD;
 	}else if (speed >= 1000 && edata->duplex == DUPLEX_HALF){
-		current_speed = PORT_FEATURE_1GB_HD; 
+		current_speed = PORT_FEATURE_1GB_HD;
 	}
 	if(speed >= 10000 && edata->duplex == DUPLEX_FULL){
-		current_speed = PORT_FEATURE_10GB_FD; 
+		current_speed = PORT_FEATURE_10GB_FD;
 	}
 
 	//TODO: properly deduce speeds
 	//Filling only with the deduced speed
-	switch_port_add_capabilities(&port->curr, advertised_capabilities);	
-	switch_port_add_capabilities(&port->advertised, advertised_capabilities);	
-	switch_port_add_capabilities(&port->supported, supported_capabilities);	
-	switch_port_add_capabilities(&port->peer, advertised_capabilities);	
+	switch_port_add_capabilities(&port->curr, advertised_capabilities);
+	switch_port_add_capabilities(&port->advertised, advertised_capabilities);
+	switch_port_add_capabilities(&port->supported, supported_capabilities);
+	switch_port_add_capabilities(&port->peer, advertised_capabilities);
 
 	//Filling speeds
 	switch_port_set_current_speed(port, current_speed);
@@ -258,12 +258,12 @@ static void fill_port_speeds_capabilities(switch_port_t* port, struct ethtool_cm
 }
 
 static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
-	
+
 	int j;
 	struct ethtool_cmd edata;
 	struct ifreq ifr;
 	struct sockaddr_ll *socll;
-	switch_port_t* port;	
+	switch_port_t* port;
 
 	//fetch interface info with ethtool
 	memset(&ifr, 0, sizeof(struct ifreq));
@@ -279,7 +279,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
 		ROFL_WARN(DRIVER_NAME"[ports] WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
 	}
-	
+
 	//Init the port
 	port = switch_port_init(ifa->ifa_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_NONE);
 	if(!port)
@@ -297,13 +297,13 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	//Fill port admin/link state
 	if( fill_port_admin_and_link_state(port) == ROFL_FAILURE){
 		if(strcmp(port->name,"lo") == 0) //Skip loopback but return success
-			return port; 
-			
+			return port;
+
 		switch_port_destroy(port);
 		return NULL;
 	}
-	
-	//Fill speeds and capabilities	
+
+	//Fill speeds and capabilities
 	fill_port_speeds_capabilities(port, &edata);
 
 	//Initialize MMAP-based port
@@ -312,10 +312,10 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	ioport* io_port = new ioport_mmap(port);
 
 	port->platform_port_state = (platform_port_state_t*)io_port;
-	
+
 	//Fill port queues
 	fill_port_queues(port, (ioport*)port->platform_port_state);
-	
+
 	return port;
 }
 
@@ -324,28 +324,28 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
  *
  */
 rofl_result_t discover_physical_ports(){
-	
+
 	unsigned int i, max_ports;
 	switch_port_t* port, **array;
 	int sock;
-	
+
 	struct ifaddrs *ifaddr, *ifa;
-	
+
 	/*real way to find interfaces*/
 	//getifaddrs(&ifap); -> there are examples on how to get the ip addresses
 	if (getifaddrs(&ifaddr) == -1){
 		perror("getifaddrs");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
 	        perror("socket");
 			freeifaddrs(ifaddr);
         	exit(EXIT_FAILURE);
     	}
-	
+
 	for(ifa = ifaddr; ifa != NULL; ifa=ifa->ifa_next){
-		
+
 		if(ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_PACKET)
 			continue;
 
@@ -355,7 +355,7 @@ rofl_result_t discover_physical_ports(){
 		if(!port)
 			continue;
 
-		//Adding the 
+		//Adding the
 		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
 			ROFL_ERR(DRIVER_NAME"[ports] All physical port slots are occupied\n");
 			freeifaddrs(ifaddr);
@@ -366,7 +366,7 @@ rofl_result_t discover_physical_ports(){
 	}
 
 	//This MUST be here and NOT in the previous loop, or the ports will be discovered (duplicated)
-	//via update_physical_ports. FIXME: this needs to be implemented properly	
+	//via update_physical_ports. FIXME: this needs to be implemented properly
 	array = physical_switch_get_physical_ports(&max_ports);
 	for(i=0; i<max_ports ; i++){
 		if(array[i] != NULL){
@@ -381,7 +381,7 @@ rofl_result_t discover_physical_ports(){
 	}
 
 	freeifaddrs(ifaddr);
-	
+
 	return ROFL_SUCCESS;
 }
 /*
@@ -394,7 +394,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	//Y is the edge 0 (left) 1 (right) of the connectio
 	static unsigned int num_of_vlinks=0;
 	char port_name[PORT_QUEUE_MAX_LEN_NAME];
-	switch_port_t *port1, *port2;	
+	switch_port_t *port1, *port2;
 	uint64_t port_capabilities=0x0;
 	//uint64_t mac_addr;
 	uint16_t randnum = 0;
@@ -415,7 +415,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 
 	//Create two ioports
 	*vport1 = new ioport_vlink(port1);
-	
+
 	if(!*vport1){
 		free(port1);
 		free(port2);
@@ -423,7 +423,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		assert(0);
 		return ROFL_FAILURE;
 	}
-	
+
 	*vport2 = new ioport_vlink(port2);
 
 	if(!*vport2){
@@ -437,11 +437,11 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 
 	//Initalize port features(Marking as 1G)
 	port_capabilities |= PORT_FEATURE_1GB_FD;
-	
-	switch_port_add_capabilities(&port1->curr, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port1->advertised, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port1->supported, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port1->peer, (port_features_t)port_capabilities);	
+
+	switch_port_add_capabilities(&port1->curr, (port_features_t)port_capabilities);
+	switch_port_add_capabilities(&port1->advertised, (port_features_t)port_capabilities);
+	switch_port_add_capabilities(&port1->supported, (port_features_t)port_capabilities);
+	switch_port_add_capabilities(&port1->peer, (port_features_t)port_capabilities);
 	//mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
 
 	randnum = (uint16_t)rand();
@@ -460,10 +460,10 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 
 	//memcpy(port1->hwaddr, &mac_addr, sizeof(port1->hwaddr));
 
-	switch_port_add_capabilities(&port2->curr, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port2->advertised, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port2->supported, (port_features_t)port_capabilities);	
-	switch_port_add_capabilities(&port2->peer, (port_features_t)port_capabilities);	
+	switch_port_add_capabilities(&port2->curr, (port_features_t)port_capabilities);
+	switch_port_add_capabilities(&port2->advertised, (port_features_t)port_capabilities);
+	switch_port_add_capabilities(&port2->supported, (port_features_t)port_capabilities);
+	switch_port_add_capabilities(&port2->peer, (port_features_t)port_capabilities);
 	//mac_addr = 0x0200000000 | (rand() % (sizeof(int)-1));
 
 	randnum = (uint16_t)rand();
@@ -490,8 +490,8 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	//Store platform state on switch ports
 	port1->platform_port_state = (platform_port_state_t*)*vport1;
 	port2->platform_port_state = (platform_port_state_t*)*vport2;
-	
-	//Set cross link 
+
+	//Set cross link
 	((ioport_vlink*)*vport1)->set_connected_port((ioport_vlink*)*vport2);
 	((ioport_vlink*)*vport2)->set_connected_port((ioport_vlink*)*vport1);
 
@@ -518,13 +518,13 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	//Increment counter and return
 	num_of_vlinks++; //TODO: make this atomic jic
 
-	return ROFL_SUCCESS;	
+	return ROFL_SUCCESS;
 }
 
 switch_port_t* get_vlink_pair(switch_port_t* port){
 	if(((ioport_vlink*)port->platform_port_state)->connected_port)
-		return ((ioport_vlink*)port->platform_port_state)->connected_port->of_port_state; 
-	else 
+		return ((ioport_vlink*)port->platform_port_state)->connected_port->of_port_state;
+	else
 		return NULL;
 }
 
@@ -532,14 +532,14 @@ switch_port_t* get_vlink_pair(switch_port_t* port){
 
 
 rofl_result_t destroy_port(switch_port_t* port){
-	
+
 	ioport* ioport_instance;
 
 	if(!port)
 		return ROFL_FAILURE;
-	
+
 	//Destroy the inner driver-dependant structures
-	ioport_instance = (ioport*)port->platform_port_state;	
+	ioport_instance = (ioport*)port->platform_port_state;
 	delete ioport_instance;
 
 	//Delete port from the pipeline library
@@ -557,7 +557,7 @@ rofl_result_t destroy_port(switch_port_t* port){
 rofl_result_t destroy_ports(){
 
 	unsigned int max_ports, i;
-	switch_port_t** array;	
+	switch_port_t** array;
 
 	array = physical_switch_get_physical_ports(&max_ports);
 	for(i=0; i<max_ports ; i++){
@@ -578,7 +578,7 @@ rofl_result_t destroy_ports(){
 	return ROFL_SUCCESS;
 }
 /*
-* Port attachement/detachment 
+* Port attachement/detachment
 */
 
 
@@ -594,38 +594,38 @@ rofl_result_t update_physical_ports(){
 	unsigned int i, max_ports;
 	std::map<std::string, struct ifaddrs*> system_ifaces;
 	std::map<std::string, switch_port_t*> pipeline_ifaces;
-	
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[ports] Trying to update the list of physical interfaces...\n");	
-	
+
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[ports] Trying to update the list of physical interfaces...\n");
+
 	/*real way to find interfaces*/
 	//getifaddrs(&ifap); -> there are examples on how to get the ip addresses
 	if (getifaddrs(&ifaddr) == -1){
-		return ROFL_FAILURE;	
+		return ROFL_FAILURE;
 	}
-	
+
 	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
-		return ROFL_FAILURE;	
+		return ROFL_FAILURE;
     	}
-	
+
 	//Call the driver to get the list the ports
 	ports = physical_switch_get_physical_ports(&max_ports);
 
 	if(!ports){
 		close(sock);
-		return ROFL_FAILURE;	
+		return ROFL_FAILURE;
 	}
 
 	//Generate some helpful vectors
 	for(i=0;i<max_ports;i++){
 		if(ports[i])
-			pipeline_ifaces[std::string(ports[i]->name)] = ports[i];	
-			
+			pipeline_ifaces[std::string(ports[i]->name)] = ports[i];
+
 	}
 	for(ifa = ifaddr; ifa != NULL; ifa=ifa->ifa_next){
 		if(ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_PACKET)
 			continue;
-			
-		system_ifaces[std::string(ifa->ifa_name)] = ifa;	
+
+		system_ifaces[std::string(ifa->ifa_name)] = ifa;
 	}
 
 	//Validate the existance of the ports in the pipeline and remove
@@ -638,9 +638,9 @@ rofl_result_t update_physical_ports(){
 				continue;
 
 			ROFL_INFO(DRIVER_NAME"[ports] Interface %s has been removed from the system. The interface will now be detached from any logical switch it is attached to (if any), and removed from the list of physical interfaces.\n", it->first.c_str());
-	
+
 			//Notify CMM
-			port_snapshot = physical_switch_get_port_snapshot(port->name); 
+			port_snapshot = physical_switch_get_port_snapshot(port->name);
 			hal_cmm_notify_port_delete(port_snapshot);
 
 			//Detach
@@ -649,37 +649,37 @@ rofl_result_t update_physical_ports(){
 				assert(0);
 			}
 			//Destroy and remove from the list of physical ports
-			destroy_port(port);	
-		} 
+			destroy_port(port);
+		}
 		system_ifaces.erase(it->first);
 	}
-	
-	//Add remaining "new" interfaces (remaining interfaces in system_ifaces map 
+
+	//Add remaining "new" interfaces (remaining interfaces in system_ifaces map
 	for (std::map<std::string, struct ifaddrs*>::iterator it = system_ifaces.begin(); it != system_ifaces.end(); ++it){
 		//Fill port
 		port = fill_port(sock,  it->second);
 		if(!port){
 			//ROFL_ERR(DRIVER_NAME"[ports] Unable to initialize newly discovered interface %s\n", it->first.c_str());
 			continue;
-		}		
+		}
 
-		//Adding the 
+		//Adding the
 		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
 			ROFL_ERR(DRIVER_NAME"[ports] Unable to add port %s to physical switch. Not enough slots?\n", it->first.c_str());
 			freeifaddrs(ifaddr);
-			continue;	
+			continue;
 		}
 
 		//Notify CMM
-		port_snapshot = physical_switch_get_port_snapshot(port->name); 
+		port_snapshot = physical_switch_get_port_snapshot(port->name);
 		hal_cmm_notify_port_add(port_snapshot);
 
 	}
-	
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[ports] Update of interfaces done.\n");	
+
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[ports] Update of interfaces done.\n");
 
 	freeifaddrs(ifaddr);
 	close(sock);
-	
+
 	return ROFL_SUCCESS;
 }

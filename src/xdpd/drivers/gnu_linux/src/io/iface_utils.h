@@ -7,14 +7,14 @@
 
 #include <rofl.h>
 #include <rofl/datapath/hal/driver.h>
-#include "ports/ioport.h" 
+#include "ports/ioport.h"
 
 /**
 * @file iface_utils.h
 * @author Victor Alvarez<victor.alvarez (at) bisdn.de>
 *
 * @brief Network interface (port) utils.
-* 
+*
 */
 
 
@@ -45,20 +45,20 @@ switch_port_t* get_vlink_pair(switch_port_t* port);
  * @name update_port_status
  */
 rofl_result_t update_port_status(char * name);
-	
+
 /**
- * Update physical port list 
+ * Update physical port list
  */
 rofl_result_t update_physical_ports(void);
 
 /**
- * Destroys ports previously created 
+ * Destroys ports previously created
  */
 rofl_result_t destroy_ports(void);
 
 
 /*
- * Destroy port 
+ * Destroy port
  */
 rofl_result_t destroy_port(switch_port_t* port);
 

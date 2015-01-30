@@ -507,7 +507,7 @@ int check_veth_interface(int sd, struct ifreq ifr){
 			}
 		}
 		if(i == drvinfo.n_stats){
-			ROFL_DEBUG(DRIVER_NAME"[mmap:%s] No vlan peer detected\n", ifr.ifr_name);
+			ROFL_DEBUG(DRIVER_NAME"[mmap:%s] No veth peer detected\n", ifr.ifr_name);
 			peer_id = 0;
 		}else{
 			// Interface is a VETH type. peer is stats->data[i]

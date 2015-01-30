@@ -64,7 +64,7 @@ rofl_result_t update_port_status(char * name){
 	strcpy(ifr.ifr_name, port->name);
 
 	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0){
-		assert(0);
+		ROFL_ERR(DRIVER_NAME"[ports] retrieval of interface index of port %s failed\n", name);
 		return ROFL_FAILURE;
 	}
 

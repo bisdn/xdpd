@@ -139,7 +139,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 		return ROFL_SUCCESS;
 	
 	//Setup RX
-	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_TEST_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, pool_direct)) < 0 ){
+	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, pool_direct)) < 0 ){
 		ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot setup RX queue: %s\n", rte_strerror(ret));
 		assert(0);
 		return ROFL_FAILURE;
@@ -148,7 +148,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	//Setup TX
 	for(i=0;i<IO_IFACE_NUM_QUEUES;++i){
 		//setup the queue
-		if( (ret = rte_eth_tx_queue_setup(port_id, i, RTE_TEST_TX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &tx_conf)) < 0 ){
+		if( (ret = rte_eth_tx_queue_setup(port_id, i, RTE_TX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &tx_conf)) < 0 ){
 			ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot setup TX queues: %s\n", rte_strerror(ret));
 			assert(0);
 			return ROFL_FAILURE;

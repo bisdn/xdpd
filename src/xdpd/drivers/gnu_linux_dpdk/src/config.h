@@ -76,8 +76,8 @@
 /*
  * Configurable number of RX/TX ring descriptors
  */
-#define RTE_TEST_RX_DESC_DEFAULT 512
-#define RTE_TEST_TX_DESC_DEFAULT 512
+#define RTE_RX_DESC_DEFAULT 512
+#define RTE_TX_DESC_DEFAULT 512
 
 /*
 * Processing stuff

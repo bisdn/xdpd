@@ -156,6 +156,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	return;
 }
 
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
 /****************************************************************************
 *						Funtions specific for NF ports						*
 *****************************************************************************/
@@ -336,6 +337,7 @@ tx_pkt_kni_nf_port(switch_port_t* port, datapacket_t* pkt)
 	return;
 }
 
+#endif //GNU_LINUX_DPDK_ENABLE_NF
 
 /****************************************************************************
 *						Funtions specific for vlinks						*

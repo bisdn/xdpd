@@ -281,6 +281,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 				return ROFL_FAILURE;
 			}
 			break;
+#ifdef GNU_LINUX_DPDK_ENABLE_NF			
 		case PORT_TYPE_NF_SHMEM:	
 		case PORT_TYPE_NF_EXTERNAL:
 			if(total_num_of_nf_ports == PROCESSING_MAX_PORTS){
@@ -289,6 +290,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 					return ROFL_FAILURE;
 			}
 			break;
+#endif //GNU_LINUX_DPDK_ENABLE_NF			
 	
 		default: assert(0);
 			return ROFL_FAILURE;
@@ -402,11 +404,13 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 				processing_core_tasks[i].phy_ports[port_id].core_id = index;
 				break;
 				
+#ifdef GNU_LINUX_DPDK_ENABLE_NF			
 			case PORT_TYPE_NF_SHMEM:	
 			case PORT_TYPE_NF_EXTERNAL:
 				processing_core_tasks[i].nf_ports[port_id].present = true;
 				processing_core_tasks[i].nf_ports[port_id].core_id = index;
 				break;
+#endif //GNU_LINUX_DPDK_ENABLE_NF			
 		
 			default: assert(0);
 				return ROFL_FAILURE;
@@ -558,11 +562,13 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 				processing_core_tasks[i].phy_ports[*port_id].core_id = 0xFFFFFFFF;
 				break;
 				
+#ifdef GNU_LINUX_DPDK_ENABLE_NF			
 			case PORT_TYPE_NF_SHMEM:	
 			case PORT_TYPE_NF_EXTERNAL:
 				processing_core_tasks[i].nf_ports[*port_id].present = false;
 				processing_core_tasks[i].nf_ports[*port_id].core_id = 0xFFFFFFFF;
 				break;
+#endif //GNU_LINUX_DPDK_ENABLE_NF			
 		
 			default: assert(0);
 				return ROFL_FAILURE;

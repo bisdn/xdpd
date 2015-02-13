@@ -98,7 +98,7 @@
 */
 
 //Enable NF extensions (KNI and secondary process DPDK ports)
-//#define GNU_LINUX_DPDK_ENABLE_NF
+#define GNU_LINUX_DPDK_ENABLE_NF
 
 //Maximum number of KNI interfaces, used during preallocation
 #define GNU_LINUX_DPDK_MAX_KNI_IFACES 4
@@ -109,7 +109,7 @@
 *
 * NOT recommended
 */
-#define ENABLE_DPDK_SECONDARY_SEMAPHORE
+//#define ENABLE_DPDK_SECONDARY_SEMAPHORE
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	//IVANO - FIXME: write a meaningfull value
 	#define PKT_TO_NF_THRESHOLD 	200

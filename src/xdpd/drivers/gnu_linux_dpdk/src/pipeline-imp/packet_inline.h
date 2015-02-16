@@ -335,7 +335,7 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 			ROFL_DEBUG("[%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
 			
 			//send the replica
-			output_single_packet(replica, (datapacket_dpdk_t*)pkt->platform_state, port_it);
+			output_single_packet(replica, (datapacket_dpdk_t*)replica->platform_state, port_it);
 		}
 			
 		//discard the original packet always (has been replicated)

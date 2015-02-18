@@ -149,12 +149,14 @@ inline void ioport_mmap::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86 *
 	// write ethernet header
 	memcpy(pkt_x86->get_buffer(), (uint8_t*)hdr + hdr->tp_mac, sizeof(struct fetherframe::eth_hdr_t));
 
+#if 0
 	// set dl_type to vlan
 	if( htobe16(ETH_P_8021Q) == ((struct fetherframe::eth_hdr_t*)((uint8_t*)hdr + hdr->tp_mac))->dl_type ) {
 		((struct fetherframe::eth_hdr_t*)pkt_x86->get_buffer())->dl_type = htobe16(ETH_P_8021Q); // tdoo maybe this should be ETH_P_8021AD
 	}else{
 		((struct fetherframe::eth_hdr_t*)pkt_x86->get_buffer())->dl_type = htobe16(ETH_P_8021Q);
 	}
+#endif
 
 	// write vlan
 	struct fvlanframe::vlan_hdr_t* vlanptr =
@@ -163,6 +165,9 @@ inline void ioport_mmap::fill_vlan_pkt(struct tpacket2_hdr *hdr, datapacketx86 *
 	vlanptr->byte0 =  (hdr->tp_vlan_tci >> 8);
 	vlanptr->byte1 = hdr->tp_vlan_tci & 0x00ff;
 	vlanptr->dl_type = ((struct fetherframe::eth_hdr_t*)((uint8_t*)hdr + hdr->tp_mac))->dl_type;
+
+	// set dl_type to C-TAG, S-TAG, I-TAG, as indicated by kernel
+	((struct fetherframe::eth_hdr_t*)pkt_x86->get_buffer())->dl_type = htobe16(hdr->tp_vlan_tpid);
 
 	// write payload
 	memcpy(pkt_x86->get_buffer() + sizeof(struct fetherframe::eth_hdr_t) + sizeof(struct fvlanframe::vlan_hdr_t),

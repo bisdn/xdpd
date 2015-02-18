@@ -496,21 +496,21 @@ of12_translation_utils::of12_map_flow_entry_matches(
 	try {
 		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_1 oxm_wlan_address_1(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_1));
-		match = of1x_init_wlan_address_1_match(oxm_wlan_address_1.get_u48value().get_mac(),oxm_wlan_address_1.get_u48mask().get_mac());
+		match = of1x_init_wlan_address_1_match(oxm_wlan_address_1.get_u48value_as_lladdr().get_mac(),oxm_wlan_address_1.get_u48mask_as_lladdr().get_mac());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
 		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_2 oxm_wlan_address_2(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_2));
-		match = of1x_init_wlan_address_2_match(oxm_wlan_address_2.get_u48value().get_mac(),oxm_wlan_address_2.get_u48mask().get_mac());
+		match = of1x_init_wlan_address_2_match(oxm_wlan_address_2.get_u48value_as_lladdr().get_mac(),oxm_wlan_address_2.get_u48mask_as_lladdr().get_mac());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
 	try {
 		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3 oxm_wlan_address_3(
 				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_3));
-		match = of1x_init_wlan_address_3_match(oxm_wlan_address_3.get_u48value().get_mac(),oxm_wlan_address_3.get_u48mask().get_mac());
+		match = of1x_init_wlan_address_3_match(oxm_wlan_address_3.get_u48value_as_lladdr().get_mac(),oxm_wlan_address_3.get_u48mask_as_lladdr().get_mac());
 		of1x_add_match_to_entry(entry, match);
 	} catch(...) {}
 
@@ -622,13 +622,13 @@ of12_translation_utils::of12_map_flow_entry_actions(
 				switch (oxm.get_oxm_field()) {
 				case rofl::openflow12::OFPXMT_OFB_ETH_DST:
 				{
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0);
 				}
 					break;
 				case rofl::openflow12::OFPXMT_OFB_ETH_SRC:
 				{
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, 0x0);
 				}
 					break;
@@ -646,7 +646,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					break;
 				case rofl::openflow12::OFPXMT_OFB_ARP_SHA:
 				{
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SHA, field, 0x0);
 				}
 					break;
@@ -658,7 +658,7 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					break;
 				case rofl::openflow12::OFPXMT_OFB_ARP_THA:
 				{
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_THA, field, 0x0);
 				}
 					break;
@@ -788,11 +788,11 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_ND_SLL: {
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_SLL, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_IPV6_ND_TLL: {
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TLL, field, 0x0);
 				}break;
 				case rofl::openflow12::OFPXMT_OFB_ICMPV6_TYPE: {
@@ -871,15 +871,15 @@ of12_translation_utils::of12_map_flow_entry_actions(
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_DIRECTION, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_1: {
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_1, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_2: {
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_2, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_3: {
-					field.u64 = oxm.get_u48value().get_mac();
+					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_3, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_VERSION: {

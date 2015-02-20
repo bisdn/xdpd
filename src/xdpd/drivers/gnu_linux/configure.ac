@@ -44,6 +44,10 @@ m4_include([../../../../config/profiling.m4])
 # pkt classifier 
 m4_include([config/pktclassifier.m4])
 
+#Check kernel support
+m4_include([config/vlan.m4])
+
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile

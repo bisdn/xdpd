@@ -3,18 +3,32 @@
 # available since kernel 3.14
 #
 
-AC_MSG_CHECKING([for vlan S-TAG/I-TAG header support in kernel])
+
 UNAME=`uname -r`
-kernel_version=`sed -n 's/^VERSION = //p' "/lib/modules/$(uname -r)/build/Makefile" `
-kernel_patchlevel=`sed -n 's/^PATCHLEVEL = //p' "/lib/modules/$(uname -r)/build/Makefile" `
-kernel_sublevel=`sed -n 's/^SUBLEVEL = //p' "/lib/modules/$(uname -r)/build/Makefile" `
 
-if ( test X"$kernel_version" = X || test X"$kernel_patchlevel" = X ); then
-    AC_MSG_WARN([unable to detect kernel version, continuing anyway, vlan S-TAG/I-TAG headers may not work])
-elif ( test "$kernel_version" -ge 3 && test "$kernel_patchlevel -ge 14" ); then
-    AC_MSG_RESULT([found])
-    AC_DEFINE(KERNEL_STAG_SUPPORT)
+#Check for if_packet (MMAP)
+AC_CHECK_HEADER([linux/if_packet.h], [], [AC_ERROR("Missing Linux kernel headers for kernel '$UNAME'")])
+
+#Check whether we have a kernel that supports tp_vlan_tpid (>= 3.14.X)
+AC_MSG_CHECKING(whether kernel supports S-TAG/I-TAG)
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[#include <linux/if_packet.h>],
+		[
+			struct tpacket2_hdr hdr;
+			hdr.tp_vlan_tpid = 2;
+			(void)hdr;
+		]
+	)],
+	[old_kernel="no"],
+	[old_kernel="yes"]
+)
+
+if test "$old_kernel" = "yes"; then
+    AC_MSG_RESULT(no)
+    AC_MSG_WARN([kernel does not support vlan S-TAG/I-TAG headers. Consider upgrading to at least kernel version 3.14.x])
+    sleep 5
 else
-    AC_MSG_WARN([kernel does not support vlan S-TAG/I-TAG headers, consider upgrading to at least kernel version 3.14.x])
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([KERNEL_STAG_SUPPORT])
 fi
-

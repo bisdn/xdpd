@@ -43,6 +43,9 @@ if (test "${have_rofl}" = "yes"); then
         LIBS+="$ROFL_LIBS"
 fi
 
+#Perform GCC checkings
+m4_include([config/gcc.m4])
+
 #Debug
 m4_include([config/debug.m4])
 

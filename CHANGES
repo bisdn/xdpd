@@ -10,6 +10,8 @@ Change log
 
 v0.6.0
 
+[K] Prevent compilation with buggy GCC versions (-O3 opt.)
+
 [+] Workaround for automake 1.14 subdir-objects bug(13928).
 [+] Fixed some LLVM related warnings and errors (clang/clang++)
 

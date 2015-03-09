@@ -84,6 +84,12 @@ http://www.xdpd.org/doc/
 
 Documentation can be compiled via `make doc`. Documentation is generated in build/doc/ folder
 
+Known issues
+================================
+
+* Certain GCC 4.8.X family versions are buggy and don't properly compile xDPd with -O3 optimizations. Please use GCC 4.8.3  or higher, or another version family.
+
+
 More information, documentation and support
 ===========================================
 

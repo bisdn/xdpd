@@ -85,7 +85,7 @@ static void output_single_packet(uint8_t* pack , pcap_t* pcap_fd, size_t size){
 datapacket_t* platform_packet_replicate(datapacket_t* pkt){
 
 	//Get a free buffer
-	datapacket_t* copy = bufferpool::get_free_buffer_nonblocking();
+	datapacket_t* copy = bufferpool::get_buffer();
 	
 	if(!copy){
 		return copy;

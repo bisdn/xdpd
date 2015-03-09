@@ -103,7 +103,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 		rte_panic("Cannot init indirect mbuf pool\n");
 
 	//Init bufferpool
-	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
+	bufferpool::init();
 
 	//Initialize pipeline
 	if(physical_switch_init() != ROFL_SUCCESS)

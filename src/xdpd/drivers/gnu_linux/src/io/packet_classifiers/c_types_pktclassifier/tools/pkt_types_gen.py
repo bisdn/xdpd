@@ -134,10 +134,11 @@ def unroll_pkt_types():
 		#Add without optional
 		tmp = type__.replace("L2","ETHERNET")
 		unrolled_types.append(tmp)
-		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET")
+		tmp = type__.replace("L2","ETHERNET/ISID")
 		unrolled_types.append(tmp)
-		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET")
+		tmp = type__.replace("L2","ETHERNET/VLAN/ISID")
 		unrolled_types.append(tmp)
+
 		#Add 802.3
 		tmp = type__.replace("L2","8023")
 		unrolled_types.append(tmp)
@@ -145,20 +146,13 @@ def unroll_pkt_types():
 		#Add ETHERNET+VLAN 
 		tmp = type__.replace("L2","ETHERNET/VLAN")
 		unrolled_types.append(tmp)
-		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET/VLAN")
-		unrolled_types.append(tmp)
-		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET/VLAN")
-		unrolled_types.append(tmp)
+
 		#Add 802.3+VLAN
 		tmp = type__.replace("L2","8023/VLAN")
 		unrolled_types.append(tmp)
 		
 		#Add ETHERNET+VLAN+VLAN 
 		tmp = type__.replace("L2","ETHERNET/VLAN/VLAN")
-		unrolled_types.append(tmp)
-		tmp = type__.replace("L2","ETHERNET/ISID/ETHERNET/VLAN/VLAN")
-		unrolled_types.append(tmp)
-		tmp = type__.replace("L2","ETHERNET/VLAN/ISID/ETHERNET/VLAN/VLAN")
 		unrolled_types.append(tmp)
 
 		#Add 802.3+VLAN+VLAN
@@ -459,7 +453,7 @@ def push_transitions(f):
 			new_type=""
 			if "ISID" in proto or "ISID" in  type_:
 				if "ISID" in proto and "ISID" not in type_: 
-					row.append("ETHERNET/ISID/ETHERNET") #type_.replace("ETHERNET","ETHERNET/ISID/ETHERNET"))
+					row.append("ETHERNET/ISID") #type_.replace("ETHERNET","ETHERNET/ISID/ETHERNET"))
 				else:
 					row.append("-1")
 			elif "MPLS" in proto:
@@ -633,7 +627,7 @@ def pop_transitions(f):
 			new_type=""
 			if "ISID" in proto or "ISID" in  type_:
 				if "ISID" in proto and "ISID" in type_ and "VLAN/ISID" not in type_: 
-					row.append(type_.replace("ETHERNET/ISID/", ""))
+					row.append(type_.replace("ISID/", ""))
 				else:
 					row.append("-1")
 			elif "MPLS" in proto:
@@ -679,7 +673,7 @@ def pop_transitions(f):
 				elif "PPP" in type_:
 					row.append("-1")
 				elif "GTPU4" in type_:
-					print type_ + " => " + re.sub("/IPV4_noptions_\d*/UDP/GTPU4", "", type_)
+					#print type_ + " => " + re.sub("/IPV4_noptions_\d*/UDP/GTPU4", "", type_)
 					row.append(re.sub("/IPV4_noptions_\d*/UDP/GTPU4", "", type_))
 				else:
 					row.append("-1")
@@ -693,7 +687,7 @@ def pop_transitions(f):
 				elif "PPP" in type_:
 					row.append("-1")
 				elif "GTPU6" in type_:
-					print type_ + " => " + type_.replace("/IPV6/UDP/GTPU6", "")
+					#print type_ + " => " + type_.replace("/IPV6/UDP/GTPU6", "")
 					row.append(type_.replace("/IPV6/UDP/GTPU6", ""))
 				else:
 					row.append("-1")
@@ -707,7 +701,7 @@ def pop_transitions(f):
 				elif "PPP" in type_:
 					row.append("-1")
 				elif "GRE4" in type_:
-					print type_ + " => " + re.sub("/IPV4_noptions_\d*/GRE4", "", type_)
+					#print type_ + " => " + re.sub("/IPV4_noptions_\d*/GRE4", "", type_)
 					row.append(re.sub("/IPV4_noptions_\d*/GRE4", "", type_))
 				else:
 					row.append("-1")
@@ -721,7 +715,7 @@ def pop_transitions(f):
 				elif "PPP" in type_:
 					row.append("-1")
 				elif "GRE6" in type_:
-					print type_ + " => " + type_.replace("/IPV6/GRE6", "")
+					#print type_ + " => " + type_.replace("/IPV6/GRE6", "")
 					row.append(type_.replace("/IPV6/GRE6", ""))
 				else:
 					row.append("-1")

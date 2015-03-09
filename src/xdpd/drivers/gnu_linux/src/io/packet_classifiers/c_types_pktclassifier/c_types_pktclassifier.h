@@ -642,7 +642,7 @@ static inline
 void parse_pbb_isid(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 	//Special parsing schema
-	clas_state->type = PT_ETHERNET_ISID_ETHERNET;
+	PT_CLASS_ADD_PROTO(clas_state, ISID);
 
 	//We don't parse beyond PBB
 

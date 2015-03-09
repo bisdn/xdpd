@@ -15,8 +15,14 @@
 * TODO 
 */
 
-//XXX delete this
+//Driver name
 #define DRIVER_NAME "[xdpd][dpdk]"
+
+//This parameter disallows the driver to schedule phyiscal ports on logical
+//cores belonging to a different CPU socket than the port(PCI).
+//Warning: disabling this flag can affect performance; consider using a proper
+//coremask instead
+#define ABORT_ON_UNMATCHED_SCHED
 
 /*
 * BG stuff

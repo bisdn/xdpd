@@ -3,7 +3,10 @@
 #These versions contain bugs for -O3.
 BLACKLISTED_GCC_VERSIONS="4.8.0 4.8.1 4.8.2"
 
-if test "${CC}" == "gcc"; then
+echo ${CC} | grep "gcc" > /dev/null
+is_gcc=`echo $?`
+
+if test "$is_gcc" == "0"; then
 	#Check for GCC version
 	AC_MSG_CHECKING(for GCC compatibility)
 

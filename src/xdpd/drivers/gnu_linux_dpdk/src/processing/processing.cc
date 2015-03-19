@@ -647,10 +647,10 @@ void processing_dump_core_states(void){
 			}
 			ss << core_task->port_list[j]->name <<",";
 		}
-		ss << "]";
+		ss << "]\n";
 	}
 
-	ROFL_INFO("%s\n", ss.str().c_str());
+	ROFL_INFO("%s", ss.str().c_str());
 }
 
 

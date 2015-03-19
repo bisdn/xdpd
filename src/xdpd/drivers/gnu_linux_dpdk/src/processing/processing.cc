@@ -2,6 +2,7 @@
 #include <rofl/common/utils/c_logger.h>
 #include <rte_cycles.h>
 #include <rte_spinlock.h>
+#include <sstream>
 
 #include "assert.h"
 #include "../util/compiler_assert.h"
@@ -27,54 +28,6 @@ core_tasks_t processing_core_tasks[RTE_MAX_LCORE];
 unsigned int total_num_of_phy_ports = 0;
 unsigned int total_num_of_nf_ports = 0;
 unsigned int running_hash = 0;
-
-static void processing_dump_cores_state(void){
-
-#ifdef DEBUG
-	unsigned int i;
-	enum rte_lcore_role_t role;
-	enum rte_lcore_state_t state;
-
-	return;
-
-	for(i=0; i < RTE_MAX_LCORE; ++i){
-		role = rte_eal_lcore_role(i);
-		state = rte_eal_get_lcore_state(i);
-		
-		ROFL_DEBUG(DRIVER_NAME"[processing] Core %u ROLE:", i);
-		switch(role){
-			case ROLE_RTE:
-				ROFL_DEBUG(" RTE");
-				break;
-			case ROLE_OFF:
-				ROFL_DEBUG(" OFF");
-				break;
-			default:
-				assert(0);
-				ROFL_DEBUG(" Unknown");
-				break;
-		}
-		
-		ROFL_DEBUG(" state:");
-		switch(state){
-			case WAIT:
-				ROFL_DEBUG(" WAIT");
-				break;
-			case RUNNING:
-				ROFL_DEBUG(" RUNNING");
-				break;
-			case FINISHED:
-				ROFL_DEBUG(" FINISHED");
-				break;
-			default:
-				assert(0);
-				ROFL_DEBUG(" UNKNOWN");
-				break;
-		}
-		ROFL_DEBUG("\n");
-	}
-#endif	
-}
 
 /*
 * Initialize data structures for processing to work 
@@ -104,7 +57,8 @@ rofl_result_t processing_init(void){
 		}
 	}
 
-	processing_dump_cores_state();	
+	//Print the status of the cores
+	processing_dump_core_states();
 
 	return ROFL_SUCCESS;
 }
@@ -308,7 +262,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			//For phy ports check for a wrong CPU socket and add additional weight
 			if( port->type == PORT_TYPE_PHYSICAL){
 				socket_id = rte_eth_dev_socket_id(((dpdk_port_state_t*)port->platform_port_state)->port_id);
-				if(socket_id != rte_lcore_to_socket_id(i))
+				if( (socket_id != 0xFFFFFFFF) && (socket_id != rte_lcore_to_socket_id(i)))
 					it_load |= WRONG_CPU_SOCK_OH;
 			}
 
@@ -331,7 +285,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	//Issue a warning if the port is physical and an unmatched CPU socket is being used
 	if(port->type == PORT_TYPE_PHYSICAL){
 		socket_id = rte_eth_dev_socket_id(((dpdk_port_state_t*)port->platform_port_state)->port_id);
-		if(socket_id != rte_lcore_to_socket_id(lcore_sel)){
+		if( (socket_id != 0xFFFFFFFF) && (socket_id != rte_lcore_to_socket_id(lcore_sel))){
 			ROFL_ERR(DRIVER_NAME"[processing] WARNING: The core selected %u[cpu socket %u] and the port %s(cpu socket: %u) are in different CPU sockets!\n This configuration is SUBOPTIMAL!! Consider using another coremask.\n",
 				 lcore_sel, rte_lcore_to_socket_id(lcore_sel),
 				 port->name, socket_id);
@@ -465,7 +419,10 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			rte_panic("Unable to launch core %u! Status was NOT wait (race-condition?)", lcore_sel);
 		ROFL_DEBUG_VERBOSE("Post-launching core %u due to scheduling action of port %p\n", lcore_sel, port);
 	}
-	
+
+	//Print the status of the cores
+	processing_dump_core_states();
+
 	return ROFL_SUCCESS;
 }
 
@@ -613,38 +570,86 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	
 	*scheduled = false;
 
+	//Print the status of the cores
+	processing_dump_core_states();
+
 	return ROFL_SUCCESS;
 }
 
 /*
 * Dump core state
 */
-void processing_dump_core_state(void){
+void processing_dump_core_states(void){
 
 	unsigned int i,j;
 	core_tasks_t* core_task;
-	
-	for(i=0;i<max_cores;++i){
+	std::stringstream ss;
+	enum rte_lcore_role_t role;
+	enum rte_lcore_state_t state;
+
+	ss << DRIVER_NAME"[processing] Core status:" << std::endl;
+
+	for(i=0;i<RTE_MAX_LCORE;++i){
 		core_task = &processing_core_tasks[i];
+
+		if(i == 0){
+			ss << "\t core [" << i <<"] Master\n";
+			continue;
+		}
+
 		if(!core_task->available)
 			continue;
 
-		//Print basic info	
-		ROFL_DEBUG(DRIVER_NAME"[processing] Core: %u ",i);
-		
-		if(!core_task->active)
-			ROFL_DEBUG("IN");
-		ROFL_DEBUG("ACTIVE port-list:[");
-	
+		//Print basic info
+		ss << "\t core [" << i <<"] ";
+
+		role = rte_eal_lcore_role(i);
+		state = rte_eal_get_lcore_state(i);
+
+		ss << "role: ";
+		switch(role){
+			case ROLE_RTE:
+				ss << "RTE";
+				break;
+			case ROLE_OFF:
+				ss << "OFF";
+				break;
+			default:
+				assert(0);
+				ss << "Unknown";
+				break;
+		}
+
+		ss << ", state: ";
+		switch(state){
+			case WAIT:
+				ss << "WAIT";
+				break;
+			case RUNNING:
+				ss << "RUNNING";
+				break;
+			case FINISHED:
+				ss << "FINISHED";
+				break;
+			default:
+				assert(0);
+				ss << "UNKNOWN";
+				break;
+		}
+
+		ss << " Load: "<< ((float)core_task->num_of_rx_ports);
+		ss << ", serving ports: [";
 		for(j=0;j<core_task->num_of_rx_ports;++j){
 			if(core_task->port_list[j] == NULL){
-				ROFL_DEBUG("error_NULL,");
+				ss << "error_NULL,";
 				continue;
 			}
-			ROFL_DEBUG("%s,",core_task->port_list[j]->name);
+			ss << core_task->port_list[j]->name <<",";
 		}
-		ROFL_DEBUG("]\n");
+		ss << "]";
 	}
+
+	ROFL_INFO("%s\n", ss.str().c_str());
 }
 
 

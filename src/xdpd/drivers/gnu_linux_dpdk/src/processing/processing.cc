@@ -3,6 +3,7 @@
 #include <rte_cycles.h>
 #include <rte_spinlock.h>
 #include <sstream>
+#include <iomanip>
 
 #include "assert.h"
 #include "../util/compiler_assert.h"
@@ -592,21 +593,21 @@ void processing_dump_core_states(void){
 	for(i=0;i<RTE_MAX_LCORE;++i){
 		core_task = &processing_core_tasks[i];
 
-		if(i == 0){
-			ss << "\t core [" << i <<"] Master\n";
-			continue;
-		}
-
-		if(!core_task->available)
+		if(i && !core_task->available)
 			continue;
 
 		//Print basic info
-		ss << "\t core [" << i <<"] ";
+		ss << "\t core [" << i << "("<<rte_lcore_to_socket_id(i)<<")]";
+
+		if(i == 0){
+			ss << " Master"<<std::endl;
+			continue;
+		}
 
 		role = rte_eal_lcore_role(i);
 		state = rte_eal_get_lcore_state(i);
 
-		ss << "role: ";
+		ss << " role: ";
 		switch(role){
 			case ROLE_RTE:
 				ss << "RTE";
@@ -637,7 +638,7 @@ void processing_dump_core_states(void){
 				break;
 		}
 
-		ss << " Load: "<< ((float)core_task->num_of_rx_ports);
+		ss << " Load: "<< std::fixed << std::setprecision(1) << (float)core_task->num_of_rx_ports;
 		ss << ", serving ports: [";
 		for(j=0;j<core_task->num_of_rx_ports;++j){
 			if(core_task->port_list[j] == NULL){

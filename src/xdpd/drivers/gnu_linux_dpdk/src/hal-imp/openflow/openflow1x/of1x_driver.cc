@@ -24,7 +24,7 @@
 
 #include <rte_memcpy.h>
 
-extern rte_mempool *pool_direct;
+extern struct rte_mempool* direct_pools[];
 
 using namespace xdpd::gnu_linux;
 
@@ -283,7 +283,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		}	
 	
 		//Initialize the packet and copy
-		struct rte_mbuf* mbuf = rte_pktmbuf_alloc(pool_direct);
+		struct rte_mbuf* mbuf = rte_pktmbuf_alloc(direct_pools[0]);
 		if(mbuf==NULL){
 			ROFL_ERR("Error prependig packet to mbuf\n");
 			return HAL_FAILURE;

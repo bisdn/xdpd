@@ -88,12 +88,13 @@
 /*
 * Processing stuff
 */
-//Nothing yet
+
+//Maximum number of CPU sockets
+#define MAX_CPU_SOCKETS 8
 
 //DPDK defines
 #define RTE_CORE_MASK 0x00000003 //2 cores(1 doing I/O)
 #define RTE_MEM_CHANNELS 2
-#define SOCKET0 0
 #define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
 #define NB_MBUF   3*8192
 

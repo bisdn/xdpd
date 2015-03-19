@@ -14,11 +14,14 @@
 #include "../io/iface_manager.h"
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
-
-using namespace xdpd::gnu_linux_dpdk;
+//Pool sizes
+extern unsigned int mbuf_pool_size;
 
 //Wrong CPU socket overhead weight
 #define WRONG_CPU_SOCK_OH 0x80000000;
+#define POOL_MAX_LEN_NAME 32
+
+using namespace xdpd::gnu_linux_dpdk;
 
 //
 // Processing state
@@ -30,31 +33,84 @@ unsigned int total_num_of_phy_ports = 0;
 unsigned int total_num_of_nf_ports = 0;
 unsigned int running_hash = 0;
 
+
+struct rte_mempool* direct_pools[MAX_CPU_SOCKETS];
+struct rte_mempool* indirect_pools[MAX_CPU_SOCKETS];
+
 /*
-* Initialize data structures for processing to work 
+* Initialize data structures for processing to work
 */
 rofl_result_t processing_init(void){
 
 	unsigned int i;
 	struct rte_config* config;
 	enum rte_lcore_role_t role;
+	unsigned int sock_id;
+	char pool_name[POOL_MAX_LEN_NAME];
 
 	//Cleanup
-	memset(processing_core_tasks,0,sizeof(core_tasks_t)*RTE_MAX_LCORE);	
+	memset(direct_pools, 0, sizeof(direct_pools));
+	memset(indirect_pools, 0, sizeof(indirect_pools));
+	memset(processing_core_tasks,0,sizeof(core_tasks_t)*RTE_MAX_LCORE);
 
-	//Init 
+	//Initialize basics
 	config = rte_eal_get_configuration();
 	max_cores = config->lcore_count;
 	rte_spinlock_init(&mutex);
-		
+
 	ROFL_DEBUG(DRIVER_NAME"[processing] Processing init: %u logical cores guessed from rte_eal_get_configuration(). Master is: %u\n", config->lcore_count, config->master_lcore);
 
-	//Define available cores 
+	//Define available cores
 	for(i=0; i < RTE_MAX_LCORE; ++i){
 		role = rte_eal_lcore_role(i);
-		if(role == ROLE_RTE && i != config->master_lcore){
-			processing_core_tasks[i].available = true;
-			ROFL_DEBUG(DRIVER_NAME"[processing] Marking core %u as available\n",i);
+		if(role == ROLE_RTE){
+
+			if(i != config->master_lcore){
+				processing_core_tasks[i].available = true;
+				ROFL_DEBUG(DRIVER_NAME"[processing] Marking core %u as available\n",i);
+			}
+
+			//Recover CPU socket for the lcore
+			sock_id = rte_lcore_to_socket_id(i);
+
+			if(direct_pools[sock_id] == NULL){
+
+				/**
+				*  create the mbuf pool for that socket id
+				*/
+				snprintf (pool_name, POOL_MAX_LEN_NAME, "pool_direct_%u", sock_id);
+				ROFL_INFO(DRIVER_NAME"[processing] Creating %s with #mbufs %u for CPU socket %u\n", pool_name, mbuf_pool_size, sock_id);
+
+				direct_pools[sock_id] = rte_mempool_create(
+					pool_name,
+					mbuf_pool_size,
+					MBUF_SIZE, 32,
+					sizeof(struct rte_pktmbuf_pool_private),
+					rte_pktmbuf_pool_init, NULL,
+					rte_pktmbuf_init, NULL,
+					sock_id, 0);
+
+				if (direct_pools[sock_id] == NULL)
+					rte_panic("Cannot init direct mbuf pool for CPU socket: %u\n", sock_id);
+
+//Softclonning is disabled
+#if 10
+				snprintf (pool_name, POOL_MAX_LEN_NAME, "pool_indirect_%u", sock_id);
+				ROFL_INFO(DRIVER_NAME"[processing] Creating %s with #mbufs %u for CPU socket %u\n", pool_name, mbuf_pool_size, sock_id);
+				indirect_pools[sock_id] = rte_mempool_create(
+						pool_name,
+						mbuf_pool_size,
+						sizeof(struct rte_mbuf), 32,
+						0,
+						NULL, NULL,
+						rte_pktmbuf_init, NULL,
+						sock_id, 0);
+
+				if(indirect_pools[sock_id] == NULL)
+					rte_panic("Cannot init indirect mbuf pool for CPU socket: %u\n", sock_id);
+#endif
+			}
+
 		}
 	}
 

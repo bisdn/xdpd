@@ -36,7 +36,6 @@
 //+] Add more here...
 
 extern int optind; 
-struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
 
 using namespace xdpd::gnu_linux;
 
@@ -51,6 +50,9 @@ using namespace xdpd::gnu_linux;
 #define GNU_LINUX_DPDK_USAGE  "" //We don't support extra params
 #define GNU_LINUX_DPDK_EXTRA_PARAMS "" //We don't support extra params
 
+
+//Number of MBUFs per pool (per CPU socket)
+unsigned int mbuf_pool_size = NB_MBUF;
 
 /*
 * @name    hal_driver_init
@@ -80,32 +82,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 		return HAL_FAILURE;
 	}
 
-	/* create the mbuf pools */
-	pool_direct = rte_mempool_create("pool_direct", NB_MBUF,
-			MBUF_SIZE, 32,
-			sizeof(struct rte_pktmbuf_pool_private),
-			rte_pktmbuf_pool_init, NULL,
-			rte_pktmbuf_init, NULL,
-			SOCKET0, 0);
-
-	if (pool_direct == NULL)
-		rte_panic("Cannot init direct mbuf pool\n");
-
-//Softclonning is disabled
-#if 0
-	
-	pool_indirect = rte_mempool_create("pool_indirect", NB_MBUF,
-			sizeof(struct rte_mbuf), 32,
-			0,
-			NULL, NULL,
-			rte_pktmbuf_init, NULL,
-			SOCKET0, 0);
-	
-	if (pool_indirect == NULL)
-		rte_panic("Cannot init indirect mbuf pool\n");
-#endif
-
-	//Init bufferpool
+	//Init PKT_IN bufferpool
 	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
 
 	//Initialize pipeline

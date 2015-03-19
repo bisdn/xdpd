@@ -21,6 +21,7 @@ v0.6.0
 [+][drivers] Adapted to the new extensions-enabled HAL API
 
 [+][gnu-linux-dpdk] Added support for NF ports, KNI and secondary DPDK proc.(thanks I. Cerrato)
+[+][gnu-linux-dpdk] Added extra-params support to tweak coremask and #mbufs of the pool via CLI/conf file
 [O][gnu-linux-dpdk] Moved platform driver to DPDK v1.7 (thanks D. Verbeiren)
 [B][gnu-linux-dpdk] Fixed functions push() and pop() in dpdk_datapacket
 [B][gnu-linux-dpdk] Use an mbuf pool per physical CPU socket

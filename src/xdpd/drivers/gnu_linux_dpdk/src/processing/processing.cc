@@ -94,7 +94,7 @@ rofl_result_t processing_init(void){
 					rte_panic("Cannot init direct mbuf pool for CPU socket: %u\n", sock_id);
 
 //Softclonning is disabled
-#if 10
+#if 0
 				snprintf (pool_name, POOL_MAX_LEN_NAME, "pool_indirect_%u", sock_id);
 				ROFL_INFO(DRIVER_NAME"[processing] Creating %s with #mbufs %u for CPU socket %u\n", pool_name, mbuf_pool_size, sock_id);
 				indirect_pools[sock_id] = rte_mempool_create(
@@ -108,6 +108,9 @@ rofl_result_t processing_init(void){
 
 				if(indirect_pools[sock_id] == NULL)
 					rte_panic("Cannot init indirect mbuf pool for CPU socket: %u\n", sock_id);
+#else
+				//Avoid compiler to complain
+				(void)indirect_pools;
 #endif
 			}
 

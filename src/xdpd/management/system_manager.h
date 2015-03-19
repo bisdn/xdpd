@@ -119,11 +119,7 @@ public:
 	* Retrieve the driver usage(help)
 	*/
 	static std::string get_driver_usage(void){
-		std::string usage(driver_info.usage);
-		if(usage == "")
-			return std::string("not supported"); 
-		else
-			return usage;
+		return std::string(driver_info.usage);
 	}	
 		
 	/**

@@ -91,7 +91,9 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 	if (pool_direct == NULL)
 		rte_panic("Cannot init direct mbuf pool\n");
 
-
+//Softclonning is disabled
+#if 0
+	
 	pool_indirect = rte_mempool_create("pool_indirect", NB_MBUF,
 			sizeof(struct rte_mbuf), 32,
 			0,
@@ -101,6 +103,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 	
 	if (pool_indirect == NULL)
 		rte_panic("Cannot init indirect mbuf pool\n");
+#endif
 
 	//Init bufferpool
 	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);

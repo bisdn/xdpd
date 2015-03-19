@@ -697,7 +697,7 @@ void processing_dump_core_states(void){
 				break;
 		}
 
-		ss << " Load: "<< std::fixed << std::setprecision(1) << (float)core_task->num_of_rx_ports;
+		ss << " Load factor: "<< std::fixed << std::setprecision(3) << (float)core_task->num_of_rx_ports/PROCESSING_MAX_PORTS_PER_CORE;
 		ss << ", serving ports: [";
 		for(j=0;j<core_task->num_of_rx_ports;++j){
 			if(core_task->port_list[j] == NULL){

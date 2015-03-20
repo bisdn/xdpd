@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 #include <thread>
 #include "io/bufferpool.h"
 
@@ -35,9 +36,6 @@ class BufferpoolTestCase : public CppUnit::TestFixture{
 	
 	void test_basic(void);
 	
-	//datapacket_t pkt[STORE_SIZE], *recv;
-	//storeid id[STORE_SIZE];
-	
 public:
 	void setUp(void);
 	void tearDown(void);
@@ -45,7 +43,6 @@ public:
 
 void BufferpoolTestCase::setUp(){
 	fprintf(stderr,"<%s:%d> ************** BufferpoolTestCase Set up ************\n",__func__,__LINE__);
-	bufferpool::init();
 }
 
 void BufferpoolTestCase::tearDown(){
@@ -53,27 +50,49 @@ void BufferpoolTestCase::tearDown(){
 	bufferpool::destroy();
 }
 
-void work(){
+void work(uint16_t id){
 	datapacket_t *pkt;
-	
-	pkt = bufferpool::get_buffer();
-	fprintf(stderr,"<%s:%d> Buffer recieved pkt = %p \n",__func__,__LINE__, pkt);
-	CPPUNIT_ASSERT(pkt!=NULL); //assert that... what?!!
-	
-	bufferpool::release_buffer(pkt);
-	fprintf(stderr,"<%s:%d> Buffer released pkt = %p \n",__func__,__LINE__, pkt);
+	uint64_t i;
+	fprintf(stderr,"<%s:%d> [%u] starting\n",__func__,__LINE__, id);
+	for(i=0; i<0x1FFFFF; i++){
+		pkt = bufferpool::get_buffer();
+		
+		CPPUNIT_ASSERT(pkt != NULL);
+		
+		pkt->__cookie = id;
+		
+		//fprintf(stderr,"<%s:%d> [%d] Buffer recieved pkt = %p \n",__func__,__LINE__, id, pkt);
+		
+		usleep(rand() % 20 + 1);
+		
+		CPPUNIT_ASSERT(pkt->__cookie==id);
+		
+		bufferpool::release_buffer(pkt);
+		//fprintf(stderr,"<%s:%d> [%d] Buffer released pkt = %p \n",__func__,__LINE__, id, pkt);
+	}
+	fprintf(stderr,"<%s:%d> [%u] finished\n",__func__,__LINE__, id);
 }
 
 /* Tests */
 void BufferpoolTestCase::test_basic(void )
 {
+	bufferpool::init();
+	srand (time(NULL));
+	
 	fprintf(stderr,"<%s:%d> ************** BufferpoolTestCase Test Basic ************\n",__func__,__LINE__);
-	std::thread first (work);     // spawn new thread that calls work()
-	std::thread second (work);
+	std::thread fir (work, 1);     // spawn new thread that calls work()
+	std::thread sec (work, 2);
+	std::thread thi (work, 3);
+	std::thread fou (work, 4);
+	std::thread fiv (work, 5);
 	
-	first.join();                // pauses until first finishes
-	second.join();               // pauses until second finishes
 	
+	
+	fir.join();                // pauses until first finishes
+	sec.join();               // pauses until second finishes
+	thi.join();
+	fou.join();
+	fiv.join();
 }
 
 /*

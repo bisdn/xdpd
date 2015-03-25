@@ -248,7 +248,7 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 			/*
 			* DPDK NF port
 			*/
-			xdpd::gnu_linux_dpdk::tx_pkt_dpdk_nf_port(port, pkt);
+			xdpd::gnu_linux_dpdk::tx_pkt_shmem_nf_port(port, pkt);
 		}else if(port->type == PORT_TYPE_NF_EXTERNAL)
 		{
 			/*

@@ -38,7 +38,7 @@ void iface_manager_handle_kni_commands(){
 		port = nf_port_mapping[i];
 		if(unlikely(port != NULL)){
 			if(port->type == PORT_TYPE_NF_EXTERNAL){
-				nf_port_state_kni *port_state = (nf_port_state_kni_t*)port->platform_port_state;
+				dpdk_kni_port_state *port_state = (dpdk_kni_port_state_t*)port->platform_port_state;
 				rte_kni_handle_request(port_state->kni);
 			}
 		}
@@ -54,7 +54,7 @@ static int kni_config_network_interface(uint8_t port_id, uint8_t if_up){
 
 	switch_port_t* port = nf_port_mapping[port_id];
 
-	nf_port_state_kni_t *port_state = (nf_port_state_kni_t*)port->platform_port_state;
+	dpdk_kni_port_state_t *port_state = (dpdk_kni_port_state_t*)port->platform_port_state;
 
 	if(port_state->just_created){
 		port_state->just_created = false;
@@ -90,7 +90,7 @@ static switch_port_t* configure_nf_port_shmem(const char *nf_name, const char *n
 		return NULL;
 
 	//Generate port state
-	nf_port_state_dpdk_t* ps = (nf_port_state_dpdk_t*)rte_malloc(NULL,sizeof(nf_port_state_dpdk_t),0);
+	dpdk_shmem_port_state_t* ps = (dpdk_shmem_port_state_t*)rte_malloc(NULL,sizeof(dpdk_shmem_port_state_t),0);
 
 	if(!ps){
 		switch_port_destroy(port);
@@ -135,9 +135,8 @@ static switch_port_t* configure_nf_port_shmem(const char *nf_name, const char *n
 		assert(0);
 		return NULL;
 	}
-#endif
-
 	ps->counter_from_last_flush = 0;
+#endif
 	ps->nf_id = nf_id;
 
 	ps->scheduled = false;
@@ -164,7 +163,7 @@ static switch_port_t* configure_nf_port_kni(const char *nf_name, const char *nf_
 		return NULL;
 
 	//Generate port state
-	nf_port_state_kni_t* ps = (nf_port_state_kni_t*)rte_malloc(NULL,sizeof(nf_port_state_kni_t),0);
+	dpdk_kni_port_state_t* ps = (dpdk_kni_port_state_t*)rte_malloc(NULL,sizeof(dpdk_kni_port_state_t),0);
 
 	if(!ps){
 		switch_port_destroy(port);
@@ -262,7 +261,7 @@ rofl_result_t iface_manager_destroy_nf_port(const char *port_name){
 	pthread_rwlock_wrlock(&iface_manager_rwlock);
 
 	if(port->type == PORT_TYPE_NF_SHMEM){
-		nf_port_state_dpdk_t *port_state = (nf_port_state_dpdk_t*)port->platform_port_state;
+		dpdk_shmem_port_state_t *port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
 
 		nf_port_mapping[port_state->nf_id] = NULL;
 
@@ -284,7 +283,7 @@ rofl_result_t iface_manager_destroy_nf_port(const char *port_name){
 
 	}else if(port->type == PORT_TYPE_NF_EXTERNAL){
 
-		nf_port_state_kni_t *port_state = (nf_port_state_kni_t*)port->platform_port_state;
+		dpdk_kni_port_state_t *port_state = (dpdk_kni_port_state_t*)port->platform_port_state;
 
 		nf_port_mapping[port_state->nf_id] = NULL;
 

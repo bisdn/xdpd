@@ -165,24 +165,40 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 /**
 * Shmem port
 */
-inline void
-tx_pkt_shmem_nf_port(switch_port_t* port, datapacket_t* pkt)
-{
-	assert(port->type == PORT_TYPE_NF_SHMEM);
+void inline
+flush_shmem_nf_port(switch_port_t* port, rte_ring* queue, struct mbuf_burst* burst){
 
-	int ret;
+	unsigned ret;
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	uint32_t tmp, next_tmp;
 #endif
-	dpdk_shmem_port_state *port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
-	struct rte_mbuf* mbuf;
+	if( burst->len == 0 || unlikely((port->up == false)) ){
+		return;
+	}
 
-	//Get mbuf pointer
-	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem][%s] Trying to flush burst(enqueue in lcore ring) of length: %u\n", port->name,  burst->len);
 
-	ret = rte_ring_mp_enqueue(port_state->to_nf_queue, (void *) mbuf);
-	if( likely((ret == 0) || (ret == -EDQUOT)) ){
+	//Enqueue to the hsmem ring
+	ret = rte_ring_mp_enqueue_burst(queue, (void **)burst->burst, burst->len);
+
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem][%s] --- Flushed %u pkts\n", port->name, ret);
+
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
+	unsigned int ret_cpy = ret;
+#endif
+
+	if (unlikely(ret < burst->len)) {
+		//TODO increase error counters?
+		do {
+			rte_pktmbuf_free(burst->burst[ret]);
+		} while (++ret < burst->len);
+	}
+
+#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
+	dpdk_shmem_port_state *port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
+	if( likely(ret_cpy >0)){
+		unsigned int i;
+
 		//The packet has been enqueued
 
 		//XXX port_statistics[port].tx++;
@@ -191,38 +207,58 @@ tx_pkt_shmem_nf_port(switch_port_t* port, datapacket_t* pkt)
 		//from the last sem_post
 		do{
 			tmp = port_state->counter_from_last_flush;
-			if(tmp == (PKT_TO_NF_THRESHOLD - 1))
-				//Reset the counter
-				next_tmp = 0;
-			else
-				next_tmp = tmp + 1;
+			next_tmp = (tmp + ret_cpy) % PKT_TO_NF_THRESHOLD;
 		}while(__sync_bool_compare_and_swap(&(port_state->counter_from_last_flush),tmp,next_tmp) == false);
 
-		if(next_tmp == 0){
-			//Notify that pkts are available
+		//Notify that pkts are available
+		for(i=0;i<ret_cpy;++i)
 			sem_post(port_state->semaphore);
-		}
-#endif
-	}else{
-			//The queue is full, and the pkt must be dropped
-
-			//XXX port_statistics[port].dropped++
-
-			rte_pktmbuf_free(mbuf);
 	}
+#endif
+
+	//Reset queue size
+	burst->len = 0;
 }
 
-void inline
-flush_shmem_nf_port(switch_port_t *port)
+inline void
+tx_pkt_shmem_nf_port(switch_port_t* port, datapacket_t* pkt)
 {
-	assert(port != NULL);
-	dpdk_shmem_port_state *port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
+	struct mbuf_burst* pkt_burst;
+	unsigned int len;
 
-	(void)port_state;
-#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
-	sem_post(port_state->semaphore);
+	dpdk_shmem_port_state *port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
+	struct rte_mbuf* mbuf;
+
+	//Get mbuf pointer
+	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
+
+	//Recover core task
+	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
+
+	//Recover burst container (cache)
+	pkt_burst = &tasks->nf_ports[port_state->nf_id].tx_queues_burst[0];
+
+#if DEBUG
+	if(unlikely(!pkt_burst)){
+		rte_pktmbuf_free(mbuf);
+		assert(0);
+		return;
+	}
 #endif
 
+	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+
+	//Enqueue
+	len = pkt_burst->len;
+	pkt_burst->burst[len] = mbuf;
+	len++;
+
+	//If burst is full => trigger send
+	if ( unlikely(!tasks->active) || unlikely(len == IO_IFACE_MAX_PKT_BURST)) { //If buffer is full or mgmt core
+		pkt_burst->len = len;
+		flush_shmem_nf_port(port, port_state->to_nf_queue, pkt_burst);
+		return;
+	}
 }
 
 /**

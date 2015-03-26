@@ -30,12 +30,12 @@ struct mbuf_burst {
 };
 
 //Port queues
-typedef struct port_queues{
+typedef struct port_bursts{
 	//This are TX-queues of a port
 	bool present; //signals that it is present AND is attached (usable by I/O subsytem)
 	unsigned int core_id; //core id serving RX/TX on this port
 	struct mbuf_burst tx_queues_burst[IO_IFACE_NUM_QUEUES];
-}port_queues_t;
+}port_bursts_t;
 
 /**
 * Core task list
@@ -49,11 +49,11 @@ typedef struct core_tasks{
 	switch_port_t* port_list[PROCESSING_MAX_PORTS_PER_CORE]; //active ports MUST be on the very beginning of the array, contiguously.
 	
 	//This are the TX-queues for ALL ports in the system; index is port_id
-	port_queues_t phy_ports[PROCESSING_MAX_PORTS];
+	port_bursts_t phy_ports[PROCESSING_MAX_PORTS];
 	
 #ifdef GNU_LINUX_DPDK_ENABLE_NF
 	//Only for NFs
-	port_queues_t nf_ports[PROCESSING_MAX_PORTS];
+	port_bursts_t nf_ports[PROCESSING_MAX_PORTS];
 #endif	
 }core_tasks_t;
 

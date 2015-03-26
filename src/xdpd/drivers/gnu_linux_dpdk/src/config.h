@@ -130,17 +130,15 @@
 #define GNU_LINUX_DPDK_MAX_KNI_IFACES 4
 
 /**
-* Uncomment the following line to enable the samaphore and implement a batch
-* meachanism in the DPDK secondary processes NF
+* Uncomment the following line to enable the semaphore and implement a sleep/
+* wake mechanism between xdpd and the NF process (DPDK secondary process)
 *
-* NOT recommended
+* NOT RECOMMENDED
 */
 //#define ENABLE_DPDK_SECONDARY_SEMAPHORE
-#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
-	//IVANO - FIXME: write a meaningfull value
-	#define PKT_TO_NF_THRESHOLD 	200
-#endif
 
+//IVANO - FIXME: write a meaningfull value
+//#define PKT_TO_NF_THRESHOLD 	200
 
 
 #endif //XDPD_GNU_LINUX_XDPD_CONFIG_H

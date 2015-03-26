@@ -163,7 +163,7 @@ int processing_core_process_packets(void* not_used){
 	int j;
 	bool own_port;
 	switch_port_t* port;
-	port_queues_t* port_queues;
+	port_bursts_t* port_bursts;
         uint64_t diff_tsc, prev_tsc;
 	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST]={0};
 	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
@@ -208,14 +208,14 @@ int processing_core_process_packets(void* not_used){
 				l++;
 
 				//make code readable
-				port_queues = &tasks->phy_ports[i];
+				port_bursts = &tasks->phy_ports[i];
 
 				//Check whether is our port (we have to also transmit TX queues)
-				own_port = (port_queues->core_id == core_id);
+				own_port = (port_bursts->core_id == core_id);
 
 				//Flush (enqueue them in the RX/TX port lcore)
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
-					flush_port_queue_tx_burst(phy_port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
+					flush_port_queue_tx_burst(phy_port_mapping[i], i, &port_bursts->tx_queues_burst[j], j);
 
 					if(own_port)
 						transmit_port_queue_tx_burst(i, j, pkt_burst);
@@ -224,33 +224,29 @@ int processing_core_process_packets(void* not_used){
 
 #ifdef GNU_LINUX_DPDK_ENABLE_NF
 			//handle NF ports
-			for(i=0, l=0; l<total_num_of_nf_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i)
-			{
+			for(i=0, l=0; l<total_num_of_nf_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
+
 				if(!tasks->nf_ports[i].present)
 					continue;
 
 				l++;
 
-				if(nf_port_mapping[i]->type == PORT_TYPE_NF_EXTERNAL)
-				{
-					//make code readable
-					port_queues = &tasks->nf_ports[i];
+				//make code readable
+				port_bursts = &tasks->nf_ports[i];
 
+				if(nf_port_mapping[i]->type == PORT_TYPE_NF_EXTERNAL){
 					//Check whether is our port (we have to also transmit TX queues)
-					own_port = (port_queues->core_id == core_id);
+					own_port = (port_bursts->core_id == core_id);
 
-					flush_kni_nf_port_burst(nf_port_mapping[i], i, &port_queues->tx_queues_burst[0]);
+					flush_kni_nf_port_burst(nf_port_mapping[i], i, &port_bursts->tx_queues_burst[0]);
 
 					if(own_port)
-						transmit_kni_nf_port_burst(nf_port_mapping[i],i, pkt_burst);
-				}
-#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
-				else
-				{
+						transmit_kni_nf_port_burst(nf_port_mapping[i], i, pkt_burst);
+				}else{
 					assert(nf_port_mapping[i]->type == PORT_TYPE_NF_SHMEM);
-					flush_shmem_nf_port(nf_port_mapping[i]);
+					port = nf_port_mapping[i];
+					flush_shmem_nf_port(port, ((dpdk_shmem_port_state_t*)port->platform_port_state)->to_nf_queue, &port_bursts->tx_queues_burst[0]);
 				}
-#endif
 			}
 #endif
 		}

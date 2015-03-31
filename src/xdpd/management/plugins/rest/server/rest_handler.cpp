@@ -27,11 +27,13 @@ namespace http
         {
         RestFuncT func = this->handler_map[request_path];
         func(req, rep);
+        if(rep.headers.size() == 0){
         rep.headers.resize(2);
         rep.headers[0].name = "Content-Length";
         rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
         rep.headers[1].name = "Content-Type";
         rep.headers[1].value = "application/json";
+        }
         rep.status = reply::ok;
         return;
         }

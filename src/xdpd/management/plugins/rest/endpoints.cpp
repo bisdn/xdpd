@@ -18,7 +18,7 @@ using namespace xdpd;
 
 namespace endpoints{
 
-
+//Utils
 static json_spirit::Value get_plugin_list(){
 	std::vector<plugin*> plugin_list = plugin_manager::get_plugins();
 	std::vector<std::string> plugins;
@@ -28,6 +28,39 @@ static json_spirit::Value get_plugin_list(){
 	}
 
 	return json_spirit::Value(plugins.begin(), plugins.end());
+}
+
+//
+// Human browsable index
+//
+void index(const http::server::request &req, http::server::reply &rep){
+	std::stringstream html;
+
+	html << "<html>" << std::endl;
+	html << "<head>" << std::endl;
+	html << "<title> xDPd control panel </title>" << std::endl;
+	html << "</head>" << std::endl;
+	html << "<body>" << std::endl;
+	html << "<h1>xDPd control panel</h1><br>" << std::endl;
+	html << "Available URLs:<br><br>" << std::endl;
+	html << "<ul>" << std::endl;
+
+	//Info
+	html << "<li><a href=\"/info\">/info</a>: general system information" << std::endl;
+	html << "<li><a href=\"/ports\">/ports</a>: list of available ports" << std::endl;
+	html << "<li><a href=\"/lsis\">/lsis</a>: list of logical switch instances (LSIs)" << std::endl;
+	html << "<li><a href=\"/plugins\">/plugins</a>: list of compiled-in plugins" << std::endl;
+	html << "</ul>" << std::endl;
+
+	html << "</body>" << std::endl;
+	html << "</html>" << std::endl;
+
+	rep.content = html.str();
+	rep.headers.resize(2);
+	rep.headers[0].name = "Content-Length";
+	rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+	rep.headers[1].name = "Content-Type";
+	rep.headers[1].value = "text/html";
 }
 
 //

@@ -8,6 +8,7 @@ namespace server{
 }//namespace http
 
 namespace endpoints{
+	void index(const http::server::request &, http::server::reply &);
 	void general_info(const http::server::request &, http::server::reply &);
 	void list_plugins(const http::server::request &, http::server::reply &);
 	void list_datapaths(const http::server::request &, http::server::reply &);

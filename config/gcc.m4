@@ -13,6 +13,18 @@ if test "$is_gcc" == "0"; then
 	buggy_gcc="no"
 	gcc_version=`${CC} -dumpversion`
 
+	# Checking if "-dumpversion" gave the revision (patch) of gcc as well
+	dots_string="${gcc_version//\.}"
+	num_dots=$((${#gcc_version} - ${#dots_string}))
+	if test $num_dots -lt 2 ; then
+		AC_MSG_RESULT(could not determine yet)
+		#Use the "-v" option
+		AC_PROG_GREP
+		AC_PROG_AWK
+		gcc_version=`${CC} -v 2>&1 | grep "gcc version" | awk -F ' ' '{print $3}'`
+		AC_MSG_CHECKING(again for GCC compatibility)
+	fi
+
 	for blacklisted_gcc in $BLACKLISTED_GCC_VERSIONS; do
 		if test "$blacklisted_gcc" = "$gcc_version"; then
 			buggy_gcc="yes"

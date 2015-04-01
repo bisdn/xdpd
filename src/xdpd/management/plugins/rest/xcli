@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+
+
+VERSION=0.7
+DEFAULT_REST_IP="127.0.0.1"
+DEFAULT_REST_PORT=5757
+defaultsocket = DEFAULT_REST_IP+":"+str(DEFAULT_REST_PORT)
+
+try:
+	import sys
+	import getopt
+	try:
+		import urllib2 as urllib
+	except:
+		import urllib
+except Exception as e:
+	print "Unable to import dependencies; please install them.\n"+str(e)
+
+
+#
+# REST
+#
+def rest_get(socket, url):
+	complete_url = "http://"+socket+url
+
+	try:
+		json = urllib.urlopen(complete_url).read()
+	except Exception as e:
+		print "ERROR http get '"+complete_url+"':"
+		print "  "+str(e)
+		return None
+
+	return json
+
+def compose_url(url_array):
+	#Compose the url
+	url=""
+	for section in url_array:
+		url +="/"+section
+	return url
+
+#
+# Command parsing
+#
+def execute(socket, command):
+
+	if command == "":
+		print "Invalid command: '"+command+"'"
+		return
+
+	#Get operation
+	op = command.split()[0]
+
+	if op == "show":
+		#Remove trailing spaces
+		stripped = command.strip().split()[1:]
+
+		#Check that we really have everything needed
+		if len(stripped) == 0:
+			print "Invalid command: '"+command+"'. No arguments given to operation '"+op+"'"
+			return
+
+		return rest_get(socket, compose_url(stripped))
+	else:
+		print "Unknown op: '"+op+"'"
+		return
+
+def list_commands():
+	string=""
+	string+='   show info\t\t\t\t - Show general info of an xDPd instance\n'
+	string+= '   show matching-algorithms\t\t - Show available matching algorithms\n'
+	string+= '   show plugins\t\t - Show compiled-in plugs\n'
+	string+= '   show lsis\t\t\t\t - List the existing logical switch instances\n'
+	string+= '   show lsi <lsi_name>\t\t\t - Show LSI information\n'
+	string+= '   show lsi <lsi_name> table <num> flows - Show LSI table <num> flows\n'
+	string+= '   show ports\t\t\t\t - List the existing logical switch instances\n'
+	string+= '   show port <port_name>\t\t - Show port information\n'
+	return string
+
+def usage():
+	print "xDPd command line tool v"+str(VERSION)
+	print ''
+	print 'Executes a CLI command or launches an interactive CLI session '
+	print 'Without arguments, it launches an interactive session'
+	print ''
+	print 'Return values are always in JSON format'
+	print ''
+	print 'Usage:'
+	print "   "+sys.argv[0]+' [-h] [-c <command>] [-o <output-file>] [-s <host:port>]'
+	print ''
+	print 'Optional paramenters:'
+	print "   -s\t Specify IP and port. default '"+defaultsocket+"'"
+	print '   -c\t Execute <command> (e.g. show ports) and exit.'
+	print '   -o\t Output to file. Only makes sense when combined with -c'
+	print ''
+	print 'Available commands:'
+	print list_commands()
+##
+## Main routine
+##
+def main(argv):
+	command = ''
+	outputfile = ''
+	socket = defaultsocket
+
+	try:
+		opts, args = getopt.getopt(argv,"hs:c:o:",["help", "socket=", "command=","output-file="])
+	except getopt.GetoptError:
+		usage()
+		sys.exit(2)
+
+	for opt, arg in opts:
+		if opt in ('-h', "--help"):
+			usage()
+			sys.exit()
+		elif opt in ('-c', "--command"):
+			command = arg
+		elif opt in ('-s', "--socket"):
+			socket = arg
+		elif opt in ("-o", "--output-file"):
+			outputfile = arg
+
+
+	if command == "":
+		print "ERROR: interactive mode not supported yet. Aborting..."
+		sys.exit()
+	else:
+		result = execute(socket, command)
+
+		#Ignore if there was an error
+		if result == None or result == "":
+			return
+
+		#Output an exit
+		if(outputfile):
+			f = open(outputfile, "w")
+			f.write(result)
+		else:
+			print result
+
+
+if __name__ == "__main__":
+	main(sys.argv[1:])

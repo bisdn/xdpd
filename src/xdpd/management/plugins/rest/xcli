@@ -78,7 +78,7 @@ def list_commands():
 	return string
 
 def usage():
-	print "xDPd command line tool v"+str(VERSION)
+	print "xDPd v"+str(VERSION)+" command line tool"
 	print ''
 	print 'Executes a CLI command or launches an interactive CLI session '
 	print 'Without arguments, it launches an interactive session'

@@ -326,7 +326,21 @@ void lsi_detail(const http::server::request &req,
 
 		t.push_back(json_spirit::Pair("num-of-entries", (uint64_t)it->num_of_entries));
 		t.push_back(json_spirit::Pair("max-entries", (uint64_t)it->max_entries));
-		//TODO: table miss, capabilities
+
+		std::string miss;
+		switch(it->default_action){
+			case OF1X_TABLE_MISS_CONTROLLER: miss = "controller";
+				break;
+			case OF1X_TABLE_MISS_CONTINUE: miss = "continue";
+				break;
+			case OF1X_TABLE_MISS_DROP: miss = "drop";
+				break;
+			default: miss = "unknown";
+				break;
+		}
+		t.push_back(json_spirit::Pair("table-miss", miss));
+
+		//TODO: capabilities
 
 		//Statistics
 		json_spirit::Object s;

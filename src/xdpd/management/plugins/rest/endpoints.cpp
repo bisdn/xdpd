@@ -51,6 +51,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	//Info
 	html << "<li><a href=\"/info\">/info</a>: general system information" << std::endl;
 	html << "<li><a href=\"/plugins\">/plugins</a>: list of compiled-in plugins" << std::endl;
+	html << "<li><a href=\"/matching-algorithms\">/plugins</a>: list available OF matching algorithms" << std::endl;
 	html << "<li><a href=\"/ports\">/ports</a>: list of available ports" << std::endl;
 	html << "<li>/port/&lt;port_name&gt;: Show port information" << std::endl;
 	html << "<li><a href=\"/lsis\">/lsis</a>: list of logical switch instances(LSIs)" << std::endl;
@@ -99,6 +100,21 @@ void list_plugins(const http::server::request &req, http::server::reply &rep, bo
 	json_spirit::Object plugins;
 	plugins.push_back(json_spirit::Pair("plugins", get_plugin_list()));
 	rep.content = json_spirit::write(plugins, true);
+}
+
+//
+// List matching algorithms
+//
+void list_matching_algorithms(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+	//Prepare object
+	json_spirit::Object mas;
+	std::list<std::string> mas_ =
+					switch_manager::list_matching_algorithms(OF_VERSION_10);
+
+	json_spirit::Value pa(mas_.begin(), mas_.end());
+	mas.push_back(json_spirit::Pair("matching-algorithms", pa));
+
+	rep.content = json_spirit::write(mas, true);
 }
 
 //

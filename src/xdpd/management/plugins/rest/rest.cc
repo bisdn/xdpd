@@ -30,6 +30,7 @@ void srvthread (){
 		//General information
 		handler.register_path("/info", boost::bind(endpoints::general_info, _1, _2, _3));
 		handler.register_path("/plugins", boost::bind(endpoints::list_plugins, _1, _2, _3));
+		handler.register_path("/matching-algorithms", boost::bind(endpoints::list_matching_algorithms, _1, _2, _3));
 
 		//Ports
 		handler.register_path("/ports", boost::bind(endpoints::list_ports, _1, _2, _3));

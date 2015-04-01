@@ -23,13 +23,19 @@ void srvthread (){
 	try{
 		http::server::rest_handler handler;
 
-		handler.register_path("/", boost::bind(endpoints::index, _1, _2));
-		handler.register_path("/index.htm", boost::bind(endpoints::index, _1, _2));
-		handler.register_path("/index.html", boost::bind(endpoints::index, _1, _2));
-		handler.register_path("/info", boost::bind(endpoints::general_info, _1, _2));
-		handler.register_path("/plugins", boost::bind(endpoints::list_plugins, _1, _2));
-		handler.register_path("/lsis", boost::bind(endpoints::list_datapaths, _1, _2));
-		handler.register_path("/ports", boost::bind(endpoints::list_ports, _1, _2));
+		handler.register_path("/", boost::bind(endpoints::index, _1, _2, _3));
+		handler.register_path("/index.htm", boost::bind(endpoints::index, _1, _2, _3));
+		handler.register_path("/index.html", boost::bind(endpoints::index, _1, _2, _3));
+
+		//General information
+		handler.register_path("/info", boost::bind(endpoints::general_info, _1, _2, _3));
+		handler.register_path("/plugins", boost::bind(endpoints::list_plugins, _1, _2, _3));
+
+		//Ports
+		handler.register_path("/ports", boost::bind(endpoints::list_ports, _1, _2, _3));
+		handler.register_path("/port/(\\w+)", boost::bind(endpoints::port_detail, _1, _2, _3));
+
+		handler.register_path("/lsis", boost::bind(endpoints::list_datapaths, _1, _2, _3));
 
 		http::server::server(io_service, "0.0.0.0", "80", handler)();
 		boost::asio::signal_set signals(io_service);

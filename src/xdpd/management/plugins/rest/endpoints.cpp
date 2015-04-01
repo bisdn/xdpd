@@ -1,11 +1,14 @@
-// Copyright (c) 2014	Barnstormer Softworks, Ltd.
+// Copyright(c) 2014	Barnstormer Softworks, Ltd.
 
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 
+
 #include "server/request.hpp"
 #include "server/reply.hpp"
 #include "json_spirit/json_spirit.h"
+
+#include "endpoints.hpp"
 
 #include <rofl/common/utils/c_logger.h>
 
@@ -23,7 +26,7 @@ static json_spirit::Value get_plugin_list(){
 	std::vector<plugin*> plugin_list = plugin_manager::get_plugins();
 	std::vector<std::string> plugins;
 
-	for (std::vector<plugin*>::iterator i = plugin_list.begin(); i != plugin_list.end(); ++i){
+	for(std::vector<plugin*>::iterator i = plugin_list.begin(); i != plugin_list.end(); ++i){
 		plugins.push_back((*i)->get_name());
 	}
 
@@ -33,7 +36,7 @@ static json_spirit::Value get_plugin_list(){
 //
 // Human browsable index
 //
-void index(const http::server::request &req, http::server::reply &rep){
+void index(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 	std::stringstream html;
 
 	html << "<html>" << std::endl;
@@ -47,9 +50,10 @@ void index(const http::server::request &req, http::server::reply &rep){
 
 	//Info
 	html << "<li><a href=\"/info\">/info</a>: general system information" << std::endl;
-	html << "<li><a href=\"/ports\">/ports</a>: list of available ports" << std::endl;
-	html << "<li><a href=\"/lsis\">/lsis</a>: list of logical switch instances (LSIs)" << std::endl;
 	html << "<li><a href=\"/plugins\">/plugins</a>: list of compiled-in plugins" << std::endl;
+	html << "<li><a href=\"/ports\">/ports</a>: list of available ports" << std::endl;
+	html << "<li>/port/&lt;port_name&gt;: Show port information" << std::endl;
+	html << "<li><a href=\"/lsis\">/lsis</a>: list of logical switch instances(LSIs)" << std::endl;
 	html << "</ul>" << std::endl;
 
 	html << "</body>" << std::endl;
@@ -66,7 +70,7 @@ void index(const http::server::request &req, http::server::reply &rep){
 //
 // General information
 //
-void general_info(const http::server::request &req, http::server::reply &rep){
+void general_info(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 
 	//Prepare object
 	json_spirit::Object xdpd_;
@@ -90,7 +94,7 @@ void general_info(const http::server::request &req, http::server::reply &rep){
 //
 // Plugins
 //
-void list_plugins (const http::server::request &req, http::server::reply &rep){
+void list_plugins(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 	//Prepare object
 	json_spirit::Object plugins;
 	plugins.push_back(json_spirit::Pair("plugins", get_plugin_list()));
@@ -101,11 +105,81 @@ void list_plugins (const http::server::request &req, http::server::reply &rep){
 // Ports
 //
 
-void port_detail (const http::server::request &req, http::server::reply &rep){
+void port_detail(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+	json_spirit::Object detail;
+	std::string port_name = std::string(grps[1]);
+	port_snapshot snapshot;
 
+	//Check if it exists;
+	if(!port_manager::exists(port_name)){
+		std::stringstream ss;
+		ss << "Invalid port: "<<port_name;
+		rep.content = ss.str();
+		return;
+	}
+
+	//Get the snapshot
+	port_manager::get_port_info(port_name, snapshot);
+
+	//Fill it in
+	detail.push_back(json_spirit::Pair("name", port_name));
+	detail.push_back(json_spirit::Pair("up", snapshot.up? "yes": "no"));
+	detail.push_back(json_spirit::Pair("forward-packets", snapshot.forward_packets? "yes": "no"));
+	detail.push_back(json_spirit::Pair("drop-received", snapshot.drop_received? "yes": "no"));
+	detail.push_back(json_spirit::Pair("no-flood", snapshot.no_flood? "yes": "no"));
+
+	std::string p_type;
+	switch(snapshot.type){
+		case PORT_TYPE_PHYSICAL: p_type = "physical";
+					break;
+		case PORT_TYPE_VIRTUAL: p_type = "virtual";
+					break;
+		case PORT_TYPE_TUNNEL: p_type = "tunnel";
+					break;
+		case PORT_TYPE_NF_NATIVE: p_type = "nf-native";
+					break;
+		case PORT_TYPE_NF_SHMEM: p_type = "nf-shmem";
+					break;
+		case PORT_TYPE_NF_EXTERNAL: p_type = "nf-external";
+					break;
+		default: p_type = "unknown";
+			break;
+	}
+	detail.push_back(json_spirit::Pair("type", p_type));
+	detail.push_back(json_spirit::Pair("link", snapshot.state&PORT_STATE_LINK_DOWN? "down": "up"));
+
+	//Stats
+	json_spirit::Object stats;
+	stats.push_back(json_spirit::Pair("link", snapshot.state&PORT_STATE_LINK_DOWN? "down": "up"));
+	stats.push_back(json_spirit::Pair("rx_packets", snapshot.stats.rx_packets));
+	stats.push_back(json_spirit::Pair("tx_packets", snapshot.stats.tx_packets));
+	stats.push_back(json_spirit::Pair("rx_bytes", snapshot.stats.rx_bytes));
+	stats.push_back(json_spirit::Pair("tx_bytes", snapshot.stats.tx_bytes));
+	stats.push_back(json_spirit::Pair("rx_dropped", snapshot.stats.rx_dropped));
+	stats.push_back(json_spirit::Pair("tx_dropped", snapshot.stats.tx_dropped));
+	stats.push_back(json_spirit::Pair("rx_errors", snapshot.stats.rx_errors));
+	stats.push_back(json_spirit::Pair("tx_errors", snapshot.stats.tx_errors));
+	stats.push_back(json_spirit::Pair("rx_frame_err", snapshot.stats.rx_frame_err));
+	stats.push_back(json_spirit::Pair("rx_over_err", snapshot.stats.rx_over_err));
+	stats.push_back(json_spirit::Pair("rx_crc_err", snapshot.stats.rx_crc_err));
+	stats.push_back(json_spirit::Pair("collisions", snapshot.stats.collisions));
+
+	detail.push_back(json_spirit::Pair("statistics", stats));
+
+	//Openflow
+	if(snapshot.attached_sw_dpid > 0){
+		json_spirit::Object of;
+		of.push_back(json_spirit::Pair("attached-dpid", snapshot.attached_sw_dpid));
+		of.push_back(json_spirit::Pair("generate-pkt-in", snapshot.of_generate_packet_in? "yes":"no"));
+		detail.push_back(json_spirit::Pair("openflow", of));
+	}
+
+	//TODO: queues
+
+	rep.content = json_spirit::write(detail, true);
 }
 
-void list_ports (const http::server::request &req, http::server::reply &rep){
+void list_ports(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 	//Prepare object
 	json_spirit::Object ports;
 
@@ -122,9 +196,9 @@ void list_ports (const http::server::request &req, http::server::reply &rep){
 // Datapaths
 //
 
-void list_datapaths (const http::server::request &req,
-						http::server::reply &rep){
-
+void list_datapaths(const http::server::request &req,
+						http::server::reply &rep,
+						boost::cmatch& grps){
 	//Prepare object
 	json_spirit::Object dps;
 

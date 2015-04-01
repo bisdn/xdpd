@@ -9,7 +9,8 @@ namespace server{
 }//namespace server
 }//namespace http
 
-namespace endpoints{
+namespace xdpd{
+namespace controllers{
 	/**
 	* Human readable index
 	*/
@@ -34,4 +35,6 @@ namespace endpoints{
 	*/
 	void list_ports(const http::server::request &, http::server::reply &, boost::cmatch&);
 	void port_detail(const http::server::request &, http::server::reply &, boost::cmatch&);
-} // namespace endpoints
+
+} //namespace controllers
+} //namespace xdpd

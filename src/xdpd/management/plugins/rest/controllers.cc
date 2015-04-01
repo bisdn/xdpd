@@ -8,7 +8,7 @@
 #include "server/reply.hpp"
 #include "json_spirit/json_spirit.h"
 
-#include "endpoints.hpp"
+#include "controllers.h"
 
 #include <rofl/common/utils/c_logger.h>
 
@@ -17,9 +17,8 @@
 #include "../../switch_manager.h"
 #include "../../system_manager.h"
 
-using namespace xdpd;
-
-namespace endpoints{
+namespace xdpd{
+namespace controllers{
 
 //Utils
 static json_spirit::Value get_plugin_list(){
@@ -389,4 +388,5 @@ void lsi_table_flows(const http::server::request &req,
 	rep.content = json_spirit::write(wrap, true);
 }
 
-} // namespace endpoints
+} //namespace controllers
+} //namespace xdpd

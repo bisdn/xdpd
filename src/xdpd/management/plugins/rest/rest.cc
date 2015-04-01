@@ -13,37 +13,37 @@
 #include "server/server.hpp"
 #include "server/rest_handler.hpp"
 
-#include "endpoints.hpp"
+#include "controllers.h" 
 
 namespace xdpd{
 
-void srvthread (){
+static void srvthread (){
 	boost::asio::io_service io_service;
 
 	try{
 		http::server::rest_handler handler;
 
-		handler.register_path("/", boost::bind(endpoints::index, _1, _2, _3));
-		handler.register_path("/index.htm", boost::bind(endpoints::index, _1, _2, _3));
-		handler.register_path("/index.html", boost::bind(endpoints::index, _1, _2, _3));
+		handler.register_path("/", boost::bind(controllers::index, _1, _2, _3));
+		handler.register_path("/index.htm", boost::bind(controllers::index, _1, _2, _3));
+		handler.register_path("/index.html", boost::bind(controllers::index, _1, _2, _3));
 
 		//General information
-		handler.register_path("/info", boost::bind(endpoints::general_info, _1, _2, _3));
-		handler.register_path("/plugins", boost::bind(endpoints::list_plugins, _1, _2, _3));
-		handler.register_path("/matching-algorithms", boost::bind(endpoints::list_matching_algorithms, _1, _2, _3));
+		handler.register_path("/info", boost::bind(controllers::general_info, _1, _2, _3));
+		handler.register_path("/plugins", boost::bind(controllers::list_plugins, _1, _2, _3));
+		handler.register_path("/matching-algorithms", boost::bind(controllers::list_matching_algorithms, _1, _2, _3));
 
 		//Ports
-		handler.register_path("/ports", boost::bind(endpoints::list_ports, _1, _2, _3));
-		handler.register_path("/port/(\\w+)", boost::bind(endpoints::port_detail, _1, _2, _3));
+		handler.register_path("/ports", boost::bind(controllers::list_ports, _1, _2, _3));
+		handler.register_path("/port/(\\w+)", boost::bind(controllers::port_detail, _1, _2, _3));
 
-		handler.register_path("/lsis", boost::bind(endpoints::list_lsis, _1, _2, _3));
-		handler.register_path("/lsi/(\\w+)", boost::bind(endpoints::lsi_detail, _1, _2, _3));
-		handler.register_path("/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(endpoints::lsi_table_flows, _1, _2, _3));
+		handler.register_path("/lsis", boost::bind(controllers::list_lsis, _1, _2, _3));
+		handler.register_path("/lsi/(\\w+)", boost::bind(controllers::lsi_detail, _1, _2, _3));
+		handler.register_path("/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(controllers::lsi_table_flows, _1, _2, _3));
 
 		http::server::server(io_service, "0.0.0.0", "80", handler)();
 		boost::asio::signal_set signals(io_service);
-		signals.add(SIGINT);
-		signals.add(SIGTERM);
+		/*signals.add(SIGINT);
+		signals.add(SIGTERM);*/
 		signals.async_wait(boost::bind(&boost::asio::io_service::stop, &io_service));
 
 		io_service.run();
@@ -55,9 +55,12 @@ void srvthread (){
 
 void rest::init(){
 	ROFL_INFO("[xdpd][rest] Starting REST server\n");
-	boost::thread t(&srvthread);
-
+	t = boost::thread(&srvthread);
 	return;
+}
+
+rest::~rest(){
+	t.interrupt();
 }
 
 } // namespace xdpd

@@ -1,5 +1,6 @@
 // Copyright (c) 2014	Barnstormer Softworks, Ltd.
 
+#include <algorithm>
 #include <boost/lexical_cast.hpp>
 
 #include "rest_handler.hpp"
@@ -10,6 +11,9 @@
 namespace http{
 namespace server{
 
+static inline int is_slash(char c){
+	return c == '/';
+}
 
 
 rest_handler::rest_handler(void){
@@ -23,7 +27,11 @@ rest_handler::rest_handler(void){
 	methods_to_enum[method] = DELETE;
 }
 
-RestFuncT rest_handler::get_handler(std::map<std::string, RestFuncT>& handler_map, const std::string& req_path, boost::cmatch& grps){
+RestFuncT rest_handler::get_handler(std::map<std::string, RestFuncT>& handler_map, std::string& req_path, boost::cmatch& grps){
+
+	//Strip trailing "/" char
+	if(req_path.begin() != (req_path.end()-1))
+		req_path.erase(std::remove_if(req_path.end()-1, req_path.end(), is_slash), req_path.end());
 
 	//First check for static matches
 	RestFuncT f = handler_map[req_path];

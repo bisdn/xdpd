@@ -31,7 +31,7 @@ public:
 	void register_delete_path(std::string path, RestFuncT f);
 
 private:
-	RestFuncT get_handler(std::map<std::string, RestFuncT>& handler_map, const std::string& req_path, boost::cmatch& grps);
+	RestFuncT get_handler(std::map<std::string, RestFuncT>& handler_map, std::string& req_path, boost::cmatch& grps);
 
 	std::map<std::string, RestFuncT> get_handlers;
 	std::map<std::string, RestFuncT> post_handlers;

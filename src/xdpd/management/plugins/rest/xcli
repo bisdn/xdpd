@@ -32,6 +32,7 @@ def list_commands():
 	string+= '   show lsis\t\t\t\t - List the existing logical switch instances\n'
 	string+= '   show lsi <lsi_name>\t\t\t - Show LSI information\n'
 	string+= '   show lsi <lsi_name> table <num> flows - Show LSI table <num> flows\n'
+	string+= '   show lsi <lsi_name> group-table\t - List LSI group-table entries\n'
 	string+= '   show ports\t\t\t\t - List the existing logical switch instances\n'
 	string+= '   show port <port_name>\t\t - Show port information\n'
 	return string
@@ -135,6 +136,7 @@ class InteractivePrompt(cmd.Cmd):
 
 	def postcmd(self, stop, line):
 		self.prompt = XCLI + "("+self.curr+")>"
+		print ""
 		return stop
 
 	def help_exit(self):

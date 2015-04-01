@@ -29,6 +29,7 @@ namespace controllers{
 	void list_lsis(const http::server::request &, http::server::reply &, boost::cmatch&);
 	void lsi_detail(const http::server::request &, http::server::reply &, boost::cmatch&);
 	void lsi_table_flows(const http::server::request &, http::server::reply &, boost::cmatch&);
+	void lsi_groups(const http::server::request &, http::server::reply &, boost::cmatch&);
 
 	/**
 	* Ports

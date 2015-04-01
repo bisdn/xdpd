@@ -48,13 +48,15 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<ul>" << std::endl;
 
 	//Info
-	html << "<li><a href=\"/info\">/info</a>: general system information" << std::endl;
-	html << "<li><a href=\"/plugins\">/plugins</a>: list of compiled-in plugins" << std::endl;
-	html << "<li><a href=\"/matching-algorithms\">/matching-algorithms</a>: list available OF table matching algorithms" << std::endl;
-	html << "<li><a href=\"/ports\">/ports</a>: list of available ports" << std::endl;
-	html << "<li>/port/&lt;port_name&gt;: show port information" << std::endl;
-	html << "<li><a href=\"/lsis\">/lsis</a>: list of logical switch instances(LSIs)" << std::endl;
-	html << "<li>/lsi/&lt;lsi_name&gt\": show logical switch instance(LSI) information" << std::endl;
+	html << "<li><b><a href=\"/info\">/info</a></b>: general system information" << std::endl;
+	html << "<li><b><a href=\"/plugins\">/plugins</a></b>: list of compiled-in plugins" << std::endl;
+	html << "<li><b><a href=\"/matching-algorithms\">/matching-algorithms</a></b>: list available OF table matching algorithms<br>" << std::endl;
+	html << "<li><b><a href=\"/ports\">/ports</a></b>: list of available ports" << std::endl;
+	html << "<li><b>/port/&lt;port_name&gt;</b>: show port information<br>" << std::endl;
+	html << "<li><b><a href=\"/lsis\">/lsis</a></b>: list of logical switch instances(LSIs)" << std::endl;
+	html << "<li><b>/lsi/&lt;lsi_name&gt</b>: show logical switch instance(LSI) information" << std::endl;
+	html << "<li><b>/lsi/&lt;lsi_name&gt/table/&lt;num&gt/flows</b>: list LSI table flow entries" << std::endl;
+	html << "<li><b>/lsi/&lt;lsi_name&gt/group-table</b>: list LSI group table entries" << std::endl;
 	html << "</ul>" << std::endl;
 
 	html << "<h3>POST</h3><br>" << std::endl;
@@ -414,5 +416,40 @@ void lsi_table_flows(const http::server::request &req,
 	rep.content = json_spirit::write(wrap, true);
 }
 
+void lsi_groups(const http::server::request &req,
+						http::server::reply &rep,
+						boost::cmatch& grps){
+	json_spirit::Object wrap;
+	json_spirit::Object table;
+	std::string lsi_name = std::string(grps[1]);
+
+	//Check if it exists;
+	if(!switch_manager::exists_by_name(lsi_name)){
+		std::stringstream ss;
+		ss << "Invalid lsi: "<<lsi_name;
+		rep.content = ss.str();
+		return;
+	}
+
+	uint64_t dpid = switch_manager::get_switch_dpid(lsi_name);
+
+	//Get flows
+	std::list<openflow_group_mod_snapshot> group_mods;
+	std::list<std::string> groups_str;
+	switch_manager::get_switch_group_mods(dpid, group_mods);
+	std::list<openflow_group_mod_snapshot>::const_iterator it;
+	for(it=group_mods.begin(); it != group_mods.end(); ++it){
+		std::stringstream ss;
+		ss << *it;
+		groups_str.push_back(ss.str());
+	}
+
+	json_spirit::Value groups_(groups_str.begin(), groups_str.end());
+	table.push_back(json_spirit::Pair("groups", groups_));
+
+	//Wrap
+	wrap.push_back(json_spirit::Pair("group-table", table));
+	rep.content = json_spirit::write(wrap, true);
+}
 } //namespace controllers
 } //namespace xdpd

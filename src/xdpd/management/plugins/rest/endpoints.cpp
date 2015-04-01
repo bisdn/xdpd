@@ -139,6 +139,7 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 
 	//Fill it in
 	detail.push_back(json_spirit::Pair("name", port_name));
+	detail.push_back(json_spirit::Pair("is-blacklisted", port_manager::is_blacklisted(port_name)?"yes":"no"));
 	detail.push_back(json_spirit::Pair("up", snapshot.up? "yes": "no"));
 	detail.push_back(json_spirit::Pair("forward-packets", snapshot.forward_packets? "yes": "no"));
 	detail.push_back(json_spirit::Pair("drop-received", snapshot.drop_received? "yes": "no"));
@@ -190,7 +191,26 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 		detail.push_back(json_spirit::Pair("openflow", of));
 	}
 
-	//TODO: queues
+	json_spirit::Object queues;
+	std::list<port_queue_snapshot>::const_iterator it;
+	for(it = snapshot.queues.begin(); it != snapshot.queues.end(); ++it){
+		std::stringstream ss;
+
+		//General info
+		json_spirit::Object q;
+		q.push_back(json_spirit::Pair("id", (uint64_t)it->id));
+		ss << it->id;
+		q.push_back(json_spirit::Pair("length", (uint64_t)it->length));
+
+		//Stats
+		json_spirit::Object s;
+		s.push_back(json_spirit::Pair("tx-pkts", it->stats_tx_pkts));
+		s.push_back(json_spirit::Pair("tx-bytes", it->stats_tx_bytes));
+		q.push_back(json_spirit::Pair("statistics", s));
+
+		queues.push_back(json_spirit::Pair(ss.str(), q));
+	}
+	detail.push_back(json_spirit::Pair("queues", queues));
 
 	rep.content = json_spirit::write(detail, true);
 }

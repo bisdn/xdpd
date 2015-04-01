@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.7.0
+
+[+][CMM] Improved REST plugin. Please read the REST_README. Added python xcli script
+
 v0.6.0
 
 [K] Prevent compilation with buggy GCC versions (-O3 opt.)

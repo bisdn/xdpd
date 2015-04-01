@@ -129,6 +129,9 @@ class InteractivePrompt(cmd.Cmd):
 		self.sockets[self.curr] = socket
 		self.prompt = XCLI + "("+self.curr+")>"
 		print GREETING
+		print ""
+		print "Using target '["+self.curr+"] "+self.sockets[self.curr]+"'"
+		print ""
 
 	def postcmd(self, stop, line):
 		self.prompt = XCLI + "("+self.curr+")>"

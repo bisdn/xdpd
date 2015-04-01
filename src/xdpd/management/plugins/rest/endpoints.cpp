@@ -51,10 +51,11 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	//Info
 	html << "<li><a href=\"/info\">/info</a>: general system information" << std::endl;
 	html << "<li><a href=\"/plugins\">/plugins</a>: list of compiled-in plugins" << std::endl;
-	html << "<li><a href=\"/matching-algorithms\">/plugins</a>: list available OF matching algorithms" << std::endl;
+	html << "<li><a href=\"/matching-algorithms\">/matching-algorithms</a>: list available OF table matching algorithms" << std::endl;
 	html << "<li><a href=\"/ports\">/ports</a>: list of available ports" << std::endl;
-	html << "<li>/port/&lt;port_name&gt;: Show port information" << std::endl;
+	html << "<li>/port/&lt;port_name&gt;: show port information" << std::endl;
 	html << "<li><a href=\"/lsis\">/lsis</a>: list of logical switch instances(LSIs)" << std::endl;
+	html << "<li>/lsi/&lt;lsi_name&gt\": show logical switch instance(LSI) information" << std::endl;
 	html << "</ul>" << std::endl;
 
 	html << "</body>" << std::endl;
@@ -232,7 +233,7 @@ void list_ports(const http::server::request &req, http::server::reply &rep, boos
 // Datapaths
 //
 
-void list_datapaths(const http::server::request &req,
+void list_lsis(const http::server::request &req,
 						http::server::reply &rep,
 						boost::cmatch& grps){
 	//Prepare object
@@ -245,6 +246,83 @@ void list_datapaths(const http::server::request &req,
 	dps.push_back(json_spirit::Pair("lsis", pa));
 
 	rep.content = json_spirit::write(dps, true);
+}
+
+void lsi_detail(const http::server::request &req,
+						http::server::reply &rep,
+						boost::cmatch& grps){
+	json_spirit::Object lsi;
+	std::string lsi_name = std::string(grps[1]);
+
+	//Check if it exists;
+	if(!switch_manager::exists_by_name(lsi_name)){
+		std::stringstream ss;
+		ss << "Invalid lsi: "<<lsi_name;
+		rep.content = ss.str();
+		return;
+	}
+
+	//Get the snapshot
+	uint64_t dpid = switch_manager::get_switch_dpid(lsi_name);
+	openflow_switch_snapshot snapshot;
+
+	switch_manager::get_switch_info(dpid, snapshot);
+
+	//Fill in general information
+	lsi.push_back(json_spirit::Pair("name", lsi_name));
+	lsi.push_back(json_spirit::Pair("dpid", dpid));
+
+	std::string of_version;
+	switch(snapshot.version){
+		case OF_VERSION_10: of_version = "1.0";
+			break;
+		case OF_VERSION_12: of_version = "1.2";
+			break;
+		case OF_VERSION_13: of_version = "1.3";
+			break;
+		default: of_version = "invalid";
+			break;
+	}
+
+	lsi.push_back(json_spirit::Pair("of_version", of_version));
+	lsi.push_back(json_spirit::Pair("num-of-tables", (int)snapshot.num_of_tables));
+	lsi.push_back(json_spirit::Pair("miss-send-len", (int)snapshot.miss_send_len));
+	lsi.push_back(json_spirit::Pair("num-of-buffers", (int)snapshot.num_of_buffers));
+
+	//Attached ports
+	json_spirit::Object ports;
+	lsi.push_back(json_spirit::Pair("ports", ports));
+	//TODO add to snapshot
+
+	//Loop over the tables
+	json_spirit::Object tables;
+	std::list<openflow_switch_table_snapshot>::const_iterator it;
+	for(it = snapshot.tables.begin(); it != snapshot.tables.end(); ++it){
+		json_spirit::Object t;
+		std::stringstream ss;
+		//Generics
+		t.push_back(json_spirit::Pair("number", (int)it->number));
+		ss <<  it->number;
+
+		//TODO: convert this into a string
+		t.push_back(json_spirit::Pair("matching-algorithm", (int)it->matching_algorithm));
+
+		t.push_back(json_spirit::Pair("num-of-entries", (uint64_t)it->num_of_entries));
+		t.push_back(json_spirit::Pair("max-entries", (uint64_t)it->max_entries));
+		//TODO: table miss, capabilities
+
+		//Statistics
+		json_spirit::Object s;
+		s.push_back(json_spirit::Pair("pkts-looked-up", it->stats_lookup));
+		s.push_back(json_spirit::Pair("pkts-matched", it->stats_matched));
+		t.push_back(json_spirit::Pair("statistics", s));
+
+		tables.push_back(json_spirit::Pair(ss.str(), t));
+	}
+	lsi.push_back(json_spirit::Pair("tables", tables));
+
+
+	rep.content = json_spirit::write(lsi, true);
 }
 
 } // namespace endpoints

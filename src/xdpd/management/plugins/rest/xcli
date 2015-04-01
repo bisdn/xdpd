@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
 
+XCLI="xcli"
 VERSION=0.7
 DEFAULT_REST_IP="127.0.0.1"
 DEFAULT_REST_PORT=5757
 defaultsocket = DEFAULT_REST_IP+":"+str(DEFAULT_REST_PORT)
+GREETING="xDPd v"+str(VERSION)+" command line tool"
 
 try:
+	import cmd
 	import sys
 	import getopt
 	try:
@@ -17,6 +20,53 @@ except Exception as e:
 	print "Unable to import dependencies; please install them.\n"+str(e)
 
 
+#
+# Commands and usage
+#
+
+def list_commands():
+	string=""
+	string+='   show info\t\t\t\t - Show general info of an xDPd instance\n'
+	string+= '   show matching-algorithms\t\t - Show available matching algorithms\n'
+	string+= '   show plugins\t\t - Show compiled-in plugs\n'
+	string+= '   show lsis\t\t\t\t - List the existing logical switch instances\n'
+	string+= '   show lsi <lsi_name>\t\t\t - Show LSI information\n'
+	string+= '   show lsi <lsi_name> table <num> flows - Show LSI table <num> flows\n'
+	string+= '   show ports\t\t\t\t - List the existing logical switch instances\n'
+	string+= '   show port <port_name>\t\t - Show port information\n'
+	return string
+
+def usage():
+	print GREETING
+	print ''
+	print 'Executes a CLI command or launches an interactive CLI session '
+	print 'Without arguments, it launches an interactive session'
+	print ''
+	print 'Return values are always in JSON format'
+	print ''
+	print 'Usage:'
+	print "   "+sys.argv[0]+' [-h] [-c <command>] [-o <output-file>] [-s <host:port>]'
+	print ''
+	print 'Optional paramenters:'
+	print "   -s\t Specify IP and port. default '"+defaultsocket+"'"
+	print '   -c\t Execute <command> (e.g. show ports) and exit.'
+	print '   -o\t Output to file. Only makes sense when combined with -c'
+	print ''
+	print 'Available commands:'
+	print list_commands()
+
+# Confirm util
+def confirm(msg):
+	""" Util confirmation """
+	ok = set(['yes','y', 'ye'])
+	ko = set(['no','n', '']) #default no
+	while 1:
+		print "Are you sure %s (Y/N)?" % msg
+		aux = raw_input().lower()
+		if aux in ok:
+			return True
+		elif aux in ko:
+			return False
 #
 # REST
 #
@@ -65,36 +115,85 @@ def execute(socket, command):
 		print "Unknown op: '"+op+"'"
 		return
 
-def list_commands():
-	string=""
-	string+='   show info\t\t\t\t - Show general info of an xDPd instance\n'
-	string+= '   show matching-algorithms\t\t - Show available matching algorithms\n'
-	string+= '   show plugins\t\t - Show compiled-in plugs\n'
-	string+= '   show lsis\t\t\t\t - List the existing logical switch instances\n'
-	string+= '   show lsi <lsi_name>\t\t\t - Show LSI information\n'
-	string+= '   show lsi <lsi_name> table <num> flows - Show LSI table <num> flows\n'
-	string+= '   show ports\t\t\t\t - List the existing logical switch instances\n'
-	string+= '   show port <port_name>\t\t - Show port information\n'
-	return string
+#
+# Cmd based interactive
+#
+class InteractivePrompt(cmd.Cmd):
+	'''
+	Interactive CLI
+	'''
+	def __init__(self, socket):
+		cmd.Cmd.__init__(self)
+		self.curr = "local"
+		self.sockets = {}
+		self.sockets[self.curr] = socket
+		self.prompt = XCLI + "("+self.curr+")>"
+		print GREETING
 
-def usage():
-	print "xDPd v"+str(VERSION)+" command line tool"
-	print ''
-	print 'Executes a CLI command or launches an interactive CLI session '
-	print 'Without arguments, it launches an interactive session'
-	print ''
-	print 'Return values are always in JSON format'
-	print ''
-	print 'Usage:'
-	print "   "+sys.argv[0]+' [-h] [-c <command>] [-o <output-file>] [-s <host:port>]'
-	print ''
-	print 'Optional paramenters:'
-	print "   -s\t Specify IP and port. default '"+defaultsocket+"'"
-	print '   -c\t Execute <command> (e.g. show ports) and exit.'
-	print '   -o\t Output to file. Only makes sense when combined with -c'
-	print ''
-	print 'Available commands:'
-	print list_commands()
+	def postcmd(self, stop, line):
+		self.prompt = XCLI + "("+self.curr+")>"
+		return stop
+
+	def help_exit(self):
+		print "Exit from the interactive CLI"
+
+	def do_switch_target(self,s=""):
+		if s == "":
+			print "Invalid empty target name"
+			return
+		target = s.split()[0]
+		if not target in self.sockets:
+			print "Invalid target '"+target+"'"
+			return
+		self.curr = target
+
+	def __complete_switch_target(self, text, line, start_index, end_index):
+		return [
+			target for target in self.sockets
+			if target.startswith(text)
+		]
+
+	def help_switch_target(self):
+		print "Switch to another xDPd target. Syntax: switch_target <name> <host:port>"
+
+	def do_add_target(self,s=""):
+		if s == "":
+			print "Invalid empty target name"
+			return
+		target = s.split()[0]
+		socket = s.split()[1]
+		if target in self.sockets:
+			print "Warning: overwritting '"+target+"' target"
+		self.sockets[target] = socket
+
+	def help_add_target(self):
+		print "Add an xDPd target. Syntax: add_target <name> <host:port>"
+
+	def do_targets(self,s=""):
+		for key in self.sockets:
+			print "["+key+"] "+self.sockets[key]
+
+	def help_targets(self):
+		print "Show xDPd instances(targets)"
+
+	#Other useful stuff
+	def do_show(self,s=""):
+		print execute(self.sockets[self.curr], "show "+s)
+
+	def help_show(self):
+		print "Retrieve information information from the xDPd instance"
+		print list_commands()
+
+	def do_exit (self,s=""):
+		if confirm("that you want to exit"):
+			return True
+
+	#necessary for \n
+	def emptyline(self, s=""):
+		"""Do nothing..."""
+		pass
+
+
 ##
 ## Main routine
 ##
@@ -122,7 +221,8 @@ def main(argv):
 
 
 	if command == "":
-		print "ERROR: interactive mode not supported yet. Aborting..."
+		c = InteractivePrompt(socket)
+		c.cmdloop()
 		sys.exit()
 	else:
 		result = execute(socket, command)

@@ -38,6 +38,7 @@ void srvthread (){
 
 		handler.register_path("/lsis", boost::bind(endpoints::list_lsis, _1, _2, _3));
 		handler.register_path("/lsi/(\\w+)", boost::bind(endpoints::lsi_detail, _1, _2, _3));
+		handler.register_path("/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(endpoints::lsi_table_flows, _1, _2, _3));
 
 		http::server::server(io_service, "0.0.0.0", "80", handler)();
 		boost::asio::signal_set signals(io_service);

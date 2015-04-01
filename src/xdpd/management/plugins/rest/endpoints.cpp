@@ -336,4 +336,57 @@ void lsi_detail(const http::server::request &req,
 	rep.content = json_spirit::write(lsi, true);
 }
 
+void lsi_table_flows(const http::server::request &req,
+						http::server::reply &rep,
+						boost::cmatch& grps){
+	json_spirit::Object wrap;
+	json_spirit::Object table;
+	std::string lsi_name = std::string(grps[1]);
+	std::string tid = std::string(grps[2]);
+
+	//Check if it exists;
+	if(!switch_manager::exists_by_name(lsi_name)){
+		std::stringstream ss;
+		ss << "Invalid lsi: "<<lsi_name;
+		rep.content = ss.str();
+		return;
+	}
+
+	//Check if table exists
+	std::istringstream reader(tid);
+	unsigned int id;
+	reader >> id;
+
+	uint64_t dpid = switch_manager::get_switch_dpid(lsi_name);
+	openflow_switch_snapshot snapshot;
+	switch_manager::get_switch_info(dpid, snapshot);
+
+	//Check if table id is valid
+	if(snapshot.num_of_tables <= id){
+		std::stringstream ss;
+		ss << "Invalid table id: "<< id << " for lsi: "<< lsi_name <<". Valid tables: 0-"<<snapshot.num_of_tables-1;
+		rep.content = ss.str();
+		return;
+	}
+
+	//Get flows
+	std::list<flow_entry_snapshot> flows;
+	std::list<std::string> flows_str;
+	switch_manager::get_switch_table_flows(dpid, id, flows);
+	std::list<flow_entry_snapshot>::const_iterator it;
+	for(it=flows.begin(); it != flows.end(); ++it){
+		std::stringstream ss;
+		ss << *it;
+		flows_str.push_back(ss.str());
+	}
+
+	table.push_back(json_spirit::Pair("id", (uint64_t)id));
+	json_spirit::Value flows_(flows_str.begin(), flows_str.end());
+	table.push_back(json_spirit::Pair("flows", flows_));
+
+	//Wrap
+	wrap.push_back(json_spirit::Pair("table", table));
+	rep.content = json_spirit::write(wrap, true);
+}
+
 } // namespace endpoints

@@ -140,16 +140,17 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 
 	//Fill it in
 	detail.push_back(json_spirit::Pair("name", port_name));
+	detail.push_back(json_spirit::Pair("is-vlink", port_manager::is_vlink(port_name)? "yes": "no"));
 
 	std::stringstream mac;
 	mac << snapshot.hw_address.str();
 	detail.push_back(json_spirit::Pair("mac-address", mac.str()));
 
-	detail.push_back(json_spirit::Pair("is-blacklisted", port_manager::is_blacklisted(port_name)?"yes":"no"));
 	detail.push_back(json_spirit::Pair("up", snapshot.up? "yes": "no"));
 	detail.push_back(json_spirit::Pair("forward-packets", snapshot.forward_packets? "yes": "no"));
 	detail.push_back(json_spirit::Pair("drop-received", snapshot.drop_received? "yes": "no"));
 	detail.push_back(json_spirit::Pair("no-flood", snapshot.no_flood? "yes": "no"));
+	detail.push_back(json_spirit::Pair("is-blacklisted", port_manager::is_blacklisted(port_name)?"yes":"no"));
 
 	std::string p_type;
 	switch(snapshot.type){

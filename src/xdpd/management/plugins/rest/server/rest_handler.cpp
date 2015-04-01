@@ -10,13 +10,23 @@
 namespace http{
 namespace server{
 
-rest_handler::rest_handler(void){ }
 
 
-RestFuncT rest_handler::get_handler(const std::string& req_path, boost::cmatch& grps){
+rest_handler::rest_handler(void){
+	std::string method = "get";
+	methods_to_enum[method] = GET;
+	method = "post";
+	methods_to_enum[method] = POST;
+	method = "put";
+	methods_to_enum[method] = PUT;
+	method = "delete";
+	methods_to_enum[method] = DELETE;
+}
+
+RestFuncT rest_handler::get_handler(std::map<std::string, RestFuncT>& handler_map, const std::string& req_path, boost::cmatch& grps){
 
 	//First check for static matches
-	RestFuncT f = this->handler_map[req_path];
+	RestFuncT f = handler_map[req_path];
 
 	if(f){
 		//Empty grps
@@ -46,7 +56,26 @@ void rest_handler::operator()(const request& req, reply& rep){
 	}
 
 	try{
-		RestFuncT func = get_handler(request_path, grps);
+		RestFuncT func;
+		std::string method(req.method);
+		std::transform(method.begin(), method.end(), method.begin(), ::tolower);
+		switch(methods_to_enum[method]){
+			case GET:
+				func = get_handler(get_handlers, request_path, grps);
+				break;
+			case POST:
+				func = get_handler(post_handlers, request_path, grps);
+				break;
+
+			case PUT:
+				func = get_handler(put_handlers, request_path, grps);
+				break;
+
+			case DELETE:
+				func = get_handler(delete_handlers, request_path, grps);
+				break;
+		}
+
 		func(req, rep, grps);
 		if(rep.headers.size() == 0){
 			rep.headers.resize(2);
@@ -63,8 +92,20 @@ void rest_handler::operator()(const request& req, reply& rep){
 	}
 }
 
-void rest_handler::register_path(std::string path, RestFuncT func){
-	this->handler_map[path] = func;
+void rest_handler::register_get_path(std::string path, RestFuncT func){
+	get_handlers[path] = func;
+}
+
+void rest_handler::register_post_path(std::string path, RestFuncT func){
+	post_handlers[path] = func;
+}
+
+void rest_handler::register_put_path(std::string path, RestFuncT func){
+	put_handlers[path] = func;
+}
+
+void rest_handler::register_delete_path(std::string path, RestFuncT func){
+	delete_handlers[path] = func;
 }
 
 } // namespace server

@@ -25,23 +25,23 @@ static void srvthread (){
 	try{
 		http::server::rest_handler handler;
 
-		handler.register_path("/", boost::bind(controllers::index, _1, _2, _3));
-		handler.register_path("/index.htm", boost::bind(controllers::index, _1, _2, _3));
-		handler.register_path("/index.html", boost::bind(controllers::index, _1, _2, _3));
+		handler.register_get_path("/", boost::bind(controllers::index, _1, _2, _3));
+		handler.register_get_path("/index.htm", boost::bind(controllers::index, _1, _2, _3));
+		handler.register_get_path("/index.html", boost::bind(controllers::index, _1, _2, _3));
 
 		//General information
-		handler.register_path("/info", boost::bind(controllers::general_info, _1, _2, _3));
-		handler.register_path("/plugins", boost::bind(controllers::list_plugins, _1, _2, _3));
-		handler.register_path("/matching-algorithms", boost::bind(controllers::list_matching_algorithms, _1, _2, _3));
+		handler.register_get_path("/info", boost::bind(controllers::general_info, _1, _2, _3));
+		handler.register_get_path("/plugins", boost::bind(controllers::list_plugins, _1, _2, _3));
+		handler.register_get_path("/matching-algorithms", boost::bind(controllers::list_matching_algorithms, _1, _2, _3));
 
 		//Ports
-		handler.register_path("/ports", boost::bind(controllers::list_ports, _1, _2, _3));
-		handler.register_path("/port/(\\w+)", boost::bind(controllers::port_detail, _1, _2, _3));
+		handler.register_get_path("/ports", boost::bind(controllers::list_ports, _1, _2, _3));
+		handler.register_get_path("/port/(\\w+)", boost::bind(controllers::port_detail, _1, _2, _3));
 
-		handler.register_path("/lsis", boost::bind(controllers::list_lsis, _1, _2, _3));
-		handler.register_path("/lsi/(\\w+)", boost::bind(controllers::lsi_detail, _1, _2, _3));
-		handler.register_path("/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(controllers::lsi_table_flows, _1, _2, _3));
-		handler.register_path("/lsi/(\\w+)/group-table", boost::bind(controllers::lsi_groups, _1, _2, _3));
+		handler.register_get_path("/lsis", boost::bind(controllers::list_lsis, _1, _2, _3));
+		handler.register_get_path("/lsi/(\\w+)", boost::bind(controllers::lsi_detail, _1, _2, _3));
+		handler.register_get_path("/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(controllers::lsi_table_flows, _1, _2, _3));
+		handler.register_get_path("/lsi/(\\w+)/group-table", boost::bind(controllers::lsi_groups, _1, _2, _3));
 
 		http::server::server(io_service, "0.0.0.0", XDPD_REST_PORT, handler)();
 		boost::asio::signal_set signals(io_service);

@@ -97,6 +97,7 @@ Show detailed information for `eth1` port:
 	xcli -c "show port eth1"
 
 Output:
+
 	{
 	    "name" : "eth1",
 	    "is-vlink" : "no",

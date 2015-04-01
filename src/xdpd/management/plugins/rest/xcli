@@ -68,6 +68,24 @@ def confirm(msg):
 			return True
 		elif aux in ko:
 			return False
+
+# Unix-style less print
+def print_less(msg):
+	packing =39 #default line terminal-1 (command)
+	lines = msg.split('\n')
+	i=0
+
+	if len(lines) <= packing:
+		print msg
+		return
+
+	while i < len(lines):
+		print '\n'.join(lines[i:i+packing])
+		if i+packing < len(lines):
+			raw_input(": press enter to continue...")
+			sys.stdout.write("\033[F") # Cursor up one line
+		i += packing
+
 #
 # REST
 #
@@ -183,7 +201,7 @@ class InteractivePrompt(cmd.Cmd):
 
 	#Other useful stuff
 	def do_show(self,s=""):
-		print execute(self.sockets[self.curr], "show "+s)
+		print_less(execute(self.sockets[self.curr], "show "+s))
 
 	def help_show(self):
 		print "Retrieve information information from the xDPd instance"

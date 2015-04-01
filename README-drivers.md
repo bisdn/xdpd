@@ -25,12 +25,12 @@ Read more
 
 Please have a look to the specific details of each driver: 
 
-src/xdpd/drivers/{driver-code-name}/README
+	src/xdpd/drivers/{driver-code-name}/README
 
-Note that drivers may, or may not, make use of xdpd's `-e` option to receive additional parameter.
+Note that drivers may, or may not, make use of xdpd's `-e` option to receive additional parameters during initialization.
 
-Build driver support
-====================
+Compile driver support
+======================
 
 To compile support for a driver:
 

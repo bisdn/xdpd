@@ -7,7 +7,7 @@ The `config` plugin is the default management plugin. During boostrap, `config` 
 Supported platforms (drivers)
 =============================
 
-All (as for any management plugin in xDPd)
+All, as for any management plugin in xDPd.
 
 Requirements
 ============
@@ -24,12 +24,12 @@ Defaut `configure` already includes `config` plugin, and it is equivalent to:
 	sh# make  
 	sh# make install
 
-`config` plugin can be combined with other plugins, e.g. `rest` or `xmp`
+`config` plugin can be combined with other plugins, e.g. `rest` or `xmp`. It is **not** mandatory that `config` plugins is compiled in, provided that other plugins can perform the initialization tasks (e.g. `xmp`).
 
 Example config files
 ====================
 
 Two examples are provided, but not distributed during `make install`:
 
-* src/xdpd/management/plugins/config/example.cfg - 1 LSI, simple configuration
-* src/xdpd/management/plugins/config/example_complex.cfg - 2 LSIs running different versions, connected through a vlink, and the majority of optional parameters
+* `src/xdpd/management/plugins/config/example.cfg` : 1 LSI, simple configuration
+* `src/xdpd/management/plugins/config/example_complex.cfg` : 2 LSIs running different versions, connected through a vlink, and the majority of optional parameters

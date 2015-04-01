@@ -352,6 +352,11 @@ void lsi_detail(const http::server::request &req,
 	}
 	lsi.push_back(json_spirit::Pair("tables", tables));
 
+	//Group table
+	json_spirit::Object gtable;
+	gtable.push_back(json_spirit::Pair("num-of-groups", (uint64_t)snapshot.group_table.num_of_entries));
+	//TODO: config
+	lsi.push_back(json_spirit::Pair("group-table", gtable));
 
 	rep.content = json_spirit::write(lsi, true);
 }

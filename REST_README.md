@@ -196,7 +196,7 @@ Output:
 	    }
 	}
 
-Show detailed information for `eth1` port:
+Show the list of flows in lsi `dp0` table `0`:
 
 	xcli -c "show list dp0 table 0 flows"
 

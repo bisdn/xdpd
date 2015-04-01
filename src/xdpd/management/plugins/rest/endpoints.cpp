@@ -297,8 +297,13 @@ void lsi_detail(const http::server::request &req,
 
 	//Attached ports
 	json_spirit::Object ports;
-	lsi.push_back(json_spirit::Pair("ports", ports));
-	//TODO add to snapshot
+	std::map<unsigned int, std::string>::const_iterator port_it;
+	for(port_it = snapshot.ports.begin(); port_it != snapshot.ports.end(); ++port_it){
+		std::stringstream ss;
+		ss <<  port_it->first;
+		ports.push_back(json_spirit::Pair(ss.str(), port_it->second));
+	}
+	lsi.push_back(json_spirit::Pair("attached-ports", ports));
 
 	//Loop over the tables
 	json_spirit::Object tables;

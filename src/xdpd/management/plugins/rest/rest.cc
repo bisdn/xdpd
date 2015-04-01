@@ -58,7 +58,6 @@ static void srvthread (){
 void rest::init(){
 	ROFL_INFO("[xdpd][rest] Starting REST server\n");
 	t = boost::thread(&srvthread);
-	return;
 }
 
 rest::~rest(){

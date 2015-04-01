@@ -1,5 +1,5 @@
-REST support
-============
+REST and CLI support
+====================
 
 xDPd's can export its management APIs via REST using the `rest` plugin.
 
@@ -18,10 +18,12 @@ Future plans:
 * Improve formatting of flows
 * More management routines
 
+The `rest` plugin also provides with a command line tool called `xcli`, to easily consume these REST services from a shell.
+
 Supported platforms (drivers)
 =============================
 
-The REST support is the driver agnostic part of xDPd's, the Control and Management Module (CMM), so works across all drivers.
+The REST support is confined in an xDPd management plugin, within the driver agnostic part, the Control and Management Module (CMM), so it works with all platform drivers.
 
 Requirements
 ============
@@ -35,7 +37,7 @@ How to build
 
 To build support for rest:
 
-	sh# ../configure --with-plugins="rest, other" 
+	sh# ../configure --with-plugins="rest, <...>" 
 	sh# make
 	sh# make install
 
@@ -44,7 +46,7 @@ This will also install `xcli` tool, typically in `/usr/local/bin`.
 REST API
 ========
 
-The REST API listens typically in port `5757`. The API returns JSON replies. There is a special page for the user convenience that lists the APIs in HTML. Pointing a browser to the root:
+The default port for the REST API is `5757`. The API returns JSON replies. There is a special page, for the user convenience, that lists the APIs in HTML. Pointing a browser to the root:
 
 	http://127.0.0.1:5757/
 	http://127.0.0.1:5757/index.html
@@ -54,7 +56,7 @@ xcli command line tool
 
 `xcli` is a python script that consumes xDPd's REST API. `xcli` has two modes of operation:
 
-* Command or script mode, specifying `-c "command"`
+* Command or script mode, specifying `-c "command"`.
 * Interactive mode: a CLI, supporting multiple targets, so multiple local and remote xDPd instances, at the same time. The default if `-c` is not defined.
 
 For usage information:

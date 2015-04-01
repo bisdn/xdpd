@@ -40,11 +40,11 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 
 	html << "<html>" << std::endl;
 	html << "<head>" << std::endl;
-	html << "<title> xDPd control panel </title>" << std::endl;
+	html << "<title> xDPd's REST APIs</title>" << std::endl;
 	html << "</head>" << std::endl;
 	html << "<body>" << std::endl;
-	html << "<h1>xDPd control panel</h1><br>" << std::endl;
-	html << "Available URLs:<br><br>" << std::endl;
+	html << "<h1>xDPd's REST APIs</h1><br>" << std::endl;
+	html << "<h3>GET</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
 	//Info
@@ -56,6 +56,13 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<li><a href=\"/lsis\">/lsis</a>: list of logical switch instances(LSIs)" << std::endl;
 	html << "<li>/lsi/&lt;lsi_name&gt\": show logical switch instance(LSI) information" << std::endl;
 	html << "</ul>" << std::endl;
+
+	html << "<h3>POST</h3><br>" << std::endl;
+	html << "None<br><br>" << std::endl;
+	html << "<h3>PUT</h3><br>" << std::endl;
+	html << "None<br><br>" << std::endl;
+	html << "<h3>DELETE</h3><br>" << std::endl;
+	html << "None<br><br>" << std::endl;
 
 	html << "</body>" << std::endl;
 	html << "</html>" << std::endl;

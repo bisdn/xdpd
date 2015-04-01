@@ -78,7 +78,7 @@ def rest_get(socket, url):
 	except Exception as e:
 		print "ERROR http get '"+complete_url+"':"
 		print "  "+str(e)
-		return None
+		return ""
 
 	return json
 
@@ -150,7 +150,7 @@ class InteractivePrompt(cmd.Cmd):
 			return
 		self.curr = target
 
-	def __complete_switch_target(self, text, line, start_index, end_index):
+	def complete_switch_target(self, text, line, start_index, end_index):
 		return [
 			target for target in self.sockets
 			if target.startswith(text)

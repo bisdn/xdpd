@@ -140,6 +140,11 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 
 	//Fill it in
 	detail.push_back(json_spirit::Pair("name", port_name));
+
+	std::stringstream mac;
+	mac << snapshot.hw_address.str();
+	detail.push_back(json_spirit::Pair("mac-address", mac.str()));
+
 	detail.push_back(json_spirit::Pair("is-blacklisted", port_manager::is_blacklisted(port_name)?"yes":"no"));
 	detail.push_back(json_spirit::Pair("up", snapshot.up? "yes": "no"));
 	detail.push_back(json_spirit::Pair("forward-packets", snapshot.forward_packets? "yes": "no"));
@@ -168,7 +173,6 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 
 	//Stats
 	json_spirit::Object stats;
-	stats.push_back(json_spirit::Pair("link", snapshot.state&PORT_STATE_LINK_DOWN? "down": "up"));
 	stats.push_back(json_spirit::Pair("rx_packets", snapshot.stats.rx_packets));
 	stats.push_back(json_spirit::Pair("tx_packets", snapshot.stats.tx_packets));
 	stats.push_back(json_spirit::Pair("rx_bytes", snapshot.stats.rx_bytes));
@@ -189,6 +193,7 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 		json_spirit::Object of;
 		of.push_back(json_spirit::Pair("attached-dpid", snapshot.attached_sw_dpid));
 		of.push_back(json_spirit::Pair("generate-pkt-in", snapshot.of_generate_packet_in? "yes":"no"));
+		of.push_back(json_spirit::Pair("port-num", (uint64_t)snapshot.of_port_num));
 		detail.push_back(json_spirit::Pair("openflow", of));
 	}
 

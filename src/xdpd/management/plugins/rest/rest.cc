@@ -13,7 +13,8 @@
 #include "server/server.hpp"
 #include "server/rest_handler.hpp"
 
-#include "controllers.h" 
+#include "get-controllers.h"
+#include "post-controllers.h"
 
 namespace xdpd{
 
@@ -25,23 +26,38 @@ static void srvthread (){
 	try{
 		http::server::rest_handler handler;
 
-		handler.register_get_path("/", boost::bind(controllers::index, _1, _2, _3));
-		handler.register_get_path("/index.htm", boost::bind(controllers::index, _1, _2, _3));
-		handler.register_get_path("/index.html", boost::bind(controllers::index, _1, _2, _3));
+		//
+		// GET
+		//
+		handler.register_get_path("/", boost::bind(controllers::get::index, _1, _2, _3));
+		handler.register_get_path("/index.htm", boost::bind(controllers::get::index, _1, _2, _3));
+		handler.register_get_path("/index.html", boost::bind(controllers::get::index, _1, _2, _3));
 
 		//General information
-		handler.register_get_path("/system", boost::bind(controllers::system_info, _1, _2, _3));
-		handler.register_get_path("/plugins", boost::bind(controllers::list_plugins, _1, _2, _3));
-		handler.register_get_path("/matching-algorithms", boost::bind(controllers::list_matching_algorithms, _1, _2, _3));
+		handler.register_get_path("/system", boost::bind(controllers::get::system_info, _1, _2, _3));
+		handler.register_get_path("/plugins", boost::bind(controllers::get::list_plugins, _1, _2, _3));
+		handler.register_get_path("/matching-algorithms", boost::bind(controllers::get::list_matching_algorithms, _1, _2, _3));
 
 		//Ports
-		handler.register_get_path("/ports", boost::bind(controllers::list_ports, _1, _2, _3));
-		handler.register_get_path("/port/(\\w+)", boost::bind(controllers::port_detail, _1, _2, _3));
+		handler.register_get_path("/ports", boost::bind(controllers::get::list_ports, _1, _2, _3));
+		handler.register_get_path("/port/(\\w+)", boost::bind(controllers::get::port_detail, _1, _2, _3));
 
-		handler.register_get_path("/lsis", boost::bind(controllers::list_lsis, _1, _2, _3));
-		handler.register_get_path("/lsi/(\\w+)", boost::bind(controllers::lsi_detail, _1, _2, _3));
-		handler.register_get_path("/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(controllers::lsi_table_flows, _1, _2, _3));
-		handler.register_get_path("/lsi/(\\w+)/group-table", boost::bind(controllers::lsi_groups, _1, _2, _3));
+		handler.register_get_path("/lsis", boost::bind(controllers::get::list_lsis, _1, _2, _3));
+		handler.register_get_path("/lsi/(\\w+)", boost::bind(controllers::get::lsi_detail, _1, _2, _3));
+		handler.register_get_path("/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(controllers::get::lsi_table_flows, _1, _2, _3));
+		handler.register_get_path("/lsi/(\\w+)/group-table", boost::bind(controllers::get::lsi_groups, _1, _2, _3));
+
+#ifdef MGMT_ENABLED
+		//
+		// POST
+		//
+		handler.register_post_path("/", boost::bind(controllers::post::enabled, _1, _2, _3));
+
+		//Ports
+		handler.register_post_path("/port/(\\w+)/up", boost::bind(controllers::post::port_up, _1, _2, _3));
+		handler.register_post_path("/port/(\\w+)/down", boost::bind(controllers::post::port_down, _1, _2, _3));
+
+#endif
 
 		http::server::server(io_service, "0.0.0.0", XDPD_REST_PORT, handler)();
 		boost::asio::signal_set signals(io_service);

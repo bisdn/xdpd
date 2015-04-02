@@ -16,6 +16,12 @@
 * @warning: this is just sketch plugin with limited functionality 
 */
 
+/**
+* Enables remote management via REST
+* @warning: the REST API does not have authentication nor encryption currently
+*/
+#define MGMT_ENABLED
+
 namespace xdpd {
 
 /**

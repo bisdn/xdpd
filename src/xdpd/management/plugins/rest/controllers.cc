@@ -138,6 +138,9 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 	//Check if it exists;
 	if(!port_manager::exists(port_name)){
 		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid port '"<<port_name<<"'";
+		rep.content = ss.str();
 		rep.status = http::server::reply::not_found;
 		return;
 	}
@@ -273,6 +276,9 @@ void lsi_detail(const http::server::request &req,
 	//Check if it exists;
 	if(!switch_manager::exists_by_name(lsi_name)){
 		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
+		rep.content = ss.str();
 		rep.status = http::server::reply::not_found;
 		return;
 	}
@@ -375,6 +381,9 @@ void lsi_table_flows(const http::server::request &req,
 	//Check if it exists;
 	if(!switch_manager::exists_by_name(lsi_name)){
 		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
+		rep.content = ss.str();
 		rep.status = http::server::reply::not_found;
 		return;
 	}
@@ -391,6 +400,9 @@ void lsi_table_flows(const http::server::request &req,
 	//Check if table id is valid
 	if(snapshot.num_of_tables <= id){
 		//Throw 404
+		std::stringstream ss;
+		ss << "Invalid table id: "<< id << " for lsi: "<< lsi_name <<". Valid tables: 0-"<<snapshot.num_of_tables-1;
+		rep.content = ss.str();
 		rep.status = http::server::reply::not_found;
 		return;
 	}
@@ -425,6 +437,9 @@ void lsi_groups(const http::server::request &req,
 	//Check if it exists;
 	if(!switch_manager::exists_by_name(lsi_name)){
 		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
+		rep.content = ss.str();
 		rep.status = http::server::reply::not_found;
 		return;
 	}

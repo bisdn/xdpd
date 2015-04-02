@@ -71,9 +71,10 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 
 namespace post{
 
-bool authorised(const http::server::request &, http::server::reply &){
+bool authorised(const http::server::request &req, http::server::reply &rep){
 
 #ifndef MGMT_ENABLED
+	std::stringstream ss;
 	ss<<"POST disabled";
 	rep.content = ss.str();
 	rep.status = http::server::reply::unauthorized;

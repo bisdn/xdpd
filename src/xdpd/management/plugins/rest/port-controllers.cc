@@ -145,6 +145,8 @@ namespace post{
 
 void port_up(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 
+	port_snapshot snapshot;
+
 	//Perform security checks
 	if(!authorised(req,rep)) return;
 
@@ -159,6 +161,12 @@ void port_up(const http::server::request &req, http::server::reply &rep, boost::
 		rep.status = http::server::reply::not_found;
 		return;
 	}
+
+	//Get the snapshot
+	port_manager::get_port_info(port_name, snapshot);
+
+	if(snapshot.up)
+		return;
 
 	try{
 		port_manager::bring_up(port_name);
@@ -174,11 +182,12 @@ void port_up(const http::server::request &req, http::server::reply &rep, boost::
 
 void port_down(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 
+	port_snapshot snapshot;
+
 	//Perform security checks
 	if(!authorised(req,rep)) return;
 
 	std::string port_name = std::string(grps[1]);
-
 	//Check if it exists;
 	if(!port_manager::exists(port_name)){
 		//Throw 404
@@ -188,6 +197,12 @@ void port_down(const http::server::request &req, http::server::reply &rep, boost
 		rep.status = http::server::reply::not_found;
 		return;
 	}
+
+	//Get the snapshot
+	port_manager::get_port_info(port_name, snapshot);
+
+	if(!snapshot.up)
+		return;
 
 	try{
 		port_manager::bring_down(port_name);

@@ -25,8 +25,8 @@ except Exception as e:
 # Commands and usage
 #
 
-def list_commands():
-	string=""
+def list_show_commands():
+	string="\nSubcommands:\n\n"
 	string+='   show info\t\t\t\t - Show general info of an xDPd instance\n'
 	string+= '   show matching-algorithms\t\t - Show available matching algorithms\n'
 	string+= '   show plugins\t\t\t\t - Show compiled-in plugs\n'
@@ -36,6 +36,12 @@ def list_commands():
 	string+= '   show lsi <lsi_name> group-table\t - List LSI group-table entries\n'
 	string+= '   show ports\t\t\t\t - List the existing logical switch instances\n'
 	string+= '   show port <port_name>\t\t - Show port information\n'
+	return string
+
+def list_do_commands():
+	string="\nSubcommands:\n\n"
+	string+='   do port <port_name> up\t\t\t - Bring the port administratively up\n'
+	string+='   do port <port_name> down\t\t\t - Bring the port administratively up\n'
 	return string
 
 def usage():
@@ -58,13 +64,15 @@ def usage():
 	print list_commands()
 
 # Confirm util
-def confirm(msg):
+def confirm(msg, default=""):
 	""" Util confirmation """
 	ok = set(['yes','y', 'ye'])
 	ko = set(['no','n', '']) #default no
 	while 1:
 		print "Are you sure %s (Y/N)?" % msg
 		aux = raw_input().lower()
+		if aux == "" and default != "":
+			aux = default
 		if aux in ok:
 			return True
 		elif aux in ko:
@@ -109,6 +117,25 @@ def rest_get(socket, url):
 
 	return json
 
+def rest_post(socket, url, payload):
+	complete_url = "http://"+socket+url
+
+	try:
+		h = urllib.urlopen(complete_url, payload)
+	except urllib.HTTPError as e:
+		print "ERROR("+str(e.code)+"): HTTP/POST '"+complete_url+"'"
+		if e.code == 401:
+			print "Unauthorised; is POST support enabled?"
+		elif e.code == 404:
+			print e.read()
+		else:
+			print "Incomplete or malformed request"
+		raise
+	except Exception as e:
+		print "Unkown ERROR:  HTTP/POST '"+complete_url+"'"
+		print "  " + str(e)
+		raise
+
 def compose_url(url_array):
 	#Compose the url
 	url=""
@@ -119,7 +146,7 @@ def compose_url(url_array):
 #
 # Command parsing
 #
-def execute(socket, command):
+def execute(socket, command, req_confirm=False):
 
 	if command == "":
 		print "Invalid command: '"+command+"'"
@@ -138,6 +165,23 @@ def execute(socket, command):
 			return
 
 		return rest_get(socket, compose_url(stripped))
+	elif op == "do":
+		#Confirm
+		if req_confirm:
+			res=confirm("", "y")
+			sys.stdout.write("\033[F") # Cursor up one line
+			if not res:
+				return "Canceled";
+
+		#Remove trailing spaces
+		stripped = command.strip().split()[1:]
+
+		#Check that we really have everything needed
+		if len(stripped) == 0:
+			print "Invalid command: '"+command+"'. No arguments given to operation '"+op+"'"
+			return
+
+		return rest_post(socket, compose_url(stripped), "")
 	else:
 		print "Unknown op: '"+op+"'"
 		return
@@ -160,15 +204,9 @@ class InteractivePrompt(cmd.Cmd):
 		print "Entering in interactive mode..."
 		print "Using target '["+self.curr+"] "+self.sockets[self.curr]+"'"
 		print ""
-
-	def postcmd(self, stop, line):
-		self.prompt = XCLI + "("+self.curr+")>"
-		print ""
-		return stop
-
-	def help_exit(self):
-		print "Exit from the interactive CLI"
-
+	#
+	# Targets
+	#
 	def do_switch_target(self,s=""):
 		if s == "":
 			print "Invalid empty target name"
@@ -208,7 +246,9 @@ class InteractivePrompt(cmd.Cmd):
 	def help_targets(self):
 		print "List xDPd instances(targets)"
 
-	#Other useful stuff
+	#
+	# Retrive information
+	#
 	def do_show(self,s=""):
 		result=""
 		try:
@@ -231,11 +271,47 @@ class InteractivePrompt(cmd.Cmd):
 
 	def help_show(self):
 		print "Retrieve information information from the xDPd instance"
-		print list_commands()
+		print list_show_commands()
 
+	#
+	# Execute remote operations
+	#
+	def do_do(self, s=""):
+		if s == "":
+			print "Missing arguments"
+			return
+		try:
+			result=execute(self.sockets[self.curr], "do "+s, True)
+		except Exception as e:
+			print e
+			return
+
+	def complete_do(self, text, line, start_index, end_index):
+		do_cmds = ["port"]
+
+		for cmd in show_cmds:
+			if cmd in line:
+				return []
+
+		return [
+			cmd for cmd in show_cmds
+			if cmd.startswith(text)
+		]
+
+	def help_do(self):
+		print "Perform an operation over an xDPd instance"
+		print list_do_commands()
+
+	#
+	# Other
+	#
 	def do_exit (self,s=""):
 		if confirm("that you want to exit"):
 			return True
+
+	def help_exit(self):
+		print "Exit from the interactive CLI"
+
 
 	def do_shell(self, s=""):
 		if not s=="":
@@ -243,6 +319,11 @@ class InteractivePrompt(cmd.Cmd):
 
 	def help_shell(self):
 		print "Execute a command in the OS shell; shell ls -la /"
+
+	def postcmd(self, stop, line):
+		self.prompt = XCLI + "("+self.curr+")>"
+		print ""
+		return stop
 
 	#necessary for \n
 	def emptyline(self, s=""):

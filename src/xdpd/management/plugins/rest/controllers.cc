@@ -92,6 +92,7 @@ void system_info(const http::server::request &req, http::server::reply &rep, boo
 	info_.push_back(json_spirit::Pair("build", XDPD_BUILD));
 	info_.push_back(json_spirit::Pair("detailed-build", XDPD_DESCRIBE));
 	info_.push_back(json_spirit::Pair("driver-code-name", system_manager::get_driver_code_name()) );
+	info_.push_back(json_spirit::Pair("driver-extra-parameters", system_manager::get_driver_extra_params()) );
 
 	info_.push_back(json_spirit::Pair("plugins", get_plugin_list()) );
 
@@ -401,7 +402,7 @@ void lsi_table_flows(const http::server::request &req,
 	if(snapshot.num_of_tables <= id){
 		//Throw 404
 		std::stringstream ss;
-		ss << "Invalid table id: "<< id << " for lsi: "<< lsi_name <<". Valid tables: 0-"<<snapshot.num_of_tables-1;
+		ss << "Invalid table id: '"<< id << "' for lsi: '"<< lsi_name <<"'. Valid tables: 0-"<<snapshot.num_of_tables-1;
 		rep.content = ss.str();
 		rep.status = http::server::reply::not_found;
 		return;

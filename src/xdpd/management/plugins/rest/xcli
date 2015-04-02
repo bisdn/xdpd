@@ -95,10 +95,19 @@ def rest_get(socket, url):
 
 	try:
 		json = urllib.urlopen(complete_url).read()
+	except urllib.URLError as e:
+		print "ERROR("+str(e.code)+"): HTTP/GET '"+complete_url+"'"
+		if e.code == 404:
+			print("Element or parameter not found")
+		elif e.code == 400:
+			print("Incomplete or malformed request"),
+		else:
+			print("  " + str(e)),
+		raise e
 	except Exception as e:
-		print "ERROR http get '"+complete_url+"':"
-		print "  "+str(e)
-		return ""
+		print "Unkown ERROR:  HTTP/GET '"+complete_url+"':"
+		print("  " + str(e)),
+		raise e
 
 	return json
 
@@ -203,7 +212,12 @@ class InteractivePrompt(cmd.Cmd):
 
 	#Other useful stuff
 	def do_show(self,s=""):
-		print_less(execute(self.sockets[self.curr], "show "+s))
+		result=""
+		try:
+			result=execute(self.sockets[self.curr], "show "+s)
+		except:
+			return
+		print_less(result)
 
 	def complete_show(self, text, line, start_index, end_index):
 		show_cmds = ["system", "plugins", "matching-algorithms", "ports", "port", "lsis", "lsi"]
@@ -269,7 +283,12 @@ def main(argv):
 		c.cmdloop()
 		sys.exit()
 	else:
-		result = execute(socket, command)
+		try:
+			result = execute(socket, command)
+		except:
+			#We don't care about the exception but we must return
+			#the error
+			exit(1)
 
 		#Ignore if there was an error
 		if result == None or result == "":

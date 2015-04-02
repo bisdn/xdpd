@@ -97,12 +97,7 @@ def rest_get(socket, url):
 		json = urllib.urlopen(complete_url).read()
 	except urllib.URLError as e:
 		print "ERROR("+str(e.code)+"): HTTP/GET '"+complete_url+"'"
-		if e.code == 404:
-			print("Element or parameter not found")
-		elif e.code == 400:
-			print("Incomplete or malformed request"),
-		else:
-			print("  " + str(e)),
+		print(e.read())
 		raise e
 	except Exception as e:
 		print "Unkown ERROR:  HTTP/GET '"+complete_url+"':"

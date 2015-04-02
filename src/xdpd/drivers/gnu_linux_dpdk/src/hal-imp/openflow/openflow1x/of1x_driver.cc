@@ -285,7 +285,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		//Initialize the packet and copy
 		struct rte_mbuf* mbuf = rte_pktmbuf_alloc(direct_pools[0]);
 		if(mbuf==NULL){
-			ROFL_ERR("Error prependig packet to mbuf\n");
+			ROFL_ERR(DEFAULT, "Error prependig packet to mbuf\n");
 			return HAL_FAILURE;
 		}
 		rte_pktmbuf_append(mbuf, buffer_size);
@@ -301,7 +301,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	}
 
 
-	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
+	ROFL_DEBUG_VERBOSE(DEFAULT, "Getting packet out [%p]\n",pkt);	
 	
 	//Instruct pipeline to process actions. This may reinject the packet	
 	of1x_process_packet_out_pipeline(ROFL_PIPELINE_LOCKED_TID, (of1x_switch_t*)lsw, pkt, action_group);

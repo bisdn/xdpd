@@ -779,7 +779,7 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 }
 
 void dump_pkt_classifier(classifier_state_t* clas_state){
-	ROFL_DEBUG(DRIVER_NAME" [c_types_pktclassifier] Dump packet state(%p) TODO!!\n",clas_state);
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME" [c_types_pktclassifier] Dump packet state(%p) TODO!!\n",clas_state);
 }
 
 size_t get_pkt_len(datapacket_t* pkt, classifier_state_t* clas_state, void *from, void *to){

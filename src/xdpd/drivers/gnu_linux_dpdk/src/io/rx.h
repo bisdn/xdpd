@@ -74,14 +74,14 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 #if DEBUG
 		if(burst_len != 0)
 		{
-			ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
+			ROFL_DEBUG_VERBOSE(DEFAULT, DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 	
 			for(i=0;i<burst_len;i++)
 			{
 				unsigned char *tmp = rte_pktmbuf_mtod(pkts_burst[i],unsigned char *);
 				unsigned int tmp_len = rte_pktmbuf_pkt_len(pkts_burst[i]);	 
-				ROFL_DEBUG_VERBOSE("#%d length: %d\n",i,tmp_len);	
-				ROFL_DEBUG_VERBOSE("#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
+				ROFL_DEBUG_VERBOSE(DEFAULT, "#%d length: %d\n",i,tmp_len);	
+				ROFL_DEBUG_VERBOSE(DEFAULT, "#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
 			}	
 		}
 #endif
@@ -93,7 +93,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
 	}
 
-	//ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
+	//ROFL_DEBUG_VERBOSE(DEFAULT, DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 
 	//Prefetch
 	if( burst_len )

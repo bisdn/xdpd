@@ -33,7 +33,7 @@ rofl_result_t netfpga_destroy_port(switch_port_t* port){
 		return ROFL_SUCCESS;
 		}
 	else	{
-		ROFL_DEBUG("netfpga_destroy_port() called without initialized netfpga port");
+		ROFL_DEBUG(DEFAULT, "netfpga_destroy_port() called without initialized netfpga port");
 		return ROFL_FAILURE;
 	
 		}	
@@ -55,10 +55,10 @@ static rofl_result_t netfpga_init_port(switch_port_t* port){
 		//fprintf(stderr, "device=  %s  \n",dev);
 	useless = pcap_lookupdev(port->name); //test if device exist// gives char pointer, why not pcap_if_t?
 	if (useless == NULL) {
-		ROFL_ERR( "Couldn't find device: error= %s; no permission to listen on interface or other failure  \n", port->name);
+		ROFL_ERR(DEFAULT,  "Couldn't find device: error= %s; no permission to listen on interface or other failure  \n", port->name);
 		return ROFL_FAILURE;	
 	}
-	ROFL_DEBUG("Device :%s  found\n", port->name);
+	ROFL_DEBUG(DEFAULT, "Device :%s  found\n", port->name);
 
 		
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -66,18 +66,18 @@ static rofl_result_t netfpga_init_port(switch_port_t* port){
 	
 	nport->pcap_fd = pcap_open_live(port->name, BUFSIZ, 1, 0, errbuf);//wait until the packet arrive, NO TIMEOUT
 	if (nport->pcap_fd == NULL) {
-		 ROFL_ERR( "Couldn't open device %s : %s\n",port->name, errbuf);
+		 ROFL_ERR(DEFAULT,  "Couldn't open device %s : %s\n",port->name, errbuf);
 		 return ROFL_FAILURE;
 	}
 
 	nport->fd = pcap_get_selectable_fd(nport->pcap_fd);
 	nport->test=25;	
-	ROFL_DEBUG("pcap_open_live: socket opened \n ");
+	ROFL_DEBUG(DEFAULT, "pcap_open_live: socket opened \n ");
 	
 
 
 
-	ROFL_DEBUG("Ports.c creating socket over %s inerface\n", port->name);
+	ROFL_DEBUG(DEFAULT, "Ports.c creating socket over %s inerface\n", port->name);
 	strncpy(interface.ifr_ifrn.ifrn_name, port->name, IFNAMSIZ/*&SWITCH_PORT_MAX_LEN_NAME*/);
 	
 
@@ -106,7 +106,7 @@ rofl_result_t netfpga_discover_ports(){
 		//Compose name nf0...nf3
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
 		
-		ROFL_DEBUG("["FWD_MOD_NAME"] Attempting to discover %s\n", iface_name);
+		ROFL_DEBUG(DEFAULT, "["FWD_MOD_NAME"] Attempting to discover %s\n", iface_name);
 
 		//Initialize pipeline structure	
 		port = switch_port_init(iface_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_LIVE);
@@ -136,7 +136,7 @@ rofl_result_t netfpga_attach_ports(of_switch_t* sw){
 		//Compose name nf0...nf3
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
 		
-		ROFL_DEBUG("["FWD_MOD_NAME"] Attempting to attach %s\n", iface_name);
+		ROFL_DEBUG(DEFAULT, "["FWD_MOD_NAME"] Attempting to attach %s\n", iface_name);
 	
 		//FIXME: interfaces should be anyway checked, and set link up.. but anyway. First implementation	
 		port = physical_switch_get_port_by_name(iface_name);

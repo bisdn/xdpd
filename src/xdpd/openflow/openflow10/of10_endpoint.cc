@@ -299,7 +299,7 @@ of10_endpoint::handle_port_stats_request(
 		// if port_no was not found, body.memlen() is 0
 	}else{
 		//Unknown port
-		ROFL_ERR("Got a port stats request for an unknown port: %u. Ignoring...\n",port_no);
+		ROFL_ERR(DEFAULT, "Got a port stats request for an unknown port: %u. Ignoring...\n",port_no);
 	}
 
 	//Destroy the snapshot
@@ -841,7 +841,7 @@ of10_endpoint::flow_mod_add(
 	// sanity check: table for table-id must exist
 	if ( (table_id > sw->num_of_tables) && (table_id != openflow10::OFPTT_ALL) )
 	{
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
+		ROFL_DEBUG(DEFAULT, "of10_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), msg.get_flowmod().get_table_id());
 	
@@ -852,7 +852,7 @@ of10_endpoint::flow_mod_add(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(&ctl, &msg, sw);
 	}catch(...){
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
+		ROFL_DEBUG(DEFAULT, "of10_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
 		assert(0);
 		return;
@@ -871,10 +871,10 @@ of10_endpoint::flow_mod_add(
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/))){
 
 		if(entry){
-			ROFL_DEBUG("Error inserting the flowmod\n");
+			ROFL_DEBUG(DEFAULT, "Error inserting the flowmod\n");
 			of1x_destroy_flow_entry(entry);
 		}else{
-			ROFL_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
+			ROFL_DEBUG(DEFAULT, "Flowmod inserted, but buffer was expired/invalid\n");
 		}
 
 		if(res == HAL_FM_OVERLAP_FAILURE)
@@ -897,7 +897,7 @@ of10_endpoint::flow_mod_modify(
 	// sanity check: table for table-id must exist
 	if (pack.get_flowmod().get_table_id() > sw->num_of_tables)
 	{
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
+		ROFL_DEBUG(DEFAULT, "of10_endpoint(%s)::flow_mod_modify() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), pack.get_flowmod().get_table_id());
 
@@ -908,7 +908,7 @@ of10_endpoint::flow_mod_modify(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(&ctl, &pack, sw);
 	}catch(...){
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
+		ROFL_DEBUG(DEFAULT, "of10_endpoint(%s)::flow_mod_modify() "
 				"unable to attempt to modify flow-entry", sw->dpname.c_str());
 		assert(0);
 		return;
@@ -929,10 +929,10 @@ of10_endpoint::flow_mod_modify(
 								strictness,
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/)){
 		if(entry){
-			ROFL_DEBUG("Error modifying the flowmod\n");
+			ROFL_DEBUG(DEFAULT, "Error modifying the flowmod\n");
 			of1x_destroy_flow_entry(entry);
 		}else{
-			ROFL_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
+			ROFL_DEBUG(DEFAULT, "Flowmod inserted, but buffer was expired/invalid\n");
 		}
 	}
 
@@ -952,7 +952,7 @@ of10_endpoint::flow_mod_delete(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(&ctl, &pack, sw);
 	}catch(...){
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
+		ROFL_DEBUG(DEFAULT, "of10_endpoint(%s)::flow_mod_delete() "
 				"unable to attempt to remove flow-entry", sw->dpname.c_str());
 		assert(0);
 		return;
@@ -972,7 +972,7 @@ of10_endpoint::flow_mod_delete(
 								of10_translation_utils::get_out_port(pack.get_flowmod().get_out_port()),
 								OF1X_GROUP_ANY,
 								strictness)) {
-		ROFL_DEBUG("Error deleting flowmod\n");
+		ROFL_DEBUG(DEFAULT, "Error deleting flowmod\n");
 	}
 
 	//Always delete entry
@@ -1255,7 +1255,7 @@ void
 of10_endpoint::handle_ctl_attached(crofctl *ctrl)
 {
 	std::stringstream sstr; sstr << ctrl->get_peer_addr(rofl::cauxid(0));
-	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , sstr.str().c_str()); //FIXME: add role
+	ROFL_INFO(DEFAULT, "[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , sstr.str().c_str()); //FIXME: add role
 }
 
 
@@ -1264,6 +1264,6 @@ void
 of10_endpoint::handle_ctl_detached(crofctl *ctrl)
 {
 	std::stringstream sstr; sstr << ctrl->get_peer_addr(rofl::cauxid(0));
-	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() ,sstr.str().c_str()); //FIXME: add role
+	ROFL_INFO(DEFAULT, "[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() ,sstr.str().c_str()); //FIXME: add role
 
 }

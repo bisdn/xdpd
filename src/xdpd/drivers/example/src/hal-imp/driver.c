@@ -32,7 +32,7 @@ char extra_params[DRIVER_EXTRA_PARAMS_MAX_LEN];
 hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* _extra_params){
 
 	
-	ROFL_INFO("["DRIVER_NAME"] calling hal_driver_init()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling hal_driver_init()\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
 	//if(physical_switch_init() != ROFL_SUCCESS)
@@ -45,7 +45,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* _extra
 	
 	//And initialize or setup any other state your platform needs...	
 	
-	ROFL_INFO("["DRIVER_NAME"] This driver is an empty example. xDPd will not be able to bootstrap any configuration (LSIs) since it is not a functional driver, so it will throw a deliverately uncaught exception\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] This driver is an empty example. xDPd will not be able to bootstrap any configuration (LSIs) since it is not a functional driver, so it will throw a deliverately uncaught exception\n");
 	
 	strncpy(extra_params, _extra_params, DRIVER_EXTRA_PARAMS_MAX_LEN);
 
@@ -83,7 +83,7 @@ hal_result_t hal_driver_destroy(){
 	//If using the pipeline you should call
 	//physical_switch_destroy();
 
-	ROFL_INFO("["DRIVER_NAME"] calling hal_driver_destroy()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling hal_driver_destroy()\n");
 	
 	return HAL_SUCCESS; 
 }
@@ -123,7 +123,7 @@ of_switch_snapshot_t* hal_driver_get_switch_snapshot_by_dpid(uint64_t dpid){
 */
 hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling create switch. Name: %s, number of tables: %d\n",name, num_of_tables);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling create switch. Name: %s, number of tables: %d\n",name, num_of_tables);
 	
 	return HAL_SUCCESS;
 }
@@ -135,7 +135,7 @@ hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of
 */
 hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 
-	ROFL_INFO("["DRIVER_NAME"] calling destroy_switch_by_dpid()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling destroy_switch_by_dpid()\n");
 	
 	return HAL_SUCCESS;
 }
@@ -204,7 +204,7 @@ switch_port_snapshot_t* hal_driver_get_port_snapshot_by_num(uint64_t dpid, unsig
 */
 hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, unsigned int* of_port_num){
 
-	ROFL_INFO("["DRIVER_NAME"] calling attach_port_to_switch()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling attach_port_to_switch()\n");
 	
 	return HAL_SUCCESS;
 }
@@ -219,7 +219,7 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 */
 hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1, switch_port_snapshot_t** port1, uint64_t dpid_lsi2, unsigned int* port_num2, switch_port_snapshot_t** port2){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling connect_switches()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling connect_switches()\n");
 	
 	return HAL_SUCCESS; 
 }
@@ -234,7 +234,7 @@ hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, unsigned int* port_
 */
 hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name){
 
-	ROFL_INFO("["DRIVER_NAME"] calling detach_port_from_switch()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling detach_port_from_switch()\n");
 
 	return HAL_SUCCESS; 
 }
@@ -249,7 +249,7 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 */
 hal_result_t hal_driver_detach_port_from_switch_at_port_num(uint64_t dpid, const unsigned int of_port_num){
 
-	ROFL_INFO("["DRIVER_NAME"] calling detach_port_from_switch_at_port_num()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling detach_port_from_switch_at_port_num()\n");
 	
 	return HAL_SUCCESS;
 }
@@ -270,7 +270,7 @@ hal_result_t hal_driver_detach_port_from_switch_at_port_num(uint64_t dpid, const
 */
 hal_result_t hal_driver_bring_port_up(const char* name){
 
-	ROFL_INFO("["DRIVER_NAME"] calling bring_port_up()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling bring_port_up()\n");
 	
 	return HAL_SUCCESS;
 }
@@ -284,7 +284,7 @@ hal_result_t hal_driver_bring_port_up(const char* name){
 */
 hal_result_t hal_driver_bring_port_down(const char* name){
 
-	ROFL_INFO("["DRIVER_NAME"] calling bring_port_down()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling bring_port_down()\n");
 	
 	return HAL_SUCCESS;
 }
@@ -300,7 +300,7 @@ hal_result_t hal_driver_bring_port_down(const char* name){
 */
 hal_result_t hal_driver_bring_port_up_by_num(uint64_t dpid, unsigned int port_num){
 
-	ROFL_INFO("["DRIVER_NAME"] calling bring_port_up_by_num()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling bring_port_up_by_num()\n");
 	
 	return HAL_SUCCESS;
 }
@@ -315,7 +315,7 @@ hal_result_t hal_driver_bring_port_up_by_num(uint64_t dpid, unsigned int port_nu
 */
 hal_result_t hal_driver_bring_port_down_by_num(uint64_t dpid, unsigned int port_num){
 
-	ROFL_INFO("["DRIVER_NAME"] calling bring_port_down_by_num()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling bring_port_down_by_num()\n");
 	
 	return HAL_SUCCESS;
 }

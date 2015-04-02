@@ -113,7 +113,7 @@ unsigned int ioport_mockup::write(unsigned int q_id, unsigned int num_of_buckets
 		//Just "put it into the wire" -> print it 
 		pkt_x86 = (datapacketx86*)pkt->platform_state;
 		
-		ROFL_DEBUG_VERBOSE(DRIVER_NAME" Getting buffer with id:%d. Putting it into the wire\n", pkt->id);
+		ROFL_DEBUG_VERBOSE(DEFAULT, DRIVER_NAME" Getting buffer with id:%d. Putting it into the wire\n", pkt->id);
 		
 		//Free buffer
 		bufferpool::release_buffer(pkt);

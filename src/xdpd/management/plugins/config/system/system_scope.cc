@@ -56,7 +56,7 @@ void system_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		else if(log_level == "TRACE")
 			logging_level = logging::TRACE;
 		else
- 			ROFL_WARN(CONF_PLUGIN_ID "%s: Invalid logging level '%s'.\n", setting.getPath().c_str(), log_level.c_str());
+ 			ROFL_WARN(DEFAULT, CONF_PLUGIN_ID "%s: Invalid logging level '%s'.\n", setting.getPath().c_str(), log_level.c_str());
 		
 	}	
 	//Execute

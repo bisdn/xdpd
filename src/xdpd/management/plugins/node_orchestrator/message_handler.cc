@@ -20,7 +20,7 @@ bool MessageHandler::parseConfigFile(string conf_file)
 
 		if(count == 0)
 		{
-			ROFL_ERR("[xdpd]["PLUGIN_NAME"] The configuration file does not specify any port.\n");
+			ROFL_ERR(DEFAULT, "[xdpd]["PLUGIN_NAME"] The configuration file does not specify any port.\n");
 			delete cfg;
 			return false;
 		}
@@ -33,7 +33,7 @@ bool MessageHandler::parseConfigFile(string conf_file)
 
 			if(!port.lookupValue("name", name) || !port.lookupValue("type", type))
 			{
-				ROFL_ERR("[xdpd]["PLUGIN_NAME"] The configuration file is malformed. A port does not specify the name, the type or both.\n");
+				ROFL_ERR(DEFAULT, "[xdpd]["PLUGIN_NAME"] The configuration file is malformed. A port does not specify the name, the type or both.\n");
 				delete cfg;
 				return false;
 			}
@@ -42,7 +42,7 @@ bool MessageHandler::parseConfigFile(string conf_file)
 	}
 	catch(const libconfig::SettingNotFoundException &nfex)
 	{
-		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Error while parsing the configuration file.\n");
+		ROFL_ERR(DEFAULT, "[xdpd]["PLUGIN_NAME"] Error while parsing the configuration file.\n");
 		delete cfg;
 		return false;
 	}
@@ -187,7 +187,7 @@ string MessageHandler::createLSI(string message)
 						string tmp = nf_value.getString();
 						if(tmp != "dpdk" && tmp != "docker")
 						{
-							ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function with a wrong \"type\"");
+							ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function with a wrong \"type\"");
 						return createErrorMessage(string(CREATE_LSI), string(" Received command \"create-lsi\" with a network function with a wrong \"type\""));
 						}
 						
@@ -208,7 +208,7 @@ string MessageHandler::createLSI(string message)
 				}
 				if(!foundName || !foundPorts || !foundType)
 				{
-					ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", the \"type\", all of them");
+					ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", the \"type\", all of them");
 					return createErrorMessage(string(CREATE_LSI), string(" Received command \"create-lsi\" with a network function without the \"name\", the \"ports\", the \"type\", all of them"));
 				}
 				
@@ -240,7 +240,7 @@ string MessageHandler::createLSI(string message)
 			}
 			if(!foundNumber || !foundRemoteLSI)
 			{
-				ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with field \"virtual-links\" without sub-fields \"number\" or \"remote-lsi\" or \"both\"");
+				ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with field \"virtual-links\" without sub-fields \"number\" or \"remote-lsi\" or \"both\"");
 				return createErrorMessage(string(CREATE_LSI), string("Received command \"create-lsi\" with field \"virtual-links\" without sub-fields \"number\" or \"remote-lsi\" or \"both\""));
 			}
         }
@@ -248,7 +248,7 @@ string MessageHandler::createLSI(string message)
     
     if(!foundControllerAddress || !foundControllerPort)
     {
-    	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" without field \"port\" or \"address\" or \"both\"");
+    	ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" without field \"port\" or \"address\" or \"both\"");
     	return createErrorMessage(string(CREATE_LSI), string("Command without controller port, controller address, or both"));
     }
  
@@ -278,7 +278,7 @@ string MessageHandler::createLSI(string message)
 			names.push_back(wirelessPortName.str());
 		}catch(...)
 	 	{
-	 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Command \"create-lsi\" failed");
+	 		ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Command \"create-lsi\" failed");
 			stringstream ss;
 			ss << "An error occurred while creating the wireless port " << wirelessPort;
 			return createErrorMessage(string(CREATE_LSI), ss.str());	
@@ -303,7 +303,7 @@ string MessageHandler::createLSI(string message)
 		 		port_id[*p] = NodeOrchestrator::createNfPort(lsi.getDpid(), nfName.str(), portName.str(),nfTypes[it->first]);
 		 	}catch(...)
 		 	{
-		 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Command \"create-lsi\" failed");
+		 		ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Command \"create-lsi\" failed");
 				stringstream ss;
 				ss << "An error occurred while creating/attaching the NF port " << portName.str();
 				return createErrorMessage(string(CREATE_LSI), ss.str());	
@@ -323,7 +323,7 @@ string MessageHandler::createLSI(string message)
 	 		ids = NodeOrchestrator::createVirtualLink(lsi.getDpid(),vlinks_remote_dpid);
 	 	}catch(...)
 	 	{
-	 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Command \"create-lsi\" failed");
+	 		ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Command \"create-lsi\" failed");
 			return createErrorMessage(string(CREATE_LSI), "An error occurred while creating a virtual link");
 	 	}
 	 	virtual_links.push_back(ids);
@@ -424,7 +424,7 @@ string MessageHandler::destroyLSI(string message)
     
     if(!foundLsiID)
     {
-    	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"destroy-lsi\" without field \"lsi-id\"");
+    	ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"destroy-lsi\" without field \"lsi-id\"");
     	return createErrorMessage(string(DESTROY_LSI), string("Command without lsi-id"));
     }
  
@@ -493,7 +493,7 @@ string MessageHandler::attachPhyPorts(string message)
     
     if(!foundLsiID || !foundPorts)
     {
-    	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"attach-phy-ports\" without field \"ports\" or \"lsi-id\" or \"both\"");
+    	ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"attach-phy-ports\" without field \"ports\" or \"lsi-id\" or \"both\"");
     	return createErrorMessage(string(ATTACH_PHY_PORTS), string("Command without ports, lsi-id, or both"));
     }
 	
@@ -506,7 +506,7 @@ string MessageHandler::attachPhyPorts(string message)
 			portID = NodeOrchestrator::attachPhyPort(lsiID,*port);
 		}catch(...)
 		{
-			ROFL_INFO("[xdpd]["PLUGIN_NAME"] Command \"attach-phy-ports\" failed");
+			ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Command \"attach-phy-ports\" failed");
 			stringstream ss;
 			ss << "An error occurred while attaching the physical port " << *port;
 			return createErrorMessage(string(ATTACH_PHY_PORTS), ss.str());
@@ -577,7 +577,7 @@ string MessageHandler::detachPhyPorts(string message)
     
     if(!foundLsiID || !foundPorts)
     {
-    	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"detach-phy-ports\" without field \"ports\" or \"lsi-id\" or \"both\"");
+    	ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"detach-phy-ports\" without field \"ports\" or \"lsi-id\" or \"both\"");
     	return createErrorMessage(string(DETACH_PHY_PORTS), string("Command without ports, lsi-id, or both"));
     }
 
@@ -658,7 +658,7 @@ string MessageHandler::createNFPorts(string message)
 						string tmp = nf_value.getString();
 						if(tmp != "dpdk" && tmp != "docker")
 						{
-							ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function with a wrong \"type\"");
+							ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"create-lsi\" with a network function with a wrong \"type\"");
 						return createErrorMessage(string(CREATE_NF_PORTS), string(" Received command \"create-lsi\" with a network function with a wrong \"type\""));
 						}
 						
@@ -679,7 +679,7 @@ string MessageHandler::createNFPorts(string message)
 				}
 				if(!foundName || !foundPorts || !foundType)
 				{
-					ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-nf-ports\" with a network function without the \"name\", the \"ports\", the \"type\", all of them");
+					ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"create-nf-ports\" with a network function without the \"name\", the \"ports\", the \"type\", all of them");
 					return createErrorMessage(string(CREATE_NF_PORTS), string(" Received command \"create-nf-ports\" with a network function without the \"name\", the \"ports\", the \"type\", all of them"));
 				}
 				
@@ -691,7 +691,7 @@ string MessageHandler::createNFPorts(string message)
     
     if(!foundLsiID)
     {
-    	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-nf-ports\" without field \"lsi-id\"");
+    	ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"create-nf-ports\" without field \"lsi-id\"");
     	return createErrorMessage(string(CREATE_NF_PORTS), string("Command without lsi-id"));
     }
 	
@@ -713,7 +713,7 @@ string MessageHandler::createNFPorts(string message)
 	 			port_id[*p] = NodeOrchestrator::createNfPort(lsiID, nfName.str(), portName.str(),nfTypes[it->first]);
 		 	}catch(...)
 		 	{
-		 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Command \"create-nf-ports\" failed");
+		 		ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Command \"create-nf-ports\" failed");
 				stringstream ss;
 				ss << "An error occurred while creating/attaching the NF port " << portName.str();
 				return createErrorMessage(string(CREATE_LSI), ss.str());	
@@ -790,7 +790,7 @@ string MessageHandler::destroyNFPorts(string message)
 			
 			if(ports_array.size() == 0)
 			{
-				ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"destroy-nf-ports\" with an empty \"ports\" list");
+				ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"destroy-nf-ports\" with an empty \"ports\" list");
 		    	return createErrorMessage(string(DESTROY_NF_PORTS), string("Command with an empty ports list"));	
 			}
 			
@@ -804,7 +804,7 @@ string MessageHandler::destroyNFPorts(string message)
     
     if(!foundLsiID || !foundPorts)
     {
-    	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"destroy-nf-ports\" without field \"lsi-id\", or the field \"ports\", or both");
+    	ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"destroy-nf-ports\" without field \"lsi-id\", or the field \"ports\", or both");
     	return createErrorMessage(string(DESTROY_NF_PORTS), string("Command without lsi-id, ports or both"));
     }
  
@@ -881,7 +881,7 @@ string MessageHandler::createVirtualLinks(string message)
 	}
 	if(!foundNumber || !foundDpIDa || !foundDpIDb)
 	{
-		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"create-virtual-links\" without sub-fields \"number\", \"lsi-a\", \"lsi-b\" or may of them");
+		ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"create-virtual-links\" without sub-fields \"number\", \"lsi-a\", \"lsi-b\" or may of them");
 		return createErrorMessage(string(CREATE_VIRTUAL_LINKS), string("Received command \"create-virtual-links\" without sub-fields \"number\", \"lsi-a\", \"lsi-b\" or may of them"));
 	}
     
@@ -894,7 +894,7 @@ string MessageHandler::createVirtualLinks(string message)
 	 		ids = NodeOrchestrator::createVirtualLink(dpid_a,dpid_b);
 	 	}catch(...)
 	 	{
-	 		ROFL_INFO("[xdpd]["PLUGIN_NAME"] Command \"create-virtual-links\" failed");
+	 		ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Command \"create-virtual-links\" failed");
 			return createErrorMessage(string(CREATE_VIRTUAL_LINKS), "An error occurred while creating a virtual link");
 	 	}
 	 	virtual_links.push_back(ids);
@@ -949,7 +949,7 @@ string MessageHandler::destroyVirtualLinks(string message)
 			
 			if(vlinks_array.size() == 0)
 			{
-				ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"destroy-virtual-links\" with an empty \"virtual-links\" list");
+				ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"destroy-virtual-links\" with an empty \"virtual-links\" list");
 		    	return createErrorMessage(string(DESTROY_VIRTUAL_LINKS), string("Command with an empty virtual links list"));	
 			}
 			
@@ -982,7 +982,7 @@ string MessageHandler::destroyVirtualLinks(string message)
 		        
 		        if(!foundLsiID || !foundLinkID)
 				{
-					ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"destroy-virtual-links\" with a virtual link without field \"lsi-id\", \"vlink-id\", or both");
+					ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"destroy-virtual-links\" with a virtual link without field \"lsi-id\", \"vlink-id\", or both");
 					return createErrorMessage(string(DESTROY_VIRTUAL_LINKS), string("Command with a virtual-links without the lsi-id, the vlink-id, or both"));
 				}
 				virtual_links.push_back(make_pair(lsiID,vlinkID));
@@ -992,7 +992,7 @@ string MessageHandler::destroyVirtualLinks(string message)
     
     if(!foundVlinks)
     {
-    	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Received command \"destroy-virtual-links\" without field \"virtual-links\"");
+    	ROFL_INFO(DEFAULT, "[xdpd]["PLUGIN_NAME"] Received command \"destroy-virtual-links\" without field \"virtual-links\"");
     	return createErrorMessage(string(DESTROY_VIRTUAL_LINKS), string("Command without virtual-links"));
     }
  

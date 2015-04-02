@@ -115,7 +115,7 @@ circular_queue<T>::circular_queue(long long unsigned int capacity){
 
 	if( ( (capacity & (capacity - 1)) != 0 ) || capacity == 0){
 		//Not power of 2!!
-		ROFL_ERR("Unable to instantiate queue of size: %u. It is not power of 2! Revise your settings",capacity);
+		ROFL_ERR(DEFAULT, "Unable to instantiate queue of size: %u. It is not power of 2! Revise your settings",capacity);
 		throw eCircularQueueInvalidSize();
 	}
 
@@ -250,14 +250,14 @@ template<typename T>
 void circular_queue<T>::dump(void){
 	for(long long unsigned int i=0; i<slots;++i){
 		if(readp == elements+i)
-			ROFL_INFO(">");
+			ROFL_INFO(DEFAULT, ">");
 		if(writep == elements+i)
-			ROFL_INFO("=||");
-		ROFL_INFO("[%llu:%p],", i, elements[i]);
+			ROFL_INFO(DEFAULT, "=||");
+		ROFL_INFO(DEFAULT, "[%llu:%p],", i, elements[i]);
 		if(i%10 == 0)
-			ROFL_INFO("\n");
+			ROFL_INFO(DEFAULT, "\n");
 	}
-	ROFL_INFO("\n");
+	ROFL_INFO(DEFAULT, "\n");
 }
 
 }// namespace xdpd::gnu_linux 

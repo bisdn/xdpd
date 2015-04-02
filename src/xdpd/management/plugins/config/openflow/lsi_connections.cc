@@ -73,7 +73,7 @@ void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting,
 		_port = setting[LSI_CONNECTION_CONTROLLER_PORT];
 
 		if(_port < 1 || _port > 65535){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: invalid controller port number %u. Must be [1-65535]\n", setting.getPath().c_str(), _port);
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: invalid controller port number %u. Must be [1-65535]\n", setting.getPath().c_str(), _port);
 			throw eConfParseError(); 	
 				
 		}
@@ -145,10 +145,10 @@ void lsi_connections_scope::parse_ssl_connection_params(libconfig::Setting& sett
 	//Issue warning
 	if(weak_ssl_config){
 		if(dry_run)
-			ROFL_WARN(CONF_PLUGIN_ID "%s: WARNING the connection only provide encryption but no authentication. \n", setting.getPath().c_str());
+			ROFL_WARN(DEFAULT, CONF_PLUGIN_ID "%s: WARNING the connection only provide encryption but no authentication. \n", setting.getPath().c_str());
 	}else{
 		if(mandatory_params_found != 3){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: ERROR the connection does not provide the necessary SSL parameters. Required parameters are: %s, %s, (%s or %s). \n", setting.getPath().c_str(), LSI_CONNECTION_SSL_CERTIFICATE_FILE, LSI_CONNECTION_SSL_PRIVATE_KEY_FILE, LSI_CONNECTION_SSL_CA_PATH, LSI_CONNECTION_SSL_CA_FILE_FILE );
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: ERROR the connection does not provide the necessary SSL parameters. Required parameters are: %s, %s, (%s or %s). \n", setting.getPath().c_str(), LSI_CONNECTION_SSL_CERTIFICATE_FILE, LSI_CONNECTION_SSL_PRIVATE_KEY_FILE, LSI_CONNECTION_SSL_CA_PATH, LSI_CONNECTION_SSL_CA_FILE_FILE );
 			throw eConfParseError();
 		}
 	}		
@@ -186,14 +186,14 @@ lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setti
 void lsi_connections_scope::pre_validate(libconfig::Setting& setting, bool dry_run){
 
 	if(setting.getLength() == 0){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: No controller connections found! At least one connection is mandatory\n", setting.getPath().c_str());
+		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: No controller connections found! At least one connection is mandatory\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 		
 	}
 	
 	//Detect existing subscopes (logical switches) and register
  	for(int i = 0; i<setting.getLength(); ++i){
-		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Found controller connection named: %s\n", get_path().c_str(), setting[i].getName());
+		ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Found controller connection named: %s\n", get_path().c_str(), setting[i].getName());
 
 		//Pre-Parse and add to the list of connections
 		parsed_connections.push_back(parse_connection(setting[i], dry_run));

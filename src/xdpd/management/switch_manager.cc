@@ -50,7 +50,7 @@ openflow_switch* switch_manager::create_switch(
 
 	//Check if ROFL supports SSL or any other socket type, so that we can send a nice exception
 	if(!rofl::csocket::supports_socket_type(socket_type)){
-		ROFL_ERR("[xdpd][switch_manager] ERROR Unsupported socket type by ROFL, specified in the first connection of switch with dpid: 0x%llx. Perhaps compiled ROFL without SSL support?\n", (long long unsigned int)dpid); 
+		ROFL_ERR(DEFAULT, "[xdpd][switch_manager] ERROR Unsupported socket type by ROFL, specified in the first connection of switch with dpid: 0x%llx. Perhaps compiled ROFL without SSL support?\n", (long long unsigned int)dpid); 
 		pthread_mutex_unlock(&switch_manager::mutex);
 		throw eOfSmUnknownSocketType();
 	}
@@ -90,7 +90,7 @@ openflow_switch* switch_manager::create_switch(
 	
 	pthread_mutex_unlock(&switch_manager::mutex);
 	
-	ROFL_INFO("[xdpd][switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
+	ROFL_INFO(DEFAULT, "[xdpd][switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
 
 	return dp; 
 }
@@ -119,7 +119,7 @@ void switch_manager::destroy_switch(uint64_t dpid){
 	if(!sw_snapshot){
 		pthread_mutex_unlock(&switch_manager::mutex);
 		assert(0);
-		ROFL_ERR("[xdpd][switch_manager] Unknown ERROR: unable to create snapshot for dpid 0x%llx. Switch deletion aborted...\n", (long long unsigned)dpid);
+		ROFL_ERR(DEFAULT, "[xdpd][switch_manager] Unknown ERROR: unable to create snapshot for dpid 0x%llx. Switch deletion aborted...\n", (long long unsigned)dpid);
 		throw eOfSmGeneralError(); 
 	}
 
@@ -137,7 +137,7 @@ void switch_manager::destroy_switch(uint64_t dpid){
 			port_manager::detach_port_from_switch(dpid, port_name);
 		}catch(...){
 			pthread_mutex_unlock(&switch_manager::mutex);
-			ROFL_ERR("[xdpd][switch_manager] ERROR: unable to detach port %s from dpid 0x%llx. Switch deletion aborted...\n", port->name, (long long unsigned)dpid);
+			ROFL_ERR(DEFAULT, "[xdpd][switch_manager] ERROR: unable to detach port %s from dpid 0x%llx. Switch deletion aborted...\n", port->name, (long long unsigned)dpid);
 			assert(0);
 
 			of_switch_destroy_snapshot(sw_snapshot);		
@@ -157,7 +157,7 @@ void switch_manager::destroy_switch(uint64_t dpid){
 
 	//Destroy element
 	delete dp;	
-	ROFL_INFO("[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
+	ROFL_INFO(DEFAULT, "[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
 
 	//Reset	
 	dpid_under_destruction = 0x0;
@@ -432,9 +432,9 @@ void switch_manager::reconfigure_pirl(uint64_t dpid, const int max_rate){
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
 	if(max_rate == pirl::PIRL_DISABLED){
-		ROFL_INFO("[xdpd][switch_manager][0x%llx] Disabling PIRL.\n", (long long unsigned)dpid);
+		ROFL_INFO(DEFAULT, "[xdpd][switch_manager][0x%llx] Disabling PIRL.\n", (long long unsigned)dpid);
 	}else{
-		ROFL_INFO("[xdpd][switch_manager][0x%llx] Enabling and reconfiguring PIRL, with max rate: %d PKT_IN/s.\n", (long long unsigned)dpid, max_rate);
+		ROFL_INFO(DEFAULT, "[xdpd][switch_manager][0x%llx] Enabling and reconfiguring PIRL, with max rate: %d PKT_IN/s.\n", (long long unsigned)dpid, max_rate);
 	}
 	dp->rate_limiter.reconfigure(max_rate);
 

@@ -47,7 +47,7 @@ rofl_result_t netfpga_update_entry_stats(of1x_flow_entry_t* entry){
 	
 	entry->stats.s.counters.packet_count = stats.pkt_counter;  
 	entry->stats.s.counters.byte_count = stats.byte_counter;  
-	//ROFL_DEBUG("\n entry stats: %x, %x",stats.pkt_counter,stats.byte_counter );
+	//ROFL_DEBUG(DEFAULT, "\n entry stats: %x, %x",stats.pkt_counter,stats.byte_counter );
 
 
 	//TODO time?? last-seen 7 bit??
@@ -74,7 +74,7 @@ rofl_result_t netfpga_read_misc_stats(uint32_t misc_stats[]){
 		{
 		netfpga_read_reg(nfpga, NETFPGA_OF_BASE_ADDR+i,&(misc_stats[i]));
 		
-		//ROFL_DEBUG("\n stat: %x",misc_stats[i]);
+		//ROFL_DEBUG(DEFAULT, "\n stat: %x",misc_stats[i]);
 		
 		
 		}
@@ -85,36 +85,36 @@ rofl_result_t netfpga_read_misc_stats(uint32_t misc_stats[]){
 
 
 void displacy_misc_stats(uint32_t misc_stats[]){ //created for debuging
-ROFL_DEBUG("\n Current stats are: ");
-ROFL_DEBUG("\n pkt dropped from port 0: 	%x",misc_stats[0]);
-ROFL_DEBUG("\n pkt dropped from port 1: 	%x",misc_stats[1]);
-ROFL_DEBUG("\n pkt dropped from port 2: 	%x",misc_stats[2]);
-ROFL_DEBUG("\n pkt dropped from port 3: 	%x",misc_stats[3]);
-ROFL_DEBUG("\n pkt dropped from port PC: 	%x",misc_stats[4]);
-ROFL_DEBUG("\n exact hit:		 	%x",misc_stats[5]);
-ROFL_DEBUG("\n exact miss: 			%x",misc_stats[6]);
-ROFL_DEBUG("\n wildcard hit:		 	%x",misc_stats[7]);
-ROFL_DEBUG("\n wildcard miss: 			%x",misc_stats[8]);
-ROFL_DEBUG("\n pkt parsed as L2 frame from port 0:	%x",misc_stats[9]);
-ROFL_DEBUG("\n pkt parsed as L2 frame from port 1: 	%x",misc_stats[10]);
-ROFL_DEBUG("\n pkt parsed as L2 frame from from port 2: %x",misc_stats[11]);
-ROFL_DEBUG("\n pkt parsed as L2 frame from from port 3: %x",misc_stats[12]);
-ROFL_DEBUG("\n pkt parsed as L2 frame from from PC port:%x",misc_stats[13]);
-ROFL_DEBUG("\n pkt processed and forwarded from port 0: %x",misc_stats[14]);
-ROFL_DEBUG("\n pkt processed and forwarded from port 1: %x",misc_stats[15]);
-ROFL_DEBUG("\n pkt processed and forwarded from port 2: %x",misc_stats[16]);
-ROFL_DEBUG("\n pkt processed and forwarded from port 3: %x",misc_stats[17]);
-ROFL_DEBUG("\n pkt processed and forwarded from PC port:%x",misc_stats[18]);
-ROFL_DEBUG("\n pkt parsed as ARP from port 0: 		%x",misc_stats[19]);
-ROFL_DEBUG("\n pkt parsed as ARP from port 1: 		%x",misc_stats[20]);
-ROFL_DEBUG("\n pkt parsed as ARP from port 2: 		%x",misc_stats[21]);
-ROFL_DEBUG("\n pkt parsed as ARP from port 3: 		%x",misc_stats[22]);
-ROFL_DEBUG("\n pkt parsed as ARP from PC port: 		%x",misc_stats[23]);
-ROFL_DEBUG("\n pkt parsed as IP, TCP/IP, UDP/IP from port 0: 	%x",misc_stats[24]);
-ROFL_DEBUG("\n pkt parsed as IP, TCP/IP, UDP/IP from port 1: 	%x",misc_stats[25]);
-ROFL_DEBUG("\n pkt parsed as IP, TCP/IP, UDP/IP from port 2: 	%x",misc_stats[26]);
-ROFL_DEBUG("\n pkt parsed as IP, TCP/IP, UDP/IP from port 3: 	%x",misc_stats[27]);
-ROFL_DEBUG("\n pkt parsed as IP, TCP/IP, UDP/IP from PC port: 	%x",misc_stats[28]);
+ROFL_DEBUG(DEFAULT, "\n Current stats are: ");
+ROFL_DEBUG(DEFAULT, "\n pkt dropped from port 0: 	%x",misc_stats[0]);
+ROFL_DEBUG(DEFAULT, "\n pkt dropped from port 1: 	%x",misc_stats[1]);
+ROFL_DEBUG(DEFAULT, "\n pkt dropped from port 2: 	%x",misc_stats[2]);
+ROFL_DEBUG(DEFAULT, "\n pkt dropped from port 3: 	%x",misc_stats[3]);
+ROFL_DEBUG(DEFAULT, "\n pkt dropped from port PC: 	%x",misc_stats[4]);
+ROFL_DEBUG(DEFAULT, "\n exact hit:		 	%x",misc_stats[5]);
+ROFL_DEBUG(DEFAULT, "\n exact miss: 			%x",misc_stats[6]);
+ROFL_DEBUG(DEFAULT, "\n wildcard hit:		 	%x",misc_stats[7]);
+ROFL_DEBUG(DEFAULT, "\n wildcard miss: 			%x",misc_stats[8]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as L2 frame from port 0:	%x",misc_stats[9]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as L2 frame from port 1: 	%x",misc_stats[10]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as L2 frame from from port 2: %x",misc_stats[11]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as L2 frame from from port 3: %x",misc_stats[12]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as L2 frame from from PC port:%x",misc_stats[13]);
+ROFL_DEBUG(DEFAULT, "\n pkt processed and forwarded from port 0: %x",misc_stats[14]);
+ROFL_DEBUG(DEFAULT, "\n pkt processed and forwarded from port 1: %x",misc_stats[15]);
+ROFL_DEBUG(DEFAULT, "\n pkt processed and forwarded from port 2: %x",misc_stats[16]);
+ROFL_DEBUG(DEFAULT, "\n pkt processed and forwarded from port 3: %x",misc_stats[17]);
+ROFL_DEBUG(DEFAULT, "\n pkt processed and forwarded from PC port:%x",misc_stats[18]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as ARP from port 0: 		%x",misc_stats[19]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as ARP from port 1: 		%x",misc_stats[20]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as ARP from port 2: 		%x",misc_stats[21]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as ARP from port 3: 		%x",misc_stats[22]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as ARP from PC port: 		%x",misc_stats[23]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as IP, TCP/IP, UDP/IP from port 0: 	%x",misc_stats[24]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as IP, TCP/IP, UDP/IP from port 1: 	%x",misc_stats[25]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as IP, TCP/IP, UDP/IP from port 2: 	%x",misc_stats[26]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as IP, TCP/IP, UDP/IP from port 3: 	%x",misc_stats[27]);
+ROFL_DEBUG(DEFAULT, "\n pkt parsed as IP, TCP/IP, UDP/IP from PC port: 	%x",misc_stats[28]);
 
 
 
@@ -132,12 +132,12 @@ rofl_result_t netfpga_clean_misc_stats(){
 
 	for (i=0;i<NETFPGA_NUMBER_OF_MISC_STATS;i++){
 		if (netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR+i,value)!= ROFL_SUCCESS) {
-			ROFL_DEBUG("\n Failled on cleanning stat number: 	%x",i);
+			ROFL_DEBUG(DEFAULT, "\n Failled on cleanning stat number: 	%x",i);
 			return ROFL_FAILURE;
 		}
 		
 	}
-	ROFL_DEBUG("\n MISC STATS CLEANED!! ");
+	ROFL_DEBUG(DEFAULT, "\n MISC STATS CLEANED!! ");
 	return ROFL_SUCCESS;	
 }
 

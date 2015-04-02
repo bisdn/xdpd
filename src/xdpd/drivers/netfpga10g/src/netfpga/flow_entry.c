@@ -9,9 +9,9 @@
 
 bool check_mac_mask(netfpga_align_mac_addr_t* mac){	
 	int i=0	;
-	ROFL_DEBUG("MAC ADDRESS MASK: ");
+	ROFL_DEBUG(DEFAULT, "MAC ADDRESS MASK: ");
 	for (i=0; i<6;i++ ){
-		ROFL_DEBUG("%x:",mac->addr[i]);
+		ROFL_DEBUG(DEFAULT, "%x:",mac->addr[i]);
 	}
 	for (i=0; i<6;i++ ){
 		if (mac->addr[i]!=0xFF) return false;
@@ -22,9 +22,9 @@ bool check_mac_mask(netfpga_align_mac_addr_t* mac){
 
 void fill_up_mac(netfpga_align_mac_addr_t* mac){	
 	int i=0	;
-	ROFL_DEBUG("MAC ADDRESS before filling up: ");
+	ROFL_DEBUG(DEFAULT, "MAC ADDRESS before filling up: ");
 	for (i=0; i<6;i++ ){
-		ROFL_DEBUG("%x:",mac->addr[i]);
+		ROFL_DEBUG(DEFAULT, "%x:",mac->addr[i]);
 	}
 	
 	uint32_t sum=0;
@@ -35,7 +35,7 @@ void fill_up_mac(netfpga_align_mac_addr_t* mac){
 		for (i=0; i<6;i++ ){
 			mac->addr[i]=0xFF;
 		}
-		ROFL_DEBUG("MAC ADDRESS filled up ");
+		ROFL_DEBUG(DEFAULT, "MAC ADDRESS filled up ");
 	}
 }
 
@@ -82,7 +82,7 @@ netfpga_flow_entry_t* netfpga_init_flow_entry(){
 	memset(entry->masks, 0, sizeof(*(entry->masks)));
 	memset(entry->actions, 0, sizeof(*(entry->actions)));
 
-	ROFL_DEBUG("size of entry: %d",sizeof(entry));
+	ROFL_DEBUG(DEFAULT, "size of entry: %d",sizeof(entry));
 	
 	return entry;
 }
@@ -122,11 +122,11 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 
 	memset(masks, 0xFF, sizeof(*(masks)));
 
-	ROFL_DEBUG("%s  %d num_of_matches: %x",__FILE__, __LINE__,of1x_entry->matches.num_elements);
+	ROFL_DEBUG(DEFAULT, "%s  %d num_of_matches: %x",__FILE__, __LINE__,of1x_entry->matches.num_elements);
 
 	//Go through all the matches and set entry matches
 	for(match = of1x_entry->matches.head; match;match = match->next){
-		ROFL_DEBUG("%s  %d  of1x_entry->type : %x, ",__FILE__, __LINE__, match->type);
+		ROFL_DEBUG(DEFAULT, "%s  %d  of1x_entry->type : %x, ",__FILE__, __LINE__, match->type);
 		switch(match->type){
 
 			case OF1X_MATCH_IN_PORT:
@@ -175,7 +175,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				num_of_matches++;
 				break;
  			case OF1X_MATCH_NW_SRC:
-				ROFL_DEBUG("of1x_entry src_ip: %d ", of1x_get_match_value32(match));
+				ROFL_DEBUG(DEFAULT, "of1x_entry src_ip: %d ", of1x_get_match_value32(match));
 				
 				matches->ip_src = of1x_get_match_value32(match);
 				tmp_ipv4_mask =  of1x_get_match_mask32(match);
@@ -190,7 +190,7 @@ static rofl_result_t netfpga_flow_entry_map_matches(netfpga_flow_entry_t* entry,
 				break;
  			case OF1X_MATCH_NW_DST:
 
-				ROFL_DEBUG("of1x_entry dst_ip: %d ", of1x_get_match_value32(match));
+				ROFL_DEBUG(DEFAULT, "of1x_entry dst_ip: %d ", of1x_get_match_value32(match));
 				
 				matches->ip_dst = of1x_get_match_value32(match);
 				tmp_ipv4_mask = of1x_get_match_mask32(match);
@@ -294,7 +294,7 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 			case OF1X_AT_OUTPUT:
 				port = of1x_get_packet_action_field32(action); 
 				entry->actions->action_flags=0;//added
-				ROFL_DEBUG(" netfpga_flow_entry_map_actions   ENTRY port %d ",port);
+				ROFL_DEBUG(DEFAULT, " netfpga_flow_entry_map_actions   ENTRY port %d ",port);
 				memset(&(actions->forward_bitmask),0x00,sizeof(actions->forward_bitmask));// clearing 
 
 				if ((port >= NETFPGA_FIRST_PORT) && (port <= NETFPGA_LAST_PORT)) {
@@ -303,11 +303,11 @@ static rofl_result_t netfpga_flow_entry_map_actions(netfpga_flow_entry_t* entry,
 				}else if (port == NETFPGA_IN_PORT) {
 					//Send back to in-port	
 
-					ROFL_DEBUG(" \n SEND BACK TO PORT %x ",entry->matches->src_port);
+					ROFL_DEBUG(DEFAULT, " \n SEND BACK TO PORT %x ",entry->matches->src_port);
 					
 					actions->forward_bitmask |= (entry->matches->src_port);
 				}else if(port == NETFPGA_ALL_PORTS || port == NETFPGA_FLOOD_PORT) {
-					ROFL_DEBUG(" \n FLOOD PORT %x ",entry->matches->src_port);
+					ROFL_DEBUG(DEFAULT, " \n FLOOD PORT %x ",entry->matches->src_port);
 					//Send to all ports except in-port	
 					for(i = NETFPGA_FIRST_PORT; i <= NETFPGA_LAST_PORT; ++i) {
 						if(entry->matches->src_port != (0x1 << ((i-1) * 2))) {
@@ -362,7 +362,7 @@ static void netfpga_set_hw_position_exact(netfpga_device_t* nfpga, netfpga_flow_
 	
 	hw_entry->hw_pos = pos;
 	nfpga->hw_exact_table[pos] = hw_entry;
-	//ROFL_DEBUG("HW position is %d \n", pos);
+	//ROFL_DEBUG(DEFAULT, "HW position is %d \n", pos);
 }
 
 //Determine wildcard position
@@ -380,7 +380,7 @@ static void netfpga_set_hw_position_wildcard(netfpga_device_t* nfpga, netfpga_fl
 	for(i=0; i<NETFPGA_OPENFLOW_WILDCARD_TABLE_SIZE; ++i){
 		if( nfpga->hw_wildcard_table[i] == NULL){
 			hw_entry->hw_pos = i;
-			ROFL_DEBUG(" \n Given hw_position %x ",i);
+			ROFL_DEBUG(DEFAULT, " \n Given hw_position %x ",i);
 			nfpga->hw_wildcard_table[i] = hw_entry;
 			return;
 		}

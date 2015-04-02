@@ -71,7 +71,7 @@ static int kni_config_network_interface(uint8_t port_id, uint8_t if_up)
 	if(!port || !port->platform_port_state)
 		return ROFL_FAILURE;
 
-	ROFL_INFO(DRIVER_NAME"[port_manager] Putting the KNI interface \"%s\" %s...\n", port->name,(if_up)?"UP":"DOWN");
+	ROFL_INFO(DEFAULT, DRIVER_NAME"[port_manager] Putting the KNI interface \"%s\" %s...\n", port->name,(if_up)?"UP":"DOWN");
 
 	port_snapshot = physical_switch_get_port_snapshot(port->name); 
 	hal_cmm_notify_port_status_changed(port_snapshot);
@@ -108,7 +108,7 @@ static switch_port_t* configure_nf_port_dpdk(const char *nf_name, const char *nf
 	//Create rofl-pipeline queue state	
 	if(switch_port_add_queue(port, 0, (char*)&nf_port, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
 	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
 		assert(0);
 		return NULL;
 	}
@@ -121,7 +121,7 @@ static switch_port_t* configure_nf_port_dpdk(const char *nf_name, const char *nf
 	ps->to_nf_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SC_DEQ);
 	if(unlikely( ps->to_nf_queue == NULL ))
 	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name,nf_port);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name,nf_port);
 		assert(0);
 		return NULL;
 	}
@@ -132,7 +132,7 @@ static switch_port_t* configure_nf_port_dpdk(const char *nf_name, const char *nf
 	ps->to_xdpd_queue = rte_ring_create(queue_name, IO_TX_LCORE_QUEUE_SLOTS , SOCKET_ID_ANY, RING_F_SP_ENQ);
 	if(unlikely( ps->to_xdpd_queue == NULL ))
 	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name, nf_port);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot create '%s' rte_ring for queue in port: %s\n", queue_name, nf_port);
 		assert(0);
 		return NULL;
 	}
@@ -143,7 +143,7 @@ static switch_port_t* configure_nf_port_dpdk(const char *nf_name, const char *nf
 	
 	if(ps->semaphore == SEM_FAILED)
 	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create semaphore '%s' for queue in port: %s\n", nf_port, nf_port);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot create semaphore '%s' for queue in port: %s\n", nf_port, nf_port);
 		assert(0);
 		return NULL;
 	}
@@ -160,7 +160,7 @@ static switch_port_t* configure_nf_port_dpdk(const char *nf_name, const char *nf
 	
 	nf_id++;
 	
-	ROFL_INFO(DRIVER_NAME"[port_manager] Created (NF) port '%s'\n", nf_port);
+	ROFL_INFO(DEFAULT, DRIVER_NAME"[port_manager] Created (NF) port '%s'\n", nf_port);
 
 	return port;
 }
@@ -189,7 +189,7 @@ static switch_port_t* configure_nf_port_kni(const char *nf_name, const char *nf_
 	//Create rofl-pipeline queue state	
 	if(switch_port_add_queue(port, 0, (char*)&nf_port, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS)
 	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
 		assert(0);
 		return NULL;
 	}
@@ -201,7 +201,7 @@ static switch_port_t* configure_nf_port_kni(const char *nf_name, const char *nf_
 
 	if(unlikely(port_tx_nf_lcore_queue[nf_id] == NULL ))
 	{
-		ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
 		assert(0);
 		return NULL;
 	}	
@@ -224,7 +224,7 @@ static switch_port_t* configure_nf_port_kni(const char *nf_name, const char *nf_
 
 	if (ps->kni == NULL)
 	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Cannot create KNI context for port: %s\n",nf_port);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot create KNI context for port: %s\n",nf_port);
 		assert(0);
 		return NULL;
 	}
@@ -239,7 +239,7 @@ static switch_port_t* configure_nf_port_kni(const char *nf_name, const char *nf_
 	
 	nf_id++;
 	
-	ROFL_INFO(DRIVER_NAME"[port_manager] Created (NF) port '%s'\n", nf_port);
+	ROFL_INFO(DEFAULT, DRIVER_NAME"[port_manager] Created (NF) port '%s'\n", nf_port);
 
 	return port;
 }
@@ -248,13 +248,13 @@ rofl_result_t iface_manager_create_nf_port(const char *nf_name, const char *nf_p
 {
 	switch_port_t* port = NULL;
 	
-	ROFL_INFO(DRIVER_NAME"[port_manager] Creating a NF port named '%s'\n",nf_port);
+	ROFL_INFO(DEFAULT, DRIVER_NAME"[port_manager] Creating a NF port named '%s'\n",nf_port);
 	
 	if(nf_port_type == PORT_TYPE_NF_SHMEM)
 	{
 		if(! ( port = configure_nf_port_dpdk(nf_name,nf_port) ) )
 		{
-			ROFL_ERR(DRIVER_NAME"[port_manager] Unable to initialize DPDK NF port %s\n", nf_port);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Unable to initialize DPDK NF port %s\n", nf_port);
 			return ROFL_FAILURE;
 		}
 	}
@@ -262,7 +262,7 @@ rofl_result_t iface_manager_create_nf_port(const char *nf_name, const char *nf_p
 	{
 		if(! ( port = configure_nf_port_kni(nf_name,nf_port) ) )
 		{
-			ROFL_ERR(DRIVER_NAME"[port_manager] Unable to initialize KNI NF port %s\n", nf_port);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Unable to initialize KNI NF port %s\n", nf_port);
 			return ROFL_FAILURE;
 		}
 	}
@@ -270,7 +270,7 @@ rofl_result_t iface_manager_create_nf_port(const char *nf_name, const char *nf_p
 	//Add port to the pipeline
 	if( physical_switch_add_port(port) != ROFL_SUCCESS )
 	{
-		ROFL_ERR(DRIVER_NAME"[port_manager] Unable to add the switch (NF) port to physical switch; perhaps there are no more physical port slots available?\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Unable to add the switch (NF) port to physical switch; perhaps there are no more physical port slots available?\n");
 		return ROFL_FAILURE;
 	}
 
@@ -299,7 +299,7 @@ rofl_result_t iface_manager_destroy_nf_port(const char *port_name)
 
 		if(physical_switch_remove_port(port_name) != ROFL_SUCCESS)
 		{
-			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot remove NF port '%s' from the physical switch\n", port->name);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot remove NF port '%s' from the physical switch\n", port->name);
 			assert(0);
 			pthread_rwlock_unlock(&iface_manager_rwlock);
 			return ROFL_FAILURE;
@@ -317,7 +317,7 @@ rofl_result_t iface_manager_destroy_nf_port(const char *port_name)
 	
 		if(physical_switch_remove_port(port_name) != ROFL_SUCCESS)
 		{
-			ROFL_ERR(DRIVER_NAME"[port_manager] Cannot remove NF port '%s' from the physical switch\n", port->name);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot remove NF port '%s' from the physical switch\n", port->name);
 			assert(0);
 			pthread_rwlock_unlock(&iface_manager_rwlock);
 			return ROFL_FAILURE;
@@ -343,7 +343,7 @@ rofl_result_t nf_iface_manager_bring_up_port(switch_port_t* port)
 		int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 		if(sockfd == -1)
 		{
-			ROFL_ERR(DRIVER_NAME"[nf_driver] Cannot bring up KNI NF port\n");
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[nf_driver] Cannot bring up KNI NF port\n");
 			return ROFL_FAILURE;
 		}
 		/* get interface name */
@@ -352,7 +352,7 @@ rofl_result_t nf_iface_manager_bring_up_port(switch_port_t* port)
 		/* Read interface flags */
 		if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0) 
 		{
-			ROFL_ERR(DRIVER_NAME"[nf_driver] Cannot bring up KNI NF port\n");
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[nf_driver] Cannot bring up KNI NF port\n");
 			return ROFL_FAILURE;
 		}
 	
@@ -368,7 +368,7 @@ rofl_result_t nf_iface_manager_bring_up_port(switch_port_t* port)
 			ifr.IRFFLAGS |= IFF_UP;
 			if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0) 
 			{
-				ROFL_ERR(DRIVER_NAME"[nf_driver] Cannot bring up KNI NF port\n");
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[nf_driver] Cannot bring up KNI NF port\n");
 				return ROFL_FAILURE;
 			}
 		}
@@ -376,7 +376,7 @@ rofl_result_t nf_iface_manager_bring_up_port(switch_port_t* port)
 		return ROFL_SUCCESS;
 	}
 	
-	ROFL_ERR(DRIVER_NAME"[nf_driver] The port type must be PORT_TYPE_NF_SHMEM or PORT_TYPE_NF_EXTERNAL\n");
+	ROFL_ERR(DEFAULT, DRIVER_NAME"[nf_driver] The port type must be PORT_TYPE_NF_SHMEM or PORT_TYPE_NF_EXTERNAL\n");
 	return ROFL_FAILURE;
 }
 
@@ -393,7 +393,7 @@ rofl_result_t nf_iface_manager_bring_down_port(switch_port_t* port)
 		int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 		if(sockfd == -1)
 		{
-			ROFL_ERR(DRIVER_NAME"[nf_driver] Cannot bring down KNI NF port\n");
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[nf_driver] Cannot bring down KNI NF port\n");
 			return ROFL_FAILURE;
 		}
 		/* get interface name */
@@ -402,7 +402,7 @@ rofl_result_t nf_iface_manager_bring_down_port(switch_port_t* port)
 		/* Read interface flags */
 		if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0) 
 		{
-			ROFL_ERR(DRIVER_NAME"[nf_driver] Cannot bring down DPDK KNI NF port\n");
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[nf_driver] Cannot bring down DPDK KNI NF port\n");
 			return ROFL_FAILURE;
 		}
 
@@ -418,13 +418,13 @@ rofl_result_t nf_iface_manager_bring_down_port(switch_port_t* port)
 			ifr.IRFFLAGS &= ~IFF_UP;
 			if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0) 
 			{
-				ROFL_ERR(DRIVER_NAME"[nf_driver] Cannot bring down DPDK KNI NF port\n");
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[nf_driver] Cannot bring down DPDK KNI NF port\n");
 				return ROFL_FAILURE;
 			}
 		}
 		return ROFL_SUCCESS;
 	}
 	
-	ROFL_ERR(DRIVER_NAME"[nf_driver] The port type must be PORT_TYPE_NF_SHMEM or PORT_TYPE_NF_EXTERNAL\n");
+	ROFL_ERR(DEFAULT, DRIVER_NAME"[nf_driver] The port type must be PORT_TYPE_NF_SHMEM or PORT_TYPE_NF_EXTERNAL\n");
 	return ROFL_FAILURE;
 }

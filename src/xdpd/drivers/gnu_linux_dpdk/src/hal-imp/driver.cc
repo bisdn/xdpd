@@ -113,7 +113,7 @@ static void parse_extra_params(const std::string& params){
 						::isspace ), r.end() );
 
 			strncpy(coremask, r.c_str(), MAX_COREMASK_LEN);
-			ROFL_DEBUG(DRIVER_NAME" Overriding default coremask(%s) with %s\n", XSTR(DEFAULT_RTE_CORE_MASK), coremask);
+			ROFL_DEBUG(DEFAULT, DRIVER_NAME" Overriding default coremask(%s) with %s\n", XSTR(DEFAULT_RTE_CORE_MASK), coremask);
 		}else if(r.compare(DRIVER_EXTRA_POOL_SIZE) == 0){
 			std::getline(ss_, r, '=');
 			r.erase(std::remove_if( r.begin(), r.end(),
@@ -123,13 +123,13 @@ static void parse_extra_params(const std::string& params){
 			unsigned int mbufs;
 			ss__ >> mbufs;
 			mbuf_pool_size = mbufs;
-			ROFL_DEBUG(DRIVER_NAME" Overriding default #mbufs per pool(%u) with %u\n", DEFAULT_NB_MBUF, mbufs);
+			ROFL_DEBUG(DEFAULT, DRIVER_NAME" Overriding default #mbufs per pool(%u) with %u\n", DEFAULT_NB_MBUF, mbufs);
 		}else{
 			t.erase(std::remove_if( t.begin(), t.end(),
 						::isspace ), t.end() );
 
 			//Unknown or unparsable parameter
-			ROFL_WARN(DRIVER_NAME" WARNING: could not understand extra-param '%s'. Ignoring it...\n",
+			ROFL_WARN(DEFAULT, DRIVER_NAME" WARNING: could not understand extra-param '%s'. Ignoring it...\n",
 							t.c_str());
 		}
 	}
@@ -141,13 +141,13 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 	int ret;
 	const int EAL_ARGS = sizeof(argv_fake)/sizeof(*argv_fake);
 
-	ROFL_INFO(DRIVER_NAME" Initializing...\n");
+	ROFL_INFO(DEFAULT, DRIVER_NAME" Initializing...\n");
 
 	//Parse extra parameters
 	parse_extra_params(std::string(extra_params));
 
 	//Show a nice trace
-	ROFL_INFO(DRIVER_NAME" Initializing EAL with coremask: %s, memchannels: %s\n", argv_fake[2], argv_fake[4]);
+	ROFL_INFO(DEFAULT, DRIVER_NAME" Initializing EAL with coremask: %s, memchannels: %s\n", argv_fake[2], argv_fake[4]);
 
 	// init EAL library
 	optind=1;
@@ -158,7 +158,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 
 	//Make sure lcore count > 2. Core 0 left for mgmt
 	if( rte_lcore_count() < 2 ){
-		ROFL_ERR(DRIVER_NAME"ERROR: the system must have at last 2 cores. Aborting\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"ERROR: the system must have at last 2 cores. Aborting\n");
 		return HAL_FAILURE;
 	}
 
@@ -171,7 +171,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 
 	//Discover and initialize rofl-pipeline state
 	if(iface_manager_discover_system_ports() != ROFL_SUCCESS) {
-		ROFL_ERR(DRIVER_NAME"ERROR: Failed to discover system ports - Aborting\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"ERROR: Failed to discover system ports - Aborting\n");
 		return HAL_FAILURE;
 	}
 
@@ -219,7 +219,7 @@ void hal_driver_get_info(driver_info_t* info){
 */
 hal_result_t hal_driver_destroy(){
 
-	ROFL_INFO(DRIVER_NAME" Destroying...\n");
+	ROFL_INFO(DEFAULT, DRIVER_NAME" Destroying...\n");
 	
 	//Cleanup processing. This must be the first thing to do
 	processing_destroy();
@@ -283,7 +283,7 @@ hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	of_switch_t* sw;
 	
-	ROFL_INFO(DRIVER_NAME" Creating switch. Name: %s, number of tables: %d\n",name, num_of_tables);
+	ROFL_INFO(DEFAULT, DRIVER_NAME" Creating switch. Name: %s, number of tables: %d\n",name, num_of_tables);
 	
 	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
@@ -413,7 +413,7 @@ hal_result_t hal_driver_attach_port_to_switch(uint64_t dpid, const char* name, u
 	if(!port)
 		return HAL_FAILURE;
 
-	ROFL_INFO(DRIVER_NAME" Trying to attach port %s. to switch %s (0x%llx)\n", port->name, lsw->name, (long long unsigned int)lsw->dpid);
+	ROFL_INFO(DEFAULT, DRIVER_NAME" Trying to attach port %s. to switch %s (0x%llx)\n", port->name, lsw->name, (long long unsigned int)lsw->dpid);
 	
 	//Update pipeline state
 	if(*of_port_num == 0){
@@ -498,7 +498,7 @@ hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, unsigned int* port_
 
 	//Enable interfaces (start packet transmission)
 	if(hal_driver_bring_port_up(vport1->name) != HAL_SUCCESS || hal_driver_bring_port_up(vport2->name) != HAL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME" ERROR: unable to bring up vlink ports.\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME" ERROR: unable to bring up vlink ports.\n");
 		assert(0);
 		return HAL_FAILURE;
 	}
@@ -538,7 +538,7 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 
 	//Detach it
 	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME" Error detaching port %s.\n",port->name);
+		ROFL_ERR(DEFAULT, DRIVER_NAME" Error detaching port %s.\n",port->name);
 		assert(0);
 		goto DRIVER_DETACH_ERROR;	
 	}
@@ -560,21 +560,21 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	
 		//Detach pair
 		if(physical_switch_detach_port_from_logical_switch(port_pair, port_pair->attached_sw) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME" Error detaching port %s.\n",port_pair->name);
+			ROFL_ERR(DEFAULT, DRIVER_NAME" Error detaching port %s.\n",port_pair->name);
 			assert(0);
 			goto DRIVER_DETACH_ERROR;	
 		}
 
 		//Remove from the pipeline and delete
 		if(physical_switch_remove_port(port->name) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
+			ROFL_ERR(DEFAULT, DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
 			assert(0);
 			return HAL_FAILURE;
 			
 		}
 		
 		if(physical_switch_remove_port(port_pair->name) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
+			ROFL_ERR(DEFAULT, DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
 			assert(0);
 			goto DRIVER_DETACH_ERROR;
 			

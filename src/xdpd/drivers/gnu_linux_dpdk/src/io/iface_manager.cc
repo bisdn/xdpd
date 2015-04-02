@@ -68,7 +68,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	//port_conf.rx_adv_conf.rss_conf.rss_hf = ETH_RSS_IPV4 | ETH_RSS_IPV6;
 	port_conf.txmode.mq_mode = ETH_MQ_TX_NONE;
 	if ((ret=rte_eth_dev_configure(port_id, 1, IO_IFACE_NUM_QUEUES, &port_conf)) < 0){
-		ROFL_ERR(DRIVER_NAME"[iface_manager][%s] Cannot configure device; %s(%d)\n", port->name, rte_strerror(ret), ret);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager][%s] Cannot configure device; %s(%d)\n", port->name, rte_strerror(ret), ret);
 		assert(0);
 		return NULL;
 	}
@@ -80,7 +80,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 		//Create rofl-pipeline queue state
 		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
 		if(switch_port_add_queue(port, i, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot configure queues on device (pipeline): %s\n", port->name);
 			assert(0);
 			return NULL;
 		}
@@ -91,7 +91,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	
 		
 		if(unlikely( port_tx_lcore_queue[port_id][i] == NULL )){
-			ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot create rte_ring for queue on device: %s\n", port->name);
 			assert(0);
 			return NULL;
 		}
@@ -107,7 +107,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	port->platform_port_state = (platform_port_state_t*)ps;
 
 	unsigned int cpu_socket_id = rte_eth_dev_socket_id(port_id);
-	ROFL_INFO(DRIVER_NAME"[iface_manager] Discovered port %s [PCI addr: %04u:%02u:%02u, MAC: %02X:%02X:%02X:%02X:%02X:%02X] id %u (CPU socket: %u)\n", port_name, dev_info.pci_dev->addr.domain, dev_info.pci_dev->addr.bus, dev_info.pci_dev->addr.devid, port->hwaddr[0], port->hwaddr[1], port->hwaddr[2], port->hwaddr[3], port->hwaddr[4], port->hwaddr[5], port_id, (cpu_socket_id == 0xFFFFFFFF)? 0 : cpu_socket_id);
+	ROFL_INFO(DEFAULT, DRIVER_NAME"[iface_manager] Discovered port %s [PCI addr: %04u:%02u:%02u, MAC: %02X:%02X:%02X:%02X:%02X:%02X] id %u (CPU socket: %u)\n", port_name, dev_info.pci_dev->addr.domain, dev_info.pci_dev->addr.bus, dev_info.pci_dev->addr.devid, port->hwaddr[0], port->hwaddr[1], port->hwaddr[2], port->hwaddr[3], port->hwaddr[4], port->hwaddr[5], port_id, (cpu_socket_id == 0xFFFFFFFF)? 0 : cpu_socket_id);
 
 
 
@@ -148,7 +148,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	
 	//Setup RX
 	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, direct_pools[sock_id])) < 0 ){
-		ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot setup RX queue: %s\n", rte_strerror(ret));
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot setup RX queue: %s\n", rte_strerror(ret));
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -157,7 +157,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	for(i=0;i<IO_IFACE_NUM_QUEUES;++i){
 		//setup the queue
 		if( (ret = rte_eth_tx_queue_setup(port_id, i, RTE_TX_DESC_DEFAULT, sock_id, &tx_conf)) < 0 ){
-			ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot setup TX queues: %s\n", rte_strerror(ret));
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot setup TX queues: %s\n", rte_strerror(ret));
 			assert(0);
 			return ROFL_FAILURE;
 		}
@@ -165,7 +165,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 #if 0
 		//bind stats IGB not supporting this???
 		if( (ret = rte_eth_dev_set_tx_queue_stats_mapping(port_id, i, i)) < 0 ){
-			ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot bind TX queue(%u) stats: %s\n", i, rte_strerror(ret));
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot bind TX queue(%u) stats: %s\n", i, rte_strerror(ret));
 			assert(0);
 			return ROFL_FAILURE;
 		}
@@ -173,7 +173,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	}
 	//Start port
 	if((ret=rte_eth_dev_start(port_id)) < 0){
-		ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
 		assert(0);
 		return ROFL_FAILURE; 
 	}
@@ -207,17 +207,17 @@ rofl_result_t iface_manager_discover_system_ports(void){
 	switch_port_t* port;
 	num_of_ports = rte_eth_dev_count();
 	
-	ROFL_INFO(DRIVER_NAME"[iface_manager] Found %u DPDK-capable interfaces\n", num_of_ports);
+	ROFL_INFO(DEFAULT, DRIVER_NAME"[iface_manager] Found %u DPDK-capable interfaces\n", num_of_ports);
 	
 	for(i=0;i<num_of_ports;++i){
 		if(! ( port = configure_port(i) ) ){
-			ROFL_ERR(DRIVER_NAME"[iface_manager] Unable to initialize port-id: %u\n", i);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Unable to initialize port-id: %u\n", i);
 			return ROFL_FAILURE;
 		}
 
 		//Add port to the pipeline
 		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
-			ROFL_ERR(DRIVER_NAME"[iface_manager] Unable to add the switch port to physical switch; perhaps there are no more physical port slots available?\n");
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Unable to add the switch port to physical switch; perhaps there are no more physical port slots available?\n");
 			return ROFL_FAILURE;
 		}
 
@@ -250,7 +250,7 @@ rofl_result_t iface_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_p
 	*vport2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
 	
 	if(*vport1 == NULL || *vport2 == NULL){
-		ROFL_ERR(DRIVER_NAME"[iface_manager] Unable to allocate memory for virtual ports\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Unable to allocate memory for virtual ports\n");
 		assert(0);
 		goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;
 	}
@@ -280,7 +280,7 @@ rofl_result_t iface_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_p
 	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
 		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
 		if(switch_port_add_queue((*vport1), i, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot configure queues on device (pipeline): %s\n", (*vport1)->name);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot configure queues on device (pipeline): %s\n", (*vport1)->name);
 			assert(0);
 			goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;
 		}
@@ -309,7 +309,7 @@ rofl_result_t iface_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_p
 	for(i=0;i<IO_IFACE_NUM_QUEUES;i++){
 		snprintf(queue_name, PORT_QUEUE_MAX_LEN_NAME, "%s%d", "queue", i);
 		if(switch_port_add_queue((*vport2), i, (char*)&queue_name, IO_IFACE_MAX_PKT_BURST, 0, 0) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot configure queues on device (pipeline): %s\n", (*vport2)->name);
+			ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot configure queues on device (pipeline): %s\n", (*vport2)->name);
 			assert(0);
 			goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;
 		}
@@ -322,13 +322,13 @@ rofl_result_t iface_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_p
 
 	//Add them to the physical switch
 	if( physical_switch_add_port(*vport1) != ROFL_SUCCESS ){
-		ROFL_ERR(DRIVER_NAME"[iface_manager] Unable to allocate memory for virtual ports\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Unable to allocate memory for virtual ports\n");
 		assert(0);
 		goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;	
 
 	}
 	if( physical_switch_add_port(*vport2) != ROFL_SUCCESS ){
-		ROFL_ERR(DRIVER_NAME"[iface_manager] Unable to allocate memory for virtual ports\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Unable to allocate memory for virtual ports\n");
 		assert(0);
 		goto PORT_MANAGER_CREATE_VLINK_PAIR_ERROR;	
 
@@ -385,7 +385,7 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 			//Was down
 			if(nf_iface_manager_bring_up_port(port) != ROFL_SUCCESS)
 			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK SECONDARY NF port: %s\n",port->name);
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot start DPDK SECONDARY NF port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
@@ -400,7 +400,7 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 			//Was down
 			if(nf_iface_manager_bring_up_port(port) != ROFL_SUCCESS)
 			{
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot start DPDK KNI NF port: %s\n",port->name);
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot start DPDK KNI NF port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
@@ -415,7 +415,7 @@ rofl_result_t iface_manager_bring_up(switch_port_t* port){
 		if(!port->up){
 			//Was down; simply start
 			if((ret=rte_eth_dev_start(port_id)) < 0){
-				ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[iface_manager] Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
 				assert(0);
 				return ROFL_FAILURE; 
 			}
@@ -455,7 +455,7 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 		*/
 		if(port->up) {
 			if(nf_iface_manager_bring_down_port(port) != ROFL_SUCCESS) {
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK SECONDARY NF port: %s\n",port->name);
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot stop DPDK SECONDARY NF port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
@@ -467,7 +467,7 @@ rofl_result_t iface_manager_bring_down(switch_port_t* port){
 		*/
 		if(port->up){
 			if(nf_iface_manager_bring_down_port(port) != ROFL_SUCCESS) {
-				ROFL_ERR(DRIVER_NAME"[port_manager] Cannot stop DPDK KNI NF port: %s\n",port->name);
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[port_manager] Cannot stop DPDK KNI NF port: %s\n",port->name);
 				assert(0);
 				return ROFL_FAILURE; 
 			}
@@ -541,12 +541,12 @@ void iface_manager_update_links(){
 					//Down
 					port->state = port->state | PORT_STATE_LINK_DOWN;
 					
-				ROFL_DEBUG(DRIVER_NAME"[port-manager] Port %s is %s, and link is %s\n", port->name, ((port->up) ? "up" : "down"), ((link.link_status) ? "detected" : "not detected"));
+				ROFL_DEBUG(DEFAULT, DRIVER_NAME"[port-manager] Port %s is %s, and link is %s\n", port->name, ((port->up) ? "up" : "down"), ((link.link_status) ? "detected" : "not detected"));
 				
 				//Notify CMM port change
 				port_snapshot = physical_switch_get_port_snapshot(port->name); 
 				if(hal_cmm_notify_port_status_changed(port_snapshot) != HAL_SUCCESS){
-					ROFL_DEBUG(DRIVER_NAME"[iface_manager] Unable to notify port status change for port %s\n", port->name);
+					ROFL_DEBUG(DEFAULT, DRIVER_NAME"[iface_manager] Unable to notify port status change for port %s\n", port->name);
 				}	
 			}
 		}

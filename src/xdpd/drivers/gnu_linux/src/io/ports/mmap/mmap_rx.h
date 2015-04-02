@@ -105,7 +105,7 @@ next:
 		if( likely( ( hdr->tp_status&(TP_STATUS_COPY|TP_STATUS_CSUMNOTREADY) ) == 0 ) ){
 #ifdef DEBUG
 			//if( ( hdr->tp_status&(TP_STATUS_LOSING) ) > 0){
-			//	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[mmap_rx:%s] Congestion in RX of the port\n", devname.c_str());
+			//	ROFL_DEBUG_VERBOSE(DEFAULT, DRIVER_NAME"[mmap_rx:%s] Congestion in RX of the port\n", devname.c_str());
 			//}
 		
 #endif
@@ -116,7 +116,7 @@ next:
 			static unsigned int dropped = 0;
 
 			if( unlikely((dropped++%1000) == 0) ){
-				ROFL_ERR(DRIVER_NAME"[mmap_rx:%s] ERROR: discarded %u frames. Reason(s): %s %s (%u), length: %u. If TP_STATUS_CSUMNOTREADY is the cause, consider disabling RX/TX checksum offloading via ethtool.\n", devname.c_str(), dropped, ((hdr->tp_status&TP_STATUS_COPY) == 0)? "":"TP_STATUS_COPY", ((hdr->tp_status&TP_STATUS_CSUMNOTREADY) == 0)? "":"TP_STATUS_CSUMNOTREADY", hdr->tp_status, hdr->tp_len );
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[mmap_rx:%s] ERROR: discarded %u frames. Reason(s): %s %s (%u), length: %u. If TP_STATUS_CSUMNOTREADY is the cause, consider disabling RX/TX checksum offloading via ethtool.\n", devname.c_str(), dropped, ((hdr->tp_status&TP_STATUS_COPY) == 0)? "":"TP_STATUS_COPY", ((hdr->tp_status&TP_STATUS_CSUMNOTREADY) == 0)? "":"TP_STATUS_CSUMNOTREADY", hdr->tp_status, hdr->tp_len );
 			}
 
 			//Skip

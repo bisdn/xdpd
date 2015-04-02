@@ -83,7 +83,7 @@ int process_timeouts(){
 			
 #ifdef DEBUG
 		dummy++;
-		//ROFL_DEBUG_VERBOSE(DRIVER_NAME"[bg] Checking flow entries expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
+		//ROFL_DEBUG_VERBOSE(DEFAULT, DRIVER_NAME"[bg] Checking flow entries expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
 #endif
 		last_time_entries_checked = now;
 	}
@@ -102,12 +102,12 @@ int process_timeouts(){
 				//Loop until the oldest expired packet is taken out
 				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
-					ROFL_DEBUG_VERBOSE(DRIVER_NAME"[bg] Trying to erase a datapacket from storage: %u\n", buffer_id);
+					ROFL_DEBUG_VERBOSE(DEFAULT, DRIVER_NAME"[bg] Trying to erase a datapacket from storage: %u\n", buffer_id);
 
 					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
-						ROFL_DEBUG_VERBOSE(DRIVER_NAME"[bg] Error in get_packet_wrapper %u\n", buffer_id);
+						ROFL_DEBUG_VERBOSE(DEFAULT, DRIVER_NAME"[bg] Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
-						ROFL_DEBUG_VERBOSE(DRIVER_NAME"[bg] Datapacket expired correctly %u\n", buffer_id);
+						ROFL_DEBUG_VERBOSE(DEFAULT, DRIVER_NAME"[bg] Datapacket expired correctly %u\n", buffer_id);
 						//Return mbuf to the pool
 						rte_pktmbuf_free(((datapacket_dpdk_t*)pkt->platform_state)->mbuf);
 						//Return buffer to bufferpool
@@ -118,7 +118,7 @@ int process_timeouts(){
 		}
 		
 #ifdef DEBUG
-		//ROFL_ERR(DRIVER_NAME"[bg] Checking pool buffers expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
+		//ROFL_ERR(DEFAULT, DRIVER_NAME"[bg] Checking pool buffers expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
 #endif
 		last_time_pool_checked = now;
 	}
@@ -170,7 +170,7 @@ void* x86_background_tasks_routine(void* param){
 	}
 	
 	//Printing some information
-	ROFL_DEBUG(DRIVER_NAME"[bg] Finishing thread execution\n"); 
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"[bg] Finishing thread execution\n"); 
 
 	//Exit
 	pthread_exit(NULL);	
@@ -184,7 +184,7 @@ rofl_result_t launch_background_tasks_manager(){
 	bg_continue_execution = true;
 
 	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0){
-		ROFL_ERR(DRIVER_NAME"[bg] pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[bg] pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
 	return ROFL_SUCCESS;

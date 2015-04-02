@@ -45,7 +45,7 @@ rofl_result_t iomanager::init( unsigned int _rx_groups, unsigned int _tx_groups)
 	}
 
 	if( unlikely(_rx_groups<0) || unlikely(_tx_groups<0) ){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Invalid RX(%u) or TX(%u) parameters. Aborting...\n", _rx_groups, _tx_groups);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Invalid RX(%u) or TX(%u) parameters. Aborting...\n", _rx_groups, _tx_groups);
 		goto INIT_ERROR;
 	}
 		
@@ -53,7 +53,7 @@ rofl_result_t iomanager::init( unsigned int _rx_groups, unsigned int _tx_groups)
 	num_of_rx_groups = _rx_groups;
 	num_of_tx_groups = _tx_groups;
 
-	ROFL_DEBUG(DRIVER_NAME"[iomanager] Initializing iomanager with %u RX portgroups (%u total threads), and %u TX portgroups (%u total threads)\n", _rx_groups, _rx_groups*DEFAULT_THREADS_PER_PORTGROUP, _tx_groups, _tx_groups*DEFAULT_THREADS_PER_PORTGROUP);
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"[iomanager] Initializing iomanager with %u RX portgroups (%u total threads), and %u TX portgroups (%u total threads)\n", _rx_groups, _rx_groups*DEFAULT_THREADS_PER_PORTGROUP, _tx_groups, _tx_groups*DEFAULT_THREADS_PER_PORTGROUP);
 	
 	try{	
 		for(i=0;i<num_of_rx_groups;++i){
@@ -70,7 +70,7 @@ rofl_result_t iomanager::init( unsigned int _rx_groups, unsigned int _tx_groups)
 			}
 		}	
 	}catch(...){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Unable to initialize port groups. Out of memory?\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Unable to initialize port groups. Out of memory?\n");
 		goto INIT_ERROR;
 	}
 
@@ -98,10 +98,10 @@ rofl_result_t iomanager::add_port(ioport* port){
 	
 	pthread_mutex_unlock(&mutex);
 	
-	ROFL_DEBUG(DRIVER_NAME"[iomanager] Adding port %s to iomanager, at portgroup RX %u\n", port->of_port_state->name, grp_id); 
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"[iomanager] Adding port %s to iomanager, at portgroup RX %u\n", port->of_port_state->name, grp_id); 
 	
 	if(add_port_to_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Adding port %s to iomanager (RX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Adding port %s to iomanager (RX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		//FIXME remove TX
 		return ROFL_FAILURE;	
@@ -114,10 +114,10 @@ rofl_result_t iomanager::add_port(ioport* port){
 	
 	pthread_mutex_unlock(&mutex);
 	
-	ROFL_DEBUG(DRIVER_NAME"[iomanager] Adding port %s to iomanager, at portgroup TX %u\n", port->of_port_state->name, grp_id); 
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"[iomanager] Adding port %s to iomanager, at portgroup TX %u\n", port->of_port_state->name, grp_id); 
 	 	
 	if(add_port_to_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Adding port %s to iomanager (TX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Adding port %s to iomanager (TX), at portgroup %u FAILED\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		return ROFL_FAILURE;	
 	}
@@ -129,7 +129,7 @@ rofl_result_t iomanager::remove_port(ioport* port){
 	
 	int grp_id;
 
-	ROFL_DEBUG(DRIVER_NAME"[iomanager] Removing port %s from iomanager\n", port->of_port_state->name); 
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"[iomanager] Removing port %s from iomanager\n", port->of_port_state->name); 
 	
 	grp_id = get_group_id_by_port(port, PG_RX);
 	
@@ -139,7 +139,7 @@ rofl_result_t iomanager::remove_port(ioport* port){
 	}
 
 	if(remove_port_from_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Removal of port %s from iomanager (RX), at portgroup %u FAILED!\n", port->of_port_state->name, grp_id); 
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Removal of port %s from iomanager (RX), at portgroup %u FAILED!\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -152,7 +152,7 @@ rofl_result_t iomanager::remove_port(ioport* port){
 	}
 
 	if(remove_port_from_group(grp_id, port) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Removal of port %s from iomanager (TX), at portgroup %u FAILED!\n", port->of_port_state->name, grp_id); 
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Removal of port %s from iomanager (TX), at portgroup %u FAILED!\n", port->of_port_state->name, grp_id); 
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -221,7 +221,7 @@ rofl_result_t iomanager::bring_port_down(ioport* port, bool mutex_locked){
 		}	
 	}catch(...){
 		//Do nothing; should never jump here
-		ROFL_ERR(DRIVER_NAME"[iomanager] Exception thrown while trying to bring %s port down\n", port->of_port_state->name);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Exception thrown while trying to bring %s port down\n", port->of_port_state->name);
 		assert(0);
 		
 	}
@@ -302,7 +302,7 @@ rofl_result_t iomanager::bring_port_up(ioport* port){
 		}	
 	}catch(...){
 		//Do nothing; should never jump here
-		ROFL_ERR(DRIVER_NAME"[iomanager] Exception thrown while trying to bring %s port up\n", port->of_port_state->name);
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Exception thrown while trying to bring %s port up\n", port->of_port_state->name);
 		assert(0);
 	}
 
@@ -342,7 +342,7 @@ void iomanager::start_portgroup_threads(portgroup_state* pg){
 	for(i=0;i<pg->num_of_threads;++i){
 		if(pthread_create(&pg->thread_state[i], NULL, func, (void *)pg) < 0){
 			//TODO: print a trace or something
-			ROFL_WARN(DRIVER_NAME" WARNING: pthread_create failed for port-group %d\n", pg->id);
+			ROFL_WARN(DEFAULT, DRIVER_NAME" WARNING: pthread_create failed for port-group %d\n", pg->id);
 		}
 	}
 }
@@ -398,7 +398,7 @@ int iomanager::create_group(pg_type_t type, unsigned int num_of_threads, bool mu
 	}
 
 	
-	ROFL_DEBUG(DRIVER_NAME"[iomanager] Created %s portgroup with %u thread(s) and id: %u\n", (type==PG_TX)? "TX": "RX", num_of_threads, pg->id); 
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"[iomanager] Created %s portgroup with %u thread(s) and id: %u\n", (type==PG_TX)? "TX": "RX", num_of_threads, pg->id); 
 
 	//Return group_id
 	return pg->id;	
@@ -425,7 +425,7 @@ rofl_result_t iomanager::delete_all_groups(){
 			}
 		}	
 	}catch(...){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Warning: Unable to destroy some port groups\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[iomanager] Warning: Unable to destroy some port groups\n");
 	}
 
 	return ROFL_SUCCESS;
@@ -617,7 +617,7 @@ void iomanager::dump_state(bool mutex_locked){
 		}
 		s << "}]\n";
 	}
-	ROFL_DEBUG(DRIVER_NAME"[iomanager] status:\n%s", s.str().c_str());
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"[iomanager] status:\n%s", s.str().c_str());
 	
 	if(!mutex_locked)
 		pthread_mutex_unlock(&mutex);

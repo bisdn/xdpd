@@ -58,7 +58,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 		id = ls_int->storage->store_packet(pkt);
 
 		if(id == datapacket_storage::ERROR){
-			ROFL_DEBUG(DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
+			ROFL_DEBUG(DEFAULT, DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
 	
 			//Return to the bufferpool
 			bufferpool::release_buffer(pkt);
@@ -81,10 +81,10 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 						);
 
 		if( unlikely(rv != HAL_SUCCESS) ){
-			ROFL_DEBUG(DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
+			ROFL_DEBUG(DEFAULT, DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
 			//Take packet out from the storage
 			if( unlikely(ls_int->storage->get_packet(id) != pkt) ){
-				ROFL_ERR(DRIVER_NAME"[pkt-in-dispatcher] Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
+				ROFL_ERR(DEFAULT, DRIVER_NAME"[pkt-in-dispatcher] Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
 
 				assert(0);
 			}

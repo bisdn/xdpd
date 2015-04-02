@@ -59,7 +59,7 @@ std::string system_manager::__get_driver_extra_params(){
 	if(extra_plugins != ""){
 		if(extra != ""){
 			//Notify user
-			ROFL_ERR("[xdpd][system_manager] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
+			ROFL_ERR(DEFAULT, "[xdpd][system_manager] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
 		}else
 			extra = extra_plugins;
 	}
@@ -73,7 +73,7 @@ void system_manager::set_logging_debug_level(unsigned int level){
 	enum rofl_debug_levels c_level;
 	
 	if( inited && env_parser->is_arg_set("debug") ){
-		ROFL_ERR("[xdpd][system_manager] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
+		ROFL_ERR(DEFAULT, "[xdpd][system_manager] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
 		throw eSystemLogLevelSetviaCLI(); 
 	}
 
@@ -144,7 +144,7 @@ void system_manager::init(int argc, char** argv){
 
 	//Prevent double calls to init()
 	if(inited)
-		ROFL_ERR("[xdpd][system_manager] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
+		ROFL_ERR(DEFAULT, "[xdpd][system_manager] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
 
 	//Set driver info cache
 	hal_driver_get_info(&driver_info);
@@ -164,7 +164,7 @@ void system_manager::init(int argc, char** argv){
 	//If -v is set, print version and return immediately. Note that this must be here after
 	//get_info 
 	if(env_parser->is_arg_set("version")) {
-		ROFL_INFO(get_version().c_str());
+		ROFL_INFO(DEFAULT, get_version().c_str());
 		goto SYSTEM_MANAGER_CLEANUP;
 	}
 
@@ -225,7 +225,7 @@ void system_manager::init(int argc, char** argv){
 
 	//Driver initialization
 	if(hal_driver_init(&hal_extension_ops, __get_driver_extra_params().c_str()) != HAL_SUCCESS){
-		ROFL_ERR("[xdpd][system_manager] ERROR: initialization of platform driver failed! Aborting...\n");	
+		ROFL_ERR(DEFAULT, "[xdpd][system_manager] ERROR: initialization of platform driver failed! Aborting...\n");	
 		exit(EXIT_FAILURE);
 	}
 
@@ -244,7 +244,7 @@ void system_manager::init(int argc, char** argv){
 	}
 
 	//Printing nice trace
-	ROFL_INFO("\n[xdpd][system_manager] Shutting down...\n");	
+	ROFL_INFO(DEFAULT, "\n[xdpd][system_manager] Shutting down...\n");	
 
 	//Destroy all state
 	switch_manager::destroy_all_switches();
@@ -265,7 +265,7 @@ void system_manager::init(int argc, char** argv){
 	rofl::cioloop::get_loop().cleanup_on_exit();
 
 	//Print a nice trace
-	ROFL_INFO("[xdpd][system_manager] Shutted down.\n");
+	ROFL_INFO(DEFAULT, "[xdpd][system_manager] Shutted down.\n");
 
 SYSTEM_MANAGER_CLEANUP:
 
@@ -292,17 +292,17 @@ void system_manager::dump_help(){
 	}
 
 	//Usage first
-	ROFL_INFO("\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
+	ROFL_INFO(DEFAULT, "\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
 	//Other information
-	ROFL_INFO("Compiled with plugins: %s\n", plugin_list.str().c_str());
-	ROFL_INFO("Compiled with hardware support for: %s\n", get_driver_code_name().c_str());
+	ROFL_INFO(DEFAULT, "Compiled with plugins: %s\n", plugin_list.str().c_str());
+	ROFL_INFO(DEFAULT, "Compiled with hardware support for: %s\n", get_driver_code_name().c_str());
 	if(get_driver_description()!="")
-		ROFL_INFO("Hardware driver description: %s\n\n", get_driver_description().c_str());
+		ROFL_INFO(DEFAULT, "Hardware driver description: %s\n\n", get_driver_description().c_str());
 	else
-		ROFL_INFO("\n");
+		ROFL_INFO(DEFAULT, "\n");
 
 	if(get_driver_extra_params()!="")
-		ROFL_INFO("%s\n", get_driver_extra_params().c_str());
+		ROFL_INFO(DEFAULT, "%s\n", get_driver_extra_params().c_str());
 
 
 }

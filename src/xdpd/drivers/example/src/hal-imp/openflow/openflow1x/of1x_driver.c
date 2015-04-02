@@ -19,7 +19,7 @@
  */
 hal_result_t hal_driver_of1x_set_port_drop_received_config(uint64_t dpid, unsigned int port_num, bool drop_received){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 
 	return HAL_SUCCESS;
 }
@@ -35,7 +35,7 @@ hal_result_t hal_driver_of1x_set_port_drop_received_config(uint64_t dpid, unsign
  */
 hal_result_t hal_driver_of1x_set_port_no_flood_config(uint64_t dpid, unsigned int port_num, bool no_flood){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 
 	return HAL_SUCCESS;
 }
@@ -51,7 +51,7 @@ hal_result_t hal_driver_of1x_set_port_no_flood_config(uint64_t dpid, unsigned in
  */
 hal_result_t hal_driver_of1x_set_port_forward_config(uint64_t dpid, unsigned int port_num, bool forward){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return HAL_SUCCESS;
 }
@@ -66,7 +66,7 @@ hal_result_t hal_driver_of1x_set_port_forward_config(uint64_t dpid, unsigned int
  */
 hal_result_t hal_driver_of1x_set_port_generate_packet_in_config(uint64_t dpid, unsigned int port_num, bool generate_packet_in){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return HAL_SUCCESS;
 }
@@ -82,7 +82,7 @@ hal_result_t hal_driver_of1x_set_port_generate_packet_in_config(uint64_t dpid, u
  */
 hal_result_t hal_driver_of1x_set_port_advertise_config(uint64_t dpid, unsigned int port_num, uint32_t advertise){
 
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return HAL_SUCCESS;
 }
@@ -98,7 +98,7 @@ hal_result_t hal_driver_of1x_set_port_advertise_config(uint64_t dpid, unsigned i
  */
 hal_result_t hal_driver_of1x_set_pipeline_config(uint64_t dpid, unsigned int flags, uint16_t miss_send_len){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 
 	return HAL_SUCCESS;
 }
@@ -114,7 +114,7 @@ hal_result_t hal_driver_of1x_set_pipeline_config(uint64_t dpid, unsigned int fla
  */
 hal_result_t hal_driver_of1x_set_table_config(uint64_t dpid, unsigned int table_id, of1x_flow_table_miss_config_t config){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 
 	return HAL_SUCCESS;
 }
@@ -134,7 +134,7 @@ hal_result_t hal_driver_of1x_set_table_config(uint64_t dpid, unsigned int table_
 hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_id, uint32_t in_port, of1x_action_group_t* action_group, uint8_t* buffer, uint32_t buffer_size)
 {
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return HAL_SUCCESS;
 }
@@ -155,7 +155,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 
 hal_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t** flow_entry, uint32_t buffer_id, bool check_overlap, bool reset_counts){
 
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return HAL_SUCCESS;
 }
@@ -174,7 +174,7 @@ hal_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
  */
 hal_result_t hal_driver_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t** flow_entry, uint32_t buffer_id, of1x_flow_removal_strictness_t strictness, bool reset_counts){
 
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 
 	return HAL_SUCCESS;
 }
@@ -194,7 +194,7 @@ hal_result_t hal_driver_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t tabl
  */
 hal_result_t hal_driver_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t* flow_entry, uint32_t out_port, uint32_t out_group, of1x_flow_removal_strictness_t strictness){
 
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return HAL_SUCCESS;
 } 
@@ -218,7 +218,7 @@ hal_result_t hal_driver_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t tabl
  */
 of1x_stats_flow_msg_t* hal_driver_of1x_get_flow_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_group_t* matches){
 
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return NULL; 
 }
@@ -239,7 +239,7 @@ of1x_stats_flow_msg_t* hal_driver_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
  */
 of1x_stats_flow_aggregate_msg_t* hal_driver_of1x_get_flow_aggregate_stats(uint64_t dpid, uint8_t table_id, uint32_t cookie, uint32_t cookie_mask, uint32_t out_port, uint32_t out_group, of1x_match_group_t* matches){
 
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 
 	return NULL; 
 } 
@@ -252,7 +252,7 @@ of1x_stats_flow_aggregate_msg_t* hal_driver_of1x_get_flow_aggregate_stats(uint64
  */
 rofl_of1x_gm_result_t hal_driver_of1x_group_mod_add(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t **buckets){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return ROFL_OF1X_GM_OK;
 }
@@ -266,7 +266,7 @@ rofl_of1x_gm_result_t hal_driver_of1x_group_mod_add(uint64_t dpid, of1x_group_ty
  */
 rofl_of1x_gm_result_t hal_driver_of1x_group_mod_modify(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t **buckets){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return ROFL_OF1X_GM_OK;
 }
@@ -280,7 +280,7 @@ rofl_of1x_gm_result_t hal_driver_of1x_group_mod_modify(uint64_t dpid, of1x_group
  */
 rofl_of1x_gm_result_t hal_driver_of1x_group_mod_delete(uint64_t dpid, uint32_t id){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return ROFL_OF1X_GM_OK;
 }
@@ -292,7 +292,7 @@ rofl_of1x_gm_result_t hal_driver_of1x_group_mod_delete(uint64_t dpid, uint32_t i
  */
 of1x_stats_group_desc_msg_t *hal_driver_of1x_get_group_desc_stats(uint64_t dpid){
 	
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return NULL; 
 }
@@ -306,7 +306,7 @@ of1x_stats_group_desc_msg_t *hal_driver_of1x_get_group_desc_stats(uint64_t dpid)
  */
 of1x_stats_group_msg_t * hal_driver_of1x_get_group_stats(uint64_t dpid, uint32_t id){
 
-	ROFL_INFO("["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling %s()\n",__FUNCTION__);
 	
 	return NULL; 
 }

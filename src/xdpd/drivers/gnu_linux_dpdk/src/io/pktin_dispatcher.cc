@@ -70,12 +70,12 @@ static void* process_packet_ins(void* param){
 		sw = (of1x_switch_t*)pkt->sw;
 		dps = (datapacket_storage*)pkt->sw->platform_state;
 
-		ROFL_DEBUG(DRIVER_NAME"[pktin_dispatcher] Processing PKT_IN for packet(%p), mbuf %p, switch %p\n", pkt, mbuf, sw);
+		ROFL_DEBUG(DEFAULT, DRIVER_NAME"[pktin_dispatcher] Processing PKT_IN for packet(%p), mbuf %p, switch %p\n", pkt, mbuf, sw);
 		//Store packet in the storage system. Packet is NOT returned to the bufferpool
 		id = dps->store_packet(pkt);
 
 		if(unlikely(id == datapacket_storage::ERROR)){
-			ROFL_DEBUG(DRIVER_NAME"[pktin_dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
+			ROFL_DEBUG(DEFAULT, DRIVER_NAME"[pktin_dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
 
 			//Return mbuf to the pool
 			rte_pktmbuf_free(mbuf);
@@ -102,7 +102,7 @@ static void* process_packet_ins(void* param){
 				);
 
 		if( rv != HAL_SUCCESS ){
-			ROFL_DEBUG(DRIVER_NAME"[pktin_dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
+			ROFL_DEBUG(DEFAULT, DRIVER_NAME"[pktin_dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
 			//Take packet out from the storage
 			pkt = dps->get_packet(id);
 
@@ -162,7 +162,7 @@ rofl_result_t pktin_dispatcher_init(){
 	pkt_ins = rte_ring_create("PKT_IN_RING", IO_PKT_IN_STORAGE_MAX_BUF, SOCKET_ID_ANY, 0x0);
 	
 	if(!pkt_ins){
-		ROFL_ERR(DRIVER_NAME"[pktin_dispatcher] Unable to create PKT_INs ring queue\n");
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[pktin_dispatcher] Unable to create PKT_INs ring queue\n");
 		return ROFL_FAILURE;
 	}
 
@@ -172,7 +172,7 @@ rofl_result_t pktin_dispatcher_init(){
 	//Launch thread
 	//XXX: use rte?
 	if(pthread_create(&pktin_thread, NULL, process_packet_ins, NULL)<0){
-		ROFL_ERR(DRIVER_NAME"[pktin_dispatcher] pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
+		ROFL_ERR(DEFAULT, DRIVER_NAME"[pktin_dispatcher] pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
 

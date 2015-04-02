@@ -117,7 +117,7 @@ int process_timeouts()
 			
 #ifdef DEBUG
 		dummy++;
-		//ROFL_DEBUG_VERBOSE("<%s:%d> Checking flow entries expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
+		//ROFL_DEBUG_VERBOSE(DEFAULT, "<%s:%d> Checking flow entries expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
 #endif
 		last_time_entries_checked = now;
 	}
@@ -134,11 +134,11 @@ int process_timeouts()
 				//TODO process buffers in the storage
 				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
-					ROFL_DEBUG_VERBOSE("<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
+					ROFL_DEBUG_VERBOSE(DEFAULT, "<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
 					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
-						ROFL_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
+						ROFL_DEBUG_VERBOSE(DEFAULT, "Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
-						ROFL_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
+						ROFL_DEBUG_VERBOSE(DEFAULT, "Datapacket expired correctly %u\n", buffer_id);
 						//Return buffer to bufferpool
 						bufferpool::release_buffer(pkt);
 					}
@@ -148,7 +148,7 @@ int process_timeouts()
 		}
 		
 #ifdef DEBUG
-		//ROFL_ERR("<%s:%d> Checking pool buffers expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
+		//ROFL_ERR(DEFAULT, "<%s:%d> Checking pool buffers expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
 #endif
 		last_time_pool_checked = now;
 	}
@@ -179,7 +179,7 @@ void* x86_background_tasks_routine(void* param)
 	efd = epoll_create1(0);
 
 	if(efd == -1){
-		ROFL_ERR("<%s:%d> Error in epoll_create1\n",__func__,__LINE__);
+		ROFL_ERR(DEFAULT, "<%s:%d> Error in epoll_create1\n",__func__,__LINE__);
 		return NULL;
 	}
 	
@@ -199,7 +199,7 @@ void* x86_background_tasks_routine(void* param)
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
 
 
-		//ROFL_DEBUG("interface name %s ", iface_name );
+		//ROFL_DEBUG(DEFAULT, "interface name %s ", iface_name );
 	
 		//Recover port from pipeline
 		port = physical_switch_get_port_by_name(iface_name);
@@ -212,7 +212,7 @@ void* x86_background_tasks_routine(void* param)
 		port_events[i].data.ptr = (void*)port;
 				
 		if( epoll_ctl(efd, EPOLL_CTL_ADD, ((netfpga_port_t*)port->platform_port_state)->fd, &port_events[i]) < 0  ){
-			ROFL_ERR("<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
+			ROFL_ERR(DEFAULT, "<%s:%d> Error in epoll_ctl\n",__func__,__LINE__);
 			exit(EXIT_FAILURE);		
 		}
 		
@@ -248,7 +248,7 @@ void* x86_background_tasks_routine(void* param)
 		of1x_flow_entry_t* of1x_entry=new of1x_flow_entry_t;
 		memset(of1x_entry,0,sizeof(of1x_flow_entry_t));
 		of1x_entry->platform_state=(of1x_flow_entry_platform_state_t*)hw_entry;
-		ROFL_DEBUG("\n entry number %d", i);
+		ROFL_DEBUG(DEFAULT, "\n entry number %d", i);
 		netfpga_update_entry_stats(of1x_entry);
 
 		netfpga_destroy_flow_entry(hw_entry);
@@ -266,21 +266,21 @@ void* x86_background_tasks_routine(void* param)
 		//update_misc_stats();
 		
 		nfds = epoll_wait(efd, event_list, MAX_EPOLL_EVENTS, LSW_TIMER_SLOT_MS  /*temporaly changet to infinite*/ /*timeout needs TBD somewhere else*/);
-		//ROFL_DEBUG(" After epoll_wait \n\n\n\n");
+		//ROFL_DEBUG(DEFAULT, " After epoll_wait \n\n\n\n");
 
 
 		if(nfds==-1){ //ERROR in select
-			ROFL_DEBUG("<%s:%d> Epoll Failed\n",__func__,__LINE__);
+			ROFL_DEBUG(DEFAULT, "<%s:%d> Epoll Failed\n",__func__,__LINE__);
 			continue;
 		}
 
 		if(nfds==0){ 
 			//TIMEOUT PASSED
-			//ROFL_DEBUG("bg_taskmanager epoll gave 0 - TIMEOUT PASSED");
+			//ROFL_DEBUG(DEFAULT, "bg_taskmanager epoll gave 0 - TIMEOUT PASSED");
 			process_timeouts();
 		}
 		
-		//ROFL_DEBUG("bg_taskmanager epoll gave %d \n \n", nfds );
+		//ROFL_DEBUG(DEFAULT, "bg_taskmanager epoll gave %d \n \n", nfds );
 	
 		for(i=0;i<nfds;i++){
 			
@@ -288,13 +288,13 @@ void* x86_background_tasks_routine(void* param)
 			
 			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)){
 				//error on this fd
-				ROFL_ERR("<%s:%d> Error in file descriptor\n",__func__,__LINE__);
+				ROFL_ERR(DEFAULT, "<%s:%d> Error in file descriptor\n",__func__,__LINE__);
 				
 				close(((netfpga_port_t*)event_list[i].data.ptr)->fd); //fd gets removed automatically from efd's
 				continue;
 			}else{
 				
-				//ROFL_DEBUG("event_list[i].data.ptr %p \n",event_list[i].data.ptr);
+				//ROFL_DEBUG(DEFAULT, "event_list[i].data.ptr %p \n",event_list[i].data.ptr);
 				netpfga_io_read_from_port(((switch_port_t*)event_list[i].data.ptr));
 			}
 			//check if there is a need of manage timers!
@@ -308,7 +308,7 @@ void* x86_background_tasks_routine(void* param)
 	close(efd);
 	
 	//Printing some information
-	ROFL_INFO("[bg] Finishing thread execution\n"); 
+	ROFL_INFO(DEFAULT, "[bg] Finishing thread execution\n"); 
 
 	//Exit
 	pthread_exit(NULL);	
@@ -323,7 +323,7 @@ rofl_result_t launch_background_tasks_manager()
 	bg_continue_execution = true;
 	
 	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0){
-		ROFL_ERR("<%s:%d> pthread_create failed\n",__func__,__LINE__);
+		ROFL_ERR(DEFAULT, "<%s:%d> pthread_create failed\n",__func__,__LINE__);
 		return ROFL_FAILURE;
 	}
 	return ROFL_SUCCESS;

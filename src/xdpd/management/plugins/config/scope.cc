@@ -74,7 +74,7 @@ void scope::register_priority_subscope(const std::string& _name, scope* sc, unsi
 		root->priority_sub_scopes[priority] = sc;		
 	}else{
 		//An element is register with the same priori
-		ROFL_ERR(CONF_PLUGIN_ID "%s: ERROR; failed to add scope '%s' with priority %d. Scope '%s' is already registered with this priority\n", sc->get_path().c_str(), priority, root->priority_sub_scopes[priority]->get_path().c_str());
+		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: ERROR; failed to add scope '%s' with priority %d. Scope '%s' is already registered with this priority\n", sc->get_path().c_str(), priority, root->priority_sub_scopes[priority]->get_path().c_str());
 		assert(0);
 		throw eConfDuplicatedPriority();
 	}
@@ -107,7 +107,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run, bool priority_cal
 
 	if(this->__processed == false){
 		//Call pre-hook
-		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'pre_validate()'\n", get_path().c_str());
+		ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Calling 'pre_validate()'\n", get_path().c_str());
 		pre_validate(setting, dry_run);
 
 		//Detect invalid paramaters if they are fixed
@@ -125,7 +125,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run, bool priority_cal
 					continue;
 		
 				//Not found, so not recognised. Throw exception
-				ROFL_ERR(CONF_PLUGIN_ID "%s: ERROR, unknow parameter or scope '%s'. Perhaps an old configuration file syntax?\n", setting.getPath().c_str(), aux.c_str());
+				ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: ERROR, unknow parameter or scope '%s'. Perhaps an old configuration file syntax?\n", setting.getPath().c_str(), aux.c_str());
 
 				throw eConfUnknownElement();
 		
@@ -136,7 +136,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run, bool priority_cal
 		std::map<std::string, bool>::iterator param_iter;
 		for (param_iter = parameters.begin(); param_iter != parameters.end(); ++param_iter) {
 			if(param_iter->second && !setting.exists(param_iter->first.c_str())){
-				ROFL_ERR(CONF_PLUGIN_ID "%s: mandatory parameter '%s' not found\n", setting.getPath().c_str(), param_iter->first.c_str());
+				ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: mandatory parameter '%s' not found\n", setting.getPath().c_str(), param_iter->first.c_str());
 				throw eConfMandatoryParameterNotPresent();
 			}
 		}
@@ -157,12 +157,12 @@ void scope::execute(libconfig::Setting& setting, bool dry_run, bool priority_cal
 					! setting[sc->name].isGroup()
 				)
 			){
-				ROFL_ERR(CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", setting.getPath().c_str(), sc->name.c_str());
+				ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", setting.getPath().c_str(), sc->name.c_str());
 				throw eConfMandatoryParameterNotPresent();
 			}
 			
 			if(setting.exists(sc->name)){
-				ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'execute()'\n", sc->get_path().c_str());
+				ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Calling 'execute()'\n", sc->get_path().c_str());
 				sc->execute(setting[sc->name], dry_run);
 			}
 		}
@@ -170,7 +170,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run, bool priority_cal
 		
 	if(this->__processed == false){
 		//Call post-hook
-		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'post_validate()'\n", get_path().c_str());
+		ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Calling 'post_validate()'\n", get_path().c_str());
 		post_validate(setting, dry_run);
 		
 		this->__processed = true;
@@ -187,24 +187,24 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 	//Execute priority scopes in order
 	std::map<unsigned int, scope*>::iterator p_iter;
 	for (p_iter = priority_sub_scopes.begin(); p_iter  != priority_sub_scopes.end(); ++p_iter) {
-		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Processing priority {%s} scope 'execute()' with p=%u\n", p_iter->second->get_path().c_str(), (p_iter->second->__type == PRIORITY_TAINT_SCOPE )? "TAINT": "DO NOT TAINT", p_iter->first);
+		ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Processing priority {%s} scope 'execute()' with p=%u\n", p_iter->second->get_path().c_str(), (p_iter->second->__type == PRIORITY_TAINT_SCOPE )? "TAINT": "DO NOT TAINT", p_iter->first);
 		try{
 			p_iter->second->execute(__get_libconfig_setting(p_iter->second), dry_run, true);
 		}catch(libconfig::SettingNotFoundException& e){
-			ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Priority scope with p(%u) NOT present.\n", p_iter->second->get_path().c_str(), p_iter->first);
+			ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Priority scope with p(%u) NOT present.\n", p_iter->second->get_path().c_str(), p_iter->first);
 			
 		}
 	}
 
 	//Call pre-hook
-	ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'pre_validate()'\n", get_path().c_str());
+	ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Calling 'pre_validate()'\n", get_path().c_str());
 	pre_validate(config, dry_run);
 
 	//Go through parameters and validate if mandatory
 	std::map<std::string, bool>::iterator param_iter;
 	for (param_iter = parameters.begin(); param_iter != parameters.end(); ++param_iter) {
 		if(param_iter->second && !config.exists(param_iter->first.c_str())){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: mandatory parameter '%s' not found\n", name.c_str(), param_iter->first.c_str());
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: mandatory parameter '%s' not found\n", name.c_str(), param_iter->first.c_str());
 			throw eConfMandatoryParameterNotPresent();
 		}
 	}
@@ -223,19 +223,19 @@ void scope::execute(libconfig::Config& config, bool dry_run){
 				! config.lookup(sc->name).isGroup()
 			)
 		){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", name.c_str(), sc->name.c_str());
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", name.c_str(), sc->name.c_str());
 	
 			throw eConfMandatoryParameterNotPresent();
 		}
 		if(config.exists(sc->name)){
-			ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'pre_execute()'\n", sc->get_path().c_str());
+			ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Calling 'pre_execute()'\n", sc->get_path().c_str());
 			sc->execute(config.lookup(sc->name), dry_run);
 		}
 	}
 
 	
 	//Call post-hook
-	ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'post_validate()'\n", get_path().c_str());
+	ROFL_DEBUG_VERBOSE(DEFAULT, CONF_PLUGIN_ID "[%s] Calling 'post_validate()'\n", get_path().c_str());
 	post_validate(config, dry_run);
 }
 

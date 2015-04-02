@@ -98,7 +98,7 @@ void port_manager::blacklist(std::string& port_name){
 	
 	//Check first if it exists
 	if(! exists(port_name)){
-		ROFL_ERR("[xdpd][port_manager] ERROR: attempting to blacklist a non-existent port %s\n", port_name.c_str());
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: attempting to blacklist a non-existent port %s\n", port_name.c_str());
 		throw ePmInvalidPort();
 	}
 	
@@ -111,7 +111,7 @@ void port_manager::blacklist(std::string& port_name){
 
 	//First check if it is attached
 	if(is_attached(port_name)){
-		ROFL_ERR("[xdpd][port_manager] ERROR: attempting to blacklist port %s which is attached to an LSI\n", port_name.c_str());
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: attempting to blacklist port %s which is attached to an LSI\n", port_name.c_str());
 		throw ePmInvalidPort(); 	
 	}
 	
@@ -121,7 +121,7 @@ void port_manager::blacklist(std::string& port_name){
 	//Release mutex	
 	pthread_mutex_unlock(&port_manager::mutex);
 		
-	ROFL_INFO("[xdpd][port_manager] Port %s blacklisted\n", port_name.c_str());
+	ROFL_INFO(DEFAULT, "[xdpd][port_manager] Port %s blacklisted\n", port_name.c_str());
 }
 
 void port_manager::whitelist(std::string& port_name){
@@ -129,7 +129,7 @@ void port_manager::whitelist(std::string& port_name){
 	
 	//Check first if it exists
 	if(! exists(port_name)){
-		ROFL_ERR("[xdpd][port_manager] ERROR: attempting to whitelist a non-existent port %s\n", port_name.c_str());
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: attempting to whitelist a non-existent port %s\n", port_name.c_str());
 		throw ePmInvalidPort();
 	}
 
@@ -147,7 +147,7 @@ void port_manager::whitelist(std::string& port_name){
 	//Release mutex	
 	pthread_mutex_unlock(&port_manager::mutex);
 
-	ROFL_INFO("[xdpd][port_manager] Port %s whitelisted\n", port_name.c_str());
+	ROFL_INFO(DEFAULT, "[xdpd][port_manager] Port %s whitelisted\n", port_name.c_str());
 }
 
 //
@@ -178,7 +178,7 @@ void port_manager::bring_up(std::string& name){
 	       throw ePmUnknownError();
 
 	//Redundant, the driver should inform us about the change of state in the port
-	ROFL_DEBUG("[xdpd][port_manager] Port %s brought administratively up\n", name.c_str());
+	ROFL_DEBUG(DEFAULT, "[xdpd][port_manager] Port %s brought administratively up\n", name.c_str());
 }
 
 void port_manager::bring_down(std::string& name){
@@ -206,7 +206,7 @@ void port_manager::bring_down(std::string& name){
 		throw ePmUnknownError();      
 	
 	//Redundant, the driver should inform us about the change of state in the port
-	ROFL_DEBUG("[xdpd][port_manager] Port %s brought administratively down\n", name.c_str());
+	ROFL_DEBUG(DEFAULT, "[xdpd][port_manager] Port %s brought administratively down\n", name.c_str());
 }
 
 
@@ -230,32 +230,32 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string& port_name, 
 	//Check port existance
 	if(!exists(port_name)){
 		pthread_mutex_unlock(&port_manager::mutex);
-		ROFL_ERR("[xdpd][port_manager] ERROR: Attempting to attach a non-existent port %s to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: Attempting to attach a non-existent port %s to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
 		throw ePmInvalidPort();
 	}
 
 	//Check DP existance
 	if(!switch_manager::exists(dpid)){
 		pthread_mutex_unlock(&port_manager::mutex);
-		ROFL_ERR("[xdpd][port_manager] ERROR: Attempting to attach port %s to a non-existent switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: Attempting to attach port %s to a non-existent switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
 		throw eOfSmDoesNotExist();	
 	}
 
 	if(hal_driver_attach_port_to_switch(dpid, port_name.c_str(), of_port_num) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
 		assert(0);
-		ROFL_ERR("[xdpd][port_manager] ERROR: Driver was unable to attach port %s to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: Driver was unable to attach port %s to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
 		throw ePmUnknownError(); 
 	}
 	
-	ROFL_INFO("[xdpd][port_manager] Port %s attached to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
+	ROFL_INFO(DEFAULT, "[xdpd][port_manager] Port %s attached to switch with dpid 0x%llx at port %u\n", port_name.c_str(), (long long unsigned)dpid, *of_port_num);
 
 	//Recover current snapshot
 	switch_port_snapshot_t* port_snapshot = hal_driver_get_port_snapshot_by_name(port_name.c_str());
 
 	if(port_snapshot == NULL ){
 		assert(0);
-		ROFL_ERR("[xdpd][port_manager] ERROR: Driver was unable to generate a port_snapshot for port %s during attachment; out of memory? The port may become unusable\n", port_name.c_str());
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: Driver was unable to generate a port_snapshot for port %s during attachment; out of memory? The port may become unusable\n", port_name.c_str());
 		//TODO: detach?
 		pthread_mutex_unlock(&port_manager::mutex);
 		throw ePmUnknownError(); 
@@ -292,13 +292,13 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1,
 	//Check lsi existance 
 	if(!switch_manager::exists(dpid_lsi1) || !switch_manager::exists(dpid_lsi2) ){
 		pthread_mutex_unlock(&port_manager::mutex);
-		ROFL_ERR("[xdpd][port_manager] ERROR: switch with dpid 0x%llx or 0x%llx (or both) do not exist.\n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: switch with dpid 0x%llx or 0x%llx (or both) do not exist.\n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2);
 		throw eOfSmDoesNotExist();
 	}
 
 	if(hal_driver_connect_switches(dpid_lsi1, port_num1, &port1, dpid_lsi2, port_num2, &port2) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
-		ROFL_ERR("[xdpd][port_manager] Unknown ERROR: driver was unable to create a link between switch with dpid 0x%llx and 0x%llx\n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] Unknown ERROR: driver was unable to create a link between switch with dpid 0x%llx and 0x%llx\n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2);
 		assert(0);
 		throw ePmUnknownError(); 
 	}
@@ -316,7 +316,7 @@ void port_manager::connect_switches(uint64_t dpid_lsi1, unsigned int* port_num1,
 		throw;
 	}
 
-	ROFL_INFO("[xdpd][port_manager] Link created between switch with dpid 0x%llx and 0x%llx, with virtual interface names %s and %s respectively \n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2, port1->name, port2->name);
+	ROFL_INFO(DEFAULT, "[xdpd][port_manager] Link created between switch with dpid 0x%llx and 0x%llx, with virtual interface names %s and %s respectively \n", (long long unsigned)dpid_lsi1, (long long unsigned)dpid_lsi2, port1->name, port2->name);
 
 	//Release mutex	
 	pthread_mutex_unlock(&port_manager::mutex);
@@ -342,7 +342,7 @@ void port_manager::detach_port_from_switch(uint64_t dpid, std::string& port_name
 
 	if(!port_snapshot){
 		pthread_mutex_unlock(&port_manager::mutex);
-		ROFL_ERR("[xdpd][port_manager] ERROR: Attempting to detach non-existent port %s from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: Attempting to detach non-existent port %s from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
 		assert(0);
 		throw ePmInvalidPort();
 	}
@@ -350,19 +350,19 @@ void port_manager::detach_port_from_switch(uint64_t dpid, std::string& port_name
 	if(port_snapshot->attached_sw_dpid != dpid){
 		pthread_mutex_unlock(&port_manager::mutex);
 		switch_port_destroy_snapshot(port_snapshot);	
-		ROFL_ERR("[xdpd][port_manager] ERROR: Attempting to detach port %s, which is not attached to switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: Attempting to detach port %s, which is not attached to switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
 		throw ePmPortNotAttachedError();	
 	}
 
 	if(hal_driver_detach_port_from_switch(dpid,port_name.c_str()) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
 		switch_port_destroy_snapshot(port_snapshot);	
-		ROFL_ERR("[xdpd][port_manager] Unknown ERROR: Driver was unable to detach non-existent port %s from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] Unknown ERROR: Driver was unable to detach non-existent port %s from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
 		assert(0);	
 		throw ePmUnknownError();
 	}
 
-	ROFL_INFO("[xdpd][port_manager] Port %s detached from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
+	ROFL_INFO(DEFAULT, "[xdpd][port_manager] Port %s detached from switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
 
 	/*
 	* If the port has been deleted due to the detachment, there is no
@@ -397,7 +397,7 @@ void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int po
 
 	if(!port_snapshot){
 		pthread_mutex_unlock(&port_manager::mutex);
-		ROFL_ERR("[xdpd][port_manager] ERROR: Attempting to detach port number %u from switch with dpid 0x%llx which is invalid\n", (long long unsigned)dpid, port_num);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: Attempting to detach port number %u from switch with dpid 0x%llx which is invalid\n", (long long unsigned)dpid, port_num);
 		assert(0);
 		throw ePmInvalidPort();
 	}
@@ -405,20 +405,20 @@ void port_manager::detach_port_from_switch_by_num(uint64_t dpid, unsigned int po
 	if(port_snapshot->attached_sw_dpid != dpid){
 		pthread_mutex_unlock(&port_manager::mutex);
 		switch_port_destroy_snapshot(port_snapshot);	
-		ROFL_ERR("[xdpd][port_manager] ERROR: Attempting to detach port number %u from switch with dpid 0x%llx which does not exist\n", (long long unsigned)dpid, port_num);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] ERROR: Attempting to detach port number %u from switch with dpid 0x%llx which does not exist\n", (long long unsigned)dpid, port_num);
 		throw ePmPortNotAttachedError();	
 	}
 
 
 	if(hal_driver_detach_port_from_switch_at_port_num(dpid,port_num) != HAL_SUCCESS){
 		pthread_mutex_unlock(&port_manager::mutex);
-		ROFL_ERR("[xdpd][port_manager] Unknown ERROR: Driver was unabel to detach port number %u from switch with dpid 0x%llx\n", port_num, (long long unsigned)dpid);
+		ROFL_ERR(DEFAULT, "[xdpd][port_manager] Unknown ERROR: Driver was unabel to detach port number %u from switch with dpid 0x%llx\n", port_num, (long long unsigned)dpid);
 		assert(0);
 		switch_port_destroy_snapshot(port_snapshot);	
 		throw eOfSmGeneralError();
 	}
 
-	ROFL_INFO("[xdpd][port_manager] Port %d detached from switch with dpid 0x%llx\n", port_num, (long long unsigned)dpid);
+	ROFL_INFO(DEFAULT, "[xdpd][port_manager] Port %d detached from switch with dpid 0x%llx\n", port_num, (long long unsigned)dpid);
 
 	/*
 	* If the port has been deleted due to the detachment, there is no

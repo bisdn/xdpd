@@ -64,7 +64,7 @@ void lsi_scope::parse_version(libconfig::Setting& setting, of_version_t* version
 	}else if(of_ver == 1.3){
 		*version = OF_VERSION_13;
 	}else{
-		ROFL_ERR(CONF_PLUGIN_ID "%s: invalid OpenFlow version. Valid version numbers are 1.0, 1.2 and 1.3. Found: %f\n", setting.getPath().c_str(), of_ver);
+		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: invalid OpenFlow version. Valid version numbers are 1.0, 1.2 and 1.3. Found: %f\n", setting.getPath().c_str(), of_ver);
 		throw eConfParseError(); 	
 	}
 }
@@ -76,7 +76,7 @@ void lsi_scope::parse_reconnect_time(libconfig::Setting& setting, unsigned int* 
 		*reconnect_time = setting[LSI_RECONNECT_TIME];
 	
 	if(*reconnect_time <1 || *reconnect_time > 90){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: invalid reconnect-time of %u. Value must be > 1 and <= 90\n", setting.getPath().c_str(), *reconnect_time);
+		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: invalid reconnect-time of %u. Value must be > 1 and <= 90\n", setting.getPath().c_str(), *reconnect_time);
 		throw eConfParseError(); 	
 
 	}
@@ -92,7 +92,7 @@ void lsi_scope::parse_pirl(libconfig::Setting& setting, bool* pirl_enabled, int*
 	}
 	
 	if(*pirl_rate < pirl::PIRL_MIN_RATE ){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: invalid pirl-rate of %u. Value must be >=  %d\n", setting.getPath().c_str(), *pirl_rate, pirl::PIRL_MIN_RATE);
+		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: invalid pirl-rate of %u. Value must be >=  %d\n", setting.getPath().c_str(), *pirl_rate, pirl::PIRL_MIN_RATE);
 		throw eConfParseError(); 	
 
 	}
@@ -104,7 +104,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 	std::set<std::string> platform_ports = port_manager::list_available_port_names();	
 
 	if(!setting.exists(LSI_PORTS) || !setting[LSI_PORTS].isList()){
- 		ROFL_ERR(CONF_PLUGIN_ID "%s: missing or unable to parse port attachment list.\n", setting.getPath().c_str());
+ 		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: missing or unable to parse port attachment list.\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	
 	}
@@ -114,18 +114,18 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 		if(port != ""){
 			//Check if blacklisted to print a nice trace
 			if(port_manager::is_blacklisted(port)){
-				ROFL_ERR(CONF_PLUGIN_ID "%s: invalid port '%s'. Port is BLACKLISTED!\n", setting.getPath().c_str(), port.c_str());
+				ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: invalid port '%s'. Port is BLACKLISTED!\n", setting.getPath().c_str(), port.c_str());
 				throw eConfParseError(); 	
 			
 			}
 			//Check if exists
 			if(port_manager::exists(port) == false && ((nf_scope*)get_scope_abs_path("config.interfaces.nf"))->is_nf_port(port)){
-				ROFL_ERR(CONF_PLUGIN_ID "%s: invalid port '%s'. Port does not exist!\n", setting.getPath().c_str(), port.c_str());
+				ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: invalid port '%s'. Port does not exist!\n", setting.getPath().c_str(), port.c_str());
 				throw eConfParseError(); 	
 			
 			}
 			if((std::find(ports.begin(), ports.end(), port) != ports.end())){
-				ROFL_ERR(CONF_PLUGIN_ID "%s: attempting to attach twice port '%s'!\n", setting.getPath().c_str(), port.c_str());
+				ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: attempting to attach twice port '%s'!\n", setting.getPath().c_str(), port.c_str());
 				throw eConfParseError(); 	
 			
 			}				
@@ -138,7 +138,7 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 	}	
 
 	if(ports.size() < 2 && dry_run){
- 		ROFL_WARN(CONF_PLUGIN_ID "%s: WARNING the LSI has less than two ports attached.\n", setting.getPath().c_str());
+ 		ROFL_WARN(DEFAULT, CONF_PLUGIN_ID "%s: WARNING the LSI has less than two ports attached.\n", setting.getPath().c_str());
 	}
 }
 
@@ -152,12 +152,12 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 		return;
 
 	if(setting.exists(LSI_TABLES_MATCHING_ALGORITHM) && !setting[LSI_TABLES_MATCHING_ALGORITHM].isList()){
- 		ROFL_ERR(CONF_PLUGIN_ID "%s: unable to parse matching algorithms.\n", setting.getPath().c_str());
+ 		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: unable to parse matching algorithms.\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	}
 
 	if(setting[LSI_TABLES_MATCHING_ALGORITHM].getLength() > (int)num_of_tables){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: error while parsing matching algorithms. The amount of matching algorithms specified (%u) exceeds the number of tables(%u)\n", setting.getPath().c_str(), setting[LSI_TABLES_MATCHING_ALGORITHM].getLength(), num_of_tables);
+		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: error while parsing matching algorithms. The amount of matching algorithms specified (%u) exceeds the number of tables(%u)\n", setting.getPath().c_str(), setting[LSI_TABLES_MATCHING_ALGORITHM].getLength(), num_of_tables);
 		throw eConfParseError(); 	
 	}
 
@@ -166,7 +166,7 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 		std::string algorithm = setting[LSI_TABLES_MATCHING_ALGORITHM][i];
 	
 		if(algorithm == ""){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: unable to parse matching algorithm for table number %u. Empty algorithm.\n", setting.getPath().c_str(), i+1);
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: unable to parse matching algorithm for table number %u. Empty algorithm.\n", setting.getPath().c_str(), i+1);
 			throw eConfParseError(); 	
 		}
 	
@@ -174,10 +174,10 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 		it = std::find(available_algorithms.begin(), available_algorithms.end(), algorithm);
 
 		if(it == available_algorithms.end()){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: unknown matching algorithm '%s' (OFP version 0x%x) for table number %u. Available matching algorithms are: [", setting.getPath().c_str(), algorithm.c_str(),version, i+1);
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: unknown matching algorithm '%s' (OFP version 0x%x) for table number %u. Available matching algorithms are: [", setting.getPath().c_str(), algorithm.c_str(),version, i+1);
 			for (it = available_algorithms.begin(); it != available_algorithms.end(); ++it)
-				ROFL_ERR(CONF_PLUGIN_ID "%s,", (*it).c_str());
-			ROFL_ERR(CONF_PLUGIN_ID "]\n");
+				ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s,", (*it).c_str());
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "]\n");
 			throw eConfParseError(); 	
 		}
 				
@@ -186,7 +186,7 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 	}
 
 	if(i != (int)num_of_tables && dry_run){
-		ROFL_WARN(CONF_PLUGIN_ID "%s: a matching algorithm has NOT been specified for all tables. Default algorithm for tables from %u to %u included has been set to the default '%s'\n", setting.getPath().c_str(), i+1, num_of_tables, (*available_algorithms.begin()).c_str());
+		ROFL_WARN(DEFAULT, CONF_PLUGIN_ID "%s: a matching algorithm has NOT been specified for all tables. Default algorithm for tables from %u to %u included has been set to the default '%s'\n", setting.getPath().c_str(), i+1, num_of_tables, (*available_algorithms.begin()).c_str());
 	}
 }
 
@@ -214,7 +214,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	std::string dpid_s = setting[LSI_DPID];
 	dpid = strtoull(dpid_s.c_str(),NULL,0);
 	if(!dpid){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to convert parameter DPID to a proper uint64_t\n", setting.getPath().c_str());
+		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: Unable to convert parameter DPID to a proper uint64_t\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 	}
 
@@ -231,12 +231,12 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		num_of_tables = setting[LSI_NUM_OF_TABLES];
 
 		if(version == OF_VERSION_10 && num_of_tables > 1){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: number of tables %u > 1. An LSI running in OF 1.0 native mode, can only be instantiated with 1 table.\n", setting.getPath().c_str(), num_of_tables);
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: number of tables %u > 1. An LSI running in OF 1.0 native mode, can only be instantiated with 1 table.\n", setting.getPath().c_str(), num_of_tables);
 			throw eConfParseError(); 	
 		}	
 	}
 	if(num_of_tables < 1 || num_of_tables > 255){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: invalid num of tables %u. An LSI shall have from 1 to 255 tables.\n", setting.getPath().c_str(), num_of_tables);
+		ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: invalid num of tables %u. An LSI shall have from 1 to 255 tables.\n", setting.getPath().c_str(), num_of_tables);
 		throw eConfParseError(); 	
 	
 	}
@@ -261,7 +261,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 
 		if(!sw){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: Unable to create LSI %s; unknown error.\n", setting.getPath().c_str(), name.c_str());
+			ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: Unable to create LSI %s; unknown error.\n", setting.getPath().c_str(), name.c_str());
 			throw eConfParseError(); 	
 		}	
 	
@@ -280,7 +280,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 				//Bring up
 				port_manager::bring_up(*port_it);
 			}catch(...){	
-				ROFL_ERR(CONF_PLUGIN_ID "%s: unable to attach port '%s'. Unknown error.\n", setting.getPath().c_str(), (*port_it).c_str());
+				ROFL_ERR(DEFAULT, CONF_PLUGIN_ID "%s: unable to attach port '%s'. Unknown error.\n", setting.getPath().c_str(), (*port_it).c_str());
 				throw;
 			}
 		}

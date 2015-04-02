@@ -37,8 +37,8 @@ static of_switch_t* sw=NULL;
 */
 hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_params){
 
-	ROFL_INFO("["DRIVER_NAME"] calling hal_driver_init()\n");
-	ROFL_ERR("["DRIVER_NAME"] !!!!!!!!! WARNING: NetFPGA 10G driver is experimental. Be advised. !!!!!!!!!\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling hal_driver_init()\n");
+	ROFL_ERR(DEFAULT, "["DRIVER_NAME"] !!!!!!!!! WARNING: NetFPGA 10G driver is experimental. Be advised. !!!!!!!!!\n");
 	
 	//If using ROFL-PIPELINE, the physical switch must be inited
 	if(physical_switch_init() != ROFL_SUCCESS)
@@ -46,13 +46,13 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 
 	//Discover platform ports;
 	if(netfpga_discover_ports() != ROFL_SUCCESS){
-		ROFL_ERR("["DRIVER_NAME"] Unable to discover physical ports!\n");
+		ROFL_ERR(DEFAULT, "["DRIVER_NAME"] Unable to discover physical ports!\n");
 		return HAL_FAILURE;	
 	}
 
 	//Init 10G NetFPGA
 	if(netfpga_init() != ROFL_SUCCESS){
-		ROFL_ERR("["DRIVER_NAME"] calling netfpga_init() failed!\n");
+		ROFL_ERR(DEFAULT, "["DRIVER_NAME"] calling netfpga_init() failed!\n");
 		//FIXME: Clear state and exit
 		return HAL_FAILURE;	
 	}
@@ -97,7 +97,7 @@ hal_result_t hal_driver_destroy(){
 
 	//Gently destroy (release) 10G NetFPGA
 	if(netfpga_destroy() != ROFL_SUCCESS){
-		ROFL_DEBUG("["DRIVER_NAME"] calling netfpga_destroy() failed!\n");
+		ROFL_DEBUG(DEFAULT, "["DRIVER_NAME"] calling netfpga_destroy() failed!\n");
 	}
 
 	//If using the pipeline you should call
@@ -106,7 +106,7 @@ hal_result_t hal_driver_destroy(){
 	//Destroy bufferpool
 	bufferpool::destroy();
 
-	ROFL_INFO("["DRIVER_NAME"] calling hal_driver_destroy()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling hal_driver_destroy()\n");
 	
 	return HAL_SUCCESS; 
 }
@@ -154,14 +154,14 @@ hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of
 	
 	//We only accept one logical switch in this driver
 	if(sw){
-		ROFL_ERR("["DRIVER_NAME"] ERROR: NetFPGA 10G driver only supports 1 logical switch! Exiting...\n");
+		ROFL_ERR(DEFAULT, "["DRIVER_NAME"] ERROR: NetFPGA 10G driver only supports 1 logical switch! Exiting...\n");
 		exit(EXIT_FAILURE);
 	}
 
-	ROFL_INFO("["DRIVER_NAME"] calling create switch. Name: %s\n",name);
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling create switch. Name: %s\n",name);
 
 	if(num_of_tables > 1){
-		ROFL_ERR("["DRIVER_NAME"] ERROR: NetFPGA 10G driver only supports 1 table! Exiting...\n");
+		ROFL_ERR(DEFAULT, "["DRIVER_NAME"] ERROR: NetFPGA 10G driver only supports 1 table! Exiting...\n");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -181,13 +181,13 @@ hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of
 
 	if(netfpga_attach_ports(sw) != ROFL_SUCCESS){
 		//Something went wrong. Abort all
-		ROFL_ERR("["DRIVER_NAME"] NetFPGA ports could NOT be discovered... I must abort execution...\n");
+		ROFL_ERR(DEFAULT, "["DRIVER_NAME"] NetFPGA ports could NOT be discovered... I must abort execution...\n");
 		exit(EXIT_FAILURE);
 		;
 	}
 
 	//Warn user
-	ROFL_ERR("["DRIVER_NAME"] All NetFPGA physical ports are attached (nf0..nf3). Subsequent calls to attach_port will be silently ignored...\n");
+	ROFL_ERR(DEFAULT, "["DRIVER_NAME"] All NetFPGA physical ports are attached (nf0..nf3). Subsequent calls to attach_port will be silently ignored...\n");
 	
 	return HAL_SUCCESS;
 }
@@ -206,7 +206,7 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 	if(sw->dpid != dpid)
 		return HAL_FAILURE;
 	
-	ROFL_INFO("["DRIVER_NAME"] calling destroy_switch_by_dpid()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling destroy_switch_by_dpid()\n");
 
 	//XXX: do something with the hw
 	
@@ -347,7 +347,7 @@ hal_result_t hal_driver_detach_port_from_switch_at_port_num(uint64_t dpid, const
 */
 hal_result_t hal_driver_bring_port_up(const char* name){
 
-	ROFL_INFO("["DRIVER_NAME"] calling enable_port()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling enable_port()\n");
 	
 	//FIXME: todo
 	
@@ -363,7 +363,7 @@ hal_result_t hal_driver_bring_port_up(const char* name){
 */
 hal_result_t hal_driver_bring_port_down(const char* name){
 
-	ROFL_INFO("["DRIVER_NAME"] calling disable_port()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling disable_port()\n");
 	
 	return HAL_SUCCESS;
 }
@@ -378,7 +378,7 @@ hal_result_t hal_driver_bring_port_down(const char* name){
 */
 hal_result_t hal_driver_bring_port_up_by_num(uint64_t dpid, unsigned int port_num){
 
-	ROFL_INFO("["DRIVER_NAME"] calling enable_port_by_num()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling enable_port_by_num()\n");
 	
 	//FIXME: todo
 	
@@ -396,7 +396,7 @@ hal_result_t hal_driver_bring_port_up_by_num(uint64_t dpid, unsigned int port_nu
 */
 hal_result_t hal_driver_bring_port_down_by_num(uint64_t dpid, unsigned int port_num){
 
-	ROFL_INFO("["DRIVER_NAME"] calling disable_port_by_num()\n");
+	ROFL_INFO(DEFAULT, "["DRIVER_NAME"] calling disable_port_by_num()\n");
 	
 	//FIXME: todo
 	

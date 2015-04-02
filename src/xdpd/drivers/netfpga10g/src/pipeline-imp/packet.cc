@@ -62,7 +62,7 @@ void platform_packet_set_queue(datapacket_t* pkt, uint32_t queue)
 
 void platform_packet_drop(datapacket_t* pkt)
 {
-	ROFL_DEBUG(DRIVER_NAME"[pkt] Dropping packet(%p)\n",pkt);
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"[pkt] Dropping packet(%p)\n",pkt);
 	
 	//Release buffer
 	bufferpool::release_buffer(pkt);
@@ -71,10 +71,10 @@ void platform_packet_drop(datapacket_t* pkt)
 
 static void output_single_packet(uint8_t* pack , pcap_t* pcap_fd, size_t size){
 
-	//ROFL_DEBUG("Writting to a socket \n");
+	//ROFL_DEBUG(DEFAULT, "Writting to a socket \n");
 
 	if (pcap_inject(pcap_fd, (const void*) pack ,  size)< 0) {
-		ROFL_DEBUG("Writting to a socket unsuccessful \n");
+		ROFL_DEBUG(DEFAULT, "Writting to a socket unsuccessful \n");
 		pcap_perror(pcap_fd, NULL);	
 		
 	}

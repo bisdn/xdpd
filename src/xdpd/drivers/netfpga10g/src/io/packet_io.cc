@@ -24,15 +24,15 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	packet = pcap_next(state->pcap_fd, &header);
 
 	if (header.len < 0) 
-		ROFL_DEBUG(" packet_io.cc Reading to a socket unsuccessful: %d",errno);
+		ROFL_DEBUG(DEFAULT, " packet_io.cc Reading to a socket unsuccessful: %d",errno);
 	
-	//ROFL_DEBUG(" in the buff %d \n",*buff);
-	//ROFL_DEBUG(" read size %d \n",header.len);
+	//ROFL_DEBUG(DEFAULT, " in the buff %d \n",*buff);
+	//ROFL_DEBUG(DEFAULT, " read size %d \n",header.len);
 
 	
 	pack->init((uint8_t*)packet, header.len, port->attached_sw, port->of_port_num, 0, true, false);
 
-	//ROFL_DEBUG(" packet_io.cc buffer %p \n",pack->get_buffer());
+	//ROFL_DEBUG(DEFAULT, " packet_io.cc buffer %p \n",pack->get_buffer());
 
 	of1x_switch_t* sw=(of1x_switch_t*)port->attached_sw;
 
@@ -44,7 +44,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	storage=((logical_switch_internals*)lsw->platform_state)->storage;
 
 	storeid storage_id=storage->store_packet(pkt);
-	//ROFL_DEBUG(" PACKET_IN storage ID %d for datapacket pkt %d dpid %d  \n", storage_id, pkt,sw->dpid);
+	//ROFL_DEBUG(DEFAULT, " PACKET_IN storage ID %d for datapacket pkt %d dpid %d  \n", storage_id, pkt,sw->dpid);
 
 	//Fill matches
 	fill_packet_matches(pkt, &matches);
@@ -62,10 +62,10 @@ void netpfga_io_read_from_port(switch_port_t* port){
 		&matches );
 
 
-	if ( HAL_FAILURE == r  ) ROFL_DEBUG(" packet_io.cc cmm packet_in unsuccessful");
-	if ( HAL_SUCCESS == r  ) ROFL_DEBUG(" \n packet_io.cc cmm packet_in successful \n");
+	if ( HAL_FAILURE == r  ) ROFL_DEBUG(DEFAULT, " packet_io.cc cmm packet_in unsuccessful");
+	if ( HAL_SUCCESS == r  ) ROFL_DEBUG(DEFAULT, " \n packet_io.cc cmm packet_in successful \n");
 
 
-	//ROFL_DEBUG(" packet_io.cc ENDS \n \n \n \n");
+	//ROFL_DEBUG(DEFAULT, " packet_io.cc ENDS \n \n \n \n");
 	
 }

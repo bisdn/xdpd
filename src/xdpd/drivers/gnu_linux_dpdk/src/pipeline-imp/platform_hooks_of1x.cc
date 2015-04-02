@@ -80,12 +80,12 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 
 rofl_result_t platform_pre_destroy_of1x_switch(of1x_switch_t* sw){
 
-	ROFL_DEBUG(DRIVER_NAME"Draining remaining PKT_INs for switch 0x%llx(%p)\n", (long long unsigned int)sw->dpid, sw);
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"Draining remaining PKT_INs for switch 0x%llx(%p)\n", (long long unsigned int)sw->dpid, sw);
 	
 	//Drain packet_ins (if any)
 	wait_pktin_draining((of_switch_t*)sw);
 	
-	ROFL_DEBUG(DRIVER_NAME"Remaining PKT_INs for switch 0x%llx(%p) drained!\n", (long long unsigned int)sw->dpid, sw);
+	ROFL_DEBUG(DEFAULT, DRIVER_NAME"Remaining PKT_INs for switch 0x%llx(%p) drained!\n", (long long unsigned int)sw->dpid, sw);
 
 	delete (datapacket_storage*)sw->platform_state;
 	return ROFL_SUCCESS;
@@ -125,11 +125,11 @@ void platform_of1x_packet_in(const of1x_switch_t* sw, uint8_t table_id, datapack
 	dpkt->pktin_send_len = send_len;
 	
 	if(unlikely(!detached_pkt)){
-		ROFL_DEBUG("Replicate packet(PKT_IN); could not clone pkt(%p). Dropping...\n");
+		ROFL_DEBUG(DEFAULT, "Replicate packet(PKT_IN); could not clone pkt(%p). Dropping...\n");
 		goto PKT_IN_ERROR;
 	}
 
-	ROFL_DEBUG("Trying to enqueue PKT_IN for packet(%p), switch %p\n", pkt, sw);
+	ROFL_DEBUG(DEFAULT, "Trying to enqueue PKT_IN for packet(%p), switch %p\n", pkt, sw);
 	
 	//Store in PKT_IN ring
 	if( unlikely( enqueue_pktin(detached_pkt) != ROFL_SUCCESS ) ){

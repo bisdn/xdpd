@@ -30,7 +30,7 @@ static void srvthread (){
 		handler.register_get_path("/index.html", boost::bind(controllers::index, _1, _2, _3));
 
 		//General information
-		handler.register_get_path("/info", boost::bind(controllers::general_info, _1, _2, _3));
+		handler.register_get_path("/system", boost::bind(controllers::system_info, _1, _2, _3));
 		handler.register_get_path("/plugins", boost::bind(controllers::list_plugins, _1, _2, _3));
 		handler.register_get_path("/matching-algorithms", boost::bind(controllers::list_matching_algorithms, _1, _2, _3));
 

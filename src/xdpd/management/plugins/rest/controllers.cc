@@ -48,7 +48,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<ul>" << std::endl;
 
 	//Info
-	html << "<li><b><a href=\"/info\">/info</a></b>: general system information" << std::endl;
+	html << "<li><b><a href=\"/system\">/system</a></b>: general system information" << std::endl;
 	html << "<li><b><a href=\"/plugins\">/plugins</a></b>: list of compiled-in plugins" << std::endl;
 	html << "<li><b><a href=\"/matching-algorithms\">/matching-algorithms</a></b>: list available OF table matching algorithms<br>" << std::endl;
 	html << "<li><b><a href=\"/ports\">/ports</a></b>: list of available ports" << std::endl;
@@ -80,7 +80,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 //
 // General information
 //
-void general_info(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+void system_info(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 
 	//Prepare object
 	json_spirit::Object xdpd_;

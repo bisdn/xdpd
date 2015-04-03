@@ -9,6 +9,7 @@ defaultsocket = DEFAULT_REST_IP+":"+str(DEFAULT_REST_PORT)
 GREETING="xDPd v"+str(VERSION)+" command line tool"
 
 try:
+	import os
 	import cmd
 	import sys
 	import getopt
@@ -28,7 +29,7 @@ def list_commands():
 	string=""
 	string+='   show info\t\t\t\t - Show general info of an xDPd instance\n'
 	string+= '   show matching-algorithms\t\t - Show available matching algorithms\n'
-	string+= '   show plugins\t\t - Show compiled-in plugs\n'
+	string+= '   show plugins\t\t\t\t - Show compiled-in plugs\n'
 	string+= '   show lsis\t\t\t\t - List the existing logical switch instances\n'
 	string+= '   show lsi <lsi_name>\t\t\t - Show LSI information\n'
 	string+= '   show lsi <lsi_name> table <num> flows - Show LSI table <num> flows\n'
@@ -94,10 +95,17 @@ def rest_get(socket, url):
 
 	try:
 		json = urllib.urlopen(complete_url).read()
+	except urllib.HTTPError as e:
+		print "ERROR("+str(e.code)+"): HTTP/GET '"+complete_url+"'"
+		if e.code == 404:
+			print e.read()
+		else:
+			print "Incomplete or malformed request"
+		raise
 	except Exception as e:
-		print "ERROR http get '"+complete_url+"':"
-		print "  "+str(e)
-		return ""
+		print "Unkown ERROR:  HTTP/GET '"+complete_url+"'"
+		print "  " + str(e)
+		raise
 
 	return json
 
@@ -149,6 +157,7 @@ class InteractivePrompt(cmd.Cmd):
 		self.prompt = XCLI + "("+self.curr+")>"
 		print GREETING
 		print ""
+		print "Entering in interactive mode..."
 		print "Using target '["+self.curr+"] "+self.sockets[self.curr]+"'"
 		print ""
 
@@ -177,7 +186,7 @@ class InteractivePrompt(cmd.Cmd):
 		]
 
 	def help_switch_target(self):
-		print "Switch to another xDPd target. Syntax: switch_target <name> <host:port>"
+		print "Switch to another xDPd instance (target). Syntax: switch_target <name> <host:port>"
 
 	def do_add_target(self,s=""):
 		if s == "":
@@ -186,22 +195,43 @@ class InteractivePrompt(cmd.Cmd):
 		target = s.split()[0]
 		socket = s.split()[1]
 		if target in self.sockets:
-			print "Warning: overwritting '"+target+"' target"
+			print "Warning: overwriting '"+target+"' target"
 		self.sockets[target] = socket
 
 	def help_add_target(self):
-		print "Add an xDPd target. Syntax: add_target <name> <host:port>"
+		print "Add an xDPd instance (target) to connect to. Syntax: add_target <name> <host:port>"
 
 	def do_targets(self,s=""):
 		for key in self.sockets:
 			print "["+key+"] "+self.sockets[key]
 
 	def help_targets(self):
-		print "Show xDPd instances(targets)"
+		print "List xDPd instances(targets)"
 
 	#Other useful stuff
 	def do_show(self,s=""):
-		print_less(execute(self.sockets[self.curr], "show "+s))
+		if s == "":
+			print "Missing arguments"
+			return
+
+		result=""
+		try:
+			result=execute(self.sockets[self.curr], "show "+s)
+		except:
+			return
+		print_less(result)
+
+	def complete_show(self, text, line, start_index, end_index):
+		show_cmds = ["system", "plugins", "matching-algorithms", "ports", "port", "lsis", "lsi"]
+
+		for cmd in show_cmds:
+			if cmd in line:
+				return []
+
+		return [
+			cmd for cmd in show_cmds
+			if cmd.startswith(text)
+		]
 
 	def help_show(self):
 		print "Retrieve information information from the xDPd instance"
@@ -210,6 +240,13 @@ class InteractivePrompt(cmd.Cmd):
 	def do_exit (self,s=""):
 		if confirm("that you want to exit"):
 			return True
+
+	def do_shell(self, s=""):
+		if not s=="":
+			print os.system(s)
+
+	def help_shell(self):
+		print "Execute a command in the OS shell; shell ls -la /"
 
 	#necessary for \n
 	def emptyline(self, s=""):
@@ -248,7 +285,12 @@ def main(argv):
 		c.cmdloop()
 		sys.exit()
 	else:
-		result = execute(socket, command)
+		try:
+			result = execute(socket, command)
+		except:
+			#We don't care about the exception but we must return
+			#the error
+			exit(1)
 
 		#Ignore if there was an error
 		if result == None or result == "":

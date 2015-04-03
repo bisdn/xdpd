@@ -48,7 +48,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<ul>" << std::endl;
 
 	//Info
-	html << "<li><b><a href=\"/info\">/info</a></b>: general system information" << std::endl;
+	html << "<li><b><a href=\"/system\">/system</a></b>: general system information" << std::endl;
 	html << "<li><b><a href=\"/plugins\">/plugins</a></b>: list of compiled-in plugins" << std::endl;
 	html << "<li><b><a href=\"/matching-algorithms\">/matching-algorithms</a></b>: list available OF table matching algorithms<br>" << std::endl;
 	html << "<li><b><a href=\"/ports\">/ports</a></b>: list of available ports" << std::endl;
@@ -80,7 +80,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 //
 // General information
 //
-void general_info(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+void system_info(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 
 	//Prepare object
 	json_spirit::Object xdpd_;
@@ -92,6 +92,7 @@ void general_info(const http::server::request &req, http::server::reply &rep, bo
 	info_.push_back(json_spirit::Pair("build", XDPD_BUILD));
 	info_.push_back(json_spirit::Pair("detailed-build", XDPD_DESCRIBE));
 	info_.push_back(json_spirit::Pair("driver-code-name", system_manager::get_driver_code_name()) );
+	info_.push_back(json_spirit::Pair("driver-extra-parameters", system_manager::get_driver_extra_params()) );
 
 	info_.push_back(json_spirit::Pair("plugins", get_plugin_list()) );
 
@@ -137,9 +138,11 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 
 	//Check if it exists;
 	if(!port_manager::exists(port_name)){
+		//Throw 404
 		std::stringstream ss;
-		ss << "Invalid port: "<<port_name;
+		ss<<"Invalid port '"<<port_name<<"'";
 		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
 		return;
 	}
 
@@ -148,18 +151,6 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 
 	//Fill it in
 	detail.push_back(json_spirit::Pair("name", port_name));
-	detail.push_back(json_spirit::Pair("is-vlink", port_manager::is_vlink(port_name)? "yes": "no"));
-
-	std::stringstream mac;
-	mac << snapshot.hw_address.str();
-	detail.push_back(json_spirit::Pair("mac-address", mac.str()));
-
-	detail.push_back(json_spirit::Pair("up", snapshot.up? "yes": "no"));
-	detail.push_back(json_spirit::Pair("forward-packets", snapshot.forward_packets? "yes": "no"));
-	detail.push_back(json_spirit::Pair("drop-received", snapshot.drop_received? "yes": "no"));
-	detail.push_back(json_spirit::Pair("no-flood", snapshot.no_flood? "yes": "no"));
-	detail.push_back(json_spirit::Pair("is-blacklisted", port_manager::is_blacklisted(port_name)?"yes":"no"));
-
 	std::string p_type;
 	switch(snapshot.type){
 		case PORT_TYPE_PHYSICAL: p_type = "physical";
@@ -178,7 +169,22 @@ void port_detail(const http::server::request &req, http::server::reply &rep, boo
 			break;
 	}
 	detail.push_back(json_spirit::Pair("type", p_type));
-	detail.push_back(json_spirit::Pair("link", snapshot.state&PORT_STATE_LINK_DOWN? "down": "up"));
+	detail.push_back(json_spirit::Pair("is-vlink", port_manager::is_vlink(port_name)? "yes": "no"));
+	if(port_manager::is_vlink(port_name))
+		detail.push_back(json_spirit::Pair("vlink-pair", port_manager::get_vlink_pair(port_name)));
+	std::stringstream mac;
+	mac << snapshot.hw_address.str();
+	detail.push_back(json_spirit::Pair("mac-address", mac.str()));
+
+	detail.push_back(json_spirit::Pair("up", snapshot.up? "yes": "no"));
+
+	detail.push_back(json_spirit::Pair("link", snapshot.state&PORT_STATE_LINK_DOWN? "down": "detected"));
+
+	detail.push_back(json_spirit::Pair("forward-packets", snapshot.forward_packets? "yes": "no"));
+	detail.push_back(json_spirit::Pair("drop-received", snapshot.drop_received? "yes": "no"));
+	detail.push_back(json_spirit::Pair("no-flood", snapshot.no_flood? "yes": "no"));
+	detail.push_back(json_spirit::Pair("is-blacklisted", port_manager::is_blacklisted(port_name)?"yes":"no"));
+
 
 	//Stats
 	json_spirit::Object stats;
@@ -270,9 +276,11 @@ void lsi_detail(const http::server::request &req,
 
 	//Check if it exists;
 	if(!switch_manager::exists_by_name(lsi_name)){
+		//Throw 404
 		std::stringstream ss;
-		ss << "Invalid lsi: "<<lsi_name;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
 		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
 		return;
 	}
 
@@ -373,9 +381,11 @@ void lsi_table_flows(const http::server::request &req,
 
 	//Check if it exists;
 	if(!switch_manager::exists_by_name(lsi_name)){
+		//Throw 404
 		std::stringstream ss;
-		ss << "Invalid lsi: "<<lsi_name;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
 		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
 		return;
 	}
 
@@ -390,9 +400,11 @@ void lsi_table_flows(const http::server::request &req,
 
 	//Check if table id is valid
 	if(snapshot.num_of_tables <= id){
+		//Throw 404
 		std::stringstream ss;
-		ss << "Invalid table id: "<< id << " for lsi: "<< lsi_name <<". Valid tables: 0-"<<snapshot.num_of_tables-1;
+		ss << "Invalid table id: '"<< id << "' for lsi: '"<< lsi_name <<"'. Valid tables: 0-"<<snapshot.num_of_tables-1;
 		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
 		return;
 	}
 
@@ -425,9 +437,11 @@ void lsi_groups(const http::server::request &req,
 
 	//Check if it exists;
 	if(!switch_manager::exists_by_name(lsi_name)){
+		//Throw 404
 		std::stringstream ss;
-		ss << "Invalid lsi: "<<lsi_name;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
 		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
 		return;
 	}
 

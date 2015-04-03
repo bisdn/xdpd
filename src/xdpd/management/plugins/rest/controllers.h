@@ -19,7 +19,7 @@ namespace controllers{
 	/**
 	* general info
 	*/
-	void general_info(const http::server::request &, http::server::reply &, boost::cmatch&);
+	void system_info(const http::server::request &, http::server::reply &, boost::cmatch&);
 	void list_plugins(const http::server::request &, http::server::reply &, boost::cmatch&);
 	void list_matching_algorithms(const http::server::request &, http::server::reply &, boost::cmatch&);
 

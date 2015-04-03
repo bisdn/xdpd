@@ -110,7 +110,7 @@ Output:
 	    "no-flood" : "no",
 	    "is-blacklisted" : "no",
 	    "type" : "physical",
-	    "link" : "up",
+	    "link" : "detected",
 	    "statistics" : {
 		"rx_packets" : 6672,
 		"tx_packets" : 6669,

@@ -40,8 +40,10 @@ def list_show_commands():
 
 def list_do_commands():
 	string="\nSubcommands:\n\n"
-	string+='   do port <port_name> up\t\t\t - Bring the port administratively up\n'
-	string+='   do port <port_name> down\t\t\t - Bring the port administratively up\n'
+	string+='   do port <port_name> up\t\t\t - Bring port administratively up\n'
+	string+='   do port <port_name> down\t\t\t - Bring port administratively up\n'
+	string+='   do attach port <port_name> <lsi_name>\t - Attach port to a logical switch instance\n'
+	string+='   do detach port <port_name> <lsi_name>\t - Detach port from a logical switch instance\n'
 	return string
 
 def usage():
@@ -120,8 +122,9 @@ def rest_get(socket, url):
 def rest_post(socket, url, payload):
 	complete_url = "http://"+socket+url
 
+	json = ""
 	try:
-		h = urllib.urlopen(complete_url, payload)
+		json = urllib.urlopen(complete_url, payload)
 	except urllib.HTTPError as e:
 		print "ERROR("+str(e.code)+"): HTTP/POST '"+complete_url+"'"
 		if e.code == 401:
@@ -135,6 +138,7 @@ def rest_post(socket, url, payload):
 		print "Unkown ERROR:  HTTP/POST '"+complete_url+"'"
 		print "  " + str(e)
 		raise
+	return json.read()
 
 def compose_url(url_array):
 	#Compose the url
@@ -290,15 +294,18 @@ class InteractivePrompt(cmd.Cmd):
 			print e
 			return
 
-	def complete_do(self, text, line, start_index, end_index):
-		do_cmds = ["port"]
+		if not result == "":
+			print_less(result)
 
-		for cmd in show_cmds:
+	def complete_do(self, text, line, start_index, end_index):
+		do_cmds = ["port", "attach", "detach"]
+
+		for cmd in do_cmds:
 			if cmd in line:
 				return []
 
 		return [
-			cmd for cmd in show_cmds
+			cmd for cmd in do_cmds
 			if cmd.startswith(text)
 		]
 

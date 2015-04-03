@@ -314,8 +314,7 @@ class InteractivePrompt(cmd.Cmd):
 			return
 		try:
 			result=execute(self.sockets[self.curr], "exec "+s, True)
-		except Exception as e:
-			print e
+		except:
 			return
 
 		if not result == "":

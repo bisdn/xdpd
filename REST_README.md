@@ -30,7 +30,7 @@ Requirements
 
 - Boost 2.54 or higher, boost-threads, boost-regex and boost-system. It is recommended to install all the boost libraries.
 
-- Common python packages: cmd, getopt and urllib/urllib2
+- Common python packages: cmd, getopt, curses and urllib/urllib2
 
 How to build
 ============

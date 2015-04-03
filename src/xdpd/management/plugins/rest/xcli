@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
-
+#Constants
 XCLI="xcli"
 VERSION=0.7
 DEFAULT_REST_IP="127.0.0.1"
 DEFAULT_REST_PORT=5757
 defaultsocket = DEFAULT_REST_IP+":"+str(DEFAULT_REST_PORT)
 GREETING="xDPd v"+str(VERSION)+" command line tool"
+
+#REST API prefixes
+REST_INFO_PREFIX="info"
+REST_MGMT_PREFIX="mgmt"
 
 try:
 	import os
@@ -172,6 +176,9 @@ def execute(socket, command, req_confirm=False):
 			print "Invalid command: '"+command+"'. No arguments given to operation '"+op+"'"
 			return
 
+		#Add prefix for the info URLS
+		stripped = [REST_INFO_PREFIX] + stripped
+
 		return rest(socket, compose_url(stripped))
 	elif op == "exec":
 		#Confirm
@@ -189,6 +196,9 @@ def execute(socket, command, req_confirm=False):
 		if len(stripped) == 0:
 			print "Invalid command: '"+command+"'. No arguments given to operation '"+op+"'"
 			return
+
+		#Add prefix for the mgmt URLS
+		stripped = [REST_MGMT_PREFIX] + stripped
 
 		#Execute the request
 		if "create" in command:

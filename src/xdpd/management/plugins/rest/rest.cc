@@ -69,39 +69,39 @@ static void srvthread (){
 		handler.register_get_path("/index.html", boost::bind(controllers::get::index, _1, _2, _3));
 
 		//General information
-		handler.register_get_path("/system", boost::bind(controllers::get::system_info, _1, _2, _3));
-		handler.register_get_path("/plugins", boost::bind(controllers::get::list_plugins, _1, _2, _3));
-		handler.register_get_path("/matching-algorithms", boost::bind(controllers::get::list_matching_algorithms, _1, _2, _3));
+		handler.register_get_path("/info/system", boost::bind(controllers::get::system_info, _1, _2, _3));
+		handler.register_get_path("/info/plugins", boost::bind(controllers::get::list_plugins, _1, _2, _3));
+		handler.register_get_path("/info/matching-algorithms", boost::bind(controllers::get::list_matching_algorithms, _1, _2, _3));
 
 		//Ports
-		handler.register_get_path("/ports", boost::bind(controllers::get::list_ports, _1, _2, _3));
-		handler.register_get_path("/port/(\\w+)", boost::bind(controllers::get::port_detail, _1, _2, _3));
+		handler.register_get_path("/info/ports", boost::bind(controllers::get::list_ports, _1, _2, _3));
+		handler.register_get_path("/info/port/(\\w+)", boost::bind(controllers::get::port_detail, _1, _2, _3));
 
-		handler.register_get_path("/lsis", boost::bind(controllers::get::list_lsis, _1, _2, _3));
-		handler.register_get_path("/lsi/(\\w+)", boost::bind(controllers::get::lsi_detail, _1, _2, _3));
-		handler.register_get_path("/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(controllers::get::lsi_table_flows, _1, _2, _3));
-		handler.register_get_path("/lsi/(\\w+)/group-table", boost::bind(controllers::get::lsi_groups, _1, _2, _3));
+		handler.register_get_path("/info/lsis", boost::bind(controllers::get::list_lsis, _1, _2, _3));
+		handler.register_get_path("/info/lsi/(\\w+)", boost::bind(controllers::get::lsi_detail, _1, _2, _3));
+		handler.register_get_path("/info/lsi/(\\w+)/table/([0-9]+)/flows", boost::bind(controllers::get::lsi_table_flows, _1, _2, _3));
+		handler.register_get_path("/info/lsi/(\\w+)/group-table", boost::bind(controllers::get::lsi_groups, _1, _2, _3));
 
 		//
 		// POST
 		//
-		handler.register_post_path("/", boost::bind(controllers::mgmt_enabled, _1, _2, _3));
+		handler.register_post_path("/mgmt/", boost::bind(controllers::mgmt_enabled, _1, _2, _3));
 
 		//Ports
-		handler.register_post_path("/port/(\\w+)/up", boost::bind(controllers::post::port_up, _1, _2, _3));
-		handler.register_post_path("/port/(\\w+)/down", boost::bind(controllers::post::port_down, _1, _2, _3));
-		handler.register_post_path("/attach/port/(\\w+)/(\\w+)", boost::bind(controllers::post::attach_port, _1, _2, _3));
-		handler.register_post_path("/detach/port/(\\w+)/(\\w+)", boost::bind(controllers::post::detach_port, _1, _2, _3));
+		handler.register_post_path("/mgmt/port/(\\w+)/up", boost::bind(controllers::post::port_up, _1, _2, _3));
+		handler.register_post_path("/mgmt/port/(\\w+)/down", boost::bind(controllers::post::port_down, _1, _2, _3));
+		handler.register_post_path("/mgmt/attach/port/(\\w+)/(\\w+)", boost::bind(controllers::post::attach_port, _1, _2, _3));
+		handler.register_post_path("/mgmt/detach/port/(\\w+)/(\\w+)", boost::bind(controllers::post::detach_port, _1, _2, _3));
 
 		//
 		// PUT
 		//
-		handler.register_put_path("/create/vlink/(\\w+)/(\\w+)", boost::bind(controllers::put::create_vlink, _1, _2, _3));
+		handler.register_put_path("/mgmt/create/vlink/(\\w+)/(\\w+)", boost::bind(controllers::put::create_vlink, _1, _2, _3));
 
 		//
 		//DELETE
 		//
-		handler.register_delete_path("/destroy/lsi/(\\w+)", boost::bind(controllers::delete_::destroy_switch, _1, _2, _3));
+		handler.register_delete_path("/mgmt/destroy/lsi/(\\w+)", boost::bind(controllers::delete_::destroy_switch, _1, _2, _3));
 
 		//Recover host and port
 		parse_bind_addr(host, port);

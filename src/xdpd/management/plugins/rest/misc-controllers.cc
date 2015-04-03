@@ -47,25 +47,25 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<ul>" << std::endl;
 
 	//GET
-	html << "<li><b><a href=\"/system\">/system</a></b>: general system information" << std::endl;
-	html << "<li><b><a href=\"/plugins\">/plugins</a></b>: list of compiled-in plugins" << std::endl;
-	html << "<li><b><a href=\"/matching-algorithms\">/matching-algorithms</a></b>: list available OF table matching algorithms<br>" << std::endl;
-	html << "<li><b><a href=\"/ports\">/ports</a></b>: list of available ports" << std::endl;
-	html << "<li><b>/port/&lt;port_name&gt;</b>: show port information<br>" << std::endl;
-	html << "<li><b><a href=\"/lsis\">/lsis</a></b>: list of logical switch instances(LSIs)" << std::endl;
-	html << "<li><b>/lsi/&lt;lsi_name&gt</b>: show logical switch instance(LSI) information" << std::endl;
-	html << "<li><b>/lsi/&lt;lsi_name&gt/table/&lt;num&gt/flows</b>: list LSI table flow entries" << std::endl;
-	html << "<li><b>/lsi/&lt;lsi_name&gt/group-table</b>: list LSI group table entries" << std::endl;
+	html << "<li><b><a href=\"/info/system\">/info/system</a></b>: general system information" << std::endl;
+	html << "<li><b><a href=\"/info/plugins\">/info/plugins</a></b>: list of compiled-in plugins" << std::endl;
+	html << "<li><b><a href=\"/info/matching-algorithms\">/info/matching-algorithms</a></b>: list available OF table matching algorithms<br>" << std::endl;
+	html << "<li><b><a href=\"/info/ports\">/info/ports</a></b>: list of available ports" << std::endl;
+	html << "<li><b>/info/port/&lt;port_name&gt;</b>: show port information<br>" << std::endl;
+	html << "<li><b><a href=\"/info/lsis\">/info/lsis</a></b>: list of logical switch instances(LSIs)" << std::endl;
+	html << "<li><b>/info/lsi/&lt;lsi_name&gt</b>: show logical switch instance(LSI) information" << std::endl;
+	html << "<li><b>/info/lsi/&lt;lsi_name&gt/table/&lt;num&gt/flows</b>: list LSI table flow entries" << std::endl;
+	html << "<li><b>/info/lsi/&lt;lsi_name&gt/group-table</b>: list LSI group table entries" << std::endl;
 	html << "</ul>" << std::endl;
 
 	//POST
 	html << "<h3 "<< mgmt_class <<">POST</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
-	html << "<li><b>/port/&lt;lsi_name&gt/up</b>: bring port administratively up" << std::endl;
-	html << "<li><b>/port/&lt;lsi_name&gt/down</b>: bring port administratively down" << std::endl;
-	html << "<li><b>/attach/port/&lt;port_name&gt/&lt;lsi_name&gt</b>: attach a port to an LSI" << std::endl;
-	html << "<li><b>/detach/port/&lt;port_name&gt/&lt;lsi_name&gt</b>: detach a port from an LSI" << std::endl;
+	html << "<li><b>/mgmt/port/&lt;lsi_name&gt/up</b>: bring port administratively up" << std::endl;
+	html << "<li><b>/mgmt/port/&lt;lsi_name&gt/down</b>: bring port administratively down" << std::endl;
+	html << "<li><b>/mgmt/attach/port/&lt;port_name&gt/&lt;lsi_name&gt</b>: attach a port to an LSI" << std::endl;
+	html << "<li><b>/mgmt/detach/port/&lt;port_name&gt/&lt;lsi_name&gt</b>: detach a port from an LSI" << std::endl;
 
 	html << "</ul>" << std::endl;
 
@@ -73,7 +73,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<h3 "<< mgmt_class << ">PUT</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
-	html << "<li><b>/create/vlink/&lt;lsi1_name&gt/&lt;lsi2_name&gt</b>: create a virtual link between two LSIs" << std::endl;
+	html << "<li><b>/mgmt/create/vlink/&lt;lsi1_name&gt/&lt;lsi2_name&gt</b>: create a virtual link between two LSIs" << std::endl;
 
 	html << "</ul>" << std::endl;
 
@@ -81,7 +81,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<h3 "<< mgmt_class << ">DELETE</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
-	html << "<li><b>/destroy/lsi/&lt;lsi_name&gt</b>: destroy an LSIs" << std::endl;
+	html << "<li><b>/mgmt/destroy/lsi/&lt;lsi_name&gt</b>: destroy an LSIs" << std::endl;
 
 	html << "</ul>" << std::endl;
 

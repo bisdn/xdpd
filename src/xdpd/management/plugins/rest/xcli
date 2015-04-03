@@ -250,6 +250,10 @@ class InteractivePrompt(cmd.Cmd):
 	# Retrive information
 	#
 	def do_show(self,s=""):
+		if s == "":
+			print "Missing arguments"
+			return
+
 		result=""
 		try:
 			result=execute(self.sockets[self.curr], "show "+s)

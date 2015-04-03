@@ -44,6 +44,7 @@ def list_exec_commands():
 	string+='   exec port <port_name> down\t\t\t - Bring port administratively up\n'
 	string+='   exec attach port <port_name> <lsi_name>\t - Attach port to a logical switch instance\n'
 	string+='   exec detach port <port_name> <lsi_name>\t - Detach port from a logical switch instance\n'
+	string+='   exec create vlink <lsi1_name> <lsi2_name>\t - Create a virtua link between two logical switch instances\n'
 	return string
 
 def usage():
@@ -100,33 +101,17 @@ def print_less(msg):
 #
 # REST
 #
-def rest_get(socket, url):
+def rest(socket, url, payload="", method="GET"):
 	complete_url = "http://"+socket+url
 
+	url = ""
 	try:
-		json = urllib.urlopen(complete_url).read()
+		opener = urllib.build_opener(urllib.HTTPHandler)
+		request = urllib.Request(complete_url, payload)
+		request.get_method = lambda: method
+		url = opener.open(request)
 	except urllib.HTTPError as e:
-		print "ERROR("+str(e.code)+"): HTTP/GET '"+complete_url+"'"
-		if e.code == 404:
-			print e.read()
-		else:
-			print "Incomplete or malformed request"
-		raise
-	except Exception as e:
-		print "Unkown ERROR:  HTTP/GET '"+complete_url+"'"
-		print "  " + str(e)
-		raise
-
-	return json
-
-def rest_post(socket, url, payload):
-	complete_url = "http://"+socket+url
-
-	json = ""
-	try:
-		json = urllib.urlopen(complete_url, payload)
-	except urllib.HTTPError as e:
-		print "ERROR("+str(e.code)+"): HTTP/POST '"+complete_url+"'"
+		print "ERROR("+str(e.code)+"): HTTP/"+method+" '"+complete_url+"'"
 		if e.code == 401:
 			print "Unauthorised; is mgmt support enabled (-m)?"
 		elif e.code == 404:
@@ -135,10 +120,11 @@ def rest_post(socket, url, payload):
 			print "Incomplete or malformed request"
 		raise
 	except Exception as e:
-		print "Unkown ERROR:  HTTP/POST '"+complete_url+"'"
+		print "Unkown ERROR:  HTTP/"+method+" '"+complete_url+"'"
 		print "  " + str(e)
 		raise
-	return json.read()
+	return url.read()
+
 
 def compose_url(url_array):
 	#Compose the url
@@ -168,7 +154,7 @@ def execute(socket, command, req_confirm=False):
 			print "Invalid command: '"+command+"'. No arguments given to operation '"+op+"'"
 			return
 
-		return rest_get(socket, compose_url(stripped))
+		return rest(socket, compose_url(stripped))
 	elif op == "exec":
 		#Confirm
 		if req_confirm:
@@ -185,7 +171,15 @@ def execute(socket, command, req_confirm=False):
 			print "Invalid command: '"+command+"'. No arguments given to operation '"+op+"'"
 			return
 
-		return rest_post(socket, compose_url(stripped), "")
+		#Execute the request
+		if "create" in command:
+			#TODO parse data
+			data = ""
+			return rest(socket, compose_url(stripped), data, "PUT")
+		elif "destroy" in command:
+			pass
+		else:
+			return rest(socket, compose_url(stripped), "", "POST")
 	else:
 		print "Unknown op: '"+op+"'"
 		return
@@ -298,7 +292,7 @@ class InteractivePrompt(cmd.Cmd):
 			print_less(result)
 
 	def complete_exec(self, text, line, start_index, end_index):
-		exec_cmds = ["port", "attach", "detach"]
+		exec_cmds = ["port", "attach", "detach", "create"]
 
 		for cmd in exec_cmds:
 			if cmd in line:

@@ -10,6 +10,7 @@
 #include "json_spirit/json_spirit.h"
 
 #include "get-controllers.h"
+#include "post-controllers.h"
 
 #include <rofl/common/utils/c_logger.h>
 
@@ -28,13 +29,22 @@ namespace get{
 void index(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 	std::stringstream html;
 
+	bool mgmt_enabled = post::authorised(req,rep);
+	std::string mgmt_class = mgmt_enabled? "class='enabled'":"class='disabled'";
 	html << "<html>" << std::endl;
 	html << "<head>" << std::endl;
 	html << "<title> xDPd's REST APIs</title>" << std::endl;
+	html << "<style> .enabled{color:green} .disabled{color:red}</style>" << std::endl;
 	html << "</head>" << std::endl;
 	html << "<body>" << std::endl;
 	html << "<h1>xDPd's REST APIs</h1><br>" << std::endl;
-	html << "<h3>GET</h3>" << std::endl;
+	std::stringstream mgmt;
+	if(mgmt_enabled)
+		mgmt << "<b "<< mgmt_class <<">enabled</b>";
+	else
+		mgmt << "<b "<< mgmt_class <<">disabled</b>";
+	html << "Management APIs status (-m): " <<  mgmt.str() << "<br>" << std::endl;
+	html << "<h3 class='enabled'>GET</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
 	//Info
@@ -49,18 +59,20 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<li><b>/lsi/&lt;lsi_name&gt/group-table</b>: list LSI group table entries" << std::endl;
 	html << "</ul>" << std::endl;
 
-	html << "<h3>POST</h3>" << std::endl;
+	html << "<h3 "<< mgmt_class <<">POST</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
 	html << "<li><b>/port/&lt;lsi_name&gt/up</b>: bring port administratively up" << std::endl;
 	html << "<li><b>/port/&lt;lsi_name&gt/down</b>: bring port administratively down" << std::endl;
+	html << "<li><b>/attach/port/&lt;port_name&gt/&lt;lsi_name&gt</b>: attach a port to an LSI" << std::endl;
+	html << "<li><b>/detach/port/&lt;port_name&gt/&lt;lsi_name&gt</b>: detach a port from an LSI" << std::endl;
 
 	html << "</ul>" << std::endl;
 
-	html << "<h3>PUT</h3><br>" << std::endl;
+	html << "<h3 "<< mgmt_class << ">PUT</h3><br>" << std::endl;
 	html << "None<br><br>" << std::endl;
 
-	html << "<h3>DELETE</h3><br>" << std::endl;
+	html << "<h3 "<< mgmt_class << ">DELETE</h3><br>" << std::endl;
 	html << "None<br><br>" << std::endl;
 
 	html << "</body>" << std::endl;

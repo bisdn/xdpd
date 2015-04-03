@@ -19,6 +19,7 @@ v0.6.0
 
 [+][CMM] Added NF port manager extensions
 [B][CMM] Set cookie field in Packet-In messages based on flow entry
+[B][CMM] Prevent two LSIs to have the same name
 
 [+][drivers] Adapted to the new extensions-enabled HAL API
 

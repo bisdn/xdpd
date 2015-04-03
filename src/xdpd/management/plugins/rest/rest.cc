@@ -21,13 +21,42 @@
 
 namespace xdpd{
 
+const std::string rest::BIND_ADDR_OPT_FULL_NAME="bind-rest";
 const std::string rest::MGMT_OPT_FULL_NAME="mgmt-rest";
 const std::string rest::name="rest";
 
-#define XDPD_REST_PORT "5757"
+
+class eInvalidBindAddrRest : public rofl::RoflException {};
+
+static void parse_bind_addr(std::string& host, std::string& port){
+
+	if(!system_manager::is_option_set(std::string(rest::BIND_ADDR_OPT_FULL_NAME)))
+		return;
+
+	std::string tmp = system_manager::get_option_value(std::string(rest::BIND_ADDR_OPT_FULL_NAME));
+
+	//Check if : char is there
+	if(tmp.find(std::string(":")) == std::string::npos){
+		//TODO: use CRIT
+		fprintf(stderr, "[xdpd][rest] CRITICAL ERROR: could not parse bind address '%s'. REST server cannot be started.\n", tmp.c_str());
+		throw eInvalidBindAddrRest();
+	}
+
+	//Split the string and recover the parameters
+	std::string r;
+	std::istringstream ss_(tmp);
+
+	//Recover parameter
+	std::getline(ss_, r, ':');
+	host = r;
+	std::getline(ss_, r, ':');
+	port = r;
+}
 
 static void srvthread (){
 	boost::asio::io_service io_service;
+	std::string host="0.0.0.0";
+	std::string port="5757";
 
 	try{
 		http::server::rest_handler handler;
@@ -74,13 +103,37 @@ static void srvthread (){
 		//
 		handler.register_delete_path("/destroy/lsi/(\\w+)", boost::bind(controllers::delete_::destroy_switch, _1, _2, _3));
 
-		http::server::server(io_service, "0.0.0.0", XDPD_REST_PORT, handler)();
+		//Recover host and port
+		parse_bind_addr(host, port);
+
+		http::server::server(io_service, host, port, handler)();
 		boost::asio::signal_set signals(io_service);
 		signals.async_wait(boost::bind(&boost::asio::io_service::stop, &io_service));
 
 		io_service.run();
 	}catch(boost::thread_interrupted&){
 		ROFL_INFO("[xdpd][rest] REST Server shutting down\n");
+		return;
+	}catch(eInvalidBindAddrRest& e){
+		//Already logged
+	}catch(...){
+		//TODO: we could try to re_load ourselves
+
+		//Recover plugin
+		rest* rest_plugin = (rest*)plugin_manager::get_plugin_by_name(rest::name);
+		std::string mgmt_enabled = "unknown";
+		if(!rest_plugin){
+			assert(0);
+		}else{
+			if(!rest_plugin->is_mgmt_enabled())
+				mgmt_enabled = "no";
+			else
+				mgmt_enabled = "yes";
+		}
+
+		//TODO use CRIT
+		fprintf(stderr, "[xdpd][rest] CRITICAL ERROR: the REST server thrown an uncatched error and will be shutdown. \n"
+			  "[xdpd][rest] parameters {bind-address: '%s:%s', management enabled: '%s'}\n", host.c_str(), port.c_str(), mgmt_enabled.c_str());
 		return;
 	}
 }
@@ -95,6 +148,7 @@ void rest::init(){
 		ROFL_INFO("[xdpd][rest] Enabling mgmt routines (write mode)\n");
 		ROFL_WARN("[xdpd][rest] WARNING: please note that REST plugin does not provide authentication nor encryption services yet (HTTPs).\n");
 	}
+
 	t = boost::thread(&srvthread);
 }
 

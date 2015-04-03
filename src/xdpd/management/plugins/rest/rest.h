@@ -1,5 +1,5 @@
 #ifndef REST_PLUGIN_H
-#define REST_PLUGIN_H 
+#define REST_PLUGIN_H
 
 #include <string>
 #include <boost/thread.hpp>
@@ -33,7 +33,7 @@ public:
 		//Add mandatory optiona argument -m to enable management
 		//routines
 		vec.push_back(rofl::coption(true, NO_ARGUMENT, MGMT_OPT_CODE,  MGMT_OPT_FULL_NAME, "Enable REST management routines (write mode)",""));
-		//vec.push_back(rofl::coption(true, NO_ARGUMENT, MGMT_OPT_CODE,  MGMT_OPT_FULL_NAME, "Enable REST management routines (write mode)",""));
+		vec.push_back(rofl::coption(true, REQUIRED_ARGUMENT, BIND_ADDR_OPT_CODE,  BIND_ADDR_OPT_FULL_NAME, "REST server bind address 'ip:port'","0.0.0.0:5757"));
 		return vec;
 	};
 
@@ -47,14 +47,17 @@ public:
 
 	//Plugin name
 	static const std::string name;
+	static const std::string MGMT_OPT_FULL_NAME;
+	static const std::string BIND_ADDR_OPT_FULL_NAME;
+	static const char MGMT_OPT_CODE = 'm';
+	static const char BIND_ADDR_OPT_CODE = 'b';
+
 private:
 	boost::thread t;
-	static const std::string MGMT_OPT_FULL_NAME;
-	static const char MGMT_OPT_CODE = 'm';
 	bool mgmt_enabled;
 };
 
-}// namespace xdpd 
+}// namespace xdpd
 
 #endif /* REST_PLUGIN_H_ */
 

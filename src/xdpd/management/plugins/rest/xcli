@@ -44,7 +44,8 @@ def list_exec_commands():
 	string+='   exec port <port_name> down\t\t\t - Bring port administratively up\n'
 	string+='   exec attach port <port_name> <lsi_name>\t - Attach port to a logical switch instance\n'
 	string+='   exec detach port <port_name> <lsi_name>\t - Detach port from a logical switch instance\n'
-	string+='   exec create vlink <lsi1_name> <lsi2_name>\t - Create a virtua link between two logical switch instances\n'
+	string+='   exec destroy lsi <lsi_name> \t\t\t - Destroy a logical switch instance\n'
+	string+='   exec create vlink <lsi1_name> <lsi2_name>\t - Create a virtual link between two logical switch instances\n'
 	return string
 
 def usage():
@@ -177,7 +178,8 @@ def execute(socket, command, req_confirm=False):
 			data = ""
 			return rest(socket, compose_url(stripped), data, "PUT")
 		elif "destroy" in command:
-			pass
+			data = ""
+			return rest(socket, compose_url(stripped), data, "DELETE")
 		else:
 			return rest(socket, compose_url(stripped), "", "POST")
 	else:
@@ -292,7 +294,7 @@ class InteractivePrompt(cmd.Cmd):
 			print_less(result)
 
 	def complete_exec(self, text, line, start_index, end_index):
-		exec_cmds = ["port", "attach", "detach", "create"]
+		exec_cmds = ["port", "attach", "detach", "create", "destroy"]
 
 		for cmd in exec_cmds:
 			if cmd in line:

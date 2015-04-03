@@ -216,6 +216,113 @@ void port_down(const http::server::request &req, http::server::reply &rep, boost
 	}
 }
 
+void attach_port(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+
+	unsigned int port_num=0;
+	port_snapshot snapshot;
+
+	//Perform security checks
+	if(!authorised(req,rep)) return;
+
+	std::string port_name = std::string(grps[1]);
+	std::string lsi_name = std::string(grps[2]);
+
+	//Check if port exists;
+	if(!port_manager::exists(port_name)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid port '"<<port_name<<"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+
+	//Check if LSI exists;
+	if(!switch_manager::exists_by_name(lsi_name)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+
+	//Get dpid
+	uint64_t dpid = switch_manager::get_switch_dpid(lsi_name);
+
+	//TODO add support to specify the port num
+
+	//Attach
+	try{
+		port_manager::attach_port_to_switch(dpid, port_name, &port_num);
+	}catch(...){
+		//Something went wrong
+		std::stringstream ss;
+		ss<<"Unable to attach port'"<<port_name<<"' to lsi '"+lsi_name+"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::internal_server_error;
+		return;
+	}
+
+	//Prepare response
+	json_spirit::Object response;
+	json_spirit::Object lsi;
+	json_spirit::Object ports;
+
+	std::stringstream ss;
+	ss << port_num;
+	ports.push_back(json_spirit::Pair(ss.str(), port_name));
+	lsi.push_back(json_spirit::Pair("attached-ports", ports));
+	response.push_back(json_spirit::Pair(lsi_name, lsi));
+
+	rep.content = json_spirit::write(response, true);
+}
+
+void detach_port(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+
+	//Perform security checks
+	if(!authorised(req,rep)) return;
+
+	std::string port_name = std::string(grps[1]);
+	std::string lsi_name = std::string(grps[2]);
+
+	//Check if port exists;
+	if(!port_manager::exists(port_name)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid port '"<<port_name<<"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+
+	//Check if LSI exists;
+	if(!switch_manager::exists_by_name(lsi_name)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+
+	//Get dpid
+	uint64_t dpid = switch_manager::get_switch_dpid(lsi_name);
+
+	//Attach
+	try{
+		port_manager::detach_port_from_switch(dpid, port_name);
+	}catch(...){
+		//Something went wrong
+		std::stringstream ss;
+		ss<<"Unable to detach port'"<<port_name<<"' from lsi '"+lsi_name+"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::internal_server_error;
+		return;
+	}
+
+}
+
 } //namespace post
 } //namespace controllers
 } //namespace xdpd

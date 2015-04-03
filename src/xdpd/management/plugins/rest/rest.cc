@@ -59,6 +59,8 @@ static void srvthread (){
 		//Ports
 		handler.register_post_path("/port/(\\w+)/up", boost::bind(controllers::post::port_up, _1, _2, _3));
 		handler.register_post_path("/port/(\\w+)/down", boost::bind(controllers::post::port_down, _1, _2, _3));
+		handler.register_post_path("/attach/port/(\\w+)/(\\w+)", boost::bind(controllers::post::attach_port, _1, _2, _3));
+		handler.register_post_path("/detach/port/(\\w+)/(\\w+)", boost::bind(controllers::post::detach_port, _1, _2, _3));
 
 		http::server::server(io_service, "0.0.0.0", XDPD_REST_PORT, handler)();
 		boost::asio::signal_set signals(io_service);

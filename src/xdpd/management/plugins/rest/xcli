@@ -125,7 +125,7 @@ def rest_post(socket, url, payload):
 	except urllib.HTTPError as e:
 		print "ERROR("+str(e.code)+"): HTTP/POST '"+complete_url+"'"
 		if e.code == 401:
-			print "Unauthorised; is POST support enabled?"
+			print "Unauthorised; is mgmt support enabled (-m)?"
 		elif e.code == 404:
 			print e.read()
 		else:

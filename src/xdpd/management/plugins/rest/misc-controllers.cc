@@ -10,7 +10,6 @@
 #include "json_spirit/json_spirit.h"
 
 #include "get-controllers.h"
-#include "post-controllers.h"
 
 #include <rofl/common/utils/c_logger.h>
 
@@ -29,7 +28,7 @@ namespace get{
 void index(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 	std::stringstream html;
 
-	bool mgmt_enabled = post::authorised(req,rep);
+	bool mgmt_enabled = authorised(req,rep);
 	std::string mgmt_class = mgmt_enabled? "class='enabled'":"class='disabled'";
 	html << "<html>" << std::endl;
 	html << "<head>" << std::endl;
@@ -70,7 +69,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "</ul>" << std::endl;
 
 	html << "<h3 "<< mgmt_class << ">PUT</h3><br>" << std::endl;
-	html << "None<br><br>" << std::endl;
+	html << "<li><b>/create/vlink/&lt;lsi1_name&gt/&lt;lsi2_name&gt</b>: create a virtual link between two LSIs" << std::endl;
 
 	html << "<h3 "<< mgmt_class << ">DELETE</h3><br>" << std::endl;
 	html << "None<br><br>" << std::endl;
@@ -87,8 +86,6 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 }
 
 } //namespace get
-
-namespace post{
 
 bool authorised(const http::server::request &req, http::server::reply &rep){
 
@@ -110,10 +107,9 @@ bool authorised(const http::server::request &req, http::server::reply &rep){
 }
 
 
-void enabled(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+void mgmt_enabled(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
 	authorised(req, rep);
 }
 
-} //namespace post
 } //namespace controllers
 } //namespace xdpd

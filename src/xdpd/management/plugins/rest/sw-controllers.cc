@@ -9,6 +9,7 @@
 #include "json_spirit/json_spirit.h"
 
 #include "get-controllers.h"
+#include "put-controllers.h"
 
 #include <rofl/common/utils/c_logger.h>
 

@@ -4,27 +4,11 @@
 // Copyright (c) 2014  Barnstormer Softworks, Ltd.
 
 #include <boost/regex.hpp>
-
-namespace http{
-namespace server{
-	struct request;
-	struct reply;
-}//namespace server
-}//namespace http
+#include "common-controllers.h"
 
 namespace xdpd{
 namespace controllers{
 namespace post{
-
-	/*
-	* Util to check if the user is allowed to perform management calls
-	*/
-	bool authorised(const http::server::request &, http::server::reply &);
-
-	/*
-	* Is active management enabled
-	*/
-	void enabled(const http::server::request &, http::server::reply &, boost::cmatch&);
 
 	/*
 	* Ports

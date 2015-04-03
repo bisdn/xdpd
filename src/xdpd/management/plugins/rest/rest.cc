@@ -16,6 +16,7 @@
 
 #include "get-controllers.h"
 #include "post-controllers.h"
+#include "put-controllers.h"
 
 namespace xdpd{
 
@@ -54,13 +55,18 @@ static void srvthread (){
 		//
 		// POST
 		//
-		handler.register_post_path("/", boost::bind(controllers::post::enabled, _1, _2, _3));
+		handler.register_post_path("/", boost::bind(controllers::mgmt_enabled, _1, _2, _3));
 
 		//Ports
 		handler.register_post_path("/port/(\\w+)/up", boost::bind(controllers::post::port_up, _1, _2, _3));
 		handler.register_post_path("/port/(\\w+)/down", boost::bind(controllers::post::port_down, _1, _2, _3));
 		handler.register_post_path("/attach/port/(\\w+)/(\\w+)", boost::bind(controllers::post::attach_port, _1, _2, _3));
 		handler.register_post_path("/detach/port/(\\w+)/(\\w+)", boost::bind(controllers::post::detach_port, _1, _2, _3));
+
+		//
+		// PUT
+		//
+		handler.register_put_path("/create/vlink/(\\w+)/(\\w+)", boost::bind(controllers::put::create_vlink, _1, _2, _3));
 
 		http::server::server(io_service, "0.0.0.0", XDPD_REST_PORT, handler)();
 		boost::asio::signal_set signals(io_service);

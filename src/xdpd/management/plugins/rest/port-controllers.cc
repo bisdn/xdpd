@@ -10,6 +10,7 @@
 
 #include "get-controllers.h"
 #include "post-controllers.h"
+#include "put-controllers.h"
 
 #include <rofl/common/utils/c_logger.h>
 
@@ -309,7 +310,7 @@ void detach_port(const http::server::request &req, http::server::reply &rep, boo
 	//Get dpid
 	uint64_t dpid = switch_manager::get_switch_dpid(lsi_name);
 
-	//Attach
+	//Detach
 	try{
 		port_manager::detach_port_from_switch(dpid, port_name);
 	}catch(...){
@@ -324,5 +325,82 @@ void detach_port(const http::server::request &req, http::server::reply &rep, boo
 }
 
 } //namespace post
+
+namespace put{
+
+void create_vlink(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+
+	//Perform security checks
+	if(!authorised(req,rep)) return;
+
+	std::string lsi1_name = std::string(grps[1]);
+	std::string lsi2_name = std::string(grps[2]);
+
+	//Check if LSI exists;
+	if(!switch_manager::exists_by_name(lsi1_name)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid lsi '"<<lsi1_name<<"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+
+	//Check if LSI exists;
+	if(!switch_manager::exists_by_name(lsi2_name)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid lsi '"<<lsi2_name<<"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+	//Get dpid
+	uint64_t dpid1 = switch_manager::get_switch_dpid(lsi1_name);
+	uint64_t dpid2 = switch_manager::get_switch_dpid(lsi2_name);
+
+	std::string port1_name;
+	std::string port2_name;
+
+	//TODO: port nums
+	unsigned int port1_num=0;
+	unsigned int port2_num=0;
+
+	//Create vlink
+	try{
+		port_manager::connect_switches(dpid1, &port1_num, port1_name, dpid2, &port2_num, port2_name);
+	}catch(...){
+		//Something went wrong
+		std::stringstream ss;
+		ss<<"Unable to connect lsi '"<<lsi1_name<<"' with lsi '"+lsi2_name+"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::internal_server_error;
+		return;
+	}
+
+	//Prepare response
+	json_spirit::Object response;
+	json_spirit::Object lsi1, lsi2;
+	json_spirit::Object ports1, ports2;
+
+	//LSI 1
+	std::stringstream ss;
+	ss << port1_num;
+	ports1.push_back(json_spirit::Pair(ss.str(), port1_name));
+	lsi1.push_back(json_spirit::Pair("attached-ports", ports1));
+	response.push_back(json_spirit::Pair(lsi1_name, lsi1));
+
+	//LSI 2
+	std::stringstream ss2;
+	ss2 << port2_num;
+	ports2.push_back(json_spirit::Pair(ss2.str(), port2_name));
+	lsi2.push_back(json_spirit::Pair("attached-ports", ports2));
+	response.push_back(json_spirit::Pair(lsi2_name, lsi2));
+
+	rep.content = json_spirit::write(response, true);
+
+}
+
+} //namespace put
 } //namespace controllers
 } //namespace xdpd

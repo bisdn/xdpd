@@ -4,13 +4,7 @@
 // Copyright (c) 2014  Barnstormer Softworks, Ltd.
 
 #include <boost/regex.hpp>
-
-namespace http{
-namespace server{
-	struct request;
-	struct reply;
-}//namespace server
-}//namespace http
+#include "common-controllers.h"
 
 namespace xdpd{
 namespace controllers{

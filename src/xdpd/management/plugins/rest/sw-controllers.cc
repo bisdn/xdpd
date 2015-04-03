@@ -9,7 +9,7 @@
 #include "json_spirit/json_spirit.h"
 
 #include "get-controllers.h"
-#include "put-controllers.h"
+#include "delete-controllers.h"
 
 #include <rofl/common/utils/c_logger.h>
 
@@ -236,5 +236,42 @@ void lsi_groups(const http::server::request &req,
 }
 
 } //namespace get
+
+namespace delete_{
+
+void destroy_switch(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+
+	//Perform security checks
+	if(!authorised(req,rep)) return;
+
+	std::string lsi_name = std::string(grps[1]);
+
+	//Check if LSI exists;
+	if(!switch_manager::exists_by_name(lsi_name)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"Invalid lsi '"<<lsi_name<<"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+
+	//Get dpid
+	uint64_t dpid = switch_manager::get_switch_dpid(lsi_name);
+
+	//Destroy it
+	try{
+		switch_manager::destroy_switch(dpid);
+	}catch(...){
+		//Something went wrong
+		std::stringstream ss;
+		ss<<"Unable to destroy lsi '"<<lsi_name<<"'";
+		rep.content = ss.str();
+		rep.status = http::server::reply::internal_server_error;
+		return;
+	}
+}
+
+} //namespace delete
 } //namespace controllers
 } //namespace xdpd

@@ -17,6 +17,7 @@
 #include "get-controllers.h"
 #include "post-controllers.h"
 #include "put-controllers.h"
+#include "delete-controllers.h"
 
 namespace xdpd{
 
@@ -68,10 +69,13 @@ static void srvthread (){
 		//
 		handler.register_put_path("/create/vlink/(\\w+)/(\\w+)", boost::bind(controllers::put::create_vlink, _1, _2, _3));
 
+		//
+		//DELETE
+		//
+		handler.register_delete_path("/destroy/lsi/(\\w+)", boost::bind(controllers::delete_::destroy_switch, _1, _2, _3));
+
 		http::server::server(io_service, "0.0.0.0", XDPD_REST_PORT, handler)();
 		boost::asio::signal_set signals(io_service);
-		/*signals.add(SIGINT);
-		signals.add(SIGTERM);*/
 		signals.async_wait(boost::bind(&boost::asio::io_service::stop, &io_service));
 
 		io_service.run();

@@ -46,7 +46,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<h3 class='enabled'>GET</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
-	//Info
+	//GET
 	html << "<li><b><a href=\"/system\">/system</a></b>: general system information" << std::endl;
 	html << "<li><b><a href=\"/plugins\">/plugins</a></b>: list of compiled-in plugins" << std::endl;
 	html << "<li><b><a href=\"/matching-algorithms\">/matching-algorithms</a></b>: list available OF table matching algorithms<br>" << std::endl;
@@ -58,6 +58,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<li><b>/lsi/&lt;lsi_name&gt/group-table</b>: list LSI group table entries" << std::endl;
 	html << "</ul>" << std::endl;
 
+	//POST
 	html << "<h3 "<< mgmt_class <<">POST</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
@@ -68,11 +69,22 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 
 	html << "</ul>" << std::endl;
 
-	html << "<h3 "<< mgmt_class << ">PUT</h3><br>" << std::endl;
+	//PUT
+	html << "<h3 "<< mgmt_class << ">PUT</h3>" << std::endl;
+	html << "<ul>" << std::endl;
+
 	html << "<li><b>/create/vlink/&lt;lsi1_name&gt/&lt;lsi2_name&gt</b>: create a virtual link between two LSIs" << std::endl;
 
-	html << "<h3 "<< mgmt_class << ">DELETE</h3><br>" << std::endl;
-	html << "None<br><br>" << std::endl;
+	html << "</ul>" << std::endl;
+
+	//DELETE
+	html << "<h3 "<< mgmt_class << ">DELETE</h3>" << std::endl;
+	html << "<ul>" << std::endl;
+
+	html << "<li><b>/destroy/lsi/&lt;lsi_name&gt</b>: destroy an LSIs" << std::endl;
+
+	html << "</ul>" << std::endl;
+
 
 	html << "</body>" << std::endl;
 	html << "</html>" << std::endl;

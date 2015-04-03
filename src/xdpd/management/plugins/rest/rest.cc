@@ -12,11 +12,15 @@
 
 #include "server/server.hpp"
 #include "server/rest_handler.hpp"
+#include "../../system_manager.h"
 
 #include "get-controllers.h"
 #include "post-controllers.h"
 
 namespace xdpd{
+
+const std::string rest::MGMT_OPT_FULL_NAME="mgmt-rest";
+const std::string rest::name="rest";
 
 #define XDPD_REST_PORT "5757"
 
@@ -70,7 +74,15 @@ static void srvthread (){
 }
 
 void rest::init(){
+
+	//See if -m option is there
+	mgmt_enabled = system_manager::is_option_set(std::string(MGMT_OPT_FULL_NAME));
+
 	ROFL_INFO("[xdpd][rest] Starting REST server\n");
+	if(mgmt_enabled){
+		ROFL_INFO("[xdpd][rest] Enabling mgmt routines (write mode)\n");
+		ROFL_WARN("[xdpd][rest] WARNING: please note that REST plugin does not provide authentication nor encryption services yet (HTTPs).\n");
+	}
 	t = boost::thread(&srvthread);
 }
 

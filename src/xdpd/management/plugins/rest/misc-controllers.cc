@@ -49,10 +49,17 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<li><b>/lsi/&lt;lsi_name&gt/group-table</b>: list LSI group table entries" << std::endl;
 	html << "</ul>" << std::endl;
 
-	html << "<h3>POST</h3><br>" << std::endl;
-	html << "None<br><br>" << std::endl;
+	html << "<h3>POST</h3>" << std::endl;
+	html << "<ul>" << std::endl;
+
+	html << "<li><b>/port/&lt;lsi_name&gt/up</b>: bring port administratively up" << std::endl;
+	html << "<li><b>/port/&lt;lsi_name&gt/down</b>: bring port administratively down" << std::endl;
+
+	html << "</ul>" << std::endl;
+
 	html << "<h3>PUT</h3><br>" << std::endl;
 	html << "None<br><br>" << std::endl;
+
 	html << "<h3>DELETE</h3><br>" << std::endl;
 	html << "None<br><br>" << std::endl;
 
@@ -73,15 +80,20 @@ namespace post{
 
 bool authorised(const http::server::request &req, http::server::reply &rep){
 
-#ifndef MGMT_ENABLED
-	std::stringstream ss;
-	ss<<"POST disabled";
-	rep.content = ss.str();
-	rep.status = http::server::reply::unauthorized;
-	return false;
-#else
-	return true;
-#endif
+	//Recover plugin
+	rest* rest_plugin = (rest*)plugin_manager::get_plugin_by_name(rest::name); 
+	if(!rest_plugin){
+		assert(0);
+		return false;
+	}
+
+	if(!rest_plugin->is_mgmt_enabled()){;
+		std::stringstream ss;
+		ss<<"REST management routines disabled";
+		rep.content = ss.str();
+		rep.status = http::server::reply::unauthorized;
+	}
+	return rest_plugin->is_mgmt_enabled();
 
 }
 

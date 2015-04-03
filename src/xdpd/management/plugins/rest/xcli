@@ -38,12 +38,12 @@ def list_show_commands():
 	string+= '   show port <port_name>\t\t - Show port information\n'
 	return string
 
-def list_do_commands():
+def list_exec_commands():
 	string="\nSubcommands:\n\n"
-	string+='   do port <port_name> up\t\t\t - Bring port administratively up\n'
-	string+='   do port <port_name> down\t\t\t - Bring port administratively up\n'
-	string+='   do attach port <port_name> <lsi_name>\t - Attach port to a logical switch instance\n'
-	string+='   do detach port <port_name> <lsi_name>\t - Detach port from a logical switch instance\n'
+	string+='   exec port <port_name> up\t\t\t - Bring port administratively up\n'
+	string+='   exec port <port_name> down\t\t\t - Bring port administratively up\n'
+	string+='   exec attach port <port_name> <lsi_name>\t - Attach port to a logical switch instance\n'
+	string+='   exec detach port <port_name> <lsi_name>\t - Detach port from a logical switch instance\n'
 	return string
 
 def usage():
@@ -169,7 +169,7 @@ def execute(socket, command, req_confirm=False):
 			return
 
 		return rest_get(socket, compose_url(stripped))
-	elif op == "do":
+	elif op == "exec":
 		#Confirm
 		if req_confirm:
 			res=confirm("", "y")
@@ -278,18 +278,18 @@ class InteractivePrompt(cmd.Cmd):
 		]
 
 	def help_show(self):
-		print "Retrieve information information from the xDPd instance"
+		print "Retrieve information information from the target"
 		print list_show_commands()
 
 	#
 	# Execute remote operations
 	#
-	def do_do(self, s=""):
+	def do_exec(self, s=""):
 		if s == "":
 			print "Missing arguments"
 			return
 		try:
-			result=execute(self.sockets[self.curr], "do "+s, True)
+			result=execute(self.sockets[self.curr], "exec "+s, True)
 		except Exception as e:
 			print e
 			return
@@ -297,21 +297,21 @@ class InteractivePrompt(cmd.Cmd):
 		if not result == "":
 			print_less(result)
 
-	def complete_do(self, text, line, start_index, end_index):
-		do_cmds = ["port", "attach", "detach"]
+	def complete_exec(self, text, line, start_index, end_index):
+		exec_cmds = ["port", "attach", "detach"]
 
-		for cmd in do_cmds:
+		for cmd in exec_cmds:
 			if cmd in line:
 				return []
 
 		return [
-			cmd for cmd in do_cmds
+			cmd for cmd in exec_cmds
 			if cmd.startswith(text)
 		]
 
-	def help_do(self):
-		print "Perform an operation over an xDPd instance"
-		print list_do_commands()
+	def help_exec(self):
+		print "Execute an operation over the target"
+		print list_exec_commands()
 
 	#
 	# Other

@@ -96,6 +96,7 @@ static void srvthread (){
 		//
 		// PUT
 		//
+		handler.register_post_path("/mgmt/create/lsi", boost::bind(controllers::put::create_lsi, _1, _2, _3));
 		handler.register_put_path("/mgmt/create/vlink/(\\w+)/(\\w+)", boost::bind(controllers::put::create_vlink, _1, _2, _3));
 
 		//

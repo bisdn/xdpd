@@ -8,8 +8,9 @@
 #include "server/reply.hpp"
 #include "json_spirit/json_spirit.h"
 
-#include "get-controllers.h"
 #include "delete-controllers.h"
+#include "get-controllers.h"
+#include "put-controllers.h"
 
 #include <rofl/common/utils/c_logger.h>
 
@@ -236,6 +237,102 @@ void lsi_groups(const http::server::request &req,
 }
 
 } //namespace get
+
+
+namespace put{
+
+void create_lsi(const http::server::request &req, http::server::reply &rep, boost::cmatch& grps){
+
+	//Perform security checks
+	if(!authorised(req,rep)) return;
+
+	of_version_t ver = OF_VERSION_10;
+	uint64_t dpid = 0;
+	std::string lsi_name = "";
+	unsigned int num_of_tables = 0;
+	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
+	int reconnect_start_time = 1;
+	enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
+	rofl::cparams socket_params = rofl::csocket::get_default_params(socket_type);
+	//bool pirl_enabled = true;
+	//unsigned int pirl_rate;
+
+	if(req.content.compare("") == 0){
+		//Something went wrong
+		std::stringstream ss;
+		ss<<"Unable to create lsi; missing lsi description";
+		rep.content = ss.str();
+		rep.status = http::server::reply::bad_request;
+		return;
+	}
+
+	//Parse
+	try{
+		//Parse the input
+		json_spirit::Value val;
+
+		//First object must be "lsi"
+		json_spirit::read(req.content, val);
+
+		json_spirit::Object obj = val.get_obj();
+		obj = json_spirit::find_value(obj, "lsi").get_obj();
+
+		//Fill in parameters
+		lsi_name = json_spirit::find_value(obj, "name").get_str();
+		dpid = json_spirit::find_value(obj, "dpid").get_uint64();
+		double ver_float = json_spirit::find_value(obj, "of-version").get_real();
+		if( ver_float == 1.0 )
+			ver = OF_VERSION_10;
+		else if( ver_float == 1.2 )
+			ver = OF_VERSION_12;
+		else if( ver_float == 1.3)
+			ver = OF_VERSION_13;
+		else
+			throw "Invalid OF version";
+
+		num_of_tables = json_spirit::find_value(obj, "number-of-tables").get_int();
+	}catch(...){
+		//Something went wrong
+		rep.status = http::server::reply::bad_request;
+		return;
+	}
+
+	//Check if LSI exists;
+	if(switch_manager::exists_by_name(lsi_name)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"lsi '"<<lsi_name<<"' already exists";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+	//Check if LSI exists (dpid;
+	if(switch_manager::exists(dpid)){
+		//Throw 404
+		std::stringstream ss;
+		ss<<"lsi with dpid'"<<dpid<<"' already exists";
+		rep.content = ss.str();
+		rep.status = http::server::reply::not_found;
+		return;
+	}
+
+	//Create
+	try{
+
+		switch_manager::create_switch(ver, dpid, lsi_name, num_of_tables, ma_list, reconnect_start_time, socket_type, socket_params);
+	}catch(...){
+		//Something went wrong
+		std::stringstream ss;
+		ss<<"Unable to create lsi '"<<lsi_name<<"', request: {"<<req.content<<"}";
+		rep.content = ss.str();
+		rep.status = http::server::reply::internal_server_error;
+		return;
+	}
+
+	//There is no need to return anything
+}
+
+} //namespace put
 
 namespace delete_{
 

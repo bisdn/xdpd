@@ -9,6 +9,11 @@ namespace controllers{
 namespace put{
 
 	/*
+	* Create an LSI
+	*/
+	void create_lsi(const http::server::request &, http::server::reply &, boost::cmatch&);
+
+	/*
 	* Create a vlink
 	*/
 	void create_vlink(const http::server::request &, http::server::reply &, boost::cmatch&);

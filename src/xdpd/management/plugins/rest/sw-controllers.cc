@@ -291,8 +291,34 @@ void create_lsi(const http::server::request &req, http::server::reply &rep, boos
 			throw "Invalid OF version";
 
 		num_of_tables = json_spirit::find_value(obj, "number-of-tables").get_int();
+
+		//Parse matching algorithms if defined
+		try{
+			std::list<std::string> available_algorithms = switch_manager::list_matching_algorithms(ver);
+			std::list<std::string>::iterator it;
+			json_spirit::Array mas = json_spirit::find_value(obj, "matching-algorithms").get_array();
+
+			if(num_of_tables != mas.size())
+				throw -1;
+
+			for( unsigned int i = 0; i < mas.size(); ++i ){
+				it = std::find(available_algorithms.begin(), available_algorithms.end(), mas[i].get_str());
+
+				if(it == available_algorithms.end())
+					throw -1;
+
+				ma_list[i] = std::distance(available_algorithms.begin(), it);
+			}
+		}catch(int& e){
+			throw e;
+		}catch(...){
+
+		}
 	}catch(...){
 		//Something went wrong
+		std::stringstream ss;
+		ss<<"Unable to parse arguments for create lsi";
+		rep.content = ss.str();
 		rep.status = http::server::reply::bad_request;
 		return;
 	}
@@ -310,7 +336,7 @@ void create_lsi(const http::server::request &req, http::server::reply &rep, boos
 	if(switch_manager::exists(dpid)){
 		//Throw 404
 		std::stringstream ss;
-		ss<<"lsi with dpid'"<<dpid<<"' already exists";
+		ss<<"lsi with dpid '"<<dpid<<"' already exists";
 		rep.content = ss.str();
 		rep.status = http::server::reply::not_found;
 		return;

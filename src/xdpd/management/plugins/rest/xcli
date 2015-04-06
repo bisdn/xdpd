@@ -504,7 +504,10 @@ def main(argv):
 
 	if command == "":
 		c = InteractivePrompt(socket)
-		c.cmdloop()
+		try:
+			c.cmdloop()
+		except KeyboardInterrupt as e:
+			print "\n\n"+GOODBYE
 		sys.exit()
 	else:
 		try:

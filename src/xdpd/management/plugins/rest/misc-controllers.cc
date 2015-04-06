@@ -66,7 +66,6 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<li><b>/mgmt/port/&lt;lsi_name&gt/down</b>: bring port administratively down" << std::endl;
 	html << "<li><b>/mgmt/attach/port/&lt;port_name&gt/&lt;lsi_name&gt</b>: attach a port to an LSI" << std::endl;
 	html << "<li><b>/mgmt/detach/port/&lt;port_name&gt/&lt;lsi_name&gt</b>: detach a port from an LSI" << std::endl;
-	html << "<li><b>/mgmt/create/lsi</b>: create a LSI" << std::endl;
 
 	html << "</ul>" << std::endl;
 
@@ -74,6 +73,7 @@ void index(const http::server::request &req, http::server::reply &rep, boost::cm
 	html << "<h3 "<< mgmt_class << ">PUT</h3>" << std::endl;
 	html << "<ul>" << std::endl;
 
+	html << "<li><b>/mgmt/create/lsi</b>: create a LSI" << std::endl;
 	html << "<li><b>/mgmt/create/vlink/&lt;lsi1_name&gt/&lt;lsi2_name&gt</b>: create a virtual link between two LSIs" << std::endl;
 
 	html << "</ul>" << std::endl;

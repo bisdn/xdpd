@@ -7,6 +7,7 @@ DEFAULT_REST_IP="127.0.0.1"
 DEFAULT_REST_PORT=5757
 defaultsocket = DEFAULT_REST_IP+":"+str(DEFAULT_REST_PORT)
 GREETING="xDPd v"+str(VERSION)+" command line tool"
+GOODBYE="Goodbye!"
 
 #REST API prefixes
 REST_INFO_PREFIX="info"
@@ -19,6 +20,7 @@ try:
 	import getopt
 	import curses
 	import json
+	import re
 	try:
 		import urllib2 as urllib
 	except:
@@ -50,10 +52,15 @@ def list_exec_commands():
 	string+='   exec port <port_name> down\t\t\t - Bring port administratively up\n'
 	string+='   exec attach port <port_name> <lsi_name>\t - Attach port to a logical switch instance\n'
 	string+='   exec detach port <port_name> <lsi_name>\t - Detach port from a logical switch instance\n'
-	string+='   exec create lsi <lsi_name> <dpid>\n'
-	string+='                   <of-version> <num-of-tables>\t - Create a logical switch instance\n'
+	string+='   exec create lsi <lsi_name> <dpid> <of-version> <num-of-tables> [matching-algorithms={<algorithms>}]\n'
+	string+='                               \t\t\t - Create a logical switch instance\n'
 	string+='   exec destroy lsi <lsi_name> \t\t\t - Destroy a logical switch instance\n'
 	string+='   exec create vlink <lsi1_name> <lsi2_name>\t - Create a virtual link between two logical switch instances\n'
+	string+="\nExamples:\n\n"
+	string+='   exec port ge0 up\n'
+	string+='   exec attach port ge0 dp0\n'
+	string+='   exec create lsi dp1 256 1.3 8\n'
+	string+='   exec create lsi dp1 256 1.2 2 matching-algorithms={"loop", "l2hash"}\n'
 	return string
 
 def usage():
@@ -207,9 +214,26 @@ def parse_create_lsi(params):
 		raise Exception("Invalid number of tables '"+num_of_tables+"'")
 	lsi["number-of-tables"] = num_of_tables
 
-	#TODO matching algorithms
+	#Parse matching algorithms
+	mas=""
+	try:
+		mas = params[7:]
+	except:
+		pass
 
-	#print json.dumps(obj)
+	if not mas == []:
+		try:
+			mas_str = ''.join(mas)
+			match = re.search(r'matching-algorithms={(.*)}', mas_str.lower())
+			if not match:
+				raise Exception("Unable to parse 'matching-algorithms'")
+			to_split = match.groups()[0]
+			splitted = to_split.split(",")
+			if len(splitted) != num_of_tables:
+				raise Exception("Invalid number of matching algorithms("+str(len(splitted))+"). Must match the number of tables ("+str(num_of_tables)+").")
+		except Exception as e:
+			raise
+
 	return json.dumps(obj)
 
 
@@ -293,11 +317,17 @@ class InteractivePrompt(cmd.Cmd):
 		self.sockets = {}
 		self.sockets[self.curr] = socket
 		self.prompt = XCLI + "("+colorize_str(self.curr, GREEN)+")>"
+
+	def preloop(self):
 		print GREETING
 		print ""
 		print "Entering in interactive mode..."
 		print "Using target '["+self.curr+"] "+self.sockets[self.curr]+"'"
 		print ""
+
+	def postloop(self):
+		print GOODBYE
+
 	#
 	# Targets
 	#

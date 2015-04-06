@@ -106,11 +106,17 @@ def colorize_str(string, color):
 		return color + string + END
 	return string
 
+#Clear line
+def clear_prev_line():
+	sys.stdout.write("\033[F") # Cursor up one line
+	print "                                                         "
+	sys.stdout.write("\033[F") # Cursor up one line
+
 # Unix-style less print
 def print_less(msg):
-	packing =39 #default line terminal-1 (command)
+	packing = 39 #default line terminal-1 (command)
 	lines = msg.split('\n')
-	i=0
+	i = 0
 
 	if len(lines) <= packing:
 		print msg
@@ -120,7 +126,7 @@ def print_less(msg):
 		print '\n'.join(lines[i:i+packing])
 		if i+packing < len(lines):
 			raw_input(": press enter to continue...")
-			sys.stdout.write("\033[F") # Cursor up one line
+			clear_prev_line()
 		i += packing
 
 #
@@ -236,10 +242,10 @@ def execute(socket, command, req_confirm=False):
 		#Confirm
 		if req_confirm:
 			res=confirm("", "y")
-			sys.stdout.write("\033[F") # Cursor up one line
+			clear_prev_line()
 			if not res:
 				return "Canceled";
-			sys.stdout.write("\033[F") # Cursor up one line
+			clear_prev_line()
 
 		#Remove trailing spaces
 		stripped = command.strip().split()[1:]
@@ -260,7 +266,7 @@ def execute(socket, command, req_confirm=False):
 				try:
 					data = parse_create_lsi(stripped)
 				except Exception as e:
-					print str(e)
+					print "Invalid arguments"
 					raise
 				return rest(socket, compose_url(stripped[:3]), data, "POST")
 			else:

@@ -404,7 +404,7 @@ class InteractivePrompt(cmd.Cmd):
 		]
 
 	def help_show(self):
-		print "Retrieve information information from the target"
+		print "Retrieve information from the target"
 		print list_show_commands()
 
 	#

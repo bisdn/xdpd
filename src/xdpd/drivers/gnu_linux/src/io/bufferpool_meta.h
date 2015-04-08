@@ -13,6 +13,7 @@
 #include <iostream>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/common/utils/c_logger.h>
+#include "../util/circular_queue.h"
 
 /**
 * @file bufferpool_meta.h
@@ -97,7 +98,7 @@ protected:
 	//Pool internals
 	static const long long unsigned int capacity=IO_BUFFERPOOL_RESERVOIR+IO_BUFFERPOOL_CAPACITY;
 	bpool_slot_t pool[IO_BUFFERPOOL_RESERVOIR+IO_BUFFERPOOL_CAPACITY];
-	bpool_slot_t* free_head; 
+	circular_queue<bpool_slot_t>* cq;
 #ifdef DEBUG
 	long long unsigned int used;
 #endif
@@ -136,23 +137,13 @@ bufferpool* bufferpool::get_instance(void){
 * Retreives an available buffer.
 */
 datapacket_t* bufferpool::get_buffer(){
-
-	bpool_slot_t *tmp, *next;
+	bpool_slot_t *tmp;//, *next;
 	bufferpool *bp = get_instance();
-
-BUFFERPOOL_META_GET_RETRY:
-
-	tmp = bp->free_head;		
+	tmp = bp->cq->non_blocking_read();
+	
 	if(!tmp)
 		return NULL;
 	
-	//Calculate
-	next = tmp->next;
-	
-	//Set the new head 
-	if( unlikely(SYNC_BOOL_CAS(&bp->free_head, tmp, next) == false) )
-		goto BUFFERPOOL_META_GET_RETRY;
-
 #ifdef DEBUG
 	SYNC_FETCH_ADD(&bp->used, 1);
 
@@ -165,7 +156,7 @@ BUFFERPOOL_META_GET_RETRY:
 	
 	tmp->status = BUFFERPOOL_SLOT_IN_USE;
 #endif
-		
+	
 	return tmp->pkt;
 }
 
@@ -173,15 +164,14 @@ BUFFERPOOL_META_GET_RETRY:
 * Releases a previously acquired buffer.
 */
 void bufferpool::release_buffer(datapacket_t* pkt){
-
-	bpool_slot_t *prev_head, *new_head;
+	bpool_slot_t *tmp;
 	unsigned int id = pkt->id; 
 
 	//Get pool instance	
 	bufferpool* bp = get_instance();
 
 	//Recover the slot
-	new_head = &bp->pool[id];
+	tmp = &(bp->pool[id]);
 
 	//Set is replica = false, if set	
 #ifdef BUFFERPOOL_CLEAR_IS_REPLICA
@@ -191,26 +181,19 @@ void bufferpool::release_buffer(datapacket_t* pkt){
 
 #ifdef DEBUG
 	//Perform basic checkings
-	if( unlikely(new_head->status != BUFFERPOOL_SLOT_IN_USE) ){
+	if( unlikely(tmp->status != BUFFERPOOL_SLOT_IN_USE) ){
 		//Attempting to release an unallocated/unavailable buffer
 		ROFL_ERR(DRIVER_NAME"[bufferpool] Attempting to release an unallocated/unavailable buffer (pkt:%p). Ignoring..\n",pkt);
 		assert(0);
 	}
-	new_head->status = BUFFERPOOL_SLOT_AVAILABLE;
+	tmp->status = BUFFERPOOL_SLOT_AVAILABLE;
 	SYNC_FETCH_SUB(&bp->used, 1);
 #endif
 
 	//Call release hook
 	BUFFERPOOL_PKT_RELEASE_HOOK(pkt);
 
-	//Proceed to return the buffer to the head of the pool
-BUFFERPOOL_META_RELEASE_RETRY:
-	prev_head = bp->free_head;
-	new_head->next = prev_head;
-	
-	//Set the new head 
-	if( unlikely(SYNC_BOOL_CAS(&bp->free_head, prev_head, new_head) == false) )
-		goto BUFFERPOOL_META_RELEASE_RETRY;
+	bp->cq->non_blocking_write(tmp);
 }
 
 /*

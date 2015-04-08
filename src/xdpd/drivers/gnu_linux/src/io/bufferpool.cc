@@ -11,11 +11,14 @@ pthread_mutex_t bufferpool::mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t bufferpool::cond = PTHREAD_COND_INITIALIZER;
  
 //Constructor and destructor
-bufferpool::bufferpool(void)
-{
+bufferpool::bufferpool(void){
 	long long unsigned int i;
 	datapacket_t* dp;
 	datapacketx86* dpx86;
+	bpool_slot_t *pslot;
+	
+	cq = new circular_queue<bpool_slot_t>(capacity);
+	memset(pool,0,sizeof(pool));
 
 	for(i=0;i<capacity;++i){
 
@@ -37,23 +40,23 @@ bufferpool::bufferpool(void)
 		}		
 
 		//Assign the buffer_id
-		dp->id = i;			
+		dp->id = i;
 				
 		//Link them
 		dp->platform_state = (platform_datapacket_state_t*)dpx86;
 
-		//Add to the pool	
-		pool[i].status = BUFFERPOOL_SLOT_AVAILABLE;
-		pool[i].pkt = dp;
-		if(i<capacity)
-			pool[i].next = &pool[i+1];
-		else
-			pool[i].next = NULL;
+		//Add to the pool
+		pslot = &pool[i];
+		pslot->status = BUFFERPOOL_SLOT_AVAILABLE;
+		pslot->pkt = dp;
 			
+		//assign to queue
+		if ( cq->non_blocking_write(pslot) != ROFL_SUCCESS ){
+			fprintf(stderr, "********************  Insertion Failed!\n" );
+			delete dpx86;
+			free(dp);
+		}
 	}
-
-	//Set head
-	free_head = &pool[0];
 
 	//Set size
 #ifdef DEBUG
@@ -62,11 +65,24 @@ bufferpool::bufferpool(void)
 }
 
 bufferpool::~bufferpool(){
-	
-	unsigned long long int i;
+	unsigned long long int i=0;
+	bpool_slot_t *pslot;
 
-	for(i=0;i<capacity;++i){
-		delete (datapacketx86*)pool[i].pkt->platform_state;
-		free(pool[i].pkt);
+	//for(i=0;i<capacity;++i){
+	while(cq->is_empty()==false){
+		pslot = cq->non_blocking_read();
+		if (pslot==NULL){
+			continue;
+		}
+		//checks for pkt==NULL, and platform_state==NULL?
+		delete (datapacketx86*)pslot->pkt->platform_state;
+		free(pslot->pkt);
+		i++;
 	}
+	
+	delete cq;
+	
+	//check that no buffer was lost
+	assert(i == capacity-1);
+	
 }

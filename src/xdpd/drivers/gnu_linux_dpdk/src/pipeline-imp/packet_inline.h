@@ -142,7 +142,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 #ifndef DISABLE_SOFT_CLONE
 	if( hard_clone ){
 #endif
-		mbuf = rte_pktmbuf_alloc(direct_pools[rte_lcore_id()]);
+		mbuf = rte_pktmbuf_alloc(direct_pools[rte_socket_id()]);
 		
 		if(unlikely(mbuf == NULL)){	
 			ROFL_DEBUG("Replicate packet; could not hard clone pkt(%p). rte_pktmbuf_clone failed. errno: %d - %s\n", pkt_replica, rte_errno, rte_strerror(rte_errno));

@@ -54,7 +54,7 @@ void work(uint16_t id){
 	datapacket_t *pkt;
 	uint64_t i;
 	fprintf(stderr,"<%s:%d> [%u] starting\n",__func__,__LINE__, id);
-	for(i=0; i<0x1FFFFF; i++){
+	for(i=0; i<0x10000; i++){
 		pkt = bufferpool::get_buffer();
 		
 		CPPUNIT_ASSERT(pkt != NULL);

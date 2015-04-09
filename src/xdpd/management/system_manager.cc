@@ -120,8 +120,8 @@ void system_manager::init_command_line_options(){
 	env_parser->add_option(coption(true,REQUIRED_ARGUMENT,'l',"logfile","Log file used when daemonization", XDPD_CLOG_FILE));
 	
 	//Extra driver parameters
-	composed_usage << "Quoted string of extra parameters that will be passed to the platform driver \n";
-	composed_usage << "\t\t\t       ["<<get_driver_code_name()<<"] supported extra parameters: "<< get_driver_usage();
+	composed_usage << "Quoted string of extra parameters that will be passed to the platform driver \n\n";
+	composed_usage << "\t\t\t       ["<<get_driver_code_name()<<"] supported extra parameters: "<<std::endl<< get_driver_usage()<<std::endl<<"\t\t\t\t";
 	env_parser->add_option(coption(true,REQUIRED_ARGUMENT, 'e', XDPD_EXTRA_PARAMS_OPT_FULL_NAME, composed_usage.str(), ""));
 
 	//Test
@@ -293,13 +293,20 @@ void system_manager::dump_help(){
 			plugin_list<<", ";
 	}
 
+	//Usage first
 	ROFL_INFO("\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
+	//Other information
 	ROFL_INFO("Compiled with plugins: %s\n", plugin_list.str().c_str());
 	ROFL_INFO("Compiled with hardware support for: %s\n", get_driver_code_name().c_str());
 	if(get_driver_description()!="")
 		ROFL_INFO("Hardware driver description: %s\n\n", get_driver_description().c_str());
 	else
 		ROFL_INFO("\n");
+
+	if(get_driver_extra_params()!="")
+		ROFL_INFO("%s\n", get_driver_extra_params().c_str());
+
+
 }
 
 
@@ -307,7 +314,7 @@ void system_manager::dump_help(){
 std::string system_manager::get_version(){
 
 	std::stringstream ss("");
-	
+
 	//xDPd CMM information
 	ss << std::endl << "The eXtensible OpenFlow Datapath daemon (xDPd)" << std::endl;	
 	ss << "Version: "<< XDPD_VERSION << std::endl;
@@ -316,22 +323,22 @@ std::string system_manager::get_version(){
 	ss << "Build: " << XDPD_BUILD << std::endl;
 	ss << "Compiled in branch: " << XDPD_BRANCH << std::endl;
 	ss << "Detailed build information:" << XDPD_DESCRIBE << std::endl;
-#endif	
+#endif
 
 	//xDPd driver information
 	ss << "\n-- Hardware support --" << std::endl;
 	ss << "Driver code name: "<< driver_info.code_name << std::endl;
 	ss << "Driver version: "<< driver_info.version << std::endl;
 	ss << "Driver description: "<< driver_info.description << std::endl;
-	
-	//Libraries info	
+
+	//Libraries info
 	ss << "\n-- Libraries --" << std::endl;
 	ss << "[ROFL]" << std::endl;
 	ss << "  Version: " << ROFL_VERSION << std::endl;
 	ss << "  Build: " << ROFL_BUILD_NUM << std::endl;
 	ss << "  Compiled in branch: " << ROFL_BUILD_BRANCH << std::endl;
 	ss << "  Detailed build information:" << ROFL_BUILD_DESCRIBE << std::endl << std::endl;
-	
+
 	return ss.str();
 }
 

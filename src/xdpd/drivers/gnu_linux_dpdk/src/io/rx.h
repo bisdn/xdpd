@@ -33,8 +33,6 @@
 //Now include pp headers
 #include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 
-extern struct rte_mempool *pool_direct;
-
 namespace xdpd {
 namespace gnu_linux_dpdk {
 

@@ -123,7 +123,7 @@ int processing_core_process_packets(void*);
 /**
 * Dump core state
 */
-void processing_dump_core_state(void);
+void processing_dump_core_states(void);
 
 //C++ extern C
 ROFL_END_DECLS

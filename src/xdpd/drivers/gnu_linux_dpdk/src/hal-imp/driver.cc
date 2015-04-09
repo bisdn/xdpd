@@ -1,4 +1,10 @@
 #include <rofl.h>
+#include <string.h>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <algorithm>
 #include <stdio.h>
 #include <unistd.h>
 #include <rofl/datapath/hal/driver.h>
@@ -35,22 +41,47 @@
 #include "nf_extensions.h"
 //+] Add more here...
 
-extern int optind; 
-struct rte_mempool *pool_direct = NULL, *pool_indirect = NULL;
+extern int optind;
 
 using namespace xdpd::gnu_linux;
+
+//Extra params MACROS
+#define DRIVER_EXTRA_COREMASK "coremask"
+#define DRIVER_EXTRA_POOL_SIZE "pool_size"
 
 //Some useful macros
 #define STR(a) #a
 #define XSTR(a) STR(a)
 
 #define GNU_LINUX_DPDK_CODE_NAME "gnu-linux-dpdk"
-#define GNU_LINUX_DPDK_VERSION VERSION 
+#define GNU_LINUX_DPDK_VERSION VERSION
 #define GNU_LINUX_DPDK_DESC \
-"GNU/Linux DPDK driver. TODO: improve"
-#define GNU_LINUX_DPDK_USAGE  "" //We don't support extra params
-#define GNU_LINUX_DPDK_EXTRA_PARAMS "" //We don't support extra params
+"GNU/Linux DPDK driver.\n\n"\
+"The GNU/Linux DPDK driver is a user-space software driver that uses Data Plane Development Kit(DPDK)[1] as the I/O Framework.\n\n"\
+"This driver supports Network Function port extensions. This functions enable xDPd to communicate to other entities via dedicated ports. The port type mapping from abstract xDPd ports to DPDK is the following:\n"\
+"   -NATIVE: not supported.\n"\
+"   -SHMEM: rte_ring shared memory port. The NF name is the name of the RTE ring.\n"\
+"   -EXTERNAL: KNI port.\n"\
+"\n\n"\
+"[1] http://www.dpdk.org"
+#define GNU_LINUX_DPDK_USAGE  \
+"\t\t\t\t" DRIVER_EXTRA_COREMASK "=<hexadecimal mask>;\t - DPDK coremask.\n"\
+"\t\t\t\t" DRIVER_EXTRA_POOL_SIZE "=<#bufs>;\t\t - Number of MBUFs in the pool (per CPU socket).\n"
 
+#define GNU_LINUX_DPDK_EXTRA_PARAMS "This driver has a number of optional \"extra parameters\" that can be used using -e option, specifying them as key1=value1;key2=value2... :\n\n"\
+"   " DRIVER_EXTRA_COREMASK "=<hexadecimal mask>\t - Overrides default coremaskDPDK EAL coremask. Default: " XSTR(DEFAULT_RTE_CORE_MASK) ".\n"\
+"   " DRIVER_EXTRA_POOL_SIZE "=<#bufs>;\t\t - Override the number of MBUFs or size of the pool (per CPU socket). Default: " XSTR(DEFAULT_NB_MBUF) ".\n\n"\
+"The use of \"extra-params\" is highly discouraged for production machines. Tunning of the config.h is preferable.\n\n"
+
+
+//Number of MBUFs per pool (per CPU socket)
+unsigned int mbuf_pool_size = DEFAULT_NB_MBUF;
+
+//Fake argv for eal
+static const char* argv_fake[] = {"xdpd", "-c", NULL, "-n", XSTR(RTE_MEM_CHANNELS), NULL};
+
+#define MAX_COREMASK_LEN 64
+static char coremask[MAX_COREMASK_LEN];
 
 /*
 * @name    hal_driver_init
@@ -58,16 +89,67 @@ using namespace xdpd::gnu_linux;
 * @ingroup driver_management
 */
 
+static void parse_extra_params(const std::string& params){
+
+	std::istringstream ss(params);
+	std::string t, r;
+
+	//Asign the coremask pointer
+	strncpy(coremask, XSTR(DEFAULT_RTE_CORE_MASK), MAX_COREMASK_LEN);
+	argv_fake[2] = coremask;
+
+	//First split
+	while(std::getline(ss, t, ';')) {
+		std::istringstream ss_(t);
+
+		//Recover parameter
+		std::getline(ss_, r, '=');
+		r.erase(std::remove_if( r.begin(), r.end(), ::isspace ),
+								r.end() );
+
+		if(r.compare(DRIVER_EXTRA_COREMASK) == 0){
+			std::getline(ss_, r, '=');
+			r.erase(std::remove_if( r.begin(), r.end(),
+						::isspace ), r.end() );
+
+			strncpy(coremask, r.c_str(), MAX_COREMASK_LEN);
+			ROFL_DEBUG(DRIVER_NAME" Overriding default coremask(%s) with %s\n", XSTR(DEFAULT_RTE_CORE_MASK), coremask);
+		}else if(r.compare(DRIVER_EXTRA_POOL_SIZE) == 0){
+			std::getline(ss_, r, '=');
+			r.erase(std::remove_if( r.begin(), r.end(),
+						::isspace ), r.end() );
+
+			std::istringstream ss__(r);
+			unsigned int mbufs;
+			ss__ >> mbufs;
+			mbuf_pool_size = mbufs;
+			ROFL_DEBUG(DRIVER_NAME" Overriding default #mbufs per pool(%u) with %u\n", DEFAULT_NB_MBUF, mbufs);
+		}else{
+			t.erase(std::remove_if( t.begin(), t.end(),
+						::isspace ), t.end() );
+
+			//Unknown or unparsable parameter
+			ROFL_WARN(DRIVER_NAME" WARNING: could not understand extra-param '%s'. Ignoring it...\n",
+							t.c_str());
+		}
+	}
+}
+
 
 hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_params){
 
 	int ret;
-	const char* argv_fake[] = {"xdpd", "-c", XSTR(RTE_CORE_MASK), "-n", XSTR(RTE_MEM_CHANNELS), NULL};
 	const int EAL_ARGS = sizeof(argv_fake)/sizeof(*argv_fake);
-	
+
 	ROFL_INFO(DRIVER_NAME" Initializing...\n");
-	
-        /* init EAL library */
+
+	//Parse extra parameters
+	parse_extra_params(std::string(extra_params));
+
+	//Show a nice trace
+	ROFL_INFO(DRIVER_NAME" Initializing EAL with coremask: %s, memchannels: %s\n", argv_fake[2], argv_fake[4]);
+
+	// init EAL library
 	optind=1;
 	ret = rte_eal_init(EAL_ARGS-1, (char**)argv_fake);
 	if (ret < 0)
@@ -80,29 +162,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 		return HAL_FAILURE;
 	}
 
-	/* create the mbuf pools */
-	pool_direct = rte_mempool_create("pool_direct", NB_MBUF,
-			MBUF_SIZE, 32,
-			sizeof(struct rte_pktmbuf_pool_private),
-			rte_pktmbuf_pool_init, NULL,
-			rte_pktmbuf_init, NULL,
-			SOCKET0, 0);
-
-	if (pool_direct == NULL)
-		rte_panic("Cannot init direct mbuf pool\n");
-
-
-	pool_indirect = rte_mempool_create("pool_indirect", NB_MBUF,
-			sizeof(struct rte_mbuf), 32,
-			0,
-			NULL, NULL,
-			rte_pktmbuf_init, NULL,
-			SOCKET0, 0);
-	
-	if (pool_indirect == NULL)
-		rte_panic("Cannot init indirect mbuf pool\n");
-
-	//Init bufferpool
+	//Init PKT_IN bufferpool
 	bufferpool::init();
 
 	//Initialize pipeline

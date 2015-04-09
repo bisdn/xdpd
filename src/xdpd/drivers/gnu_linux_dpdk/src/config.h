@@ -15,8 +15,14 @@
 * TODO 
 */
 
-//XXX delete this
+//Driver name
 #define DRIVER_NAME "[xdpd][dpdk]"
+
+//This parameter disallows the driver to schedule phyiscal ports on logical
+//cores belonging to a different CPU socket than the port(PCI).
+//Warning: disabling this flag can affect performance; consider using a proper
+//coremask instead
+#define ABORT_ON_UNMATCHED_SCHED
 
 /*
 * BG stuff
@@ -82,19 +88,39 @@
 /*
 * Processing stuff
 */
-//Nothing yet
+
+//Maximum number of CPU sockets
+#define MAX_CPU_SOCKETS 8
 
 //DPDK defines
-#define RTE_CORE_MASK 0x00000003 //2 cores(1 doing I/O)
+
+/*
+ * The core mask defines the DPDK core mask.
+ *
+ * In xDPd the core mask must always include 0x1 as the management core which
+ * is reserved and WON'T do I/O
+ *
+ * So at least another I/O core needs to be defined. Default is Ox2 is the only
+ * core doing I/O
+ *
+ * The coremask can be overriden using driver extra parameters. However this is
+ * not recommended for stable setups
+ */
+#define DEFAULT_RTE_CORE_MASK 0x00000003
+
+//Other parameters
 #define RTE_MEM_CHANNELS 2
-#define SOCKET0 0
-#define MBUF_SIZE (/*2048*/8192 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
-#define NB_MBUF   3*8192
+#define MBUF_SIZE (/*2048*/9000 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
+
+/*
+ * Default number of MBUFs per pool
+ */
+#define DEFAULT_NB_MBUF 24576
 
 
 
 /**
-* NF related parameters 
+* NF related parameters
 */
 
 //Enable NF extensions (KNI and secondary process DPDK ports)

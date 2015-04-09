@@ -8,21 +8,30 @@ Legend:
 Change log
 ==========
 
+v0.7.0
+
+[+][CMM] Improved REST plugin. Please read the REST_README. Added python xcli script
+
 v0.6.0
 
 [K] Prevent compilation with buggy GCC versions (-O3 opt.)
+
+[O] Added specific READMEs (drivers, plugins...)
 
 [+] Workaround for automake 1.14 subdir-objects bug(13928).
 [+] Fixed some LLVM related warnings and errors (clang/clang++)
 
 [+][CMM] Added NF port manager extensions
+[B][CMM] Set cookie field in Packet-In messages based on flow entry
+[B][CMM] Prevent two LSIs to have the same name
 
 [+][drivers] Adapted to the new extensions-enabled HAL API
 
 [+][gnu-linux-dpdk] Added support for NF ports, KNI and secondary DPDK proc.(thanks I. Cerrato)
+[+][gnu-linux-dpdk] Added extra-params support to tweak coremask and #mbufs of the pool via CLI/conf file
 [O][gnu-linux-dpdk] Moved platform driver to DPDK v1.7 (thanks D. Verbeiren)
 [B][gnu-linux-dpdk] Fixed functions push() and pop() in dpdk_datapacket
-[B][CMM] Set cookie field in Packet-In messages based on flow entry
+[B][gnu-linux-dpdk] Use an mbuf pool per physical CPU socket
 
 
 v0.5.3

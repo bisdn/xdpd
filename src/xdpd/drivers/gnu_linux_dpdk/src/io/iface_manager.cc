@@ -15,7 +15,8 @@
 
 #include <fcntl.h>  
 
-extern struct rte_mempool *pool_direct;
+extern struct rte_mempool* direct_pools[MAX_CPU_SOCKETS];
+
 switch_port_t* phy_port_mapping[PORT_MANAGER_MAX_PORTS] = {0};
 struct rte_ring* port_tx_lcore_queue[PORT_MANAGER_MAX_PORTS][IO_IFACE_NUM_QUEUES] = {{NULL}};
 
@@ -105,7 +106,8 @@ static switch_port_t* configure_port(unsigned int port_id){
 	ps->port_id = port_id;
 	port->platform_port_state = (platform_port_state_t*)ps;
 
-	ROFL_INFO(DRIVER_NAME"[iface_manager] Discovered port %s [PCI addr: %04u:%02u:%02u, MAC: %02X:%02X:%02X:%02X:%02X:%02X] id %u\n", port_name, dev_info.pci_dev->addr.domain, dev_info.pci_dev->addr.bus, dev_info.pci_dev->addr.devid, port->hwaddr[0], port->hwaddr[1], port->hwaddr[2], port->hwaddr[3], port->hwaddr[4], port->hwaddr[5], port_id);
+	unsigned int cpu_socket_id = rte_eth_dev_socket_id(port_id);
+	ROFL_INFO(DRIVER_NAME"[iface_manager] Discovered port %s [PCI addr: %04u:%02u:%02u, MAC: %02X:%02X:%02X:%02X:%02X:%02X] id %u (CPU socket: %u)\n", port_name, dev_info.pci_dev->addr.domain, dev_info.pci_dev->addr.bus, dev_info.pci_dev->addr.devid, port->hwaddr[0], port->hwaddr[1], port->hwaddr[2], port->hwaddr[3], port->hwaddr[4], port->hwaddr[5], port_id, (cpu_socket_id == 0xFFFFFFFF)? 0 : cpu_socket_id);
 
 
 
@@ -119,6 +121,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	
 	unsigned int i;
 	int ret;
+	unsigned int sock_id;
 	struct rte_eth_rxconf rx_conf;
 	rx_conf.rx_thresh.pthresh = RX_PTHRESH;
 	rx_conf.rx_thresh.hthresh = RX_HTHRESH;
@@ -131,7 +134,12 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	tx_conf.tx_thresh.wthresh = TX_WTHRESH;
 	tx_conf.tx_free_thresh = 0; /* Use PMD default values */
 	tx_conf.tx_rs_thresh = 0; /* Use PMD default values */
-	
+
+	//Check first for the socket CPU id
+	sock_id = rte_eth_dev_socket_id(port_id);
+	if(sock_id == 0xFFFFFFFF)
+		sock_id = 0;//Single CPU socket system
+
 	//Recover the 	
 	dpdk_port_state_t* dpdk_port = (dpdk_port_state_t*)port->platform_port_state;
 	
@@ -139,7 +147,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 		return ROFL_SUCCESS;
 	
 	//Setup RX
-	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, pool_direct)) < 0 ){
+	if( (ret=rte_eth_rx_queue_setup(port_id, 0, RTE_RX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &rx_conf, direct_pools[sock_id])) < 0 ){
 		ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot setup RX queue: %s\n", rte_strerror(ret));
 		assert(0);
 		return ROFL_FAILURE;
@@ -148,7 +156,7 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	//Setup TX
 	for(i=0;i<IO_IFACE_NUM_QUEUES;++i){
 		//setup the queue
-		if( (ret = rte_eth_tx_queue_setup(port_id, i, RTE_TX_DESC_DEFAULT, rte_eth_dev_socket_id(port_id), &tx_conf)) < 0 ){
+		if( (ret = rte_eth_tx_queue_setup(port_id, i, RTE_TX_DESC_DEFAULT, sock_id, &tx_conf)) < 0 ){
 			ROFL_ERR(DRIVER_NAME"[iface_manager] Cannot setup TX queues: %s\n", rte_strerror(ret));
 			assert(0);
 			return ROFL_FAILURE;

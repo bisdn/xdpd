@@ -16,9 +16,6 @@ static pthread_mutex_t drain_mutex=PTHREAD_MUTEX_INITIALIZER;
 
 using namespace xdpd::gnu_linux;
 
-//MBUF pool
-extern struct rte_mempool* pool_direct;
-
 //Process packet_ins
 static void* process_packet_ins(void* param){
 

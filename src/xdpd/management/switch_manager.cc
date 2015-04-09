@@ -41,11 +41,18 @@ openflow_switch* switch_manager::create_switch(
 	openflow_switch* dp;
 
 	pthread_mutex_lock(&switch_manager::mutex);
-	
-	//
+
+	//Check for overlapping names and dpids
 	if(switch_manager::switchs.find(dpid) != switch_manager::switchs.end()){
 		pthread_mutex_unlock(&switch_manager::mutex);
 		throw eOfSmExists();
+	}
+
+	for(std::map<uint64_t, openflow_switch*>::iterator it = switchs.begin(); it != switchs.end(); ++it){
+		if( it->second->dpname.compare(dpname) == 0 ){
+			pthread_mutex_unlock(&switch_manager::mutex);
+			throw eOfSmExists();
+		}
 	}
 
 	//Check if ROFL supports SSL or any other socket type, so that we can send a nice exception

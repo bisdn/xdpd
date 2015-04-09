@@ -2,6 +2,8 @@
 #include <rofl/common/utils/c_logger.h>
 #include <rte_cycles.h>
 #include <rte_spinlock.h>
+#include <sstream>
+#include <iomanip>
 
 #include "assert.h"
 #include "../util/compiler_assert.h"
@@ -12,13 +14,18 @@
 #include "../io/iface_manager.h"
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 
+//Pool sizes
+extern unsigned int mbuf_pool_size;
+
+//Wrong CPU socket overhead weight
+#define WRONG_CPU_SOCK_OH 0x80000000;
+#define POOL_MAX_LEN_NAME 32
 
 using namespace xdpd::gnu_linux_dpdk;
 
 //
-// Processing state 
+// Processing state
 //
-static unsigned int current_core_index;
 static unsigned int max_cores;
 static rte_spinlock_t mutex;
 core_tasks_t processing_core_tasks[RTE_MAX_LCORE];
@@ -26,84 +33,92 @@ unsigned int total_num_of_phy_ports = 0;
 unsigned int total_num_of_nf_ports = 0;
 unsigned int running_hash = 0;
 
-static void processing_dump_cores_state(void){
 
-#ifdef DEBUG
-	unsigned int i;
-	enum rte_lcore_role_t role;
-	enum rte_lcore_state_t state;
-
-	return;
-
-	for(i=0; i < RTE_MAX_LCORE; ++i){
-		role = rte_eal_lcore_role(i);
-		state = rte_eal_get_lcore_state(i);
-		
-		ROFL_DEBUG(DRIVER_NAME"[processing] Core %u ROLE:", i);
-		switch(role){
-			case ROLE_RTE:
-				ROFL_DEBUG(" RTE");
-				break;
-			case ROLE_OFF:
-				ROFL_DEBUG(" OFF");
-				break;
-			default:
-				assert(0);
-				ROFL_DEBUG(" Unknown");
-				break;
-		}
-		
-		ROFL_DEBUG(" state:");
-		switch(state){
-			case WAIT:
-				ROFL_DEBUG(" WAIT");
-				break;
-			case RUNNING:
-				ROFL_DEBUG(" RUNNING");
-				break;
-			case FINISHED:
-				ROFL_DEBUG(" FINISHED");
-				break;
-			default:
-				assert(0);
-				ROFL_DEBUG(" UNKNOWN");
-				break;
-		}
-		ROFL_DEBUG("\n");
-	}
-#endif	
-}
+struct rte_mempool* direct_pools[MAX_CPU_SOCKETS];
+struct rte_mempool* indirect_pools[MAX_CPU_SOCKETS];
 
 /*
-* Initialize data structures for processing to work 
+* Initialize data structures for processing to work
 */
 rofl_result_t processing_init(void){
 
 	unsigned int i;
 	struct rte_config* config;
 	enum rte_lcore_role_t role;
+	unsigned int sock_id;
+	char pool_name[POOL_MAX_LEN_NAME];
 
 	//Cleanup
-	memset(processing_core_tasks,0,sizeof(core_tasks_t)*RTE_MAX_LCORE);	
+	memset(direct_pools, 0, sizeof(direct_pools));
+	memset(indirect_pools, 0, sizeof(indirect_pools));
+	memset(processing_core_tasks,0,sizeof(core_tasks_t)*RTE_MAX_LCORE);
 
-	//Init 
-	current_core_index = 0;
+	//Initialize basics
 	config = rte_eal_get_configuration();
 	max_cores = config->lcore_count;
 	rte_spinlock_init(&mutex);
-		
+
 	ROFL_DEBUG(DRIVER_NAME"[processing] Processing init: %u logical cores guessed from rte_eal_get_configuration(). Master is: %u\n", config->lcore_count, config->master_lcore);
 
-	//Define available cores 
+	//Define available cores
 	for(i=0; i < RTE_MAX_LCORE; ++i){
 		role = rte_eal_lcore_role(i);
-		if(role == ROLE_RTE && i != config->master_lcore){
-			processing_core_tasks[i].available = true;
-			ROFL_DEBUG(DRIVER_NAME"[processing] Marking core %u as available\n",i);
+		if(role == ROLE_RTE){
+
+			if(i != config->master_lcore){
+				processing_core_tasks[i].available = true;
+				ROFL_DEBUG(DRIVER_NAME"[processing] Marking core %u as available\n",i);
+			}
+
+			//Recover CPU socket for the lcore
+			sock_id = rte_lcore_to_socket_id(i);
+
+			if(direct_pools[sock_id] == NULL){
+
+				/**
+				*  create the mbuf pool for that socket id
+				*/
+				snprintf (pool_name, POOL_MAX_LEN_NAME, "pool_direct_%u", sock_id);
+				ROFL_INFO(DRIVER_NAME"[processing] Creating %s with #mbufs %u for CPU socket %u\n", pool_name, mbuf_pool_size, sock_id);
+
+				direct_pools[sock_id] = rte_mempool_create(
+					pool_name,
+					mbuf_pool_size,
+					MBUF_SIZE, 32,
+					sizeof(struct rte_pktmbuf_pool_private),
+					rte_pktmbuf_pool_init, NULL,
+					rte_pktmbuf_init, NULL,
+					sock_id, 0);
+
+				if (direct_pools[sock_id] == NULL)
+					rte_panic("Cannot init direct mbuf pool for CPU socket: %u\n", sock_id);
+
+//Softclonning is disabled
+#if 0
+				snprintf (pool_name, POOL_MAX_LEN_NAME, "pool_indirect_%u", sock_id);
+				ROFL_INFO(DRIVER_NAME"[processing] Creating %s with #mbufs %u for CPU socket %u\n", pool_name, mbuf_pool_size, sock_id);
+				indirect_pools[sock_id] = rte_mempool_create(
+						pool_name,
+						mbuf_pool_size,
+						sizeof(struct rte_mbuf), 32,
+						0,
+						NULL, NULL,
+						rte_pktmbuf_init, NULL,
+						sock_id, 0);
+
+				if(indirect_pools[sock_id] == NULL)
+					rte_panic("Cannot init indirect mbuf pool for CPU socket: %u\n", sock_id);
+#else
+				//Avoid compiler to complain
+				(void)indirect_pools;
+#endif
+			}
+
 		}
 	}
 
-	processing_dump_cores_state();	
+	//Print the status of the cores
+	processing_dump_core_states();
 
 	return ROFL_SUCCESS;
 }
@@ -267,10 +282,11 @@ int processing_core_process_packets(void* not_used){
 */
 rofl_result_t processing_schedule_port(switch_port_t* port){
 
-	unsigned int i, index, *num_of_ports;
+	unsigned int i, *num_of_ports;
 	unsigned int port_id;
+	unsigned int lcore_sel, lcore_sel_load = 0xFFFFFFFF;
+	unsigned int socket_id, it_load;
 
-	
 	rte_spinlock_lock(&mutex);
 
 	switch(port->type){
@@ -295,33 +311,61 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		default: assert(0);
 			return ROFL_FAILURE;
 	}
-	//Select core
-	for(current_core_index++, index=current_core_index;;){
-		if( processing_core_tasks[current_core_index].available == true && processing_core_tasks[current_core_index].num_of_rx_ports != PROCESSING_MAX_PORTS_PER_CORE )
-			break;
 
-		//Circular increment
-		if(current_core_index+1 == RTE_MAX_LCORE)
-			current_core_index=0; 
-		else
-			current_core_index++;
-	
-		//We've already checked all positions. No core free. Return
-		if(current_core_index == index){
-			//All full 
-			ROFL_ERR(DRIVER_NAME"[processing] All cores are full. No available port slots\n");
-			assert(0);		
-			rte_spinlock_unlock(&mutex);
-			return ROFL_FAILURE;
+	//Select core
+	for(i=0, lcore_sel = RTE_MAX_LCORE; i < RTE_MAX_LCORE; ++i){
+		if( processing_core_tasks[i].available &&
+			processing_core_tasks[i].num_of_rx_ports != PROCESSING_MAX_PORTS_PER_CORE){
+
+			it_load = processing_core_tasks[i].num_of_rx_ports;
+
+			//For phy ports check for a wrong CPU socket and add additional weight
+			if( port->type == PORT_TYPE_PHYSICAL){
+				socket_id = rte_eth_dev_socket_id(((dpdk_port_state_t*)port->platform_port_state)->port_id);
+				if( (socket_id != 0xFFFFFFFF) && (socket_id != rte_lcore_to_socket_id(i)))
+					it_load |= WRONG_CPU_SOCK_OH;
+			}
+
+			//Check if this is more appropriate
+			if(lcore_sel_load > it_load){
+				//Select it
+				lcore_sel = i;
+				lcore_sel_load = it_load;
+			}
 		}
 	}
 
-	ROFL_DEBUG(DRIVER_NAME"[processing] Selected core %u for scheduling port %s(%p)\n", current_core_index, port->name, port); 
+	//If they are all full
+	if(lcore_sel == RTE_MAX_LCORE){
+		ROFL_ERR(DRIVER_NAME"[processing] ERROR: All cores are full. No available port slots\n");
+		rte_spinlock_unlock(&mutex);
+		return ROFL_FAILURE;
+	}
 
-	num_of_ports = &processing_core_tasks[current_core_index].num_of_rx_ports;
+	//Issue a warning if the port is physical and an unmatched CPU socket is being used
+	if(port->type == PORT_TYPE_PHYSICAL){
+		socket_id = rte_eth_dev_socket_id(((dpdk_port_state_t*)port->platform_port_state)->port_id);
+		if( (socket_id != 0xFFFFFFFF) && (socket_id != rte_lcore_to_socket_id(lcore_sel))){
+			ROFL_ERR(DRIVER_NAME"[processing] WARNING: The core selected %u[cpu socket %u] and the port %s(cpu socket: %u) are in different CPU sockets!\n This configuration is SUBOPTIMAL!! Consider using another coremask.\n",
+				 lcore_sel, rte_lcore_to_socket_id(lcore_sel),
+				 port->name, socket_id);
+#ifdef ABORT_ON_UNMATCHED_SCHED
+			ROFL_ERR(DRIVER_NAME"[processing] ERROR: The core selected %u[cpu socket %u] and the port %s(cpu socket: %u) are in different CPU sockets!\n No available core .\n",
+				 lcore_sel, rte_lcore_to_socket_id(lcore_sel),
+				 port->name, socket_id);
+
+			rte_spinlock_unlock(&mutex);
+			return ROFL_FAILURE;
+#endif
+		}
+	}
+
+	ROFL_DEBUG(DRIVER_NAME"[processing] Selected core %u for scheduling port %s(%p)\n", lcore_sel, port->name, port); 
+
+	num_of_ports = &processing_core_tasks[lcore_sel].num_of_rx_ports;
 
 	//Assign port and exit
-	if(processing_core_tasks[current_core_index].port_list[*num_of_ports] != NULL){
+	if(processing_core_tasks[lcore_sel].port_list[*num_of_ports] != NULL){
 		ROFL_ERR(DRIVER_NAME"[processing] Corrupted state on the core task list\n");
 		assert(0);
 		rte_spinlock_unlock(&mutex);
@@ -333,13 +377,13 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		{
 			dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;	
 			//FIXME: check if already scheduled
-			if( iface_manager_set_queues(port, current_core_index, port_state->port_id) != ROFL_SUCCESS){
+			if( iface_manager_set_queues(port, lcore_sel, port_state->port_id) != ROFL_SUCCESS){
 				assert(0);
 				return ROFL_FAILURE;
 			}
 
 			//Store attachment info (back reference)
-			port_state->core_id = current_core_index; 
+			port_state->core_id = lcore_sel; 
 			port_state->core_port_slot = *num_of_ports;
 		
 			
@@ -356,7 +400,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			nf_port_state_dpdk_t* port_state = (nf_port_state_dpdk_t*)port->platform_port_state;
 
 			//Store attachment info (back reference)
-			port_state->core_id = current_core_index; 
+			port_state->core_id = lcore_sel; 
 			port_state->core_port_slot = *num_of_ports;
 
 			port_id = port_state->nf_id;
@@ -373,7 +417,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			nf_port_state_kni_t* port_state = (nf_port_state_kni_t*)port->platform_port_state;
 
 			//Store attachment info (back reference)
-			port_state->core_id = current_core_index; 
+			port_state->core_id = lcore_sel; 
 			port_state->core_port_slot = *num_of_ports;
 
 			port_id = port_state->nf_id;
@@ -390,25 +434,23 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			return ROFL_FAILURE;
 	}
 
-	processing_core_tasks[current_core_index].port_list[*num_of_ports] = port;
+	processing_core_tasks[lcore_sel].port_list[*num_of_ports] = port;
 	(*num_of_ports)++;
 	
-	index = current_core_index;
-
 	//Mark port as present (and scheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
 
 		switch(port->type){
 			case PORT_TYPE_PHYSICAL: 
 				processing_core_tasks[i].phy_ports[port_id].present = true;
-				processing_core_tasks[i].phy_ports[port_id].core_id = index;
+				processing_core_tasks[i].phy_ports[port_id].core_id = lcore_sel;
 				break;
 				
 #ifdef GNU_LINUX_DPDK_ENABLE_NF			
 			case PORT_TYPE_NF_SHMEM:	
 			case PORT_TYPE_NF_EXTERNAL:
 				processing_core_tasks[i].nf_ports[port_id].present = true;
-				processing_core_tasks[i].nf_ports[port_id].core_id = index;
+				processing_core_tasks[i].nf_ports[port_id].core_id = lcore_sel;
 				break;
 #endif //GNU_LINUX_DPDK_ENABLE_NF			
 		
@@ -423,21 +465,24 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	
 	rte_spinlock_unlock(&mutex);
 
-	if(!processing_core_tasks[index].active){
-		if(rte_eal_get_lcore_state(index) != WAIT){
+	if(!processing_core_tasks[lcore_sel].active){
+		if(rte_eal_get_lcore_state(lcore_sel) != WAIT){
 			assert(0);
 			rte_panic("Core status corrupted!");
 		}
 		
-		ROFL_DEBUG(DRIVER_NAME"[processing] Launching core %u due to scheduling action of port %p\n", index, port);
+		ROFL_DEBUG(DRIVER_NAME"[processing] Launching core %u due to scheduling action of port %p\n", lcore_sel, port);
 
 		//Launch
-		ROFL_DEBUG_VERBOSE("Pre-launching core %u due to scheduling action of port %p\n", index, port);
-		if( rte_eal_remote_launch(processing_core_process_packets, NULL, index) < 0)
-			rte_panic("Unable to launch core %u! Status was NOT wait (race-condition?)", index);
-		ROFL_DEBUG_VERBOSE("Post-launching core %u due to scheduling action of port %p\n", index, port);
+		ROFL_DEBUG_VERBOSE("Pre-launching core %u due to scheduling action of port %p\n", lcore_sel, port);
+		if( rte_eal_remote_launch(processing_core_process_packets, NULL, lcore_sel) < 0)
+			rte_panic("Unable to launch core %u! Status was NOT wait (race-condition?)", lcore_sel);
+		ROFL_DEBUG_VERBOSE("Post-launching core %u due to scheduling action of port %p\n", lcore_sel, port);
 	}
-	
+
+	//Print the status of the cores
+	processing_dump_core_states();
+
 	return ROFL_SUCCESS;
 }
 
@@ -585,38 +630,86 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 	
 	*scheduled = false;
 
+	//Print the status of the cores
+	processing_dump_core_states();
+
 	return ROFL_SUCCESS;
 }
 
 /*
 * Dump core state
 */
-void processing_dump_core_state(void){
+void processing_dump_core_states(void){
 
 	unsigned int i,j;
 	core_tasks_t* core_task;
-	
-	for(i=0;i<max_cores;++i){
+	std::stringstream ss;
+	enum rte_lcore_role_t role;
+	enum rte_lcore_state_t state;
+
+	ss << DRIVER_NAME"[processing] Core status:" << std::endl;
+
+	for(i=0;i<RTE_MAX_LCORE;++i){
 		core_task = &processing_core_tasks[i];
-		if(!core_task->available)
+
+		if(i && !core_task->available)
 			continue;
 
-		//Print basic info	
-		ROFL_DEBUG(DRIVER_NAME"[processing] Core: %u ",i);
-		
-		if(!core_task->active)
-			ROFL_DEBUG("IN");
-		ROFL_DEBUG("ACTIVE port-list:[");
-	
+		//Print basic info
+		ss << "\t core [" << i << "("<<rte_lcore_to_socket_id(i)<<")]";
+
+		if(i == 0){
+			ss << " Master"<<std::endl;
+			continue;
+		}
+
+		role = rte_eal_lcore_role(i);
+		state = rte_eal_get_lcore_state(i);
+
+		ss << " role: ";
+		switch(role){
+			case ROLE_RTE:
+				ss << "RTE";
+				break;
+			case ROLE_OFF:
+				ss << "OFF";
+				break;
+			default:
+				assert(0);
+				ss << "Unknown";
+				break;
+		}
+
+		ss << ", state: ";
+		switch(state){
+			case WAIT:
+				ss << "WAIT";
+				break;
+			case RUNNING:
+				ss << "RUNNING";
+				break;
+			case FINISHED:
+				ss << "FINISHED";
+				break;
+			default:
+				assert(0);
+				ss << "UNKNOWN";
+				break;
+		}
+
+		ss << " Load factor: "<< std::fixed << std::setprecision(3) << (float)core_task->num_of_rx_ports/PROCESSING_MAX_PORTS_PER_CORE;
+		ss << ", serving ports: [";
 		for(j=0;j<core_task->num_of_rx_ports;++j){
 			if(core_task->port_list[j] == NULL){
-				ROFL_DEBUG("error_NULL,");
+				ss << "error_NULL,";
 				continue;
 			}
-			ROFL_DEBUG("%s,",core_task->port_list[j]->name);
+			ss << core_task->port_list[j]->name <<",";
 		}
-		ROFL_DEBUG("]\n");
+		ss << "]\n";
 	}
+
+	ROFL_INFO("%s", ss.str().c_str());
 }
 
 

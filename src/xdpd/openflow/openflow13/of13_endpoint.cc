@@ -608,7 +608,7 @@ of13_endpoint::handle_queue_stats_request(
 		throw rofl::eRofBase();
 
 
-	if( ((portnum >= of13switch->max_ports) && (portnum != openflow13::OFPP_ALL)) || portnum == 0){
+	if( ((portnum >= of13switch->max_ports) && (portnum != openflow13::OFPP_ANY)) || portnum == 0){
 		//Destroy the snapshot
 		of_switch_destroy_snapshot((of_switch_snapshot_t*)of13switch);
 		throw rofl::eBadRequestBadPort(); 	//Invalid port num
@@ -625,7 +625,7 @@ of13_endpoint::handle_queue_stats_request(
 
 		port = of13switch->logical_ports[n].port;
 
-		if ((openflow13::OFPP_ALL != portnum) && (port->of_port_num != portnum))
+		if ((openflow13::OFPP_ANY != portnum) && (port->of_port_num != portnum))
 			continue;
 
 
@@ -1510,7 +1510,7 @@ of13_endpoint::handle_queue_get_config_request(
 		if (of13switch->logical_ports[n].attachment_state != LOGICAL_PORT_STATE_ATTACHED)
 			continue;
 
-		if ((openflow13::OFPP_ALL != portnum) && (port->of_port_num != portnum))
+		if ((openflow13::OFPP_ANY != portnum) && (port->of_port_num != portnum))
 			continue;
 
 		for(unsigned int i=0; i<port->max_queues; i++){

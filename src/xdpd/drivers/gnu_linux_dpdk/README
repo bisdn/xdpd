@@ -1,10 +1,10 @@
-The GNU/Linux DPDK driver 
+The GNU/Linux DPDK driver
 ================================
 
 Brief
 -----
 
-Platform driver using Intel's DPDK 
+Platform driver backend using Intel's DPDK
 
 Requirements
 ------------
@@ -14,16 +14,22 @@ DPDK v1.7
 Compilation
 -----------
 
-To compile xDPd with DPDK support, make sure it is configured like this (if libraries are not installed):
+To compile xDPd you have to define RTE_SDK pointing to the _final_ DPDK build folder before configure. As an example:
 
-	CFLAGS="-L$RTE_SDK/lib/ -I$RTE_SDK/include/" CXXFLAGS="$CFLAGS" ../configure --with-hw-support=gnu-linux-dpdk --disable-silent-rules 
+	export RTE_SDK=/<PATH TO DPDK>/dpdk/x86_64-native-linuxapp-gcc/
+
+Then to configure xDPd with the DPDK support, make sure it is configured like this:
+
+	CFLAGS="-L$RTE_SDK/lib/ -I$RTE_SDK/include/" CXXFLAGS="$CFLAGS" ../configure --with-hw-support=gnu-linux-dpdk --disable-silent-rules
 
 Note also that _before_ compiling, the file src/config.h should be revised to make sure that at least:
 
 - IO_IFACE_NUM_QUEUES, RX_XXTHRESH and TX_XXTHRESH are correct according to your NIC's capabilities
-- Core mask is at least 0x3 (2 cores)
+- Core mask is at least 0x1 + 1 core, e.g. 0x3 (so 2 cores)
 
-To execute xdpd use the normal config file. Note that DPDK's driver will discover 1G ports as geXX and 10G as 10geXX.
+To execute xdpd use the normal configuration file (e.g. example.cfg). Note that DPDK's driver will discover 1G ports as geXX and 10G as 10geXX.
+
+Extra parameters, such as the coremask and the number of buffers can be specified using --extra-params. See FAQ.
 
 Limitations
 -----------
@@ -32,6 +38,10 @@ Note that current config.h cannot handle multiple configurations of ports and RX
 
 FAQ
 ---
+
+* Can I override the coremask or the pool size without recompiling? Yes, use the --extra-params option of xdpd like this:
+
+        ./xdpd -c example.cfg -e "coremask=0x7;pool_size=65536"
 
 * Why are some interfaces not recognised by xDPd? By default only tested devices are compiled by DPDK's PMDs; make sure all the device IDs are enabled when compiling DPDK. e.g. (E1000_DEV_ID_82583V): 
 

@@ -1,6 +1,7 @@
 #include "bufferpool.h"
 #include "dpdk_datapacket.h"
 #include "../config.h"
+#include <stdexcept>
 
 using namespace xdpd::gnu_linux;
 
@@ -14,15 +15,19 @@ bufferpool::bufferpool(void)
 {
 	long long unsigned int i;
 	datapacket_t* dp;
-	datapacket_dpdk_t* dp_dpdk;	
+	datapacket_dpdk_t* dp_dpdk;
+	bpool_slot_t *pslot;
 
-	for(i=0;i<capacity;++i){
+	cq = new circular_queue<bpool_slot_t>(capacity);
+	memset(pool,0,sizeof(pool));
+
+	for(i=0;i<capacity-1;++i){
 
 		//Init datapacket
 		dp = (datapacket_t*)malloc(sizeof(datapacket_t));
 		
 		if(!dp){
-			throw "Unable to allocate bufferpool; out of memory.";
+			throw std::runtime_error("Unable to allocate bufferpool; out of memory.");
 		}
 
 		//Memset datapacket
@@ -31,7 +36,7 @@ bufferpool::bufferpool(void)
 		//Init datapacketx86
 		dp_dpdk = create_datapacket_dpdk(dp);
 		if(!dp_dpdk){
-			throw "Unable to allocate bufferpool; out of memory.";
+			throw std::runtime_error("Unable to allocate bufferpool; out of memory.");
 		}
 
 		//Assign the buffer_id
@@ -40,18 +45,18 @@ bufferpool::bufferpool(void)
 		//Link them
 		dp->platform_state = (platform_datapacket_state_t*)dp_dpdk;
 
-		//Add to the pool	
-		pool[i].status = BUFFERPOOL_SLOT_AVAILABLE;
-		pool[i].pkt = dp;
-		if(i<capacity)
-			pool[i].next = &pool[i+1];
-		else
-			pool[i].next = NULL;
-			
-	}
+		//Add to the pool
+		pslot = &pool[i];	
+		pslot->status = BUFFERPOOL_SLOT_AVAILABLE;
+		pslot->pkt = dp;
 
-	//Set head
-	free_head = &pool[0];
+		//assign to queue
+                if ( cq->non_blocking_write(pslot) != ROFL_SUCCESS ){
+                        destroy_datapacket_dpdk(dp_dpdk);
+                        free(dp);
+                        throw std::runtime_error("Insertion in bufferpool failed at initialization.");
+                } 
+	}
 
 	//Set size
 #ifdef DEBUG
@@ -61,12 +66,25 @@ bufferpool::bufferpool(void)
 
 bufferpool::~bufferpool(){
 	
-	unsigned long long int i;
+	unsigned long long int i=0;
+	bpool_slot_t *pslot;
 
-	for(i=0;i<capacity;++i){
-		free(pool[i].pkt->platform_state);
+	while(cq->is_empty()==false){
+		pslot = cq->non_blocking_read();
+                if (pslot==NULL){
+                        continue;
+                }
+		
+		if (pslot->pkt)
+			destroy_datapacket_dpdk((datapacket_dpdk_t*)pslot->pkt->platform_state);
 		free(pool[i].pkt);
+		i++;
 	}
+
+	delete cq;
+
+        //check that no buffer was lost
+        assert(i == capacity-1);
 }
 
 

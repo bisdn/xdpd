@@ -20,7 +20,7 @@ bufferpool::bufferpool(void){
 	cq = new circular_queue<bpool_slot_t>(capacity);
 	memset(pool,0,sizeof(pool));
 
-	for(i=0;i<capacity;++i){
+	for(i=0;i<capacity-1;++i){
 
 		//Init datapacket
 		dp = (datapacket_t*)malloc(sizeof(datapacket_t));
@@ -52,9 +52,9 @@ bufferpool::bufferpool(void){
 			
 		//assign to queue
 		if ( cq->non_blocking_write(pslot) != ROFL_SUCCESS ){
-			fprintf(stderr, "********************  Insertion Failed!\n" );
 			delete dpx86;
 			free(dp);
+			throw "Insertion in bufferpool failed at initialization.";
 		}
 	}
 
@@ -75,7 +75,8 @@ bufferpool::~bufferpool(){
 			continue;
 		}
 		//checks for pkt==NULL, and platform_state==NULL?
-		delete (datapacketx86*)pslot->pkt->platform_state;
+		if (pslot->pkt)
+			delete (datapacketx86*)pslot->pkt->platform_state;
 		free(pslot->pkt);
 		i++;
 	}

@@ -2,6 +2,7 @@
 
 #include "datapacketx86.h"
 #include "../config.h"
+#include <stdexcept>
 
 using namespace xdpd::gnu_linux;
 
@@ -26,7 +27,7 @@ bufferpool::bufferpool(void){
 		dp = (datapacket_t*)malloc(sizeof(datapacket_t));
 		
 		if(!dp){
-			throw "Unable to allocate bufferpool; out of memory.";
+			throw std::runtime_error("Unable to allocate bufferpool; out of memory.");
 		}
 
 		//Memset datapacket
@@ -36,7 +37,7 @@ bufferpool::bufferpool(void){
 		try {
 			dpx86 = new datapacketx86(dp);
 		}catch(std::bad_alloc ex){
-			throw "Unable to allocate bufferpool; out of memory.";
+			throw std::runtime_error("Unable to allocate bufferpool; out of memory.");
 		}		
 
 		//Assign the buffer_id
@@ -54,7 +55,7 @@ bufferpool::bufferpool(void){
 		if ( cq->non_blocking_write(pslot) != ROFL_SUCCESS ){
 			delete dpx86;
 			free(dp);
-			throw "Insertion in bufferpool failed at initialization.";
+			throw std::runtime_error("Insertion in bufferpool failed at initialization.");
 		}
 	}
 

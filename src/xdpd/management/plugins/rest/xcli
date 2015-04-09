@@ -261,7 +261,11 @@ def execute(socket, command, req_confirm=False):
 		#Add prefix for the info URLS
 		stripped = [REST_INFO_PREFIX] + stripped
 
-		return rest(socket, compose_url(stripped))
+		result = rest(socket, compose_url(stripped))
+
+		if "flows" in command or "group-table" in command:
+			result = sanitize_flow_or_group(result)
+		return result
 	elif op == "exec":
 		#Confirm
 		if req_confirm:
@@ -303,6 +307,53 @@ def execute(socket, command, req_confirm=False):
 	else:
 		print "Unknown op: '"+op+"'"
 		return
+
+#
+# TODO remove these two functions; this is only needed due to the missing
+# feature issue number #13 in ROFL
+#
+def sanitize_flow_or_group(string):
+	#remove \n and \t
+	string = re.sub(r'\\n', r'', string)
+	string = re.sub(r'\\t', r'', string)
+
+	#remove unuseful blocks in matches
+	string = re.sub(r'<cofmatch[^>]*>', r'', string)
+	string = re.sub(r'<coxmatches\s*#matches:([^>^\s]*)\s*>', r'(\1)', string)
+	string = re.sub(r'<coxmatch[^>]*>', r'', string)
+	string = re.sub(r'<cmemory[^>]*>[^<]*<', r'<', string)
+
+	#Annoying comma
+	string = re.sub(r'{,\s', r'{', string)
+
+	#Instructions
+	string = re.sub(r'<cofintructions[^>]*>', r'', string)
+	string = re.sub(r'<cofactions [^>]*>', r'', string)
+	string = re.sub(r'<cofaction_([\w]+) ([^>]+)\s*>', r'<\1#\2>', string)
+	string = re.sub(r'<cofaction_([\w]+)\s*>', r'<\1#>', string)
+	string = re.sub(r'<cofaction [^>]*>', r'', string)
+	string = re.sub(r'<cofinstruction_([\w]+)\s*>', r'(\1)', string)
+	string = re.sub(r'<cofinstruction_actions[^>]*>', r'', string)
+	string = re.sub(r'<cofinstruction[^>]*>', r'', string)
+
+	#Pack
+	string = re.sub(r'>\s+<', r', ', string)
+	string = re.sub(r'<', r'', string)
+	string = re.sub(r'\s*>\s*', r'', string)
+	string = re.sub(r' +', r' ', string)
+	string = re.sub(r' ,', r',', string)
+	string = re.sub(r'\(goto_table\)\s*table-id:\s*(\w+)\s*\(', r'(goto_table:\1) (', string)
+
+	#Spurious stuff
+	string = re.sub(r'" id', r'"id', string)
+	string = re.sub(r'}}\]\[', r'}[', string)
+	string = re.sub(r'\(\s*actions\s*\)', r'', string)
+	string = re.sub(r'#, ', r'#', string)
+
+	#Prettify string
+	string = json.loads(string)
+	string = json.dumps(string, sort_keys=False, indent=4, separators=(',', ': '))
+	return string
 
 #
 # Cmd based interactive
@@ -389,6 +440,7 @@ class InteractivePrompt(cmd.Cmd):
 			result=execute(self.sockets[self.curr], "show "+s)
 		except:
 			return
+
 		print_less(result)
 
 	def complete_show(self, text, line, start_index, end_index):

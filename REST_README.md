@@ -37,7 +37,7 @@ How to build
 
 To build support for rest:
 
-	sh# ../configure --with-plugins="rest, <...>" 
+	sh# ../configure --with-plugins="rest [...]"
 	sh# make
 	sh# make install
 

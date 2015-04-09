@@ -68,13 +68,12 @@ bufferpool::~bufferpool(){
 	unsigned long long int i=0;
 	bpool_slot_t *pslot;
 
-	//for(i=0;i<capacity;++i){
 	while(cq->is_empty()==false){
 		pslot = cq->non_blocking_read();
 		if (pslot==NULL){
 			continue;
 		}
-		//checks for pkt==NULL, and platform_state==NULL?
+
 		if (pslot->pkt)
 			delete (datapacketx86*)pslot->pkt->platform_state;
 		free(pslot->pkt);

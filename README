@@ -84,6 +84,8 @@ http://www.xdpd.org/doc/
 
 Documentation can be compiled via `make doc`. Documentation is generated in build/doc/ folder
 
+RYU certification for gnu-linux/gnu-linux-dpdk: check doc/gnu-linux-ryu.cert
+
 Known issues
 ================================
 

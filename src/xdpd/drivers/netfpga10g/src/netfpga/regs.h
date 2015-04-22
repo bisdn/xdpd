@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 #include <linux/sockios.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/common/utils/c_logger.h>
 
 #include "../util/compiler_assert.h"

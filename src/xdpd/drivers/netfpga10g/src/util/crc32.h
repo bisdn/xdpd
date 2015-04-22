@@ -40,7 +40,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 
 #define CRC32_TABLE_BITS 8
 #define CRC32_TABLE_SIZE (1u << CRC32_TABLE_BITS)

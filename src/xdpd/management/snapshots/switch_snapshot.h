@@ -9,7 +9,7 @@
 #include <string> 
 #include <sstream>
 #include <list> 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/matching_algorithms/matching_algorithms.h>

@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <stdexcept>
 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/common/csocket.h>
 #include <rofl/common/caddress.h>
 #include <rofl/common/croflexception.h>

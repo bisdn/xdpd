@@ -1,5 +1,7 @@
 #include "system_manager.h"
 
+#include <rofl_common_conf.h>
+#include <rofl_datapath_conf.h>
 #include <sstream>
 #include <stdexcept>
 #include <sys/stat.h>
@@ -332,12 +334,17 @@ std::string system_manager::get_version(){
 	ss << "Driver description: "<< driver_info.description << std::endl;
 
 	//Libraries info
-	ss << "\n-- Libraries --" << std::endl;
-	ss << "[ROFL]" << std::endl;
-	ss << "  Version: " << ROFL_VERSION << std::endl;
-	ss << "  Build: " << ROFL_BUILD_NUM << std::endl;
-	ss << "  Compiled in branch: " << ROFL_BUILD_BRANCH << std::endl;
-	ss << "  Detailed build information:" << ROFL_BUILD_DESCRIBE << std::endl << std::endl;
+	ss << std::endl << "-- Libraries --" << std::endl;
+	ss << "[ROFL-common]" << std::endl;
+	ss << "  Version: " << ROFL_COMMON_VERSION << std::endl;
+	ss << "  Build: " << ROFL_COMMON_BUILD_NUM << std::endl;
+	ss << "  Compiled in branch: " << ROFL_COMMON_BUILD_BRANCH << std::endl;
+	ss << "  Detailed build information:" << ROFL_COMMON_BUILD_DESCRIBE << std::endl << std::endl;
+	ss << "[ROFL-datapath]" << std::endl;
+	ss << "  Version: " << ROFL_DATAPATH_VERSION << std::endl;
+	ss << "  Build: " << ROFL_DATAPATH_BUILD_NUM << std::endl;
+	ss << "  Compiled in branch: " << ROFL_DATAPATH_BUILD_BRANCH << std::endl;
+	ss << "  Detailed build information:" << ROFL_DATAPATH_BUILD_DESCRIBE << std::endl << std::endl;
 
 	return ss.str();
 }

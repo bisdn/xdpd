@@ -21,6 +21,9 @@ AC_ARG_WITH(hw-support, AS_HELP_STRING([--with-hw-support="driver-name"],[Compil
 	HW="gnu-linux"
 ])
 
+#External librs
+WITH_DPDK="no"
+
 #Add subpackages conditionally
 if ( test "$HW" = "gnu-linux");then
 	msg="$msg GNU/Linux"
@@ -46,6 +49,10 @@ if ( test "$HW" = "gnu-linux-dpdk");then
 		-Wl,-lrte_pmd_ring \
 		-Wl,-lrte_pmd_virtio_uio \
 		-Wl,--no-whole-archive"
+
+	#Onboard DPDK compilation
+	WITH_DPDK="yes"
+	AC_CONFIG_SUBDIRS([libs/dpdk])
 fi
 if( test "$HW" = "bcm");then
 	msg="$msg Broadcom"
@@ -81,6 +88,7 @@ fi
 #Print fancy message
 AC_MSG_RESULT($msg)
 
+AM_CONDITIONAL([WITH_DPDK], [test "$WITH_DPDK" = "yes"])
 AC_SUBST(PLATFORM)
 AC_SUBST(xdpd_HW_LDFLAGS)
 

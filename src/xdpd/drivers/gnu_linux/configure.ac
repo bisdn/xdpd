@@ -47,6 +47,8 @@ m4_include([config/pktclassifier.m4])
 #Check kernel support
 m4_include([config/vlan.m4])
 
+# ROFL
+m4_include([../../../../config/rofl.m4])
 
 AC_CONFIG_FILES([
 	Makefile

@@ -3,7 +3,7 @@ MAINTAINERCLEANFILES = Makefile.in
 ringbuffertest_SOURCES= \
 	ringbuffertest.cc	
 
-ringbuffertest_LDADD= -lrofl \
+ringbuffertest_LDADD= -lrofl_common\
 	-lcppunit \
 	-lpthread
 

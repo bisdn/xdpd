@@ -2,7 +2,7 @@
 #ifndef PTHREAD_LOCK_IMPL_INLINE
 #define PTHREAD_LOCK_IMPL_INLINE
 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <pthread.h>
 
 //Define inline or not depending if the pipeline was compiled with inlined functions

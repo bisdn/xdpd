@@ -11,7 +11,7 @@ noinst_LTLIBRARIES = libxdpd_wrap.la
 libxdpd_wrap_la_SOURCES = 
 libxdpd_wrap_la_LIBADD = \
 	management/libxdpd_mgmt.la \
-	-lrofl_pipeline \
+	-lrofl_datapath \
 	openflow/libxdpd_openflow.la\
 	$(FM_LIB)
 
@@ -21,8 +21,10 @@ xdpd_SOURCES = cmm.cc xdpd.cc
 xdpd_LDADD = \
 	libxdpd_wrap.la \
 	openflow/libxdpd_openflow.la \
-	-lrofl_pipeline \
+	-lrofl_datapath \
+	-lrofl_common \
 	$(FM_LIB)
+
 xdpd_LDFLAGS = $(xdpd_HW_LDFLAGS)
 
 #The .a is a workaround to prevent libtool to strip it...

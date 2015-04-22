@@ -1,5 +1,6 @@
 AC_INIT(xdpd - DPDK GNU/Linux driver, m4_esyscmd_s(cat VERSION), xdpd@bisdn.de, xdpd_gnu_linux_dpdk_fm)
-AC_CONFIG_AUX_DIR([.])
+
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AC_CONFIG_MACRO_DIR([m4])
 AC_GNU_SOURCE
@@ -32,6 +33,9 @@ m4_include([../../../../config/debug.m4])
 
 # Check for profiling mode
 m4_include([../../../../config/profiling.m4])
+
+# ROFL
+m4_include([../../../../config/rofl.m4])
 
 # TODO: remove this once the patch is accepted
 AC_CHECK_LIB(rte_kni, rte_kni_init, [AC_DEFINE(DPDK_PATCHED_KNI, 1)], [echo "";AC_WARN([DPDK does not contain the KNI memzone pool patch! NF ports will still work, but the number of NF ports that can be allocated could be limited and fail. You can safely ignore this warning if you are not going to be using NF ports.]); sleep 3], [-lrte_eal -lethdev -lrte_hash -lrte_kni -lrte_lpm -lrte_malloc -lrte_mbuf -lrte_mempool -lrte_power -lrte_ring -lrte_timer -lrte_eal -lrte_kvargs -ldl -lpthread -lrt])

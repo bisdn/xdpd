@@ -10,7 +10,7 @@
 #include <string>
 #include <stdbool.h>
 #include <pthread.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/hal/driver.h>
 #include <rofl/datapath/pipeline/switch_port.h>

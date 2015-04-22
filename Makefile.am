@@ -5,7 +5,7 @@ MAINTAINERCLEANFILES = \
 	$(top_srcdir)/configure \
 	$(top_srcdir)/Makefile.in
 
-SUBDIRS = src doc test
+SUBDIRS = libs src doc test
 
 #Could be improved.. 
 .PHONY: doc

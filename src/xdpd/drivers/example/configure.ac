@@ -37,6 +37,9 @@ m4_include([../../../../config/profiling.m4])
 # Ensure rofl-pipeline platform functions are NOT inlined 
 m4_include([../../../../config/no_pipeline_inline.m4])
 
+# ROFL
+m4_include([../../../../config/rofl.m4])
+
 AC_DEFINE(DRIVER_NAME,"example_platform")
 
 AC_CONFIG_FILES([

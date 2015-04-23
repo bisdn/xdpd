@@ -27,15 +27,6 @@ NodeOrchestrator::~NodeOrchestrator()
 
 void NodeOrchestrator::init()
 {
-	if(!system_manager::is_option_set(CONFIG_FILE_NAME))
-	{
-		ROFL_ERR("[xdpd]["PLUGIN_NAME"] No configuration file specified either via -%c or --%s\n",CONFIG_FILE_CODE,CONFIG_FILE_NAME);
-		throw eConfParamNotFound();
-	}
-	string conf_file = system_manager::get_option_value(CONFIG_FILE_NAME).c_str();
-
-	if(!MessageHandler::parseConfigFile(conf_file))
-		throw eConfParamNotFound();
 
 	ROFL_INFO("\n\n[xdpd]["PLUGIN_NAME"] **************************\n");	
 	ROFL_INFO("[xdpd]["PLUGIN_NAME"] Plugin receiving commands from the node orchestrator.\n");
@@ -47,10 +38,6 @@ void NodeOrchestrator::init()
 vector<rofl::coption> NodeOrchestrator::get_options(void)
 {
 		vector<rofl::coption> vec;
-
-		//Add mandatory -c argument
-		vec.push_back(rofl::coption(false,REQUIRED_ARGUMENT, CONFIG_FILE_CODE,  CONFIG_FILE_NAME, "xDPd config file","./config/example.xml"));
-	
 		return vec;
 };
 
@@ -197,11 +184,11 @@ pair<unsigned int, unsigned int> NodeOrchestrator::createVirtualLink(uint64_t dp
 {
 	string name_port_a;
 	string name_port_b;
-	unsigned int port_a, port_b;
+	unsigned int port_a = 0, port_b = 0;
 	
 	try
 	{
-		port_manager::connect_switches(dpid_a, name_port_a, dpid_b, name_port_b);
+		port_manager::connect_switches(dpid_a, &port_a, name_port_a, dpid_b, &port_b, name_port_b);
 	}catch(...)
 	{
 		ROFL_ERR("[xdpd]["PLUGIN_NAME"] Unable to create a virtual link between the switch '%d' and '%d'\n",dpid_a,dpid_b);
@@ -213,12 +200,10 @@ pair<unsigned int, unsigned int> NodeOrchestrator::createVirtualLink(uint64_t dp
 	xdpd::port_snapshot port_snapshot_a;
 	port_manager::get_port_info(name_port_a,port_snapshot_a);
 	
-	port_a = port_snapshot_a.of_port_num;
 	
 	xdpd::port_snapshot port_snapshot_b;
 	port_manager::get_port_info(name_port_b,port_snapshot_b);
 	
-	port_b = port_snapshot_b.of_port_num;
 				
 	return make_pair(port_a,port_b);
 }

@@ -304,14 +304,8 @@ protected:
 		"answer" : "discover-physical-ports",
 		"status" : "ok",
 		"ports" : [
-			{
-				"name" : "ge0", 
-				"type " : "edge"
-			},
-			{
-				"name" : "ge1",
-				"type" : "core"
-			}
+			"name" : "ge0",
+			"name" : "ge1"
 		]
 	}
 */

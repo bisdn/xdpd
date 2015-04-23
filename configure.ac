@@ -68,8 +68,16 @@ m4_include([config/hw.m4])
 #Check hardware support
 m4_include([config/versioning.m4])
 
-#Check hardware support
+#
+#Libraries
+#
+
+#ROFL
 m4_include([config/rofl.m4])
+
+#DPDK
+m4_include([config/dpdk.m4])
+
 
 #Output the files
 AC_CONFIG_FILES([

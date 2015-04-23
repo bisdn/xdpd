@@ -1,10 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-.PHONY: rofl_common rofl_datapath
+.PHONY: rofl_common rofl_datapath dpdk
 .NOTPARALLEL:
-
-#SUBDIRS = rofl-common rofl-datapath
-
 
 #
 # So here we are, battling with autotools again.
@@ -37,7 +34,11 @@ endif
 endif
 
 #All targets
+if WITH_DPDK
+all: rofl_common rofl_datapath dpdk
+else
 all: rofl_common rofl_datapath
+endif
 
 #ROFL related targets
 rofl_common:
@@ -52,12 +53,15 @@ clean-libs:
 	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) clean
 	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) clean
 	@rm -f $(top_srcdir)/libs/.*-commit
+	@rm -rf $(top_srcdir)/libs/dpdk/build/
 
 maintainer-clean-local:
 	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) maintainer-clean
 	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) maintainer-clean
 	@rm -f $(top_srcdir)/libs/.*-commit
+	@rm -rf $(top_srcdir)/libs/dpdk/build/
 
 if WITH_DPDK
-#SUBDIRS += dpdk
+dpdk:
+	@$(SHELL) $(top_srcdir)/libs/compile_dpdk.sh $(top_srcdir) $(DPDK_TARGET) 
 endif

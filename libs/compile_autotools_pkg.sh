@@ -28,12 +28,19 @@ CURR_COMMIT=`cd $LIBS_DIR/$LIB && git log -1 --pretty=%H || echo`
 if test "$PREV_COMMIT" = "$CURR_COMMIT" ;then
 	#Print a nice trace
 	echo Package \'$LIB\' is up-to-date
+
 else
 	#Print a nice trace
 	echo Compiling \'$LIB\'...
+
 	OLD_PWD=$PWD
-	cd $LIBS_DIR/$LIB/ && sh autogen.sh && cd build && ../configure $AC__FLAGS && make $MK__FLAGS
-	cd $OLD_PWD
-	touch $COMMIT_FILE
-	echo $CURR_COMMIT > $COMMIT_FILE
+
+	cd $LIBS_DIR/$LIB/ || exit -1
+	sh autogen.sh || exit -1
+	cd build || exit -1
+	../configure $AC__FLAGS || exit -1
+	make $MK__FLAGS || exit -1
+	cd $OLD_PWD || exit -1
+	touch $COMMIT_FILE || exit -1
+	echo $CURR_COMMIT > $COMMIT_FILE || exit -1
 fi

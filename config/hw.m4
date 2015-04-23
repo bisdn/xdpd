@@ -24,9 +24,6 @@ AC_ARG_WITH(hw-support, AS_HELP_STRING([--with-hw-support="driver-name"],[Compil
 #General settings
 DRIVER_HAS_INLINE_SUPPORT="yes"
 
-#External libs
-WITH_DPDK="no"
-
 #Add subpackages conditionally
 if ( test "$HW" = "gnu-linux");then
 	msg="$msg GNU/Linux"

@@ -13,9 +13,27 @@ DPDK_LDFLAGS="-L$XDPD_SRCDIR/libs/dpdk/build/lib"
 CPPFLAGS="$DPDK_INCLUDES $CPPFLAGS"
 LDFLAGS="$DPDK_LDFLAGS $LDFLAGS "
 
-#Set target
-#Todo add other architectures and  OSs
-DPDK_TARGET=x86_64-native-linuxapp-$CC
+#
+# Determine the OS
+#
+AC_CANONICAL_HOST
+
+OS=
+case $host_os in
+	linux*)
+	OS=linux
+	;;
+	*BSD*)
+	OS=bsd
+	;;
+	*)
+	#Default Case
+	AC_MSG_ERROR([Your platform is not currently supported])
+	;;
+esac
+
+#Compose DPDK target string
+DPDK_TARGET="x86_64-native-${OS}app-${CC}"
 
 AC_SUBST(DPDK_TARGET)
 AC_MSG_RESULT([added ($DPDK_TARGET)])

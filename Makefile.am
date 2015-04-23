@@ -17,6 +17,9 @@ install-exec-hook:
 uninstall-hook:
 	@echo "Uninstall"
 
+clean-libs:
+	cd libs && $(MAKE) clean-libs
+
 maintainer-clean-local:
 	rm -rf $(top_srcdir)/m4
 	rm -rf $(top_srcdir)/build-aux

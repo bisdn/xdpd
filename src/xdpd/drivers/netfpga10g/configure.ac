@@ -43,12 +43,11 @@ m4_include([../../../../config/profiling.m4])
 # pkt classifier 
 m4_include([config/pktclassifier.m4])
 
-# Ensure rofl-pipeline platform functions are NOT inlined 
-m4_include([../../../../config/no_pipeline_inline.m4])
-
-# ROFL
+# ROFL (Must always be included *before* no_pipeline_inline.m4)
 m4_include([../../../../config/rofl.m4])
 
+# Ensure rofl-pipeline platform functions are NOT inlined 
+m4_include([../../../../config/no_pipeline_inline.m4])
 
 AC_CONFIG_FILES([
 	Makefile

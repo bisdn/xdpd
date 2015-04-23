@@ -21,7 +21,10 @@ AC_ARG_WITH(hw-support, AS_HELP_STRING([--with-hw-support="driver-name"],[Compil
 	HW="gnu-linux"
 ])
 
-#External librs
+#General settings
+DRIVER_HAS_INLINE_SUPPORT="yes"
+
+#External libs
 WITH_DPDK="no"
 
 #Add subpackages conditionally
@@ -59,6 +62,7 @@ if( test "$HW" = "bcm");then
 	AC_DEFINE(HW_BCM)
 	PLATFORM=bcm
 	AC_CONFIG_SUBDIRS([src/xdpd/drivers/bcm])
+	DRIVER_HAS_INLINE_SUPPORT="no"
 fi	
 if( test "$HW" = "octeon");then
 	msg="$msg OCTEON"
@@ -71,12 +75,14 @@ if( test "$HW" = "netfpga10g");then
 	AC_DEFINE(HW_NETFPGA10G)
 	PLATFORM=netfpga10g
 	AC_CONFIG_SUBDIRS([src/xdpd/drivers/netfpga10g])
+	DRIVER_HAS_INLINE_SUPPORT="no"
 fi
 if( test "$HW" = "example");then
 	msg="$msg Example platform"
 	AC_DEFINE(HW_EXAMPLE)
 	PLATFORM=example
 	AC_CONFIG_SUBDIRS([src/xdpd/drivers/example])
+	DRIVER_HAS_INLINE_SUPPORT="no"
 fi
 #[+]Add your platform here...
 
@@ -88,6 +94,7 @@ fi
 #Print fancy message
 AC_MSG_RESULT($msg)
 
+AM_CONDITIONAL([DRIVER_HAS_INLINE_SUPPORT], [test "$DRIVER_HAS_INLINE_SUPPORT" = "yes"])
 AM_CONDITIONAL([WITH_DPDK], [test "$WITH_DPDK" = "yes"])
 AC_SUBST(PLATFORM)
 AC_SUBST(xdpd_HW_LDFLAGS)

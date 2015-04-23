@@ -29,7 +29,11 @@ if DEBUG
 ROFL_CM_AC_FLAGS+= --enable-debug
 ROFL_DP_AC_FLAGS+= --enable-debug
 else
+
+if DRIVER_HAS_INLINE_SUPPORT
 ROFL_DP_AC_FLAGS+= --with-pipeline-lockless --with-pipeline-platform-funcs-inlined
+endif
+
 endif
 
 #All targets
@@ -44,7 +48,12 @@ rofl_datapath:
 
 
 #Force recompiling
+clean-libs:
+	rm -f $(top_srcdir)/libs/.*-commit
+
 maintainer-clean-local:
+	@$(SHELL) cd $(top_srcdir)/libs/rofl-common && make maintainer-clean
+	@$(SHELL) cd $(top_srcdir)/libs/rofl-datapath && make maintainer-clean
 	rm -f $(top_srcdir)/libs/.*-commit
 
 if WITH_DPDK

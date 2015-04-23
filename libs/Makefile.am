@@ -49,12 +49,14 @@ rofl_datapath:
 
 #Force recompiling
 clean-libs:
-	rm -f $(top_srcdir)/libs/.*-commit
+	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) clean
+	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) clean
+	@rm -f $(top_srcdir)/libs/.*-commit
 
 maintainer-clean-local:
-	@$(SHELL) cd $(top_srcdir)/libs/rofl-common && make maintainer-clean
-	@$(SHELL) cd $(top_srcdir)/libs/rofl-datapath && make maintainer-clean
-	rm -f $(top_srcdir)/libs/.*-commit
+	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) maintainer-clean
+	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) maintainer-clean
+	@rm -f $(top_srcdir)/libs/.*-commit
 
 if WITH_DPDK
 #SUBDIRS += dpdk

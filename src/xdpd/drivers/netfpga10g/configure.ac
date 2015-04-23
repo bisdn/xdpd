@@ -28,13 +28,13 @@ LDFLAGS=" -Wl,-export-dynamic"
 
 AC_DEFINE(__STDC_FORMAT_MACROS)
 
-PKG_CHECK_MODULES([ROFL], [rofl >= 0.4.0], [have_rofl=yes], [have_rofl=no])
-if (test "${have_rofl}" = "yes"); then
-        CPPFLAGS+="$ROFL_CFLAGS"
-        LIBS+="$ROFL_LIBS"
-fi
+# Driver enviorment. Must go first
+m4_include([../../../../config/driver.m4])
 
-#Debug
+# ROFL (Must always be included *before* no_pipeline_inline.m4)
+m4_include([../../../../config/rofl.m4])
+
+# Debug
 m4_include([../../../../config/debug.m4])
 
 # Check for profiling mode
@@ -42,9 +42,6 @@ m4_include([../../../../config/profiling.m4])
 
 # pkt classifier 
 m4_include([config/pktclassifier.m4])
-
-# ROFL (Must always be included *before* no_pipeline_inline.m4)
-m4_include([../../../../config/rofl.m4])
 
 # Ensure rofl-pipeline platform functions are NOT inlined 
 m4_include([../../../../config/no_pipeline_inline.m4])

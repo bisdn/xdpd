@@ -29,11 +29,11 @@ LDFLAGS=" -Wl,-export-dynamic"
 
 AC_DEFINE(__STDC_FORMAT_MACROS)
 
-PKG_CHECK_MODULES([ROFL], [rofl >= 0.4.0], [have_rofl=yes], [have_rofl=no])
-if (test "${have_rofl}" = "yes"); then
-        CPPFLAGS+="$ROFL_CFLAGS"
-        LIBS+="$ROFL_LIBS"
-fi
+# Driver enviorment. Must go first
+m4_include([../../../../config/driver.m4])
+
+# ROFL
+m4_include([../../../../config/rofl.m4])
 
 #Debug
 m4_include([../../../../config/debug.m4])
@@ -46,9 +46,6 @@ m4_include([config/pktclassifier.m4])
 
 #Check kernel support
 m4_include([config/vlan.m4])
-
-# ROFL
-m4_include([../../../../config/rofl.m4])
 
 AC_CONFIG_FILES([
 	Makefile

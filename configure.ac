@@ -38,8 +38,8 @@ AC_CHECK_LIB(pthread, pthread_kill,,AC_MSG_ERROR([pthread library not found]))
 AC_CHECK_LIB(rt, clock_gettime,,[AC_MSG_ERROR([rt library not found])]) 
 
 #Set basic constants (build dir and srcdir to be used by configure)
-export XDPD_SRCDIR="$PWD/$srcdir/"
-export XDPD_BUILDDIR="$PWD/"
+XDPD_SRCDIR="$PWD/$srcdir/"
+XDPD_BUILDDIR="$PWD/"
 
 #Perform GCC checkings
 m4_include([config/gcc.m4])

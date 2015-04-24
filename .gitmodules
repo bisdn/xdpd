@@ -1,9 +1,9 @@
 [submodule "libs/rofl-common"]
 	path = libs/rofl-common
-	url = git@github.com:/bisdn/rofl-common.git
+	url = https://github.com:/bisdn/rofl-common.git
 [submodule "libs/rofl-datapath"]
 	path = libs/rofl-datapath
-	url = git@github.com:/bisdn/rofl-datapath.git
+	url = https://github.com:/bisdn/rofl-datapath.git
 [submodule "libs/dpdk"]
 	path = libs/dpdk
-	url = git@github.com:/bisdn/dpdk-dev.git
+	url = https://github.com:/bisdn/dpdk-dev.git

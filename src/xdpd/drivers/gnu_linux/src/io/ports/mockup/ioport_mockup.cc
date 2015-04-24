@@ -69,7 +69,7 @@ datapacket_t* ioport_mockup::read(){
 		return pkt;		
 
 	//Allocate free buffer	
-	pkt = bufferpool::get_free_buffer_nonblocking();
+	pkt = bufferpool::get_buffer();
 	if(!pkt)
 		return NULL;
 

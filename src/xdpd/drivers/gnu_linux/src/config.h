@@ -69,7 +69,7 @@
 //Number of buffers available for I/O. Dimension according to the 
 //the maximum number of interfaces that can run at the same time
 //Warning: changing the size of this variable can affect performance 
-#define IO_BUFFERPOOL_CAPACITY 2048*16 //32K buffers
+#define IO_BUFFERPOOL_CAPACITY 2048*16-2048 //32K buffers
 
 /*
 * Port scheduling strategy

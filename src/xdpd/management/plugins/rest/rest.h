@@ -2,9 +2,9 @@
 #define REST_PLUGIN_H 
 
 #include <string>
+#include <boost/thread.hpp>
 
 #include "../../plugin_manager.h"
-
 #include "server/request.hpp"
 #include "server/reply.hpp"
 
@@ -18,22 +18,23 @@
 
 namespace xdpd {
 
-  void list_plugins (const http::server::request&, http::server::reply&);
-  void srvthread (void);
+/**
+* @brief Dummy management plugin rest
+* @ingroup cmm_mgmt_plugins
+*/
+class rest:public plugin {
 
-  /**
-  * @brief Dummy management plugin rest
-  * @ingroup cmm_mgmt_plugins
-  */
-  class rest:public plugin {
-    
-  public:
-    virtual void init();
+public:
+	virtual void init(void);
+	virtual ~rest(void);
 
-    virtual std::string get_name(void){
-      return std::string("rest");
-    };
-  };
+	virtual std::string get_name(void){
+		return std::string("rest");
+	};
+
+private:
+	boost::thread t;
+};
 
 }// namespace xdpd 
 

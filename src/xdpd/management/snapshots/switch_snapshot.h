@@ -10,6 +10,7 @@
 #include <sstream>
 #include <list> 
 #include <rofl_datapath.h>
+#include <map> 
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/matching_algorithms/matching_algorithms.h>
@@ -213,6 +214,14 @@ public:
 		//Construct 
 		for(unsigned int i=0;i<num_of_tables;i++)
 			tables.push_back(openflow_switch_table_snapshot(&snapshot->pipeline.tables[i]));
+
+		//Ports
+		for(unsigned int i=0;i<LOGICAL_SWITCH_MAX_LOG_PORTS;i++){
+			logical_switch_port_t* lport = &snapshot->logical_ports[i];
+			if(lport->attachment_state == LOGICAL_PORT_STATE_ATTACHED && lport->port)
+			ports[i] = lport->port->name;
+		}
+
 	}
 
 	//Dumping operator
@@ -277,6 +286,11 @@ public:
 	* OF1X_CAP_* bitmap
 	*/
 	bitmap32_t capabilities; 
+
+	//
+	// Attached ports
+	//
+	std::map<unsigned int, std::string> ports;
 
 	//
 	// Group and flow tables

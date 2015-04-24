@@ -235,7 +235,7 @@ next:
 	}
 
 	//Retrieve buffer from pool: this is a non-blocking call
-	pkt = bufferpool::get_free_buffer_nonblocking();
+	pkt = bufferpool::get_buffer();
 
 	//Handle no free buffer
 	if(!pkt) {

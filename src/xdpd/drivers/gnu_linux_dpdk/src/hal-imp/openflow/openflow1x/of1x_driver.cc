@@ -275,7 +275,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		pkt_dpdk->clas_state.calculate_checksums_in_sw |= calculate_checksums_in_sw;
 	}else{
 		//Retrieve a free buffer	
-		pkt = bufferpool::get_free_buffer_nonblocking();
+		pkt = bufferpool::get_buffer();
 
 		if(!pkt){
 			//No available buffers

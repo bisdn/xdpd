@@ -32,8 +32,25 @@ case $host_os in
 	;;
 esac
 
+TARGET_CC=
+case $CC in
+	*gcc*)
+	TARGET_CC=gcc
+	;;
+	*clang*)
+	TARGET_CC=clang
+	;;
+	*icc*)
+	TARGET_CC=icc
+	;;
+	*)
+	#Default Case
+	AC_MSG_ERROR([Could not deduce DPDK target for compiler '$CC'. DPDK supported compiler families: gcc, clang and icc])
+	;;
+esac
+
 #Compose DPDK target string
-DPDK_TARGET="x86_64-native-${OS}app-${CC}"
+DPDK_TARGET="x86_64-native-${OS}app-${TARGET_CC}"
 
 AC_SUBST(DPDK_TARGET)
 AC_MSG_RESULT([added ($DPDK_TARGET)])

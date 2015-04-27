@@ -52,7 +52,6 @@ if ( test "$HW" = "gnu-linux-dpdk");then
 
 	#Onboard DPDK compilation
 	WITH_DPDK="yes"
-	AC_CONFIG_SUBDIRS([libs/dpdk])
 fi
 if( test "$HW" = "bcm");then
 	msg="$msg Broadcom"

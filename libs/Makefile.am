@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-.PHONY: rofl_common rofl_datapath dpdk
+.PHONY: rofl-common rofl-datapath dpdk
 .NOTPARALLEL:
 
 #
@@ -11,19 +11,40 @@ MAINTAINERCLEANFILES = Makefile.in
 # the configure options for the inner subpackages will in general be different
 # than the ones in the main package, and likely be dependent on them.
 #
-# So we define them as regular Makefile targets. The `compile_autotools_pkg.sh` is I
-# guess not needed, but I don't have the time to figure out how to embed it
-# into the Makefile target without automake screwing it.
-#
 # Note that CFLAGS, CXXFLAGS... are deliverately not passed to the inner subpackages
 #
 
-#ROFL defaults
+##
+## ROFL common
+##
+
+#Defaults
 ROFL_CM_AC_FLAGS=
-ROFL_DP_AC_FLAGS=
 
 if DEBUG
 ROFL_CM_AC_FLAGS+= --enable-debug
+endif
+
+#ROFL-common target
+rofl-common:
+	@$(SHELL) $(top_srcdir)/libs/compile_autotools_pkg.sh $(top_srcdir) "rofl-common" "$(ROFL_CM_AC_FLAGS)"
+
+clean-rofl-common:
+	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) clean
+	@rm -f $(top_srcdir)/libs/.rofl-common-commit
+
+maintainer-clean-rofl-common: clean-rofl-common
+	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) maintainer-clean
+
+
+##
+## ROFL datapath
+##
+
+#Defaults
+ROFL_DP_AC_FLAGS=
+
+if DEBUG
 ROFL_DP_AC_FLAGS+= --enable-debug
 else
 
@@ -33,35 +54,46 @@ endif
 
 endif
 
-#All targets
-if WITH_DPDK
-all: rofl_common rofl_datapath dpdk
-else
-all: rofl_common rofl_datapath
-endif
-
-#ROFL related targets
-rofl_common:
-	@$(SHELL) $(top_srcdir)/libs/compile_autotools_pkg.sh $(top_srcdir) "rofl-common" "$(ROFL_CM_AC_FLAGS)"
-
-rofl_datapath:
+#ROFL-datapath target
+rofl-datapath:
 	@$(SHELL) $(top_srcdir)/libs/compile_autotools_pkg.sh $(top_srcdir) "rofl-datapath" "$(ROFL_DP_AC_FLAGS)"
 
-
-#Force recompiling
-clean-libs:
-	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) clean
+clean-rofl-common-datapath:
 	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) clean
-	@rm -f $(top_srcdir)/libs/.*-commit
-	@rm -rf $(top_srcdir)/libs/dpdk/build/
+	@rm -f $(top_srcdir)/libs/.rofl-datapath-commit
 
-maintainer-clean-local:
-	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) maintainer-clean
+maintainer-clean-rofl-datapath: clean-rofl-common-datapath
 	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) maintainer-clean
-	@rm -f $(top_srcdir)/libs/.*-commit
-	@rm -rf $(top_srcdir)/libs/dpdk/build/
+
+
+##
+## DPDK
+##
 
 if WITH_DPDK
 dpdk:
 	@$(SHELL) $(top_srcdir)/libs/compile_dpdk.sh $(top_srcdir) $(DPDK_TARGET) 
+
+clean-dpdk:
+	@rm -rf $(top_srcdir)/libs/dpdk/build/
+	@rm -f $(top_srcdir)/libs/.dpdk-commit
+
+maintainer-clean-dpdk: clean-dpdk
+
+endif
+
+
+##
+## Main targets
+##
+
+#All targets
+if WITH_DPDK
+all: rofl-common rofl-datapath dpdk
+clean-libs: clean-rofl-common clean-rofl-common-datapath clean-dpdk
+maintainer-clean-local: maintainer-clean-rofl-common maintainer-clean-rofl-datapath maintainer-clean-dpdk
+else
+all: rofl-common rofl-datapath
+clean-libs: clean-rofl-common clean-rofl-common-datapath
+maintainer-clean-local: maintainer-clean-rofl-common maintainer-clean-rofl-datapath
 endif

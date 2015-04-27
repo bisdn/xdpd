@@ -14,6 +14,9 @@ MAINTAINERCLEANFILES = Makefile.in
 # Note that CFLAGS, CXXFLAGS... are deliverately not passed to the inner subpackages
 #
 
+#General variables
+LIBS_DIR=$(top_srcdir)/libs/
+
 ##
 ## ROFL common
 ##
@@ -25,9 +28,32 @@ if DEBUG
 ROFL_CM_AC_FLAGS+= --enable-debug
 endif
 
+
+#Makefile specific variables (at automake time)
+RC_COMMIT_FILE=$(LIBS_DIR)/.rofl-common-commit
+
 #ROFL-common target
 rofl-common:
-	@$(SHELL) $(top_srcdir)/libs/compile_autotools_pkg.sh $(top_srcdir) "rofl-common" "$(ROFL_CM_AC_FLAGS)"
+	@LIB="rofl-common";								\
+	PREV_COMMIT= ;									\
+	if test -f $(RC_COMMIT_FILE) ; then						\
+		PREV_COMMIT=`cat $(RC_COMMIT_FILE)` ;					\
+	fi ;										\
+	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;	\
+	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then				\
+		echo Package \'$$LIB\' is up-to-date; 					\
+	else										\
+		echo Compiling \'$$LIB\'... ;						\
+		OLD_PWD=$$PWD ;								\
+		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
+		sh autogen.sh || exit -1 ;						\
+		cd build || exit -1 ;							\
+		../configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 				\
+		$(MAKE) || exit -1 ; 							\
+		cd $$OLD_PWD || exit -1 ;						\
+		touch $(RC_COMMIT_FILE) || exit -1 ; 					\
+		echo $$CURR_COMMIT > $(RC_COMMIT_FILE) || exit -1 ; 			\
+	fi
 
 clean-rofl-common:
 	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) clean
@@ -54,9 +80,32 @@ endif
 
 endif
 
+#Makefile specific variables (at automake time)
+RD_COMMIT_FILE=$(LIBS_DIR)/.rofl-datapath-commit
+
 #ROFL-datapath target
 rofl-datapath:
-	@$(SHELL) $(top_srcdir)/libs/compile_autotools_pkg.sh $(top_srcdir) "rofl-datapath" "$(ROFL_DP_AC_FLAGS)"
+	@LIB="rofl-datapath";								\
+	PREV_COMMIT= ;									\
+	if test -f $(RD_COMMIT_FILE) ; then						\
+		PREV_COMMIT=`cat $(RD_COMMIT_FILE)` ;					\
+	fi ;										\
+	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;\
+	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then				\
+		echo Package \'$$LIB\' is up-to-date; 					\
+	else										\
+		echo Compiling \'$$LIB\'... ;						\
+		OLD_PWD=$$PWD ;								\
+		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
+		sh autogen.sh || exit -1 ;						\
+		cd build || exit -1 ;							\
+		../configure $(ROFL_DP_AC_FLAGS) || exit -1 ; 				\
+		$(MAKE) || exit -1 ; 							\
+		cd $$OLD_PWD || exit -1 ;						\
+		touch $(RD_COMMIT_FILE) || exit -1 ; 					\
+		echo $$CURR_COMMIT > $(RD_COMMIT_FILE) || exit -1 ; 			\
+	fi
+
 
 clean-rofl-common-datapath:
 	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) clean
@@ -71,8 +120,29 @@ maintainer-clean-rofl-datapath: clean-rofl-common-datapath
 ##
 
 if WITH_DPDK
+
+#Makefile specific variables (at automake time)
+DPDK_COMMIT_FILE=$(LIBS_DIR)/.dpdk-commit
+
 dpdk:
-	@$(SHELL) $(top_srcdir)/libs/compile_dpdk.sh $(top_srcdir) $(DPDK_TARGET) 
+	@LIB="dpdk";								\
+	PREV_COMMIT= ;									\
+	if test -f $(DPDK_COMMIT_FILE) ; then						\
+		PREV_COMMIT=`cat $(DPDK_COMMIT_FILE)` ;					\
+	fi ;										\
+	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;\
+	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then				\
+		echo Package \'$$LIB\' is up-to-date; 					\
+	else										\
+		echo Compiling \'$$LIB\'... ;						\
+		OLD_PWD=$$PWD ;								\
+		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
+		$(MAKE) config T=$(DPDK_TARGET) || exit -1				\
+		$(MAKE) || exit -1
+		cd $$OLD_PWD || exit -1 ;						\
+		touch $(DPDK_COMMIT_FILE) || exit -1 ; 					\
+		echo $$CURR_COMMIT > $(DPDK_COMMIT_FILE) || exit -1 ; 			\
+	fi
 
 clean-dpdk:
 	@rm -rf $(top_srcdir)/libs/dpdk/build/

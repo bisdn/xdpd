@@ -11,7 +11,8 @@ MAINTAINERCLEANFILES = Makefile.in
 # the configure options for the inner subpackages will in general be different
 # than the ones in the main package, and likely be dependent on them.
 #
-# Note that CFLAGS, CXXFLAGS... are deliverately not passed to the inner subpackages
+# Note that CFLAGS, CXXFLAGS... are deliverately not passed to the inner subpackages,
+# Use LIBS_CFLAGS, LIBS_CXXFLAGS etc... for that
 #
 
 #General variables
@@ -22,12 +23,7 @@ LIBS_DIR=$(top_srcdir)/libs/
 ##
 
 #Defaults
-ROFL_CM_AC_FLAGS=
-
-if DEBUG
-ROFL_CM_AC_FLAGS+= --enable-debug
-endif
-
+ROFL_CM_AC_FLAGS=$(AC_CONFIGURE_ARGS)
 
 #Makefile specific variables (at automake time)
 RC_COMMIT_FILE=$(LIBS_DIR)/.rofl-common-commit
@@ -48,6 +44,8 @@ rofl-common:
 		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
 		sh autogen.sh || exit -1 ;						\
 		cd build || exit -1 ;							\
+		CFLAGS=$(LIBS_CFLAGS) CXXFLAGS=$(LIBS_CXXFLAGS) LDFLAGS=$(LIBS_LDFLAGS) \
+		CPPFLAGS=$(LIBS_CPPFLAGS) CC=$(CC) CXX=$(CXX) 				\
 		../configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 				\
 		$(MAKE) || exit -1 ; 							\
 		cd $$OLD_PWD || exit -1 ;						\
@@ -68,16 +66,10 @@ maintainer-clean-rofl-common: clean-rofl-common
 ##
 
 #Defaults
-ROFL_DP_AC_FLAGS=
-
-if DEBUG
-ROFL_DP_AC_FLAGS+= --enable-debug
-else
+ROFL_DP_AC_FLAGS=$(AC_CONFIGURE_ARGS)
 
 if DRIVER_HAS_INLINE_SUPPORT
 ROFL_DP_AC_FLAGS+= --with-pipeline-lockless --with-pipeline-platform-funcs-inlined
-endif
-
 endif
 
 #Makefile specific variables (at automake time)
@@ -90,7 +82,7 @@ rofl-datapath:
 	if test -f $(RD_COMMIT_FILE) ; then						\
 		PREV_COMMIT=`cat $(RD_COMMIT_FILE)` ;					\
 	fi ;										\
-	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;\
+	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;	\
 	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then				\
 		echo Package \'$$LIB\' is up-to-date; 					\
 	else										\
@@ -99,7 +91,9 @@ rofl-datapath:
 		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
 		sh autogen.sh || exit -1 ;						\
 		cd build || exit -1 ;							\
-		../configure $(ROFL_DP_AC_FLAGS) || exit -1 ; 				\
+		CFLAGS=$(LIBS_CFLAGS) CXXFLAGS=$(LIBS_CXXFLAGS) LDFLAGS=$(LIBS_LDFLAGS) \
+		CPPFLAGS=$(LIBS_CPPFLAGS) CC=$(CC) CXX=$(CXX) 				\
+		../configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 				\
 		$(MAKE) || exit -1 ; 							\
 		cd $$OLD_PWD || exit -1 ;						\
 		touch $(RD_COMMIT_FILE) || exit -1 ; 					\
@@ -125,20 +119,20 @@ if WITH_DPDK
 DPDK_COMMIT_FILE=$(LIBS_DIR)/.dpdk-commit
 
 dpdk:
-	@LIB="dpdk";								\
+	@LIB="dpdk";									\
 	PREV_COMMIT= ;									\
 	if test -f $(DPDK_COMMIT_FILE) ; then						\
 		PREV_COMMIT=`cat $(DPDK_COMMIT_FILE)` ;					\
 	fi ;										\
-	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;\
+	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;	\
 	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then				\
 		echo Package \'$$LIB\' is up-to-date; 					\
 	else										\
-		echo Compiling \'$$LIB\'... ;						\
+		echo Compiling \'$$LIB\' \(T=$(DPDK_TARGET)\)... ;			\
 		OLD_PWD=$$PWD ;								\
 		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
-		$(MAKE) config T=$(DPDK_TARGET) || exit -1				\
-		$(MAKE) || exit -1
+		$(MAKE) config T=$(DPDK_TARGET) || exit -1 ;				\
+		$(MAKE) || exit -1 ;							\
 		cd $$OLD_PWD || exit -1 ;						\
 		touch $(DPDK_COMMIT_FILE) || exit -1 ; 					\
 		echo $$CURR_COMMIT > $(DPDK_COMMIT_FILE) || exit -1 ; 			\

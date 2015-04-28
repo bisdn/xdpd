@@ -41,6 +41,10 @@ AC_CHECK_LIB(rt, clock_gettime,,[AC_MSG_ERROR([rt library not found])])
 XDPD_SRCDIR="$PWD/$srcdir/"
 XDPD_BUILDDIR="$PWD/"
 
+#Store autoconf variables
+AC_CONFIGURE_ARGS="$ac_configure_args"
+AC_SUBST(AC_CONFIGURE_ARGS)
+
 #Perform GCC checkings
 m4_include([config/gcc.m4])
 

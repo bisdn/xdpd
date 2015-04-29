@@ -35,7 +35,7 @@ except Exception as e:
 
 def list_show_commands():
 	string="\nSubcommands:\n\n"
-	string+='   show info\t\t\t\t - Show general info of an xDPd instance\n'
+	string+='   show system\t\t\t\t - Show xDPd target instance system information\n'
 	string+= '   show matching-algorithms\t\t - Show available matching algorithms\n'
 	string+= '   show plugins\t\t\t\t - Show compiled-in plugs\n'
 	string+= '   show lsis\t\t\t\t - List the existing logical switch instances\n'

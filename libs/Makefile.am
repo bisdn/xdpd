@@ -16,7 +16,8 @@ MAINTAINERCLEANFILES = Makefile.in
 #
 
 #General variables
-LIBS_DIR=$(top_srcdir)/libs/
+LIBS_DIR=$(abs_top_srcdir)/libs
+LIBS_BUILD_DIR=$(abs_top_builddir)/libs
 
 ##
 ## ROFL common
@@ -26,7 +27,7 @@ LIBS_DIR=$(top_srcdir)/libs/
 ROFL_CM_AC_FLAGS=$(AC_CONFIGURE_ARGS)
 
 #Makefile specific variables (at automake time)
-RC_COMMIT_FILE=$(LIBS_DIR)/.rofl-common-commit
+RC_COMMIT_FILE=$(LIBS_BUILD_DIR)/.rofl-common-commit
 
 #ROFL-common target
 rofl-common:
@@ -41,12 +42,13 @@ rofl-common:
 	else										\
 		echo Compiling \'$$LIB\'... ;						\
 		OLD_PWD=$$PWD ;								\
+		mkdir -p $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;			\
 		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
 		sh autogen.sh || exit -1 ;						\
-		cd build || exit -1 ;							\
+		cd $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;				\
 		CFLAGS=$(LIBS_CFLAGS) CXXFLAGS=$(LIBS_CXXFLAGS) LDFLAGS=$(LIBS_LDFLAGS) \
 		CPPFLAGS=$(LIBS_CPPFLAGS) CC=$(CC) CXX=$(CXX) 				\
-		../configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 				\
+		$(LIBS_DIR)/$$LIB/configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 		\
 		$(MAKE) || exit -1 ; 							\
 		cd $$OLD_PWD || exit -1 ;						\
 		touch $(RC_COMMIT_FILE) || exit -1 ; 					\
@@ -54,11 +56,11 @@ rofl-common:
 	fi
 
 clean-rofl-common:
-	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) clean
-	@rm -f $(top_srcdir)/libs/.rofl-common-commit
+	@cd $(builddir)/rofl-common/build && $(MAKE) clean
+	@rm -f $(builddir)/.rofl-common-commit
 
 maintainer-clean-rofl-common: clean-rofl-common
-	@cd $(top_srcdir)/libs/rofl-common/build && $(MAKE) maintainer-clean
+	@cd $(builddir)/rofl-common/build && $(MAKE) maintainer-clean
 
 
 ##
@@ -73,7 +75,7 @@ ROFL_DP_AC_FLAGS+= --with-pipeline-lockless --with-pipeline-platform-funcs-inlin
 endif
 
 #Makefile specific variables (at automake time)
-RD_COMMIT_FILE=$(LIBS_DIR)/.rofl-datapath-commit
+RD_COMMIT_FILE=$(LIBS_BUILD_DIR)/.rofl-datapath-commit
 
 #ROFL-datapath target
 rofl-datapath:
@@ -88,12 +90,13 @@ rofl-datapath:
 	else										\
 		echo Compiling \'$$LIB\'... ;						\
 		OLD_PWD=$$PWD ;								\
+		mkdir -p $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;				\
 		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
 		sh autogen.sh || exit -1 ;						\
-		cd build || exit -1 ;							\
+		cd $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;				\
 		CFLAGS=$(LIBS_CFLAGS) CXXFLAGS=$(LIBS_CXXFLAGS) LDFLAGS=$(LIBS_LDFLAGS) \
 		CPPFLAGS=$(LIBS_CPPFLAGS) CC=$(CC) CXX=$(CXX) 				\
-		../configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 				\
+		$(LIBS_DIR)/$$LIB/configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 		\
 		$(MAKE) || exit -1 ; 							\
 		cd $$OLD_PWD || exit -1 ;						\
 		touch $(RD_COMMIT_FILE) || exit -1 ; 					\
@@ -102,11 +105,12 @@ rofl-datapath:
 
 
 clean-rofl-common-datapath:
-	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) clean
-	@rm -f $(top_srcdir)/libs/.rofl-datapath-commit
+	@cd $(builddir)/rofl-datapath/build && $(MAKE) clean
+	@rm -f $(builddir)/.rofl-datapath-commit
+
 
 maintainer-clean-rofl-datapath: clean-rofl-common-datapath
-	@cd $(top_srcdir)/libs/rofl-datapath/build && $(MAKE) maintainer-clean
+	@cd $(builddir)/rofl-datapath/build && $(MAKE) maintainer-clean
 
 
 ##
@@ -116,7 +120,7 @@ maintainer-clean-rofl-datapath: clean-rofl-common-datapath
 if WITH_DPDK
 
 #Makefile specific variables (at automake time)
-DPDK_COMMIT_FILE=$(LIBS_DIR)/.dpdk-commit
+DPDK_COMMIT_FILE=$(LIBS_BUILD_DIR)/.dpdk-commit
 
 dpdk:
 	@LIB="dpdk";									\
@@ -130,17 +134,21 @@ dpdk:
 	else										\
 		echo Compiling \'$$LIB\' \(T=$(DPDK_TARGET)\)... ;			\
 		OLD_PWD=$$PWD ;								\
+		mkdir -p $(LIBS_BUILD_DIR)/$$LIB || exit -1 ;				\
 		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
-		$(MAKE) config T=$(DPDK_TARGET) || exit -1 ;				\
-		$(MAKE) || exit -1 ;							\
-		cd $$OLD_PWD || exit -1 ;						\
+		$(MAKE) config T=$(DPDK_TARGET) ; 					\
+		if test "$(LIBS_BUILD_DIR)/$$LIB" == "$(abs_srcdir)/dpdk" ; then	\
+			$(MAKE) || exit -1 ;						\
+		else									\
+			DESTDIR=$(LIBS_BUILD_DIR)/$$LIB $(MAKE) || exit -1 ;		\
+		fi ;									\
 		touch $(DPDK_COMMIT_FILE) || exit -1 ; 					\
 		echo $$CURR_COMMIT > $(DPDK_COMMIT_FILE) || exit -1 ; 			\
 	fi
 
 clean-dpdk:
-	@rm -rf $(top_srcdir)/libs/dpdk/build/
-	@rm -f $(top_srcdir)/libs/.dpdk-commit
+	@rm -rf $(builddir)/dpdk/build
+	@rm -f $(builddir)/.dpdk-commit
 
 maintainer-clean-dpdk: clean-dpdk
 

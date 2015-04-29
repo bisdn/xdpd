@@ -4,10 +4,10 @@ if test "$WITH_DPDK" = "yes"; then
 
 AC_MSG_CHECKING(and adding support for the DPDK library...)
 #Adding the includes
-DPDK_INCLUDES="-I$XDPD_SRCDIR/libs/dpdk/build/include"
+DPDK_INCLUDES="-I$XDPD_BUILDDIR/libs/dpdk/build/include"
 
 #Library path
-DPDK_LDFLAGS="-L$XDPD_SRCDIR/libs/dpdk/build/lib"
+DPDK_LDFLAGS="-L$XDPD_BUILDDIR/libs/dpdk/build/lib"
 
 #Add them
 CPPFLAGS="$DPDK_INCLUDES $CPPFLAGS"

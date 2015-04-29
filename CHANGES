@@ -10,7 +10,10 @@ Change log
 
 v0.7.0
 
-[+][CMM] Improved REST plugin. Please read the REST_README. Added python xcli script
+[+] New build system. Now ROFL dependencies and, if necessary, DPDK, are compiled on board
+[K] ROFL-datapath and ROFL-common git information (BUILD, DECRIBE...) is not correctly generated when building on-board
+
+[+][CMM] Improved REST plugin. Added python xcli script
 
 v0.6.0
 

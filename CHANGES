@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.6.1
+
+[B][cmm][node_orchestrator] Fixed compilation and added README
+
 v0.6.0
 
 [K] Prevent compilation with buggy GCC versions (-O3 opt.)

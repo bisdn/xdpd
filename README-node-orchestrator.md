@@ -1,13 +1,13 @@
 
-Node orchestrtpr plugin
-=======================
+Node orchestrator plugin
+========================
 
-The `node_orchestrator` is used to interact with the Universal Node orchestrator (https://github.com/bisdn/of-config).
+The `node_orchestrator` is used to interact with the Universal Node orchestrator (https://github.com/bisdn/un-orchestrator).
 
 Supported platforms (drivers)
 =============================
 
-gnu_linux_dpdk
+All
 
 Requirements
 ============

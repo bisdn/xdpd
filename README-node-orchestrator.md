@@ -7,7 +7,7 @@ The `node_orchestrator` is used to interact with the Universal Node orchestrator
 Supported platforms (drivers)
 =============================
 
-All
+All.
 
 Requirements
 ============

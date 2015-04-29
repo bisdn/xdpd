@@ -157,6 +157,10 @@ public:
 		return &hal_extension_ops; 
 	}	
 
+	/**
+	* Main ciosrv thread pthread state
+	*/
+	static pthread_t ciosrv_thread;
 private:
 
 	//Prevent double initializations

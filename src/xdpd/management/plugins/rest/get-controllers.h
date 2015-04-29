@@ -1,16 +1,14 @@
+#ifndef GET_CONTROLLERS_H
+#define GET_CONTROLLERS_H
+
 // Copyright (c) 2014  Barnstormer Softworks, Ltd.
 
 #include <boost/regex.hpp>
-
-namespace http{
-namespace server{
-	struct request;
-	struct reply;
-}//namespace server
-}//namespace http
+#include "common-controllers.h"
 
 namespace xdpd{
 namespace controllers{
+namespace get{
 	/**
 	* Human readable index
 	*/
@@ -37,5 +35,8 @@ namespace controllers{
 	void list_ports(const http::server::request &, http::server::reply &, boost::cmatch&);
 	void port_detail(const http::server::request &, http::server::reply &, boost::cmatch&);
 
+} //namespace get
 } //namespace controllers
 } //namespace xdpd
+
+#endif /* GET_CONTROLLERS_H_ */

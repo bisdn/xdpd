@@ -38,7 +38,7 @@ const unsigned int system_manager::XDPD_DEFAULT_DEBUG_LEVEL=3; //ERROR
 
 const std::string system_manager::XDPD_TEST_RUN_OPT_FULL_NAME="test-config";
 const std::string system_manager::XDPD_EXTRA_PARAMS_OPT_FULL_NAME="extra-params";
-
+pthread_t system_manager::ciosrv_thread = 0;
 
 //Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
@@ -149,6 +149,9 @@ void system_manager::init(int argc, char** argv){
 	//Prevent double calls to init()
 	if(inited)
 		ROFL_ERR("[xdpd][system_manager] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
+
+	//Set ciosrv thread
+	ciosrv_thread = pthread_self();
 
 	//Set driver info cache
 	hal_driver_get_info(&driver_info);

@@ -30,7 +30,7 @@ Requirements
 
 - Boost 2.54 or higher, boost-threads, boost-regex and boost-system. It is recommended to install all the boost libraries.
 
-- Common python packages: cmd, getopt and urllib/urllib2
+- Common python packages: cmd, getopt, curses and urllib/urllib2
 
 How to build
 ============
@@ -69,6 +69,26 @@ Examples (using xcli)
 
 Non-interactive
 ---------------
+
+Show the xDPd instance information:
+
+	xcli -c "show system"
+
+Output:
+	{
+	    "xdpd" : {
+		"system-id" : "0000000123",
+		"version" : "v0.7.0dev",
+		"build" : "ac78b6f50a93f441507c0544ca618dacaa794c28",
+		"detailed-build" : "v0.6.0-123-gac78b6f50a93f441507c0544ca618dacaa794c28",
+		"driver-code-name" : "gnu-linux",
+		"driver-extra-parameters" : "",
+		"plugins" : [
+		    "config",
+		    "rest"
+		]
+	    }
+	}
 
 List ports:
 
@@ -202,14 +222,14 @@ Show the list of flows in lsi `dp0` table `0`:
 
 	xcli -c "show list dp0 table 0 flows"
 
-Output (Warning: this has to be fixed, as of ROFL issue bisdn/rofl-core#13):
+Output:
 
 	{
-	    "table" : {
-		"id" : 0,
-		"flows" : [
-		    " p:0 cookie:0 pkt_count:7737 {matches<cofmatch ofp-version:0 >\n  <coxmatches #matches:2 >\n    <coxmatch oxm-id: 0x80000004 >\n      <cmemory: data:0x7fffcc001260 datalen:8 >\n        0000: 80 00 00 04 00 00 00 02   \n      <in-port: 2 >\n    <coxmatch oxm-id: 0x8000070c >\n      <cmemory: data:0x7fffcc001260 datalen:16 >\n        0000: 80 00 07 0c fe 54 00 2a   1b fc ff ff ff ff ff ff   \n      <eth-dst: fe:54:00:2a:1b:fc/ff:ff:ff:ff:ff:ff >\n }\n {, instructions<cofintructions ofp-version:0 >\n  <cofinstruction_apply_actions >\n    <cofinstruction_actions >\n      <cofinstruction type: 0x4 length: 24 >\n        <cofactions ofp-version:3 #actions:1 >\n          <cofaction_output port-no: 0x1 max-len: 0xffe5 >\n            <cofaction ofp-version:3 type:0x0 length:4  >\n }\n",
-		    " p:0 cookie:0 pkt_count:7737 {matches<cofmatch ofp-version:0 >\n  <coxmatches #matches:2 >\n    <coxmatch oxm-id: 0x80000004 >\n      <cmemory: data:0x7fffcc001230 datalen:8 >\n        0000: 80 00 00 04 00 00 00 01   \n      <in-port: 1 >\n    <coxmatch oxm-id: 0x8000070c >\n      <cmemory: data:0x7fffcc001250 datalen:16 >\n        0000: 80 00 07 0c ee 6e cd a7   32 f5 ff ff ff ff ff ff   \n      <eth-dst: ee:6e:cd:a7:32:f5/ff:ff:ff:ff:ff:ff >\n }\n {, instructions<cofintructions ofp-version:0 >\n  <cofinstruction_apply_actions >\n    <cofinstruction_actions >\n      <cofinstruction type: 0x4 length: 24 >\n        <cofactions ofp-version:3 #actions:1 >\n          <cofaction_output port-no: 0x2 max-len: 0xffe5 >\n            <cofaction ofp-version:3 type:0x0 length:4  >\n }\n"
+	    "table": {
+		"id": 0,
+		"flows": [
+		    " p:32652 cookie:0 pkt_count:0 {matches (3) eth-dst: 00:01:02:03:00:1a/ff:ff:ff:ff:ff:ff, vlan-vid: 0xffff/0xffff, vlan-pcp: 0} {actions output#port-no: 0xfffd max-len: 0x0}",
+		    " p:32612 cookie:0 pkt_count:0 {matches (3) eth-dst: 00:01:02:03:00:42/ff:ff:ff:ff:ff:ff, vlan-vid: 0xffff/0xffff, vlan-pcp: 0} {actions output#port-no: 0xfffd max-len: 0x0}"
 		]
 	    }
 	}

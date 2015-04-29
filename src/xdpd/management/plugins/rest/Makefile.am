@@ -16,7 +16,10 @@ libxdpd_mgmt_rest_js_la_CXXFLAGS = -Wno-unused-local-typedefs
 
 #Rest main library
 libxdpd_mgmt_rest_la_SOURCES = 			\
-	controllers.cc				\
+	misc-controllers.cc			\
+	port-controllers.cc			\
+	sw-controllers.cc			\
+	sys-controllers.cc			\
 	rest.cc
 
 libxdpd_mgmt_rest_la_LIBADD =			\

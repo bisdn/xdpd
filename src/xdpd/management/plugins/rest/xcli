@@ -1,20 +1,26 @@
 #!/usr/bin/env python
 
-
+#Constants
 XCLI="xcli"
 VERSION=0.7
 DEFAULT_REST_IP="127.0.0.1"
 DEFAULT_REST_PORT=5757
 defaultsocket = DEFAULT_REST_IP+":"+str(DEFAULT_REST_PORT)
 GREETING="xDPd v"+str(VERSION)+" command line tool"
+GOODBYE="Goodbye!"
+
+#REST API prefixes
+REST_INFO_PREFIX="info"
+REST_MGMT_PREFIX="mgmt"
 
 try:
 	import os
 	import cmd
 	import sys
 	import getopt
-	import re
+	import curses
 	import json
+	import re
 	try:
 		import urllib2 as urllib
 	except:
@@ -27,17 +33,34 @@ except Exception as e:
 # Commands and usage
 #
 
-def list_commands():
-	string=""
-	string+='   show info\t\t\t\t - Show general info of an xDPd instance\n'
+def list_show_commands():
+	string="\nSubcommands:\n\n"
+	string+='   show system\t\t\t\t - Show xDPd target instance system information\n'
 	string+= '   show matching-algorithms\t\t - Show available matching algorithms\n'
 	string+= '   show plugins\t\t\t\t - Show compiled-in plugs\n'
 	string+= '   show lsis\t\t\t\t - List the existing logical switch instances\n'
 	string+= '   show lsi <lsi_name>\t\t\t - Show LSI information\n'
 	string+= '   show lsi <lsi_name> table <num> flows - Show LSI table <num> flows\n'
 	string+= '   show lsi <lsi_name> group-table\t - List LSI group-table entries\n'
-	string+= '   show ports\t\t\t\t - List the existing logical switch instances\n'
+	string+= '   show ports\t\t\t\t - List the available ports in the platform\n'
 	string+= '   show port <port_name>\t\t - Show port information\n'
+	return string
+
+def list_exec_commands():
+	string="\nSubcommands:\n\n"
+	string+='   exec port <port_name> up\t\t\t - Bring port administratively up\n'
+	string+='   exec port <port_name> down\t\t\t - Bring port administratively up\n'
+	string+='   exec attach port <port_name> <lsi_name>\t - Attach port to a logical switch instance\n'
+	string+='   exec detach port <port_name> <lsi_name>\t - Detach port from a logical switch instance\n'
+	string+='   exec create lsi <lsi_name> <dpid> <of-version> <num-of-tables> [matching-algorithms={<algorithms>}]\n'
+	string+='                               \t\t\t - Create a logical switch instance\n'
+	string+='   exec destroy lsi <lsi_name> \t\t\t - Destroy a logical switch instance\n'
+	string+='   exec create vlink <lsi1_name> <lsi2_name>\t - Create a virtual link between two logical switch instances\n'
+	string+="\nExamples:\n\n"
+	string+='   exec port ge0 up\n'
+	string+='   exec attach port ge0 dp0\n'
+	string+='   exec create lsi dp1 256 1.3 8\n'
+	string+='   exec create lsi dp1 256 1.2 2 matching-algorithms={"loop", "l2hash"}\n'
 	return string
 
 def usage():
@@ -60,23 +83,47 @@ def usage():
 	print list_commands()
 
 # Confirm util
-def confirm(msg):
+def confirm(msg, default=""):
 	""" Util confirmation """
 	ok = set(['yes','y', 'ye'])
 	ko = set(['no','n', '']) #default no
 	while 1:
 		print "Are you sure %s (Y/N)?" % msg
 		aux = raw_input().lower()
+		if aux == "" and default != "":
+			aux = default
 		if aux in ok:
 			return True
 		elif aux in ko:
 			return False
 
+#Supports colors
+color_term=True
+GREEN = '\033[92m'
+ORANGE = '\033[93m'
+RED = '\033[91m'
+BOLD = '\033[1m'
+UNDERLINE = '\033[4m'
+
+#Colorize output with compatible terminals
+def colorize_str(string, color):
+	END = '\033[0m'
+
+	if color_term:
+		return color + string + END
+	return string
+
+#Clear line
+def clear_prev_line():
+	sys.stdout.write("\033[F") # Cursor up one line
+	print "                                                         "
+	sys.stdout.write("\033[F") # Cursor up one line
+
 # Unix-style less print
 def print_less(msg):
-	packing =39 #default line terminal-1 (command)
+	packing = 39 #default line terminal-1 (command)
 	lines = msg.split('\n')
-	i=0
+	i = 0
 
 	if len(lines) <= packing:
 		print msg
@@ -86,30 +133,36 @@ def print_less(msg):
 		print '\n'.join(lines[i:i+packing])
 		if i+packing < len(lines):
 			raw_input(": press enter to continue...")
-			sys.stdout.write("\033[F") # Cursor up one line
+			clear_prev_line()
 		i += packing
 
 #
 # REST
 #
-def rest_get(socket, url):
+def rest(socket, url, payload="", method="GET"):
 	complete_url = "http://"+socket+url
 
+	url = ""
 	try:
-		json = urllib.urlopen(complete_url).read()
+		opener = urllib.build_opener(urllib.HTTPHandler)
+		request = urllib.Request(complete_url, payload)
+		request.get_method = lambda: method
+		url = opener.open(request)
 	except urllib.HTTPError as e:
-		print "ERROR("+str(e.code)+"): HTTP/GET '"+complete_url+"'"
-		if e.code == 404:
+		print colorize_str("ERROR("+str(e.code)+"): HTTP/"+method+" '"+complete_url+"'", RED)
+		if e.code == 401:
+			print "Unauthorised; is mgmt support enabled (-m)?"
+		elif e.code == 404:
 			print e.read()
 		else:
 			print "Incomplete or malformed request"
 		raise
 	except Exception as e:
-		print "Unkown ERROR:  HTTP/GET '"+complete_url+"'"
+		print colorize_str("Unkown ERROR:  HTTP/"+method+" '"+complete_url+"'", RED)
 		print "  " + str(e)
 		raise
+	return url.read()
 
-	return json
 
 def compose_url(url_array):
 	#Compose the url
@@ -118,10 +171,76 @@ def compose_url(url_array):
 		url +="/"+section
 	return url
 
+##
+# Parse create lsi and compose json
+#
+def parse_create_lsi(params):
+	import pprint
+
+	obj = {}
+	lsi = obj["lsi"] = {}
+
+	#Put the name
+	lsi["name"] = params[3]
+
+	#Parse the dpid
+	dpid = 0
+	try:
+		dpid = long(params[4])
+	except:
+		raise Exception("Unable to parse dpid value '"+params[4]+"'")
+
+	if(dpid < 0):
+		raise Exception("Invalid dpid value '"+dpid+"'")
+	lsi["dpid"] = dpid
+
+	#Parse version
+	try:
+		ver = float(params[5])
+	except:
+		raise Exception("Unable to parse version '"+str(ver)+"'. Supported {1.0, 1.2, 1.3}")
+
+	if not ver == 1.0 and not ver == 1.2 and not ver == 1.3:
+		raise Exception("Invalid version '"+str(ver)+"'. Supported {1.0, 1.2, 1.3}")
+	lsi["of-version"] = ver
+
+	#Number of tables
+	try:
+		num_of_tables = int(params[6])
+	except:
+		raise Exception("Unable to parse number of tables '"+num_of_tables+"'")
+
+	if num_of_tables < 0 or num_of_tables > 256:
+		raise Exception("Invalid number of tables '"+num_of_tables+"'")
+	lsi["number-of-tables"] = num_of_tables
+
+	#Parse matching algorithms
+	mas=""
+	try:
+		mas = params[7:]
+	except:
+		pass
+
+	if not mas == []:
+		try:
+			mas_str = ''.join(mas)
+			match = re.search(r'matching-algorithms={(.*)}', mas_str.lower())
+			if not match:
+				raise Exception("Unable to parse 'matching-algorithms'")
+			to_split = match.groups()[0]
+			splitted = to_split.split(",")
+			if len(splitted) != num_of_tables:
+				raise Exception("Invalid number of matching algorithms("+str(len(splitted))+"). Must match the number of tables ("+str(num_of_tables)+").")
+		except Exception as e:
+			raise
+
+	return json.dumps(obj)
+
+
 #
 # Command parsing
 #
-def execute(socket, command):
+def execute(socket, command, req_confirm=False):
 
 	if command == "":
 		print "Invalid command: '"+command+"'"
@@ -139,12 +258,52 @@ def execute(socket, command):
 			print "Invalid command: '"+command+"'. No arguments given to operation '"+op+"'"
 			return
 
-		result = rest_get(socket, compose_url(stripped))
+		#Add prefix for the info URLS
+		stripped = [REST_INFO_PREFIX] + stripped
+
+		result = rest(socket, compose_url(stripped))
 
 		if "flows" in command or "group-table" in command:
 			result = sanitize_flow_or_group(result)
 		return result
+	elif op == "exec":
+		#Confirm
+		if req_confirm:
+			res=confirm("", "y")
+			clear_prev_line()
+			if not res:
+				return "Canceled";
+			clear_prev_line()
 
+		#Remove trailing spaces
+		stripped = command.strip().split()[1:]
+
+		#Check that we really have everything needed
+		if len(stripped) == 0:
+			print "Invalid command: '"+command+"'. No arguments given to operation '"+op+"'"
+			return
+
+		#Add prefix for the mgmt URLS
+		stripped = [REST_MGMT_PREFIX] + stripped
+
+		#Execute the request
+		if "create" in command:
+			data = "";
+			if "lsi" in command:
+				#Create LSI
+				try:
+					data = parse_create_lsi(stripped)
+				except Exception as e:
+					print "Invalid arguments"
+					raise
+				return rest(socket, compose_url(stripped[:3]), data, "POST")
+			else:
+				return rest(socket, compose_url(stripped), data, "PUT")
+		elif "destroy" in command:
+			data = ""
+			return rest(socket, compose_url(stripped), data, "DELETE")
+		else:
+			return rest(socket, compose_url(stripped), "", "POST")
 	else:
 		print "Unknown op: '"+op+"'"
 		return
@@ -208,21 +367,21 @@ class InteractivePrompt(cmd.Cmd):
 		self.curr = "local"
 		self.sockets = {}
 		self.sockets[self.curr] = socket
-		self.prompt = XCLI + "("+self.curr+")>"
+		self.prompt = XCLI + "("+colorize_str(self.curr, GREEN)+")>"
+
+	def preloop(self):
 		print GREETING
 		print ""
 		print "Entering in interactive mode..."
 		print "Using target '["+self.curr+"] "+self.sockets[self.curr]+"'"
 		print ""
 
-	def postcmd(self, stop, line):
-		self.prompt = XCLI + "("+self.curr+")>"
-		print ""
-		return stop
+	def postloop(self):
+		print GOODBYE
 
-	def help_exit(self):
-		print "Exit from the interactive CLI"
-
+	#
+	# Targets
+	#
 	def do_switch_target(self,s=""):
 		if s == "":
 			print "Invalid empty target name"
@@ -240,11 +399,17 @@ class InteractivePrompt(cmd.Cmd):
 		]
 
 	def help_switch_target(self):
-		print "Switch to another xDPd instance (target). Syntax: switch_target <name> <host:port>"
+		print "Switch to another xDPd instance (target)"
+		print ""
+		print "Syntax:"
+		print "   switch_target <name> <host:port>"
 
 	def do_add_target(self,s=""):
 		if s == "":
 			print "Invalid empty target name"
+			return
+                if len(s.split()) < 2:
+			print "Invalid number of parameters."
 			return
 		target = s.split()[0]
 		socket = s.split()[1]
@@ -253,7 +418,10 @@ class InteractivePrompt(cmd.Cmd):
 		self.sockets[target] = socket
 
 	def help_add_target(self):
-		print "Add an xDPd instance (target) to connect to. Syntax: add_target <name> <host:port>"
+		print "Add an xDPd instance (target) to connect to"
+		print ""
+		print "Syntax:"
+		print "   add_target <name> <host:port>"
 
 	def do_targets(self,s=""):
 		for key in self.sockets:
@@ -262,7 +430,9 @@ class InteractivePrompt(cmd.Cmd):
 	def help_targets(self):
 		print "List xDPd instances(targets)"
 
-	#Other useful stuff
+	#
+	# Retrive information
+	#
 	def do_show(self,s=""):
 		if s == "":
 			print "Missing arguments"
@@ -289,19 +459,65 @@ class InteractivePrompt(cmd.Cmd):
 		]
 
 	def help_show(self):
-		print "Retrieve information information from the xDPd instance"
-		print list_commands()
+		print "Retrieve information from the target"
+		print list_show_commands()
 
+	#
+	# Execute remote operations
+	#
+	def do_exec(self, s=""):
+		if s == "":
+			print "Missing arguments"
+			return
+		try:
+			result=execute(self.sockets[self.curr], "exec "+s, True)
+		except:
+			return
+
+		if not result == "":
+			print_less(result)
+
+	def complete_exec(self, text, line, start_index, end_index):
+		exec_cmds = ["port", "attach", "detach", "create", "destroy"]
+
+		for cmd in exec_cmds:
+			if cmd in line:
+				return []
+
+		return [
+			cmd for cmd in exec_cmds
+			if cmd.startswith(text)
+		]
+
+	def help_exec(self):
+		print "Execute an operation over the target"
+		print list_exec_commands()
+
+	#
+	# Other
+	#
 	def do_exit (self,s=""):
 		if confirm("that you want to exit"):
 			return True
+
+	def help_exit(self):
+		print "Exit from the interactive CLI"
+
 
 	def do_shell(self, s=""):
 		if not s=="":
 			print os.system(s)
 
 	def help_shell(self):
-		print "Execute a command in the OS shell; shell ls -la /"
+		print "Execute a command in the OS shell"
+		print ""
+		print "Example:"
+		print "   shell ls -la /"
+
+	def postcmd(self, stop, line):
+		self.prompt = XCLI + "("+colorize_str(self.curr, GREEN)+")>"
+		print ""
+		return stop
 
 	#necessary for \n
 	def emptyline(self, s=""):
@@ -316,6 +532,12 @@ def main(argv):
 	command = ''
 	outputfile = ''
 	socket = defaultsocket
+
+	#Detect if we have a color terminal
+	global color_term
+	curses.setupterm()
+	if curses.tigetnum("colors") < 8:
+		color_term=False
 
 	try:
 		opts, args = getopt.getopt(argv,"hs:c:o:",["help", "socket=", "command=","output-file="])
@@ -337,7 +559,10 @@ def main(argv):
 
 	if command == "":
 		c = InteractivePrompt(socket)
-		c.cmdloop()
+		try:
+			c.cmdloop()
+		except KeyboardInterrupt as e:
+			print "\n\n"+GOODBYE
 		sys.exit()
 	else:
 		try:

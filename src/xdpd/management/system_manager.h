@@ -7,7 +7,7 @@
 
 #include <list>
 #include <stdint.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/common/croflexception.h>
 #include <rofl/datapath/hal/driver.h>
 #include <rofl/platform/unix/cunixenv.h>

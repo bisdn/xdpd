@@ -36,8 +36,8 @@ SHARED_SRC=\
 	$(CLASSIFIER_SRC)
 		
 SHARED_LIBS=\
-	-lrofl \
-	-lrofl_pipeline \
+	-lrofl_common \
+	-lrofl_datapath \
 	-lcppunit \
 	-lpthread
 	

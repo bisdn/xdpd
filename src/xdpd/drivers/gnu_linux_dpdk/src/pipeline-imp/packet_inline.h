@@ -2,7 +2,7 @@
 #ifndef PACKET_IMPL_INLINE__
 #define PACKET_IMPL_INLINE__
 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <inttypes.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>

@@ -9,7 +9,7 @@
 #include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <string.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include "../config.h"

@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/common/caddress.h>

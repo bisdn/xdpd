@@ -8,7 +8,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <pthread.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include "stats.h"
 #include "ports.h"
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline.h>

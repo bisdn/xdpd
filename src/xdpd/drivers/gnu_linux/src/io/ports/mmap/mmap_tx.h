@@ -5,6 +5,7 @@
 #ifndef MMAP_TX_H
 #define MMAP_TX_H 
 
+#include <rofl_datapath.h>
 #include <string>
 
 #include <unistd.h>

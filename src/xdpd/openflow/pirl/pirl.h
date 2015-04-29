@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/common/croflexception.h>
 
 #include "pirl_config.h"

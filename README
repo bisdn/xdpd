@@ -29,9 +29,7 @@ Requirements
 
 - A modern GNU build-system (autoconf, automake, libtool, ...)
 - GNU/Linux and libc development headers (linux-libc-dev and libc6-dev package in Debian/Ubuntu systems)
-- pkg-config
 - libconfig C++ lib (libconfig++-dev in Debian/Ubuntu systems)
-- ROFL libraries installed [1]
 - [optional] if you want to run automatic tests (make check), libcunit and libcppunit are required (in libcunit1-dev and libcppunit-dev packages in Debian-like systems).
 - [optional] Doxygen to generate the documentation.
 
@@ -54,6 +52,8 @@ Optionally you can `make check` for consistency checks. For other platforms diff
 How to run it
 ================================
 
+The default management plugin is `config`. Read README-conf-file for more information. 
+
 Copy the example.cfg: 
 
 	sh# cd build/src/xdpd  
@@ -72,7 +72,7 @@ Optional ../configure parameters
 
 	--with-hw-support=platform-name: Compiles support for the platform-name (platform driver). Default is gnu-linux.   
 	--with-plugins="plugin1...pluginN": Compile with plugin1..pluginN enabled. Default is --with-plugins="config" plugin.  
-	--enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).  
+	--enable-debug: Compile with debug symbols (-g) and debug output, -O0 (warning, it may affect performance).  
 	--disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)   
 
 Doxygen documentation
@@ -83,6 +83,8 @@ You can have a look on:
 http://www.xdpd.org/doc/
 
 Documentation can be compiled via `make doc`. Documentation is generated in build/doc/ folder
+
+RYU certification for gnu-linux/gnu-linux-dpdk: check doc/gnu-linux-ryu.cert
 
 Known issues
 ================================

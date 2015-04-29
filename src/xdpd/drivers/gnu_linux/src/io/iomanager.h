@@ -7,7 +7,7 @@
 
 #include <pthread.h>
 #include <map>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <semaphore.h>
 #include "../config.h"

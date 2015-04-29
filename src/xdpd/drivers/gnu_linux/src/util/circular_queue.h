@@ -7,7 +7,7 @@
 
 #include <string.h>
 #include <pthread.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/common/utils/c_logger.h>
 #include <stdio.h>

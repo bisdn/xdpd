@@ -37,11 +37,13 @@ AC_DEFINE(__STDC_CONSTANT_MACROS)
 AC_CHECK_LIB(pthread, pthread_kill,,AC_MSG_ERROR([pthread library not found])) 
 AC_CHECK_LIB(rt, clock_gettime,,[AC_MSG_ERROR([rt library not found])]) 
 
-PKG_CHECK_MODULES([ROFL], [rofl >= 0.6.0], [have_rofl=yes], AC_MSG_ERROR([Revised OpenFlow Libraries(ROFL) not found]))
-if (test "${have_rofl}" = "yes"); then
-        CPPFLAGS+="$ROFL_CFLAGS"
-        LIBS+="$ROFL_LIBS"
-fi
+#Set basic constants (build dir and srcdir to be used by configure)
+XDPD_SRCDIR="$PWD/$srcdir/"
+XDPD_BUILDDIR="$PWD/"
+
+#Store autoconf variables
+AC_CONFIGURE_ARGS="$ac_configure_args"
+AC_SUBST(AC_CONFIGURE_ARGS)
 
 #Perform GCC checkings
 m4_include([config/gcc.m4])
@@ -70,9 +72,23 @@ m4_include([config/hw.m4])
 #Check hardware support
 m4_include([config/versioning.m4])
 
+#
+#Libraries
+#
+
+#ROFL
+m4_include([config/rofl.m4])
+
+#DPDK
+m4_include([config/dpdk.m4])
+
+
 #Output the files
 AC_CONFIG_FILES([
 	Makefile
+
+	libs/Makefile
+
 	src/Makefile
 	src/xdpd/Makefile
 	src/xdpd/drivers/Makefile
@@ -84,6 +100,7 @@ AC_CONFIG_FILES([
 	src/xdpd/openflow/openflow12/Makefile
 	src/xdpd/openflow/openflow13/Makefile
 	src/xdpd/openflow/pirl/Makefile
+
 	test/Makefile
 	test/xdpd/Makefile
 	test/xdpd/unit/Makefile

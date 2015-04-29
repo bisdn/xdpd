@@ -5,7 +5,7 @@
 #ifndef _PKTCLASSIFIER_H_
 #define _PKTCLASSIFIER_H_
 
-#include <rofl.h>
+#include <rofl_datapath.h>
 
 #if 0
 	#include "c_pktclassifier/c_pktclassifier.h"

@@ -6,7 +6,7 @@
 #define TIME_UTILS_H 1
 
 #include <string.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <inttypes.h>

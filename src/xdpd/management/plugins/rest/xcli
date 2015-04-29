@@ -408,6 +408,9 @@ class InteractivePrompt(cmd.Cmd):
 		if s == "":
 			print "Invalid empty target name"
 			return
+                if len(s.split()) < 2:
+			print "Invalid number of parameters."
+			return
 		target = s.split()[0]
 		socket = s.split()[1]
 		if target in self.sockets:

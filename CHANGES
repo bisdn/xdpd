@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.7.1
+
+[B][gnu-linux-dpdk] Fixing missing call to rte_kni_init() (introduced in 0aa54f09)
+
 v0.7.0
 
 [+] New build system. Now ROFL dependencies and, if necessary, DPDK, are compiled on board

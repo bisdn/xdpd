@@ -22,13 +22,18 @@ then
 else
 
 	AC_MSG_CHECKING([the build number(version)])
-	
-	if test -d $srcdir/.git ; then
+
+	if test -e $srcdir/.git ; then
+		old_pwd=$PWD
+		cd $srcdir
+
 		#Try to retrieve the build number
 		_XDPD_GIT_BUILD=`git log -1 --pretty=%H`
 		_XDPD_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 		#XDPD_VERSION=`git describe --abbrev=0`
 		_XDPD_GIT_DESCRIBE=`git describe --abbrev=40`
+
+		cd $old_pwd
 
 		AC_DEFINE_UNQUOTED([XDPD_BUILD],["$_XDPD_GIT_BUILD"])
 		AC_DEFINE_UNQUOTED([XDPD_BRANCH],["$_XDPD_GIT_BRANCH"])

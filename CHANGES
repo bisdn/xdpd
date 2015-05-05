@@ -10,7 +10,10 @@ Change log
 
 v0.7.2
 
+[O] Added troubleshooting section to README
 [B] Fixed known issue #62 "ROFL-datapath and ROFL-common git information..."
+
+[O][gnu-linux-dpdk] Improved README
 
 v0.7.1
 

@@ -67,6 +67,35 @@ Run xdpd:
 	
 	sh# ./xdpd -c example.cfg
 
+Troubleshooting
+===============
+
+What to do if something doesn't work...
+
+1. Check the controller <-> LSI OF channel. Launch xDPd with debug level 8 for maximum OF control channel output. Check the very basics (addresses, ports and OF versions).
+2. To troubleshoot problems with flowmod/groupmod check the OF control channel to see if the messages are correctly interpreted by the endpoint.
+3. If they are correct, you can check whether they have been installed in the datapath by either using a controller or using the REST plugin + CLI (remember you have to compile in the support for REST); e.g. `xcli -c "show list dp0 table 0 flows"`.
+
+
+If this is not enough, you can always compile xDPd with debug (warning: it affects performance) to see the output of the fast-path. To do so:
+
+	cd <path_to_xdpd_folder>
+	cd build
+	../configure --enable-debug 	# add extra parameters...
+	make clean-libs 		# Clean the compiled libraries (compile them with debug)
+	make clean			# Clean xDPd code
+	make -j2
+
+And then launch xdpd with debug level 7 or more:
+
+
+	./xdpd -c config_file.cfg -d 8
+
+
+If you think this there is a bug, please report it to the issue tracker / mailing list.
+
+
+
 Optional ../configure parameters
 ================================
 
@@ -87,9 +116,9 @@ Documentation can be compiled via `make doc`. Documentation is generated in buil
 RYU certification for gnu-linux/gnu-linux-dpdk: check doc/gnu-linux-ryu.cert
 
 Known issues
-================================
+============
 
-* Certain GCC 4.8.X family versions are buggy and don't properly compile xDPd with -O3 optimizations. Please use GCC 4.8.3  or higher, or another version family. e.g. for gcc-4.7:
+* Certain GCC 4.8.X family versions are buggy and don't properly compile xDPd with -O3 optimizations. Please use GCC 4.8.3  or higher, or another version family. E.g. for gcc-4.7:
 
 
 	CC=gcc-4.7 CXX=g++-4.7 ../configure

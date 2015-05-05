@@ -1,5 +1,5 @@
 The GNU/Linux DPDK driver
-================================
+==========================
 
 Brief
 -----
@@ -11,20 +11,88 @@ Compilation
 
 To compile xDPd you just have to specify the `--with-hw-support=gnu-linux-dpdk` option. DPDK will be compiled "on-board".
 
-Note also that _before_ compiling, the file src/config.h should be revised to make sure that at least:
+Note also that _before_ compiling, the file `src/config.h` should be revised to make sure that at least:
 
-- IO_IFACE_NUM_QUEUES, RX_XXTHRESH and TX_XXTHRESH are correct according to your NIC's capabilities
+- `IO_IFACE_NUM_QUEUES`, `RX_XXTHRESH` and `TX_XXTHRESH` are correct according to your NIC's capabilities
 - Core mask is at least 0x1 + 1 core, e.g. 0x3 (so 2 cores)
 
-To execute xdpd use the normal configuration file (e.g. example.cfg). Note that DPDK's driver will discover 1G ports as geXX and 10G as 10geXX.
+If you don't plan to use NF ports, so KNI or rte_ring ports, you can comment `GNU_LINUX_DPDK_ENABLE_NF` for a small extra-boost:
 
-Extra parameters, such as the coremask and the number of buffers can be specified using --extra-params. See FAQ.
+	//Enable NF extensions (KNI and secondary process DPDK ports)
+	//#define GNU_LINUX_DPDK_ENABLE_NF
+
+
+If you plan to use more than 4 KNI interfaces, please change:
+
+	//Maximum number of KNI interfaces, used during preallocation
+	#define GNU_LINUX_DPDK_MAX_KNI_IFACES 4
+
+To execute xdpd use the normal configuration file (e.g. example.cfg). Note that DPDK's driver will discover 1G ports as `geXX` and 10G as `10geXX`.
+
+Extra parameters, such as the coremask and the number of buffers can be specified using `--extra-params`. See FAQ.
+
+
+Using xdpd+dpdk driver
+----------------------
+
+Before starting xdpd, three things must be done:
+
+1. Set-up hugepages memory. Please refer to the DPDK manual for more information.
+2. Load DPDK kernel modules:
+  1. Load UIO default kernel module `modprobe uio`
+  2. Load the IGB DPDK kernel module `insmod path_to_xdpd_folder/build/libs/dpdk/build/kmod/igb_uio.ko`
+  3. [optional] If you use KNI interfaces `insmod path_to_xdpd_folder/build/libs/dpdk/build/kmod/rte_kni.ko`
+3. Attach interfaces to the igb_uio kernel module. You can either use setup.sh script under `path_to_xdpd_folder/libs/dpdk/tools`, or use the shell script:
+
+Simple script that does 2 and 3:
+
+	#!/bin/sh
+
+	## As discussed in 1.7.1 sect. 2.3.2.1 of the DPDK manual, reserve the hugepages memory at boot time.
+
+	#user i/o
+	modprobe uio
+
+	#insmod DPDK kernel modules
+	insmod <path_to_xdpd_folder>/build/libs/dpdk/build/kmod/igb_uio.ko
+
+	#Optionally, if you use KNI
+	insmod <path_to_xdpd_folder>/build/libs/dpdk/build/kmod/rte_kni.ko
+
+	#Bind NIC by name
+	<path_to_xdpd_folder>/libs/dpdk/tools/dpdk_nic_bind.py --bind=igb_uio eth1 eth2 eth3
+
+	#Bind NIC by PCI address
+	<path_to_xdpd_folder>/libs/dpdk/tools/dpdk_nic_bind.py --bind=igb_uio 0000:00:0b.0
+
+
+Network interfaces
+------------------
+
+xDPd DPDK driver will discover 1G ports as `geXX` and 10G as `10geXX`. To list the discovered interfaces, you can boot xDPd with logging level `5` or more, or use the REST plugin or the CLI to list the available ports.:
+
+	marc@dpdk:~/git/msune_xdpd/build/src/xdpd$ sudo ./xdpd -t -c example.cfg -d 5
+	[xdpd] Initializing system...
+	[xdpd][system_manager] Launched with -t test-config. Doing a test-run execution
+	[xdpd][dpdk] Initializing...
+	[xdpd][dpdk] Initializing EAL with coremask: 0x00000003, memchannels: 2
+	EAL: Detected lcore 0 as core 0 on socket 0
+	EAL: Detected lcore 1 as core 0 on socket 0
+
+	...
+
+	[xdpd][dpdk][iface_manager] Found 4 DPDK-capable interfaces
+	[xdpd][dpdk][iface_manager] Discovered port ge0 [PCI addr: 0000:00:08, MAC: 52:54:00:4A:37:5F] id 0 (CPU socket: 0)
+	[xdpd][dpdk][iface_manager] Discovered port ge1 [PCI addr: 0000:00:09, MAC: 52:54:00:82:84:94] id 1 (CPU socket: 0)
+	[xdpd][dpdk][iface_manager] Discovered port ge2 [PCI addr: 0000:00:10, MAC: 52:54:00:FA:B5:9B] id 2 (CPU socket: 0)
+	[xdpd][dpdk][iface_manager] Discovered port ge3 [PCI addr: 0000:00:11, MAC: 52:54:00:E2:B2:D2] id 3 (CPU socket: 0)
 
 
 DPDK version
 ------------
 
 Current using v1.7.1 + KNI mempool patch (http://dpdk.org/dev/patchwork/patch/885/)
+
 
 Limitations
 -----------
@@ -55,7 +123,7 @@ FAQ
          #define E1000_DEV_ID_82576                      0x10C9
 
 
-* Which interface names are used in gnu-linux-dpdk? geXX and 10geXX. The discovered interfaces are listed on bootstrapping time.
+* Which interface names are used in gnu-linux-dpdk? `geXX` and `10geXX`. The discovered interfaces are listed on bootstrapping time.
 
 * Why do I get the error 'PANIC in hal_driver_init(): Cannot init direct mbuf pool'? This is very likely due to insufficient hugepages memory. Try to increase the amount of hugepages memory. Alternatively you can reduce the amount of buffers allocated, by reducing `NB_MBUF` in `src/xdpd/drivers/gnu_linux_dpdk/src/config.h`.
 

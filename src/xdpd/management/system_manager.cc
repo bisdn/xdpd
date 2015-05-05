@@ -340,14 +340,14 @@ std::string system_manager::get_version(){
 	ss << std::endl << "-- Libraries --" << std::endl;
 	ss << "[ROFL-common]" << std::endl;
 	ss << "  Version: " << ROFL_COMMON_VERSION << std::endl;
-	ss << "  Build: " << ROFL_COMMON_BUILD_NUM << std::endl;
-	ss << "  Compiled in branch: " << ROFL_COMMON_BUILD_BRANCH << std::endl;
-	ss << "  Detailed build information:" << ROFL_COMMON_BUILD_DESCRIBE << std::endl << std::endl;
+	ss << "  Build: " << ROFL_COMMON_BUILD << std::endl;
+	ss << "  Compiled in branch: " << ROFL_COMMON_BRANCH << std::endl;
+	ss << "  Detailed build information:" << ROFL_COMMON_DESCRIBE << std::endl << std::endl;
 	ss << "[ROFL-datapath]" << std::endl;
 	ss << "  Version: " << ROFL_DATAPATH_VERSION << std::endl;
-	ss << "  Build: " << ROFL_DATAPATH_BUILD_NUM << std::endl;
-	ss << "  Compiled in branch: " << ROFL_DATAPATH_BUILD_BRANCH << std::endl;
-	ss << "  Detailed build information:" << ROFL_DATAPATH_BUILD_DESCRIBE << std::endl << std::endl;
+	ss << "  Build: " << ROFL_DATAPATH_BUILD << std::endl;
+	ss << "  Compiled in branch: " << ROFL_DATAPATH_BRANCH << std::endl;
+	ss << "  Detailed build information:" << ROFL_DATAPATH_DESCRIBE << std::endl << std::endl;
 
 	return ss.str();
 }

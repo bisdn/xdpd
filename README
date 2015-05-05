@@ -81,9 +81,9 @@ If this is not enough, you can always compile xDPd with debug (warning: it affec
 
 	cd <path_to_xdpd_folder>
 	cd build
-	../configure --enable-debug 	# add extra parameters...
-	make clean-libs 		# Clean the compiled libraries (compile them with debug)
-	make clean			# Clean xDPd code
+	../configure --enable-debug     # add extra parameters...
+	make clean-libs                 # Clean the compiled libraries (compile them with debug)
+	make clean                      # Clean xDPd code
 	make -j2
 
 And then launch xdpd with debug level 7 or more:

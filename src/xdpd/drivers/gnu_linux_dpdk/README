@@ -40,9 +40,9 @@ Before starting xdpd, three things must be done:
 1. Set-up hugepages memory. Please refer to the DPDK manual for more information.
 2. Load DPDK kernel modules:
   1. Load UIO default kernel module `modprobe uio`
-  2. Load the IGB DPDK kernel module `insmod path_to_xdpd_folder/build/libs/dpdk/build/kmod/igb_uio.ko`
-  3. [optional] If you use KNI interfaces `insmod path_to_xdpd_folder/build/libs/dpdk/build/kmod/rte_kni.ko`
-3. Attach interfaces to the igb_uio kernel module. You can either use setup.sh script under `path_to_xdpd_folder/libs/dpdk/tools`, or use the shell script:
+  2. Load the IGB DPDK kernel module `insmod <path_to_xdpd_folder>/build/libs/dpdk/build/kmod/igb_uio.ko`
+  3. [optional] If you use KNI interfaces `insmod <path_to_xdpd_folder>/build/libs/dpdk/build/kmod/rte_kni.ko`
+3. Attach interfaces to the igb_uio kernel module. You can either use setup.sh script under `<path_to_xdpd_folder>/libs/dpdk/tools`, or use the shell script:
 
 Simple script that does 2 and 3:
 

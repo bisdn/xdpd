@@ -89,7 +89,10 @@ RYU certification for gnu-linux/gnu-linux-dpdk: check doc/gnu-linux-ryu.cert
 Known issues
 ================================
 
-* Certain GCC 4.8.X family versions are buggy and don't properly compile xDPd with -O3 optimizations. Please use GCC 4.8.3  or higher, or another version family.
+* Certain GCC 4.8.X family versions are buggy and don't properly compile xDPd with -O3 optimizations. Please use GCC 4.8.3  or higher, or another version family. e.g. for gcc-4.7:
+
+
+	CC=gcc-4.7 CXX=g++-4.7 ../configure
 
 
 More information, documentation and support

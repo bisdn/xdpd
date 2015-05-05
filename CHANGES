@@ -1,12 +1,16 @@
 Legend:
 
-[+] New/improved feature 
+[+] New/improved feature
 [B] Bug fixed
 [K] Known issue
 [O] Other
 
 Change log
 ==========
+
+v0.7.2
+
+[B] Fixed known issue #62 "ROFL-datapath and ROFL-common git information..."
 
 v0.7.1
 

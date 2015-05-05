@@ -31,28 +31,28 @@ RC_COMMIT_FILE=$(LIBS_BUILD_DIR)/.rofl-common-commit
 
 #ROFL-common target
 rofl-common:
-	@LIB="rofl-common";								\
-	PREV_COMMIT= ;									\
-	if test -f $(RC_COMMIT_FILE) ; then						\
-		PREV_COMMIT=`cat $(RC_COMMIT_FILE)` ;					\
-	fi ;										\
-	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;	\
-	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then				\
-		echo Package \'$$LIB\' is up-to-date; 					\
-	else										\
-		echo Compiling \'$$LIB\'... ;						\
-		OLD_PWD=$$PWD ;								\
-		mkdir -p $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;			\
-		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
-		sh autogen.sh || exit -1 ;						\
-		cd $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;				\
-		CFLAGS=$(LIBS_CFLAGS) CXXFLAGS=$(LIBS_CXXFLAGS) LDFLAGS=$(LIBS_LDFLAGS) \
-		CPPFLAGS=$(LIBS_CPPFLAGS) CC=$(CC) CXX=$(CXX) 				\
-		$(LIBS_DIR)/$$LIB/configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 		\
-		$(MAKE) || exit -1 ; 							\
-		cd $$OLD_PWD || exit -1 ;						\
-		touch $(RC_COMMIT_FILE) || exit -1 ; 					\
-		echo $$CURR_COMMIT > $(RC_COMMIT_FILE) || exit -1 ; 			\
+	@LIB="rofl-common";									\
+	PREV_COMMIT= ;										\
+	if test -f $(RC_COMMIT_FILE) ; then							\
+		PREV_COMMIT=`cat $(RC_COMMIT_FILE)` ;						\
+	fi ;											\
+	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;		\
+	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then					\
+		echo Package \'$$LIB\' is up-to-date; 						\
+	else											\
+		echo Compiling \'$$LIB\'... ;							\
+		OLD_PWD=$$PWD ;									\
+		mkdir -p $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;				\
+		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;						\
+		sh autogen.sh || exit -1 ;							\
+		cd $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;					\
+		CFLAGS="$(LIBS_CFLAGS)" CXXFLAGS="$(LIBS_CXXFLAGS)" LDFLAGS="$(LIBS_LDFLAGS)" 	\
+		CPPFLAGS="$(LIBS_CPPFLAGS)" CC="$(CC)" CXX="$(CXX)" 				\
+		$(LIBS_DIR)/$$LIB/configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 			\
+		$(MAKE) || exit -1 ; 								\
+		cd $$OLD_PWD || exit -1 ;							\
+		touch $(RC_COMMIT_FILE) || exit -1 ; 						\
+		echo $$CURR_COMMIT > $(RC_COMMIT_FILE) || exit -1 ; 				\
 	fi
 
 clean-rofl-common:
@@ -79,28 +79,28 @@ RD_COMMIT_FILE=$(LIBS_BUILD_DIR)/.rofl-datapath-commit
 
 #ROFL-datapath target
 rofl-datapath:
-	@LIB="rofl-datapath";								\
-	PREV_COMMIT= ;									\
-	if test -f $(RD_COMMIT_FILE) ; then						\
-		PREV_COMMIT=`cat $(RD_COMMIT_FILE)` ;					\
-	fi ;										\
-	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;	\
-	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then				\
-		echo Package \'$$LIB\' is up-to-date; 					\
-	else										\
-		echo Compiling \'$$LIB\'... ;						\
-		OLD_PWD=$$PWD ;								\
+	@LIB="rofl-datapath";									\
+	PREV_COMMIT= ;										\
+	if test -f $(RD_COMMIT_FILE) ; then							\
+		PREV_COMMIT=`cat $(RD_COMMIT_FILE)` ;						\
+	fi ;											\
+	CURR_COMMIT=`cd $(LIBS_DIR)/$$LIB && git log -1 --pretty=%H  || echo ` ;		\
+	if test "$$PREV_COMMIT" = "$$CURR_COMMIT" ; then					\
+		echo Package \'$$LIB\' is up-to-date; 						\
+	else											\
+		echo Compiling \'$$LIB\'... ;							\
+		OLD_PWD=$$PWD ;									\
 		mkdir -p $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;				\
-		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
-		sh autogen.sh || exit -1 ;						\
-		cd $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;				\
-		CFLAGS=$(LIBS_CFLAGS) CXXFLAGS=$(LIBS_CXXFLAGS) LDFLAGS=$(LIBS_LDFLAGS) \
-		CPPFLAGS=$(LIBS_CPPFLAGS) CC=$(CC) CXX=$(CXX) 				\
-		$(LIBS_DIR)/$$LIB/configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 		\
-		$(MAKE) || exit -1 ; 							\
-		cd $$OLD_PWD || exit -1 ;						\
-		touch $(RD_COMMIT_FILE) || exit -1 ; 					\
-		echo $$CURR_COMMIT > $(RD_COMMIT_FILE) || exit -1 ; 			\
+		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;						\
+		sh autogen.sh || exit -1 ;							\
+		cd $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;					\
+		CFLAGS="$(LIBS_CFLAGS)" CXXFLAGS="$(LIBS_CXXFLAGS)" LDFLAGS="$(LIBS_LDFLAGS)" 	\
+		CPPFLAGS="$(LIBS_CPPFLAGS)" CC="$(CC)" CXX="$(CXX)" 				\
+		$(LIBS_DIR)/$$LIB/configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 			\
+		$(MAKE) || exit -1 ; 								\
+		cd $$OLD_PWD || exit -1 ;							\
+		touch $(RD_COMMIT_FILE) || exit -1 ; 						\
+		echo $$CURR_COMMIT > $(RD_COMMIT_FILE) || exit -1 ; 				\
 	fi
 
 

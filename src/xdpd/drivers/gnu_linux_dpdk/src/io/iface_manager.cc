@@ -40,7 +40,10 @@ static switch_port_t* configure_port(unsigned int port_id){
 	//Hack to "deduce" the maximum speed of the NIC.
 	//As of DPDK v1.4 there is not way to retreive such features from
 	//the NIC
-	if( strncmp(dev_info.driver_name, "rte_ixgbe", 9) == 0 ){
+	if(strncmp(dev_info.driver_name, "rte_i40e", 8) == 0){
+		/* 40G */
+		snprintf (port_name, SWITCH_PORT_MAX_LEN_NAME, "40ge%u",port_id);
+	}else if(strncmp(dev_info.driver_name, "rte_ixgbe", 9) == 0){
 		/* 10G */
 		snprintf (port_name, SWITCH_PORT_MAX_LEN_NAME, "10ge%u",port_id);
 	}else{

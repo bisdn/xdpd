@@ -560,36 +560,38 @@ void iface_manager_update_links(){
 * Update port stats (pipeline)
 */
 void iface_manager_update_stats(){
-	
+
 	unsigned int i, j;
 	struct rte_eth_stats stats;
 	switch_port_t* port;
-	
-	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
+
+	for(i=0; i<PORT_MANAGER_MAX_PORTS; ++i){
+
 		port = phy_port_mapping[i];
-		if(unlikely(port != NULL)){
 
-			//Retrieve stats
-			rte_eth_stats_get(i, &stats);
-			
-			//RX	
-			port->stats.rx_packets = stats.ipackets;
-			port->stats.rx_bytes = stats.ibytes;
-			port->stats.rx_errors = stats.ierrors;
-				
-			//FIXME: collisions and other errors
-		
-			//TX
-			port->stats.tx_packets = stats.opackets;
-			port->stats.tx_bytes = stats.obytes;
-			port->stats.tx_errors = stats.oerrors;
+		if(!port)
+			continue;
 
-			//TX-queues
-			for(j=0;j<IO_IFACE_NUM_QUEUES;j++){
-				port->queues[j].stats.tx_packets = stats.q_opackets[j];
-				port->queues[j].stats.tx_bytes = stats.q_obytes[j];
-				//port->queues[j].stats.overrun = stats.q_;
-			}
+		//Retrieve stats
+		rte_eth_stats_get(i, &stats);
+
+		//RX
+		port->stats.rx_packets = stats.ipackets;
+		port->stats.rx_bytes = stats.ibytes;
+		port->stats.rx_errors = stats.ierrors;
+
+		//FIXME: collisions and other errors
+
+		//TX
+		port->stats.tx_packets = stats.opackets;
+		port->stats.tx_bytes = stats.obytes;
+		port->stats.tx_errors = stats.oerrors;
+
+		//TX-queues
+		for(j=0; j<IO_IFACE_NUM_QUEUES; ++j){
+			port->queues[j].stats.tx_packets = stats.q_opackets[j];
+			port->queues[j].stats.tx_bytes = stats.q_obytes[j];
+			//port->queues[j].stats.overrun = stats.q_;
 		}
 	}
 

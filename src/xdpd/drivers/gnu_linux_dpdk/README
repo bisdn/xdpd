@@ -93,11 +93,14 @@ DPDK version
 
 Current using v1.7.1 + KNI mempool patch (http://dpdk.org/dev/patchwork/patch/885/)
 
+Limitations and known issues
+----------------------------
 
-Limitations
------------
+* Current config.h cannot handle multiple configurations of ports and RX/TX thresholds. This will be fixed when the driver moves to 1.8+ DPDK version.
 
-Note that current config.h cannot handle multiple configurations of ports and RX/TX thresholds. This will be fixed in following version
+* Intel's X710 NICs are discovered incorrectly as 40 Gbps (`40geXX`) cards instead of 10Gbps. There is apparently in DPDK currently to retrieve the exact capabilities / NIC model, just the driver (i40).
+
+* There is a bug in DPDK v1.7.1, fixed in subsequent versions, that produces a segfault during xDPd shutdown process (specifically calling: i40e_dev_stop()).
 
 FAQ
 ---

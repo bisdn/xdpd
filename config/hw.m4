@@ -45,6 +45,7 @@ if ( test "$HW" = "gnu-linux-dpdk");then
 	xdpd_HW_LDFLAGS=" -Wl,--whole-archive \
 		-Wl,-lrte_pmd_e1000 \
 		-Wl,-lrte_pmd_ixgbe \
+		-Wl,-lrte_pmd_i40e \
 		-Wl,-lrte_pmd_vmxnet3_uio \
 		-Wl,-lrte_pmd_ring \
 		-Wl,-lrte_pmd_virtio_uio \

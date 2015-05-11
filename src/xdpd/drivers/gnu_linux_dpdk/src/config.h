@@ -32,7 +32,7 @@
 #define BG_UPDATE_PORT_LINKS_MS 400
 
 //Frequency(period) of port stats updating in milliseconds
-#define BG_UPDATE_PORT_STATS_MS 2000
+#define BG_UPDATE_PORT_STATS_MS 500
 
 //Frequency(period) of handling KNI commands in milliseconds
 #define BG_HANDLE_KNI_COMMANDS_MS 1000

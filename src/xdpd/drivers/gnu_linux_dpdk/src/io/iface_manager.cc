@@ -195,6 +195,10 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	//Reset stats
 	rte_eth_stats_reset(port_id);
 
+	//Make sure the link is up
+	rte_eth_dev_set_link_down(port_id);
+	rte_eth_dev_set_link_up(port_id);
+
 	//Set as queues setup
 	dpdk_port->queues_set=true;
 	

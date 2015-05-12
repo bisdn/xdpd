@@ -126,24 +126,29 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	int ret;
 	unsigned int sock_id;
 	struct rte_eth_rxconf rx_conf;
+	struct rte_eth_txconf tx_conf;
+
+	memset(&rx_conf, 0, sizeof(rx_conf));
+	memset(&tx_conf, 0, sizeof(tx_conf));
+
 	rx_conf.rx_thresh.pthresh = RX_PTHRESH;
 	rx_conf.rx_thresh.hthresh = RX_HTHRESH;
 	rx_conf.rx_thresh.wthresh = RX_WTHRESH;
 	rx_conf.rx_free_thresh = 32;
-	
-	struct rte_eth_txconf tx_conf;
+
 	tx_conf.tx_thresh.pthresh = TX_PTHRESH;
 	tx_conf.tx_thresh.hthresh = TX_HTHRESH;
 	tx_conf.tx_thresh.wthresh = TX_WTHRESH;
 	tx_conf.tx_free_thresh = 0; /* Use PMD default values */
 	tx_conf.tx_rs_thresh = 0; /* Use PMD default values */
+	tx_conf.txq_flags = ETH_TXQ_FLAGS_NOMULTSEGS;
 
 	//Check first for the socket CPU id
 	sock_id = rte_eth_dev_socket_id(port_id);
 	if(sock_id == 0xFFFFFFFF)
 		sock_id = 0;//Single CPU socket system
 
-	//Recover the 	
+	//Recover the platform state
 	dpdk_port_state_t* dpdk_port = (dpdk_port_state_t*)port->platform_port_state;
 	
 	if(dpdk_port->queues_set)

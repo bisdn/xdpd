@@ -8,8 +8,11 @@ Legend:
 Change log
 ==========
 
-v0.7.3
+v0.7.4
 
+[B][gnu-linux-dpdk] Fixed critical bug in TX/RX queue initialization (PR #73)
+
+v0.7.3
 
 [B] Fixed compilation with absolute paths in --srcdir
 [B] Fixed LIBS_XXXFLAGS passed to compiled-in libraries

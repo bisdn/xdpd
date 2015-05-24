@@ -40,7 +40,10 @@ static switch_port_t* configure_port(unsigned int port_id){
 	//Hack to "deduce" the maximum speed of the NIC.
 	//As of DPDK v1.4 there is not way to retreive such features from
 	//the NIC
-	if( strncmp(dev_info.driver_name, "rte_ixgbe", 9) == 0 ){
+	if(strncmp(dev_info.driver_name, "rte_i40e", 8) == 0){
+		/* 40G */
+		snprintf (port_name, SWITCH_PORT_MAX_LEN_NAME, "40ge%u",port_id);
+	}else if(strncmp(dev_info.driver_name, "rte_ixgbe", 9) == 0){
 		/* 10G */
 		snprintf (port_name, SWITCH_PORT_MAX_LEN_NAME, "10ge%u",port_id);
 	}else{
@@ -123,24 +126,29 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	int ret;
 	unsigned int sock_id;
 	struct rte_eth_rxconf rx_conf;
+	struct rte_eth_txconf tx_conf;
+
+	memset(&rx_conf, 0, sizeof(rx_conf));
+	memset(&tx_conf, 0, sizeof(tx_conf));
+
 	rx_conf.rx_thresh.pthresh = RX_PTHRESH;
 	rx_conf.rx_thresh.hthresh = RX_HTHRESH;
 	rx_conf.rx_thresh.wthresh = RX_WTHRESH;
 	rx_conf.rx_free_thresh = 32;
-	
-	struct rte_eth_txconf tx_conf;
+
 	tx_conf.tx_thresh.pthresh = TX_PTHRESH;
 	tx_conf.tx_thresh.hthresh = TX_HTHRESH;
 	tx_conf.tx_thresh.wthresh = TX_WTHRESH;
 	tx_conf.tx_free_thresh = 0; /* Use PMD default values */
 	tx_conf.tx_rs_thresh = 0; /* Use PMD default values */
+	tx_conf.txq_flags = ETH_TXQ_FLAGS_NOMULTSEGS;
 
 	//Check first for the socket CPU id
 	sock_id = rte_eth_dev_socket_id(port_id);
 	if(sock_id == 0xFFFFFFFF)
 		sock_id = 0;//Single CPU socket system
 
-	//Recover the 	
+	//Recover the platform state
 	dpdk_port_state_t* dpdk_port = (dpdk_port_state_t*)port->platform_port_state;
 	
 	if(dpdk_port->queues_set)
@@ -191,6 +199,10 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 	
 	//Reset stats
 	rte_eth_stats_reset(port_id);
+
+	//Make sure the link is up
+	rte_eth_dev_set_link_down(port_id);
+	rte_eth_dev_set_link_up(port_id);
 
 	//Set as queues setup
 	dpdk_port->queues_set=true;
@@ -557,36 +569,38 @@ void iface_manager_update_links(){
 * Update port stats (pipeline)
 */
 void iface_manager_update_stats(){
-	
+
 	unsigned int i, j;
 	struct rte_eth_stats stats;
 	switch_port_t* port;
-	
-	for(i=0;i<PORT_MANAGER_MAX_PORTS;i++){
+
+	for(i=0; i<PORT_MANAGER_MAX_PORTS; ++i){
+
 		port = phy_port_mapping[i];
-		if(unlikely(port != NULL)){
 
-			//Retrieve stats
-			rte_eth_stats_get(i, &stats);
-			
-			//RX	
-			port->stats.rx_packets = stats.ipackets;
-			port->stats.rx_bytes = stats.ibytes;
-			port->stats.rx_errors = stats.ierrors;
-				
-			//FIXME: collisions and other errors
-		
-			//TX
-			port->stats.tx_packets = stats.opackets;
-			port->stats.tx_bytes = stats.obytes;
-			port->stats.tx_errors = stats.oerrors;
+		if(!port)
+			continue;
 
-			//TX-queues
-			for(j=0;j<IO_IFACE_NUM_QUEUES;j++){
-				port->queues[j].stats.tx_packets = stats.q_opackets[j];
-				port->queues[j].stats.tx_bytes = stats.q_obytes[j];
-				//port->queues[j].stats.overrun = stats.q_;
-			}
+		//Retrieve stats
+		rte_eth_stats_get(i, &stats);
+
+		//RX
+		port->stats.rx_packets = stats.ipackets;
+		port->stats.rx_bytes = stats.ibytes;
+		port->stats.rx_errors = stats.ierrors;
+
+		//FIXME: collisions and other errors
+
+		//TX
+		port->stats.tx_packets = stats.opackets;
+		port->stats.tx_bytes = stats.obytes;
+		port->stats.tx_errors = stats.oerrors;
+
+		//TX-queues
+		for(j=0; j<IO_IFACE_NUM_QUEUES; ++j){
+			port->queues[j].stats.tx_packets = stats.q_opackets[j];
+			port->queues[j].stats.tx_bytes = stats.q_obytes[j];
+			//port->queues[j].stats.overrun = stats.q_;
 		}
 	}
 

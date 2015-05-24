@@ -7,7 +7,7 @@
 
 #include <pthread.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 
 #define MAX_NL_MESSAGE_HEADER 4096
 #define MAX_EPOLL_EVENTS 128

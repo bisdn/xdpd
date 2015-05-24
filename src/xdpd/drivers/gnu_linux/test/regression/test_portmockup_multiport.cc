@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <pthread.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/hal/driver.h>
 #include "io/iomanager.h"

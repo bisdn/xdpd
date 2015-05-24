@@ -1,4 +1,4 @@
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <string.h>
 #include <string>
 #include <vector>
@@ -163,7 +163,7 @@ hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_
 	}
 
 	//Init PKT_IN bufferpool
-	bufferpool::init(IO_BUFFERPOOL_RESERVOIR);
+	bufferpool::init();
 
 	//Initialize pipeline
 	if(physical_switch_init() != ROFL_SUCCESS)

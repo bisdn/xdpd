@@ -2,12 +2,26 @@ MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS=server
 
-#Library MUST BE named libxdpd_mgmt_PLUGIN_NAME.la
-noinst_LTLIBRARIES = libxdpd_mgmt_rest.la
+bin_SCRIPTS = xcli
+CLEANFILES = $(bin_SCRIPTS)
 
-libxdpd_mgmt_rest_la_SOURCES = \
-  endpoints.cpp \
-	rest.cc 
+noinst_LTLIBRARIES = libxdpd_mgmt_rest_js.la libxdpd_mgmt_rest.la
 
-libxdpd_mgmt_rest_la_LIBADD = \
-  server/libxdpd_mgmt_rest_server.la
+#JSON spirit
+libxdpd_mgmt_rest_js_la_SOURCES = 		\
+	json_spirit/json_spirit_reader.cpp	\
+	json_spirit/json_spirit_value.cpp	\
+	json_spirit/json_spirit_writer.cpp
+libxdpd_mgmt_rest_js_la_CXXFLAGS = -Wno-unused-local-typedefs
+
+#Rest main library
+libxdpd_mgmt_rest_la_SOURCES = 			\
+	misc-controllers.cc			\
+	port-controllers.cc			\
+	sw-controllers.cc			\
+	sys-controllers.cc			\
+	rest.cc
+
+libxdpd_mgmt_rest_la_LIBADD =			\
+	libxdpd_mgmt_rest_js.la			\
+	server/libxdpd_mgmt_rest_server.la

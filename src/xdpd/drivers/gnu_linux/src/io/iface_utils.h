@@ -5,7 +5,7 @@
 #ifndef _PLATFORM_PORT_MGMT_
 #define _PLATFORM_PORT_MGMT_
 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/hal/driver.h>
 #include "ports/ioport.h"
 

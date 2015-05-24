@@ -9,7 +9,7 @@
 #include <string> 
 #include <sstream>
 #include <list> 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/common/openflow/cofbucket.h>
 //#include <rofl/datapath/pipeline/openflow/of_switch.h>

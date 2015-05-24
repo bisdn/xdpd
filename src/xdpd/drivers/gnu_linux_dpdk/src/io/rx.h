@@ -115,8 +115,12 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		pkt_state->mbuf = mbuf;
 
 		//Increment port RX statistics
-		port->stats.rx_packets++;
-		port->stats.rx_bytes += mbuf->pkt.pkt_len;
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
+		if(port->type != PORT_TYPE_PHYSICAL){
+			port->stats.rx_packets++;
+			port->stats.rx_bytes += mbuf->pkt.pkt_len;
+		}
+#endif
 
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
 		assert(mbuf->pkt.nb_segs == 1);

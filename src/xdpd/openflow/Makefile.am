@@ -7,6 +7,7 @@ noinst_LTLIBRARIES = libxdpd_openflow.la
 
 libxdpd_openflow_la_SOURCES = \
 	of_endpoint.h \
+	of_endpoint.cc \
 	openflow_switch.h \
 	openflow_switch.cc 
 	

@@ -7,7 +7,7 @@
 
 #include <string> 
 #include <vector> 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/datapath/pipeline/monitoring.h>
 #include <rofl/platform/unix/cunixenv.h>

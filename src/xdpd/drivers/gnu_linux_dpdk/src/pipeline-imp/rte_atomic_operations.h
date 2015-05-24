@@ -2,7 +2,7 @@
 #ifndef ATOMIC_OPS_IMPL_INLINE
 #define ATOMIC_OPS_IMPL_INLINE
 
-#include <rofl.h> 
+#include <rofl_datapath.h> 
 #include <inttypes.h>
 
 //Define inline or not depending if the pipeline was compiled with inlined functions

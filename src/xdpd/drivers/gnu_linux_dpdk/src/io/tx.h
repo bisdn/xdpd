@@ -33,7 +33,7 @@ namespace gnu_linux_dpdk {
 inline void
 transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct rte_mbuf** burst){
 
-	unsigned int ret, len, i, tx_bytes;
+	unsigned int ret, len;
 	switch_port_t* port = phy_port_mapping[port_id];
 
 	//Dequeue a burst from the TX ring
@@ -44,19 +44,8 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct
 
 	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n", phy_port_mapping[port_id]->name,  port_id, queue_id, len);
 
-	//Calculate tx bytes
-	for(i=0, tx_bytes=0;i<len;++i){
-		tx_bytes += burst[i]->pkt.pkt_len;
-	}
-
 	//Send burst
 	ret = rte_eth_tx_burst(port_id, queue_id, burst, len);
-
-	//Increment port stats
-	port->stats.tx_packets += (len-ret);
-	port->stats.tx_bytes += tx_bytes;
-	port->queues[queue_id].stats.tx_packets += (len-ret);
-	port->queues[queue_id].stats.tx_bytes += tx_bytes;
 
 	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] +++ Transmited %u pkts, on queue_id %u\n", phy_port_mapping[port_id]->name, port_id, ret, queue_id);
 
@@ -66,13 +55,6 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct
 		port->queues[queue_id].stats.overrun += ret;
 
 		do {
-			//Remove the stats not
-			//unfortunately there is no other way of efficiently do so
-			//since the rte_eth_tx_burst() does not return the amount of bytes
-			//TXed
-			port->stats.tx_bytes -= burst[ret]->pkt.pkt_len ;
-			port->queues[queue_id].stats.tx_bytes -= burst[ret]->pkt.pkt_len;
-
 			//Now release the mbuf
 			rte_pktmbuf_free(burst[ret]);
 		} while (++ret < len);

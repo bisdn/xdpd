@@ -5,7 +5,7 @@ MAINTAINERCLEANFILES = \
 	$(top_srcdir)/configure \
 	$(top_srcdir)/Makefile.in
 
-SUBDIRS = src doc test
+SUBDIRS = libs src doc test
 
 #Could be improved.. 
 .PHONY: doc
@@ -16,6 +16,9 @@ install-exec-hook:
 	@echo "Install"
 uninstall-hook:
 	@echo "Uninstall"
+
+clean-libs:
+	cd libs && $(MAKE) clean-libs
 
 maintainer-clean-local:
 	rm -rf $(top_srcdir)/m4

@@ -6,7 +6,7 @@
 #define IOPORT_VLINK_H 1
 
 #include <unistd.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include "../ioport.h" 

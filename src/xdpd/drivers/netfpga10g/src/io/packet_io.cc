@@ -13,7 +13,7 @@ void netpfga_io_read_from_port(switch_port_t* port){
 	netfpga_port_t* state = (netfpga_port_t*)port->platform_port_state;
 
 	//Retrieve an empty buffer
-	datapacket_t* pkt=bufferpool::get_free_buffer_nonblocking();
+	datapacket_t* pkt = bufferpool::get_buffer();
 	
 	if(!pkt)
 		return;

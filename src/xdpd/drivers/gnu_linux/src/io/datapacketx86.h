@@ -10,7 +10,7 @@
 #include <inttypes.h>
 #include <sys/types.h>
 #include <sys/uio.h>
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/platform/memory.h>

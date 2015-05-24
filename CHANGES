@@ -1,6 +1,6 @@
 Legend:
 
-[+] New/improved feature 
+[+] New/improved feature
 [B] Bug fixed
 [K] Known issue
 [O] Other
@@ -8,15 +8,57 @@ Legend:
 Change log
 ==========
 
+v0.7.4
+
+[B][gnu-linux-dpdk] Fixed critical bug in TX/RX queue initialization (PR #73)
+
+v0.7.3
+
+[B] Fixed compilation with absolute paths in --srcdir
+[B] Fixed LIBS_XXXFLAGS passed to compiled-in libraries
+[B] Update to rofl-datapath v0.6.2 due to bug #71, rofl-datapath/#1
+
+[B][gnu-linux-dpdk] Fixed missing -lrte_pmd_i40e and 40g interfaces naming. DPDK README updated.
+[B][gnu-linux-dpdk] Fixed RX/TX dpdk physical port stats corruption and removing unnecessary soft stats.
+
+[K][gnu-linux-dpdk] EXTERNAL(KNI) TX statistics and SHMEM(rte_ring) RX/TX statistics are not correctly updated.
+
+v0.7.2
+
+[O] Added troubleshooting section to README
+[B] Fixed gcc.m4; prevent compilation with buggy g++-4.8
+[B] Fixed known issue #62 "ROFL-datapath and ROFL-common git information..."
+
+[O][gnu-linux-dpdk] Improved README
+
+v0.7.1
+
+[B][gnu-linux-dpdk] Fixing missing call to rte_kni_init() (introduced in 0aa54f09)
+
+v0.7.0
+
+[+] New build system. Now ROFL dependencies and, if necessary, DPDK, are compiled on board
+[K] ROFL-datapath and ROFL-common git information (BUILD, DECRIBE...) is not correctly generated when building on-board
+
+[+][CMM] Improved REST plugin. Added python xcli script
+
+
+v0.6.1
+
+[B][cmm][node_orchestrator] Fixed compilation and added README
+
 v0.6.0
 
 [K] Prevent compilation with buggy GCC versions (-O3 opt.)
+
+[O] Added specific READMEs (drivers, plugins...)
 
 [+] Workaround for automake 1.14 subdir-objects bug(13928).
 [+] Fixed some LLVM related warnings and errors (clang/clang++)
 
 [+][CMM] Added NF port manager extensions
 [B][CMM] Set cookie field in Packet-In messages based on flow entry
+[B][CMM] Prevent two LSIs to have the same name
 
 [+][drivers] Adapted to the new extensions-enabled HAL API
 

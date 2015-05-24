@@ -34,13 +34,13 @@ CLASSIFIER_SRC=$(top_srcdir)/src/io/packet_classifiers/c_types_pktclassifier/c_t
 		$(top_srcdir)/src/io/packet_classifiers/c_types_pktclassifier/autogen_pkt_types.c \
 		$(top_srcdir)/src/io/packet_classifiers/packet_operations.cc
 	
-datapacketx86test_SOURCES= $(top_srcdir)/src/io/datapacketx86.cc\
-			$(top_srcdir)/src/io/bufferpool.cc\
-			$(top_srcdir)/src/pipeline-imp/memory.c \
-			$(CLASSIFIER_SRC) \
-			datapacketx86test.cc 
-			
-datapacketx86test_LDADD= -lrofl -lcppunit -lpthread
+#datapacketx86test_SOURCES= $(top_srcdir)/src/io/datapacketx86.cc\
+#			$(top_srcdir)/src/io/bufferpool.cc\
+#			$(top_srcdir)/src/pipeline-imp/memory.c \
+#			$(CLASSIFIER_SRC) \
+#			datapacketx86test.cc 
+#			
+#datapacketx86test_LDADD= -lrofl -lcppunit -lpthread
 
 #mmap_port_test_SOURCES = $(SHARED_SRC)\
 #			$(CLASSIFIER_SRC) \
@@ -56,6 +56,6 @@ datapacketx86test_LDADD= -lrofl -lcppunit -lpthread
 #DEBUG_ONLY_TESTS= portmockuptest 
 #endif
 
-check_PROGRAMS = datapacketx86test $(DEBUG_ONLY_TESTS)
+check_PROGRAMS = $(DEBUG_ONLY_TESTS)
 
-TESTS = datapacketx86test $(DEBUG_ONLY_TESTS) 
+TESTS = $(DEBUG_ONLY_TESTS) 

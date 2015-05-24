@@ -5,7 +5,7 @@
 #ifndef _NF_IFACE_MANAGER_H_
 #define _NF_IFACE_MANAGER_H_
 
-#include <rofl.h>
+#include <rofl_datapath.h>
 #include "../config.h"
 #include <rte_config.h> 
 #include <rte_common.h> 

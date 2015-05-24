@@ -29,9 +29,7 @@ Requirements
 
 - A modern GNU build-system (autoconf, automake, libtool, ...)
 - GNU/Linux and libc development headers (linux-libc-dev and libc6-dev package in Debian/Ubuntu systems)
-- pkg-config
 - libconfig C++ lib (libconfig++-dev in Debian/Ubuntu systems)
-- ROFL libraries installed [1]
 - [optional] if you want to run automatic tests (make check), libcunit and libcppunit are required (in libcunit1-dev and libcppunit-dev packages in Debian-like systems).
 - [optional] Doxygen to generate the documentation.
 
@@ -54,6 +52,8 @@ Optionally you can `make check` for consistency checks. For other platforms diff
 How to run it
 ================================
 
+The default management plugin is `config`. Read README-conf-file for more information. 
+
 Copy the example.cfg: 
 
 	sh# cd build/src/xdpd  
@@ -67,12 +67,41 @@ Run xdpd:
 	
 	sh# ./xdpd -c example.cfg
 
+Troubleshooting
+===============
+
+What to do if something doesn't work...
+
+1. Check the controller <-> LSI OF channel. Launch xDPd with debug level 8 for maximum OF control channel output. Check the very basics (addresses, ports and OF versions).
+2. To troubleshoot problems with flowmod/groupmod check the OF control channel to see if the messages are correctly interpreted by the endpoint.
+3. If they are correct, you can check whether they have been installed in the datapath by either using a controller or using the REST plugin + CLI (remember you have to compile in the support for REST); e.g. `xcli -c "show list dp0 table 0 flows"`.
+
+
+If this is not enough, you can always compile xDPd with debug (warning: it affects performance) to see the output of the fast-path. To do so:
+
+	cd <path_to_xdpd_folder>
+	cd build
+	../configure --enable-debug     # add extra parameters...
+	make clean-libs                 # Clean the compiled libraries (compile them with debug)
+	make clean                      # Clean xDPd code
+	make -j2
+
+And then launch xdpd with debug level 7 or more:
+
+
+	./xdpd -c config_file.cfg -d 8
+
+
+If you think this there is a bug, please report it to the issue tracker / mailing list.
+
+
+
 Optional ../configure parameters
 ================================
 
 	--with-hw-support=platform-name: Compiles support for the platform-name (platform driver). Default is gnu-linux.   
 	--with-plugins="plugin1...pluginN": Compile with plugin1..pluginN enabled. Default is --with-plugins="config" plugin.  
-	--enable-debug: Compile with debug symbols (-g) and debug output (warning, it may affect performance).  
+	--enable-debug: Compile with debug symbols (-g) and debug output, -O0 (warning, it may affect performance).  
 	--disable-silent-rules: Enable verbose compilation mode (AM_SILENT_RULES disabled)   
 
 Doxygen documentation
@@ -84,10 +113,15 @@ http://www.xdpd.org/doc/
 
 Documentation can be compiled via `make doc`. Documentation is generated in build/doc/ folder
 
-Known issues
-================================
+RYU certification for gnu-linux/gnu-linux-dpdk: check doc/gnu-linux-ryu.cert
 
-* Certain GCC 4.8.X family versions are buggy and don't properly compile xDPd with -O3 optimizations. Please use GCC 4.8.3  or higher, or another version family.
+Known issues
+============
+
+* Certain GCC 4.8.X family versions are buggy and don't properly compile xDPd with -O3 optimizations. Please use GCC 4.8.3  or higher, or another version family. E.g. for gcc-4.7:
+
+
+	CC=gcc-4.7 CXX=g++-4.7 ../configure
 
 
 More information, documentation and support

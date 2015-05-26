@@ -241,6 +241,8 @@ tx_pkt_shmem_nf_port(switch_port_t* port, datapacket_t* pkt)
 		flush_shmem_nf_port(port, port_state->to_nf_queue, pkt_burst);
 		return;
 	}
+
+	pkt_burst->len = len;
 }
 
 /**

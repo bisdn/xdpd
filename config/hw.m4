@@ -91,6 +91,10 @@ fi
 #Print fancy message
 AC_MSG_RESULT($msg)
 
+#Print a nice message
+AC_MSG_CHECKING(whether driver supports rofl-pipeline inlining...)
+AC_MSG_RESULT($DRIVER_HAS_INLINE_SUPPORT)
+
 AM_CONDITIONAL([DRIVER_HAS_INLINE_SUPPORT], [test "$DRIVER_HAS_INLINE_SUPPORT" = "yes"])
 AM_CONDITIONAL([WITH_DPDK], [test "$WITH_DPDK" = "yes"])
 AC_SUBST(PLATFORM)

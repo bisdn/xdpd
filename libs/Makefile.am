@@ -96,7 +96,7 @@ rofl-datapath:
 		cd $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;					\
 		CFLAGS="$(LIBS_CFLAGS)" CXXFLAGS="$(LIBS_CXXFLAGS)" LDFLAGS="$(LIBS_LDFLAGS)" 	\
 		CPPFLAGS="$(LIBS_CPPFLAGS)" CC="$(CC)" CXX="$(CXX)" 				\
-		$(LIBS_DIR)/$$LIB/configure $(ROFL_CM_AC_FLAGS) || exit -1 ; 			\
+		$(LIBS_DIR)/$$LIB/configure $(ROFL_DP_AC_FLAGS) || exit -1 ; 			\
 		$(MAKE) || exit -1 ; 								\
 		cd $$OLD_PWD || exit -1 ;							\
 		touch $(RD_COMMIT_FILE) || exit -1 ; 						\

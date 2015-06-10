@@ -125,14 +125,14 @@ rofl_result_t processing_init(void){
 
 
 /*
-* Destroy data structures for processing to work 
+* Destroy data structures for processing to work
 */
 rofl_result_t processing_destroy(void){
 
 	unsigned int i;
 
 	ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down all active cores\n");
-	
+
 	//Stop all cores and wait for them to complete execution tasks
 	for(i=0;i<RTE_MAX_LCORE;++i){
 		if(processing_core_tasks[i].available && processing_core_tasks[i].active){
@@ -153,7 +153,7 @@ static void processing_wait_for_cores_to_sync(){
 	for(i=0;i<RTE_MAX_LCORE;++i){
 		if(processing_core_tasks[i].active){
 			while(processing_core_tasks[i].running_hash != running_hash);
-		}	
+		}
 	}
 }
 
@@ -163,16 +163,16 @@ int processing_core_process_packets(void* not_used){
 	int j;
 	bool own_port;
 	switch_port_t* port;
-	port_queues_t* port_queues;	
+	port_bursts_t* port_bursts;
         uint64_t diff_tsc, prev_tsc;
 	struct rte_mbuf* pkt_burst[IO_IFACE_MAX_PKT_BURST]={0};
 	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
 
-	//Time to drain in tics	
+	//Time to drain in tics
 	const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * IO_BURST_TX_DRAIN_US;
-	
+
 	//Own core
-	core_id = rte_lcore_id();  
+	core_id = rte_lcore_id();
 
 	//Parsing and pipeline extra state
 	datapacket_t pkt;
@@ -184,7 +184,7 @@ int processing_core_process_packets(void* not_used){
 
 	//Set flag to active
 	tasks->active = true;
-	
+
 	//Last drain tsc
 	prev_tsc = 0;
 
@@ -194,82 +194,78 @@ int processing_core_process_packets(void* not_used){
 		tasks->running_hash = running_hash;
 
 		//Calc diff
-		diff_tsc = prev_tsc - rte_rdtsc();  
+		diff_tsc = prev_tsc - rte_rdtsc();
 
-		//Drain TX if necessary	
+		//Drain TX if necessary
 		if(unlikely(diff_tsc > drain_tsc)){
-		
+
 			//Handle physical ports
 			for(i=0, l=0; l<total_num_of_phy_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
-				
+
 				if(!tasks->phy_ports[i].present)
 					continue;
-					
+
 				l++;
-	
+
 				//make code readable
-				port_queues = &tasks->phy_ports[i];
-				
-				//Check whether is our port (we have to also transmit TX queues)				
-				own_port = (port_queues->core_id == core_id);
-						
+				port_bursts = &tasks->phy_ports[i];
+
+				//Check whether is our port (we have to also transmit TX queues)
+				own_port = (port_bursts->core_id == core_id);
+
 				//Flush (enqueue them in the RX/TX port lcore)
 				for( j=(IO_IFACE_NUM_QUEUES-1); j >=0 ; j-- ){
-					flush_port_queue_tx_burst(phy_port_mapping[i], i, &port_queues->tx_queues_burst[j], j);
-					
-					if(own_port)	
+					flush_port_queue_tx_burst(phy_port_mapping[i], i, &port_bursts->tx_queues_burst[j], j);
+
+					if(own_port)
 						transmit_port_queue_tx_burst(i, j, pkt_burst);
 				}
 			}
 
-#ifdef GNU_LINUX_DPDK_ENABLE_NF			
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
 			//handle NF ports
-			for(i=0, l=0; l<total_num_of_nf_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i)
-			{	
+			for(i=0, l=0; l<total_num_of_nf_ports && likely(i<PROCESSING_MAX_PORTS) ; ++i){
+
 				if(!tasks->nf_ports[i].present)
 					continue;
-					
+
 				l++;
-				
-				if(nf_port_mapping[i]->type == PORT_TYPE_NF_EXTERNAL)
-				{
-					//make code readable
-					port_queues = &tasks->nf_ports[i];
-				
-					//Check whether is our port (we have to also transmit TX queues)				
-					own_port = (port_queues->core_id == core_id);
-						
-					flush_kni_nf_port_burst(nf_port_mapping[i], i, &port_queues->tx_queues_burst[0]);
-				
-					if(own_port)		
-						transmit_kni_nf_port_burst(nf_port_mapping[i],i, pkt_burst);
-				}
-#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
-				else
-				{
+
+				//make code readable
+				port_bursts = &tasks->nf_ports[i];
+
+				if(nf_port_mapping[i]->type == PORT_TYPE_NF_EXTERNAL){
+					//Check whether is our port (we have to also transmit TX queues)
+					own_port = (port_bursts->core_id == core_id);
+
+					flush_kni_nf_port_burst(nf_port_mapping[i], i, &port_bursts->tx_queues_burst[0]);
+
+					if(own_port)
+						transmit_kni_nf_port_burst(nf_port_mapping[i], i, pkt_burst);
+				}else{
 					assert(nf_port_mapping[i]->type == PORT_TYPE_NF_SHMEM);
-					flush_dpdk_nf_port(nf_port_mapping[i]);
-				}				
-#endif
+					port = nf_port_mapping[i];
+					flush_shmem_nf_port(port, ((dpdk_shmem_port_state_t*)port->platform_port_state)->to_nf_queue, &port_bursts->tx_queues_burst[0]);
+				}
 			}
 #endif
 		}
-		
+
 		//Process RX
 		for(i=0;i<tasks->num_of_rx_ports;++i)
 		{
 			port = tasks->port_list[i];
 			if(likely(port != NULL) && likely(port->up)){ //This CAN happen while deschedulings
-				//Process RX&pipeline 
+				//Process RX&pipeline
 				process_port_rx(core_id, port, pkt_burst, &pkt, pkt_state);
 			}
 		}
 	}
-	
+
 	tasks->active = false;
 	destroy_datapacket_dpdk(pkt_state);
 
-	return (int)ROFL_SUCCESS; 
+	return (int)ROFL_SUCCESS;
 }
 
 
@@ -290,15 +286,15 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	rte_spinlock_lock(&mutex);
 
 	switch(port->type){
-		case PORT_TYPE_PHYSICAL: 
+		case PORT_TYPE_PHYSICAL:
 			if(total_num_of_phy_ports == PROCESSING_MAX_PORTS){
 				ROFL_ERR(DRIVER_NAME"[processing] Reached already PROCESSING_MAX_PORTS(%u). All cores are full. No available port slots\n", PROCESSING_MAX_PORTS);
 				rte_spinlock_unlock(&mutex);
 				return ROFL_FAILURE;
 			}
 			break;
-#ifdef GNU_LINUX_DPDK_ENABLE_NF			
-		case PORT_TYPE_NF_SHMEM:	
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
+		case PORT_TYPE_NF_SHMEM:
 		case PORT_TYPE_NF_EXTERNAL:
 			if(total_num_of_nf_ports == PROCESSING_MAX_PORTS){
 					ROFL_ERR(DRIVER_NAME"[processing] Reached already PROCESSING_MAX_PORTS(%u). All cores are full. No available port slots\n", PROCESSING_MAX_PORTS);
@@ -306,8 +302,8 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 					return ROFL_FAILURE;
 			}
 			break;
-#endif //GNU_LINUX_DPDK_ENABLE_NF			
-	
+#endif //GNU_LINUX_DPDK_ENABLE_NF
+
 		default: assert(0);
 			return ROFL_FAILURE;
 	}
@@ -360,7 +356,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 		}
 	}
 
-	ROFL_DEBUG(DRIVER_NAME"[processing] Selected core %u for scheduling port %s(%p)\n", lcore_sel, port->name, port); 
+	ROFL_DEBUG(DRIVER_NAME"[processing] Selected core %u for scheduling port %s(%p)\n", lcore_sel, port->name, port);
 
 	num_of_ports = &processing_core_tasks[lcore_sel].num_of_rx_ports;
 
@@ -373,9 +369,9 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 	}
 
 	switch(port->type){
-		case PORT_TYPE_PHYSICAL: 
+		case PORT_TYPE_PHYSICAL:
 		{
-			dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;	
+			dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;
 			//FIXME: check if already scheduled
 			if( iface_manager_set_queues(port, lcore_sel, port_state->port_id) != ROFL_SUCCESS){
 				assert(0);
@@ -383,77 +379,77 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			}
 
 			//Store attachment info (back reference)
-			port_state->core_id = lcore_sel; 
+			port_state->core_id = lcore_sel;
 			port_state->core_port_slot = *num_of_ports;
-		
-			
+
+
 			port_id = port_state->port_id;
 
 			//Increment total counter
 			total_num_of_phy_ports++;
-			
+
 			port_state->scheduled = true;
 		}
 			break;
-		case PORT_TYPE_NF_SHMEM:	
+		case PORT_TYPE_NF_SHMEM:
 		{
-			nf_port_state_dpdk_t* port_state = (nf_port_state_dpdk_t*)port->platform_port_state;
+			dpdk_shmem_port_state_t* port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
 
 			//Store attachment info (back reference)
-			port_state->core_id = lcore_sel; 
+			port_state->core_id = lcore_sel;
 			port_state->core_port_slot = *num_of_ports;
 
 			port_id = port_state->nf_id;
 
 			//Increment total counter
 			total_num_of_nf_ports++;
-				
+
 			port_state->scheduled = true;
 		}
 
 			break;
 		case PORT_TYPE_NF_EXTERNAL:
 		{
-			nf_port_state_kni_t* port_state = (nf_port_state_kni_t*)port->platform_port_state;
+			dpdk_kni_port_state_t* port_state = (dpdk_kni_port_state_t*)port->platform_port_state;
 
 			//Store attachment info (back reference)
-			port_state->core_id = lcore_sel; 
+			port_state->core_id = lcore_sel;
 			port_state->core_port_slot = *num_of_ports;
 
 			port_id = port_state->nf_id;
-		
+
 			//Increment total counter
 			total_num_of_nf_ports++;
-			
+
 			port_state->scheduled = true;
 		}
 
 			break;
-	
+
 		default: assert(0);
 			return ROFL_FAILURE;
 	}
 
 	processing_core_tasks[lcore_sel].port_list[*num_of_ports] = port;
 	(*num_of_ports)++;
-	
+
 	//Mark port as present (and scheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
 
 		switch(port->type){
-			case PORT_TYPE_PHYSICAL: 
+			case PORT_TYPE_PHYSICAL:
 				processing_core_tasks[i].phy_ports[port_id].present = true;
 				processing_core_tasks[i].phy_ports[port_id].core_id = lcore_sel;
 				break;
-				
-#ifdef GNU_LINUX_DPDK_ENABLE_NF			
-			case PORT_TYPE_NF_SHMEM:	
+
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
+			case PORT_TYPE_NF_SHMEM:
 			case PORT_TYPE_NF_EXTERNAL:
 				processing_core_tasks[i].nf_ports[port_id].present = true;
 				processing_core_tasks[i].nf_ports[port_id].core_id = lcore_sel;
 				break;
-#endif //GNU_LINUX_DPDK_ENABLE_NF			
-		
+#endif //GNU_LINUX_DPDK_ENABLE_NF
+
 			default: assert(0);
 				return ROFL_FAILURE;
 		}
@@ -462,7 +458,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 
 	//Increment the hash counter
 	running_hash++;
-	
+
 	rte_spinlock_unlock(&mutex);
 
 	if(!processing_core_tasks[lcore_sel].active){
@@ -470,7 +466,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 			assert(0);
 			rte_panic("Core status corrupted!");
 		}
-		
+
 		ROFL_DEBUG(DRIVER_NAME"[processing] Launching core %u due to scheduling action of port %p\n", lcore_sel, port);
 
 		//Launch
@@ -487,7 +483,7 @@ rofl_result_t processing_schedule_port(switch_port_t* port){
 }
 
 /*
-* Deschedule port to a core 
+* Deschedule port to a core
 */
 rofl_result_t processing_deschedule_port(switch_port_t* port){
 
@@ -497,47 +493,47 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 
 	switch(port->type){
 		case PORT_TYPE_PHYSICAL:
-		{ 
-			dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;	
+		{
+			dpdk_port_state_t* port_state = (dpdk_port_state_t*)port->platform_port_state;
 			scheduled = &port_state->scheduled;
-			core_id = &port_state->core_id;	
-			core_port_slot = &port_state->core_port_slot;	
-			port_id = &port_state->port_id;	
-		}	
+			core_id = &port_state->core_id;
+			core_port_slot = &port_state->core_port_slot;
+			port_id = &port_state->port_id;
+		}
 			break;
 		case PORT_TYPE_NF_SHMEM:
 		{
-			nf_port_state_dpdk_t* port_state = (nf_port_state_dpdk_t*)port->platform_port_state;	
-			scheduled = &port_state->scheduled;	
+			dpdk_shmem_port_state_t* port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
+			scheduled = &port_state->scheduled;
 			core_id = &port_state->core_id;
-			core_port_slot = &port_state->core_port_slot;	
-			port_id = &port_state->nf_id;	
+			core_port_slot = &port_state->core_port_slot;
+			port_id = &port_state->nf_id;
 
 		}
-			break;	
+			break;
 		case PORT_TYPE_NF_EXTERNAL:
 		{
-			nf_port_state_kni_t* port_state = (nf_port_state_kni_t*)port->platform_port_state;	
-		
-			scheduled = &port_state->scheduled;	
-			core_id = &port_state->core_id;	
-			core_port_slot = &port_state->core_port_slot;	
-			port_id = &port_state->nf_id;	
+			dpdk_kni_port_state_t* port_state = (dpdk_kni_port_state_t*)port->platform_port_state;
+
+			scheduled = &port_state->scheduled;
+			core_id = &port_state->core_id;
+			core_port_slot = &port_state->core_port_slot;
+			port_id = &port_state->nf_id;
 
 		}
-			
+
 			break;
-	
+
 		default: assert(0);
 			return ROFL_FAILURE;
 	}
-	
+
 	if(*scheduled == false){
 		ROFL_ERR(DRIVER_NAME"[processing] Tyring to descheduled an unscheduled port\n");
 		assert(0);
 		return ROFL_FAILURE;
 	}
-	
+
 	core_tasks_t* core_task = &processing_core_tasks[*core_id];
 
 	rte_spinlock_lock(&mutex);
@@ -548,21 +544,21 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 		core_task->port_list[i] = core_task->port_list[i+1];
 		if(core_task->port_list[i]){
 			switch(core_task->port_list[i]->type){
-				case PORT_TYPE_PHYSICAL: 
+				case PORT_TYPE_PHYSICAL:
 					((dpdk_port_state_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
 					break;
-				case PORT_TYPE_NF_SHMEM:	
-					((nf_port_state_dpdk_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
+				case PORT_TYPE_NF_SHMEM:
+					((dpdk_shmem_port_state_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
 					break;
 				case PORT_TYPE_NF_EXTERNAL:
-					((nf_port_state_kni_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
+					((dpdk_kni_port_state_t*)core_task->port_list[i]->platform_port_state)->core_port_slot = i;
 					break;
 				default: assert(0); //Can never happen
 					return ROFL_FAILURE;
 			}
 		}
 	}
-	
+
 	//Decrement counter
 	core_task->num_of_rx_ports--;
 
@@ -571,50 +567,50 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 		if(rte_eal_get_lcore_state(*core_id) != RUNNING){
 			ROFL_ERR(DRIVER_NAME"[processing] Corrupted state; port was marked as active, but EAL informs it was not running..\n");
 			assert(0);
-			
+
 		}
-		
+
 		ROFL_DEBUG(DRIVER_NAME"[processing] Shutting down core %u, since port list is empty\n",i);
-		
+
 		core_task->active = false;
-		
+
 		//Wait for core to stop
 		rte_eal_wait_lcore(*core_id);
 	}
 
 	switch(port->type){
-		case PORT_TYPE_PHYSICAL: 
+		case PORT_TYPE_PHYSICAL:
 			//Decrement total counter
 			total_num_of_phy_ports--;
 			break;
-		case PORT_TYPE_NF_SHMEM:	
+		case PORT_TYPE_NF_SHMEM:
 		case PORT_TYPE_NF_EXTERNAL:
 			//Decrement total counter
 			total_num_of_nf_ports--;
 			break;
-		
+
 		default: assert(0); //Can never happen
 			return ROFL_FAILURE;
 	}
-	
-	
+
+
 	//Mark port as NOT present anymore (descheduled) on all cores (TX)
 	for(i=0;i<RTE_MAX_LCORE;++i){
 
 		switch(port->type){
-			case PORT_TYPE_PHYSICAL: 
+			case PORT_TYPE_PHYSICAL:
 				processing_core_tasks[i].phy_ports[*port_id].present = false;
 				processing_core_tasks[i].phy_ports[*port_id].core_id = 0xFFFFFFFF;
 				break;
-				
-#ifdef GNU_LINUX_DPDK_ENABLE_NF			
-			case PORT_TYPE_NF_SHMEM:	
+
+#ifdef GNU_LINUX_DPDK_ENABLE_NF
+			case PORT_TYPE_NF_SHMEM:
 			case PORT_TYPE_NF_EXTERNAL:
 				processing_core_tasks[i].nf_ports[*port_id].present = false;
 				processing_core_tasks[i].nf_ports[*port_id].core_id = 0xFFFFFFFF;
 				break;
-#endif //GNU_LINUX_DPDK_ENABLE_NF			
-		
+#endif //GNU_LINUX_DPDK_ENABLE_NF
+
 			default: assert(0);
 				return ROFL_FAILURE;
 		}
@@ -622,12 +618,12 @@ rofl_result_t processing_deschedule_port(switch_port_t* port){
 
 	//Increment the hash counter
 	running_hash++;
-	
+
 	//Wait for all the active cores to sync
 	processing_wait_for_cores_to_sync();
 
-	rte_spinlock_unlock(&mutex);	
-	
+	rte_spinlock_unlock(&mutex);
+
 	*scheduled = false;
 
 	//Print the status of the cores

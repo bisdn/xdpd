@@ -171,3 +171,5 @@ all: rofl-common rofl-datapath
 clean-libs: clean-rofl-common clean-rofl-common-datapath
 maintainer-clean-local: maintainer-clean-rofl-common maintainer-clean-rofl-datapath
 endif
+
+check: all

@@ -68,11 +68,13 @@ maintainer-clean-rofl-common: clean-rofl-common
 ##
 
 #Defaults
-ROFL_DP_AC_FLAGS=$(AC_CONFIGURE_ARGS)
-
+ROFL_DP_AC_FLAGS=""
 if DRIVER_HAS_INLINE_SUPPORT
+if !USER_OVERRIDES_PIPELINE_FLAGS
 ROFL_DP_AC_FLAGS+= --with-pipeline-lockless --with-pipeline-platform-funcs-inlined
 endif
+endif
+ROFL_DP_AC_FLAGS+=$(AC_CONFIGURE_ARGS)
 
 #Makefile specific variables (at automake time)
 RD_COMMIT_FILE=$(LIBS_BUILD_DIR)/.rofl-datapath-commit

@@ -71,6 +71,9 @@ m4_include([config/profiling.m4])
 #Experimental code
 m4_include([config/experimental.m4])
 
+#Pipeline optimizations
+m4_include([config/pipeline_opts.m4])
+
 #External libraries
 m4_include([config/libs.m4])
 

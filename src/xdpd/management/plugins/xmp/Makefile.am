@@ -68,7 +68,8 @@ xmpclient_SOURCES = \
 
 xmpclient_LDADD = libxdpd_xmp_client.la \
 	libxdpd_mgmt_xmp.la \
-	libxdpd_xmp.la
+	libxdpd_xmp.la \
+	-lrofl_common
 
 
 pkgconfigdir = $(libdir)/pkgconfig

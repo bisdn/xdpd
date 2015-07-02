@@ -8,6 +8,13 @@ Legend:
 Change log
 ==========
 
+v0.7.6
+
+[B] Fixed overriding of default flags for rofl-datapath #81. Synced with rofl-datapath v0.6.3.
+[B] Updated boost.m4 to v24 due to errors with new compiler/lib versions #79
+
+[B][CMM] Fixed linking error for xmp plugin #82
+
 v0.7.5
 
 [B][gnu-linux][gnu-linux-dpdk][octeon] Build system; configure time lockless and inlining flags were not passed to rofl-pipeline, causing substantial performance degradation ~40%. (PR #74)

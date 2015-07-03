@@ -44,11 +44,6 @@ rofl_result_t iomanager::init( unsigned int _rx_groups, unsigned int _tx_groups)
 		goto INIT_ERROR;
 	}
 
-	if( unlikely(_rx_groups<0) || unlikely(_tx_groups<0) ){
-		ROFL_ERR(DRIVER_NAME"[iomanager] Invalid RX(%u) or TX(%u) parameters. Aborting...\n", _rx_groups, _tx_groups);
-		goto INIT_ERROR;
-	}
-		
 	//Initialize the number of groups
 	num_of_rx_groups = _rx_groups;
 	num_of_tx_groups = _tx_groups;

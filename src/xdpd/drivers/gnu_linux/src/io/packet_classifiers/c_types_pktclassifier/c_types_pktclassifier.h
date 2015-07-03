@@ -387,7 +387,7 @@ void parse_ipv4(classifier_state_t* clas_state, uint8_t *data, size_t datalen){
 
 #ifdef DEBUG
 	//Prevent malformed packets to raise asserts()
-	if(unlikely(num_of_options < 0) || unlikely(num_of_options > 15))
+	if(unlikely(num_of_options > 15))
 		return; 
 #endif
 

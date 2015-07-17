@@ -282,7 +282,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
  * @param check_counts	Check RESET_COUNTS flag
  */
 
-hal_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t** flow_entry, uint32_t buffer_id, bool check_overlap, bool reset_counts){
+hal_fm_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_id, of1x_flow_entry_t** flow_entry, uint32_t buffer_id, bool check_overlap, bool reset_counts){
 
 	of1x_switch_t* lsw;
 	rofl_of1x_fm_result_t result;
@@ -292,20 +292,14 @@ hal_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 
 	if(!lsw){
 		assert(0);
-		return HAL_FAILURE;
+		return HAL_FM_FAILURE;
 	}
 
 	if(table_id >= lsw->pipeline.num_of_tables)
-		return HAL_FAILURE;
+		return HAL_FM_FAILURE;
 
-	//TODO: enhance error codes. Contain invalid matches (pipeline enhancement) 
-	if( (result = of1x_add_flow_entry_table(&lsw->pipeline, table_id, flow_entry, check_overlap, reset_counts)) != ROFL_OF1X_FM_SUCCESS){
-
-		if(result == ROFL_OF1X_FM_OVERLAP)
-			return HAL_FM_OVERLAP_FAILURE;
-		
-		return HAL_FAILURE;
-	}
+	if( (result = of1x_add_flow_entry_table(&lsw->pipeline, table_id, flow_entry, check_overlap, reset_counts)) != ROFL_OF1X_FM_SUCCESS)
+		return hal_fm_map_pipeline_retcode(result);
 
 	if(buffer_id && buffer_id != OF1XP_NO_BUFFER){
 	
@@ -313,7 +307,7 @@ hal_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 	
 		if(!pkt){
 			//Return failure (buffer ID was invalid/expired)
-			return HAL_FAILURE;
+			return HAL_FM_FAILURE;
 		}
 
 		of_process_packet_pipeline(ROFL_PIPELINE_LOCKED_TID, (of_switch_t*)lsw,pkt);
@@ -324,7 +318,7 @@ hal_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t table_i
 	of1x_dump_table(&lsw->pipeline.tables[table_id], false);
 #endif
 	
-	return HAL_SUCCESS;
+	return HAL_FM_SUCCESS;
 }
 
 /**
@@ -490,16 +484,18 @@ of1x_stats_flow_aggregate_msg_t* hal_driver_of1x_get_flow_aggregate_stats(uint64
  *
  * @param dpid 		Datapath ID of the switch to install the GROUP
  */
-rofl_of1x_gm_result_t hal_driver_of1x_group_mod_add(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t **buckets){
+hal_gm_result_t hal_driver_of1x_group_mod_add(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t **buckets){
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+	rofl_of1x_gm_result_t res;
 	
 	if(!lsw){
 		assert(0);
-		return ROFL_OF1X_GM_UNKGRP;
+		return HAL_GM_UNKGRP;
 	}
 
-	return of1x_group_add(lsw->pipeline.groups, type, id, buckets);
+	res = of1x_group_add(lsw->pipeline.groups, type, id, buckets);
+	return hal_gm_map_pipeline_retcode(res);
 }
 
 /**
@@ -509,16 +505,18 @@ rofl_of1x_gm_result_t hal_driver_of1x_group_mod_add(uint64_t dpid, of1x_group_ty
  *
  * @param dpid 		Datapath ID of the switch to modify the GROUP
  */
-rofl_of1x_gm_result_t hal_driver_of1x_group_mod_modify(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t **buckets){
+hal_gm_result_t hal_driver_of1x_group_mod_modify(uint64_t dpid, of1x_group_type_t type, uint32_t id, of1x_bucket_list_t **buckets){
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+	rofl_of1x_gm_result_t res;
 		
 	if(!lsw){
 		assert(0);
-		return ROFL_OF1X_GM_UNKGRP;
+		return HAL_GM_UNKGRP;
 	}
 
-	return of1x_group_modify(lsw->pipeline.groups, type, id, buckets);
+	res = of1x_group_modify(lsw->pipeline.groups, type, id, buckets);
+	return hal_gm_map_pipeline_retcode(res);
 }
 
 /**
@@ -528,16 +526,18 @@ rofl_of1x_gm_result_t hal_driver_of1x_group_mod_modify(uint64_t dpid, of1x_group
  *
  * @param dpid 		Datapath ID of the switch to delete the GROUP
  */
-rofl_of1x_gm_result_t hal_driver_of1x_group_mod_delete(uint64_t dpid, uint32_t id){
+hal_gm_result_t hal_driver_of1x_group_mod_delete(uint64_t dpid, uint32_t id){
 	
 	of1x_switch_t* lsw = (of1x_switch_t*)physical_switch_get_logical_switch_by_dpid(dpid);
+	rofl_of1x_gm_result_t res;
 		
 	if(!lsw){
 		assert(0);
-		return ROFL_OF1X_GM_UNKGRP;
+		return HAL_GM_UNKGRP;
 	}
 
-	return of1x_group_delete(&lsw->pipeline, lsw->pipeline.groups, id);
+	res = of1x_group_delete(&lsw->pipeline, lsw->pipeline.groups, id);
+	return hal_gm_map_pipeline_retcode(res);
 }
 
 /**

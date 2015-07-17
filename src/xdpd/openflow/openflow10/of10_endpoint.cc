@@ -835,7 +835,7 @@ of10_endpoint::flow_mod_add(
 		rofl::openflow::cofmsg_flow_mod& msg)
 {
 	uint8_t table_id = msg.get_flowmod().get_table_id();
-	hal_result_t res;
+	hal_fm_result_t res;
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
@@ -863,7 +863,7 @@ of10_endpoint::flow_mod_add(
 		return;
 	}
 
-	if (HAL_SUCCESS != (res = hal_driver_of1x_process_flow_mod_add(sw->dpid,
+	if (HAL_FM_SUCCESS != (res = hal_driver_of1x_process_flow_mod_add(sw->dpid,
 								msg.get_flowmod().get_table_id(),
 								&entry,
 								msg.get_flowmod().get_buffer_id(),
@@ -877,10 +877,16 @@ of10_endpoint::flow_mod_add(
 			ROFL_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
 		}
 
-		if(res == HAL_FM_OVERLAP_FAILURE)
-			throw rofl::eFlowModOverlap();
-		else
-			throw rofl::eFlowModTableFull();
+		switch(res){
+			case HAL_FM_OVERLAP_FAILURE:
+				throw rofl::eFlowModOverlap();
+			case HAL_FM_TABLE_FULL_FAILURE:
+				throw rofl::eFlowModTableFull();
+			case HAL_FM_VALIDATION_FAILURE:
+				throw rofl::eFlowModBadCommand();
+			default:
+				throw eFlowModUnknown();
+		}
 	}
 }
 
@@ -934,6 +940,7 @@ of10_endpoint::flow_mod_modify(
 		}else{
 			ROFL_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
 		}
+		throw rofl::eFlowModBase();
 	}
 
 }
@@ -973,6 +980,8 @@ of10_endpoint::flow_mod_delete(
 								OF1X_GROUP_ANY,
 								strictness)) {
 		ROFL_DEBUG("Error deleting flowmod\n");
+		of1x_destroy_flow_entry(entry);
+		throw rofl::eFlowModBase();
 	}
 
 	//Always delete entry

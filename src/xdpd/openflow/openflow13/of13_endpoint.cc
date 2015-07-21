@@ -184,9 +184,8 @@ of13_endpoint::flow_mod_add(
 		throw rofl::eFlowModUnknown();
 	}
 
-	if(!entry){
+	if(!entry)
 		throw rofl::eFlowModUnknown();//Just for safety, but shall never reach this
-	}
 
 	if (HAL_FM_SUCCESS != (res = hal_driver_of1x_process_flow_mod_add(sw->dpid,
 								msg.get_flowmod().get_table_id(),
@@ -208,6 +207,8 @@ of13_endpoint::flow_mod_add(
 				throw rofl::eFlowModOverlap();
 			case HAL_FM_TABLE_FULL_FAILURE:
 				throw rofl::eFlowModTableFull();
+			case HAL_FM_INVALID_TABLE_ID_FAILURE:
+				throw rofl::eFlowModBadTableId();
 			case HAL_FM_VALIDATION_FAILURE:
 				throw rofl::eFlowModBadCommand();
 			default:
@@ -225,10 +226,10 @@ of13_endpoint::flow_mod_modify(
 		bool strict)
 {
 	of1x_flow_entry_t *entry=NULL;
+	hal_fm_result_t res;
 
 	// sanity check: table for table-id must exist
-	if (pack.get_flowmod().get_table_id() > sw->num_of_tables)
-	{
+	if (pack.get_flowmod().get_table_id() > sw->num_of_tables){
 		rofl::logging::error << "[xdpd][of13][flow-mod-modify] unable to modify flow-mod due to " <<
 				"invalid table-id:" << pack.get_flowmod().get_table_id() << " on dpt:" << sw->dpname << std::endl;
 		throw rofl::eFlowModBadTableId();
@@ -241,20 +242,17 @@ of13_endpoint::flow_mod_modify(
 		throw rofl::eFlowModUnknown();
 	}
 
-	if(!entry){
+	if(!entry)
 		throw rofl::eFlowModUnknown();//Just for safety, but shall never reach this
-	}
-
 
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
-
-	if(HAL_SUCCESS != hal_driver_of1x_process_flow_mod_modify(sw->dpid,
+	if(HAL_FM_SUCCESS != (res=hal_driver_of1x_process_flow_mod_modify(sw->dpid,
 								pack.get_flowmod().get_table_id(),
 								&entry,
 								pack.get_flowmod().get_buffer_id(),
 								strictness,
-								pack.get_flowmod().get_flags() & openflow13::OFPFF_RESET_COUNTS)){
+								pack.get_flowmod().get_flags() & openflow13::OFPFF_RESET_COUNTS))){
 		if(entry){
 			rofl::logging::error << "[xdpd][of13][flow-mod-modify] error modifying flow-mod on dpt:" << sw->dpname << std::endl;
 			of1x_destroy_flow_entry(entry);
@@ -262,7 +260,10 @@ of13_endpoint::flow_mod_modify(
 			rofl::logging::error << "[xdpd][of13][flow-mod-modify] Bufferid: "<<pack.get_flowmod().get_buffer_id()<<" could not be processed for dpt:" << sw->dpname <<". Buffer ID expired or invalid" << std::endl;
 		}
 
-		throw rofl::eFlowModBase();
+		if(res == HAL_FM_INVALID_TABLE_ID_FAILURE)
+			throw rofl::eFlowModBadTableId();
+		else
+			throw rofl::eFlowModUnknown();
 	}
 }
 
@@ -276,6 +277,7 @@ of13_endpoint::flow_mod_delete(
 {
 
 	of1x_flow_entry_t *entry=NULL;
+	hal_fm_result_t res;
 
 	try{
 		entry = of13_translation_utils::of13_map_flow_entry(&ctl, &pack, sw);
@@ -290,15 +292,20 @@ of13_endpoint::flow_mod_delete(
 
 	of1x_flow_removal_strictness_t strictness = (strict) ? STRICT : NOT_STRICT;
 
-	if(HAL_SUCCESS != hal_driver_of1x_process_flow_mod_delete(sw->dpid,
+	if(HAL_FM_SUCCESS != (res=hal_driver_of1x_process_flow_mod_delete(sw->dpid,
 								pack.get_flowmod().get_table_id(),
 								entry,
 								pack.get_flowmod().get_out_port(),
 								pack.get_flowmod().get_out_group(),
-								strictness)) {
+								strictness))) {
 		rofl::logging::error << "[xdpd][of13][flow-mod-delete] error deleting flow-mod on dpt:" << sw->dpname << std::endl;
 		of1x_destroy_flow_entry(entry);
-		throw rofl::eFlowModBase();
+
+		if(res == HAL_FM_INVALID_TABLE_ID_FAILURE)
+			throw rofl::eFlowModBadTableId();
+		else
+			throw rofl::eFlowModUnknown();
+
 	}
 
 	//Always delete entry
@@ -418,7 +425,7 @@ of13_endpoint::handle_aggregate_stats_request(
 		rofl::openflow::cofmsg_aggr_stats_request& msg)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	 of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
 
 	if(!entry)
 		throw rofl::eBadRequestBadStat();

@@ -17,6 +17,7 @@ v0.7.6
 [B] Fix flowmod/groupmod return codes and udgrade to rofl-datapath v0.6.4 #76
 
 [B][CMM] Fixed linking error for xmp plugin #82
+[B][CMM] Fix REST plugin HTTP return codes #89.
 
 [B][gnu-linux] Fixed tests when compiled with --enable-experimental #87
 

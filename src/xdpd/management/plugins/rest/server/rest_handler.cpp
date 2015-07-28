@@ -58,13 +58,15 @@ void rest_handler::operator()(const request& req, reply& rep){
 
 	boost::cmatch grps;
 	std::string request_path;
+	RestFuncT func;
+
 	if (!file_handler::url_decode(req.uri, request_path)){
 		rep = reply::stock_reply(reply::bad_request);
 		return;
 	}
 
+	//Resolution step
 	try{
-		RestFuncT func;
 		std::string method(req.method);
 		std::transform(method.begin(), method.end(), method.begin(), ::tolower);
 		switch(methods_to_enum[method]){
@@ -83,9 +85,16 @@ void rest_handler::operator()(const request& req, reply& rep){
 				func = get_handler(delete_handlers, request_path, grps);
 				break;
 		}
+	}catch (...){
+		rep = reply::stock_reply(reply::bad_request);
+		return;
+	}
 
+	//Execution
+	try{
 		rep.status = reply::ok;
 		func(req, rep, grps);
+
 		if(rep.headers.size() == 0){
 			rep.headers.resize(2);
 			rep.headers[0].name = "Content-Length";
@@ -93,12 +102,11 @@ void rest_handler::operator()(const request& req, reply& rep){
 			rep.headers[1].name = "Content-Type";
 			rep.headers[1].value = "application/json";
 		}
-
-		return;
-	}catch (...){
-		rep = reply::stock_reply(reply::bad_request);
+	}catch(...){
+		rep = reply::stock_reply(reply::internal_server_error);
 		return;
 	}
+
 }
 
 void rest_handler::register_get_path(std::string path, RestFuncT func){

@@ -21,7 +21,7 @@ LIBTOOL="$LIBTOOL --preserve-dup-deps"
 AC_SUBST(LIBTOOL)dnl
 
 # default flags
-CFLAGS="-Werror -Wall $CFLAGS"
+CFLAGS="-fgnu89-inline -Werror -Wall $CFLAGS"
 CXXFLAGS="-Werror -Wall $CXXFLAGS"
 LDFLAGS=" -Wl,-export-dynamic"
 

@@ -347,6 +347,21 @@ uint64_t* platform_packet_get_wlan_address_3(datapacket_t * const pkt)
 	return 0x0;
 }
 
+uint16_t* platform_packet_get_gre_version(datapacket_t * const pkt)
+{
+	return NULL;
+}
+
+uint16_t* platform_packet_get_gre_prot_type(datapacket_t * const pkt)
+{
+	return NULL;
+}
+
+uint32_t* platform_packet_get_gre_key(datapacket_t * const pkt)
+{
+	return NULL;
+}
+
 /*
 * Actions
 */
@@ -391,11 +406,11 @@ platform_packet_push_mpls(datapacket_t* pkt, uint16_t ether_type)
 	fprintf(stderr,"PUSH MPLS\n");
 // 	dpx86_push_mpls(pkt, ether_type);
 }
-void platform_packet_pop_gtp(datapacket_t* pkt)
+void platform_packet_pop_gtp(datapacket_t* pkt, uint16_t ether_type)
 {
 	//TODO: implement
 }
-void platform_packet_push_gtp(datapacket_t* pkt)
+void platform_packet_push_gtp(datapacket_t* pkt, uint16_t ether_type)
 {
 	//TODO: implement
 }
@@ -420,6 +435,15 @@ void platform_packet_push_wlan(datapacket_t* pkt)
 	//TODO: implement
 }
 
+void platform_packet_pop_gre(datapacket_t* pkt, uint16_t ether_type)
+{
+	//TODO: implement
+}
+
+void platform_packet_push_gre(datapacket_t* pkt, uint16_t ether_type)
+{
+	//TODO: implement
+}
 
 void
 platform_packet_push_vlan(datapacket_t* pkt, uint16_t ether_type)
@@ -828,6 +852,21 @@ void platform_packet_set_wlan_address_2(datapacket_t* pkt, uint64_t address_2)
 void platform_packet_set_wlan_address_3(datapacket_t* pkt, uint64_t address_3)
 {
 	fprintf(stderr,"SET WLAN ADDRESS 3\n");
+}
+
+void platform_packet_set_gre_version(datapacket_t* pkt, uint16_t version)
+{
+	fprintf(stderr,"SET GRE VERSION\n");
+}
+
+void platform_packet_set_gre_prot_type(datapacket_t* pkt, uint16_t prot_type)
+{
+	fprintf(stderr,"SET GRE PROTO TYPE\n");
+}
+
+void platform_packet_set_gre_key(datapacket_t* pkt, uint32_t key)
+{
+	fprintf(stderr,"SET GRE KEY\n");
 }
 
 void

@@ -26,7 +26,7 @@ AC_SUBST(LIBTOOL)dnl
 
 
 #Default flags
-CFLAGS="-Werror -Wall $CFLAGS"
+CFLAGS="-fgnu89-inline -Werror -Wall $CFLAGS"
 CXXFLAGS="-Werror -Wall $CXXFLAGS"
 LDFLAGS="-Wl,--as-needed -Wl,-export-dynamic"
 

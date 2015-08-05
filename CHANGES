@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.7.7
+
+[B] Fix: boost libraries should only be required when REST plugin is compiled #94 #95
+
 v0.7.6
 
 [B] Fixed GCC 5 compilation #86

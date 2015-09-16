@@ -798,7 +798,7 @@ string MessageHandler::destroyNFPorts(string message)
 string MessageHandler::createVirtualLinks(string message)
 {	
 	int vlinks_number = 0;
-    uint64_t dpid_a = 0, dpid_b;
+    uint64_t dpid_a = 0, dpid_b = 0;
 	
 	bool foundNumber = false;
 	bool foundDpIDa = false;

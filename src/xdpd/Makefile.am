@@ -4,12 +4,13 @@ MAINTAINERCLEANFILES = Makefile.in
 FM_LIB= drivers/$(PLATFORM)/libxdpd_driver_$(PLATFORM).la
 FM_LIB_a= drivers/$(PLATFORM)/.libs/libxdpd_driver_$(PLATFORM).a
 
-SUBDIRS = management openflow drivers
+SUBDIRS = common management openflow drivers
 
 #Wrap
 noinst_LTLIBRARIES = libxdpd_wrap.la
 libxdpd_wrap_la_SOURCES = 
 libxdpd_wrap_la_LIBADD = \
+	common/libxdpd_common_base.la \
 	management/libxdpd_mgmt.la \
 	-lrofl_datapath \
 	openflow/libxdpd_openflow.la\

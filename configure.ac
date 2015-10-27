@@ -111,6 +111,8 @@ AC_CONFIG_FILES([
 
 	src/Makefile
 	src/xdpd/Makefile
+	src/xdpd/common/Makefile
+	src/xdpd/common/utils/Makefile
 	src/xdpd/drivers/Makefile
 	src/xdpd/management/Makefile
 	src/xdpd/management/plugins/Makefile

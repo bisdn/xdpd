@@ -7,7 +7,8 @@
 #include <sstream> 
 #include <vector> 
 #include <rofl/common/croflexception.h>
-#include <rofl/common/utils/c_logger.h>
+
+#include "xdpd/common/utils/c_logger.h"
 
 /**
 * @file scope_plugin.h

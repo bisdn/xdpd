@@ -7,3 +7,4 @@ libxdpd_mgmt_config_interfaces_la_SOURCES = \
 	nf_scope.cc 
 
 libxdpd_mgmt_config_interfaces_la_LIBADD =
+AM_CXXFLAGS=-I$(top_srcdir)/src/

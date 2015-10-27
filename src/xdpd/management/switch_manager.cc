@@ -35,8 +35,8 @@ openflow_switch* switch_manager::create_switch(
 		unsigned int num_of_tables,
 		int* ma_list,
 		int reconnect_start_timeout,
-		enum rofl::csocket::socket_type_t socket_type,
-		cparams const& socket_params){
+		enum xdpd::switch_manager::socket_type_t socket_type,
+		const xdpd::cparams& params){
 
 	openflow_switch* dp;
 
@@ -53,13 +53,6 @@ openflow_switch* switch_manager::create_switch(
 			pthread_mutex_unlock(&switch_manager::mutex);
 			throw eOfSmExists();
 		}
-	}
-
-	//Check if ROFL supports SSL or any other socket type, so that we can send a nice exception
-	if(!rofl::csocket::supports_socket_type(socket_type)){
-		ROFL_ERR("[xdpd][switch_manager] ERROR Unsupported socket type by ROFL, specified in the first connection of switch with dpid: 0x%llx. Perhaps compiled ROFL without SSL support?\n", (long long unsigned int)dpid); 
-		pthread_mutex_unlock(&switch_manager::mutex);
-		throw eOfSmUnknownSocketType();
 	}
 
 	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;

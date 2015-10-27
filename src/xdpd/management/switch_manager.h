@@ -23,11 +23,12 @@
 #include <rofl_datapath.h>
 #include <rofl/common/csocket.h>
 #include <rofl/common/caddress.h>
-#include <rofl/common/croflexception.h>
 
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
+
+#include "xdpd/common/exception.h"
 
 //Snapshot
 #include "snapshots/switch_snapshot.h"
@@ -44,7 +45,13 @@
 
 namespace xdpd {
 
-class eOfSmBase				: public rofl::RoflException {};	// base error class for all switch_manager related errors
+class eOfSmBase				: public xdpd::exception {
+public:
+	eOfSmBase(
+			const std::string& __arg = std::string("")) :
+				xdpd::exception(__arg)
+	{};
+};	// base error class for all switch_manager related errors
 class eOfSmGeneralError			: public eOfSmBase {};
 class eOfSmErrorOnCreation		: public eOfSmBase {};
 class eOfSmExists			: public eOfSmBase {};
@@ -70,6 +77,15 @@ class openflow_switch;
 * @ingroup cmm_mgmt
 */
 class switch_manager {
+public:
+
+	/**
+	 * @brief	Socket type
+	 */
+	enum socket_type_t {
+		SOCKET_TYPE_PLAIN = 0,
+		SOCKET_TYPE_TLS = 1,
+	};
 
 public:
 
@@ -91,8 +107,8 @@ public:
 					unsigned int num_of_tables,
 					int* ma_list,
 					int reconnect_start_timeout,
-					enum rofl::csocket::socket_type_t socket_type,
-					rofl::cparams const& socket_params);
+					enum xdpd::switch_manager::socket_type_t socket_type,
+					const xdpd::cparams& params);
 
 
 	/**

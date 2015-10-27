@@ -20,3 +20,5 @@ library_include_HEADERS= \
 		cparams.h
 
 AM_CPPFLAGS=-fPIC
+AM_CXXFLAGS=-I$(top_srcdir)/src/
+

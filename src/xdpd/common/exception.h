@@ -24,6 +24,10 @@ namespace xdpd {
 
 class exception : public std::runtime_error {
 public:
+	virtual
+	~exception() _GLIBCXX_USE_NOEXCEPT
+	{};
+
 	exception(
 			const std::string& __arg) :
 				std::runtime_error(__arg)
@@ -52,8 +56,9 @@ public:
 		if (this == &e)
 			return *this;
 		kvmap.clear();
-		for (auto it : e.kvmap) {
-			set_key(it.first, it.second);
+		for (std::map<std::string, std::string>::const_iterator
+				it = e.kvmap.begin(); it != e.kvmap.end(); ++it) {
+			set_key(it->first, it->second);
 		}
 		return *this;
 	};
@@ -235,8 +240,9 @@ public:
 	std::vector<std::string>
 	keys() const {
 		std::vector<std::string> vkeys;
-		for (auto it : kvmap) {
-			vkeys.push_back(it.first);
+		for (std::map<std::string, std::string>::const_iterator
+				it = kvmap.begin(); it != kvmap.end(); ++it) {
+			vkeys.push_back(it->first);
 		}
 		return vkeys;
 	}
@@ -316,8 +322,9 @@ public:
 	friend std::ostream&
 	operator<< (std::ostream& os, const exception& e) {
 		os << "exception: " << e.what() << " ";
-		for (auto it : e.kvmap) {
-			os << it.first << ":" << it.second << ", ";
+		for (std::map<std::string, std::string>::const_iterator
+				it = e.kvmap.begin(); it != e.kvmap.end(); ++it) {
+			os << it->first << ":" << it->second << ", ";
 		}
 		return os;
 	};
@@ -371,7 +378,7 @@ public:
 	{ set_errnum(errno); };
     virtual
 	const char*
-    what() const noexcept {
+    what() const _GLIBCXX_USE_NOEXCEPT {
     	std::stringstream ss;
     	ss << exception::what() <<  " errno: " << __errno << " (" << strerror(__errno) << ")";
     	return ss.str().c_str();

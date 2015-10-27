@@ -21,7 +21,6 @@
 #include <stdexcept>
 
 #include <rofl_datapath.h>
-#include <rofl/common/csocket.h>
 #include <rofl/common/caddress.h>
 
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -29,6 +28,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 
 #include "xdpd/common/exception.h"
+#include "xdpd/common/cparams.h"
 
 //Snapshot
 #include "snapshots/switch_snapshot.h"

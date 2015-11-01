@@ -28,7 +28,9 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 
 #include "xdpd/common/exception.h"
+#include "xdpd/common/csocket.h"
 #include "xdpd/common/cparams.h"
+#include "xdpd/common/logging.h"
 
 //Snapshot
 #include "snapshots/switch_snapshot.h"
@@ -79,16 +81,6 @@ class openflow_switch;
 class switch_manager {
 public:
 
-	/**
-	 * @brief	Socket type
-	 */
-	enum socket_type_t {
-		SOCKET_TYPE_PLAIN = 0,
-		SOCKET_TYPE_TLS = 1,
-	};
-
-public:
-
 	//
 	// Switch management
 	//
@@ -107,7 +99,7 @@ public:
 					unsigned int num_of_tables,
 					int* ma_list,
 					int reconnect_start_timeout,
-					enum xdpd::switch_manager::socket_type_t socket_type,
+					enum xdpd::csocket::socket_type_t socket_type,
 					const xdpd::cparams& params);
 
 
@@ -183,12 +175,12 @@ public:
 	/**
 	 * connect to controller
 	 */
-	static void rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, rofl::cparams const& socket_params);
+	static void rpc_connect_to_ctl(uint64_t dpid, enum xdpd::csocket::socket_type_t socket_type, xdpd::cparams const& socket_params);
 
 	/**
 	 * disconnect from from controller
 	 */
-	static void rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, rofl::cparams const& socket_params);
+	static void rpc_disconnect_from_ctl(uint64_t dpid, enum xdpd::csocket::socket_type_t socket_type, xdpd::cparams const& socket_params);
 
 	//
 	// Other configuration parameters

@@ -24,6 +24,8 @@
 #include <rofl/datapath/pipeline/switch_port.h>
 //#include "openflow_switch.h"
 
+#include "xdpd/common/csocket.h"
+
 /**
 * @file of_endpoint.h
 * @author Marc Sune<marc.sune (at) bisdn.de>
@@ -32,7 +34,6 @@
 * @brief OpenFlow endpoint abstraction. 
 */
 
-using namespace rofl;
 
 namespace xdpd {
 
@@ -46,14 +47,14 @@ class openflow_switch;
 * @description An OpenFlow endpoint is not a single connection endpoint, but rather the agent which
 * manages both ACTIVE and PASSIVE mode connections
 */
-class of_endpoint : public crofbase {
+class of_endpoint : public rofl::crofbase {
 
 public:
 
 	of_endpoint(
 			rofl::openflow::cofhello_elem_versionbitmap const& versionbitmap,
-			enum rofl::csocket::socket_type_t socket_type,
-			const rofl::cparams& socket_params);
+			enum xdpd::csocket::socket_type_t socket_type,
+			const xdpd::cparams& socket_params);
 
 	virtual ~of_endpoint() {};
 
@@ -73,8 +74,8 @@ protected:
 	//Switch to which the endpoint belongs to
 	openflow_switch* sw;	
 	rofl::openflow::cofhello_elem_versionbitmap versionbitmap;
-	enum rofl::csocket::socket_type_t socket_type;
-	cparams socket_params;
+	enum xdpd::csocket::socket_type_t socket_type;
+	xdpd::cparams socket_params;
 };
 
 }// namespace rofl

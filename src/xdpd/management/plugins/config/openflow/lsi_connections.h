@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <libconfig.h++>
-#include <rofl/common/csocket.h>
-#include <rofl/common/cparams.h>
+#include "xdpd/common/csocket.h"
+#include "xdpd/common/cparams.h"
 #include "../config.h"
 
 /**
@@ -20,8 +20,8 @@ namespace xdpd {
 class lsi_connection{
 
 public:
-	rofl::csocket::socket_type_t type;
-	rofl::cparams params;	
+	xdpd::csocket::socket_type_t type;
+	xdpd::cparams params;
 };
 
 class lsi_connection_scope:public scope {

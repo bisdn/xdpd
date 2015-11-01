@@ -1,6 +1,7 @@
 #include "plugin_manager.h"
 #include <assert.h>
-#include <rofl/common/utils/c_logger.h>
+
+#include "xdpd/common/utils/c_logger.h"
 
 using namespace xdpd;
 using namespace std;
@@ -13,15 +14,15 @@ extern int optind;
 
 rofl_result_t plugin_manager::init(){
 
-	ROFL_DEBUG("[xdpd][plugin_manager] Initializing Plugin Manager\n");
+	XDPD_DEBUG("[xdpd][plugin_manager] Initializing Plugin Manager\n");
 
 	for(std::vector<plugin*>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
-		ROFL_INFO("[xdpd][plugin_manager] Loading plugin (%s)...\n", (*it)->get_name().c_str());
+		XDPD_INFO("[xdpd][plugin_manager] Loading plugin (%s)...\n", (*it)->get_name().c_str());
 		(*it)->init();
 		optind=0; //Reset getopt
 	}
 
-	ROFL_INFO("[xdpd][plugin_manager] All plugins loaded.\n");
+	XDPD_INFO("[xdpd][plugin_manager] All plugins loaded.\n");
 	
 	return ROFL_SUCCESS;
 }
@@ -68,7 +69,7 @@ void plugin_manager::__notify_port_added(const switch_port_snapshot_t* port_snap
 		try{
 			(*it)->notify_port_added(port_snapshot);
  		}catch(...){
-			ROFL_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			XDPD_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
 			assert(0);
 			//Continue with the rest of the plugins
 		}
@@ -86,7 +87,7 @@ void plugin_manager::__notify_port_attached(const switch_port_snapshot_t* port_s
 		try{
 			(*it)->notify_port_attached(port_snapshot);
  		}catch(...){
-			ROFL_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			XDPD_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
 			assert(0);
 			//Continue with the rest of the plugins
 		}
@@ -104,7 +105,7 @@ void plugin_manager::__notify_port_status_changed(const switch_port_snapshot_t* 
 		try{
 			(*it)->notify_port_status_changed(port_snapshot); 
 		}catch(...){
-			ROFL_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			XDPD_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
 			assert(0);
 			//Continue with the rest of the plugins
 		}
@@ -122,7 +123,7 @@ void plugin_manager::__notify_port_detached(const switch_port_snapshot_t* port_s
 		try{
 			(*it)->notify_port_detached(port_snapshot); 
 		}catch(...){
-			ROFL_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			XDPD_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
 			assert(0);
 			//Continue with the rest of the plugins
 		}
@@ -141,7 +142,7 @@ void plugin_manager::__notify_port_deleted(const switch_port_snapshot_t* port_sn
 		try{
 			(*it)->notify_port_deleted(port_snapshot); 
 		}catch(...){
-			ROFL_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			XDPD_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
 			assert(0);
 			//Continue with the rest of the plugins
 		}
@@ -160,7 +161,7 @@ void plugin_manager::__notify_monitoring_state_changed(const monitoring_snapshot
 		try{
 			(*it)->notify_monitoring_state_changed(monitoring_snapshot); 
 		}catch(...){
-			ROFL_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
+			XDPD_ERR("[xdpd][plugin_manager] ERROR: uncaught exception throw by plugin [%s] thrown during callback of %s. This is a bug in the plugin code, please contact the mantainer of the plugin...\n", (*it)->get_name().c_str(), __func__);
 			assert(0);
 			//Continue with the rest of the plugins
 		}
@@ -170,10 +171,10 @@ void plugin_manager::__notify_monitoring_state_changed(const monitoring_snapshot
 /**
 * Get plugin specific command line options. This shall only be called by system_manager
 */	
-std::vector<rofl::coption> plugin_manager::__get_plugin_options(void){
+std::vector<xdpd::coption> plugin_manager::__get_plugin_options(void){
 	
-	std::vector<rofl::coption> vec;
-	std::vector<rofl::coption> plugin_vec;
+	std::vector<xdpd::coption> vec;
+	std::vector<xdpd::coption> plugin_vec;
 
 	//Call register
 	plugin_manager::pre_init();
@@ -184,7 +185,7 @@ std::vector<rofl::coption> plugin_manager::__get_plugin_options(void){
 		//Retrieve the options specific to the plugin
 		plugin_vec = (*it)->get_options();
 	
-		for(std::vector<rofl::coption>::iterator it2 = plugin_vec.begin(); it2 != plugin_vec.end(); ++it2)
+		for(std::vector<xdpd::coption>::iterator it2 = plugin_vec.begin(); it2 != plugin_vec.end(); ++it2)
 			vec.push_back(*it2);
 	}
 	

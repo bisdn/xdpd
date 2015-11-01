@@ -12,3 +12,5 @@ libxdpd_openflow13_la_SOURCES = \
 	openflow13_switch.h \
 	openflow13_switch.cc 
 	
+AM_CXXFLAGS=-I$(top_srcdir)/src/
+

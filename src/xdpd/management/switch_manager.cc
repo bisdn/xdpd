@@ -2,7 +2,8 @@
 
 #include <rofl/datapath/hal/hal.h>
 #include <rofl/datapath/hal/cmm.h>
-#include <rofl/common/utils/c_logger.h>
+
+#include "xdpd/common/utils/c_logger.h"
 #include "port_manager.h"
 
 //Add here the headers of the version-dependant Openflow switchs 
@@ -35,8 +36,8 @@ openflow_switch* switch_manager::create_switch(
 		unsigned int num_of_tables,
 		int* ma_list,
 		int reconnect_start_timeout,
-		enum xdpd::switch_manager::socket_type_t socket_type,
-		const xdpd::cparams& params){
+		enum xdpd::csocket::socket_type_t socket_type,
+		const xdpd::cparams& socket_params){
 
 	openflow_switch* dp;
 
@@ -90,7 +91,7 @@ openflow_switch* switch_manager::create_switch(
 	
 	pthread_mutex_unlock(&switch_manager::mutex);
 	
-	ROFL_INFO("[xdpd][switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
+	XDPD_INFO("[xdpd][switch_manager] Created switch %s with dpid 0x%llx\n", dpname.c_str(), (long long unsigned)dpid);
 
 	return dp; 
 }
@@ -119,7 +120,7 @@ void switch_manager::destroy_switch(uint64_t dpid){
 	if(!sw_snapshot){
 		pthread_mutex_unlock(&switch_manager::mutex);
 		assert(0);
-		ROFL_ERR("[xdpd][switch_manager] Unknown ERROR: unable to create snapshot for dpid 0x%llx. Switch deletion aborted...\n", (long long unsigned)dpid);
+		XDPD_ERR("[xdpd][switch_manager] Unknown ERROR: unable to create snapshot for dpid 0x%llx. Switch deletion aborted...\n", (long long unsigned)dpid);
 		throw eOfSmGeneralError(); 
 	}
 
@@ -137,7 +138,7 @@ void switch_manager::destroy_switch(uint64_t dpid){
 			port_manager::detach_port_from_switch(dpid, port_name);
 		}catch(...){
 			pthread_mutex_unlock(&switch_manager::mutex);
-			ROFL_ERR("[xdpd][switch_manager] ERROR: unable to detach port %s from dpid 0x%llx. Switch deletion aborted...\n", port->name, (long long unsigned)dpid);
+			XDPD_ERR("[xdpd][switch_manager] ERROR: unable to detach port %s from dpid 0x%llx. Switch deletion aborted...\n", port->name, (long long unsigned)dpid);
 			assert(0);
 
 			of_switch_destroy_snapshot(sw_snapshot);		
@@ -157,7 +158,7 @@ void switch_manager::destroy_switch(uint64_t dpid){
 
 	//Destroy element
 	delete dp;	
-	ROFL_INFO("[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
+	XDPD_INFO("[xdpd][switch_manager] Destroyed switch with dpid 0x%llx\n", (long long unsigned)dpid);
 
 	//Reset	
 	dpid_under_destruction = 0x0;
@@ -382,7 +383,7 @@ void switch_manager::get_switch_group_mods(uint64_t dpid, std::list<openflow_gro
 }
 
 void
-switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){
+switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum xdpd::csocket::socket_type_t socket_type, cparams const& socket_params){
 
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
@@ -400,7 +401,7 @@ switch_manager::rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_typ
 
 
 void
-switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params){
+switch_manager::rpc_disconnect_from_ctl(uint64_t dpid, enum xdpd::csocket::socket_type_t socket_type, cparams const& socket_params){
 
 	pthread_rwlock_wrlock(&switch_manager::rwlock);
 	
@@ -432,9 +433,9 @@ void switch_manager::reconfigure_pirl(uint64_t dpid, const int max_rate){
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
 	if(max_rate == pirl::PIRL_DISABLED){
-		ROFL_INFO("[xdpd][switch_manager][0x%llx] Disabling PIRL.\n", (long long unsigned)dpid);
+		XDPD_INFO("[xdpd][switch_manager][0x%llx] Disabling PIRL.\n", (long long unsigned)dpid);
 	}else{
-		ROFL_INFO("[xdpd][switch_manager][0x%llx] Enabling and reconfiguring PIRL, with max rate: %d PKT_IN/s.\n", (long long unsigned)dpid, max_rate);
+		XDPD_INFO("[xdpd][switch_manager][0x%llx] Enabling and reconfiguring PIRL, with max rate: %d PKT_IN/s.\n", (long long unsigned)dpid, max_rate);
 	}
 	dp->rate_limiter.reconfigure(max_rate);
 

@@ -40,8 +40,8 @@ public:
 			openflow_switch* sw,
 			int reconnect_start_timeout,
 			const rofl::openflow::cofhello_elem_versionbitmap& versionbitmap,
-			enum rofl::csocket::socket_type_t socket_type,
-			cparams const& socket_params) throw (eOfSmErrorOnCreation);
+			enum xdpd::csocket::socket_type_t socket_type,
+			xdpd::cparams const& socket_params) throw (eOfSmErrorOnCreation);
 
 	/**
 	 *
@@ -246,7 +246,7 @@ private:
 	 * @param ctrl new cofctrl instance
 	 */
 	virtual void
-	handle_ctl_attached(crofctl *ctrl);
+	handle_ctl_open(rofl::crofctl& ctrl);
 
 	/** Handle close event on ctrl
 	 *
@@ -255,7 +255,7 @@ private:
 	 * @param ctrl cofctrl instance to be deleted
 	 */
 	virtual void
-	handle_ctl_detached(crofctl *ctrl);
+	handle_ctl_close(const rofl::cctlid& id);
 
 
 	/**

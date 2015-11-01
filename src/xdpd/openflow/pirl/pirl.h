@@ -16,13 +16,17 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <rofl_datapath.h>
-#include <rofl/common/croflexception.h>
+
+#include "xdpd/common/exception.h"
 
 #include "pirl_config.h"
 
 namespace xdpd {
 
-class ePIRLBase				: public rofl::RoflException {};	// base error class for all switch_manager related errors
+class ePIRLBase				: public xdpd::exception {
+public:
+	ePIRLBase() : xdpd::exception("ePIRLBase") {};
+};	// base error class for all switch_manager related errors
 class ePIRLInvalidConf			: public ePIRLBase {};
 
 /**

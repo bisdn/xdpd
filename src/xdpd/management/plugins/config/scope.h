@@ -6,9 +6,9 @@
 #include <map> 
 #include <sstream> 
 #include <vector> 
-#include <rofl/common/croflexception.h>
 
 #include "xdpd/common/utils/c_logger.h"
+#include "xdpd/common/exception.h"
 
 /**
 * @file scope_plugin.h
@@ -20,16 +20,42 @@
 
 namespace xdpd {
 
-class eConfParamNotFound: public rofl::RoflException {};
-class eConfFileNotFound: public rofl::RoflException {};
-class eConfParseError: public rofl::RoflException {};
-
-class eConfDuplicatedScope: public rofl::RoflException {};
-class eConfDuplicatedPriority: public rofl::RoflException {};
-class eConfDuplicatedParameter: public rofl::RoflException {};
-class eConfMandatoryParameterNotPresent: public rofl::RoflException {};
-class eConfMandatoryScopeNotPresent: public rofl::RoflException {};
-class eConfUnknownElement: public rofl::RoflException {};
+class eConfParamNotFound: public xdpd::exception {
+public:
+	eConfParamNotFound() : exception("eConfParamNotFound") {};
+};
+class eConfFileNotFound: public xdpd::exception {
+public:
+	eConfFileNotFound() : exception("eConfFileNotFound") {};
+};
+class eConfParseError: public xdpd::exception {
+public:
+	eConfParseError() : exception("eConfParseError") {};
+};
+class eConfDuplicatedScope: public xdpd::exception {
+public:
+	eConfDuplicatedScope() : exception("eConfDuplicatedScope") {};
+};
+class eConfDuplicatedPriority: public xdpd::exception {
+public:
+	eConfDuplicatedPriority() : exception("eConfDuplicatedPriority") {};
+};
+class eConfDuplicatedParameter: public xdpd::exception {
+public:
+	eConfDuplicatedParameter() : exception("eConfDuplicatedParameter") {};
+};
+class eConfMandatoryParameterNotPresent: public xdpd::exception {
+public:
+	eConfMandatoryParameterNotPresent() : exception("eConfMandatoryParameterNotPresent") {};
+};
+class eConfMandatoryScopeNotPresent: public xdpd::exception {
+public:
+	eConfMandatoryScopeNotPresent() : exception("eConfMandatoryScopeNotPresent") {};
+};
+class eConfUnknownElement: public xdpd::exception {
+public:
+	eConfUnknownElement() : exception("eConfUnknownElement") {};
+};
 
 class scope {
 	

@@ -2,12 +2,11 @@
 #include <vector>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <rofl/common/logging.h>
+#include "xdpd/common/logging.h"
 #include "../../../system_manager.h"
 #include "../config.h"
 
 using namespace xdpd;
-using namespace rofl;
 using namespace libconfig;
 
 #define ID "id" 
@@ -55,9 +54,9 @@ void system_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 			logging_level = logging::DBG; 
 		else if(log_level == "TRACE")
 			logging_level = logging::TRACE;
-		else
- 			ROFL_WARN(CONF_PLUGIN_ID "%s: Invalid logging level '%s'.\n", setting.getPath().c_str(), log_level.c_str());
-		
+		else {
+ 			XDPD_WARN(CONF_PLUGIN_ID "%s: Invalid logging level '%s'.\n", setting.getPath().c_str(), log_level.c_str());
+		}
 	}	
 	//Execute
 	if(!dry_run && logging_level!=-1){

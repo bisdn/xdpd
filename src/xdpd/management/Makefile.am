@@ -14,3 +14,6 @@ libxdpd_mgmt_la_SOURCES = \
 
 libxdpd_mgmt_la_LIBADD = plugins/libxdpd_mgmt_plugins.la \
 			snapshots/libxdpd_mgmt_snapshots.la
+
+AM_CXXFLAGS = -I$(top_srcdir)/src/
+

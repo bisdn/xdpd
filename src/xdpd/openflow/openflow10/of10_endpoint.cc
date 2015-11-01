@@ -8,7 +8,7 @@
 #include "of10_endpoint.h"
 
 #include <rofl/datapath/hal/driver.h>
-#include <rofl/common/utils/c_logger.h>
+#include "xdpd/common/utils/c_logger.h"
 #include "of10_translation_utils.h"
 #include "../../management/system_manager.h"
 
@@ -22,16 +22,12 @@ of10_endpoint::of10_endpoint(
 		openflow_switch* sw,
 		int reconnect_start_timeout,
 		const rofl::openflow::cofhello_elem_versionbitmap& versionbitmap,
-		enum rofl::csocket::socket_type_t socket_type,
-		cparams const& socket_params) throw (eOfSmErrorOnCreation) :
-				of_endpoint(versionbitmap, socket_type, socket_params) {
-
-
+		enum xdpd::csocket::socket_type_t socket_type,
+		xdpd::cparams const& socket_params) throw (eOfSmErrorOnCreation) :
+				of_endpoint(versionbitmap, socket_type, socket_params)
+{
 	//Reference back to the sw
 	this->sw = sw;
-
-	//Connect to the main controller
-	crofbase::add_ctl(rofl::cctlid(0), versionbitmap).connect(rofl::cauxid(0), socket_type, socket_params);
 }
 
 
@@ -56,7 +52,7 @@ of10_endpoint::handle_features_request(
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
-		throw rofl::eRofBase();
+		throw rofl::exception("of10_endpoint::handle_features_request()", __FILE__, __PRETTY_FUNCTION__, __LINE__);
 		
 	uint32_t num_of_tables 	= 0;
 	uint32_t num_of_buffers = 0;
@@ -67,7 +63,7 @@ of10_endpoint::handle_features_request(
 	capabilities 	= of10switch->pipeline.capabilities;
 
 	// array of structures ofp_port
-	rofl::openflow::cofports ports(ctl.get_version_negotiated());
+	rofl::openflow::cofports ports(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for (unsigned int n = 1; n < of10switch->max_ports; n++){
@@ -80,7 +76,7 @@ of10_endpoint::handle_features_request(
 			//Mapping of port state
 			assert(n == _port->of_port_num);
 
-			rofl::openflow::cofport port(ctl.get_version_negotiated());
+			rofl::openflow::cofport port(ctl.get_version());
 
 			port.set_port_no(_port->of_port_num);
 			port.set_hwaddr(cmacaddr(_port->hwaddr, OFP_ETH_ALEN));
@@ -100,10 +96,10 @@ of10_endpoint::handle_features_request(
 
 			port.set_config(config);
 			port.set_state(_port->state);
-			port.set_curr(_port->curr);
-			port.set_advertised(_port->advertised);
-			port.set_supported(_port->supported);
-			port.set_peer(_port->peer);
+			port.set_ethernet().set_curr(_port->curr);
+			port.set_ethernet().set_advertised(_port->advertised);
+			port.set_ethernet().set_supported(_port->supported);
+			port.set_ethernet().set_peer(_port->peer);
 
 			ports.add_port(_port->of_port_num) = port;
 		}
@@ -142,8 +138,8 @@ of10_endpoint::handle_get_config_request(
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
-		throw rofl::eRofBase();
-	
+		throw rofl::exception("of10_endpoint::handle_get_config_request()", __FILE__, __PRETTY_FUNCTION__, __LINE__);
+
 	flags = of10switch->pipeline.capabilities;
 	miss_send_len = of10switch->pipeline.miss_send_len;
 
@@ -166,7 +162,7 @@ of10_endpoint::handle_desc_stats_request(
 	std::string sw_desc(VERSION);
 
 	rofl::openflow::cofdesc_stats_reply desc_stats(
-			ctl.get_version_negotiated(),
+			ctl.get_version(),
 			mfr_desc,
 			hw_desc,
 			sw_desc,
@@ -189,12 +185,12 @@ of10_endpoint::handle_table_stats_request(
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
-		throw rofl::eRofBase();
-	
+		throw rofl::exception("of10_endpoint::handle_table_stats_request()", __FILE__, __PRETTY_FUNCTION__, __LINE__);
+
 	num_of_tables = of10switch->pipeline.num_of_tables;
 	
 	//Reply to fill in
-	rofl::openflow::coftablestatsarray tablestatsarray(ctl.get_version_negotiated());
+	rofl::openflow::coftablestatsarray tablestatsarray(ctl.get_version());
 
 	for (unsigned int n = 0; n < num_of_tables; n++) {
 
@@ -235,9 +231,9 @@ of10_endpoint::handle_port_stats_request(
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
-		throw rofl::eRofBase();
-	
-	rofl::openflow::cofportstatsarray portstatsarray(ctl.get_version_negotiated());
+		throw rofl::exception("of10_endpoint::handle_port_stats_request()", __FILE__, __PRETTY_FUNCTION__, __LINE__);
+
+	rofl::openflow::cofportstatsarray portstatsarray(ctl.get_version());
 
 	/*
 	 *  send statistics for all ports
@@ -299,7 +295,7 @@ of10_endpoint::handle_port_stats_request(
 		// if port_no was not found, body.memlen() is 0
 	}else{
 		//Unknown port
-		ROFL_ERR("Got a port stats request for an unknown port: %u. Ignoring...\n",port_no);
+		XDPD_ERR("Got a port stats request for an unknown port: %u. Ignoring...\n",port_no);
 	}
 
 	//Destroy the snapshot
@@ -322,7 +318,7 @@ of10_endpoint::handle_flow_stats_request(
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
-		throw rofl::eRofBase();
+		throw rofl::exception("of10_endpoint::handle_flow_stats_request()", __FILE__, __PRETTY_FUNCTION__, __LINE__);
 
 	//Map the match structure from OpenFlow to of1x_packet_matches_t
 	entry = of1x_init_flow_entry(false);
@@ -361,7 +357,7 @@ of10_endpoint::handle_flow_stats_request(
 	//Construct OF message
 	of1x_stats_single_flow_msg_t *elem = fp_msg->flows_head;
 
-	rofl::openflow::cofflowstatsarray flowstatsarray(ctl.get_version_negotiated());
+	rofl::openflow::cofflowstatsarray flowstatsarray(ctl.get_version());
 
 	uint32_t flow_id = 0;
 
@@ -460,7 +456,7 @@ of10_endpoint::handle_aggregate_stats_request(
 				auxid,
 				msg.get_xid(),
 				rofl::openflow::cofaggr_stats_reply(
-					ctl.get_version_negotiated(),
+					ctl.get_version(),
 					fp_msg->packet_count,
 					fp_msg->byte_count,
 					fp_msg->flow_count),
@@ -491,7 +487,7 @@ of10_endpoint::handle_queue_stats_request(
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
-		throw rofl::eRofBase();
+		throw rofl::exception("of10_endpoint::handle_queue_stats_request()", __FILE__, __PRETTY_FUNCTION__, __LINE__);
 
 	if( ((portnum >= of10switch->max_ports) && (portnum != openflow10::OFPP_ALL)) || portnum == 0){
 		//Destroy the snapshot
@@ -499,7 +495,7 @@ of10_endpoint::handle_queue_stats_request(
 		throw rofl::eBadRequestBadPort(); 	//Invalid port num
 	}
 
-	rofl::openflow::cofqueuestatsarray queuestatsarray(ctl.get_version_negotiated());
+	rofl::openflow::cofqueuestatsarray queuestatsarray(ctl.get_version());
 
 	/*
 	* port num
@@ -516,7 +512,7 @@ of10_endpoint::handle_queue_stats_request(
 
 		if( of10switch->logical_ports[n].attachment_state == LOGICAL_PORT_STATE_ATTACHED /* && (port->of_port_num == portnum)*/){
 
-			if (OFPQ_ALL == queue_id){
+			if (rofl::openflow::OFPQ_ALL == queue_id){
 
 				for(unsigned int i=0; i<port->max_queues; i++){
 					if(!port->queues[i].set)
@@ -649,11 +645,7 @@ of10_endpoint::process_packet_in(
 
 		return ROFL_SUCCESS;
 
-	} catch (rofl::eRofBaseNotConnected& e) {
-
-		return ROFL_FAILURE;
-
-	} catch (rofl::eRofBaseCongested& e) {
+	} catch (rofl::exception& e) {
 
 		return ROFL_FAILURE;
 
@@ -686,10 +678,10 @@ rofl_result_t of10_endpoint::notify_port_attached(const switch_port_snapshot_t* 
 		ofport.set_name(std::string(port->name));
 		ofport.set_config(config);
 		ofport.set_state(port->state&0x1); //Only first bit is relevant
-		ofport.set_curr(port->curr);
-		ofport.set_advertised(port->advertised);
-		ofport.set_supported(port->supported);
-		ofport.set_peer(port->peer);
+		ofport.set_ethernet().set_curr(port->curr);
+		ofport.set_ethernet().set_advertised(port->advertised);
+		ofport.set_ethernet().set_supported(port->supported);
+		ofport.set_ethernet().set_peer(port->peer);
 		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
 		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
@@ -722,10 +714,10 @@ rofl_result_t of10_endpoint::notify_port_detached(const switch_port_snapshot_t* 
 		ofport.set_name(std::string(port->name));
 		ofport.set_config(config);
 		ofport.set_state(port->state&0x1); //Only first bit is relevant
-		ofport.set_curr(port->curr);
-		ofport.set_advertised(port->advertised);
-		ofport.set_supported(port->supported);
-		ofport.set_peer(port->peer);
+		ofport.set_ethernet().set_curr(port->curr);
+		ofport.set_ethernet().set_advertised(port->advertised);
+		ofport.set_ethernet().set_supported(port->supported);
+		ofport.set_ethernet().set_peer(port->peer);
 		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
 		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
@@ -760,10 +752,10 @@ rofl_result_t of10_endpoint::notify_port_status_changed(const switch_port_snapsh
 		ofport.set_name(std::string(port->name));
 		ofport.set_config(config);
 		ofport.set_state(port->state&0x1); //Only first bit is relevant
-		ofport.set_curr(port->curr);
-		ofport.set_advertised(port->advertised);
-		ofport.set_supported(port->supported);
-		ofport.set_peer(port->peer);
+		ofport.set_ethernet().set_curr(port->curr);
+		ofport.set_ethernet().set_advertised(port->advertised);
+		ofport.set_ethernet().set_supported(port->supported);
+		ofport.set_ethernet().set_peer(port->peer);
 		//ofport.set_curr_speed(of10_translation_utils::get_port_speed_kb(port->curr_speed));
 		//ofport.set_max_speed(of10_translation_utils::get_port_speed_kb(port->curr_max_speed));
 
@@ -841,7 +833,7 @@ of10_endpoint::flow_mod_add(
 	// sanity check: table for table-id must exist
 	if ( (table_id > sw->num_of_tables) && (table_id != openflow10::OFPTT_ALL) )
 	{
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
+		XDPD_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), msg.get_flowmod().get_table_id());
 		throw rofl::eFlowModBadTableId();
@@ -850,7 +842,7 @@ of10_endpoint::flow_mod_add(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(&ctl, &msg, sw);
 	}catch(...){
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_add() "
+		XDPD_DEBUG("of10_endpoint(%s)::flow_mod_add() "
 				"unable to create flow-entry", sw->dpname.c_str());
 		throw rofl::eFlowModUnknown();
 	}
@@ -866,10 +858,10 @@ of10_endpoint::flow_mod_add(
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/))){
 
 		if(entry){
-			ROFL_DEBUG("Error inserting the flowmod\n");
+			XDPD_DEBUG("Error inserting the flowmod\n");
 			of1x_destroy_flow_entry(entry);
 		}else{
-			ROFL_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
+			XDPD_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
 		}
 
 		switch(res){
@@ -901,7 +893,7 @@ of10_endpoint::flow_mod_modify(
 	// sanity check: table for table-id must exist
 	if (pack.get_flowmod().get_table_id() > sw->num_of_tables)
 	{
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
+		XDPD_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
 				"invalid table-id:%d in flow-mod command",
 				sw->dpname.c_str(), pack.get_flowmod().get_table_id());
 		throw rofl::eFlowModBadTableId();
@@ -910,7 +902,7 @@ of10_endpoint::flow_mod_modify(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(&ctl, &pack, sw);
 	}catch(...){
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
+		XDPD_DEBUG("of10_endpoint(%s)::flow_mod_modify() "
 				"unable to attempt to modify flow-entry", sw->dpname.c_str());
 		throw rofl::eFlowModUnknown();
 	}
@@ -927,10 +919,10 @@ of10_endpoint::flow_mod_modify(
 								strictness,
 								false /*OFPFF_RESET_COUNTS is not defined for OpenFlow 1.0*/))){
 		if(entry){
-			ROFL_DEBUG("Error modifying the flowmod\n");
+			XDPD_DEBUG("Error modifying the flowmod\n");
 			of1x_destroy_flow_entry(entry);
 		}else{
-			ROFL_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
+			XDPD_DEBUG("Flowmod inserted, but buffer was expired/invalid\n");
 		}
 
 		if(res == HAL_FM_INVALID_TABLE_ID_FAILURE)
@@ -956,7 +948,7 @@ of10_endpoint::flow_mod_delete(
 	try{
 		entry = of10_translation_utils::of1x_map_flow_entry(&ctl, &pack, sw);
 	}catch(...){
-		ROFL_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
+		XDPD_DEBUG("of10_endpoint(%s)::flow_mod_delete() "
 				"unable to attempt to remove flow-entry", sw->dpname.c_str());
 		throw rofl::eFlowModUnknown();
 	}
@@ -972,7 +964,7 @@ of10_endpoint::flow_mod_delete(
 								of10_translation_utils::get_out_port(pack.get_flowmod().get_out_port()),
 								OF1X_GROUP_ANY,
 								strictness))) {
-		ROFL_DEBUG("Error deleting flowmod\n");
+		XDPD_DEBUG("Error deleting flowmod\n");
 		of1x_destroy_flow_entry(entry);
 		if(res == HAL_FM_INVALID_TABLE_ID_FAILURE)
 			throw rofl::eFlowModBadTableId();
@@ -1076,12 +1068,12 @@ of10_endpoint::handle_port_mod(
 	config 		= msg.get_config();
 	mask 		= msg.get_mask();
 	advertise 	= msg.get_advertise();
-	port_num 	= (uint16_t)msg.get_port_no();
+	port_num 	= (uint16_t)msg.get_portno();
 
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
-		throw rofl::eRofBase();
+		throw rofl::exception("of10_endpoint::handle_port_mod()", __FILE__, __PRETTY_FUNCTION__, __LINE__);
 
 	//Check if port_num FLOOD
 	//TODO: Inspect if this is right. Spec does not clearly define if this should be supported or not
@@ -1205,14 +1197,14 @@ of10_endpoint::handle_queue_get_config_request(
 		rofl::openflow::cofmsg_queue_get_config_request& pack)
 {
 	switch_port_snapshot_t* port;
-	unsigned int portnum = pack.get_port_no();
+	unsigned int portnum = pack.get_portno();
 
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 
 	if(!of10switch)
-		throw rofl::eRofBase();
+		throw rofl::exception("of10_endpoint::handle_queue_get_config_request()", __FILE__, __PRETTY_FUNCTION__, __LINE__);
 
-	rofl::openflow::cofpacket_queues queues(ctl.get_version_negotiated());
+	rofl::openflow::cofpacket_queues queues(ctl.get_version());
 
 	//we check all the positions in case there are empty slots
 	for(unsigned int n = 1; n < of10switch->max_ports; n++){
@@ -1240,7 +1232,7 @@ of10_endpoint::handle_queue_get_config_request(
 	of_switch_destroy_snapshot((of_switch_snapshot_t*)of10switch);
 	
 	//Send reply
-	ctl.send_queue_get_config_reply(auxid, pack.get_xid(), pack.get_port_no(), queues);
+	ctl.send_queue_get_config_reply(auxid, pack.get_xid(), pack.get_portno(), queues);
 }
 
 
@@ -1257,18 +1249,16 @@ of10_endpoint::handle_experimenter_message(
 
 
 void
-of10_endpoint::handle_ctl_attached(crofctl *ctrl)
+of10_endpoint::handle_ctl_open(rofl::crofctl& ctl)
 {
-	std::stringstream sstr; sstr << ctrl->get_peer_addr(rofl::cauxid(0));
-	ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , sstr.str().c_str()); //FIXME: add role
+	XDPD_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str(), ctl.get_conn(0).get_raddr().str().c_str()); //FIXME: add role
 }
 
 
 
 void
-of10_endpoint::handle_ctl_detached(crofctl *ctrl)
+of10_endpoint::handle_ctl_close(const rofl::cctlid& ctlid)
 {
-	std::stringstream sstr; sstr << ctrl->get_peer_addr(rofl::cauxid(0));
-	ROFL_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str() ,sstr.str().c_str()); //FIXME: add role
+	XDPD_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str(), ctlid.str().c_str()); //FIXME: add role
 
 }

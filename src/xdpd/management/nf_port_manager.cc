@@ -22,7 +22,7 @@ void nf_port_manager::create_nf_port(std::string& nf_name, std::string& nf_port_
 
 	if(nf_type == PORT_TYPE_NF_NATIVE)
 	{
-		ROFL_ERR("%s ERROR: only SHMEM or EXTERNAL types are currently implemented\n", MODULE_NAME);
+		XDPD_ERR("%s ERROR: only SHMEM or EXTERNAL types are currently implemented\n", MODULE_NAME);
 		throw eNFPMmInvalidNF();	
 	}
 
@@ -33,7 +33,7 @@ void nf_port_manager::create_nf_port(std::string& nf_name, std::string& nf_port_
 	if(port_manager::exists(nf_port_name))
 	{
 		pthread_mutex_unlock(&nf_port_manager::mutex);
-		ROFL_ERR("%s ERROR: Attempting to create an existent NF port %s\n", MODULE_NAME, nf_port_name.c_str());
+		XDPD_ERR("%s ERROR: Attempting to create an existent NF port %s\n", MODULE_NAME, nf_port_name.c_str());
 		throw eNFPMmInvalidNF();
 	}
 	
@@ -41,11 +41,11 @@ void nf_port_manager::create_nf_port(std::string& nf_name, std::string& nf_port_
 	{
 		pthread_mutex_unlock(&nf_port_manager::mutex);
 		assert(0);
-		ROFL_ERR("%s ERROR: Driver was unable to create the NF port\n", MODULE_NAME, nf_port_name.c_str());
+		XDPD_ERR("%s ERROR: Driver was unable to create the NF port\n", MODULE_NAME, nf_port_name.c_str());
 		throw eNFPMmUnknownError(); 
 	}
 
-	ROFL_INFO("%s Successfully created NF port %s of type %s, {%s}\n", MODULE_NAME, nf_port_name.c_str(), (nf_type == PORT_TYPE_NF_SHMEM)? "SHMEM": "EXTERNAL", nf_name.c_str() );
+	XDPD_INFO("%s Successfully created NF port %s of type %s, {%s}\n", MODULE_NAME, nf_port_name.c_str(), (nf_type == PORT_TYPE_NF_SHMEM)? "SHMEM": "EXTERNAL", nf_name.c_str() );
 
 	//TODO: notify the creation to the plugins?
 
@@ -67,7 +67,7 @@ void nf_port_manager::destroy_nf_port(std::string& nf_port_name)
 	if(!port_manager::exists(nf_port_name))
 	{
 		pthread_mutex_unlock(&nf_port_manager::mutex);
-		ROFL_ERR("%s ERROR: Attempting to destroy a non-existent NF port %s\n", MODULE_NAME, nf_port_name.c_str());
+		XDPD_ERR("%s ERROR: Attempting to destroy a non-existent NF port %s\n", MODULE_NAME, nf_port_name.c_str());
 		throw eNFPMmInvalidNF();
 	}
 	
@@ -75,11 +75,11 @@ void nf_port_manager::destroy_nf_port(std::string& nf_port_name)
 	{
 		pthread_mutex_unlock(&nf_port_manager::mutex);
 		assert(0);
-		ROFL_ERR("%s ERROR: Driver was unable to destroy the NF port %s\n", MODULE_NAME, nf_port_name.c_str());
+		XDPD_ERR("%s ERROR: Driver was unable to destroy the NF port %s\n", MODULE_NAME, nf_port_name.c_str());
 		throw eNFPMmUnknownError(); 
 	}
 	
-	ROFL_INFO("%s NF port %s destroyed\n", MODULE_NAME, nf_port_name.c_str());
+	XDPD_INFO("%s NF port %s destroyed\n", MODULE_NAME, nf_port_name.c_str());
 
 	//TODO: notify the destruction to the plugins?
 

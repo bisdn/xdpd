@@ -1,6 +1,6 @@
 #include "datapacket_storage.h"
 #include <assert.h>
-#include <rofl/common/thread_helper.h>
+#include <rofl/common/locking.hpp>
 #include <rofl/datapath/pipeline/platform/packet.h>
 
 #include "../util/likely.h"

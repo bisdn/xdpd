@@ -17,7 +17,6 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/hal/driver.h>
 #include <rofl/datapath/hal/cmm.h>
@@ -28,6 +27,7 @@
 #include "io/iomanager.h"
 #include "io/iface_utils.h"
 #include "util/time_utils.h"
+#include "c_logger.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -54,13 +54,13 @@ int prepare_event_socket()
 	struct sockaddr_nl addr;
 
 	if ((sock = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE)) == -1){
-		ROFL_ERR(DRIVER_NAME" [bg] Couldn't open NETLINK_ROUTE socket, errno(%d): %s\n", errno, strerror(errno));
+		XDPD_ERR(DRIVER_NAME" [bg] Couldn't open NETLINK_ROUTE socket, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
 	if(fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0){
 		// handle error
-		ROFL_ERR(DRIVER_NAME" [bg] Error fcntl, errno(%d): %s\n", errno, strerror(errno));
+		XDPD_ERR(DRIVER_NAME" [bg] Error fcntl, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
@@ -69,7 +69,7 @@ int prepare_event_socket()
 	addr.nl_groups = RTMGRP_LINK;
 
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1){
-		ROFL_ERR(DRIVER_NAME" [bg] couldn't bind, errno(%d): %s\n", errno, strerror(errno));
+		XDPD_ERR(DRIVER_NAME" [bg] couldn't bind, errno(%d): %s\n", errno, strerror(errno));
 		return -1;
 	}
 
@@ -146,7 +146,7 @@ static rofl_result_t read_netlink_message(int fd){
 				if(!if_indextoname(ifi->ifi_index, name))
 					continue; //Unable to map interface
 				
-				ROFL_DEBUG_VERBOSE(DRIVER_NAME" [bg] Interface changed status %s (%u) flags=0x%x change=0x%x\n",name, ifi->ifi_index, ifi->ifi_flags, ifi->ifi_change);
+				XDPD_DEBUG_VERBOSE(DRIVER_NAME" [bg] Interface changed status %s (%u) flags=0x%x change=0x%x\n",name, ifi->ifi_index, ifi->ifi_flags, ifi->ifi_change);
 				
 				//We are interested only in admin port status and link
 				unsigned int mask = IFF_UP|IFF_RUNNING;
@@ -207,7 +207,7 @@ int process_timeouts()
 			
 #ifdef DEBUG
 		dummy++;
-		//ROFL_DEBUG_VERBOSE(DRIVER_NAME" Checking flow entries expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
+		//XDPD_DEBUG_VERBOSE(DRIVER_NAME" Checking flow entries expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
 #endif
 		last_time_entries_checked = now;
 	}
@@ -225,12 +225,12 @@ int process_timeouts()
 				//Loop until the oldest expired packet is taken out
 				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
-					ROFL_DEBUG_VERBOSE(DRIVER_NAME" [bg] Trying to erase a datapacket from storage: %u\n", buffer_id);
+					XDPD_DEBUG_VERBOSE(DRIVER_NAME" [bg] Trying to erase a datapacket from storage: %u\n", buffer_id);
 
 					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
-						ROFL_DEBUG_VERBOSE(DRIVER_NAME" [bg] Error in get_packet_wrapper %u\n", buffer_id);
+						XDPD_DEBUG_VERBOSE(DRIVER_NAME" [bg] Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
-						ROFL_DEBUG_VERBOSE(DRIVER_NAME" [bg] Datapacket expired correctly %u\n", buffer_id);
+						XDPD_DEBUG_VERBOSE(DRIVER_NAME" [bg] Datapacket expired correctly %u\n", buffer_id);
 						//Return buffer to bufferpool
 						bufferpool::release_buffer(pkt);
 					}
@@ -239,7 +239,7 @@ int process_timeouts()
 		}
 		
 #ifdef DEBUG
-		//ROFL_ERR(DRIVER_NAME" Checking pool buffers expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
+		//XDPD_ERR(DRIVER_NAME" Checking pool buffers expirations %lu:%lu\n",now.tv_sec,now.tv_usec);
 #endif
 		last_time_pool_checked = now;
 	}
@@ -269,7 +269,7 @@ void* x86_background_tasks_routine(void* param)
 	efd = epoll_create1(0);
 
 	if(efd == -1){
-		ROFL_ERR(DRIVER_NAME" [bg] Error in epoll_create1, errno(%d): %s\n", errno, strerror(errno) );
+		XDPD_ERR(DRIVER_NAME" [bg] Error in epoll_create1, errno(%d): %s\n", errno, strerror(errno) );
 		return NULL;
 	}
 
@@ -278,7 +278,7 @@ void* x86_background_tasks_routine(void* param)
 	epe_port.events = EPOLLIN; //| EPOLLET;
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD,events_socket,&epe_port)==-1){
-		ROFL_ERR(DRIVER_NAME" [bg] Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
+		XDPD_ERR(DRIVER_NAME" [bg] Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
 		return NULL;
 	}
 
@@ -289,7 +289,7 @@ void* x86_background_tasks_routine(void* param)
 	epe_port.events = EPOLLIN; //| EPOLLET
 	
 	if(epoll_ctl(efd,EPOLL_CTL_ADD, epe_port.data.fd, &epe_port)==-1){
-		ROFL_ERR(DRIVER_NAME" [bg] Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
+		XDPD_ERR(DRIVER_NAME" [bg] Error in epoll_ctl, errno(%d): %s\n", errno, strerror(errno));
 		return NULL;
 	}
 
@@ -300,7 +300,7 @@ void* x86_background_tasks_routine(void* param)
 
 
 		if(nfds==-1){
-			//ROFL_DEBUG(DRIVER_NAME" Epoll Failed\n");
+			//XDPD_DEBUG(DRIVER_NAME" Epoll Failed\n");
 			continue;
 		}
 
@@ -309,7 +309,7 @@ void* x86_background_tasks_routine(void* param)
 
 			if( (event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP)/*||(event_list[i].events & EPOLLIN)*/){
 				//error on this fd
-				//ROFL_ERR(DRIVER_NAME" Error in file descriptor\n");
+				//XDPD_ERR(DRIVER_NAME" Error in file descriptor\n");
 				close(event_list[i].data.fd); //fd gets removed automatically from efd's
 				continue;
 			}else{
@@ -344,7 +344,7 @@ void* x86_background_tasks_routine(void* param)
 	close(efd);
 	
 	//Printing some information
-	ROFL_DEBUG(DRIVER_NAME" [bg] Finishing thread execution\n"); 
+	XDPD_DEBUG(DRIVER_NAME" [bg] Finishing thread execution\n");
 
 	//Exit
 	pthread_exit(NULL);	
@@ -359,7 +359,7 @@ rofl_result_t launch_background_tasks_manager()
 	bg_continue_execution = true;
 
 	if(pthread_create(&bg_thread, NULL, x86_background_tasks_routine,NULL)<0){
-		ROFL_ERR(DRIVER_NAME" [bg] pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
+		XDPD_ERR(DRIVER_NAME" [bg] pthread_create failed, errno(%d): %s\n", errno, strerror(errno));
 		return ROFL_FAILURE;
 	}
 	return ROFL_SUCCESS;

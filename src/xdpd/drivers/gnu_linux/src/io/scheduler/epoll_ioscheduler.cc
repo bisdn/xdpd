@@ -9,9 +9,10 @@
 
 //Do it here before any pipeline inclusion
 
-#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/switch_port.h>
+
+#include "../../c_logger.h"
 
 /*
 * 
@@ -36,7 +37,7 @@ void epoll_ioscheduler::add_fd_epoll(struct epoll_event* ev, int epfd, ioport* p
 	epoll_event_data_t* port_data = (epoll_event_data_t*)malloc(sizeof(epoll_event_data_t));
 
 	if(!port_data){
-		ROFL_ERR(DRIVER_NAME"[epoll_ioscheduler] Could not allocate port_data memory for port %p\n", port);
+		XDPD_ERR(DRIVER_NAME"[epoll_ioscheduler] Could not allocate port_data memory for port %p\n", port);
 		assert(0);
 		return;
 	}
@@ -47,10 +48,10 @@ void epoll_ioscheduler::add_fd_epoll(struct epoll_event* ev, int epfd, ioport* p
 	port_data->port = port;
 	ev->data.ptr = (void*)port_data; //Use pointer ONLY
 	
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[epoll_ioscheduler] Trying to add event with flags: %u and port_data:%p\n", ev->events, port_data); 
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[epoll_ioscheduler] Trying to add event with flags: %u and port_data:%p\n", ev->events, port_data);
 
 	if( epoll_ctl(epfd, EPOLL_CTL_ADD, fd, ev) < 0){
-		ROFL_ERR(DRIVER_NAME"[epoll_ioscheduler] Insertion of the event %p in the epoll failed\n", ev);
+		XDPD_ERR(DRIVER_NAME"[epoll_ioscheduler] Insertion of the event %p in the epoll failed\n", ev);
 		assert(0);
 	}
 }
@@ -94,7 +95,7 @@ void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevector<iopor
 
 	if(!*ev || !*events){
 	       //FIXME: what todo...
-               ROFL_ERR(DRIVER_NAME"[epoll_ioscheduler] malloc failed");
+               XDPD_ERR(DRIVER_NAME"[epoll_ioscheduler] malloc failed");
                pg->running_ports->read_unlock();
                return;
        }
@@ -103,7 +104,7 @@ void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevector<iopor
 	*epfd = epoll_create(pg->running_ports->size()*2);
 	
 	if(*epfd < 0){
-		ROFL_ERR(DRIVER_NAME"[epoll_ioscheduler] malloc failed");
+		XDPD_ERR(DRIVER_NAME"[epoll_ioscheduler] malloc failed");
 		pg->running_ports->read_unlock();
 		return; 
 	}
@@ -123,7 +124,7 @@ void epoll_ioscheduler::init_or_update_fds(portgroup_state* pg, safevector<iopor
 			fd = port->get_write_fd();
 			
 		if( fd != -1 ){
-			ROFL_DEBUG_VERBOSE(DRIVER_NAME"[epoll_ioscheduler] Adding %s event to epoll event list ioport: %s, fd: %d\n", (rx)? "RX":"TX", port->of_port_state->name, fd);
+			XDPD_DEBUG_VERBOSE(DRIVER_NAME"[epoll_ioscheduler] Adding %s event to epoll event list ioport: %s, fd: %d\n", (rx)? "RX":"TX", port->of_port_state->name, fd);
 			epoll_ioscheduler::add_fd_epoll( &((*ev)[i]), *epfd, port, fd);
 		}else
 			(*ev)[i].data.ptr = NULL;
@@ -148,7 +149,7 @@ void epoll_ioscheduler::set_kernel_scheduling(){
 	struct sched_param sched_param;
 	
 	if (sched_getparam(0, &sched_param) < 0) {
-		ROFL_WARN(DRIVER_NAME"[epoll_ioscheduler] Unable to get properties for thread on process id %u(%u): %s(%u)\n", syscall(SYS_gettid), pthread_self(), strerror(errno), errno);
+		XDPD_WARN(DRIVER_NAME"[epoll_ioscheduler] Unable to get properties for thread on process id %u(%u): %s(%u)\n", syscall(SYS_gettid), pthread_self(), strerror(errno), errno);
 		return;
 	}
 
@@ -156,10 +157,10 @@ void epoll_ioscheduler::set_kernel_scheduling(){
 	sched_param.sched_priority = sched_get_priority_max(IO_KERN_SCHED_POL); 
 	
 	if(sched_setscheduler(0, IO_KERN_SCHED_POL, &sched_param) < 0){
-		ROFL_WARN(DRIVER_NAME"[epoll_ioscheduler] Unable to set scheduling and/or priority for thread on process id %u(%u): %s(%u)\n", syscall(SYS_gettid), pthread_self(), strerror(errno), errno);
+		XDPD_WARN(DRIVER_NAME"[epoll_ioscheduler] Unable to set scheduling and/or priority for thread on process id %u(%u): %s(%u)\n", syscall(SYS_gettid), pthread_self(), strerror(errno), errno);
 	}
 		
-	ROFL_DEBUG(DRIVER_NAME"[epoll_ioscheduler] Set scheduling policy (%u) and priority for thread on process id %u(%u)\n", IO_KERN_SCHED_POL, syscall(SYS_gettid), pthread_self());
+	XDPD_DEBUG(DRIVER_NAME"[epoll_ioscheduler] Set scheduling policy (%u) and priority for thread on process id %u(%u)\n", IO_KERN_SCHED_POL, syscall(SYS_gettid), pthread_self());
 
 #endif
 

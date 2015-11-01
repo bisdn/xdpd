@@ -319,7 +319,7 @@ private:
 	 * @param ctrl new cofctrl instance
 	 */
 	virtual void
-	handle_ctl_attached(crofctl *ctrl);
+	handle_ctl_open(rofl::crofctl& ctrl);
 
 	/** Handle close event on ctrl
 	 *
@@ -328,8 +328,7 @@ private:
 	 * @param ctrl cofctrl instance to be deleted
 	 */
 	virtual void
-	handle_ctl_detached(crofctl *ctrl);
-
+	handle_ctl_close(const rofl::cctlid& id);
 
 	/**
 	 * @name 	flow_mod_add

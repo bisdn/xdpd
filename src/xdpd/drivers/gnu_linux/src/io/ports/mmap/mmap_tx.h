@@ -8,6 +8,7 @@
 #include <rofl_datapath.h>
 #include <string>
 
+#include <errno.h>
 #include <unistd.h>
 #include <string.h>
 #include <strings.h>
@@ -23,10 +24,9 @@
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
 
-#include <rofl/common/croflexception.h>
-#include <rofl/common/utils/c_logger.h>
 #include "../../../util/likely.h"
 #include "../../../config.h"
+#include "../../../c_logger.h"
 
 /**
 * @file mmap_tx.h
@@ -41,7 +41,7 @@
 namespace xdpd {
 namespace gnu_linux {
 
-class eConstructorMmapTx : public rofl::RoflException {};
+class eConstructorMmapTx : public std::exception {};
 
 /**
 * @brief MMAP TX internals (v2)
@@ -98,11 +98,11 @@ public:
 	};
 
 	inline rofl_result_t send(void){
-		ROFL_DEBUG_VERBOSE(DRIVER_NAME" %s() on socket descriptor %d\n", __FUNCTION__, sd);
+		XDPD_DEBUG_VERBOSE(DRIVER_NAME" %s() on socket descriptor %d\n", __FUNCTION__, sd);
 
 		if ( unlikely( ::sendto(sd, NULL, 0, MSG_DONTWAIT, NULL, 0) ) < 0) {
 
-			ROFL_ERR(DRIVER_NAME"[%s:mmap_tx]: Error in port's sendto(), errno:%d, %s\n", devname.c_str(), errno, strerror(errno));
+			XDPD_ERR(DRIVER_NAME"[%s:mmap_tx]: Error in port's sendto(), errno:%d, %s\n", devname.c_str(), errno, strerror(errno));
 				return ROFL_FAILURE;	
 		}
 		return ROFL_SUCCESS;	

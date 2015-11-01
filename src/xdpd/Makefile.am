@@ -28,3 +28,6 @@ xdpd_LDADD = \
 	$(FM_LIB)
 
 xdpd_LDFLAGS = $(xdpd_HW_LDFLAGS) -static
+
+AM_CXXFLAGS=-I$(top_srcdir)/src/
+

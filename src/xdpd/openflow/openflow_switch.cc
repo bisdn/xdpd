@@ -36,8 +36,8 @@ void openflow_switch::rpc_connect_to_ctl(enum xdpd::csocket::socket_type_t socke
 
 	// TODO: map socket_type and socket_params to required parameters
 
-	rofl::sockaddr raddr;
-	endpoint->add_ctl(0).add_conn(rofl::cauxid(0)).set_raddr(raddr).tcp_connect(versionbitmap, rofl::crofconn::MODE_DATAPATH);
+	rofl::csockaddr raddr;
+	endpoint->add_ctl(rofl::cctlid(0)).add_conn(rofl::cauxid(0)).set_raddr(raddr).tcp_connect(versionbitmap, rofl::crofconn::MODE_DATAPATH);
 
 	// TODO: TLS
 

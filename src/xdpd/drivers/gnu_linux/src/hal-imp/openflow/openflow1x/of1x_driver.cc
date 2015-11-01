@@ -1,5 +1,4 @@
 #include <rofl/datapath/hal/openflow/openflow1x/of1x_driver.h>
-#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_statistics.h>
@@ -20,6 +19,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline_pp.h>
 #include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 
+#include "c_logger.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -327,7 +327,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 		classify_packet(&pktx86->clas_state, pktx86->get_buffer(), pktx86->get_buffer_length(), in_port, 0);
 	}
 	
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME" Getting packet out [%p]\n",pkt);	
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME" Getting packet out [%p]\n",pkt);
 	
 	//Instruct pipeline to process actions. This may reinject the packet	
 	of1x_process_packet_out_pipeline(ROFL_PIPELINE_LOCKED_TID, (of1x_switch_t*)lsw, pkt, action_group);

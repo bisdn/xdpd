@@ -11,7 +11,6 @@
 #include <unistd.h>
 
 //Prototypes
-#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
@@ -23,6 +22,8 @@
 #include "ports/ioport.h"
 #include "ports/mmap/ioport_mmap.h"
 #include "ports/vlink/ioport_vlink.h"
+
+#include "../c_logger.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -44,7 +45,7 @@ rofl_result_t update_port_status(char * name){
 
 	//Update all ports
 	if(update_physical_ports() != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME"[ports] Update physical ports failed \n");
+		XDPD_ERR(DRIVER_NAME"[ports] Update physical ports failed \n");
 		assert(0);
 	}
 
@@ -64,7 +65,7 @@ rofl_result_t update_port_status(char * name){
 	strcpy(ifr.ifr_name, port->name);
 
 	if ((rc = ioctl(sd, SIOCGIFINDEX, &ifr)) < 0){
-		ROFL_ERR(DRIVER_NAME"[ports] retrieval of interface index of port %s failed\n", name);
+		XDPD_ERR(DRIVER_NAME"[ports] retrieval of interface index of port %s failed\n", name);
 		return ROFL_FAILURE;
 	}
 
@@ -82,7 +83,7 @@ rofl_result_t update_port_status(char * name){
 	//Release mutex
 	pthread_rwlock_unlock(&io_port->rwlock);
 
-	ROFL_DEBUG(DRIVER_NAME"[ports] Interface %s is %s, and link is %s\n", name,( ((IFF_UP & ifr.ifr_flags) > 0) ? "up" : "down"), ( ((IFF_RUNNING & ifr.ifr_flags) > 0) ? "detected" : "not detected"));
+	XDPD_DEBUG(DRIVER_NAME"[ports] Interface %s is %s, and link is %s\n", name,( ((IFF_UP & ifr.ifr_flags) > 0) ? "up" : "down"), ( ((IFF_RUNNING & ifr.ifr_flags) > 0) ? "detected" : "not detected"));
 
 	//Update link state
 	io_port->set_link_state( ((IFF_RUNNING & ifr.ifr_flags) > 0) );
@@ -277,7 +278,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 		return NULL;
 
 	if (ioctl(sock, SIOCETHTOOL, &ifr)==-1){
-		ROFL_WARN(DRIVER_NAME"[ports] WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
+		XDPD_WARN(DRIVER_NAME"[ports] WARNING: unable to retrieve MAC address from iface %s via ioctl SIOCETHTOOL. Information will not be filled\n",ifr.ifr_name);
 	}
 
 	//Init the port
@@ -287,7 +288,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 
 	//get the MAC addr.
 	socll = (struct sockaddr_ll *)ifa->ifa_addr;
-	ROFL_INFO(DRIVER_NAME"[ports] Discovered interface %s mac_addr %02X:%02X:%02X:%02X:%02X:%02X \n",
+	XDPD_INFO(DRIVER_NAME"[ports] Discovered interface %s mac_addr %02X:%02X:%02X:%02X:%02X:%02X \n",
 		ifa->ifa_name,socll->sll_addr[0],socll->sll_addr[1],socll->sll_addr[2],socll->sll_addr[3],
 		socll->sll_addr[4],socll->sll_addr[5]);
 
@@ -357,7 +358,7 @@ rofl_result_t discover_physical_ports(){
 
 		//Adding the
 		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
-			ROFL_ERR(DRIVER_NAME"[ports] All physical port slots are occupied\n");
+			XDPD_ERR(DRIVER_NAME"[ports] All physical port slots are occupied\n");
 			freeifaddrs(ifaddr);
 			assert(0);
 			return ROFL_FAILURE;
@@ -372,7 +373,7 @@ rofl_result_t discover_physical_ports(){
 		if(array[i] != NULL){
 			//Update status
 			if(update_port_status(array[i]->name) != ROFL_SUCCESS){
-				ROFL_ERR(DRIVER_NAME"[ports] Unable to retrieve link and/or admin status of the interface\n");
+				XDPD_ERR(DRIVER_NAME"[ports] Unable to retrieve link and/or admin status of the interface\n");
 				freeifaddrs(ifaddr);
 				assert(0);
 				return ROFL_FAILURE;
@@ -409,7 +410,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	if(!port1 || !port2){
 		free(port1);
 		assert(0);
-		ROFL_ERR(DRIVER_NAME"[ports] Not enough memory\n");
+		XDPD_ERR(DRIVER_NAME"[ports] Not enough memory\n");
 		return ROFL_FAILURE;
 	}
 
@@ -419,7 +420,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 	if(!*vport1){
 		free(port1);
 		free(port2);
-		ROFL_ERR(DRIVER_NAME"[ports] Not enough memory\n");
+		XDPD_ERR(DRIVER_NAME"[ports] Not enough memory\n");
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -430,7 +431,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		free(port1);
 		free(port2);
 		delete *vport1;
-		ROFL_ERR(DRIVER_NAME"[ports] Not enough memory\n");
+		XDPD_ERR(DRIVER_NAME"[ports] Not enough memory\n");
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -501,7 +502,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		free(port2);
 		delete *vport1;
 		delete *vport2;
-		ROFL_ERR(DRIVER_NAME"[ports] Unable to add vlink port1 to the physical switch; out of slots?\n");
+		XDPD_ERR(DRIVER_NAME"[ports] Unable to add vlink port1 to the physical switch; out of slots?\n");
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -510,7 +511,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		free(port2);
 		delete *vport1;
 		delete *vport2;
-		ROFL_ERR(DRIVER_NAME"[ports] Unable to add vlink port2 to the physical switch; out of slots?\n");
+		XDPD_ERR(DRIVER_NAME"[ports] Unable to add vlink port2 to the physical switch; out of slots?\n");
 		assert(0);
 		return ROFL_FAILURE;
 	}
@@ -595,7 +596,7 @@ rofl_result_t update_physical_ports(){
 	std::map<std::string, struct ifaddrs*> system_ifaces;
 	std::map<std::string, switch_port_t*> pipeline_ifaces;
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[ports] Trying to update the list of physical interfaces...\n");
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[ports] Trying to update the list of physical interfaces...\n");
 
 	/*real way to find interfaces*/
 	//getifaddrs(&ifap); -> there are examples on how to get the ip addresses
@@ -637,7 +638,7 @@ rofl_result_t update_physical_ports(){
 			if(!port)
 				continue;
 
-			ROFL_INFO(DRIVER_NAME"[ports] Interface %s has been removed from the system. The interface will now be detached from any logical switch it is attached to (if any), and removed from the list of physical interfaces.\n", it->first.c_str());
+			XDPD_INFO(DRIVER_NAME"[ports] Interface %s has been removed from the system. The interface will now be detached from any logical switch it is attached to (if any), and removed from the list of physical interfaces.\n", it->first.c_str());
 
 			//Notify CMM
 			port_snapshot = physical_switch_get_port_snapshot(port->name);
@@ -645,7 +646,7 @@ rofl_result_t update_physical_ports(){
 
 			//Detach
 			if(port->attached_sw && (hal_driver_detach_port_from_switch(port->attached_sw->dpid, port->name) != HAL_SUCCESS) ){
-				ROFL_WARN(DRIVER_NAME"[ports] WARNING: unable to detach port %s from switch. This can lead to an unknown behaviour\n", it->first.c_str());
+				XDPD_WARN(DRIVER_NAME"[ports] WARNING: unable to detach port %s from switch. This can lead to an unknown behaviour\n", it->first.c_str());
 				assert(0);
 			}
 			//Destroy and remove from the list of physical ports
@@ -659,13 +660,13 @@ rofl_result_t update_physical_ports(){
 		//Fill port
 		port = fill_port(sock,  it->second);
 		if(!port){
-			//ROFL_ERR(DRIVER_NAME"[ports] Unable to initialize newly discovered interface %s\n", it->first.c_str());
+			//XDPD_ERR(DRIVER_NAME"[ports] Unable to initialize newly discovered interface %s\n", it->first.c_str());
 			continue;
 		}
 
 		//Adding the
 		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
-			ROFL_ERR(DRIVER_NAME"[ports] Unable to add port %s to physical switch. Not enough slots?\n", it->first.c_str());
+			XDPD_ERR(DRIVER_NAME"[ports] Unable to add port %s to physical switch. Not enough slots?\n", it->first.c_str());
 			freeifaddrs(ifaddr);
 			continue;
 		}
@@ -676,7 +677,7 @@ rofl_result_t update_physical_ports(){
 
 	}
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[ports] Update of interfaces done.\n");
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[ports] Update of interfaces done.\n");
 
 	freeifaddrs(ifaddr);
 	close(sock);

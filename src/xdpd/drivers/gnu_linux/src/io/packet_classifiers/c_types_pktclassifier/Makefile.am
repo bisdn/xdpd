@@ -8,3 +8,6 @@ libxdpd_driver_gnu_linux_io_classifiers_c_types_la_SOURCES = \
 	autogen_pkt_types.c\
 	c_types_pktclassifier.c \
 	../packet_operations.cc
+
+AM_CXXFLAGS = -I$(top_srcdir)/src/
+

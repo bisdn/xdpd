@@ -20,6 +20,7 @@
 #include <stdexcept>
 
 #include <rofl/common/crofbase.h>
+#include <rofl/common/caddrinfos.h>
 #include <rofl/datapath/hal/hal.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 //#include "openflow_switch.h"

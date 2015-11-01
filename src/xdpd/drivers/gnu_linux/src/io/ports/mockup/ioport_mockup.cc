@@ -1,8 +1,9 @@
 #include "ioport_mockup.h"
 #include <iostream>
-#include <rofl/common/utils/c_logger.h>
+
 #include "../../bufferpool.h" 
 #include <fcntl.h>
+#include "../../../c_logger.h"
 
 using namespace xdpd::gnu_linux;
 
@@ -113,7 +114,7 @@ unsigned int ioport_mockup::write(unsigned int q_id, unsigned int num_of_buckets
 		//Just "put it into the wire" -> print it 
 		pkt_x86 = (datapacketx86*)pkt->platform_state;
 		
-		ROFL_DEBUG_VERBOSE(DRIVER_NAME" Getting buffer with id:%d. Putting it into the wire\n", pkt->id);
+		XDPD_DEBUG_VERBOSE(DRIVER_NAME" Getting buffer with id:%d. Putting it into the wire\n", pkt->id);
 		
 		//Free buffer
 		bufferpool::release_buffer(pkt);

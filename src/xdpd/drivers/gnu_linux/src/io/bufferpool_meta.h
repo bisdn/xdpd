@@ -12,8 +12,10 @@
 #include <vector>
 #include <iostream>
 #include <rofl/datapath/pipeline/common/datapacket.h>
-#include <rofl/common/utils/c_logger.h>
+
 #include "../util/circular_queue.h"
+
+#include "../c_logger.h"
 
 /**
 * @file bufferpool_meta.h
@@ -150,7 +152,7 @@ datapacket_t* bufferpool::get_buffer(){
 	//Double check
 	if( unlikely(tmp->status != BUFFERPOOL_SLOT_AVAILABLE) ){
 		//Attempting to release an unallocated/unavailable buffer
-		ROFL_ERR(DRIVER_NAME"[bufferpool] Corrupted pool, buffer (pkt:%p).\n", tmp->pkt);
+		XDPD_ERR(DRIVER_NAME"[bufferpool] Corrupted pool, buffer (pkt:%p).\n", tmp->pkt);
 		assert(0);
 	}
 	
@@ -183,7 +185,7 @@ void bufferpool::release_buffer(datapacket_t* pkt){
 	//Perform basic checkings
 	if( unlikely(tmp->status != BUFFERPOOL_SLOT_IN_USE) ){
 		//Attempting to release an unallocated/unavailable buffer
-		ROFL_ERR(DRIVER_NAME"[bufferpool] Attempting to release an unallocated/unavailable buffer (pkt:%p). Ignoring..\n",pkt);
+		XDPD_ERR(DRIVER_NAME"[bufferpool] Attempting to release an unallocated/unavailable buffer (pkt:%p). Ignoring..\n",pkt);
 		assert(0);
 	}
 	tmp->status = BUFFERPOOL_SLOT_AVAILABLE;
@@ -203,9 +205,9 @@ void bufferpool::dump(){
 	bufferpool* bp = get_instance();
 	(void)bp;
 #ifdef DEBUG
-	ROFL_DEBUG("bufferpool at %p, capacity: %llu, used: %llu\n", bp, bp->capacity, bp->used);
+	XDPD_DEBUG("bufferpool at %p, capacity: %llu, used: %llu\n", bp, bp->capacity, bp->used);
 #else
-	ROFL_DEBUG("bufferpool at %p, capacity: %llu\n", bp, bp->capacity);
+	XDPD_DEBUG("bufferpool at %p, capacity: %llu\n", bp, bp->capacity);
 #endif //DEBUG 
 }
 
@@ -219,17 +221,17 @@ void bufferpool::init(){
 
 	if(bufferpool::instance){
 		//Double-call to init??
-		ROFL_DEBUG(DRIVER_NAME"[bufferpool] Double call to bufferpool init!! Skipping...\n");
+		XDPD_DEBUG(DRIVER_NAME"[bufferpool] Double call to bufferpool init!! Skipping...\n");
 		pthread_mutex_unlock(&bufferpool::mutex);
 		return;	
 	}
 	
-	ROFL_DEBUG(DRIVER_NAME"[bufferpool] Initializing bufferpool with a capacity of %d buffers...\n",capacity);
+	XDPD_DEBUG(DRIVER_NAME"[bufferpool] Initializing bufferpool with a capacity of %d buffers...\n",capacity);
 
 	//Init 	
 	bufferpool::instance = new bufferpool();
 	
-	ROFL_DEBUG(DRIVER_NAME"[bufferpool] Initialization was successful\n");
+	XDPD_DEBUG(DRIVER_NAME"[bufferpool] Initialization was successful\n");
 
 	//Wake consumers
 	pthread_cond_broadcast(&bufferpool::cond);

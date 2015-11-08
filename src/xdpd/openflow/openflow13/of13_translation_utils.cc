@@ -830,11 +830,13 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					break;
 
 				case rofl::openflow13::OFPXMT_OFB_IPV6_SRC: {
-					const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().pack(field.u128.val, 16); NTOHB128(field.u128);
+					caddress_in6 ipv6_src(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
+					ipv6_src.pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_DST: {
-					const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().pack(field.u128.val, 16); NTOHB128(field.u128);
+					caddress_in6 ipv6_dst(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
+					ipv6_dst.pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_DST, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_FLABEL: {
@@ -842,7 +844,8 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_FLABEL, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_ND_TARGET: {
-					const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().pack(field.u128.val, 16); NTOHB128(field.u128);
+					caddress_in6 ipv6_nd_target(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
+					ipv6_nd_target.pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_ND_SLL: {

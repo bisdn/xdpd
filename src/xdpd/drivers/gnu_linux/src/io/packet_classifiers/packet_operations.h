@@ -7,7 +7,7 @@
 
 #include <rofl/datapath/pipeline/common/datapacket.h>
 
-#include "../../../c_logger.h"
+#include "c_logger.h"
 
 /**
 * @file packet_operations.h

@@ -12,6 +12,7 @@ test_datapacket_storage_LDADD= -lcppunit -lpthread
 test_bufferpool_SOURCES=$(top_srcdir)/src/io/bufferpool.cc\
 	$(top_srcdir)/src/io/datapacketx86.cc\
 	$(top_srcdir)/src/pipeline-imp/memory.c\
+	$(top_srcdir)/src/c_logger.c\
 	test_bufferpool.cc
 
 test_bufferpool_LDADD= -lrofl_common -lcppunit -lpthread

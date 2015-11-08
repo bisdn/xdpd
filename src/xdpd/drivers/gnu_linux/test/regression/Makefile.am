@@ -33,6 +33,7 @@ SHARED_SRC=\
 	$(top_srcdir)/src/bg_taskmanager.cc \
 	$(top_srcdir)/src/bg_taskmanager.h \
 	platform_hooks_of1x_mockup.cc \
+	$(top_srcdir)/src/c_logger.c \
 	$(CLASSIFIER_SRC)
 		
 SHARED_LIBS=\

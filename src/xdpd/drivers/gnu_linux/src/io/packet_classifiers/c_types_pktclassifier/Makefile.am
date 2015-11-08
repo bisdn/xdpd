@@ -10,4 +10,5 @@ libxdpd_driver_gnu_linux_io_classifiers_c_types_la_SOURCES = \
 	../packet_operations.cc
 
 AM_CFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/drivers/gnu_linux/src
+AM_CXXFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/drivers/gnu_linux/src
 

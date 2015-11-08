@@ -226,7 +226,7 @@ of10_endpoint::handle_port_stats_request(
 		rofl::openflow::cofmsg_port_stats_request& msg)
 {
 	switch_port_snapshot_t* port;
-	uint32_t port_no = msg.get_port_stats().get_portno();
+	uint32_t port_no = msg.get_port_stats().get_port_no();
 
 	of1x_switch_snapshot_t* of10switch = (of1x_switch_snapshot_t*)hal_driver_get_switch_snapshot_by_dpid(sw->dpid);
 

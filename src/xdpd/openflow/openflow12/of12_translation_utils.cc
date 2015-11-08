@@ -1314,12 +1314,9 @@ of12_translation_utils::of12_map_bucket_list(
 		rofl::openflow::cofbuckets& of_buckets,
 		of1x_bucket_list_t* bucket_list)
 {	
-	
-	for (std::map<uint32_t, rofl::openflow::cofbucket>::iterator
-			it = of_buckets.set_buckets().begin(); it != of_buckets.set_buckets().end(); ++it) {
-
+	for (auto bucket_id : of_buckets.keys()) {
 		//for each bucket we must map its actions
-		rofl::openflow::cofbucket& bucket_ptr = it->second;
+		rofl::openflow::cofbucket& bucket_ptr = of_buckets.set_bucket(bucket_id);
 		of1x_action_group_t* action_group = of1x_init_action_group(NULL);
 		if(action_group == NULL){
 			//TODO Handle Error

@@ -830,6 +830,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					break;
 
 				case rofl::openflow13::OFPXMT_OFB_IPV6_SRC: {
+					//set_field.get_oxm_128().get_u128value()
 					caddress_in6 ipv6_src(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
 					ipv6_src.pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, 0x0);
@@ -1097,7 +1098,11 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				match.set_in_phy_port(of1x_get_match_value32(m));
 				break;
 			case OF1X_MATCH_METADATA:
-				match.set_metadata(of1x_get_match_value64(m), of1x_get_match_mask64(m));
+				if (of1x_get_match_mask64(m) != 0xffffffffffffffffL) {
+					match.set_metadata(of1x_get_match_value64(m), of1x_get_match_mask64(m));
+				} else {
+					match.set_metadata(of1x_get_match_value64(m));
+				}
 				break;
 			case OF1X_MATCH_ETH_DST:
 			{

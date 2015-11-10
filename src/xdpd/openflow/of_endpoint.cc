@@ -172,8 +172,15 @@ of_endpoint::of_endpoint(
 	raddr = rofl::csockaddr(domain, remote_addr, remote_port);
 
 	//Connect to the main controller
-	crofbase::add_ctl(rofl::cctlid(0)).add_conn(rofl::cauxid(0)).set_laddr(laddr).set_raddr(raddr).
+	crofbase::add_ctl(rofl::cctlid(0)).add_conn(rofl::cauxid(0)).
+			set_laddr(laddr).set_raddr(raddr).
 				tcp_connect(versionbitmap, rofl::crofconn::MODE_DATAPATH);
+
+	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
+			set_journal().set_max_entries(64);
+
+	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
+			set_trace(true);
 };
 
 

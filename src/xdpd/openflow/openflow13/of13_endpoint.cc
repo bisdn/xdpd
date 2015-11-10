@@ -202,13 +202,13 @@ of13_endpoint::flow_mod_add(
 
 		switch(res){
 			case HAL_FM_OVERLAP_FAILURE:
-				throw rofl::eFlowModOverlap();
+				throw rofl::eFlowModOverlap("eFlowModOverlap: HAL_FM_OVERLAP_FAILURE");
 			case HAL_FM_TABLE_FULL_FAILURE:
-				throw rofl::eFlowModTableFull();
+				throw rofl::eFlowModTableFull("eFlowModTableFull: HAL_FM_TABLE_FULL_FAILURE");
 			case HAL_FM_INVALID_TABLE_ID_FAILURE:
-				throw rofl::eFlowModBadTableId();
+				throw rofl::eFlowModBadTableId("eFlowModBadTableId: HAL_FM_INVALID_TABLE_ID_FAILURE");
 			case HAL_FM_VALIDATION_FAILURE:
-				throw rofl::eFlowModBadCommand();
+				throw rofl::eFlowModBadCommand("eFlowModBadCommand: HAL_FM_VALIDATION_FAILURE");
 			default:
 				throw eFlowModUnknown();
 		}
@@ -1198,6 +1198,8 @@ of13_endpoint::handle_barrier_request(
 {
 	//Since we are not queuing messages currently
 	ctl.send_barrier_reply(auxid, pack.get_xid());
+	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	std::cerr << ctl.get_journal() << std::endl;
 }
 
 

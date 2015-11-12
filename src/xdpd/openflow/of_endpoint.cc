@@ -180,7 +180,7 @@ of_endpoint::of_endpoint(
 			set_journal().set_max_entries(64);
 
 	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
-			set_trace(true);
+			set_trace(false);
 };
 
 

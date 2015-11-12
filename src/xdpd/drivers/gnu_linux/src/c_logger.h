@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef XDPD_COMMON_UTILS_LOG_H_
-#define XDPD_COMMON_UTILS_LOG_H_
+#ifndef XDPD_GNU_LINUX_LOG_H_
+#define XDPD_GNU_LINUX_LOG_H_
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -106,4 +106,4 @@ void xdpd_set_logging_level(/*cn,*/ enum xdpd_debug_levels level);
 	}
 #endif
 
-#endif /* XDPD_COMMON_LOG_H_ */
+#endif /* XDPD_GNU_LINUX_LOG_H_ */

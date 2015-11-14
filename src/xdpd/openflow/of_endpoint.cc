@@ -177,10 +177,8 @@ of_endpoint::of_endpoint(
 				tcp_connect(versionbitmap, rofl::crofconn::MODE_DATAPATH);
 
 	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
-			set_journal().set_max_entries(64);
-
-	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
-			set_trace(false);
+			set_trace(true).
+				set_journal().set_max_entries(64);
 };
 
 

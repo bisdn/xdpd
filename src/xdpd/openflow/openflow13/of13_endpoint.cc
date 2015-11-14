@@ -1542,7 +1542,7 @@ of13_endpoint::handle_meter_mod(
 void
 of13_endpoint::handle_ctl_open(rofl::crofctl& ctl)
 {
-	XDPD_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str(), ctl.get_conn(0).get_raddr().str().c_str()); //FIXME: add role
+	XDPD_INFO("[sw: %s]Controller %s is in CONNECTED state. \n", sw->dpname.c_str(), ctl.get_conn(0).get_raddr().str().c_str()); //FIXME: add role
 }
 
 
@@ -1550,7 +1550,10 @@ of13_endpoint::handle_ctl_open(rofl::crofctl& ctl)
 void
 of13_endpoint::handle_ctl_close(const rofl::cctlid& ctlid)
 {
-	XDPD_INFO("[sw: %s] Controller %s:%u has DISCONNECTED. \n", sw->dpname.c_str(), ctlid.str().c_str()); //FIXME: add role
-
+	XDPD_INFO("[sw: %s] Controller %s has DISCONNECTED. \n", sw->dpname.c_str(), ctlid.str().c_str()); //FIXME: add role
+	std::cerr << crofbase::get_journal() << std::endl;
+	std::cerr << crofbase::get_ctl(ctlid).get_journal() << std::endl;
+	std::cerr << crofbase::get_ctl(ctlid).get_conn(0).get_journal() << std::endl;
+	std::cerr << crofbase::get_ctl(ctlid).get_conn(0).get_tcp_journal() << std::endl;
 }
 

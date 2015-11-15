@@ -1198,8 +1198,8 @@ of13_endpoint::handle_barrier_request(
 {
 	//Since we are not queuing messages currently
 	ctl.send_barrier_reply(auxid, pack.get_xid());
-	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
-	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+	//std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	//std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
 	//std::cerr << ctl.get_journal() << std::endl;
 }
 
@@ -1551,9 +1551,124 @@ void
 of13_endpoint::handle_ctl_close(const rofl::cctlid& ctlid)
 {
 	XDPD_INFO("[sw: %s] Controller %s has DISCONNECTED. \n", sw->dpname.c_str(), ctlid.str().c_str()); //FIXME: add role
+#if 0
 	std::cerr << crofbase::get_journal() << std::endl;
 	std::cerr << crofbase::get_ctl(ctlid).get_journal() << std::endl;
+#endif
 	std::cerr << crofbase::get_ctl(ctlid).get_conn(0).get_journal() << std::endl;
 	std::cerr << crofbase::get_ctl(ctlid).get_conn(0).get_tcp_journal() << std::endl;
 }
+
+
+
+void
+of13_endpoint::handle_conn_established(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid)
+{
+	XDPD_INFO("[sw: %s] Controller %s connection %d established. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str(), auxid.get_id());
+#if 0
+	std::cerr << crofbase::get_journal() << std::endl;
+	std::cerr << ctl.get_journal() << std::endl;
+#endif
+	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+}
+
+
+
+void
+of13_endpoint::handle_conn_terminated(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid)
+{
+	XDPD_INFO("[sw: %s] Controller %s connection %d terminated. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str(), auxid.get_id());
+#if 0
+	std::cerr << crofbase::get_journal() << std::endl;
+	std::cerr << ctl.get_journal() << std::endl;
+#endif
+	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+}
+
+
+
+void
+of13_endpoint::handle_conn_refused(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid)
+{
+	XDPD_INFO("[sw: %s] Controller %s connection %d refused. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str(), auxid.get_id());
+#if 0
+	std::cerr << crofbase::get_journal() << std::endl;
+	std::cerr << ctl.get_journal() << std::endl;
+#endif
+	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+}
+
+
+
+void
+of13_endpoint::handle_conn_failed(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid)
+{
+	XDPD_INFO("[sw: %s] Controller %s connection %d failed. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str(), auxid.get_id());
+#if 0
+	std::cerr << crofbase::get_journal() << std::endl;
+	std::cerr << ctl.get_journal() << std::endl;
+#endif
+	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+}
+
+
+
+void
+of13_endpoint::handle_conn_negotiation_failed(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid)
+{
+	XDPD_INFO("[sw: %s] Controller %s connection %d negotiation failed. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str(), auxid.get_id());
+#if 0
+	std::cerr << crofbase::get_journal() << std::endl;
+	std::cerr << ctl.get_journal() << std::endl;
+#endif
+	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+}
+
+
+
+void
+of13_endpoint::handle_conn_congestion_occured(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid)
+{
+	XDPD_INFO("[sw: %s] Controller %s connection %d congestion occured. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str(), auxid.get_id());
+#if 0
+	std::cerr << crofbase::get_journal() << std::endl;
+	std::cerr << ctl.get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+#endif
+}
+
+
+
+void
+of13_endpoint::handle_conn_congestion_solved(
+		rofl::crofctl& ctl,
+		const rofl::cauxid& auxid)
+{
+	XDPD_INFO("[sw: %s] Controller %s connection %d congestion solved. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str(), auxid.get_id());
+#if 0
+	std::cerr << crofbase::get_journal() << std::endl;
+	std::cerr << ctl.get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+#endif
+}
+
 

@@ -331,6 +331,91 @@ private:
 	handle_ctl_close(const rofl::cctlid& id);
 
 	/**
+	 * @brief 	Called when a control connection (main or auxiliary) has been established.
+	 *
+	 * @param ctl controller instance
+	 * @param auxid connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_established(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief 	Called when a control connection (main or auxiliary) has been terminated by the peer entity.
+	 *
+	 * @param ctl controller instance
+	 * @param auxid connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_terminated(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief 	Called when an attempt to establish a control connection has been refused.
+	 *
+	 * This event occurs when the C-library's connect() system call fails
+	 * with the ECONNREFUSED error code. This indicates typically a problem on
+	 * the remote site.
+	 *
+	 * @param ctl controller instance
+	 * @param auxid connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_refused(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief 	Called when an attempt to establish a control connection has been failed.
+	 *
+	 * This event occurs when some failure occures while calling the underlying
+	 * C-library connect() system call, e.g., no route to destination, etc. This may
+	 * indicate a local configuration problem inside or outside of the application.
+	 *
+	 * @param ctl controller instance
+	 * @param auxid connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_failed(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief	Called when a negotiation failed with a peer controller entity
+	 *
+	 * @param ctl controller instance
+	 * @param auxid control connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_negotiation_failed(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief	Called when a congestion situation on the control connection occurs
+	 *
+	 * @param ctl controller instance
+	 * @param auxid control connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_congestion_occured(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief	Called when a congestion situation on the control connection has been solved
+	 *
+	 * @param ctl controller instance
+	 * @param auxid control connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_congestion_solved(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
 	 * @name 	flow_mod_add
 	 * @brief 	Add a flow mod received from controller to flow-table
 	 *

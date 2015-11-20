@@ -46,7 +46,7 @@ rofl_result_t update_port_status(char * name){
 	//Update all ports
 	if(update_physical_ports() != ROFL_SUCCESS){
 		XDPD_ERR(DRIVER_NAME"[ports] Update physical ports failed \n");
-		assert(0);
+		assert(1);
 	}
 
 	port = physical_switch_get_port_by_name(name);
@@ -57,7 +57,7 @@ rofl_result_t update_port_status(char * name){
 	ioport* io_port = ((ioport*)port->platform_port_state);
 
 	if ((sd = socket(AF_PACKET, SOCK_RAW, 0)) < 0){
-		assert(0);
+		assert(1);
 		return ROFL_FAILURE;
 	}
 
@@ -76,7 +76,7 @@ rofl_result_t update_port_status(char * name){
 	if ((rc = ioctl(sd, SIOCGIFFLAGS, &ifr)) < 0){
 		close(sd);
 		pthread_rwlock_unlock(&io_port->rwlock);
-		assert(0);
+		assert(1);
 		return ROFL_FAILURE;
 	}
 
@@ -360,7 +360,7 @@ rofl_result_t discover_physical_ports(){
 		if( physical_switch_add_port(port) != ROFL_SUCCESS ){
 			XDPD_ERR(DRIVER_NAME"[ports] All physical port slots are occupied\n");
 			freeifaddrs(ifaddr);
-			assert(0);
+			assert(1);
 			return ROFL_FAILURE;
 		}
 
@@ -375,7 +375,7 @@ rofl_result_t discover_physical_ports(){
 			if(update_port_status(array[i]->name) != ROFL_SUCCESS){
 				XDPD_ERR(DRIVER_NAME"[ports] Unable to retrieve link and/or admin status of the interface\n");
 				freeifaddrs(ifaddr);
-				assert(0);
+				assert(1);
 				return ROFL_FAILURE;
 			}
 		}
@@ -409,7 +409,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 
 	if(!port1 || !port2){
 		free(port1);
-		assert(0);
+		assert(1);
 		XDPD_ERR(DRIVER_NAME"[ports] Not enough memory\n");
 		return ROFL_FAILURE;
 	}
@@ -421,7 +421,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		free(port1);
 		free(port2);
 		XDPD_ERR(DRIVER_NAME"[ports] Not enough memory\n");
-		assert(0);
+		assert(1);
 		return ROFL_FAILURE;
 	}
 
@@ -432,7 +432,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		free(port2);
 		delete *vport1;
 		XDPD_ERR(DRIVER_NAME"[ports] Not enough memory\n");
-		assert(0);
+		assert(1);
 		return ROFL_FAILURE;
 	}
 
@@ -503,7 +503,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		delete *vport1;
 		delete *vport2;
 		XDPD_ERR(DRIVER_NAME"[ports] Unable to add vlink port1 to the physical switch; out of slots?\n");
-		assert(0);
+		assert(1);
 		return ROFL_FAILURE;
 	}
 	if( physical_switch_add_port(port2) != ROFL_SUCCESS ){
@@ -512,7 +512,7 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 		delete *vport1;
 		delete *vport2;
 		XDPD_ERR(DRIVER_NAME"[ports] Unable to add vlink port2 to the physical switch; out of slots?\n");
-		assert(0);
+		assert(1);
 		return ROFL_FAILURE;
 	}
 
@@ -647,7 +647,7 @@ rofl_result_t update_physical_ports(){
 			//Detach
 			if(port->attached_sw && (hal_driver_detach_port_from_switch(port->attached_sw->dpid, port->name) != HAL_SUCCESS) ){
 				XDPD_WARN(DRIVER_NAME"[ports] WARNING: unable to detach port %s from switch. This can lead to an unknown behaviour\n", it->first.c_str());
-				assert(0);
+				assert(1);
 			}
 			//Destroy and remove from the list of physical ports
 			destroy_port(port);

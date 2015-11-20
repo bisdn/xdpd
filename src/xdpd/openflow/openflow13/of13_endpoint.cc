@@ -1198,9 +1198,12 @@ of13_endpoint::handle_barrier_request(
 {
 	//Since we are not queuing messages currently
 	ctl.send_barrier_reply(auxid, pack.get_xid());
-	//std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
-	//std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+	//std::cerr << ">>>>>>>>>>>>>>>>>>> ctl journal <<<<<<<<<<<<<<<<<<<<" << std::endl;
 	//std::cerr << ctl.get_journal() << std::endl;
+	//std::cerr << ">>>>>>>>>>>>>>>>>>> conn journal <<<<<<<<<<<<<<<<<<<" << std::endl;
+	//std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+	//std::cerr << ">>>>>>>>>>>>>>>>> conn tcp journal <<<<<<<<<<<<<<<<<" << std::endl;
+	//std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
 }
 
 

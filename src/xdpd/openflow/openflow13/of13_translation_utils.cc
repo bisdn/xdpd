@@ -1108,14 +1108,22 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			{
 				uint64_t mac = of1x_get_match_value64(m);
 				uint64_t msk = of1x_get_match_mask64(m);
-				match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
+				if (cmacaddr(msk).is_broadcast()) {
+					match.set_eth_dst(cmacaddr(mac));
+				} else {
+					match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
+				}
 			}
 				break;
 			case OF1X_MATCH_ETH_SRC:
 			{
 				uint64_t mac = of1x_get_match_value64(m);
 				uint64_t msk = of1x_get_match_mask64(m);
-				match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
+				if (cmacaddr(msk).is_broadcast()) {
+					match.set_eth_src(cmacaddr(mac));
+				} else {
+					match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
+				}
 			}
 				break;
 			case OF1X_MATCH_ETH_TYPE:
@@ -1152,28 +1160,44 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			{
 				uint64_t mac = of1x_get_match_value64(m);
 				uint64_t msk = of1x_get_match_mask64(m);
-				match.set_arp_sha(cmacaddr(mac), cmacaddr(msk));
+				if (cmacaddr(msk).is_broadcast()) {
+					match.set_arp_sha(cmacaddr(mac));
+				} else {
+					match.set_arp_sha(cmacaddr(mac), cmacaddr(msk));
+				}
 			}
 				break;
 			case OF1X_MATCH_ARP_SPA:
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_arp_spa(addr, mask);
+				if (mask == rofl::caddress_in4("255.255.255.255")) {
+					match.set_arp_spa(addr);
+				} else {
+					match.set_arp_spa(addr, mask);
+				}
 			}
 				break;
 			case OF1X_MATCH_ARP_THA:
 			{
 				uint64_t mac = of1x_get_match_value64(m);
 				uint64_t msk = of1x_get_match_mask64(m);
-				match.set_arp_tha(cmacaddr(mac), cmacaddr(msk));
+				if (cmacaddr(msk).is_broadcast()) {
+					match.set_arp_tha(cmacaddr(mac));
+				} else {
+					match.set_arp_tha(cmacaddr(mac), cmacaddr(msk));
+				}
 			}
 				break;
 			case OF1X_MATCH_ARP_TPA:
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_arp_tpa(addr, mask);
+				if (mask == rofl::caddress_in4("255.255.255.255")) {
+					match.set_arp_tpa(addr);
+				} else {
+					match.set_arp_tpa(addr, mask);
+				}
 			}
 				break;
 			case OF1X_MATCH_IP_DSCP:
@@ -1189,14 +1213,22 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_ipv4_src(addr, mask);
+				if (mask == rofl::caddress_in4("255.255.255.255")) {
+					match.set_ipv4_src(addr);
+				} else {
+					match.set_ipv4_src(addr, mask);
+				}
 			}
 				break;
 			case OF1X_MATCH_IPV4_DST:
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_ipv4_dst(addr, mask);
+				if (mask == rofl::caddress_in4("255.255.255.255")) {
+					match.set_ipv4_dst(addr);
+				} else {
+					match.set_ipv4_dst(addr, mask);
+				}
 			}
 				break;
 			case OF1X_MATCH_TCP_SRC:
@@ -1228,17 +1260,29 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				caddress_in6 addr; addr.unpack(value.val, 16);
 				uint128__t mask = of1x_get_match_mask128(m); HTONB128(mask);
 				caddress_in6 msk; msk.unpack(mask.val, 16);
-				match.set_ipv6_src(addr,msk);
+				if (msk == rofl::caddress_in6("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")) {
+					match.set_ipv6_src(addr);
+				} else {
+					match.set_ipv6_src(addr,msk);
+				}
 				}break;
 			case OF1X_MATCH_IPV6_DST:{
 				uint128__t value = of1x_get_match_value128(m); HTONB128(value);
 				caddress_in6 addr; addr.unpack(value.val, 16);
 				uint128__t mask = of1x_get_match_mask128(m); HTONB128(mask);
 				caddress_in6 msk; msk.unpack(mask.val, 16);
-				match.set_ipv6_dst(addr, msk);
+				if (msk == rofl::caddress_in6("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")) {
+					match.set_ipv6_dst(addr);
+				} else {
+					match.set_ipv6_dst(addr, msk);
+				}
 				}break;
 			case OF1X_MATCH_IPV6_FLABEL:
-				match.set_ipv6_flabel(of1x_get_match_value32(m), of1x_get_match_mask32(m));
+				if (of1x_get_match_mask32(m) == 1048575) {
+					match.set_ipv6_flabel(of1x_get_match_value32(m));
+				} else {
+					match.set_ipv6_flabel(of1x_get_match_value32(m), of1x_get_match_mask32(m));
+				}
 				break;
 			case OF1X_MATCH_ICMPV6_TYPE:
 				match.set_icmpv6_type(of1x_get_match_value8(m));
@@ -1274,7 +1318,11 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_PBB_ISID:{
 				uint32_t value = of1x_get_match_value32(m);
 				uint32_t mask = of1x_get_match_mask32(m);
-				match.set_pbb_isid(value, mask);
+				if (mask == 16777215) {
+					match.set_pbb_isid(value);
+				} else {
+					match.set_pbb_isid(value, mask);
+				}
 				}break;
 			case OF1X_MATCH_IPV6_EXTHDR:
 				match.set_ipv6_exthdr(of1x_get_match_value16(m));

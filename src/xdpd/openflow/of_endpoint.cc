@@ -173,15 +173,20 @@ of_endpoint::of_endpoint(
 
 	//Connect to the main controller
 	crofbase::add_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
-			set_trace(true).
-				set_journal().log_on_stderr(true).set_max_entries(64);
+				set_trace(false).
+				set_journal().
+					log_on_stderr(false).
+					set_max_entries(64);
 
 	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
-				set_tcp_journal().log_on_stderr(true).set_max_entries(16);
+				set_tcp_journal().
+					log_on_stderr(false).
+					set_max_entries(16);
 
 	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
-			set_laddr(laddr).set_raddr(raddr).
-				tcp_connect(versionbitmap, rofl::crofconn::MODE_DATAPATH);
+				set_laddr(laddr).
+				set_raddr(raddr).
+					tcp_connect(versionbitmap, rofl::crofconn::MODE_DATAPATH);
 
 	crofbase::set_journal().set_max_entries(16);
 };

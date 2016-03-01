@@ -171,16 +171,18 @@ of_endpoint::of_endpoint(
 
 	raddr = rofl::csockaddr(domain, remote_addr, remote_port);
 
+	bool trace = true;
+
 	//Connect to the main controller
 	crofbase::add_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
-				set_trace(false).
+				set_trace(trace).
 				set_journal().
-					log_on_stderr(false).
+					log_on_stderr(trace).
 					set_max_entries(64);
 
 	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).
 				set_tcp_journal().
-					log_on_stderr(false).
+					log_on_stderr(trace).
 					set_max_entries(16);
 
 	crofbase::set_ctl(rofl::cctlid(0)).set_conn(rofl::cauxid(0)).

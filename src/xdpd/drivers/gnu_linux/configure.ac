@@ -24,7 +24,7 @@ AC_SUBST(LIBTOOL)dnl
 
 # default flags
 CFLAGS="-fgnu89-inline -Werror -Wall $CFLAGS"
-CXXFLAGS="-std=c++11 -Werror -Wall -Wno-error=deprecated-register $CXXFLAGS"
+CXXFLAGS="-std=c++11 -Werror -Wall $CXXFLAGS"
 LDFLAGS=" -Wl,-export-dynamic"
 
 AC_DEFINE(__STDC_FORMAT_MACROS)

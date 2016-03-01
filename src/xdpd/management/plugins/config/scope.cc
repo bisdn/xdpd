@@ -155,7 +155,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run, bool priority_cal
 
 			if(	sc->mandatory && 
 				(	! setting.exists(sc->name) || 
-					! setting[sc->name].isGroup()
+					! setting[sc->name.c_str()].isGroup()
 				)
 			){
 				XDPD_ERR(CONF_PLUGIN_ID "%s: mandatory subscope '%s' not found\n", setting.getPath().c_str(), sc->name.c_str());
@@ -164,7 +164,7 @@ void scope::execute(libconfig::Setting& setting, bool dry_run, bool priority_cal
 			
 			if(setting.exists(sc->name)){
 				XDPD_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Calling 'execute()'\n", sc->get_path().c_str());
-				sc->execute(setting[sc->name], dry_run);
+				sc->execute(setting[sc->name.c_str()], dry_run);
 			}
 		}
 	}

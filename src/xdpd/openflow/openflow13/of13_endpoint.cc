@@ -1545,7 +1545,14 @@ of13_endpoint::handle_meter_mod(
 void
 of13_endpoint::handle_ctl_open(rofl::crofctl& ctl)
 {
-	XDPD_INFO("[sw: %s]Controller %s is in CONNECTED state. \n", sw->dpname.c_str(), ctl.get_conn(0).get_raddr().str().c_str()); //FIXME: add role
+	XDPD_INFO("[sw: %s]Controller %s is in CONNECTED state. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str()); //FIXME: add role
+	try {
+		for (auto auxid : ctl.get_conn_ids()) {
+			std::cerr << "conn_id: " << (int)auxid.get_id() << std::endl;
+		}
+		std::cerr << ctl.get_conn(0).get_journal() << std::endl;
+		std::cerr << ctl.get_conn(0).get_tcp_journal() << std::endl;
+	} catch (...) {}
 }
 
 
@@ -1558,8 +1565,10 @@ of13_endpoint::handle_ctl_close(const rofl::cctlid& ctlid)
 	std::cerr << crofbase::get_journal() << std::endl;
 	std::cerr << crofbase::get_ctl(ctlid).get_journal() << std::endl;
 #endif
-	std::cerr << crofbase::get_ctl(ctlid).get_conn(0).get_journal() << std::endl;
-	std::cerr << crofbase::get_ctl(ctlid).get_conn(0).get_tcp_journal() << std::endl;
+	try {
+		std::cerr << crofbase::get_ctl(ctlid).get_conn(0).get_journal() << std::endl;
+		std::cerr << crofbase::get_ctl(ctlid).get_conn(0).get_tcp_journal() << std::endl;
+	} catch (...) {}
 }
 
 
@@ -1570,6 +1579,9 @@ of13_endpoint::handle_conn_established(
 		const rofl::cauxid& auxid)
 {
 	XDPD_INFO("[sw: %s] Controller %s connection %d established. \n", sw->dpname.c_str(), ctl.get_ctlid().str().c_str(), auxid.get_id());
+	for (auto auxid : ctl.get_conn_ids()) {
+		std::cerr << "conn_id: " << (int)auxid.get_id() << std::endl;
+	}
 #if 0
 	std::cerr << crofbase::get_journal() << std::endl;
 	std::cerr << ctl.get_journal() << std::endl;
@@ -1606,8 +1618,10 @@ of13_endpoint::handle_conn_refused(
 	std::cerr << crofbase::get_journal() << std::endl;
 	std::cerr << ctl.get_journal() << std::endl;
 #endif
-	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
-	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+	try {
+		std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
+		std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+	} catch(...) {}
 }
 
 
@@ -1622,8 +1636,10 @@ of13_endpoint::handle_conn_failed(
 	std::cerr << crofbase::get_journal() << std::endl;
 	std::cerr << ctl.get_journal() << std::endl;
 #endif
+	try {
 	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
 	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+	} catch (...) {}
 }
 
 
@@ -1638,8 +1654,10 @@ of13_endpoint::handle_conn_negotiation_failed(
 	std::cerr << crofbase::get_journal() << std::endl;
 	std::cerr << ctl.get_journal() << std::endl;
 #endif
+	try {
 	std::cerr << ctl.get_conn(auxid).get_journal() << std::endl;
 	std::cerr << ctl.get_conn(auxid).get_tcp_journal() << std::endl;
+	} catch (...) {}
 }
 
 

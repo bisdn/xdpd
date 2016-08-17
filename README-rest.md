@@ -220,7 +220,7 @@ Output:
 
 Show the list of flows in lsi `dp0` table `0`:
 
-	xcli -c "show list dp0 table 0 flows"
+	xcli -c "show lsi dp0 table 0 flows"
 
 Output:
 

@@ -627,14 +627,14 @@ rofl_result_t ioport_mmap::up() {
 		peer_ifr.ifr_ifindex = peer_id;
 
 		if ((peer_rv = ioctl(peer_sd, SIOCGIFNAME, &peer_ifr)) < 0){
-			close(peer_sd);
-			return ROFL_FAILURE;
+			ROFL_WARN(DRIVER_NAME"[mmap:%s] Warning veth iface peer not detected (running in another namespace?). Offloads will not be disabled. Please, manually disable offloads in both veths!\n", ifr.ifr_name);
+		}else{
+			ROFL_DEBUG(DRIVER_NAME"[mmap:%s] Veth iface detected: peer id = %llu : name %s\n", ifr.ifr_name, peer_id, peer_ifr.ifr_name);
+			
+			//Disable chk offload in both the interface and the link
+			disable_iface_checksum_offloading(peer_sd, peer_ifr);
+			disable_iface_checksum_offloading(sd, ifr);
 		}
-		ROFL_DEBUG(DRIVER_NAME"[mmap:%s] Veth iface detected: peer id = %llu : name %s\n", ifr.ifr_name, peer_id, peer_ifr.ifr_name);
-		
-		//Disable chk offload in both the interface and the link
-		disable_iface_checksum_offloading(peer_sd, peer_ifr);
-		disable_iface_checksum_offloading(sd, ifr);
 		close(peer_sd);
 	}
 #endif	

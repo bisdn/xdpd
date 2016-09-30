@@ -6,7 +6,7 @@
 #define _RX_H_
 
 #include "../config.h"
-#include <rofl/common/utils/c_logger.h>
+#include <utils/c_logger.h>
 #include <rte_config.h>
 #include <rte_common.h>
 #include <rte_cycles.h>
@@ -74,14 +74,14 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 #if DEBUG
 		if(burst_len != 0)
 		{
-			ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
+			XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 
 			for(i=0;i<burst_len;i++)
 			{
 				unsigned char *tmp = rte_pktmbuf_mtod(pkts_burst[i],unsigned char *);
 				unsigned int tmp_len = rte_pktmbuf_pkt_len(pkts_burst[i]);	
-				ROFL_DEBUG_VERBOSE("#%d length: %d\n",i,tmp_len);
-				ROFL_DEBUG_VERBOSE("#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
+				XDPD_DEBUG_VERBOSE("#%d length: %d\n",i,tmp_len);
+				XDPD_DEBUG_VERBOSE("#%d %x:%x:%x:%x:%x:%x->%x:%x:%x:%x:%x:%x\n",i,tmp[6],tmp[7],tmp[8],tmp[9],tmp[10],tmp[11],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
 			}
 		}
 #endif
@@ -93,7 +93,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		burst_len = rte_eth_rx_burst(port_id, 0, pkts_burst, IO_IFACE_MAX_PKT_BURST);
 	}
 
-	//ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
+	//XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io] Read burst from %s (%u pkts)\n", port->name, burst_len);
 
 	//Prefetch
 	if( burst_len )
@@ -118,12 +118,12 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 #ifdef GNU_LINUX_DPDK_ENABLE_NF
 		if(port->type != PORT_TYPE_PHYSICAL){
 			port->stats.rx_packets++;
-			port->stats.rx_bytes += mbuf->pkt.pkt_len;
+			port->stats.rx_bytes += mbuf->pkt_len;
 		}
 #endif
 
 		//We only support nb_segs == 1. TODO: can it be that NICs send us pkts with more than one segment?
-		assert(mbuf->pkt.nb_segs == 1);
+		assert(mbuf->nb_segs == 1);
 
 		//tmp_port is used to avoid to repeat code for both kinds of port
 		//(note that the port_mapping used is different
@@ -137,7 +137,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 		}else
 #endif
 		{
-			tmp_port = phy_port_mapping[mbuf->pkt.in_port];
+			tmp_port = phy_port_mapping[mbuf->port];
 		}
 
 		if(unlikely(!tmp_port)){

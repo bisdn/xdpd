@@ -5,7 +5,7 @@
 #ifndef _PACKET_OPERATIONS_DPDK_
 #define _PACKET_OPERATIONS_DPDK_
 
-#include <rofl/common/utils/c_logger.h>
+#include <utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include "../dpdk_datapacket.h"
 

@@ -3,7 +3,7 @@ set -e
 
 #Populate submodules
 echo Populating git submodules...
-git submodule update --init --recursive
+#git submodule update --init --recursive
 echo Done
 
 #Autoreconf

@@ -6,7 +6,7 @@
 #define TIME_PROFILING_H 
 
 #include <assert.h>
-#include <rofl/common/utils/c_logger.h>
+#include <utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <string.h>
 #include <rofl_datapath.h>

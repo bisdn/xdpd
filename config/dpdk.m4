@@ -2,15 +2,18 @@
 
 if test "$WITH_DPDK" = "yes"; then
 
+Compose DPDK target string
+DPDK_TARGET="x86_64-native-${OS}app-${TARGET_CC}"
+
 AC_MSG_CHECKING(and adding support for the DPDK library...)
 #Adding the includes
-DPDK_INCLUDES="-I$XDPD_BUILDDIR/libs/dpdk/build/include"
+DPDK_INCLUDES="-I$XDPD_BUILDDIR/libs/dpdk/include -I$XDPD_BUILDDIR/libs/dpdk/usr/local/include/dpdk"
 
 #Library path
 DPDK_LDFLAGS="-L$XDPD_BUILDDIR/libs/dpdk/build/lib"
 
 #Add them
-CPPFLAGS="$DPDK_INCLUDES $CPPFLAGS"
+CPPFLAGS="$DPDK_INCLUDES $CPPFLAGS -msse4.2"
 LDFLAGS="$DPDK_LDFLAGS $LDFLAGS "
 
 #
@@ -48,9 +51,6 @@ case $CC in
 	AC_MSG_ERROR([Could not deduce DPDK target for compiler '$CC'. DPDK supported compiler families: gcc, clang and icc])
 	;;
 esac
-
-#Compose DPDK target string
-DPDK_TARGET="x86_64-native-${OS}app-${TARGET_CC}"
 
 AC_SUBST(DPDK_TARGET)
 AC_MSG_RESULT([added ($DPDK_TARGET)])

@@ -6,7 +6,7 @@
 #define _TX_H_
 
 #include "../config.h"
-#include <rofl/common/utils/c_logger.h>
+#include <utils/c_logger.h>
 #include <rte_config.h>
 #include <rte_common.h>
 #include <rte_cycles.h>
@@ -42,12 +42,12 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct
 	if(len == 0)
 		return;
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n", phy_port_mapping[port_id]->name,  port_id, queue_id, len);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] Trying to transmit burst on port queue_id %u of length %u\n", phy_port_mapping[port_id]->name,  port_id, queue_id, len);
 
 	//Send burst
 	ret = rte_eth_tx_burst(port_id, queue_id, burst, len);
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] +++ Transmited %u pkts, on queue_id %u\n", phy_port_mapping[port_id]->name, port_id, ret, queue_id);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] +++ Transmitted %u pkts, on queue_id %u\n", phy_port_mapping[port_id]->name, port_id, ret, queue_id);
 
 	if (unlikely(ret < len)) {
 		//Increment errors
@@ -69,12 +69,12 @@ flush_port_queue_tx_burst(switch_port_t* port, unsigned int port_id, struct mbuf
 		return;
 	}
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] Trying to flush burst(enqueue in lcore ring) on port queue_id %u of length: %u\n", port->name,  port_id, queue_id, queue->len);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] Trying to flush burst(enqueue in lcore ring) on port queue_id %u of length: %u\n", port->name,  port_id, queue_id, queue->len);
 
 	//Enqueue to the lcore (if it'd we us, we could probably call to transmit directly)
 	ret = rte_ring_mp_enqueue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)queue->burst, queue->len);
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
 
 	if (unlikely(ret < queue->len)) {
 		//TODO increase error counters?
@@ -119,7 +119,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	}
 #endif
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
 
 	//Enqueue
 	len = pkt_burst->len;
@@ -158,12 +158,12 @@ flush_shmem_nf_port(switch_port_t* port, rte_ring* queue, struct mbuf_burst* bur
 		return;
 	}
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem][%s] Trying to flush burst(enqueue in lcore ring) of length: %u\n", port->name,  burst->len);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem][%s] Trying to flush burst(enqueue in lcore ring) of length: %u\n", port->name,  burst->len);
 
 	//Enqueue to the hsmem ring
 	ret = rte_ring_mp_enqueue_burst(queue, (void **)burst->burst, burst->len);
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem][%s] --- Flushed %u pkts\n", port->name, ret);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem][%s] --- Flushed %u pkts\n", port->name, ret);
 
 #ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
 	unsigned int ret_cpy = ret;
@@ -228,7 +228,7 @@ tx_pkt_shmem_nf_port(switch_port_t* port, datapacket_t* pkt)
 	}
 #endif
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
 
 	//Enqueue
 	len = pkt_burst->len;
@@ -256,7 +256,7 @@ transmit_kni_nf_port_burst(switch_port_t* port, unsigned int port_id, struct rte
 	//Dequeue a burst from the TX ring
 	len = rte_ring_mc_dequeue_burst(port_tx_nf_lcore_queue[port_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Trying to transmit burst on KNI port %s of length %u\n",nf_port_mapping[port_id]->name, len);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Trying to transmit burst on KNI port %s of length %u\n",nf_port_mapping[port_id]->name, len);
 
 	//Send burst
 	dpdk_kni_port_state *port_state = (dpdk_kni_port_state_t*)port->platform_port_state;
@@ -264,7 +264,7 @@ transmit_kni_nf_port_burst(switch_port_t* port, unsigned int port_id, struct rte
 
 	//XXX port_statistics[port].tx += ret;
 	if(ret > 0)
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Transmited %u pkts, on port %s\n", ret, nf_port_mapping[port_id]->name);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Transmited %u pkts, on port %s\n", ret, nf_port_mapping[port_id]->name);
 
 	if (unlikely(ret < len)) {
 		//XXX port_statistics[port].dropped += (n - ret);
@@ -285,14 +285,14 @@ flush_kni_nf_port_burst(switch_port_t* port, unsigned int port_id, struct mbuf_b
 
 	assert((dpdk_kni_port_state_t*)port->platform_port_state != NULL);
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Trying to flush burst(enqueue in lcore ring) on KNI port %s\n", port->name, queue->len);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Trying to flush burst(enqueue in lcore ring) on KNI port %s\n", port->name, queue->len);
 
 
 	ret = rte_ring_mp_enqueue_burst(port_tx_nf_lcore_queue[port_id], (void **)queue->burst, queue->len);
 
 	//XXX port_statistics[port].tx += ret;
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] --- Flushed %u pkts, on KNI port %s\n", port_id, ret, port->name);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] --- Flushed %u pkts, on KNI port %s\n", port_id, ret, port->name);
 
 	if (unlikely(ret < queue->len))
 	{
@@ -338,7 +338,7 @@ tx_pkt_kni_nf_port(switch_port_t* port, datapacket_t* pkt)
 	}
 #endif
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
 
 	//Enqueue
 	len = pkt_burst->len;

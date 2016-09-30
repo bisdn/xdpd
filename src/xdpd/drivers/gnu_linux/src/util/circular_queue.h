@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 #include "likely.h"
-#include "../c_logger.h"
+#include <utils/c_logger.h>
 
 /*
  * Implementation of a ring elements

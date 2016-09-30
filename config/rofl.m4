@@ -7,7 +7,7 @@
 AC_MSG_CHECKING(and adding support for ROFL libraries...)
 
 #Adding the includes
-ROFL_INCLUDES="-I$XDPD_SRCDIR/libs/rofl-common/src/ -I$XDPD_SRCDIR/libs/rofl-datapath/src/ -I$XDPD_BUILDDIR/libs/rofl-common/build/src/ -I$XDPD_BUILDDIR/libs/rofl-datapath/build/src"
+ROFL_INCLUDES="-I$XDPD_SRCDIR/libs/rofl-common/src/ -I$XDPD_SRCDIR/libs/rofl-datapath/src/ -I$XDPD_BUILDDIR/libs/rofl-common/build/src/ -I$XDPD_BUILDDIR/libs/rofl-datapath/build/src -I$XDPD_SRCDIR/src/xdpd/common"
 
 #Library path
 ROFL_LDFLAGS="-L$XDPD_BUILDDIR/libs/rofl-common/build/src/rofl/ -L$XDPD_BUILDDIR/libs/rofl-datapath/build/src/rofl/"

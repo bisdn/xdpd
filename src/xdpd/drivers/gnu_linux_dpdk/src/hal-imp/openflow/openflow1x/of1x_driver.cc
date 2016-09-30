@@ -1,7 +1,7 @@
 #include <rofl_datapath.h>
 #include <assert.h>
 #include <rofl/datapath/hal/openflow/openflow1x/of1x_driver.h>
-#include <rofl/common/utils/c_logger.h>
+#include "../../../c_logger.h"
 #include <rofl/datapath/pipeline/physical_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_statistics.h>

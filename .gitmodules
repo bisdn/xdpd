@@ -6,4 +6,4 @@
 	url = https://github.com/bisdn/rofl-datapath.git
 [submodule "libs/dpdk"]
 	path = libs/dpdk
-	url = https://github.com/bisdn/dpdk-dev.git
+	url = git://dpdk.org/dpdk.git

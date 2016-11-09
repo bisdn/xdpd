@@ -4,7 +4,6 @@
 #include <rte_spinlock.h>
 #include <sstream>
 #include <iomanip>
-
 #include "assert.h"
 #include "../util/compiler_assert.h"
 #include "../io/rx.h"
@@ -43,6 +42,7 @@ struct rte_mempool* indirect_pools[MAX_CPU_SOCKETS];
 rofl_result_t processing_init(void){
 
 	unsigned int i;
+	int flags=0;
 	struct rte_config* config;
 	enum rte_lcore_role_t role;
 	unsigned int sock_id;
@@ -59,6 +59,7 @@ rofl_result_t processing_init(void){
 	rte_spinlock_init(&mutex);
 
 	XDPD_DEBUG(DRIVER_NAME"[processing] Processing init: %u logical cores guessed from rte_eal_get_configuration(). Master is: %u\n", config->lcore_count, config->master_lcore);
+	mp_hdlr_init_ops_mp_mc();
 
 	//Define available cores
 	for(i=0; i < RTE_MAX_LCORE; ++i){
@@ -78,6 +79,7 @@ rofl_result_t processing_init(void){
 				/**
 				*  create the mbuf pool for that socket id
 				*/
+				flags = MEMPOOL_F_SP_PUT | MEMPOOL_F_SC_GET;
 				snprintf (pool_name, POOL_MAX_LEN_NAME, "pool_direct_%u", sock_id);
 				XDPD_INFO(DRIVER_NAME"[processing] Creating %s with #mbufs %u for CPU socket %u\n", pool_name, mbuf_pool_size, sock_id);
 
@@ -88,7 +90,7 @@ rofl_result_t processing_init(void){
 					sizeof(struct rte_pktmbuf_pool_private),
 					rte_pktmbuf_pool_init, NULL,
 					rte_pktmbuf_init, NULL,
-					sock_id, 0);
+					sock_id, flags);
 
 				if (direct_pools[sock_id] == NULL)
 					rte_panic("Cannot init direct mbuf pool for CPU socket: %u\n", sock_id);

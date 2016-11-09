@@ -22,7 +22,7 @@
 
 #include "../io/packet_classifiers/pktclassifier.h"
 
-#include "../c_logger.h"
+#include <utils/c_logger.h>
 
 //
 // Configuration to include packet_proto_meta_imp.h

@@ -13,7 +13,7 @@
 #include "../processing/ls_internal_state.h"
 #include "../io/pktin_dispatcher.h"
 
-#include "../c_logger.h"
+#include <utils/c_logger.h>
 
 //Time measurements
 #include "../util/time_measurements.h"

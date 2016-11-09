@@ -137,8 +137,8 @@ dpdk:
 		echo Compiling \'$$LIB\' \(T=$(DPDK_TARGET)\)... ;			\
 		OLD_PWD=$$PWD ;								\
 		mkdir -p $(LIBS_BUILD_DIR)/$$LIB || exit -1 ;				\
-		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;				\
-		$(MAKE) config T=$(DPDK_TARGET) ; 		\
+		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
+		$(MAKE) config T=$(DPDK_TARGET) ; 					\
 		if test "$(LIBS_BUILD_DIR)/$$LIB" == "$(abs_srcdir)/dpdk" ; then	\
 			$(MAKE) || exit -1 ;						\
 		else									\

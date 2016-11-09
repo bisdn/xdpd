@@ -7,9 +7,7 @@ noinst_LTLIBRARIES = libxdpd_driver_gnu_linux_src.la
 
 libxdpd_driver_gnu_linux_src_la_SOURCES = \
 	config.cc\
-	bg_taskmanager.cc \
-	c_logger.c \
-	c_logger.h
+	bg_taskmanager.cc 
 
 libxdpd_driver_gnu_linux_src_la_LIBADD = \
 		hal-imp/libxdpd_driver_gnu_linux_hal_imp.la \

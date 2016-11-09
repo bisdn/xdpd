@@ -34,8 +34,7 @@
 #include <string.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
-
-#include "c_logger.h"
+#include <utils/c_logger.h>
 
 using namespace xdpd::gnu_linux;
 

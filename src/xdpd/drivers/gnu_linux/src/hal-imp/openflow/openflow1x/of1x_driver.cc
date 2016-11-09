@@ -19,7 +19,7 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_pipeline_pp.h>
 #include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 
-#include "c_logger.h"
+#include <utils/c_logger.h>
 
 using namespace xdpd::gnu_linux;
 

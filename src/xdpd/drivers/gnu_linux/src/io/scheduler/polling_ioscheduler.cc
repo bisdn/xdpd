@@ -16,7 +16,7 @@
 #include "../../pipeline-imp/pthread_lock.h"
 #include "../../pipeline-imp/packet.h"
 
-#include "../../c_logger.h"
+#include <utils/c_logger.h>
 
 #include <rofl/datapath/pipeline/openflow/of_switch_pp.h>
 

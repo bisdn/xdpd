@@ -14,7 +14,7 @@
 //Profiling
 #include "../../../util/time_measurements.h"
 #include "../../../config.h"
-#include "../../../c_logger.h"
+#include <utils/c_logger.h>
 
 using namespace rofl;
 using namespace xdpd::gnu_linux;

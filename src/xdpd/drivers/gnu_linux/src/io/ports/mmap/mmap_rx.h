@@ -26,7 +26,7 @@
 
 #include "../../../util/likely.h"
 #include "../../../config.h"
-#include "../../../c_logger.h"
+#include <utils/c_logger.h>
 /**
 * @file mmap_rx.h
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>

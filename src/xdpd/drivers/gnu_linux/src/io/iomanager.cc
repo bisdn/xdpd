@@ -8,7 +8,7 @@
 #include "scheduler/epoll_ioscheduler.h"
 #include "scheduler/polling_ioscheduler.h"
 
-#include "../c_logger.h"
+#include <utils/c_logger.h>
 
 using namespace xdpd::gnu_linux;
 

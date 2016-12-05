@@ -26,7 +26,11 @@ const std::string rest::MGMT_OPT_FULL_NAME="mgmt-rest";
 const std::string rest::name="rest";
 
 
-class eInvalidBindAddrRest : public exception {};
+class eInvalidBindAddrRest : public exception {
+public:
+	eInvalidBindAddrRest(const std::string& __arg): exception(__arg)
+	{};
+};
 
 static void parse_bind_addr(std::string& host, std::string& port){
 
@@ -38,7 +42,7 @@ static void parse_bind_addr(std::string& host, std::string& port){
 	//Check if : char is there
 	if(tmp.find(std::string(":")) == std::string::npos){
 		XDPD_CRIT("[xdpd][rest] CRITICAL ERROR: could not parse bind address. REST server cannot be started.\n");
-		throw eInvalidBindAddrRest();
+		throw eInvalidBindAddrRest(tmp);
 	}
 
 	//Split the string and recover the parameters

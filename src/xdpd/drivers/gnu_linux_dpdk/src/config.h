@@ -90,7 +90,7 @@
 */
 
 //Maximum number of CPU sockets
-#define MAX_CPU_SOCKETS 48
+#define MAX_CPU_SOCKETS 128
 
 //DPDK defines
 
@@ -106,20 +106,18 @@
  * The coremask can be overriden using driver extra parameters. However this is
  * not recommended for stable setups
  */
-#define DEFAULT_RTE_CORE_MASK 0x00000007
+#define DEFAULT_RTE_CORE_MASK 0x0000001f
 
 //Other parameters
 #define RTE_MEM_CHANNELS 4
-#define MBUF_SIZE 2048
+#define MBUF_SIZE 16383
 
 /* (9000 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM) */
 
 /*
  * Default number of MBUFs per pool
  */
-#define DEFAULT_NB_MBUF 2048
-
-
+#define DEFAULT_NB_MBUF 65365
 
 /**
 * NF related parameters

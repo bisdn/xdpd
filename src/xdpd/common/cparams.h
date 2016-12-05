@@ -12,7 +12,7 @@
 #include <string>
 #include <iostream>
 
-#include "xdpd/common/cparam.h"
+#include <cparam.h>
 
 namespace xdpd {
 

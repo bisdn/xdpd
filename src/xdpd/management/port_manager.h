@@ -15,8 +15,8 @@
 #include <rofl/datapath/hal/driver.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 
-#include "xdpd/common/utils/c_logger.h"
-#include "xdpd/common/exception.h"
+#include <utils/c_logger.h>
+#include <exception.h>
 
 #include "snapshots/port_snapshot.h"
 

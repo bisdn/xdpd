@@ -27,10 +27,10 @@
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
 
-#include "xdpd/common/exception.h"
-#include "xdpd/common/csocket.h"
-#include "xdpd/common/cparams.h"
-#include "xdpd/common/logging.h"
+#include <exception.h>
+#include <csocket.h>
+#include <cparams.h>
+#include <logging.h>
 
 //Snapshot
 #include "snapshots/switch_snapshot.h"

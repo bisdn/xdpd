@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "xdpd/common/cparams.h"
+#include <cparams.h>
 
 namespace xdpd {
 

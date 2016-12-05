@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "rest.h"
-#include <rofl/common/utils/c_logger.h>
+#include <utils/c_logger.h>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -26,7 +26,7 @@ const std::string rest::MGMT_OPT_FULL_NAME="mgmt-rest";
 const std::string rest::name="rest";
 
 
-class eInvalidBindAddrRest : public rofl::RoflException {};
+class eInvalidBindAddrRest : public exception {};
 
 static void parse_bind_addr(std::string& host, std::string& port){
 
@@ -37,8 +37,7 @@ static void parse_bind_addr(std::string& host, std::string& port){
 
 	//Check if : char is there
 	if(tmp.find(std::string(":")) == std::string::npos){
-		//TODO: use CRIT
-		fprintf(stderr, "[xdpd][rest] CRITICAL ERROR: could not parse bind address '%s'. REST server cannot be started.\n", tmp.c_str());
+		XDPD_CRIT("[xdpd][rest] CRITICAL ERROR: could not parse bind address. REST server cannot be started.\n");
 		throw eInvalidBindAddrRest();
 	}
 
@@ -113,7 +112,7 @@ static void srvthread (){
 
 		io_service.run();
 	}catch(boost::thread_interrupted&){
-		ROFL_INFO("[xdpd][rest] REST Server shutting down\n");
+		XDPD_INFO("[xdpd][rest] REST Server shutting down\n");
 		return;
 	}catch(eInvalidBindAddrRest& e){
 		//Already logged
@@ -144,10 +143,10 @@ void rest::init(){
 	//See if -m option is there
 	mgmt_enabled = system_manager::is_option_set(std::string(MGMT_OPT_FULL_NAME));
 
-	ROFL_INFO("[xdpd][rest] Starting REST server\n");
+	XDPD_INFO("[xdpd][rest] Starting REST server\n");
 	if(mgmt_enabled){
-		ROFL_INFO("[xdpd][rest] Enabling mgmt routines (write mode)\n");
-		ROFL_WARN("[xdpd][rest] WARNING: please note that REST plugin does not provide authentication nor encryption services yet (HTTPs).\n");
+		XDPD_INFO("[xdpd][rest] Enabling mgmt routines (write mode)\n");
+		XDPD_WARN("[xdpd][rest] WARNING: please note that REST plugin does not provide authentication nor encryption services yet (HTTPs).\n");
 	}
 
 	t = boost::thread(&srvthread);

@@ -12,7 +12,7 @@
 #include "get-controllers.h"
 #include "put-controllers.h"
 
-#include <rofl/common/utils/c_logger.h>
+#include <utils/c_logger.h>
 
 #include "../../port_manager.h"
 #include "../../plugin_manager.h"
@@ -252,8 +252,8 @@ void create_lsi(const http::server::request &req, http::server::reply &rep, boos
 	unsigned int num_of_tables = 0;
 	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
 	int reconnect_start_time = 1;
-	enum rofl::csocket::socket_type_t socket_type = rofl::csocket::SOCKET_TYPE_PLAIN;
-	rofl::cparams socket_params = rofl::csocket::get_default_params(socket_type);
+	enum xdpd::csocket::socket_type_t socket_type = xdpd::csocket::SOCKET_TYPE_PLAIN;
+	xdpd::cparams socket_params = xdpd::csocket::get_default_params(socket_type);
 	//bool pirl_enabled = true;
 	//unsigned int pirl_rate;
 

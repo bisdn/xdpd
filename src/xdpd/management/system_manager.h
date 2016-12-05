@@ -15,9 +15,9 @@
 #include <rofl_datapath.h>
 #include <rofl/datapath/hal/driver.h>
 
-#include "xdpd/common/cunixenv.h"
-#include "xdpd/common/exception.h"
-#include "xdpd/common/utils/c_logger.h"
+#include <cunixenv.h>
+#include <exception.h>
+#include <utils/c_logger.h>
 
 /**
 * @file system_manager.h

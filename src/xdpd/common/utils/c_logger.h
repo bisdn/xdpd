@@ -19,7 +19,7 @@ enum xdpd_debug_levels {
 	UNDEF_DEBUG_LEVEL = -1,		/* Undefined debug level */
 	//EMERGENCY_LEVEL,			/* system is unusable */
 	//ALERT_LEVEL,			/* action must be taken immediately */
-	//CRITICAL_LEVEL,			/* critical conditions */
+	CRITICAL_LEVEL,			/* critical conditions */
 	ERROR_LEVEL,				/* error conditions */
 	WARN_LEVEL,				/* warning conditions */
 	//NOTICE_LEVEL,			/* normal but significant condition */
@@ -61,6 +61,9 @@ extern int (*xdpd_debug_print)(FILE *stream, const char *format, ...);
 		xdpd_debug_print(fd,stuff, ##__VA_ARGS__);\
 	}\
     }while(0)
+
+#define XDPD_CRIT(stuff,...) \
+	XDPD_DEBUG_PRINT(stderr, DEFAULT, CRITICAL_LEVEL, stuff, ##__VA_ARGS__)
 
 #define XDPD_WARN(stuff,...) \
 	XDPD_DEBUG_PRINT(stderr, DEFAULT, WARN_LEVEL, stuff, ##__VA_ARGS__)

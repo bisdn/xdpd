@@ -79,7 +79,7 @@ rofl_result_t processing_init(void){
 				/**
 				*  create the mbuf pool for that socket id
 				*/
-				flags = MEMPOOL_F_SP_PUT | MEMPOOL_F_SC_GET;
+				flags = 0;
 				snprintf (pool_name, POOL_MAX_LEN_NAME, "pool_direct_%u", sock_id);
 				XDPD_INFO(DRIVER_NAME"[processing] Creating %s with #mbufs %u for CPU socket %u\n", pool_name, mbuf_pool_size, sock_id);
 

@@ -24,7 +24,7 @@
 #include <string>
 #include <stdexcept>
 
-#include "xdpd/common/exception.h"
+#include <exception.h>
 
 namespace xdpd
 {

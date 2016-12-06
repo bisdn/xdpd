@@ -13,7 +13,7 @@
 #include <sstream>
 #include <cstdlib>
 
-#include "xdpd/common/exception.h"
+#include <exception.h>
 
 namespace xdpd {
 

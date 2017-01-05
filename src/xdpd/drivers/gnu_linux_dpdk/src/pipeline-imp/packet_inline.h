@@ -124,6 +124,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 
 	datapacket_t* pkt_replica;
 	struct rte_mbuf* mbuf=NULL, *mbuf_origin;
+	unsigned int rte_socket;
 	
 	//Protect
 	if(unlikely(!pkt))
@@ -142,7 +143,11 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 #ifndef DISABLE_SOFT_CLONE
 	if( hard_clone ){
 #endif
-		mbuf = rte_pktmbuf_alloc(direct_pools[rte_socket_id()]);
+		rte_socket = rte_socket_id();
+		if (rte_socket==0xffffffff) rte_socket=0; 
+		//for non-EAL threads rte_socket_id() apparently returns 0xffffffff
+
+		mbuf = rte_pktmbuf_alloc(direct_pools[rte_socket]);
 		
 		if(unlikely(mbuf == NULL)){	
 			XDPD_DEBUG("Replicate packet; could not hard clone pkt(%p). rte_pktmbuf_clone failed. errno: %d - %s\n", pkt_replica, rte_errno, rte_strerror(rte_errno));

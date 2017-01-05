@@ -264,7 +264,7 @@ void system_manager::init(int argc, char** argv){
 	logging::close();
 
 	//Print a nice trace
-	XDPD_INFO("[xdpd][system_manager] Shutted down.\n");
+	XDPD_INFO("[xdpd][system_manager] xdpd is now ...down.\n");
 
 SYSTEM_MANAGER_CLEANUP:
 

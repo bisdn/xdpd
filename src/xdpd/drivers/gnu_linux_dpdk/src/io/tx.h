@@ -92,7 +92,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 
 	struct rte_mbuf* mbuf;
 	struct mbuf_burst* pkt_burst;
-	unsigned int port_id, len;
+	unsigned int port_id, len, rte_lcore;
 
 	//Get mbuf pointer
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
@@ -104,9 +104,11 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 		return;
 	}
 #endif
-
+	rte_lcore = rte_lcore_id();
+	if (rte_lcore == 0xffffffff) rte_lcore=0;
+	
 	//Recover core task
-	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
+	core_tasks_t* tasks = &processing_core_tasks[rte_lcore];
 
 	//Recover burst container (cache)
 	pkt_burst = &tasks->phy_ports[port_id].tx_queues_burst[queue_id];
@@ -119,7 +121,7 @@ tx_pkt(switch_port_t* port, unsigned int queue_id, datapacket_t* pkt){
 	}
 #endif
 
-	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore);
 
 	//Enqueue
 	len = pkt_burst->len;
@@ -206,7 +208,7 @@ inline void
 tx_pkt_shmem_nf_port(switch_port_t* port, datapacket_t* pkt)
 {
 	struct mbuf_burst* pkt_burst;
-	unsigned int len;
+	unsigned int len, rte_lcore;
 
 	dpdk_shmem_port_state *port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
 	struct rte_mbuf* mbuf;
@@ -214,9 +216,12 @@ tx_pkt_shmem_nf_port(switch_port_t* port, datapacket_t* pkt)
 	//Get mbuf pointer
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
 
-	//Recover core task
-	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
+	rte_lcore = rte_lcore_id();
+        if (rte_lcore == 0xffffffff) rte_lcore=0;
 
+        //Recover core task
+        core_tasks_t* tasks = &processing_core_tasks[rte_lcore];
+        
 	//Recover burst container (cache)
 	pkt_burst = &tasks->nf_ports[port_state->nf_id].tx_queues_burst[0];
 
@@ -228,7 +233,7 @@ tx_pkt_shmem_nf_port(switch_port_t* port, datapacket_t* pkt)
 	}
 #endif
 
-	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore);
 
 	//Enqueue
 	len = pkt_burst->len;
@@ -311,7 +316,7 @@ tx_pkt_kni_nf_port(switch_port_t* port, datapacket_t* pkt)
 {
 	struct rte_mbuf* mbuf;
 	struct mbuf_burst* pkt_burst;
-	unsigned int port_id, len;
+	unsigned int port_id, len, rte_lcore;
 
 	//Get mbuf pointer
 	mbuf = ((datapacket_dpdk_t*)pkt->platform_state)->mbuf;
@@ -324,8 +329,11 @@ tx_pkt_kni_nf_port(switch_port_t* port, datapacket_t* pkt)
 	}
 #endif
 
-	//Recover core task
-	core_tasks_t* tasks = &processing_core_tasks[rte_lcore_id()];
+	rte_lcore = rte_lcore_id();
+        if (rte_lcore == 0xffffffff) rte_lcore=0;
+
+        //Recover core task
+        core_tasks_t* tasks = &processing_core_tasks[rte_lcore];
 
 	//Recover burst container (cache)
 	pkt_burst = &tasks->nf_ports[port_id].tx_queues_burst[0];
@@ -338,7 +346,7 @@ tx_pkt_kni_nf_port(switch_port_t* port, datapacket_t* pkt)
 	}
 #endif
 
-	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore_id());
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Adding packet %p to queue %p (id: %u)\n", pkt, pkt_burst, rte_lcore);
 
 	//Enqueue
 	len = pkt_burst->len;

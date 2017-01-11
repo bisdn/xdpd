@@ -985,7 +985,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 		case rofl::openflow13::OFPAT_EXPERIMENTER: {
 #ifdef EXPERIMENTAL
 			switch (actions.get_action_experimenter(index).get_exp_id()) {
-			case rofl::openflow::experimental::pppoe::PPPOE_EXP_ID: {
+			case rofl::openflow::experimental::pppoe::ROFL_EXP_ID: {
 				rofl::openflow::experimental::pppoe::cofaction_exp_body_pppoe exp_body_pppoe(actions.get_action_experimenter(index).get_exp_body());
 				switch (exp_body_pppoe.get_exp_type()) {
 				case rofl::openflow::experimental::pppoe::PPPOE_ACTION_PUSH_PPPOE:{
@@ -1705,7 +1705,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		} break;
 		case OF1X_AT_POP_PPPOE: {
 			actions.add_action_experimenter(index).
-					set_exp_id(rofl::openflow::experimental::pppoe::PPPOE_EXP_ID);
+					set_exp_id(rofl::openflow::experimental::pppoe::ROFL_EXP_ID);
 			actions.set_action_experimenter(index).
 					set_exp_body(rofl::openflow::experimental::pppoe::cofaction_exp_body_pop_pppoe(of1x_get_packet_action_field16(of1x_action)));
 		} break;
@@ -1735,7 +1735,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		} break;
 		case OF1X_AT_PUSH_PPPOE: {
 			actions.add_action_experimenter(index).
-					set_exp_id(rofl::openflow::experimental::pppoe::PPPOE_EXP_ID);
+					set_exp_id(rofl::openflow::experimental::pppoe::ROFL_EXP_ID);
 			actions.set_action_experimenter(index).
 					set_exp_body(rofl::openflow::experimental::pppoe::cofaction_exp_body_push_pppoe(of1x_get_packet_action_field16(of1x_action)));
 		} break;

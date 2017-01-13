@@ -44,7 +44,7 @@ How to build
 Install the dependencies and run:
 
 	sh# ./autogen.sh
-	sh# mkdir -p
+	sh# mkdir -p build
 	sh# cd build  
 	sh# ../configure  
 	sh# make  

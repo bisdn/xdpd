@@ -892,22 +892,27 @@ of13_translation_utils::of13_map_flow_entry_actions(
 #ifdef EXPERIMENTAL
 				switch (set_field.get_oxm_field()) {
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_CODE: {
-					field.u8 = set_field.get_oxm_8().get_u8value();
+					field.u8 = set_field.get_oxm_exp().get_u8value();
+					//field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_CODE, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_TYPE: {
-					field.u8 = set_field.get_oxm_8().get_u8value();
+					field.u8 = set_field.get_oxm_exp().get_u8value();
+					//field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_TYPE, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_SID: {
-					field.u16 = set_field.get_oxm_16().get_u16value();
+					field.u16 = set_field.get_oxm_exp().get_u16value();
+					//field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_SID, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPP_PROT: {
-					field.u16 = set_field.get_oxm_16().get_u16value();
+					field.u16 = set_field.get_oxm_exp().get_u16value();
+					//field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPP_PROT, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_MSGTYPE: {
+					// TODO: fix all other experimental matches as well
 					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_MSG_TYPE, field, 0x0);
 				} break;

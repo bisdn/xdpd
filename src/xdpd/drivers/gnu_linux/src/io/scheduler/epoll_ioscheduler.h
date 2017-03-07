@@ -127,7 +127,7 @@ inline bool epoll_ioscheduler::process_port_rx(unsigned tid, ioport* port){
 	sw = port->of_port_state->attached_sw;
 	
 	//Perform up_to n_buckets_read
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME" Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME" Trying to read at port %s with %d\n", port->of_port_state->name, READ_BUCKETS_PP);
 	
 	for(i=0; i<READ_BUCKETS_PP; ++i){
 
@@ -154,7 +154,7 @@ inline bool epoll_ioscheduler::process_port_rx(unsigned tid, ioport* port){
 			}
 #endif
 		}else{
-			ROFL_DEBUG_VERBOSE(DRIVER_NAME"[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, READ_BUCKETS_PP);
+			XDPD_DEBUG_VERBOSE(DRIVER_NAME"[%s] reading finished at: %d/%d\n", port->of_port_state->name, i, READ_BUCKETS_PP);
 			break;
 		}
 	}
@@ -181,7 +181,7 @@ inline int epoll_ioscheduler::process_port_tx(ioport* port){
 		//Increment number of buckets
 		n_buckets = WRITE_BUCKETS_PP*WRITE_QOS_QUEUE_FACTOR[q_id];
 
-		ROFL_DEBUG_VERBOSE(DRIVER_NAME"[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
+		XDPD_DEBUG_VERBOSE(DRIVER_NAME"[%s] Trying to write at port queue: %d with n_buckets: %d.\n", port->of_port_state->name, q_id, n_buckets);
 		
 		//Perform up to n_buckets write	
 		tx_packets += n_buckets - port->write(q_id, n_buckets);
@@ -208,8 +208,8 @@ void* epoll_ioscheduler::process_io(void* grp){
 
 	assert(pg->type == ((is_rx)? PG_RX:PG_TX));
 
-	ROFL_DEBUG(DRIVER_NAME"[epoll_ioscheduler] Launching I/O RX thread on process id: %u(%u) for group %u\n", is_rx? "RX":"TX", syscall(SYS_gettid), pthread_self(), pg->id);
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME"[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
+	XDPD_DEBUG(DRIVER_NAME"[epoll_ioscheduler] Launching I/O RX thread on process id: %u(%u) for group %u\n", is_rx? "RX":"TX", syscall(SYS_gettid), pthread_self(), pg->id);
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[epoll_ioscheduler] Initialization of epoll completed in thread:%d\n",pthread_self());
 
 	//Set scheduling and priority
 	set_kernel_scheduling();
@@ -220,7 +220,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 	}else{
 		//Warn the user that we will have to use locking
 		if(is_rx)
-			ROFL_ERR(DRIVER_NAME"[epoll_ioscheduler] WARNING: RX portgroup within I/O thread: #%u, with ID %u will have to use locking within rofl-pipeline (ROFL_PIPELINE_LOCKED_TID), since %u >= ROFL_PIPELINE_MAX_TIDS(%u). You should probably compile the pipeline with the support of more running threads or decrease the number of threads in RX/TX groups \n", pthread_self(), pg->id, pg->id, ROFL_PIPELINE_MAX_TIDS);
+			XDPD_ERR(DRIVER_NAME"[epoll_ioscheduler] WARNING: RX portgroup within I/O thread: #%u, with ID %u will have to use locking within rofl-pipeline (ROFL_PIPELINE_LOCKED_TID), since %u >= ROFL_PIPELINE_MAX_TIDS(%u). You should probably compile the pipeline with the support of more running threads or decrease the number of threads in RX/TX groups \n", pthread_self(), pg->id, pg->id, ROFL_PIPELINE_MAX_TIDS);
 		tid = ROFL_PIPELINE_LOCKED_TID;
 	}
 	/*
@@ -238,7 +238,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 			if(res == 0){
 				//Timeout
 			}else{	
-				ROFL_DEBUG_VERBOSE(DRIVER_NAME"[epoll_ioscheduler] Got %d events\n", res); 
+				XDPD_DEBUG_VERBOSE(DRIVER_NAME"[epoll_ioscheduler] Got %d events\n", res);
 				for(i=0; i<res; ++i){
 					
 					port = ((epoll_event_data_t*)events[i].data.ptr)->port;
@@ -259,7 +259,7 @@ void* epoll_ioscheduler::process_io(void* grp){
 	//Release resources
 	release_resources(epfd, ev, events, current_num_of_ports);
 
-	ROFL_DEBUG(DRIVER_NAME"[epoll_ioscheduler] Finishing execution of the %s I/O thread: #%u\n", is_rx? "RX":"TX", pthread_self());
+	XDPD_DEBUG(DRIVER_NAME"[epoll_ioscheduler] Finishing execution of the %s I/O thread: #%u\n", is_rx? "RX":"TX", pthread_self());
 
 	//Return whatever
 	pthread_exit(NULL);

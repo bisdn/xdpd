@@ -10,6 +10,8 @@ libxdpd_mgmt_plugins_la_SOURCES = plugin_manager_loader.cc
 #Never remove this line
 libxdpd_mgmt_plugins_la_LIBADD = 
 
+AM_CXXFLAGS = -I$(top_srcdir)/src/
+
 #
 # Inclusion of the portion of Makefile for plugin
 # which does add its plugin library to LIBADD.

@@ -19,7 +19,7 @@ mmap_rx::mmap_rx(
 {
 	int rc = 0;
 	
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME" mmap_rx(%p)::mmap_rx() %s\n",
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME" mmap_rx(%p)::mmap_rx() %s\n",
 			this, "RX-RING");
 
 	memset(&req, 0, sizeof(req));
@@ -106,7 +106,7 @@ mmap_rx::mmap_rx(
 	req.tp_frame_nr 	= req.tp_block_size * req.tp_block_nr / req.tp_frame_size;
 
 
-	ROFL_DEBUG_VERBOSE(DRIVER_NAME" mmap_rx(%p)::initialize() block-size:%u block-nr:%u frame-size:%u frame-nr:%u\n",
+	XDPD_DEBUG_VERBOSE(DRIVER_NAME" mmap_rx(%p)::initialize() block-size:%u block-nr:%u frame-size:%u frame-nr:%u\n",
 			this,
 			req.tp_block_size,
 			req.tp_block_nr,
@@ -120,7 +120,7 @@ mmap_rx::mmap_rx(
 	if ((rc = setsockopt(sd, SOL_PACKET, PACKET_VERSION,
 			(void *) &val, sizeof(val))) < 0)
 	{
-		ROFL_ERR(DRIVER_NAME" mmap_rx(%p)::initialize() setsockopt() sys-call failed for PACKET_VERSION "
+		XDPD_ERR(DRIVER_NAME" mmap_rx(%p)::initialize() setsockopt() sys-call failed for PACKET_VERSION "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw eConstructorMmapRx();	
 	}
@@ -131,7 +131,7 @@ mmap_rx::mmap_rx(
 	{
 		// todo implement a retry if the request is not accepted
 
-		ROFL_DEBUG_VERBOSE(DRIVER_NAME" mmap_rx(%p)::initialize() setsockopt() sys-call failed "
+		XDPD_DEBUG_VERBOSE(DRIVER_NAME" mmap_rx(%p)::initialize() setsockopt() sys-call failed "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw eConstructorMmapRx();	
 	}
@@ -160,7 +160,7 @@ mmap_rx::mmap_rx(
 			PROT_READ | PROT_WRITE /* | PROT_EXEC*/, MAP_SHARED,
 			/*file descriptor*/sd, /*offset*/0)) == MAP_FAILED)
 	{
-		ROFL_ERR(DRIVER_NAME" mmap_rx(%p)::initialize() mmap() sys-call failed "
+		XDPD_ERR(DRIVER_NAME" mmap_rx(%p)::initialize() mmap() sys-call failed "
 				"rc: %d errno: %d (%s)\n", this, rc, errno, strerror(errno));
 		throw eConstructorMmapRx();	
 	}
@@ -176,7 +176,7 @@ mmap_rx::mmap_rx(
 
 mmap_rx::~mmap_rx()
 {
-	//ROFL_DEBUG_VERBOSE(DRIVER_NAME" mmap_rx(%p)::~mmap_rx() %s\n",
+	//XDPD_DEBUG_VERBOSE(DRIVER_NAME" mmap_rx(%p)::~mmap_rx() %s\n",
 	//		this, "RX-RING");
 
 	if (-1 != sd)
@@ -187,7 +187,7 @@ mmap_rx::~mmap_rx()
 
 			if ((rc = munmap(map, req.tp_block_size * req.tp_block_nr)) < 0)
 			{
-				ROFL_ERR(DRIVER_NAME" mmap_rx(%p)::~mmap_rx() %s => errno: %d (%s) \n",
+				XDPD_ERR(DRIVER_NAME" mmap_rx(%p)::~mmap_rx() %s => errno: %d (%s) \n",
 						this, "RX-RING", errno, strerror(errno));
 
 			}

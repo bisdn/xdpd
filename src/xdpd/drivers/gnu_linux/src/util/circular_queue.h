@@ -9,11 +9,11 @@
 #include <pthread.h>
 #include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
-#include <rofl/common/utils/c_logger.h>
 #include <stdio.h>
 #include <unistd.h>
 
 #include "likely.h"
+#include <utils/c_logger.h>
 
 /*
  * Implementation of a ring elements
@@ -115,7 +115,7 @@ circular_queue<T>::circular_queue(long long unsigned int capacity){
 
 	if( ( (capacity & (capacity - 1)) != 0 ) || capacity == 0){
 		//Not power of 2!!
-		ROFL_ERR("Unable to instantiate queue of size: %u. It is not power of 2! Revise your settings",capacity);
+		XDPD_ERR("Unable to instantiate queue of size: %u. It is not power of 2! Revise your settings",capacity);
 		throw eCircularQueueInvalidSize();
 	}
 
@@ -250,14 +250,14 @@ template<typename T>
 void circular_queue<T>::dump(void){
 	for(long long unsigned int i=0; i<slots;++i){
 		if(readp == elements+i)
-			ROFL_INFO(">");
+			XDPD_INFO(">");
 		if(writep == elements+i)
-			ROFL_INFO("=||");
-		ROFL_INFO("[%llu:%p],", i, elements[i]);
+			XDPD_INFO("=||");
+		XDPD_INFO("[%llu:%p],", i, elements[i]);
 		if(i%10 == 0)
-			ROFL_INFO("\n");
+			XDPD_INFO("\n");
 	}
-	ROFL_INFO("\n");
+	XDPD_INFO("\n");
 }
 
 }// namespace xdpd::gnu_linux 

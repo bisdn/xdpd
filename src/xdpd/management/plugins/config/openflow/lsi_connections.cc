@@ -66,14 +66,14 @@ void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting,
 	if(setting.exists(LSI_CONNECTION_CONTROLLER_HOSTNAME)){
 		setting.lookupValue(LSI_CONNECTION_CONTROLLER_HOSTNAME, hostname);
 	}
-	con.params.set_param(rofl::csocket::PARAM_KEY_REMOTE_HOSTNAME) = hostname;
+	con.params.set_param(xdpd::csocket::PARAM_KEY_REMOTE_HOSTNAME) = hostname;
 
 	//Parse port 
 	if(setting.exists(LSI_CONNECTION_CONTROLLER_PORT)){
 		_port = setting[LSI_CONNECTION_CONTROLLER_PORT];
 
 		if(_port < 1 || _port > 65535){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: invalid controller port number %u. Must be [1-65535]\n", setting.getPath().c_str(), _port);
+			XDPD_ERR(CONF_PLUGIN_ID "%s: invalid controller port number %u. Must be [1-65535]\n", setting.getPath().c_str(), _port);
 			throw eConfParseError(); 	
 				
 		}
@@ -82,17 +82,17 @@ void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting,
 		ss << _port;
 		port = ss.str();
 	}
-	con.params.set_param(rofl::csocket::PARAM_KEY_REMOTE_PORT) = port; 
+	con.params.set_param(xdpd::csocket::PARAM_KEY_REMOTE_PORT) = port;
 	
 	//Parse family
 	if(setting.exists(LSI_CONNECTION_CONTROLLER_FAMILY)){
 		setting.lookupValue(LSI_CONNECTION_CONTROLLER_FAMILY, aux);
-		con.params.set_param(rofl::csocket::PARAM_KEY_DOMAIN) = aux;
+		con.params.set_param(xdpd::csocket::PARAM_KEY_DOMAIN) = aux;
 	}
 	//Bind address
 	if(setting.exists(LSI_CONNECTION_CONTROLLER_BIND_ADDRESS)){
 		setting.lookupValue(LSI_CONNECTION_CONTROLLER_BIND_ADDRESS, aux);
-		con.params.set_param(rofl::csocket::PARAM_KEY_LOCAL_HOSTNAME) = aux;
+		con.params.set_param(xdpd::csocket::PARAM_KEY_LOCAL_HOSTNAME) = aux;
 	}
 
 	//Parse bind port
@@ -100,7 +100,7 @@ void lsi_connections_scope::parse_connection_params(libconfig::Setting& setting,
 		_port = setting[LSI_CONNECTION_CONTROLLER_BIND_PORT];
 		ss.clear();
 		ss << _port;
-		con.params.set_param(rofl::csocket::PARAM_KEY_LOCAL_PORT) = ss.str();
+		con.params.set_param(xdpd::csocket::PARAM_KEY_LOCAL_PORT) = ss.str();
 	}
 
 }
@@ -113,42 +113,42 @@ void lsi_connections_scope::parse_ssl_connection_params(libconfig::Setting& sett
 
 	//SSL specific
 	if (setting.lookupValue(LSI_CONNECTION_SSL_CERTIFICATE_FILE, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CERT) = tmp;
+		con.params.set_param(xdpd::csocket::PARAM_SSL_KEY_CERT) = tmp;
 		mandatory_params_found++; 
 	}
 	if (setting.lookupValue(LSI_CONNECTION_SSL_PRIVATE_KEY_FILE, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_PRIVATE_KEY) = tmp;
+		con.params.set_param(xdpd::csocket::PARAM_SSL_KEY_PRIVATE_KEY) = tmp;
 		mandatory_params_found++; 
 	}
 	if (setting.lookupValue(LSI_CONNECTION_SSL_PRIVATE_KEY_FILE_PASSWORD, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_PRIVATE_KEY_PASSWORD) = tmp;
+		con.params.set_param(xdpd::csocket::PARAM_SSL_KEY_PRIVATE_KEY_PASSWORD) = tmp;
 	}
 	if (setting.lookupValue(LSI_CONNECTION_SSL_CA_FILE_FILE, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CA_FILE) = tmp;
+		con.params.set_param(xdpd::csocket::PARAM_SSL_KEY_CA_FILE) = tmp;
 		mandatory_params_found++; 
 	}
 	if (setting.lookupValue(LSI_CONNECTION_SSL_CA_PATH, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CA_PATH) = tmp;
+		con.params.set_param(xdpd::csocket::PARAM_SSL_KEY_CA_PATH) = tmp;
 		mandatory_params_found++; 
 	}
 	if (setting.lookupValue(LSI_CONNECTION_SSL_VERIFY_MODE, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_VERIFY_MODE) = tmp;
+		con.params.set_param(xdpd::csocket::PARAM_SSL_KEY_VERIFY_MODE) = tmp;
 	}
 	if (setting.lookupValue(LSI_CONNECTION_SSL_VERIFY_DEPTH, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_VERIFY_DEPTH) = tmp;
+		con.params.set_param(xdpd::csocket::PARAM_SSL_KEY_VERIFY_DEPTH) = tmp;
 	}
 	if (setting.lookupValue(LSI_CONNECTION_SSL_CIPHER, tmp)) {
-		con.params.set_param(rofl::csocket::PARAM_SSL_KEY_CIPHERS) = tmp;
+		con.params.set_param(xdpd::csocket::PARAM_SSL_KEY_CIPHERS) = tmp;
 	}
 
 
 	//Issue warning
 	if(weak_ssl_config){
 		if(dry_run)
-			ROFL_WARN(CONF_PLUGIN_ID "%s: WARNING the connection only provide encryption but no authentication. \n", setting.getPath().c_str());
+			XDPD_WARN(CONF_PLUGIN_ID "%s: WARNING the connection only provide encryption but no authentication. \n", setting.getPath().c_str());
 	}else{
 		if(mandatory_params_found != 3){
-			ROFL_ERR(CONF_PLUGIN_ID "%s: ERROR the connection does not provide the necessary SSL parameters. Required parameters are: %s, %s, (%s or %s). \n", setting.getPath().c_str(), LSI_CONNECTION_SSL_CERTIFICATE_FILE, LSI_CONNECTION_SSL_PRIVATE_KEY_FILE, LSI_CONNECTION_SSL_CA_PATH, LSI_CONNECTION_SSL_CA_FILE_FILE );
+			XDPD_ERR(CONF_PLUGIN_ID "%s: ERROR the connection does not provide the necessary SSL parameters. Required parameters are: %s, %s, (%s or %s). \n", setting.getPath().c_str(), LSI_CONNECTION_SSL_CERTIFICATE_FILE, LSI_CONNECTION_SSL_PRIVATE_KEY_FILE, LSI_CONNECTION_SSL_CA_PATH, LSI_CONNECTION_SSL_CA_FILE_FILE );
 			throw eConfParseError();
 		}
 	}		
@@ -164,16 +164,16 @@ lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setti
 	}
 
 	if (enable_ssl) {
-		con.type = rofl::csocket::SOCKET_TYPE_OPENSSL;
+		con.type = xdpd::csocket::SOCKET_TYPE_OPENSSL;
 		//Generate list of empty parameters for this socket
-		con.params = rofl::csocket::get_default_params(con.type);
+		con.params = xdpd::csocket::get_default_params(con.type);
 
 		//Parse specific stuff for SSL
 		parse_ssl_connection_params(setting, con, dry_run);
 	}else{
-		con.type = rofl::csocket::SOCKET_TYPE_PLAIN;
+		con.type = xdpd::csocket::SOCKET_TYPE_PLAIN;
 		//Generate list of empty parameters for this socket
-		con.params = rofl::csocket::get_default_params(con.type);
+		con.params = xdpd::csocket::get_default_params(con.type);
 	}
 
 	//Fill common parameters
@@ -186,14 +186,14 @@ lsi_connection lsi_connections_scope::parse_connection(libconfig::Setting& setti
 void lsi_connections_scope::pre_validate(libconfig::Setting& setting, bool dry_run){
 
 	if(setting.getLength() == 0){
-		ROFL_ERR(CONF_PLUGIN_ID "%s: No controller connections found! At least one connection is mandatory\n", setting.getPath().c_str());
+		XDPD_ERR(CONF_PLUGIN_ID "%s: No controller connections found! At least one connection is mandatory\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
 		
 	}
 	
 	//Detect existing subscopes (logical switches) and register
  	for(int i = 0; i<setting.getLength(); ++i){
-		ROFL_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Found controller connection named: %s\n", get_path().c_str(), setting[i].getName());
+		XDPD_DEBUG_VERBOSE(CONF_PLUGIN_ID "[%s] Found controller connection named: %s\n", get_path().c_str(), setting[i].getName());
 
 		//Pre-Parse and add to the list of connections
 		parsed_connections.push_back(parse_connection(setting[i], dry_run));

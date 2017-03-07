@@ -1,5 +1,7 @@
 #include "../plugin_manager.h"
-#include <rofl/common/utils/c_logger.h>
+
+#include "xdpd/common/utils/c_logger.h"
+
 #include "pm_timestamp.h" //Regenerated every time configure script is launched
 
 //Convenience

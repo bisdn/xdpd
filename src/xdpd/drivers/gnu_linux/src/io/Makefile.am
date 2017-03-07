@@ -26,3 +26,7 @@ libxdpd_driver_gnu_linux_io_la_LIBADD = \
 	$(CLASSIFIER_LIB)\
 	ports/libxdpd_driver_gnu_linux_io_ports.la \
 	scheduler/libxdpd_driver_gnu_linux_io_scheduler.la
+
+AM_CFLAGS = -I$(top_srcdir)/src/
+AM_CXXFLAGS = -I$(top_srcdir)/src/
+

@@ -16,7 +16,6 @@ libxdpd_driver_gnu_linux_dpdk_src_la_LIBADD = \
 		-lrte_hash\
 		-lrte_kni\
 		-lrte_lpm\
-		-lrte_malloc\
 		-lrte_mbuf\
 		-lrte_mempool\
 		-lrte_power\

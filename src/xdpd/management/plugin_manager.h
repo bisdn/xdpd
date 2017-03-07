@@ -10,7 +10,7 @@
 #include <rofl_datapath.h>
 #include <rofl/datapath/pipeline/switch_port.h>
 #include <rofl/datapath/pipeline/monitoring.h>
-#include <rofl/platform/unix/cunixenv.h>
+#include <cunixenv.h>
 
 /**
 * @file plugin_manager.h
@@ -122,8 +122,8 @@ protected:
 	* WARNING: this call is uncaught and execute before xDPd is completely bootstrap; any call
 	* to any of the management APIs will fail.
 	*/
-	virtual std::vector<rofl::coption> get_options(void){
-		return std::vector<rofl::coption>();
+	virtual std::vector<xdpd::coption> get_options(void){
+		return std::vector<xdpd::coption>();
 	};
 
 	/**
@@ -221,7 +221,7 @@ public:
 	/**
 	* Get plugin specific command line options. This shall only be called by system_manager
 	*/	
-	static std::vector<rofl::coption> __get_plugin_options(void);
+	static std::vector<xdpd::coption> __get_plugin_options(void);
 
 	/**
 	* Get driver extra parameters string from plugins

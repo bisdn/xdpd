@@ -3,7 +3,9 @@
 
 #include <iostream>
 #include <libconfig.h++> 
-#include <rofl/common/croflexception.h>
+
+#include "xdpd/common/exception.h"
+
 #include "scope.h"
 
 /**

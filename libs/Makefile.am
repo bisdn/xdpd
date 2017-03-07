@@ -142,7 +142,7 @@ dpdk:
 		if test "$(LIBS_BUILD_DIR)/$$LIB" == "$(abs_srcdir)/dpdk" ; then	\
 			$(MAKE) || exit -1 ;						\
 		else									\
-			DESTDIR=$(LIBS_BUILD_DIR)/$$LIB $(MAKE) || exit -1 ;		\
+			DESTDIR=$(LIBS_BUILD_DIR)/$$LIB $(MAKE) install T=$(DPDK_TARGET) || exit -1 ;		\
 		fi ;									\
 		touch $(DPDK_COMMIT_FILE) || exit -1 ; 					\
 		echo $$CURR_COMMIT > $(DPDK_COMMIT_FILE) || exit -1 ; 			\
@@ -156,6 +156,7 @@ maintainer-clean-dpdk: clean-dpdk
 
 endif
 
+#		$(MAKE) config T=$(DPDK_TARGET) O=$(LIBS_BUILD_DIR)/$$LIB ; 		
 
 ##
 ## Main targets

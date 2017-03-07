@@ -28,12 +28,12 @@ public:
 	virtual void init(void);
 	virtual ~rest(void);
 
-	virtual std::vector<rofl::coption> get_options(void){
-		std::vector<rofl::coption> vec;
+	virtual std::vector<xdpd::coption> get_options(void){
+		std::vector<xdpd::coption> vec;
 		//Add mandatory optiona argument -m to enable management
 		//routines
-		vec.push_back(rofl::coption(true, NO_ARGUMENT, MGMT_OPT_CODE,  MGMT_OPT_FULL_NAME, "Enable REST management routines (write mode)",""));
-		vec.push_back(rofl::coption(true, REQUIRED_ARGUMENT, BIND_ADDR_OPT_CODE,  BIND_ADDR_OPT_FULL_NAME, "REST server bind address 'ip:port'","0.0.0.0:5757"));
+		vec.push_back(xdpd::coption(true, NO_ARGUMENT, MGMT_OPT_CODE,  MGMT_OPT_FULL_NAME, "Enable REST management routines (write mode)",""));
+		vec.push_back(xdpd::coption(true, REQUIRED_ARGUMENT, BIND_ADDR_OPT_CODE,  BIND_ADDR_OPT_FULL_NAME, "REST server bind address 'ip:port'","0.0.0.0:5757"));
 		return vec;
 	};
 

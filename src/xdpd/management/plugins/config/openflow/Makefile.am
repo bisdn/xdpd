@@ -8,3 +8,5 @@ libxdpd_mgmt_config_openflow_la_SOURCES = \
 	openflow_scope.cc 
 
 libxdpd_mgmt_config_openflow_la_LIBADD =
+
+AM_CXXFLAGS = -I$(top_srcdir)/src/

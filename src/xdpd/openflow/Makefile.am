@@ -16,3 +16,5 @@ libxdpd_openflow_la_LIBADD = \
 		openflow10/libxdpd_openflow10.la \
 		openflow12/libxdpd_openflow12.la \
 		openflow13/libxdpd_openflow13.la
+
+AM_CXXFLAGS = -I$(top_srcdir)/src/

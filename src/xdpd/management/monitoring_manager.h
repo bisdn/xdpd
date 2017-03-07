@@ -8,8 +8,9 @@
 #include <list>
 #include <stdint.h>
 #include <rofl_datapath.h>
-#include <rofl/common/croflexception.h>
 #include <rofl/datapath/hal/driver.h>
+
+#include "xdpd/common/exception.h"
 
 /**
 * @file monitoring_manager.h
@@ -22,7 +23,10 @@ namespace xdpd {
 
 
 //Monitoring manager exceptions
-class eMonitoringBase		: public rofl::RoflException {};	// base error class for all monitoring_manager related errors
+class eMonitoringBase		: public xdpd::exception {
+public:
+	eMonitoringBase() : xdpd::exception("eMonitoringBase") {};
+};	// base error class for all monitoring_manager related errors
 class eMonitoringUnknownError	: public eMonitoringBase {};
 
 /**

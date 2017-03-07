@@ -8,6 +8,7 @@
 #include <string>
 #include <assert.h>
 
+#include <errno.h>
 #include <unistd.h>
 #include <string.h>
 #include <strings.h>
@@ -23,11 +24,9 @@
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
 
-#include <rofl/common/croflexception.h>
-#include <rofl/common/utils/c_logger.h>
 #include "../../../util/likely.h"
 #include "../../../config.h"
-
+#include <utils/c_logger.h>
 /**
 * @file mmap_rx.h
 * @author Tobias Jungel<tobias.jungel (at) bisdn.de>
@@ -41,7 +40,7 @@
 namespace xdpd {
 namespace gnu_linux {
 
-class eConstructorMmapRx : public rofl::RoflException {};
+class eConstructorMmapRx : public std::exception {};
 
 /**
 * @brief MMAP RX internals (v2)
@@ -116,7 +115,7 @@ next:
 			static unsigned int dropped = 0;
 
 			if( unlikely((dropped++%1000) == 0) ){
-				ROFL_ERR(DRIVER_NAME"[mmap_rx:%s] ERROR: discarded %u frames. Reason(s): %s %s (%u), length: %u. If TP_STATUS_CSUMNOTREADY is the cause, consider disabling RX/TX checksum offloading via ethtool.\n", devname.c_str(), dropped, ((hdr->tp_status&TP_STATUS_COPY) == 0)? "":"TP_STATUS_COPY", ((hdr->tp_status&TP_STATUS_CSUMNOTREADY) == 0)? "":"TP_STATUS_CSUMNOTREADY", hdr->tp_status, hdr->tp_len );
+				XDPD_ERR(DRIVER_NAME"[mmap_rx:%s] ERROR: discarded %u frames. Reason(s): %s %s (%u), length: %u. If TP_STATUS_CSUMNOTREADY is the cause, consider disabling RX/TX checksum offloading via ethtool.\n", devname.c_str(), dropped, ((hdr->tp_status&TP_STATUS_COPY) == 0)? "":"TP_STATUS_COPY", ((hdr->tp_status&TP_STATUS_CSUMNOTREADY) == 0)? "":"TP_STATUS_CSUMNOTREADY", hdr->tp_status, hdr->tp_len );
 			}
 
 			//Skip

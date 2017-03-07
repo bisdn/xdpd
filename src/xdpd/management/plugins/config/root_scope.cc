@@ -1,6 +1,7 @@
 #include "root_scope.h"
-#include <rofl/platform/unix/cunixenv.h>
-#include <rofl/common/utils/c_logger.h>
+
+#include "xdpd/common/cunixenv.h"
+#include "xdpd/common/utils/c_logger.h"
 
 //sub scopes
 #include "openflow/openflow_scope.h" 
@@ -8,7 +9,6 @@
 #include "system/system_scope.h" 
 
 using namespace xdpd;
-using namespace rofl;
 using namespace libconfig; 
 
 root_scope::root_scope():scope("root", NULL){

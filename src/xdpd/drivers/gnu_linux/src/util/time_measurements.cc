@@ -25,7 +25,7 @@ static void tm_dump_row(const char* message, uint64_t accumulated_stage_ticks, d
 	if(stage_number_of_packets)
 		stage_ticks = (double)(accumulated_stage_ticks/stage_number_of_packets);
 	
-	ROFL_INFO("%s\t%10.1f\t\t%05.02f\t\t%u\n", message, stage_ticks, (stage_ticks/path_ticks)*100, stage_number_of_packets);
+	XDPD_INFO("%s\t%10.1f\t\t%05.02f\t\t%u\n", message, stage_ticks, (stage_ticks/path_ticks)*100, stage_number_of_packets);
 }
 
 void tm_dump_measurements(void){
@@ -33,11 +33,11 @@ void tm_dump_measurements(void){
 	unsigned int i;	
 	double ticks_fast_path=0, ticks_slow_path=0;
 
-	ROFL_INFO("\nGNU/Linux time measurements summary\n");
-	ROFL_INFO("-----------------------------------\n\n");
+	XDPD_INFO("\nGNU/Linux time measurements summary\n");
+	XDPD_INFO("-----------------------------------\n\n");
 
-	ROFL_INFO("Stage name \t\t\t| Average ticks | %% overall ticks(*) | # pkts\n");
-	ROFL_INFO("*****************************************************************************\n");
+	XDPD_INFO("Stage name \t\t\t| Average ticks | %% overall ticks(*) | # pkts\n");
+	XDPD_INFO("*****************************************************************************\n");
 
 	//Calculate average ticks
 	for(i=0;i<TM_MAX;i++){
@@ -117,19 +117,19 @@ void tm_dump_measurements(void){
 		}
 	}	
 	
-	ROFL_INFO("\n");
-	ROFL_INFO("* Always refered to the average fast path transit ticks, except for slow path sections.\n");
-	ROFL_INFO("** Includes enqueue ticks.\n");
-	ROFL_INFO("\n\n");
+	XDPD_INFO("\n");
+	XDPD_INFO("* Always refered to the average fast path transit ticks, except for slow path sections.\n");
+	XDPD_INFO("** Includes enqueue ticks.\n");
+	XDPD_INFO("\n\n");
 	
 	//Final stats
-	ROFL_INFO("Average transit ticks in the fast path: %.1f\n", ticks_fast_path);
-	ROFL_INFO("Average transit ticks in the slow path(until PKT_IN enqueue): %.1f\n", ticks_slow_path);
-	ROFL_INFO("Total RX packets: %u (100%)\n",global_measurements.total_pkts);
-	ROFL_INFO("Total TX packets (excluding PKT_OUTs): %u (%.2f%%)\n",global_measurements.total_output_pkts, ((float)global_measurements.total_output_pkts/global_measurements.total_pkts*100));
-	ROFL_INFO("Total PKT_IN packets: %u (%.2f%%)\n",global_measurements.total_pktin_pkts, ((float)global_measurements.total_pktin_pkts/global_measurements.total_pkts*100) );
-	ROFL_INFO("Total Dropped trying to enqueue to output port(s): %u (%.2f%%)\n",global_measurements.total_SA5_dropped_pkts, ((float)global_measurements.total_SA5_dropped_pkts/global_measurements.total_pkts*100));
-	ROFL_INFO("Total Dropped trying to enqueue to PKT_IN queue: %u (%.2f%%)\n\n",global_measurements.total_SB5_dropped_pkts, ((float)global_measurements.total_SB5_dropped_pkts/global_measurements.total_pkts*100));
+	XDPD_INFO("Average transit ticks in the fast path: %.1f\n", ticks_fast_path);
+	XDPD_INFO("Average transit ticks in the slow path(until PKT_IN enqueue): %.1f\n", ticks_slow_path);
+	XDPD_INFO("Total RX packets: %u (100%)\n",global_measurements.total_pkts);
+	XDPD_INFO("Total TX packets (excluding PKT_OUTs): %u (%.2f%%)\n",global_measurements.total_output_pkts, ((float)global_measurements.total_output_pkts/global_measurements.total_pkts*100));
+	XDPD_INFO("Total PKT_IN packets: %u (%.2f%%)\n",global_measurements.total_pktin_pkts, ((float)global_measurements.total_pktin_pkts/global_measurements.total_pkts*100) );
+	XDPD_INFO("Total Dropped trying to enqueue to output port(s): %u (%.2f%%)\n",global_measurements.total_SA5_dropped_pkts, ((float)global_measurements.total_SA5_dropped_pkts/global_measurements.total_pkts*100));
+	XDPD_INFO("Total Dropped trying to enqueue to PKT_IN queue: %u (%.2f%%)\n\n",global_measurements.total_SB5_dropped_pkts, ((float)global_measurements.total_SB5_dropped_pkts/global_measurements.total_pkts*100));
 }
 
 #ifdef ENABLE_TIME_MEASUREMENTS
@@ -139,10 +139,10 @@ void tm_dump_pkt(datapacket_t* pkt){
 	unsigned int i,j;	
 	time_measurements_t* tm = &((xdpd::gnu_linux::datapacketx86*)pkt->platform_state)->tm_state;
 	
-	ROFL_INFO("Dumping path of pkt (%p)", pkt);
+	XDPD_INFO("Dumping path of pkt (%p)", pkt);
 	if(tm->pkt_out)
-		ROFL_INFO(" [PKT_OUT]");
-	ROFL_INFO(":\n");
+		XDPD_INFO(" [PKT_OUT]");
+	XDPD_INFO(":\n");
 
 	//Do the calculations for stage time
 	for(i=0,j=0;i<TM_MAX;i++){
@@ -164,7 +164,7 @@ void tm_dump_pkt(datapacket_t* pkt){
 			case TM_SB5_FAILURE:
 			case TM_SA6:
 			case TM_SA7:
-				ROFL_INFO("[%u] %s(%u)\n", j, stage_names[i], tm->current[i]);	
+				XDPD_INFO("[%u] %s(%u)\n", j, stage_names[i], tm->current[i]);
 				j++;
 				break;
 		}

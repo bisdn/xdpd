@@ -16,7 +16,6 @@ bucket_snapshot::bucket_snapshot(of1x_stats_bucket_t* stats, rofl::openflow::cof
 
 rofl_result_t
 bucket_snapshot::map_bucket_list(of_version_t ver, int num_of_buckets, of1x_stats_bucket_t* stats, of1x_stats_bucket_desc_msg_t* desc, std::list<bucket_snapshot>& buckets){
-	int i;
 	of1x_stats_bucket_t* stats_ptr=stats;
 	std::map<uint32_t, rofl::openflow::cofbucket>::iterator bu_it;
 	rofl::openflow::cofbuckets bclist(ver);
@@ -38,8 +37,8 @@ bucket_snapshot::map_bucket_list(of_version_t ver, int num_of_buckets, of1x_stat
 	
 	try{ 
 		//Translate group mods
-		for(i = 0, bu_it = bclist.set_buckets().begin(); (bu_it != bclist.set_buckets().end() && i < num_of_buckets); i++, ++bu_it){
-			buckets.push_back(bucket_snapshot(stats_ptr, bu_it->second));
+		for (auto bucket_id : bclist.keys()) {
+			buckets.push_back(bucket_snapshot(stats_ptr, bclist.set_bucket(bucket_id)));
 			stats_ptr++;
 		}
 	}catch(...){

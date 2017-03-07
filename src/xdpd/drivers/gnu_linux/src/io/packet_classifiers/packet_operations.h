@@ -5,8 +5,8 @@
 #ifndef _PACKET_OPERATIONS_X86_
 #define _PACKET_OPERATIONS_X86_
 
-#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <utils/c_logger.h>
 
 /**
 * @file packet_operations.h

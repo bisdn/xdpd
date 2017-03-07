@@ -15,4 +15,6 @@ libxdpd_mgmt_config_la_LIBADD = \
 	system/libxdpd_mgmt_config_system.la\
 	-lconfig++
 
+AM_CXXFLAGS = -I$(top_srcdir)/src/
+
 sysconf_DATA = xdpd.conf

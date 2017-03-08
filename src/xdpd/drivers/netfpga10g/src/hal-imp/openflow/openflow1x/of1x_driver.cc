@@ -260,7 +260,7 @@ hal_result_t hal_driver_of1x_process_packet_out(uint64_t dpid, uint32_t buffer_i
 	classify_packet(&pktx86->clas_state, pktx86->get_buffer(), pktx86->get_buffer_length(), pktx86->clas_state.port_in, 0);
 
 
-	ROFL_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
+	XDPD_DEBUG_VERBOSE("Getting packet out [%p]\n",pkt);	
 	
 	//Instruct pipeline to process actions. This may reinject the packet	
 	of1x_process_packet_out_pipeline(ROFL_PIPELINE_LOCKED_TID, (of1x_switch_t*)lsw, pkt, action_group);

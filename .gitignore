@@ -12,6 +12,7 @@
 *.swo
 *.out
 *.kdev4
+*.trs
 
 config/libtool.m4
 config/ltoptions.m4

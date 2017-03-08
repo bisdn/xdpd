@@ -99,7 +99,7 @@ public:
 
 	inline rofl_result_t send(void){
 		int rv;
-		ROFL_DEBUG_VERBOSE(DRIVER_NAME" %s() on socket descriptor %d\n", __FUNCTION__, sd);
+		XDPD_DEBUG_VERBOSE(DRIVER_NAME" %s() on socket descriptor %d\n", __FUNCTION__, sd);
 
 MMAP_SEND_RETRY:
 		rv = ::sendto(sd, NULL, 0, MSG_DONTWAIT, NULL, 0);

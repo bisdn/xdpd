@@ -117,7 +117,7 @@ int process_timeouts()
 			
 #ifdef DEBUG
 		dummy++;
-		//ROFL_DEBUG_VERBOSE("<%s:%d> Checking flow entries expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
+		//XDPD_DEBUG_VERBOSE("<%s:%d> Checking flow entries expirations %lu:%lu\n",__func__,__LINE__,now.tv_sec,now.tv_usec);
 #endif
 		last_time_entries_checked = now;
 	}
@@ -134,11 +134,11 @@ int process_timeouts()
 				//TODO process buffers in the storage
 				while(dps->oldest_packet_needs_expiration(&buffer_id)){
 
-					ROFL_DEBUG_VERBOSE("<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
+					XDPD_DEBUG_VERBOSE("<%s:%d> trying to erase a datapacket from storage\n",__func__,__LINE__);
 					if( (pkt = dps->get_packet(buffer_id) ) == NULL ){
-						ROFL_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
+						XDPD_DEBUG_VERBOSE("Error in get_packet_wrapper %u\n", buffer_id);
 					}else{
-						ROFL_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
+						XDPD_DEBUG_VERBOSE("Datapacket expired correctly %u\n", buffer_id);
 						//Return buffer to bufferpool
 						bufferpool::release_buffer(pkt);
 					}
@@ -199,7 +199,7 @@ void* x86_background_tasks_routine(void* param)
 		snprintf(iface_name, NETFPGA_INTERFACE_NAME_LEN, NETFPGA_INTERFACE_BASE_NAME"%d", i);
 
 
-		//ROFL_DEBUG("interface name %s ", iface_name );
+		//XDPD_DEBUG("interface name %s ", iface_name );
 	
 		//Recover port from pipeline
 		port = physical_switch_get_port_by_name(iface_name);
@@ -248,7 +248,7 @@ void* x86_background_tasks_routine(void* param)
 		of1x_flow_entry_t* of1x_entry=new of1x_flow_entry_t;
 		memset(of1x_entry,0,sizeof(of1x_flow_entry_t));
 		of1x_entry->platform_state=(of1x_flow_entry_platform_state_t*)hw_entry;
-		ROFL_DEBUG("\n entry number %d", i);
+		XDPD_DEBUG("\n entry number %d", i);
 		netfpga_update_entry_stats(of1x_entry);
 
 		netfpga_destroy_flow_entry(hw_entry);
@@ -266,21 +266,21 @@ void* x86_background_tasks_routine(void* param)
 		//update_misc_stats();
 		
 		nfds = epoll_wait(efd, event_list, MAX_EPOLL_EVENTS, LSW_TIMER_SLOT_MS  /*temporaly changet to infinite*/ /*timeout needs TBD somewhere else*/);
-		//ROFL_DEBUG(" After epoll_wait \n\n\n\n");
+		//XDPD_DEBUG(" After epoll_wait \n\n\n\n");
 
 
 		if(nfds==-1){ //ERROR in select
-			ROFL_DEBUG("<%s:%d> Epoll Failed\n",__func__,__LINE__);
+			XDPD_DEBUG("<%s:%d> Epoll Failed\n",__func__,__LINE__);
 			continue;
 		}
 
 		if(nfds==0){ 
 			//TIMEOUT PASSED
-			//ROFL_DEBUG("bg_taskmanager epoll gave 0 - TIMEOUT PASSED");
+			//XDPD_DEBUG("bg_taskmanager epoll gave 0 - TIMEOUT PASSED");
 			process_timeouts();
 		}
 		
-		//ROFL_DEBUG("bg_taskmanager epoll gave %d \n \n", nfds );
+		//XDPD_DEBUG("bg_taskmanager epoll gave %d \n \n", nfds );
 	
 		for(i=0;i<nfds;i++){
 			
@@ -294,7 +294,7 @@ void* x86_background_tasks_routine(void* param)
 				continue;
 			}else{
 				
-				//ROFL_DEBUG("event_list[i].data.ptr %p \n",event_list[i].data.ptr);
+				//XDPD_DEBUG("event_list[i].data.ptr %p \n",event_list[i].data.ptr);
 				netpfga_io_read_from_port(((switch_port_t*)event_list[i].data.ptr));
 			}
 			//check if there is a need of manage timers!

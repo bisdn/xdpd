@@ -136,14 +136,10 @@ dpdk:
 	else										\
 		echo Compiling \'$$LIB\' \(T=$(DPDK_TARGET)\)... ;			\
 		OLD_PWD=$$PWD ;								\
-		mkdir -p $(LIBS_BUILD_DIR)/$$LIB || exit -1 ;				\
+		mkdir -p $(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;			\
 		cd $(LIBS_DIR)/$$LIB/ || exit -1 ;					\
-		$(MAKE) config T=$(DPDK_TARGET) ; 					\
-		if test "$(LIBS_BUILD_DIR)/$$LIB" == "$(abs_srcdir)/dpdk" ; then	\
-			$(MAKE) || exit -1 ;						\
-		else									\
-			DESTDIR=$(LIBS_BUILD_DIR)/$$LIB $(MAKE) install T=$(DPDK_TARGET) || exit -1 ;		\
-		fi ;									\
+		$(MAKE) config T=$(DPDK_TARGET) O=$(LIBS_BUILD_DIR)/$$LIB/build ; 	\
+		$(MAKE) O=$(LIBS_BUILD_DIR)/$$LIB/build || exit -1 ;			\
 		touch $(DPDK_COMMIT_FILE) || exit -1 ; 					\
 		echo $$CURR_COMMIT > $(DPDK_COMMIT_FILE) || exit -1 ; 			\
 	fi

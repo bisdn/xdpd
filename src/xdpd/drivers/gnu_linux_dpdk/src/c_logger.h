@@ -1,1 +1,0 @@
-../../gnu_linux/src/c_logger.h

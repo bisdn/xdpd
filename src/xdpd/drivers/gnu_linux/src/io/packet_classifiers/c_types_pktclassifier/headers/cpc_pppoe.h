@@ -16,7 +16,7 @@
 
 /* PPPoE constants and definitions */
 enum pppoe_version_t {
-	PPPOE_VERSION = 0x01,	// PPPoE version
+	PPPOE_VERSION = 0x10,	// PPPoE version
 };
 
 enum pppoe_type_t {

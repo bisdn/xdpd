@@ -221,6 +221,7 @@ void* push_mpls(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ethe
 void* push_pppoe(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_type){
 	
 	void* ether_header;
+        size_t payload_length;
 	//unsigned int current_length;
 	pkt_types_t new = PT_PUSH_PROTO(clas_state, PPPOE);  
 	if(unlikely(new == PT_INVALID))
@@ -228,6 +229,7 @@ void* push_pppoe(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t eth
 
 	//Recover the ether(0)
 	ether_header = get_ether_hdr(clas_state, 0);
+        payload_length = clas_state->len - sizeof(cpc_eth_hdr_t) + sizeof(cpc_ppp_hdr_t);
 	//current_length = ether_header->framelen(); 
 	
 	cpc_pppoe_hdr_t *n_pppoe = NULL; 
@@ -290,6 +292,7 @@ void* push_pppoe(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t eth
 	set_pppoe_sessid(n_pppoe, 0x0000);
 	set_pppoe_type(n_pppoe, PPPOE_TYPE);
 	set_pppoe_vers(n_pppoe, PPPOE_VERSION);
+        set_pppoe_length(n_pppoe, htobe16(payload_length));
 
 	return NULL;
 }

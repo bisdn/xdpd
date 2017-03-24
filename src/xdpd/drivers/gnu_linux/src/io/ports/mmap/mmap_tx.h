@@ -98,9 +98,16 @@ public:
 	};
 
 	inline rofl_result_t send(void){
+		int rv;
 		ROFL_DEBUG_VERBOSE(DRIVER_NAME" %s() on socket descriptor %d\n", __FUNCTION__, sd);
 
-		if ( unlikely( ::sendto(sd, NULL, 0, MSG_DONTWAIT, NULL, 0) ) < 0) {
+MMAP_SEND_RETRY:
+		rv = ::sendto(sd, NULL, 0, MSG_DONTWAIT, NULL, 0);
+		if(rv < 0){
+			if(likely(errno == EAGAIN)){
+				sched_yield(); //Preempt
+				goto MMAP_SEND_RETRY;
+			}
 
 			ROFL_ERR(DRIVER_NAME"[%s:mmap_tx]: Error in port's sendto(), errno:%d, %s\n", devname.c_str(), errno, strerror(errno));
 				return ROFL_FAILURE;	

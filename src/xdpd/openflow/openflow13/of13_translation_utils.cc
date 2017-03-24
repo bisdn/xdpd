@@ -5,7 +5,14 @@
 #include <inttypes.h>
 #include <stdint.h>
 
-#include <rofl/common/utils/c_logger.h>
+#include <rofl/common/openflow/openflow_common.h>
+#include <rofl/common/openflow/experimental/matches/pppoe_matches.h>
+#include <rofl/common/openflow/experimental/matches/gtp_matches.h>
+#include <rofl/common/openflow/experimental/matches/capwap_matches.h>
+#include <rofl/common/openflow/experimental/matches/wlan_matches.h>
+#include <rofl/common/openflow/experimental/matches/gre_matches.h>
+
+#include "xdpd/common/utils/c_logger.h"
 
 using namespace xdpd;
 
@@ -437,140 +444,141 @@ of13_translation_utils::of13_map_flow_entry_matches(
 
 #ifdef EXPERIMENTAL
 	/* Extensions */
-	try {
-		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code oxm_pppoe_code(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_CODE));
-
-		match = of1x_init_pppoe_code_match(oxm_pppoe_code.get_u8value());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_CODE)) {
+		match = of1x_init_pppoe_code_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_CODE).get_u8value());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type oxm_pppoe_type(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_TYPE));
-		match = of1x_init_pppoe_type_match(oxm_pppoe_type.get_u8value());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_TYPE)) {
+		match = of1x_init_pppoe_type_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_TYPE).get_u8value());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid oxm_pppoe_sid(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_SID));
-		match = of1x_init_pppoe_session_match(oxm_pppoe_sid.get_u16value());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_SID)) {
+		match = of1x_init_pppoe_session_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_SID).get_u16value());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot oxm_ppp_prot(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPP_PROT));
-		match = of1x_init_ppp_prot_match(oxm_ppp_prot.get_u16value());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPP_PROT)) {
+		match = of1x_init_ppp_prot_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPP_PROT).get_u16value());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type oxm_gtp_msg_type(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_MSGTYPE));
-		match = of1x_init_gtp_msg_type_match(oxm_gtp_msg_type.get_u8value());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_MSGTYPE)) {
+		match = of1x_init_gtp_msg_type_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_MSGTYPE).get_u8value());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid oxm_gtp_teid(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_TEID));
-		match = of1x_init_gtp_teid_match(oxm_gtp_teid.get_u32value(),oxm_gtp_teid.get_u32mask());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_TEID)) {
+		match = of1x_init_gtp_teid_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_TEID).get_u32value(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_TEID).get_u32mask());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
-	
-	try {
-		rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid oxm_capwap_wbid(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_WBID));
-		match = of1x_init_capwap_wbid_match(oxm_capwap_wbid.get_u8value(),oxm_capwap_wbid.get_u8mask());
-		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_rid oxm_capwap_rid(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_RID));
-		match = of1x_init_capwap_rid_match(oxm_capwap_rid.get_u8value(),oxm_capwap_rid.get_u8mask());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_WBID)) {
+		match = of1x_init_capwap_wbid_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_WBID).get_u8value(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_WBID).get_u8mask());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_flags oxm_capwap_flags(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_FLAGS));
-		match = of1x_init_capwap_flags_match(oxm_capwap_flags.get_u16value(),oxm_capwap_flags.get_u16mask());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_RID)) {
+		match = of1x_init_capwap_rid_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_RID).get_u8value(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_RID).get_u8mask());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_fc oxm_wlan_fc(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_FC));
-		match = of1x_init_wlan_fc_match(oxm_wlan_fc.get_u16value(),oxm_wlan_fc.get_u16mask());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_FLAGS)) {
+		match = of1x_init_capwap_flags_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_FLAGS).get_u16value(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_FLAGS).get_u16mask());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_type oxm_wlan_type(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_TYPE));
-		match = of1x_init_wlan_type_match(oxm_wlan_type.get_u8value(),oxm_wlan_type.get_u8mask());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_FC)) {
+		match = of1x_init_wlan_fc_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_FC).get_u16value(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_FC).get_u16mask());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_subtype oxm_wlan_subtype(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_SUBTYPE));
-		match = of1x_init_wlan_subtype_match(oxm_wlan_subtype.get_u8value(),oxm_wlan_subtype.get_u8mask());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_TYPE)) {
+		match = of1x_init_wlan_type_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_TYPE).get_u8value(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_TYPE).get_u8mask());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_direction oxm_wlan_direction(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_DIRECTION));
-		match = of1x_init_wlan_direction_match(oxm_wlan_direction.get_u8value(),oxm_wlan_direction.get_u8mask());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_SUBTYPE)) {
+		match = of1x_init_wlan_subtype_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_SUBTYPE).get_u8value(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_SUBTYPE).get_u8mask());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_1 oxm_wlan_address_1(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_1));
-		match = of1x_init_wlan_address_1_match(oxm_wlan_address_1.get_u48value_as_lladdr().get_mac(),oxm_wlan_address_1.get_u48mask_as_lladdr().get_mac());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_DIRECTION)) {
+		match = of1x_init_wlan_direction_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_DIRECTION).get_u8value(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_DIRECTION).get_u8mask());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_2 oxm_wlan_address_2(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_2));
-		match = of1x_init_wlan_address_2_match(oxm_wlan_address_2.get_u48value_as_lladdr().get_mac(),oxm_wlan_address_2.get_u48mask_as_lladdr().get_mac());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_1)) {
+		match = of1x_init_wlan_address_1_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_1).get_u48value().get_mac(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_1).get_u48mask().get_mac());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3 oxm_wlan_address_3(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_3));
-		match = of1x_init_wlan_address_3_match(oxm_wlan_address_3.get_u48value_as_lladdr().get_mac(),oxm_wlan_address_3.get_u48mask_as_lladdr().get_mac());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_2)) {
+		match = of1x_init_wlan_address_2_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_2).get_u48value().get_mac(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_2).get_u48mask().get_mac());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::gre::coxmatch_ofx_gre_version oxm_gre_version(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_VERSION));
-		match = of1x_init_gre_version_match(oxm_gre_version.get_u16value());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_3)) {
+		match = of1x_init_wlan_address_3_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_3).get_u48value().get_mac(),
+										 ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_3).get_u48mask().get_mac());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::gre::coxmatch_ofx_gre_prot_type oxm_gre_prot_type(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_PROT_TYPE));
-		match = of1x_init_gre_prot_type_match(oxm_gre_prot_type.get_u16value());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_VERSION)) {
+		match = of1x_init_gre_version_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_VERSION).get_u16value());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
-	try {
-		rofl::openflow::experimental::gre::coxmatch_ofx_gre_key oxm_gre_key(
-				ofmatch.get_matches().get_match(rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY));
-		match = of1x_init_gre_key_match(oxm_gre_key.get_u32value());
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_PROT_TYPE)) {
+		match = of1x_init_gre_prot_type_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_PROT_TYPE).get_u16value());
 		of1x_add_match_to_entry(entry, match);
-	} catch(...) {}
+	}
 
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY)) {
+		match = of1x_init_gre_key_match(ofmatch.get_matches().get_exp_match(
+				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY).get_u16value());
+		of1x_add_match_to_entry(entry, match);
+	}
 	/* End of extensions */
 #endif
 }
@@ -658,217 +666,221 @@ of13_translation_utils::of13_map_flow_entry_actions(
 			break;
 		case rofl::openflow13::OFPAT_SET_FIELD:
 		{
-			const rofl::openflow::coxmatch& oxm = actions.get_action_set_field(index).get_oxm();
+			const rofl::openflow::cofaction_set_field& set_field = actions.get_action_set_field(index);
 
-			switch (oxm.get_oxm_class()) {
+			switch (set_field.get_oxm_class()) {
 			case rofl::openflow13::OFPXMC_OPENFLOW_BASIC:
 			{
-				switch (oxm.get_oxm_field()) {
+				switch (set_field.get_oxm_field()) {
 				case rofl::openflow13::OFPXMT_OFB_ETH_DST:
 				{
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_DST, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ETH_SRC:
 				{
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_SRC, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ETH_TYPE:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ETH_TYPE, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ARP_OP:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_OPCODE, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ARP_SHA:
 				{
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SHA, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ARP_SPA:
 				{
-					field.u32 = oxm.get_u32value();
+					field.u32 = set_field.get_oxm_32().get_u32value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_SPA, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ARP_THA:
 				{
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_THA, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ARP_TPA:
 				{
-					field.u32 = oxm.get_u32value();
+					field.u32 = set_field.get_oxm_32().get_u32value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ARP_TPA, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ICMPV4_CODE:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ICMPV4_CODE, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_ICMPV4_TYPE:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_ICMPV4_TYPE, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_IPV4_DST:
 				{
-					field.u32 = oxm.get_u32value();
+					field.u32 = set_field.get_oxm_32().get_u32value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IPV4_DST, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_IPV4_SRC:
 				{
-					field.u32 = oxm.get_u32value();
+					field.u32 = set_field.get_oxm_32().get_u32value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IPV4_SRC, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_IP_DSCP:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_DSCP, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_IP_ECN:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_ECN, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_IP_PROTO:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_IP_PROTO, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_MPLS_LABEL:
 				{
-					field.u32 = oxm.get_u32value();
+					field.u32 = set_field.get_oxm_32().get_u32value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_LABEL, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_MPLS_TC:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_TC, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_MPLS_BOS:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_MPLS_BOS, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_VLAN_VID:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_VID, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_VLAN_PCP:
 				{
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_VLAN_PCP, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_TCP_DST:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_TCP_DST, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_TCP_SRC:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_TCP_SRC, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_UDP_DST:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_UDP_DST, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_UDP_SRC:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_UDP_SRC, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_SCTP_DST:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_SCTP_DST, field, 0x0);
 				}
 					break;
 				case rofl::openflow13::OFPXMT_OFB_SCTP_SRC:
 				{
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_SCTP_SRC, field, 0x0);
 				}
 					break;
 
 				case rofl::openflow13::OFPXMT_OFB_IPV6_SRC: {
-					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
+					//set_field.get_oxm_128().get_u128value()
+					caddress_in6 ipv6_src(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
+					ipv6_src.pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_DST: {
-					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
+					caddress_in6 ipv6_dst(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
+					ipv6_dst.pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_DST, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_FLABEL: {
-					field.u32 = oxm.get_u32value();
+					field.u32 = set_field.get_oxm_32().get_u32value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_FLABEL, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_ND_TARGET: {
-					oxm.get_u128value().pack(field.u128.val, 16); NTOHB128(field.u128);
+					caddress_in6 ipv6_nd_target(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
+					ipv6_nd_target.pack(field.u128.val, 16); NTOHB128(field.u128);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_ND_SLL: {
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_SLL, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_ND_TLL: {
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TLL, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_ICMPV6_TYPE: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_ICMPV6_TYPE, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_ICMPV6_CODE: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_ICMPV6_CODE, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_TUNNEL_ID: {
-					field.u64 = oxm.get_u64value();
+					field.u64 = set_field.get_oxm_64().get_u64value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_TUNNEL_ID, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_PBB_ISID: {
-					field.u32 = oxm.get_u24value();
+					field.u32 = set_field.get_oxm_24().get_u24value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PBB_ISID, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_EXTHDR: {
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_EXTHDR, field, 0x0);
 				}break;
 				default:
 				{
 					std::stringstream sstr; sstr << actions.get_action_set_field(index);
-					ROFL_ERR("of1x_endpoint(%s)::of13_map_flow_entry() "
+					XDPD_ERR("of1x_endpoint(%s)::of13_map_flow_entry() "
 							"unknown OXM type in action SET-FIELD found: %s",
 							sw->dpname.c_str(), sstr.str().c_str());
 				}
@@ -878,81 +890,86 @@ of13_translation_utils::of13_map_flow_entry_actions(
 				break;
 			case rofl::openflow13::OFPXMC_EXPERIMENTER: {
 #ifdef EXPERIMENTAL
-				switch (oxm.get_oxm_field()) {
+				switch (set_field.get_oxm_field()) {
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_CODE: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_exp().get_u8value();
+					//field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_CODE, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_TYPE: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_exp().get_u8value();
+					//field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_TYPE, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_SID: {
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_exp().get_u16value();
+					//field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_SID, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPP_PROT: {
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_exp().get_u16value();
+					//field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPP_PROT, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_MSGTYPE: {
-					field.u8 = oxm.get_u8value();
+					// TODO: fix all other experimental matches as well
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_MSG_TYPE, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_TEID: {
-					field.u32 = oxm.get_u32value();
+					field.u32 = set_field.get_oxm_32().get_u32value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_TEID, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_WBID: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_WBID, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_RID: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_RID, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_FLAGS: {
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_FLAGS, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_FC: {
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_FC, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_TYPE: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_TYPE, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_SUBTYPE: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_SUBTYPE, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_DIRECTION: {
-					field.u8 = oxm.get_u8value();
+					field.u8 = set_field.get_oxm_8().get_u8value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_DIRECTION, field, 0x0);
 				} break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_1: {
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_1, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_2: {
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_2, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_3: {
-					field.u64 = oxm.get_u48value_as_lladdr().get_mac();
+					field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_3, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_VERSION: {
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_VERSION, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_PROT_TYPE: {
-					field.u16 = oxm.get_u16value();
+					field.u16 = set_field.get_oxm_16().get_u16value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_PROT_TYPE, field, 0x0);
 				}break;
 				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_KEY: {
-					field.u32 = oxm.get_u32value();
+					field.u32 = set_field.get_oxm_32().get_u32value();
 					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_KEY, field, 0x0);
 				}break;
 				}
@@ -962,7 +979,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 			default:
 			{
 				std::stringstream sstr; sstr << actions.get_action_set_field(index);
-				ROFL_ERR("of1x_endpoint(%s)::of13_map_flow_entry() "
+				XDPD_ERR("of1x_endpoint(%s)::of13_map_flow_entry() "
 						"unknown OXM class in action SET-FIELD found: %s",
 						sw->dpname.c_str(), sstr.str().c_str());
 			}
@@ -973,7 +990,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 		case rofl::openflow13::OFPAT_EXPERIMENTER: {
 #ifdef EXPERIMENTAL
 			switch (actions.get_action_experimenter(index).get_exp_id()) {
-			case rofl::openflow::experimental::pppoe::PPPOE_EXP_ID: {
+			case rofl::openflow::ROFL_EXP_ID: {
 				rofl::openflow::experimental::pppoe::cofaction_exp_body_pppoe exp_body_pppoe(actions.get_action_experimenter(index).get_exp_body());
 				switch (exp_body_pppoe.get_exp_type()) {
 				case rofl::openflow::experimental::pppoe::PPPOE_ACTION_PUSH_PPPOE:{
@@ -1086,20 +1103,32 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				match.set_in_phy_port(of1x_get_match_value32(m));
 				break;
 			case OF1X_MATCH_METADATA:
-				match.set_metadata(of1x_get_match_value64(m), of1x_get_match_mask64(m));
+				if (of1x_get_match_mask64(m) != 0xffffffffffffffffL) {
+					match.set_metadata(of1x_get_match_value64(m), of1x_get_match_mask64(m));
+				} else {
+					match.set_metadata(of1x_get_match_value64(m));
+				}
 				break;
 			case OF1X_MATCH_ETH_DST:
 			{
 				uint64_t mac = of1x_get_match_value64(m);
 				uint64_t msk = of1x_get_match_mask64(m);
-				match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
+				if (cmacaddr(msk).is_broadcast()) {
+					match.set_eth_dst(cmacaddr(mac));
+				} else {
+					match.set_eth_dst(cmacaddr(mac), cmacaddr(msk));
+				}
 			}
 				break;
 			case OF1X_MATCH_ETH_SRC:
 			{
 				uint64_t mac = of1x_get_match_value64(m);
 				uint64_t msk = of1x_get_match_mask64(m);
-				match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
+				if (cmacaddr(msk).is_broadcast()) {
+					match.set_eth_src(cmacaddr(mac));
+				} else {
+					match.set_eth_src(cmacaddr(mac), cmacaddr(msk));
+				}
 			}
 				break;
 			case OF1X_MATCH_ETH_TYPE:
@@ -1136,28 +1165,44 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			{
 				uint64_t mac = of1x_get_match_value64(m);
 				uint64_t msk = of1x_get_match_mask64(m);
-				match.set_arp_sha(cmacaddr(mac), cmacaddr(msk));
+				if (cmacaddr(msk).is_broadcast()) {
+					match.set_arp_sha(cmacaddr(mac));
+				} else {
+					match.set_arp_sha(cmacaddr(mac), cmacaddr(msk));
+				}
 			}
 				break;
 			case OF1X_MATCH_ARP_SPA:
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_arp_spa(addr, mask);
+				if (mask == rofl::caddress_in4("255.255.255.255")) {
+					match.set_arp_spa(addr);
+				} else {
+					match.set_arp_spa(addr, mask);
+				}
 			}
 				break;
 			case OF1X_MATCH_ARP_THA:
 			{
 				uint64_t mac = of1x_get_match_value64(m);
 				uint64_t msk = of1x_get_match_mask64(m);
-				match.set_arp_tha(cmacaddr(mac), cmacaddr(msk));
+				if (cmacaddr(msk).is_broadcast()) {
+					match.set_arp_tha(cmacaddr(mac));
+				} else {
+					match.set_arp_tha(cmacaddr(mac), cmacaddr(msk));
+				}
 			}
 				break;
 			case OF1X_MATCH_ARP_TPA:
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_arp_tpa(addr, mask);
+				if (mask == rofl::caddress_in4("255.255.255.255")) {
+					match.set_arp_tpa(addr);
+				} else {
+					match.set_arp_tpa(addr, mask);
+				}
 			}
 				break;
 			case OF1X_MATCH_IP_DSCP:
@@ -1173,14 +1218,22 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_ipv4_src(addr, mask);
+				if (mask == rofl::caddress_in4("255.255.255.255")) {
+					match.set_ipv4_src(addr);
+				} else {
+					match.set_ipv4_src(addr, mask);
+				}
 			}
 				break;
 			case OF1X_MATCH_IPV4_DST:
 			{
 				caddress_in4 addr; addr.set_addr_hbo(of1x_get_match_value32(m));
 				caddress_in4 mask; mask.set_addr_hbo(of1x_get_match_mask32(m));
-				match.set_ipv4_dst(addr, mask);
+				if (mask == rofl::caddress_in4("255.255.255.255")) {
+					match.set_ipv4_dst(addr);
+				} else {
+					match.set_ipv4_dst(addr, mask);
+				}
 			}
 				break;
 			case OF1X_MATCH_TCP_SRC:
@@ -1212,17 +1265,29 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				caddress_in6 addr; addr.unpack(value.val, 16);
 				uint128__t mask = of1x_get_match_mask128(m); HTONB128(mask);
 				caddress_in6 msk; msk.unpack(mask.val, 16);
-				match.set_ipv6_src(addr,msk);
+				if (msk == rofl::caddress_in6("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")) {
+					match.set_ipv6_src(addr);
+				} else {
+					match.set_ipv6_src(addr,msk);
+				}
 				}break;
 			case OF1X_MATCH_IPV6_DST:{
 				uint128__t value = of1x_get_match_value128(m); HTONB128(value);
 				caddress_in6 addr; addr.unpack(value.val, 16);
 				uint128__t mask = of1x_get_match_mask128(m); HTONB128(mask);
 				caddress_in6 msk; msk.unpack(mask.val, 16);
-				match.set_ipv6_dst(addr, msk);
+				if (msk == rofl::caddress_in6("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")) {
+					match.set_ipv6_dst(addr);
+				} else {
+					match.set_ipv6_dst(addr, msk);
+				}
 				}break;
 			case OF1X_MATCH_IPV6_FLABEL:
-				match.set_ipv6_flabel(of1x_get_match_value32(m), of1x_get_match_mask32(m));
+				if (of1x_get_match_mask32(m) == 1048575) {
+					match.set_ipv6_flabel(of1x_get_match_value32(m));
+				} else {
+					match.set_ipv6_flabel(of1x_get_match_value32(m), of1x_get_match_mask32(m));
+				}
 				break;
 			case OF1X_MATCH_ICMPV6_TYPE:
 				match.set_icmpv6_type(of1x_get_match_value8(m));
@@ -1258,7 +1323,11 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 			case OF1X_MATCH_PBB_ISID:{
 				uint32_t value = of1x_get_match_value32(m);
 				uint32_t mask = of1x_get_match_mask32(m);
-				match.set_pbb_isid(value, mask);
+				if (mask == 16777215) {
+					match.set_pbb_isid(value);
+				} else {
+					match.set_pbb_isid(value, mask);
+				}
 				}break;
 			case OF1X_MATCH_IPV6_EXTHDR:
 				match.set_ipv6_exthdr(of1x_get_match_value16(m));
@@ -1266,61 +1335,108 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 #ifdef EXPERIMENTAL
 			/* Experimental */
 			case OF1X_MATCH_PPPOE_CODE:
-				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(of1x_get_match_value8(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_CODE).set_u8value(of1x_get_match_value8(m));
 				break;
 			case OF1X_MATCH_PPPOE_TYPE:
-				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type(of1x_get_match_value8(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_TYPE).set_u8value(of1x_get_match_value8(m));
 				break;
 			case OF1X_MATCH_PPPOE_SID:
-				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid(of1x_get_match_value16(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPPOE_SID).set_u16value(of1x_get_match_value16(m));
 				break;
 			case OF1X_MATCH_PPP_PROT:
-				match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(of1x_get_match_value16(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::pppoe::OXM_TLV_EXPR_PPP_PROT).set_u16value(of1x_get_match_value16(m));
 				break;
 			case OF1X_MATCH_GTP_MSG_TYPE:
-				match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(of1x_get_match_value8(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_MSGTYPE).set_u8value(of1x_get_match_value8(m));
 				break;
 			case OF1X_MATCH_GTP_TEID:
-				match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(of1x_get_match_value32(m), of1x_get_match_mask32(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_TEID_MASK).set_u32value(of1x_get_match_value32(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gtp::OXM_TLV_EXPR_GTP_TEID_MASK).set_u32mask(of1x_get_match_mask32(m));
 				break;
 			case OF1X_MATCH_CAPWAP_WBID:
-				match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid(of1x_get_match_value8(m), of1x_get_match_mask8(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_WBID_MASK).set_u8value(of1x_get_match_value8(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_WBID_MASK).set_u8mask(of1x_get_match_mask8(m));
 				break;
 			case OF1X_MATCH_CAPWAP_RID:
-				match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_rid(of1x_get_match_value8(m), of1x_get_match_mask8(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_RID_MASK).set_u8value(of1x_get_match_value8(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_RID_MASK).set_u8mask(of1x_get_match_mask8(m));
 				break;
 			case OF1X_MATCH_CAPWAP_FLAGS:
-				match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_flags(of1x_get_match_value16(m), of1x_get_match_mask16(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_FLAGS_MASK).set_u16value(of1x_get_match_value16(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::capwap::OXM_TLV_EXPR_CAPWAP_FLAGS_MASK).set_u16mask(of1x_get_match_mask16(m));
 				break;
 			case OF1X_MATCH_WLAN_FC:
-				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_fc(of1x_get_match_value16(m), of1x_get_match_mask16(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_FC_MASK).set_u16value(of1x_get_match_value16(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_FC_MASK).set_u16mask(of1x_get_match_mask16(m));
 				break;
 			case OF1X_MATCH_WLAN_TYPE:
-				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_type(of1x_get_match_value8(m), of1x_get_match_mask8(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_TYPE_MASK).set_u8value(of1x_get_match_value8(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_TYPE_MASK).set_u8mask(of1x_get_match_mask8(m));
 				break;
 			case OF1X_MATCH_WLAN_SUBTYPE:
-				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_subtype(of1x_get_match_value8(m), of1x_get_match_mask8(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_SUBTYPE_MASK).set_u8value(of1x_get_match_value8(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_SUBTYPE_MASK).set_u8mask(of1x_get_match_mask8(m));
 				break;
 			case OF1X_MATCH_WLAN_DIRECTION:
-				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_direction(of1x_get_match_value8(m), of1x_get_match_mask8(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_DIRECTION_MASK).set_u8value(of1x_get_match_value8(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_DIRECTION_MASK).set_u8mask(of1x_get_match_mask8(m));
 				break;
 			case OF1X_MATCH_WLAN_ADDRESS_1:
-				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_1(cmacaddr(of1x_get_match_value64(m)), cmacaddr(of1x_get_match_mask64(m))));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_1_MASK).set_u48value(caddress_ll(of1x_get_match_value64(m)));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_1_MASK).set_u48mask(caddress_ll(of1x_get_match_mask64(m)));
 				break;
 			case OF1X_MATCH_WLAN_ADDRESS_2:
-				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_2(cmacaddr(of1x_get_match_value64(m)), cmacaddr(of1x_get_match_mask64(m))));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_2_MASK).set_u48value(caddress_ll(of1x_get_match_value64(m)));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_2_MASK).set_u48mask(caddress_ll(of1x_get_match_mask64(m)));
 				break;
 			case OF1X_MATCH_WLAN_ADDRESS_3:
-				match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3(cmacaddr(of1x_get_match_value64(m)), cmacaddr(of1x_get_match_mask64(m))));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_3_MASK).set_u48value(caddress_ll(of1x_get_match_value64(m)));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::wlan::OXM_TLV_EXPR_WLAN_ADDRESS_3_MASK).set_u48mask(caddress_ll(of1x_get_match_mask64(m)));
 				break;
 			case OF1X_MATCH_GRE_VERSION:
-				match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_version(of1x_get_match_value16(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_VERSION_MASK).set_u16value(of1x_get_match_value16(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_VERSION_MASK).set_u16mask(of1x_get_match_mask16(m));
 				break;
 			case OF1X_MATCH_GRE_PROT_TYPE:
-				match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_prot_type(of1x_get_match_value16(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_PROT_TYPE_MASK).set_u16value(of1x_get_match_value16(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_PROT_TYPE_MASK).set_u16mask(of1x_get_match_mask16(m));
 				break;
 			case OF1X_MATCH_GRE_KEY:
-				match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_key(of1x_get_match_value32(m)));
+				match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY_MASK).set_u32value(of1x_get_match_value32(m));
+				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
+						rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY_MASK).set_u32mask(of1x_get_match_mask32(m));
 				break;
 #endif
 			default:
@@ -1341,11 +1457,9 @@ of13_translation_utils::of13_map_bucket_list(
 		rofl::openflow::cofbuckets& of_buckets,
 		of1x_bucket_list_t* bucket_list)
 {	
-	
-	for (std::map<uint32_t, rofl::openflow::cofbucket>::iterator
-			it = of_buckets.set_buckets().begin(); it != of_buckets.set_buckets().end(); ++it) {
+	for (auto bucket_id : of_buckets.keys()) {
 		//for each bucket we must map its actions
-		rofl::openflow::cofbucket& bucket_ptr = it->second;
+		rofl::openflow::cofbucket& bucket_ptr = of_buckets.set_bucket(bucket_id);
 		of1x_action_group_t* action_group = of1x_init_action_group(NULL);
 		if(action_group == NULL){
 			//TODO Handle Error
@@ -1596,7 +1710,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		} break;
 		case OF1X_AT_POP_PPPOE: {
 			actions.add_action_experimenter(index).
-					set_exp_id(rofl::openflow::experimental::pppoe::PPPOE_EXP_ID);
+					set_exp_id(rofl::openflow::ROFL_EXP_ID);
 			actions.set_action_experimenter(index).
 					set_exp_body(rofl::openflow::experimental::pppoe::cofaction_exp_body_pop_pppoe(of1x_get_packet_action_field16(of1x_action)));
 		} break;
@@ -1626,7 +1740,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		} break;
 		case OF1X_AT_PUSH_PPPOE: {
 			actions.add_action_experimenter(index).
-					set_exp_id(rofl::openflow::experimental::pppoe::PPPOE_EXP_ID);
+					set_exp_id(rofl::openflow::ROFL_EXP_ID);
 			actions.set_action_experimenter(index).
 					set_exp_body(rofl::openflow::experimental::pppoe::cofaction_exp_body_push_pppoe(of1x_get_packet_action_field16(of1x_action)));
 		} break;
@@ -2022,57 +2136,76 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 
 	//PPPoE
 	if(packet_matches_get_pppoe_code_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_code(packet_matches_get_pppoe_code_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_CODE).set_u8value(packet_matches_get_pppoe_code_value(pm));
 	if(packet_matches_get_pppoe_type_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_type(packet_matches_get_pppoe_type_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_TYPE).set_u8value(packet_matches_get_pppoe_type_value(pm));
 	if(packet_matches_get_pppoe_sid_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_pppoe_sid(packet_matches_get_pppoe_sid_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_SID).set_u16value(packet_matches_get_pppoe_sid_value(pm));
 	if(packet_matches_get_ppp_proto_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::pppoe::coxmatch_ofx_ppp_prot(packet_matches_get_ppp_proto_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPP_PROT).set_u16value(packet_matches_get_ppp_proto_value(pm));
 
 	//GTP
 	if(packet_matches_get_gtp_msg_type_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_msg_type(packet_matches_get_gtp_msg_type_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_MSGTYPE).set_u8value(packet_matches_get_gtp_msg_type_value(pm));
 	if(packet_matches_get_gtp_teid_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::gtp::coxmatch_ofx_gtp_teid(packet_matches_get_gtp_teid_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_TEID).set_u32value(packet_matches_get_gtp_teid_value(pm));
 
 	//CAPWAP
 	if(packet_matches_get_capwap_wbid_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_wbid(packet_matches_get_capwap_wbid_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_WBID).set_u8value(packet_matches_get_capwap_wbid_value(pm));
 	if(packet_matches_get_capwap_rid_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_rid(packet_matches_get_capwap_rid_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_RID).set_u8value(packet_matches_get_capwap_rid_value(pm));
 	if(packet_matches_get_capwap_flags_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::capwap::coxmatch_ofx_capwap_flags(packet_matches_get_capwap_flags_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_FLAGS).set_u16value(packet_matches_get_capwap_flags_value(pm));
 
 	//WLAN
 	if(packet_matches_get_wlan_fc_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_fc(packet_matches_get_wlan_fc_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_FC).set_u16value(packet_matches_get_wlan_fc_value(pm));
 	if(packet_matches_get_wlan_type_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_type(packet_matches_get_wlan_type_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_TYPE).set_u8value(packet_matches_get_wlan_type_value(pm));
 	if(packet_matches_get_wlan_subtype_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_subtype(packet_matches_get_wlan_subtype_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_SUBTYPE).set_u8value(packet_matches_get_wlan_subtype_value(pm));
 	if(packet_matches_get_wlan_direction_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_direction(packet_matches_get_wlan_direction_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_DIRECTION).set_u8value(packet_matches_get_wlan_direction_value(pm));
 	if(packet_matches_get_wlan_address_1_value(pm)){
 		uint64_t mac = packet_matches_get_wlan_address_1_value(pm);
-		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_1(cmacaddr(mac)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_1).set_u48value(caddress_ll(mac));
 	}
 	if(packet_matches_get_wlan_address_2_value(pm)){
 		uint64_t mac = packet_matches_get_wlan_address_2_value(pm);
-		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_2(cmacaddr(mac)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_2).set_u48value(caddress_ll(mac));
 	}
 	if(packet_matches_get_wlan_address_3_value(pm)){
 		uint64_t mac = packet_matches_get_wlan_address_3_value(pm);
-		match.set_matches().add_match(rofl::openflow::experimental::wlan::coxmatch_ofx_wlan_address_3(cmacaddr(mac)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_3).set_u48value(caddress_ll(mac));
 	}
 
 	//GRE
 	if(packet_matches_get_gre_version_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_version(packet_matches_get_gre_version_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_VERSION).set_u16value(packet_matches_get_gre_version_value(pm));
 	if(packet_matches_get_gre_prot_type_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_prot_type(packet_matches_get_gre_prot_type_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_PROT_TYPE).set_u16value(packet_matches_get_gre_prot_type_value(pm));
 	if(packet_matches_get_gre_key_value(pm))
-		match.set_matches().add_match(rofl::openflow::experimental::gre::coxmatch_ofx_gre_key(packet_matches_get_gre_key_value(pm)));
+		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
+				rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_KEY).set_u32value(packet_matches_get_gre_key_value(pm));
 #endif
 }
 

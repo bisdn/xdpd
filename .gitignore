@@ -12,6 +12,7 @@
 *.swo
 *.out
 *.kdev4
+*.trs
 
 config/libtool.m4
 config/ltoptions.m4
@@ -34,6 +35,7 @@ depcomp
 libtool
 m4
 ar-lib
+tags
 
 build-aux
 /build/*

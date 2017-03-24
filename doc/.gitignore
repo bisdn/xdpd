@@ -2,3 +2,4 @@
 !.gitignore
 !Makefile.am
 !doxyfile.conf
+doxyfile.conf

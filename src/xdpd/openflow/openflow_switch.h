@@ -9,6 +9,10 @@
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/of1x_switch.h>
 
+#include <rofl/common/csockaddr.h>
+#include <rofl/common/crofbase.h>
+#include <rofl/common/crofctl.h>
+
 #include "of_endpoint.h"
 #include "pirl/pirl.h"
 
@@ -96,9 +100,9 @@ public:
 	/**
 	 * Connecting and disconnecting from a controller entity
 	 */
-	virtual void rpc_connect_to_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params);
+	virtual void rpc_connect_to_ctl(enum xdpd::csocket::socket_type_t socket_type, xdpd::cparams const& socket_params);
 
-	virtual void rpc_disconnect_from_ctl(enum rofl::csocket::socket_type_t socket_type, cparams const& socket_params);
+	virtual void rpc_disconnect_from_ctl(enum xdpd::csocket::socket_type_t socket_type, xdpd::cparams const& socket_params);
 
 protected:
 	/*

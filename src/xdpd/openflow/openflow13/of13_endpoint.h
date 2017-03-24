@@ -38,8 +38,8 @@ public:
 			openflow_switch* sw,
 			int reconnect_start_timeout,
 			const rofl::openflow::cofhello_elem_versionbitmap& versionbitmap,
-			enum rofl::csocket::socket_type_t socket_type,
-			cparams const& socket_params) throw (eOfSmErrorOnCreation);
+			enum xdpd::csocket::socket_type_t socket_type,
+			xdpd::cparams const& socket_params) throw (eOfSmErrorOnCreation);
 
 	/**
 	 *
@@ -319,7 +319,7 @@ private:
 	 * @param ctrl new cofctrl instance
 	 */
 	virtual void
-	handle_ctl_attached(crofctl *ctrl);
+	handle_ctl_open(rofl::crofctl& ctrl);
 
 	/** Handle close event on ctrl
 	 *
@@ -328,8 +328,92 @@ private:
 	 * @param ctrl cofctrl instance to be deleted
 	 */
 	virtual void
-	handle_ctl_detached(crofctl *ctrl);
+	handle_ctl_close(const rofl::cctlid& id);
 
+	/**
+	 * @brief 	Called when a control connection (main or auxiliary) has been established.
+	 *
+	 * @param ctl controller instance
+	 * @param auxid connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_established(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief 	Called when a control connection (main or auxiliary) has been terminated by the peer entity.
+	 *
+	 * @param ctl controller instance
+	 * @param auxid connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_terminated(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief 	Called when an attempt to establish a control connection has been refused.
+	 *
+	 * This event occurs when the C-library's connect() system call fails
+	 * with the ECONNREFUSED error code. This indicates typically a problem on
+	 * the remote site.
+	 *
+	 * @param ctl controller instance
+	 * @param auxid connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_refused(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief 	Called when an attempt to establish a control connection has been failed.
+	 *
+	 * This event occurs when some failure occures while calling the underlying
+	 * C-library connect() system call, e.g., no route to destination, etc. This may
+	 * indicate a local configuration problem inside or outside of the application.
+	 *
+	 * @param ctl controller instance
+	 * @param auxid connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_failed(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief	Called when a negotiation failed with a peer controller entity
+	 *
+	 * @param ctl controller instance
+	 * @param auxid control connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_negotiation_failed(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief	Called when a congestion situation on the control connection occurs
+	 *
+	 * @param ctl controller instance
+	 * @param auxid control connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_congestion_occured(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
+
+	/**
+	 * @brief	Called when a congestion situation on the control connection has been solved
+	 *
+	 * @param ctl controller instance
+	 * @param auxid control connection identifier (main: 0)
+	 */
+	virtual void
+	handle_conn_congestion_solved(
+			rofl::crofctl& ctl,
+			const rofl::cauxid& auxid);
 
 	/**
 	 * @name 	flow_mod_add

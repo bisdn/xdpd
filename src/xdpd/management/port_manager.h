@@ -11,10 +11,12 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <rofl_datapath.h>
-#include <rofl/common/utils/c_logger.h>
+
 #include <rofl/datapath/hal/driver.h>
 #include <rofl/datapath/pipeline/switch_port.h>
-#include <rofl/common/croflexception.h>
+
+#include <utils/c_logger.h>
+#include <exception.h>
 
 #include "snapshots/port_snapshot.h"
 
@@ -28,7 +30,10 @@
 
 namespace xdpd {
 
-class ePmBase			: public rofl::RoflException {};	// base error class for all port_manager related errors
+class ePmBase			: public xdpd::exception {
+public:
+	ePmBase() : xdpd::exception("ePmBase") {};
+};	// base error class for all port_manager related errors
 class ePmInvalidPort		: public ePmBase {};
 class ePmInvalidPortNumber	: public ePmBase {};
 class ePmUnknownError		: public ePmBase {};
@@ -174,9 +179,9 @@ public:
 			return;
 
 		if(port_snapshot->is_attached_to_sw)
-			ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] added to the system and attached; admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+			XDPD_INFO("[xdpd][port_manager][0x%" PRIx64":%u(%s)] added to the system and attached; admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 		else
-			ROFL_INFO("[xdpd][port_manager][%s] added to the system; admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+			XDPD_INFO("[xdpd][port_manager][%s] added to the system; admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 	};
 		
 	/**
@@ -191,9 +196,9 @@ public:
 			return;
 
 		if(port_snapshot->is_attached_to_sw)
-			ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+			XDPD_INFO("[xdpd][port_manager][0x%" PRIx64":%u(%s)] admin status: %s, link: %s\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 		else
-			ROFL_INFO("[xdpd][port_manager][%s] admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
+			XDPD_INFO("[xdpd][port_manager][%s] admin status: %s, link: %s\n", port_snapshot->name, (port_snapshot->up)? "up":"down", ((port_snapshot->state & PORT_STATE_LINK_DOWN) > 0)? "not detected":"detected");
 	};
 	
 	/**
@@ -208,9 +213,9 @@ public:
 
 		//Notify
 		if(port_snapshot->is_attached_to_sw)
-			ROFL_INFO("[xdpd][port_manager][0x%"PRIx64":%u(%s)] detached and removed from the system\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name);
+			XDPD_INFO("[xdpd][port_manager][0x%" PRIx64":%u(%s)] detached and removed from the system\n", port_snapshot->attached_sw_dpid, port_snapshot->of_port_num, port_snapshot->name);
 		else
-			ROFL_INFO("[xdpd][port_manager][%s] removed from the system;\n", port_snapshot->name);
+			XDPD_INFO("[xdpd][port_manager][%s] removed from the system;\n", port_snapshot->name);
 
 		if(is_vlink(port_name)){
 			//Remove port and pair from the cache
@@ -246,7 +251,7 @@ private:
 		pthread_rwlock_wrlock(&port_manager::rwlock);
 
 		if ( port_manager::vlinks.find(port1) != port_manager::vlinks.end() || port_manager::vlinks.find(port2) != port_manager::vlinks.end()){
-			ROFL_INFO("[xdpd][port_manager] Corrupted vlink cache state; vlink %s or %s \n", port1.c_str(), port2.c_str());
+			XDPD_INFO("[xdpd][port_manager] Corrupted vlink cache state; vlink %s or %s \n", port1.c_str(), port2.c_str());
 			assert(0);
 			pthread_rwlock_unlock(&port_manager::rwlock);
 			throw ePmUnknownError();

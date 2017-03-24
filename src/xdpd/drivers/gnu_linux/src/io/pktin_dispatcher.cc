@@ -8,13 +8,14 @@
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_table.h>
 #include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/datapath/pipeline/platform/packet.h>
-#include <rofl/common/utils/c_logger.h>
 
 #include "../config.h"
 #include "../io/bufferpool.h"
 #include "../io/datapacketx86.h"
 #include "../io/datapacket_storage.h"
 #include "../processing/ls_internal_state.h"
+
+#include <utils/c_logger.h>
 
 using namespace xdpd::gnu_linux;
 
@@ -58,7 +59,7 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 		id = ls_int->storage->store_packet(pkt);
 
 		if(id == datapacket_storage::ERROR){
-			ROFL_DEBUG(DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
+			XDPD_DEBUG(DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be stored in the storage. Dropping..\n",pkt);
 	
 			//Return to the bufferpool
 			bufferpool::release_buffer(pkt);
@@ -81,10 +82,10 @@ static inline void process_sw_of1x_packet_ins(of1x_switch_t* sw){
 						);
 
 		if( unlikely(rv != HAL_SUCCESS) ){
-			ROFL_DEBUG(DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
+			XDPD_DEBUG(DRIVER_NAME"[pkt-in-dispatcher] PKT_IN for packet(%p) could not be sent to sw:%s controller. Dropping..\n",pkt,sw->name);
 			//Take packet out from the storage
 			if( unlikely(ls_int->storage->get_packet(id) != pkt) ){
-				ROFL_ERR(DRIVER_NAME"[pkt-in-dispatcher] Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
+				XDPD_ERR(DRIVER_NAME"[pkt-in-dispatcher] Storage corruption. get_packet(%u) returned a different pkt pointer (should have been %p)\n", id, pkt);
 
 				assert(0);
 			}

@@ -7,5 +7,7 @@ test_checksums_SOURCES= $(top_srcdir)/src/io/packet_classifiers/c_pktclassifier/
 
 test_checksums_LDADD= -lrofl_common -lcppunit -lpthread
 
+AM_CXXFLAGS=-I$(top_srcdir)/src
+
 check_PROGRAMS = test_checksums
 TESTS = test_checksums

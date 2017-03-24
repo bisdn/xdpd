@@ -37,14 +37,14 @@ rofl_result_t netfpga_write_reg(netfpga_device_t *nfpga, uint32_t reg_id, uint32
 	
 	int result;
 	result=ioctl(nfpga->fd, NETFPGA_IOCTL_CMD_WRITE_REG,reg);
-	//ROFL_DEBUG("\n ioctl result: %x \n" , result);
+	//XDPD_DEBUG("\n ioctl result: %x \n" , result);
 	if( result != 0){
 		ROFL_ERR("ioctl failed on writing register fd: %d REG: 0x%x\n", nfpga->fd, reg_id);
 		
 		return ROFL_FAILURE;
 	}
 
-//	ROFL_DEBUG("ERRNO is: ", errno);
+//	XDPD_DEBUG("ERRNO is: ", errno);
 
 	return ROFL_SUCCESS;
 }

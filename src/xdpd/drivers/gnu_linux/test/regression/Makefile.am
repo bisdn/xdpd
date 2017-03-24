@@ -39,7 +39,8 @@ SHARED_LIBS=\
 	-lrofl_common \
 	-lrofl_datapath \
 	-lcppunit \
-	-lpthread
+	-lpthread \
+	$(top_srcdir)/../../common/utils/libxdpd_common_utils.la
 	
 
 #Simple portmockup with mockup matches	

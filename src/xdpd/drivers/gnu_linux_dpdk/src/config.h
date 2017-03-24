@@ -90,7 +90,7 @@
 */
 
 //Maximum number of CPU sockets
-#define MAX_CPU_SOCKETS 8
+#define MAX_CPU_SOCKETS 128
 
 //DPDK defines
 
@@ -106,18 +106,18 @@
  * The coremask can be overriden using driver extra parameters. However this is
  * not recommended for stable setups
  */
-#define DEFAULT_RTE_CORE_MASK 0x00000003
+#define DEFAULT_RTE_CORE_MASK 0x0000001f
 
 //Other parameters
-#define RTE_MEM_CHANNELS 2
-#define MBUF_SIZE (/*2048*/9000 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
+#define RTE_MEM_CHANNELS 4
+#define MBUF_SIZE 16383
+
+/* (9000 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM) */
 
 /*
  * Default number of MBUFs per pool
  */
-#define DEFAULT_NB_MBUF 24576
-
-
+#define DEFAULT_NB_MBUF 65365
 
 /**
 * NF related parameters
@@ -130,17 +130,15 @@
 #define GNU_LINUX_DPDK_MAX_KNI_IFACES 4
 
 /**
-* Uncomment the following line to enable the samaphore and implement a batch
-* meachanism in the DPDK secondary processes NF
+* Uncomment the following line to enable the semaphore and implement a sleep/
+* wake mechanism between xdpd and the NF process (DPDK secondary process)
 *
-* NOT recommended
+* NOT RECOMMENDED
 */
 //#define ENABLE_DPDK_SECONDARY_SEMAPHORE
-#ifdef ENABLE_DPDK_SECONDARY_SEMAPHORE
-	//IVANO - FIXME: write a meaningfull value
-	#define PKT_TO_NF_THRESHOLD 	200
-#endif
 
+//IVANO - FIXME: write a meaningfull value
+//#define PKT_TO_NF_THRESHOLD 	200
 
 
 #endif //XDPD_GNU_LINUX_XDPD_CONFIG_H

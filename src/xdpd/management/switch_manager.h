@@ -21,13 +21,16 @@
 #include <stdexcept>
 
 #include <rofl_datapath.h>
-#include <rofl/common/csocket.h>
 #include <rofl/common/caddress.h>
-#include <rofl/common/croflexception.h>
 
 #include <rofl/datapath/pipeline/common/datapacket.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_flow_entry.h>
+
+#include <exception.h>
+#include <csocket.h>
+#include <cparams.h>
+#include <logging.h>
 
 //Snapshot
 #include "snapshots/switch_snapshot.h"
@@ -44,7 +47,13 @@
 
 namespace xdpd {
 
-class eOfSmBase				: public rofl::RoflException {};	// base error class for all switch_manager related errors
+class eOfSmBase				: public xdpd::exception {
+public:
+	eOfSmBase(
+			const std::string& __arg = std::string("")) :
+				xdpd::exception(__arg)
+	{};
+};	// base error class for all switch_manager related errors
 class eOfSmGeneralError			: public eOfSmBase {};
 class eOfSmErrorOnCreation		: public eOfSmBase {};
 class eOfSmExists			: public eOfSmBase {};
@@ -70,7 +79,6 @@ class openflow_switch;
 * @ingroup cmm_mgmt
 */
 class switch_manager {
-
 public:
 
 	//
@@ -91,8 +99,8 @@ public:
 					unsigned int num_of_tables,
 					int* ma_list,
 					int reconnect_start_timeout,
-					enum rofl::csocket::socket_type_t socket_type,
-					rofl::cparams const& socket_params);
+					enum xdpd::csocket::socket_type_t socket_type,
+					const xdpd::cparams& params);
 
 
 	/**
@@ -167,12 +175,12 @@ public:
 	/**
 	 * connect to controller
 	 */
-	static void rpc_connect_to_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, rofl::cparams const& socket_params);
+	static void rpc_connect_to_ctl(uint64_t dpid, enum xdpd::csocket::socket_type_t socket_type, xdpd::cparams const& socket_params);
 
 	/**
 	 * disconnect from from controller
 	 */
-	static void rpc_disconnect_from_ctl(uint64_t dpid, enum rofl::csocket::socket_type_t socket_type, rofl::cparams const& socket_params);
+	static void rpc_disconnect_from_ctl(uint64_t dpid, enum xdpd::csocket::socket_type_t socket_type, xdpd::cparams const& socket_params);
 
 	//
 	// Other configuration parameters

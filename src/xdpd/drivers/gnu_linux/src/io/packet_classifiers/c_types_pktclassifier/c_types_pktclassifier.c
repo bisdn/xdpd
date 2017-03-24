@@ -1,10 +1,11 @@
 #include "c_types_pktclassifier.h"
 #include <stdlib.h>
 #include <string.h>
-#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/pipeline/common/protocol_constants.h>
 #include "../packet_operations.h"
 #include "../../../config.h"
+
+#include <utils/c_logger.h>
 
 void pop_pbb(datapacket_t* pkt, classifier_state_t* clas_state){
 
@@ -782,7 +783,7 @@ void pop_gre(datapacket_t* pkt, classifier_state_t* clas_state, uint16_t ether_t
 }
 
 void dump_pkt_classifier(classifier_state_t* clas_state){
-	ROFL_DEBUG(DRIVER_NAME" [c_types_pktclassifier] Dump packet state(%p) TODO!!\n",clas_state);
+	XDPD_DEBUG(DRIVER_NAME" [c_types_pktclassifier] Dump packet state(%p) TODO!!\n",clas_state);
 }
 
 size_t get_pkt_len(datapacket_t* pkt, classifier_state_t* clas_state, void *from, void *to){

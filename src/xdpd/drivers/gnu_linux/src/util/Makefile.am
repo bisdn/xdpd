@@ -9,3 +9,6 @@ libxdpd_driver_gnu_linux_util_la_SOURCES = \
 	time_utils.h\
 	time_utils.c\
 	safevector.h 
+
+AM_CXXFLAGS = -I$(top_srcdir)/src/
+

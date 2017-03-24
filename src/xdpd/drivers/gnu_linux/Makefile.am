@@ -12,6 +12,8 @@ libxdpd_driver_gnu_linux_la_SOURCES =
 libxdpd_driver_gnu_linux_la_LIBADD = \
 		src/libxdpd_driver_gnu_linux_src.la
 
+AM_CXXFLAGS = -I$(top_srcdir)/src/
+
 maintainer-clean-local:
 	rm -rf $(top_srcdir)/m4
 	rm -rf $(top_srcdir)/build-aux

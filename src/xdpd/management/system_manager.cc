@@ -7,18 +7,17 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <time.h>
-#include <rofl/common/ciosrv.h>
-#include <rofl/common/utils/c_logger.h>
+
+#include <rofl_common.h>
 #include <rofl/datapath/pipeline/util/logging.h>
-#include <rofl/platform/unix/cdaemon.h>
+
+#include "xdpd/common/cdaemon.h"
 #include "switch_manager.h"
 #include "port_manager.h"
 #include "plugin_manager.h"
 #include "plugins/pm_timestamp.h" //Regnerate on configure for version numbers
 
-
 using namespace xdpd;
-using namespace rofl;
 
 //getopt
 extern int optind;
@@ -30,7 +29,7 @@ bool system_manager::inited = false;
 hal_extension_ops_t system_manager::hal_extension_ops;
 std::string system_manager::id("000000001");
 driver_info_t system_manager::driver_info;
-rofl::cunixenv* system_manager::env_parser = NULL;
+xdpd::cunixenv* system_manager::env_parser = NULL;
 const std::string system_manager::XDPD_CLOG_FILE="./xdpd.log";
 const std::string system_manager::XDPD_LOG_FILE="/var/log/xdpd.log";
 const std::string system_manager::XDPD_PID_FILE="/var/run/xdpd.pid";
@@ -40,10 +39,8 @@ const std::string system_manager::XDPD_TEST_RUN_OPT_FULL_NAME="test-config";
 const std::string system_manager::XDPD_EXTRA_PARAMS_OPT_FULL_NAME="extra-params";
 pthread_t system_manager::ciosrv_thread = 0;
 
-//Handler to stop ciosrv
 void interrupt_handler(int dummy=0) {
-	//Only stop cioloop
-	rofl::cioloop::get_loop().shutdown();
+	/* not used any more, TODO: remove handler */
 }
 
 
@@ -62,7 +59,7 @@ std::string system_manager::__get_driver_extra_params(){
 	if(extra_plugins != ""){
 		if(extra != ""){
 			//Notify user
-			ROFL_ERR("[xdpd][system_manager] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
+			XDPD_ERR("[xdpd][system_manager] Warning: Ignoring extra driver parameters provided by plugins (%s), since xDPd was launched with -e (%s)\n", extra_plugins.c_str(), extra.c_str());
 		}else
 			extra = extra_plugins;
 	}
@@ -73,10 +70,10 @@ std::string system_manager::__get_driver_extra_params(){
 //Set the debug level
 void system_manager::set_logging_debug_level(unsigned int level){
 
-	enum rofl_debug_levels c_level;
+	enum xdpd_debug_levels c_level;
 	
 	if( inited && env_parser->is_arg_set("debug") ){
-		ROFL_ERR("[xdpd][system_manager] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
+		XDPD_ERR("[xdpd][system_manager] Ignoring the attempt to set_logging_debug_level(); logging level set via command line has preference.\n");
 		throw eSystemLogLevelSetviaCLI(); 
 	}
 
@@ -107,7 +104,6 @@ void system_manager::set_logging_debug_level(unsigned int level){
 	logging::set_debug_level(level);
 	
 	//Adjust C logging debug level
-	rofl_set_logging_level(/*cn,*/c_level);
 	rofl_pipeline_set_logging_level(/*cn,*/(rofl_pipeline_debug_levels)c_level);
 }
 
@@ -148,7 +144,7 @@ void system_manager::init(int argc, char** argv){
 
 	//Prevent double calls to init()
 	if(inited)
-		ROFL_ERR("[xdpd][system_manager] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
+		XDPD_ERR("[xdpd][system_manager] ERROR: double call to system_amanager::init(). This can only be caused by a spurious call from a misbehaving plugin. Please notify this error. Continuing execution...\n");
 
 	//Set ciosrv thread
 	ciosrv_thread = pthread_self();
@@ -171,7 +167,7 @@ void system_manager::init(int argc, char** argv){
 	//If -v is set, print version and return immediately. Note that this must be here after
 	//get_info 
 	if(env_parser->is_arg_set("version")) {
-		ROFL_INFO(get_version().c_str());
+		XDPD_INFO(get_version().c_str());
 		goto SYSTEM_MANAGER_CLEANUP;
 	}
 
@@ -189,8 +185,8 @@ void system_manager::init(int argc, char** argv){
 
 	//Daemonize
 	if(env_parser->is_arg_set("daemonize")) {
-		rofl::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
-		rofl::logging::notice << "[xdpd][system_manager] daemonizing successful" << std::endl;
+		xdpd::cdaemon::daemonize(XDPD_PID_FILE, XDPD_LOG_FILE);
+		XDPD_INFO("[xdpd][system_manager] daemonizing successful\n");
 	}else{
 		//If not daemonized and logfile is set: redirects the output to logfile. TODO: maybe logfile shouldn't depend on daemonize.
 		if(env_parser->is_arg_set("logfile")){
@@ -227,12 +223,13 @@ void system_manager::init(int argc, char** argv){
 	//Capture control+C
 	signal(SIGINT, interrupt_handler);
 		
-	if(is_test_run())
-		rofl::logging::notice << "[xdpd][system_manager] Launched with -t "<< XDPD_TEST_RUN_OPT_FULL_NAME <<". Doing a test-run execution" << std::endl;
+	if(is_test_run()) {
+		XDPD_INFO("[xdpd][system_manager] Launched with -t %s. Doing a test-run execution", XDPD_TEST_RUN_OPT_FULL_NAME.c_str());
+	}
 
 	//Driver initialization
 	if(hal_driver_init(&hal_extension_ops, __get_driver_extra_params().c_str()) != HAL_SUCCESS){
-		ROFL_ERR("[xdpd][system_manager] ERROR: initialization of platform driver failed! Aborting...\n");	
+		XDPD_ERR("[xdpd][system_manager] ERROR: initialization of platform driver failed! Aborting...\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -246,12 +243,12 @@ void system_manager::init(int argc, char** argv){
 
 	//If test-config is not set, launch ciosrv loop, otherwise terminate execution
 	if(!is_test_run()){
-		//cioloop run. Only will stop in Ctrl+C
-		rofl::cioloop::get_loop().run();
+		//run main loop. Only will stop in Ctrl+C
+		pselect(0, NULL, NULL, NULL, NULL, NULL);
 	}
 
 	//Printing nice trace
-	ROFL_INFO("\n[xdpd][system_manager] Shutting down...\n");	
+	XDPD_INFO("\n[xdpd][system_manager] Shutting down...\n");
 
 	//Destroy all state
 	switch_manager::destroy_all_switches();
@@ -266,13 +263,8 @@ void system_manager::init(int argc, char** argv){
 	//Logging	
 	logging::close();
 
-	//Release ciosrv loop resources
-	rofl::cioloop::get_loop().shutdown();
-
-	rofl::cioloop::get_loop().cleanup_on_exit();
-
 	//Print a nice trace
-	ROFL_INFO("[xdpd][system_manager] Shutted down.\n");
+	XDPD_INFO("[xdpd][system_manager] xdpd is now ...down.\n");
 
 SYSTEM_MANAGER_CLEANUP:
 
@@ -299,17 +291,17 @@ void system_manager::dump_help(){
 	}
 
 	//Usage first
-	ROFL_INFO("\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
+	XDPD_INFO("\n%s\n", env_parser->get_usage((char*)xdpd_name.c_str()).c_str());
 	//Other information
-	ROFL_INFO("Compiled with plugins: %s\n", plugin_list.str().c_str());
-	ROFL_INFO("Compiled with hardware support for: %s\n", get_driver_code_name().c_str());
+	XDPD_INFO("Compiled with plugins: %s\n", plugin_list.str().c_str());
+	XDPD_INFO("Compiled with hardware support for: %s\n", get_driver_code_name().c_str());
 	if(get_driver_description()!="")
-		ROFL_INFO("Hardware driver description: %s\n\n", get_driver_description().c_str());
+		XDPD_INFO("Hardware driver description: %s\n\n", get_driver_description().c_str());
 	else
-		ROFL_INFO("\n");
+		XDPD_INFO("\n");
 
 	if(get_driver_extra_params()!="")
-		ROFL_INFO("%s\n", get_driver_extra_params().c_str());
+		XDPD_INFO("%s\n", get_driver_extra_params().c_str());
 
 
 }

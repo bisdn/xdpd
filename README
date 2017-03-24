@@ -30,10 +30,12 @@ Requirements
 - A modern GNU build-system (autoconf, automake, libtool, ...)
 - GNU/Linux and libc development headers (linux-libc-dev and libc6-dev package in Debian/Ubuntu systems)
 - libconfig C++ lib (libconfig++-dev in Debian/Ubuntu systems)
+- openssl (rofl-common, libssl-dev in Debian/Ubuntu systems)
 - [optional] if you want to run automatic tests (make check), libcunit and libcppunit are required (in libcunit1-dev and libcppunit-dev packages in Debian-like systems).
 - [optional] Doxygen to generate the documentation.
 
-[1] http://www.roflibs.org/, https://github.com/bisdn/rofl-core
+[1] https://github.com/bisdn/rofl-common
+[2] https://github.com/bisdn/rofl-datapath
 
 
 How to build
@@ -41,7 +43,8 @@ How to build
 
 Install the dependencies and run:
 
-	sh# ./autogen.sh  
+	sh# ./autogen.sh
+	sh# mkdir -p build
 	sh# cd build  
 	sh# ../configure  
 	sh# make  

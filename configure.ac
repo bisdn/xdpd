@@ -27,7 +27,7 @@ AC_SUBST(LIBTOOL)dnl
 
 #Default flags
 CFLAGS="-fgnu89-inline -Werror -Wall $CFLAGS"
-CXXFLAGS="-Werror -Wall $CXXFLAGS"
+CXXFLAGS="-std=c++11 -Werror -Wall $CXXFLAGS"
 LDFLAGS="-Wl,--as-needed -Wl,-export-dynamic"
 
 AC_DEFINE(__STDC_FORMAT_MACROS)
@@ -111,6 +111,8 @@ AC_CONFIG_FILES([
 
 	src/Makefile
 	src/xdpd/Makefile
+	src/xdpd/common/Makefile
+	src/xdpd/common/utils/Makefile
 	src/xdpd/drivers/Makefile
 	src/xdpd/management/Makefile
 	src/xdpd/management/plugins/Makefile

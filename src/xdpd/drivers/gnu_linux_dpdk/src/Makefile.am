@@ -12,11 +12,10 @@ libxdpd_driver_gnu_linux_dpdk_src_la_LIBADD = \
 		processing/libxdpd_driver_gnu_linux_dpdk_src_processing.la\
 		util/libxdpd_driver_gnu_linux_dpdk_src_util.la\
 		-lrte_eal\
-		-lethdev\
+		-lrte_ethdev\
 		-lrte_hash\
 		-lrte_kni\
 		-lrte_lpm\
-		-lrte_malloc\
 		-lrte_mbuf\
 		-lrte_mempool\
 		-lrte_power\

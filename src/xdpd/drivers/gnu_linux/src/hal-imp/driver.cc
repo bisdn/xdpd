@@ -17,7 +17,6 @@
 
 #include <stdio.h>
 #include <rofl/datapath/hal/driver.h>
-#include <rofl/common/utils/c_logger.h>
 #include <rofl/datapath/hal/cmm.h>
 #include <rofl/datapath/pipeline/platform/memory.h>
 #include <rofl/datapath/pipeline/physical_switch.h>
@@ -35,6 +34,7 @@
 #include <string.h>
 #include <rofl/datapath/pipeline/openflow/of_switch.h>
 #include <rofl/datapath/pipeline/common/datapacket.h>
+#include <utils/c_logger.h>
 
 using namespace xdpd::gnu_linux;
 
@@ -54,7 +54,7 @@ using namespace xdpd::gnu_linux;
 */
 hal_result_t hal_driver_init(hal_extension_ops_t* extensions, const char* extra_params){
 
-	ROFL_INFO(DRIVER_NAME" Initializing driver...\n");
+	XDPD_INFO(DRIVER_NAME" Initializing driver...\n");
 	
 	//Init the ROFL-PIPELINE phyisical switch
 	if(physical_switch_init() != ROFL_SUCCESS)
@@ -133,7 +133,7 @@ hal_result_t hal_driver_destroy(){
 	//Print stats if any
 	TM_DUMP_MEASUREMENTS();
 	
-	ROFL_INFO(DRIVER_NAME" driver destroyed.\n");
+	XDPD_INFO(DRIVER_NAME" driver destroyed.\n");
 	
 	return HAL_SUCCESS; 
 }
@@ -210,7 +210,7 @@ hal_result_t hal_driver_destroy_switch_by_dpid(const uint64_t dpid){
 		if(sw->logical_ports[i].attachment_state == LOGICAL_PORT_STATE_ATTACHED && sw->logical_ports[i].port){
 			//Take it out from the group
 			if( iomanager::remove_port((ioport*)sw->logical_ports[i].port->platform_port_state) != ROFL_SUCCESS ){
-				ROFL_ERR(DRIVER_NAME" WARNING! Error removing port %s from the iomanager for the switch: %s. This can leave the port unusable in the future.\n", sw->logical_ports[i].port->name, sw->name);
+				XDPD_ERR(DRIVER_NAME" WARNING! Error removing port %s from the iomanager for the switch: %s. This can leave the port unusable in the future.\n", sw->logical_ports[i].port->name, sw->name);
 				assert(0);
 			}
 
@@ -388,7 +388,7 @@ hal_result_t hal_driver_connect_switches(uint64_t dpid_lsi1, unsigned int* port_
 
 	//Enable interfaces (start packet transmission)
 	if(hal_driver_bring_port_up(vport1->of_port_state->name) != HAL_SUCCESS || hal_driver_bring_port_up(vport2->of_port_state->name) != HAL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME" ERROR: unable to bring up vlink ports.\n");
+		XDPD_ERR(DRIVER_NAME" ERROR: unable to bring up vlink ports.\n");
 		assert(0);
 		return HAL_FAILURE;
 	}
@@ -437,14 +437,14 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	
 	//Remove it from the iomanager (do not feed more packets)
 	if(iomanager::remove_port((ioport*)port->platform_port_state) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME" Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
+		XDPD_ERR(DRIVER_NAME" Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
 		assert(0);
 		goto DRIVER_DETACH_ERROR;	
 	}
 	
 	//Detach it
 	if(physical_switch_detach_port_from_logical_switch(port,lsw) != ROFL_SUCCESS){
-		ROFL_ERR(DRIVER_NAME" Error detaching port %s.\n",port->name);
+		XDPD_ERR(DRIVER_NAME" Error detaching port %s.\n",port->name);
 		assert(0);
 		goto DRIVER_DETACH_ERROR;	
 	}
@@ -454,7 +454,7 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 		switch_port_t* port_pair = get_vlink_pair(port); 
 
 		if(!port_pair){
-			ROFL_ERR(DRIVER_NAME" Error detaching a virtual link port. Could not find the counter port of %s.\n",port->name);
+			XDPD_ERR(DRIVER_NAME" Error detaching a virtual link port. Could not find the counter port of %s.\n",port->name);
 			assert(0);
 			goto DRIVER_DETACH_ERROR;
 		}
@@ -464,13 +464,13 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 	
 		//Remove it from the iomanager (do not feed more packets)
 		if(iomanager::remove_port((ioport*)port_pair->platform_port_state) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME" Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
+			XDPD_ERR(DRIVER_NAME" Error removing port %s from the iomanager. The port may become unusable...\n",port->name);
 			assert(0);
 			goto DRIVER_DETACH_ERROR;
 		}
 	
 		if(!port_pair->attached_sw || physical_switch_detach_port_from_logical_switch(port_pair,port_pair->attached_sw) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME" Error detaching port-pair %s from the sw.\n",port_pair->name);
+			XDPD_ERR(DRIVER_NAME" Error detaching port-pair %s from the sw.\n",port_pair->name);
 			assert(0);
 			goto DRIVER_DETACH_ERROR;
 		}
@@ -484,14 +484,14 @@ hal_result_t hal_driver_detach_port_from_switch(uint64_t dpid, const char* name)
 
 		//Remove from the pipeline and delete
 		if(physical_switch_remove_port(port->name) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
+			XDPD_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
 			assert(0);
 			return HAL_FAILURE;
 			
 		}
 		
 		if(physical_switch_remove_port(port_pair->name) != ROFL_SUCCESS){
-			ROFL_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
+			XDPD_ERR(DRIVER_NAME" Error removing port from the physical_switch. The port may become unusable...\n");
 			assert(0);
 			goto DRIVER_DETACH_ERROR;
 			

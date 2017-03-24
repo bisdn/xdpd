@@ -35,6 +35,30 @@ namespace gnu_linux {
 * region (MMAP) using PF_PACKET TX/RX rings 
 */
 
+// Ethernet II header
+struct eth_hdr_t {
+        uint8_t dl_dst[6];
+        uint8_t dl_src[6];
+        uint16_t dl_type;
+        uint8_t data[0];
+} __attribute__((packed));
+
+// VLAN ethernet types
+enum vlan_ether_t {
+        VLAN_CTAG_ETHER = 0x8100,
+        VLAN_STAG_ETHER = 0x88a8,
+        VLAN_ITAG_ETHER = 0x88e7,
+};
+
+// VLAN header
+struct vlan_hdr_t {
+        // tag control identifier (TCI)
+        uint8_t byte0;
+        uint8_t byte1;
+        //uint16_t hdr;                 // vid + cfi + pcp
+        uint16_t dl_type;               // ethernet type
+} __attribute__((packed));
+
 
 /**
 * @brief GNU/Linux interface access via Memory Mapped

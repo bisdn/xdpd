@@ -14,8 +14,7 @@ test_bufferpool_SOURCES=$(top_srcdir)/src/io/bufferpool.cc\
 	$(top_srcdir)/src/pipeline-imp/memory.c\
 	test_bufferpool.cc
 
-test_bufferpool_LDADD= -lrofl_common -lcppunit -lpthread
-test_bufferpool_CXXFLAGS= -std=c++0x -std=gnu++0x
+test_bufferpool_LDADD= -lrofl_common -lcppunit -lpthread $(top_srcdir)/../../common/utils/libxdpd_common_utils.la
 
 check_PROGRAMS = test_datapacket_storage test_bufferpool
 TESTS = test_datapacket_storage test_bufferpool

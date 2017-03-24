@@ -9,8 +9,8 @@
 #include <list>
 #include <pthread.h>
 
-#include <rofl/common/croflexception.h>
-#include <rofl/common/utils/c_logger.h>
+#include "xdpd/common/exception.h"
+#include "xdpd/common/utils/c_logger.h"
 #include "port_manager.h"
 
 /**
@@ -22,7 +22,10 @@
 
 namespace xdpd {
 
-class eNFPMmBase			: public rofl::RoflException {};
+class eNFPMmBase			: public xdpd::exception {
+public:
+	eNFPMmBase() : xdpd::exception("eNFPMmBase") {};
+};
 class eNFPMmInvalidNF			: public eNFPMmBase {};
 class eNFPMmNotsupportedByDriver	: public eNFPMmBase {};
 class eNFPMmUnknownError 		: public eNFPMmBase {};

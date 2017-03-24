@@ -7,8 +7,8 @@
 
 #include <iostream>
 #include <libconfig.h++> 
-#include <rofl/platform/unix/cunixenv.h>
-#include <rofl/common/croflexception.h>
+#include "xdpd/common/cunixenv.h"
+#include "xdpd/common/exception.h"
 #include "../../plugin_manager.h"
 #include "scope.h"
 
@@ -40,11 +40,11 @@ public:
 	
 	virtual void init(void);
 	
-	virtual std::vector<rofl::coption> get_options(void){
-		std::vector<rofl::coption> vec;
+	virtual std::vector<xdpd::coption> get_options(void){
+		std::vector<xdpd::coption> vec;
 
 		//Add mandatory -c argument
-		vec.push_back(rofl::coption(false,REQUIRED_ARGUMENT, CONFIG_FILE_OPT_CODE,  CONFIG_FILE_OPT_FULL_NAME, "xDPd config file","./example.cfg"));
+		vec.push_back(xdpd::coption(false,REQUIRED_ARGUMENT, CONFIG_FILE_OPT_CODE,  CONFIG_FILE_OPT_FULL_NAME, "xDPd config file","./example.cfg"));
 	
 		return vec;
 	};

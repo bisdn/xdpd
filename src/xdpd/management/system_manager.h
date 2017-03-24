@@ -5,12 +5,19 @@
 #ifndef SYSTEM_MANAGER_H
 #define SYSTEM_MANAGER_H 
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/select.h>
+
 #include <list>
 #include <stdint.h>
 #include <rofl_datapath.h>
-#include <rofl/common/croflexception.h>
 #include <rofl/datapath/hal/driver.h>
-#include <rofl/platform/unix/cunixenv.h>
+
+#include <cunixenv.h>
+#include <exception.h>
+#include <utils/c_logger.h>
 
 /**
 * @file system_manager.h
@@ -23,7 +30,10 @@ namespace xdpd {
 
 
 //System manager exceptions
-class eSystemBase		: public rofl::RoflException {};	// base error class for all system_manager related errors
+class eSystemBase		: public xdpd::exception {
+public:
+	eSystemBase() : xdpd::exception("eSystemBase") {};
+};	// base error class for all system_manager related errors
 class eSystemGeneralError	: public eSystemBase {};
 class eSystemUnknownError	: public eSystemBase {};
 class eSystemLogLevelSetviaCLI	: public eSystemBase {};
@@ -176,7 +186,7 @@ private:
 	static driver_info_t driver_info;
 
 	//Command line options
-	static rofl::cunixenv* env_parser;
+	static xdpd::cunixenv* env_parser;
 
 	//Constants
 	static const std::string XDPD_CLOG_FILE;

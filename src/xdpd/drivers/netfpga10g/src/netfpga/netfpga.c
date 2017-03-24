@@ -90,13 +90,13 @@ static rofl_result_t netfpga_add_entry_hw(netfpga_flow_entry_t* entry){
 
 	//Set Row address
 	if(entry->type == NETFPGA_FE_FIXED ){
-		//ROFL_DEBUG("\n  %s : % d  FIXED ENTRY  \n ", __FILE__,__LINE__);
+		//XDPD_DEBUG("\n  %s : % d  FIXED ENTRY  \n ", __FILE__,__LINE__);
 		
 		if(netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_EXACT_BASE + entry->hw_pos) != ROFL_SUCCESS)//NETFPGA_EXACT_BASE			0x0000
 			return ROFL_FAILURE;
 	}else{
 		
-		//ROFL_DEBUG("\n  %s : % d  WILD CARD  \n ", __FILE__,__LINE__);
+		//XDPD_DEBUG("\n  %s : % d  WILD CARD  \n ", __FILE__,__LINE__);
 		if(netfpga_write_reg(nfpga, NETFPGA_OF_BASE_ADDR_REG, NETFPGA_WILDCARD_BASE + entry->hw_pos) != ROFL_SUCCESS)
 			return ROFL_FAILURE;
 	}
@@ -223,7 +223,7 @@ netfpga_device_t* netfpga_get(){
 rofl_result_t netfpga_init(){
 
 	if(nfpga){
-		ROFL_DEBUG("Double call to netfpga_init()\n");
+		XDPD_DEBUG("Double call to netfpga_init()\n");
 		assert(0);
 		return ROFL_SUCCESS; //Skip
 	}
@@ -264,7 +264,7 @@ rofl_result_t netfpga_init(){
 	netfpga_read_misc_stats(misc_stats);
 	displacy_misc_stats(misc_stats);
 */
-	ROFL_DEBUG("\n   END OF NETFPGA INITIALIZATION !!!!!!!!!!!!!!!!!!!!!!!! \n");
+	XDPD_DEBUG("\n   END OF NETFPGA INITIALIZATION !!!!!!!!!!!!!!!!!!!!!!!! \n");
 	return ROFL_SUCCESS;
 }
 
@@ -277,17 +277,17 @@ rofl_result_t netfpga_destroy(){
 	port[2] = physical_switch_get_port_by_name("nf2");
 	port[3] = physical_switch_get_port_by_name("nf3");
 	
-	if(ROFL_FAILURE==netfpga_destroy_port(port[0])) ROFL_DEBUG("netfpga_destroy_port() failled");
-	if(ROFL_FAILURE==netfpga_destroy_port(port[1])) ROFL_DEBUG("netfpga_destroy_port() failled");
-	if(ROFL_FAILURE==netfpga_destroy_port(port[2])) ROFL_DEBUG("netfpga_destroy_port() failled");
-	if(ROFL_FAILURE==netfpga_destroy_port(port[3])) ROFL_DEBUG("netfpga_destroy_port() failled");
+	if(ROFL_FAILURE==netfpga_destroy_port(port[0])) XDPD_DEBUG("netfpga_destroy_port() failled");
+	if(ROFL_FAILURE==netfpga_destroy_port(port[1])) XDPD_DEBUG("netfpga_destroy_port() failled");
+	if(ROFL_FAILURE==netfpga_destroy_port(port[2])) XDPD_DEBUG("netfpga_destroy_port() failled");
+	if(ROFL_FAILURE==netfpga_destroy_port(port[3])) XDPD_DEBUG("netfpga_destroy_port() failled");
 
 	//for(int i=0;i<NETFPGA_LAST_PORT-1;i++){		
-	//	if(ROFL_FAILURE==netfpga_destroy_port(port[i])) ROFL_DEBUG("netfpga_destroy_port() failled");
+	//	if(ROFL_FAILURE==netfpga_destroy_port(port[i])) XDPD_DEBUG("netfpga_destroy_port() failled");
 	//}
 
 	if(!nfpga){
-		ROFL_DEBUG("netfpga_destroy() called without netfpga being initialized!\n");
+		XDPD_DEBUG("netfpga_destroy() called without netfpga being initialized!\n");
 		assert(0);
 		return ROFL_SUCCESS; //Skip
 	}	
@@ -325,10 +325,10 @@ rofl_result_t netfpga_set_table_behaviour(void){
 
 //Add flow entry to table 
 rofl_result_t netfpga_add_flow_entry(of1x_flow_entry_t* entry){
-	//ROFL_DEBUG("%s : %d GOT FLOW ENTRY! \n", __FILE__,__LINE__);
+	//XDPD_DEBUG("%s : %d GOT FLOW ENTRY! \n", __FILE__,__LINE__);
 	//Map entry to a hw entry
 
-	//ROFL_DEBUG("",entry->matchs->    ,            ,             );
+	//XDPD_DEBUG("",entry->matchs->    ,            ,             );
 	netfpga_flow_entry_t* hw_entry = netfpga_generate_hw_flow_entry(nfpga, entry);
 
 

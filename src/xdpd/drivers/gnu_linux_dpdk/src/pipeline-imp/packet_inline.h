@@ -10,7 +10,7 @@
 #include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/datapath/pipeline/common/ipv6_exthdr.h>
-#include <rofl/common/utils/c_logger.h>
+#include <utils/c_logger.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -63,10 +63,10 @@ platform_packet_drop(datapacket_t* pkt)
 {
 	datapacket_dpdk_t* state = (datapacket_dpdk_t*)(pkt->platform_state);
 	
-	ROFL_DEBUG("Dropping packet(%p)\n",pkt);
+	XDPD_DEBUG("Dropping packet(%p)\n",pkt);
 	
 	if ( NULL == state ){
-		ROFL_DEBUG("packet state is NULL\n");
+		XDPD_DEBUG("packet state is NULL\n");
 		return;
 	}
 
@@ -124,6 +124,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 
 	datapacket_t* pkt_replica;
 	struct rte_mbuf* mbuf=NULL, *mbuf_origin;
+	unsigned int rte_socket;
 	
 	//Protect
 	if(unlikely(!pkt))
@@ -133,7 +134,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 	pkt_replica = xdpd::gnu_linux::bufferpool::get_buffer();
 	
 	if(unlikely(!pkt_replica)){
-		ROFL_DEBUG("Replicate packet; could not clone pkt(%p). No buffers left in bufferpool\n", pkt);
+		XDPD_DEBUG("Replicate packet; could not clone pkt(%p). No buffers left in bufferpool\n", pkt);
 		goto PKT_REPLICATE_ERROR;
 	}
 
@@ -142,14 +143,18 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 #ifndef DISABLE_SOFT_CLONE
 	if( hard_clone ){
 #endif
-		mbuf = rte_pktmbuf_alloc(direct_pools[rte_socket_id()]);
+		rte_socket = rte_socket_id();
+		if (rte_socket==0xffffffff) rte_socket=0; 
+		//for non-EAL threads rte_socket_id() apparently returns 0xffffffff
+
+		mbuf = rte_pktmbuf_alloc(direct_pools[rte_socket]);
 		
 		if(unlikely(mbuf == NULL)){	
-			ROFL_DEBUG("Replicate packet; could not hard clone pkt(%p). rte_pktmbuf_clone failed. errno: %d - %s\n", pkt_replica, rte_errno, rte_strerror(rte_errno));
+			XDPD_DEBUG("Replicate packet; could not hard clone pkt(%p). rte_pktmbuf_clone failed. errno: %d - %s\n", pkt_replica, rte_errno, rte_strerror(rte_errno));
 			goto PKT_REPLICATE_ERROR;
 		}
 		if(unlikely( rte_pktmbuf_append(mbuf, rte_pktmbuf_pkt_len(mbuf_origin)) == NULL)){
-			ROFL_DEBUG("Replicate packet(hard); could not perform rte_pktmbuf_append pkt(%p). rte_pktmbuf_clone failed\n", pkt_replica);
+			XDPD_DEBUG("Replicate packet(hard); could not perform rte_pktmbuf_append pkt(%p). rte_pktmbuf_clone failed\n", pkt_replica);
 			goto PKT_REPLICATE_ERROR;
 		}
 		rte_memcpy(rte_pktmbuf_mtod(mbuf, uint8_t*), rte_pktmbuf_mtod(mbuf_origin, uint8_t*),  rte_pktmbuf_pkt_len(mbuf_origin));
@@ -161,7 +166,7 @@ STATIC_PACKET_INLINE__ datapacket_t* platform_packet_replicate__(datapacket_t* p
 		mbuf = rte_pktmbuf_clone(mbuf_origin, pool_indirect);
 		
 		if(unlikely(mbuf == NULL)){	
-			ROFL_DEBUG("Replicate packet; could not hard clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
+			XDPD_DEBUG("Replicate packet; could not hard clone pkt(%p). rte_pktmbuf_clone failed\n", pkt);
 			goto PKT_REPLICATE_ERROR;
 		}
 	}
@@ -230,7 +235,7 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 	//Output packet to the appropiate queue and port_num
 	if(likely(port && port->platform_port_state) && port->up && port->forward_packets){
 		
-		ROFL_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
+		XDPD_DEBUG("[%s] OUTPUT packet(%p)\n", port->name, pkt);
 
 		if(port->type == PORT_TYPE_VIRTUAL){
 			/*
@@ -248,7 +253,7 @@ static inline void output_single_packet(datapacket_t* pkt, datapacket_dpdk_t* pa
 			/*
 			* DPDK NF port
 			*/
-			xdpd::gnu_linux_dpdk::tx_pkt_dpdk_nf_port(port, pkt);
+			xdpd::gnu_linux_dpdk::tx_pkt_shmem_nf_port(port, pkt);
 		}else if(port->type == PORT_TYPE_NF_EXTERNAL)
 		{
 			/*
@@ -327,12 +332,12 @@ STATIC_PACKET_INLINE__ void platform_packet_output(datapacket_t* pkt, switch_por
 			replica = platform_packet_replicate__(pkt, false);
 
 			if(unlikely(!replica)){
-				ROFL_ERR("ERROR: Could not complete FLOOD action(%p): out of memory!\n", pkt);
+				XDPD_ERR("ERROR: Could not complete FLOOD action(%p): out of memory!\n", pkt);
 				assert(0);
 				break;
 			}
 
-			ROFL_DEBUG("[%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
+			XDPD_DEBUG("[%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
 			
 			//send the replica
 			output_single_packet(replica, (datapacket_dpdk_t*)replica->platform_state, port_it);

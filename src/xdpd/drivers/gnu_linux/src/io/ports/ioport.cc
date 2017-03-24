@@ -7,8 +7,9 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <unistd.h>
-#include <rofl/common/utils/c_logger.h>
 #include "../bufferpool.h"
+
+#include <utils/c_logger.h>
 
 using namespace xdpd::gnu_linux;
 
@@ -36,7 +37,7 @@ ioport::ioport(switch_port_t* of_ps, unsigned int q_num){
 	//Initalize pthread rwlock		
 	if(pthread_rwlock_init(&rwlock, NULL) < 0){
 		//Can never happen...
-		ROFL_ERR(DRIVER_NAME" Unable to initialize ioport's rwlock\n");
+		XDPD_ERR(DRIVER_NAME" Unable to initialize ioport's rwlock\n");
 		assert(0);
 	}
 }

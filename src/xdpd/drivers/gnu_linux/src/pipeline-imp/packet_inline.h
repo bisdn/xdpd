@@ -10,7 +10,6 @@
 #include <rofl/datapath/pipeline/platform/packet.h>
 #include <rofl/datapath/hal/openflow/openflow1x/of1x_cmm.h>
 #include <rofl/datapath/pipeline/common/ipv6_exthdr.h>
-#include <rofl/common/utils/c_logger.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -23,6 +22,7 @@
 
 #include "../io/packet_classifiers/pktclassifier.h"
 
+#include <utils/c_logger.h>
 
 //
 // Configuration to include packet_proto_meta_imp.h
@@ -70,7 +70,7 @@ void platform_packet_set_queue(datapacket_t* pkt, uint32_t queue)
 STATIC_PACKET_INLINE__
 void platform_packet_drop(datapacket_t* pkt)
 {
-	ROFL_DEBUG(DRIVER_NAME"[pkt] Dropping packet(%p)\n",pkt);
+	XDPD_DEBUG(DRIVER_NAME"[pkt] Dropping packet(%p)\n",pkt);
 	
 	//Release buffer
 	bufferpool::release_buffer(pkt);
@@ -83,7 +83,7 @@ void output_single_packet(datapacket_t* pkt, datapacketx86* pack, switch_port_t*
 	//Output packet to the appropiate queue and port_num
 	if(likely(port && port->platform_port_state) && port->up && port->forward_packets){
 		
-		ROFL_DEBUG(DRIVER_NAME"[pkt][%s] OUTPUT packet(%p)\n", port->name, pkt);
+		XDPD_DEBUG(DRIVER_NAME"[pkt][%s] OUTPUT packet(%p)\n", port->name, pkt);
 
 		TM_STAMP_STAGE(pkt, TM_SA5_PRE);
 		
@@ -188,7 +188,7 @@ void platform_packet_output(datapacket_t* pkt, switch_port_t* output_port){
 			replica = platform_packet_replicate(pkt); 	
 			replica_pack = (datapacketx86*) (replica->platform_state);
 
-			ROFL_DEBUG(DRIVER_NAME"[pkt][%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
+			XDPD_DEBUG(DRIVER_NAME"[pkt][%s] OUTPUT FLOOD packet(%p), origin(%p)\n", port_it->name, replica, pkt);
 			
 			//send the replica
 			output_single_packet(replica, replica_pack, port_it);

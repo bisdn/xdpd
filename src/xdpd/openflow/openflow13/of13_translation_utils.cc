@@ -356,15 +356,15 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		uint128__t val; ofmatch.get_ipv6_src_value().pack(val.val, 16); NTOHB128(val);
-		uint128__t msk; ofmatch.get_ipv6_src_mask().pack(msk.val, 16);  NTOHB128(msk);
+		uint128__t val; ofmatch.get_ipv6_src_value().pack(val.val, 16);
+		uint128__t msk; ofmatch.get_ipv6_src_mask().pack(msk.val, 16); 
 		match = of1x_init_ip6_src_match(val, msk);
 		of1x_add_match_to_entry(entry,match);
 	} catch(...) {}
 	
 	try {
-		uint128__t val; ofmatch.get_ipv6_dst_value().pack(val.val, 16); NTOHB128(val);
-		uint128__t msk; ofmatch.get_ipv6_dst_mask().pack(msk.val, 16);  NTOHB128(msk);
+		uint128__t val; ofmatch.get_ipv6_dst_value().pack(val.val, 16);
+		uint128__t msk; ofmatch.get_ipv6_dst_mask().pack(msk.val, 16); 
 		match = of1x_init_ip6_dst_match(val, msk);
 		of1x_add_match_to_entry(entry,match);
 	} catch(...) {}
@@ -385,7 +385,7 @@ of13_translation_utils::of13_map_flow_entry_matches(
 	} catch(...) {}
 
 	try {
-		uint128__t val; ofmatch.get_ipv6_nd_target().pack(val.val, 16); NTOHB128(val);
+		uint128__t val; ofmatch.get_ipv6_nd_target().pack(val.val, 16);
 		match = of1x_init_ip6_nd_target_match(val);
 		of1x_add_match_to_entry(entry,match);
 	} catch(...) {}
@@ -830,14 +830,13 @@ of13_translation_utils::of13_map_flow_entry_actions(
 					break;
 
 				case rofl::openflow13::OFPXMT_OFB_IPV6_SRC: {
-					//set_field.get_oxm_128().get_u128value()
 					caddress_in6 ipv6_src(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
-					ipv6_src.pack(field.u128.val, 16); NTOHB128(field.u128);
+					ipv6_src.pack(field.u128.val, 16);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_SRC, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_DST: {
 					caddress_in6 ipv6_dst(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
-					ipv6_dst.pack(field.u128.val, 16); NTOHB128(field.u128);
+					ipv6_dst.pack(field.u128.val, 16);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_DST, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_FLABEL: {
@@ -846,7 +845,7 @@ of13_translation_utils::of13_map_flow_entry_actions(
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_ND_TARGET: {
 					caddress_in6 ipv6_nd_target(const_cast<rofl::openflow::cofaction_set_field&>(set_field).set_oxm_128().get_u128value());
-					ipv6_nd_target.pack(field.u128.val, 16); NTOHB128(field.u128);
+					ipv6_nd_target.pack(field.u128.val, 16);
 					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_IPV6_ND_TARGET, field, 0x0);
 				}break;
 				case rofl::openflow13::OFPXMT_OFB_IPV6_ND_SLL: {
@@ -1261,9 +1260,9 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				match.set_icmpv4_code(of1x_get_match_value8(m));
 				break;
 			case OF1X_MATCH_IPV6_SRC: {
-				uint128__t value = of1x_get_match_value128(m); HTONB128(value);
+				uint128__t value = of1x_get_match_value128(m);
 				caddress_in6 addr; addr.unpack(value.val, 16);
-				uint128__t mask = of1x_get_match_mask128(m); HTONB128(mask);
+				uint128__t mask = of1x_get_match_mask128(m);
 				caddress_in6 msk; msk.unpack(mask.val, 16);
 				if (msk == rofl::caddress_in6("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")) {
 					match.set_ipv6_src(addr);
@@ -1272,9 +1271,9 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				}
 				}break;
 			case OF1X_MATCH_IPV6_DST:{
-				uint128__t value = of1x_get_match_value128(m); HTONB128(value);
+				uint128__t value = of1x_get_match_value128(m);
 				caddress_in6 addr; addr.unpack(value.val, 16);
-				uint128__t mask = of1x_get_match_mask128(m); HTONB128(mask);
+				uint128__t mask = of1x_get_match_mask128(m);
 				caddress_in6 msk; msk.unpack(mask.val, 16);
 				if (msk == rofl::caddress_in6("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")) {
 					match.set_ipv6_dst(addr);
@@ -1296,7 +1295,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 				match.set_icmpv6_code(of1x_get_match_value8(m));
 				break;
 			case OF1X_MATCH_IPV6_ND_TARGET:{
-				uint128__t value = of1x_get_match_value128(m); HTONB128(value);
+				uint128__t value = of1x_get_match_value128(m);
 				caddress_in6 addr; addr.unpack(value.val, 16);
 				match.set_ipv6_nd_target(addr);
 				}break;
@@ -1862,12 +1861,12 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		} break;
 		
 		case OF1X_AT_SET_FIELD_IPV6_SRC: {
-			uint128__t value = of1x_get_packet_action_field128(of1x_action); HTONB128(value);
+			uint128__t value = of1x_get_packet_action_field128(of1x_action);
 			caddress_in6 addr; addr.unpack(value.val, 16);
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_ipv6_src(addr));
 		} break;
 		case OF1X_AT_SET_FIELD_IPV6_DST: {
-			uint128__t value = of1x_get_packet_action_field128(of1x_action); HTONB128(value);
+			uint128__t value = of1x_get_packet_action_field128(of1x_action);
 			caddress_in6 addr; addr.unpack(value.val, 16);
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_ipv6_dst(addr));
 		} break;
@@ -1875,7 +1874,7 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_ipv6_flabel(of1x_get_packet_action_field32(of1x_action)));
 		} break;
 		case OF1X_AT_SET_FIELD_IPV6_ND_TARGET: {
-			uint128__t value = of1x_get_packet_action_field128(of1x_action); HTONB128(value);
+			uint128__t value = of1x_get_packet_action_field128(of1x_action);
 			caddress_in6 addr; addr.unpack(value.val, 16);
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::coxmatch_ofb_ipv6_nd_target(addr));
 		} break;
@@ -2081,14 +2080,14 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 	
 	tmp = packet_matches_get_ipv6_src_value(pm);	
 	if( UINT128__T_IS_NOT_ZERO(tmp) ){
-		uint128__t addru128 = packet_matches_get_ipv6_src_value(pm); HTONB128(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_src_value(pm);
 		caddress_in6 addr; addr.unpack(addru128.val, 16);
 		match.set_ipv6_src(addr);
 	}
 	
 	tmp = packet_matches_get_ipv6_dst_value(pm);
 	if( UINT128__T_IS_NOT_ZERO(tmp) ){
-		uint128__t addru128 = packet_matches_get_ipv6_dst_value(pm); HTONB128(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_dst_value(pm);
 		caddress_in6 addr; addr.unpack(addru128.val, 16);
 		match.set_ipv6_dst(addr);
 	}
@@ -2097,7 +2096,7 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 
 	tmp = packet_matches_get_ipv6_nd_target_value(pm);
 	if( UINT128__T_IS_NOT_ZERO(tmp) ){
-		uint128__t addru128 = packet_matches_get_ipv6_nd_target_value(pm); HTONB128(addru128);
+		uint128__t addru128 = packet_matches_get_ipv6_nd_target_value(pm);
 		caddress_in6 addr; addr.unpack(addru128.val, 16);
 		match.set_ipv6_nd_target(addr);
 	}

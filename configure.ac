@@ -28,7 +28,7 @@ AC_SUBST(LIBTOOL)dnl
 #Default flags
 CFLAGS="-fgnu89-inline -Werror -Wall $CFLAGS"
 CXXFLAGS="-std=c++11 -Werror -Wall $CXXFLAGS"
-LDFLAGS="-Wl,--as-needed -Wl,-export-dynamic"
+LDFLAGS="-Wl,--as-needed -Wl,-export-dynamic -Wl,--build-id"
 
 AC_DEFINE(__STDC_FORMAT_MACROS)
 AC_DEFINE(__STDC_CONSTANT_MACROS)

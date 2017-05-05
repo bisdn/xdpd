@@ -1,30 +1,77 @@
 Name:		xdpd
-Version:	0.4.0
-Release:	rc2%{?dist}
-Summary:	extensible data path daemon
+Version:	0.7.7
+Release:	1%{?dist}
+Summary:	eXtensible DataPath daemon
 
 Group:		System Environment/Daemons
 License:        Mozilla Public License Version 2.0, http://www.mozilla.org/MPL/2.0/
-URL:		http://codebasin.net/xdpd
+URL:		http://github.com/bisdn/xdpd
 Source0:	xdpd-%{version}.tar.gz
 Epoch:		0
 
-BuildRequires:	rofl-devel libconfig-devel qpid-qmf-devel boost-devel
+BuildRequires: autoconf
+BuildRequires: automake
+BuildRequires: bash
+BuildRequires: binutils
+BuildRequires: boost-devel
+BuildRequires: boost-system
+BuildRequires: coreutils
+BuildRequires: cpio
+BuildRequires: diffutils
+BuildRequires: dwz
+BuildRequires: elfutils
+BuildRequires: file
+BuildRequires: findutils
+BuildRequires: gawk
+BuildRequires: gcc
+BuildRequires: gcc-c++
+BuildRequires: gdb
+BuildRequires: git-core
+BuildRequires: glibc
+BuildRequires: glibc
+BuildRequires: glibc-common
+BuildRequires: glibc-devel
+BuildRequires: glibc-headers
+BuildRequires: grep
+BuildRequires: guile
+BuildRequires: gzip
+BuildRequires: hostname
+BuildRequires: kernel-headers
+BuildRequires: libgcc
+BuildRequires: libstdc++
+BuildRequires: libstdc++-devel
+BuildRequires: libtool
+BuildRequires: m4
+BuildRequires: make
+BuildRequires: openssl-devel
+BuildRequires: libconfig-devel
+BuildRequires: glog-devel
+BuildRequires: gflags-devel
+Requires: boost
+Requires: libconfig
+Requires: pkgconfig
+Requires: glog
+Requires: gflags
+Requires: openssl-libs
+
+
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root 
-Requires:	rofl libconfig qpid-qmf boost
+
+%global _missing_build_ids_terminate_build 0
 
 %description
-extensible data path daemon version 0.4.0 (rc2)
+eXtensible DataPath daemon version %{version}
 
 
 %prep
-%setup 
+%autosetup 
+sh autogen.sh
+
 
 
 %build
-sh autogen.sh
 cd build/
-env PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --prefix=/usr/local --disable-silent-rules --with-plugins="config"
+../configure --disable-silent-rules --enable-experimental --with-hw-support=gnu-linux-dpdk --with-pipeline-platform-funcs-inlined --with-pipeline-lockless --with-plugins="config rest" --prefix=/usr --sysconfdir=/etc
 make %{?_smp_mflags}
 
 
@@ -43,14 +90,18 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc
-/usr/local/sbin/xdpd
-#/usr/local/sbin/xmpclient
+/usr/sbin/xdpd
+/usr/bin/xcli
+/etc/xdpd.conf
+
 
 
 %clean
 rm -rf $RPM_BUILD_ROOT 
 
 %changelog
+* Thu May 04 2017 Andreas Koepsel <andreas.koepsel@bisdn.de>
+- build package for xdpd v0.7.7 (with rofl-common v0.11)
 * Sat Apr 26 2014 Andreas Koepsel <andreas.koepsel@bisdn.de>
 - build package for xdpd v0.4.0 (rc2)
 

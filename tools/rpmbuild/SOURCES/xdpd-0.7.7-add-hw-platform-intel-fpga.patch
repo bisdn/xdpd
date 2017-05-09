@@ -1,0 +1,33 @@
+diff -Nur a/config/hw.m4 b/config/hw.m4
+--- a/config/hw.m4	2017-05-09 16:05:37.446218500 +0200
++++ b/config/hw.m4	2017-05-09 16:05:16.177046809 +0200
+@@ -81,6 +81,29 @@
+ 	AC_CONFIG_SUBDIRS([src/xdpd/drivers/example])
+ 	DRIVER_HAS_INLINE_SUPPORT="no"
+ fi
++if ( test "$HW" = "intel_fpga");then
++	msg="$msg INTEL_FPGA"
++	AC_DEFINE(HW_INTEL_FPGA)
++	PLATFORM=intel_fpga
++	AC_CONFIG_SUBDIRS([src/xdpd/drivers/intel_fpga])
++	#In DPDK-1.7, Poll Mode Drivers (PMD) register with DPDK from static constructors. If linker decides
++	#not to include the corresponding object file (which is usually the case since PMDs mostly contain
++	#static functions, only accessed indirectly), then the PMD is not registered.
++	#To fix this, PMDs have to be linked in using the --whole-archive linker flag.
++	#Unfortunately, autoconf+libtool don't seem to provide a way to include these extra linker flags in
++	#the .la file. Hence, they have to be provided here at the top-level...
++	xdpd_HW_LDFLAGS=" -Wl,--whole-archive \
++	    -Wl,-lrte_pmd_e1000 \
++	    -Wl,-lrte_pmd_ixgbe \
++	    -Wl,-lrte_pmd_i40e \
++	    -Wl,-lrte_pmd_fm10k \
++	    -Wl,-lrte_pmd_vmxnet3_uio \
++	    -Wl,-lrte_pmd_ring \
++	    -Wl,--no-whole-archive"
++	
++	#Onboard DPDK compilation
++	WITH_DPDK="yes"
++fi
+ #[+]Add your platform here...
+ 
+ if test -z $PLATFORM; then

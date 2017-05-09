@@ -1,5 +1,5 @@
 Name:		xdpd
-Version:	0.7.7
+Version:	0.7.8
 Release:	1%{?dist}
 Summary:	eXtensible DataPath daemon
 
@@ -9,12 +9,13 @@ URL:		http://github.com/bisdn/xdpd
 Source0:	xdpd-%{version}.tar.gz
 Epoch:		0
 
+%bcond_with dpdk
+%bcond_with intel_fpga
+
 BuildRequires: autoconf
 BuildRequires: automake
 BuildRequires: bash
 BuildRequires: binutils
-BuildRequires: boost-devel
-BuildRequires: boost-system
 BuildRequires: coreutils
 BuildRequires: cpio
 BuildRequires: diffutils
@@ -47,13 +48,17 @@ BuildRequires: openssl-devel
 BuildRequires: libconfig-devel
 BuildRequires: glog-devel
 BuildRequires: gflags-devel
-Requires: boost
 Requires: libconfig
 Requires: pkgconfig
 Requires: glog
 Requires: gflags
 Requires: openssl-libs
 
+# add AM_PROG_CC_C_O macro to rofl-datapath/configure.ac on centos
+Patch1: xdpd-0.7.7-fix-rofl-datapath-configure-ac.patch
+
+# enable hardware platform for Intel-FPGA
+Patch2: xdpd-0.7.7-add-hw-platform-intel-fpga.patch
 
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root 
 
@@ -64,14 +69,45 @@ eXtensible DataPath daemon version %{version}
 
 
 %prep
-%autosetup 
-sh autogen.sh
+
+%setup 
+
+git submodule update --init --recursive
+
+# Apply m4 patch for centos
+%patch1 -p1
+
+# when building with Intel-FPGA support
+%if %{with intel_fpga}
+
+# Add Intel-FPGA platform to config/hw.m4
+%patch2 -p1
+
+# clone the Intel-FPGA driver
+echo "Please make sure you have ssh-key based access to repository git@gitlab.bisdn.de:vBRAS/intel_fpga.git"
+pushd src/xdpd/drivers
+git clone git@gitlab.bisdn.de:vBRAS/intel_fpga.git
+popd
+
+%endif
+
+export AUTOMAKE="automake --foreign -a"
+autoreconf -f -i
 
 
 
 %build
 cd build/
-../configure --disable-silent-rules --enable-experimental --with-hw-support=gnu-linux-dpdk --with-pipeline-platform-funcs-inlined --with-pipeline-lockless --with-plugins="config rest" --prefix=/usr --sysconfdir=/etc
+
+%define configure_flags --disable-silent-rules --enable-experimental --with-pipeline-platform-funcs-inlined --with-pipeline-lockless --with-plugins="config rest" --prefix=/usr --sysconfdir=/etc
+
+%if %{with intel_fpga}
+../configure %{configure_flags} --with-hw-support=intel_fpga
+%elif %{with dpdk}
+../configure %{configure_flags} --with-hw-support=gnu-linux-dpdk
+%else
+../configure %{configure_flags} --with-hw-support=gnu-linux
+%endif
 make %{?_smp_mflags}
 
 
@@ -100,6 +136,8 @@ make install DESTDIR=$RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT 
 
 %changelog
+* Tue May 09 2017 Andreas Koepsel <andreas.koepsel@bisdn.de>
+- build package for xdpd v0.7.8 (with Intel-FPGA driver)
 * Thu May 04 2017 Andreas Koepsel <andreas.koepsel@bisdn.de>
 - build package for xdpd v0.7.7 (with rofl-common v0.11)
 * Sat Apr 26 2014 Andreas Koepsel <andreas.koepsel@bisdn.de>

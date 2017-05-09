@@ -102,11 +102,13 @@ cd build/
 %define configure_flags --disable-silent-rules --enable-experimental --with-pipeline-platform-funcs-inlined --with-pipeline-lockless --with-plugins="config rest" --prefix=/usr --sysconfdir=/etc
 
 %if %{with intel_fpga}
-../configure %{configure_flags} --with-hw-support=intel_fpga
-%elif %{with dpdk}
-../configure %{configure_flags} --with-hw-support=gnu-linux-dpdk
+  ../configure %{configure_flags} --with-hw-support=intel_fpga
 %else
-../configure %{configure_flags} --with-hw-support=gnu-linux
+  %if %{with dpdk}
+    ../configure %{configure_flags} --with-hw-support=gnu-linux-dpdk
+  %else
+    ../configure %{configure_flags} --with-hw-support=gnu-linux
+  %endif
 %endif
 make %{?_smp_mflags}
 

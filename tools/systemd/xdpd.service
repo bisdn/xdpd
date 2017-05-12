@@ -6,6 +6,7 @@ Requires=network.target
 User=root
 Group=root
 Type=simple
+Environment=LD_LIBRARY_PATH=/usr/lib:/usr/local/lib
 Environment="XDPDCONF=-c /etc/xdpd.conf"
 EnvironmentFile=/etc/sysconfig/xdpd
 ExecStart=/usr/sbin/xdpd $XDPDCONF $XDPDOPTS

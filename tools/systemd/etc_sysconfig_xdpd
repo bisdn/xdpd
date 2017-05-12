@@ -1,0 +1,2 @@
+XDPDCONF=-c /etc/xdpd.conf
+XDPDOPTS=-e coremask=0xffffffff

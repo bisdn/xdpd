@@ -5,9 +5,11 @@ Requires=network.target
 [Service]
 User=root
 Group=root
-Type=forking
-ExecStart=/usr/local/sbin/xdpd -D -c /usr/local/etc/xdpd.conf
-PIDFile=/var/run/xdpd.pid
+Type=simple
+Environment="XDPDCONF=-c /etc/xdpd.conf"
+EnvironmentFile=/etc/sysconfig/xdpd
+ExecStart=/usr/sbin/xdpd $XDPDCONF $XDPDOPTS
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

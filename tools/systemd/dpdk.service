@@ -1,0 +1,13 @@
+[Unit]
+Description=data plane development kit
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/dpdk-init.sh start
+RemainAfterExit=true
+ExecStop=/usr/local/sbin/dpdk-init.sh stop
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

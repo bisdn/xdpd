@@ -1,6 +1,8 @@
 [Unit]
 Description=eXtensible Data Path daemon (xDPd)
 Requires=network.target
+Requires=dpdk.service
+After=dpdk.service
 
 [Service]
 User=root

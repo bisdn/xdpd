@@ -7,26 +7,80 @@ DPDK_DEVBIND=/usr/local/sbin/dpdk-devbind
 
 test -f /etc/sysconfig/dpdk && . /etc/sysconfig/dpdk
 
-init_huge_pages()
+# these functions shamelessly taken from dpdk-setup.py script ;)
+#
+
+#
+# Creates hugepage filesystem.
+#
+create_mnt_huge()
 {
-	echo "reserving huge pages ..."
-	echo > .echo_tmp
-        	for d in /sys/devices/system/node/node? ; do
-                	node=$(basename $d)
-                	echo "$PAGES pages for $node "
-            		echo "echo $PAGES > $d/hugepages/hugepages-${HUGEPGSZ}/nr_hugepages" >> .echo_tmp
-        	done
-	sudo sh .echo_tmp
-	rm -f .echo_tmp
-	
-        echo "mounting hugetlbfs ..."
+        #echo "Creating /mnt/huge and mounting as hugetlbfs"
         test -d $HUGEMNT || mkdir -p $HUGEMNT
 
-        grep -s $HUGEMNT /proc/mounts > /dev/null
+        grep -s "$HUGEMNT" /proc/mounts > /dev/null
         if [ $? -ne 0 ] ; then
-                sudo mount -t hugetlbfs nodev $HUGEMNT
+                mount -t hugetlbfs nodev $HUGEMNT
         fi
 }
+
+#
+# Removes hugepage filesystem.
+#
+remove_mnt_huge()
+{
+        #echo "Unmounting /mnt/huge and removing directory"
+        grep -s "$HUGEMNT" /proc/mounts > /dev/null
+        if [ $? -eq 0 ] ; then
+                umount $HUGEMNT
+        fi
+
+        if [ -d $HUGEMNT ] ; then
+                rm -R $HUGEMNT
+        fi
+}
+
+#
+# Removes all reserved hugepages.
+#
+clear_huge_pages()
+{
+        #echo "Removing currently reserved hugepages"
+        for d in /sys/devices/system/node/node? ; do
+                echo 0 > $d/hugepages/hugepages-${HUGEPGSZ}/nr_hugepages
+        done
+
+        remove_mnt_huge
+}
+
+#
+# Creates hugepages.
+#
+set_non_numa_pages()
+{
+        clear_huge_pages
+
+        #echo "Reserving hugepages for non-NUMA system"
+        echo $HUGEPAGES > /sys/kernel/mm/hugepages/hugepages-${HUGEPGSZ}/nr_hugepages
+
+        create_mnt_huge
+}
+
+#
+# Creates hugepages on specific NUMA nodes.
+#
+set_numa_pages()
+{
+        clear_huge_pages
+
+        #echo "Reserving hugepages for NUMA system"
+        for d in /sys/devices/system/node/node? ; do
+                echo $HUGEPAGES > $d/hugepages/hugepages-${HUGEPGSZ}/nr_hugepages
+        done
+
+        create_mnt_huge
+}
+
 
 if [ ! -e $DPDK_DEVBIND ];
 then
@@ -37,7 +91,15 @@ fi
 
 case "$1" in 
 start)
-	init_huge_pages
+	NUM_NUMA_NODES=$(lscpu | grep "NUMA node(s)" | wc -l)
+	if [ $NUM_NUMA_NODES == "0" ];
+	then
+		#echo "set_non_numa_pages"
+		set_non_numa_pages
+	else
+		#echo "set_numa_pages"
+		set_numa_pages
+	fi
 
 	# bind interfaces to DPDK driver
 	for IFACE in $DPDK_BIND_INTERFACES;
@@ -49,8 +111,10 @@ stop)
 	# unbind interfaces from DPDK driver
 	for IFACE in $DPDK_BIND_INTERFACES;
 	do
-		$DPDK_DEVBIND -u igb_uio $IFACE
+		$DPDK_DEVBIND -u $IFACE
 	done
+
+	clear_huge_pages
 	;;
 
 *)

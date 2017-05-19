@@ -1,8 +1,9 @@
 #!/bin/bash
 
 HUGEMNT=/mnt/huge
-HUGEPAGES=4
-HUGEPGSZ=`cat /proc/meminfo  | grep Hugepagesize | cut -d : -f 2 | tr -d ' '`
+HUGEPAGES=16
+HUGEPGSZ=1048576kB
+#HUGEPGSZ=cat /proc/meminfo  | grep Hugepagesize | cut -d : -f 2 | tr -d ' '
 DPDK_DEVBIND=/usr/local/sbin/dpdk-devbind
 
 test -f /etc/sysconfig/dpdk && . /etc/sysconfig/dpdk
@@ -82,6 +83,79 @@ set_numa_pages()
 }
 
 
+#
+# Bind dpdk devices
+#
+bind_dpdk_devices()
+{
+	DPDK_BIND_INTERFACES=$(dpdk-devbind -s | grep "Virtual Function" | python -c "import sys; print ''.join([x.split()[0]+' ' for x in sys.stdin.readlines()]);")
+	for IFACE in $DPDK_BIND_INTERFACES;
+	do
+		echo "$DPDK_DEVBIND -b igb_uio $IFACE"
+		$DPDK_DEVBIND -b igb_uio $IFACE
+	done
+}
+
+
+#
+# Unbind dpdk devices
+#
+unbind_dpdk_devices()
+{
+	DPDK_BIND_INTERFACES=$(dpdk-devbind -s | grep "Virtual Function" | python -c "import sys; print ''.join([x.split()[0]+' ' for x in sys.stdin.readlines()]);")
+	for IFACE in $DPDK_BIND_INTERFACES;
+	do
+		echo "$DPDK_DEVBIND -u $IFACE"
+		$DPDK_DEVBIND -u $IFACE
+	done
+}
+
+
+#
+# create SR-IOV interfaces
+#
+create_sr_iov()
+{
+	# create SR-IOV interfaces
+	j=0; 
+	for HFACE in $SR_IOV_INTERFACES;
+	do
+		# get the interface name
+		IFACE=$(echo $HFACE | python -c "import sys; print sys.stdin.read().split(':')[0];")
+		# get the VLAN id
+		VLAN=$(echo $HFACE | python -c "import sys; print sys.stdin.read().split(':')[1];")
+		# get the target interface name (eno1 => em0) wtf ????
+		JFACE=$(echo $IFACE | python -c "import sys; str=sys.stdin.read().split('eno'); print 'em'+str[1] if len(str) > 1 else str[0];")
+
+		echo "echo $NUM_SRIOV > /sys/class/net/$IFACE/device/sriov_numvfs"
+		echo $NUM_SRIOV > /sys/class/net/$IFACE/device/sriov_numvfs 
+		sleep 3
+                for i in $(seq 0 $((NUM_SRIOV-1))); 
+		do
+			HWADDR=$(ip link show ${JFACE}_${i} | grep "link/ether" | python -c "import sys; print sys.stdin.read().split()[1];")
+			echo "ip link set $IFACE vf $i mac $HWADDR"
+			ip link set $IFACE vf $i mac $HWADDR
+			echo "ip link set $IFACE vf $i vlan $(($VLAN+i))"
+			ip link set $IFACE vf $i vlan $(($VLAN+i))
+		done
+		((j++));
+	done
+}
+
+
+#
+# remove SR-IOV interfaces
+#
+remove_sr_iov()
+{
+	for IFACE in $SR_IOV_INTERFACES;
+        do
+                echo "echo 0 > /sys/class/net/$IFACE/device/sriov_numvfs"
+                echo 0 > /sys/class/net/$IFACE/device/sriov_numvfs
+        done
+}
+
+
 if [ ! -e $DPDK_DEVBIND ];
 then
 	echo "dpdk-devbind.py not found, aborting."
@@ -90,6 +164,18 @@ fi
 	
 
 case "$1" in 
+sriov)
+	create_sr_iov
+	;;
+nosriov)
+	remove_sr_iov
+	;;
+bind)
+	bind_dpdk_devices
+	;;
+unbind)
+	unbind_dpdk_devices
+	;;
 start)
 	NUM_NUMA_NODES=$(lscpu | grep "NUMA node(s)" | wc -l)
 	if [ $NUM_NUMA_NODES == "0" ];
@@ -101,24 +187,19 @@ start)
 		set_numa_pages
 	fi
 
-	# bind interfaces to DPDK driver
-	for IFACE in $DPDK_BIND_INTERFACES;
-	do
-		$DPDK_DEVBIND -b igb_uio $IFACE
-	done
+	create_sr_iov
+
+	bind_dpdk_devices
 	;;
 stop)
-	# unbind interfaces from DPDK driver
-	for IFACE in $DPDK_BIND_INTERFACES;
-	do
-		$DPDK_DEVBIND -u $IFACE
-	done
+	unbind_dpdk_devices
+
+	remove_sr_iov
 
 	clear_huge_pages
 	;;
-
 *)
-	echo "usage: $0 [start|stop]"
+	echo "usage: $0 [start|stop|bind|unbind|sriov|nosriov]"
 ;;
 esac
 

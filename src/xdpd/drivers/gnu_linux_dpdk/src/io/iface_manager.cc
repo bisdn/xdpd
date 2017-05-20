@@ -66,10 +66,11 @@ static switch_port_t* configure_port(unsigned int port_id){
 
 	//Set rx and tx queues
 	memset(&port_conf, 0, sizeof(port_conf));
-	port_conf.rxmode.max_rx_pkt_len =  IO_MAX_PACKET_SIZE;
-	//port_conf.rxmode.hw_ip_checksum = 1;
-	//port_conf.rx_adv_conf.rss_conf.rss_hf = ETH_RSS_IPV4 | ETH_RSS_IPV6;
-	port_conf.txmode.mq_mode = ETH_MQ_TX_NONE;
+        port_conf.rxmode.max_rx_pkt_len =  IO_MAX_PACKET_SIZE;
+        port_conf.rxmode.hw_ip_checksum = 1;
+        port_conf.rxmode.hw_strip_crc = 1;
+        port_conf.rx_adv_conf.rss_conf.rss_hf = ETH_RSS_IPV4 | ETH_RSS_IPV6;
+        port_conf.txmode.mq_mode = ETH_MQ_TX_NONE;
 	if ((ret=rte_eth_dev_configure(port_id, 1, IO_IFACE_NUM_QUEUES, &port_conf)) < 0){
 		XDPD_ERR(DRIVER_NAME"[iface_manager][%s] Cannot configure device; %s(%d)\n", port->name, rte_strerror(ret), ret);
 		assert(0);

@@ -117,28 +117,31 @@ unbind_dpdk_devices()
 create_sr_iov()
 {
 	# create SR-IOV interfaces
-	j=0; 
 	for HFACE in $SR_IOV_INTERFACES;
 	do
 		# get the interface name
 		IFACE=$(echo $HFACE | python -c "import sys; print sys.stdin.read().split(':')[0];")
-		# get the VLAN id
-		VLAN=$(echo $HFACE | python -c "import sys; print sys.stdin.read().split(':')[1];")
+		# get VLAN ids
+		#VLANS=$(echo $HFACE | python -c "import sys; ''.join([x for x in sys.stdin.read().split(':')[1].split(',')]);")
+		VLANS=$(echo $HFACE | python -c "import sys; print ''.join(['{} '.format(x) for x in sys.stdin.read().split(':')[1].split(',')]);")
 		# get the target interface name (eno1 => em0) wtf ????
 		JFACE=$(echo $IFACE | python -c "import sys; str=sys.stdin.read().split('eno'); print 'em'+str[1] if len(str) > 1 else str[0];")
+		# get number of SR-IOV VFs for this interface (one per vlan)
+		NUM_SRIOV=$(echo $VLANS | wc -w)
 
 		echo "echo $NUM_SRIOV > /sys/class/net/$IFACE/device/sriov_numvfs"
 		echo $NUM_SRIOV > /sys/class/net/$IFACE/device/sriov_numvfs 
 		sleep 3
-                for i in $(seq 0 $((NUM_SRIOV-1))); 
+		j=0
+                for VLAN in $VLANS;
 		do
-			HWADDR=$(ip link show ${JFACE}_${i} | grep "link/ether" | python -c "import sys; print sys.stdin.read().split()[1];")
-			echo "ip link set $IFACE vf $i mac $HWADDR"
-			ip link set $IFACE vf $i mac $HWADDR
-			echo "ip link set $IFACE vf $i vlan $(($VLAN+i))"
-			ip link set $IFACE vf $i vlan $(($VLAN+i))
+			HWADDR=$(ip link show ${JFACE}_${j} | grep "link/ether" | python -c "import sys; print sys.stdin.read().split()[1];")
+			echo "ip link set $IFACE vf $j mac $HWADDR"
+			ip link set $IFACE vf $j mac $HWADDR
+			echo "ip link set $IFACE vf $j vlan $VLAN"
+			ip link set $IFACE vf $j vlan $VLAN
+			((j++));
 		done
-		((j++));
 	done
 }
 

@@ -2,8 +2,7 @@ MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS=server
 
-bin_SCRIPTS = xcli
-CLEANFILES = $(bin_SCRIPTS)
+dist_bin_SCRIPTS = xcli
 
 noinst_LTLIBRARIES = libxdpd_mgmt_rest_js.la libxdpd_mgmt_rest.la
 

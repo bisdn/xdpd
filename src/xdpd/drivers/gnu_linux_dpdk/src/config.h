@@ -106,7 +106,7 @@
  * The coremask can be overriden using driver extra parameters. However this is
  * not recommended for stable setups
  */
-#define DEFAULT_RTE_CORE_MASK 0x0000001f
+#define DEFAULT_RTE_CORE_MASK 0x0000ffff
 
 //Other parameters
 #define RTE_MEM_CHANNELS 4

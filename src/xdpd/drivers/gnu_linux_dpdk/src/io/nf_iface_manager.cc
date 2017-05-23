@@ -333,14 +333,20 @@ rofl_result_t nf_iface_manager_bring_up_port(switch_port_t* port){
 			# define IRFFLAGS       ifr_flagshigh
 		#endif
 
-		// If interface is down, bring it up
-		if (!(ifr.IRFFLAGS & IFF_UP)){
-			ifr.IRFFLAGS |= IFF_UP;
-			if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0){
-				XDPD_ERR(DRIVER_NAME"[nf_driver] Cannot bring up KNI NF port\n");
-				return ROFL_FAILURE;
-			}
-		}
+                // If interface is down, bring it up
+                if (!(ifr.IRFFLAGS & IFF_UP)){
+                        int rc = 0, count = 10;
+                        ifr.IRFFLAGS |= IFF_UP;
+                        do {
+                                if ((rc = ioctl(sockfd, SIOCSIFFLAGS, &ifr)) < 0){
+                                        XDPD_ERR(DRIVER_NAME"[nf_driver] Cannot bring up KNI NF port %d(%s)\n", errno, strerror(errno));
+                                }
+                                count--;
+                        } while ((rc < 0) && (count > 0));
+                        if (0 == count) {
+                                return ROFL_FAILURE;
+                        }
+                }
 
 		return ROFL_SUCCESS;
 	}

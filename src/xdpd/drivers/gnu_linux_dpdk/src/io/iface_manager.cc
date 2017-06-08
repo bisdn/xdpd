@@ -181,9 +181,18 @@ rofl_result_t iface_manager_set_queues(switch_port_t* port, unsigned int core_id
 #endif
 	}
 	//Start port
+
+	i = 0;
+START_RETRY:
 	if((ret=rte_eth_dev_start(port_id)) < 0){
+		if(++i != 100) {
+			// Circumvent DPDK issues with rte_eth_dev_start
+			usleep(300*1000);
+			goto START_RETRY;
+		}
+
 		XDPD_ERR(DRIVER_NAME"[iface_manager] Cannot start device %u:  %s\n", port_id, rte_strerror(ret));
-		assert(0);
+		assert(0 && "rte_eth_dev_start failed");
 		return ROFL_FAILURE; 
 	}
 

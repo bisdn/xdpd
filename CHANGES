@@ -8,6 +8,10 @@ Legend:
 Change log
 ==========
 
+v0.7.9
+
+[B] Updated to rofl-datapath v0.6.5 (bisdn/rofl-datapath PRs #15, #16 and #17)
+
 v0.7.8
 
 [+] Updated xdpd.spec file to compile xdpd under Fedora 25 and CentOS 7.3

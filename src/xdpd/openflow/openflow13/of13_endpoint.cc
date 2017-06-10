@@ -967,10 +967,7 @@ of13_endpoint::handle_port_desc_stats_request(
 			port.set_ethernet().set_curr_speed(of13_translation_utils::get_port_speed_kb(_port->curr_speed));
 			port.set_ethernet().set_max_speed(of13_translation_utils::get_port_speed_kb(_port->curr_max_speed));
 
-			std::cerr << "AAA[0] " << port << std::endl;
 			ports.add_port(_port->of_port_num) = port;
-			std::cerr << "AAA[1] " << port << std::endl;
-			std::cerr << "AAA[2] " << ports.get_port(_port->of_port_num) << std::endl;
 		}
  	}
 

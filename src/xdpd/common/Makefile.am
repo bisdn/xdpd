@@ -25,16 +25,16 @@ libxdpd_common_base_la_SOURCES = \
 libxdpd_common_base_la_LIBADD=utils/libxdpd_common_utils.la
 
 library_includedir=$(includedir)/xdpd/common
-library_include_HEADERS= \
-		exception.h
-		logging.h \
-		cparam.h \
-		cparams.h \
-		cunixenv.h \
-		cdaemon.h \
-		cpipe.h \
-		csocket.h \
-		csocket_strings.h
+#library_include_HEADERS= \
+#		exception.h
+#		logging.h \
+#		cparam.h \
+#		cparams.h \
+#		cunixenv.h \
+#		cdaemon.h \
+#		cpipe.h \
+#		csocket.h \
+#		csocket_strings.h
 
 AM_CPPFLAGS=-fPIC
 AM_CXXFLAGS=-I$(top_srcdir)/src/

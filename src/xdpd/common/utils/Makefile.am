@@ -11,7 +11,7 @@ libxdpd_common_utils_la_SOURCES = \
 libxdpd_common_utils_la_LIBADD=
 
 library_includedir=$(includedir)/xdpd/common
-library_include_HEADERS= \
-		c_logger.h
+#library_include_HEADERS= \
+#		c_logger.h
 
 AM_CPPFLAGS=-fPIC

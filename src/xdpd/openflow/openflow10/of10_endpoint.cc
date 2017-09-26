@@ -23,7 +23,7 @@ of10_endpoint::of10_endpoint(
 		int reconnect_start_timeout,
 		const rofl::openflow::cofhello_elem_versionbitmap& versionbitmap,
 		enum xdpd::csocket::socket_type_t socket_type,
-		xdpd::cparams const& socket_params) throw (eOfSmErrorOnCreation) :
+		xdpd::cparams const& socket_params) :
 				of_endpoint(versionbitmap, socket_type, socket_params)
 {
 	//Reference back to the sw

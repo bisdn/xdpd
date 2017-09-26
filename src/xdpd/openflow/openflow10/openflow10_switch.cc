@@ -22,7 +22,7 @@ openflow10_switch::openflow10_switch(uint64_t dpid,
 				int reconnect_start_timeout,
 				const rofl::openflow::cofhello_elem_versionbitmap& versionbitmap,
 				enum xdpd::csocket::socket_type_t socket_type,
-				xdpd::cparams const& socket_params) throw (eOfSmVersionNotSupported)
+				xdpd::cparams const& socket_params)
 		: openflow_switch(dpid, dpname, OF_VERSION_10, num_of_tables)
 {
 

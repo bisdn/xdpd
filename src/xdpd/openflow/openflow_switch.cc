@@ -36,7 +36,22 @@ void openflow_switch::rpc_connect_to_ctl(enum xdpd::csocket::socket_type_t socke
 
 	// TODO: map socket_type and socket_params to required parameters
 
-	rofl::csockaddr raddr;
+	int af_family = AF_INET; // default: IPv4
+	if (socket_params.has_param(xdpd::csocket::PARAM_KEY_DOMAIN)) {
+		if (socket_params.get_param(xdpd::csocket::PARAM_KEY_DOMAIN).get_string() == "inet") {
+			af_family = AF_INET;
+		} else
+		if (socket_params.get_param(xdpd::csocket::PARAM_KEY_DOMAIN).get_string() == "inet6") {
+			af_family = AF_INET6;
+		} else
+		if (socket_params.get_param(xdpd::csocket::PARAM_KEY_DOMAIN).get_string() == "inet-any") {
+			af_family = AF_INET6;
+		}
+	}
+	rofl::csockaddr raddr = rofl::csockaddr(
+			af_family,
+			socket_params.get_param(xdpd::csocket::PARAM_KEY_REMOTE_HOSTNAME).get_string(),
+			socket_params.get_param(xdpd::csocket::PARAM_KEY_REMOTE_PORT).get_int());
 	endpoint->add_ctl(rofl::cctlid(0)).add_conn(rofl::cauxid(0)).set_raddr(raddr).tcp_connect(versionbitmap, rofl::crofconn::MODE_DATAPATH);
 
 	// TODO: TLS

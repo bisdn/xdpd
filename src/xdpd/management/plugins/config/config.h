@@ -25,7 +25,7 @@
 namespace xdpd {
 
 //Macro for C logging
-#define CONF_PLUGIN_ID "[xdpd][config] "
+#define CONF_PLUGIN_ID "[xdpd][plugins][config] "
 
 /**
 * @brief libconfig based configuration plugin
@@ -50,9 +50,14 @@ public:
 	};
 	
 	virtual std::string get_driver_extra_params(void){
-		libconfig::Config cfg;
-		get_config_file_contents(&cfg);
-		return system_scope::get_driver_extra_params(cfg); 
+		try {
+			libconfig::Config cfg;
+			get_config_file_contents(&cfg);
+			return system_scope::get_driver_extra_params(cfg);
+		} catch (eConfParamNotFound& e) {
+			// let other plugins continue to work
+			return std::string("");
+		}
 	}
 	
 	virtual std::string get_name(void){

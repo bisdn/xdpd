@@ -57,6 +57,9 @@ touch $srcdir/src/xdpd/management/plugins/pm_timestamp.h
 #CONFIG
 ADD_PLUGIN(config)
 
+#YAML
+ADD_PLUGIN(yaml_config)
+
 #QMF
 ADD_PLUGIN(qmf)
 

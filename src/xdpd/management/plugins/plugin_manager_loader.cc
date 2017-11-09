@@ -23,6 +23,9 @@ using namespace xdpd;
 #ifdef WITH_MGMT_CONFIG
 	#include "config/config.h"
 #endif
+#ifdef WITH_MGMT_YAML_CONFIG
+	#include "yaml_config/yaml_config.h"
+#endif
 #ifdef WITH_MGMT_QMF
 	#include "qmf/qmfagent.h"
 #endif
@@ -50,6 +53,11 @@ void plugin_manager::pre_init(){
 	#ifdef WITH_MGMT_CONFIG
 		//Register CONFIG 
 		register_plugin(new config());	
+	#endif
+
+	#ifdef WITH_MGMT_YAML_CONFIG
+		//Register YAML_CONFIG
+		register_plugin(new xdpd::plugins::yaml_config::yaml_config());
 	#endif
 		
 	#ifdef WITH_MGMT_QMF

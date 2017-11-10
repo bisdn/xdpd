@@ -23,7 +23,7 @@ void config::get_config_file_contents(Config* cfg){
 	std::string conf_file;
 
 	if(!system_manager::is_option_set(CONFIG_FILE_OPT_FULL_NAME)){
-		XDPD_ERR(CONF_PLUGIN_ID "No configuration file specified either via -c or --config-file\n");
+		XDPD_INFO(CONF_PLUGIN_ID "No configuration file specified either via -c or --config-file\n");
 		throw eConfParamNotFound();
 	}
 
@@ -41,29 +41,33 @@ void config::get_config_file_contents(Config* cfg){
 }
 
 void config::init(){
-	Config* cfg = new Config;
-	root_scope* root = new root_scope();
+	try {
+		Config* cfg = new Config;
+		root_scope* root = new root_scope();
 
 
-	//Dry run
-	XDPD_DEBUG_VERBOSE(CONF_PLUGIN_ID "Starting dry-run\n");
-	get_config_file_contents(cfg);
-	root->execute(*cfg,true);
-
-	delete cfg;
-	delete root;
-
-	//Unless test-config is set, execute the config
-	if(!system_manager::is_test_run()) {
-		//Execute
-		cfg = new Config;
-		root = new root_scope();
-
+		//Dry run
+		XDPD_DEBUG_VERBOSE(CONF_PLUGIN_ID "Starting dry-run\n");
 		get_config_file_contents(cfg);
-		
-		XDPD_DEBUG_VERBOSE(CONF_PLUGIN_ID "Starting real execution\n");
-		root->execute(*cfg);
+		root->execute(*cfg,true);
+
 		delete cfg;
 		delete root;
+
+		//Unless test-config is set, execute the config
+		if(!system_manager::is_test_run()) {
+			//Execute
+			cfg = new Config;
+			root = new root_scope();
+
+			get_config_file_contents(cfg);
+
+			XDPD_DEBUG_VERBOSE(CONF_PLUGIN_ID "Starting real execution\n");
+			root->execute(*cfg);
+			delete cfg;
+			delete root;
+		}
+	} catch (eConfParamNotFound& e) {
+		// let other plugins continue to work
 	}
 }

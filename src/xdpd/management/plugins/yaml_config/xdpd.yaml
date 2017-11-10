@@ -1,0 +1,94 @@
+root:
+  config:
+    openflow:
+      lsis:
+        dp0:
+          dpid: "0x100"
+          version: "1.3"
+          description: "This is a switch"
+          controller-connections:
+            main:
+              remote-hostname: "127.0.0.1"
+              remote-port: 6633
+              address-family: "inet"
+              bind-address: "127.0.0.1"
+              bind-port: 54545
+          reconnect-time: 2
+          pirl-enabled: True
+          pirl-rate: 2000
+          tables:
+            table0:
+              number: 0
+              matching-algorithm: "loop"
+            table1:
+              number: 1
+              matching-algorithm: "loop"
+            table2:
+              number: 2
+              matching-algorithm: "loop"
+            table3:
+              number: 3
+              matching-algorithm: "loop"
+          ports:
+            veth0: 
+              unused: 1
+            veth1:
+              unused: 2
+            veth2:
+              unused: 3
+            veth3:
+              unused: 3
+        test:
+          dpid: "0x200"
+          version: "1.3"
+          controller-connections:
+            main:
+              remote-hostname: "127.0.0.1"
+              remote-port: 6633
+              address-family: "inet"
+              bind-address: "127.0.0.1"
+              bind-port: 54546
+          tables:
+            table0:
+              number: 0
+              matching-algorithm: "loop"
+            table1:
+              number: 1
+              matching-algorithm: "loop"
+          ports:
+            veth4: 
+              unused: 1
+            veth5:
+              unused: 2
+    interfaces:
+      blacklist:
+        - tap0
+        - tap1
+      nf:
+        kni0:
+          type: "EXTERNAL"
+          nf-name: "SOMETHING"
+      virtual:
+        vlink0:
+          description: "Virtual link #1 between dp0 and test"
+          left: 
+            lsi: "dp0"
+            portname: "vif0"
+          right:
+            lsi: "test"
+            portname: "vif1"
+        vlink1:
+          description: "Virtual link #2 between dp0 and test"
+          left:
+            lsi: "dp0"
+            portname: "vif2"
+          right:
+            lsi: "test"
+            portname: "whatever"
+    system:
+      id: "0000000123"
+      logging-level: "DEBUG"
+      driver-extra-params: 
+        key1: value1
+        key2: value2
+        config: ./xdpd-driver-intel-fpga.conf.yaml

@@ -23,6 +23,9 @@ AM_CXXFLAGS = -I$(top_srcdir)/src/
 #Config
 include config/Plugin.am
 
+#Yaml
+include yaml_config/Plugin.am
+
 #QMF
 include qmf/Plugin.am
 

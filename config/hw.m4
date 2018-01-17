@@ -49,7 +49,12 @@ if ( test "$HW" = "gnu-linux-dpdk");then
 		-Wl,-lrte_pmd_fm10k \
 		-Wl,-lrte_pmd_vmxnet3_uio \
 		-Wl,-lrte_pmd_ring \
-		-Wl,-lrte_mempool \
+                -Wl,-lrte_mempool_ring \
+                -Wl,-lrte_mempool \
+                -Wl,-lrte_bus_pci \
+                -Wl,-lrte_bus_vdev \
+                -Wl,-lrte_pci \
+                -Wl,-lnuma \
 		-Wl,--no-whole-archive"
 
 	#Onboard DPDK compilation

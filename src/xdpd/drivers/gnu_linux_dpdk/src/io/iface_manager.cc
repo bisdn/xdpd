@@ -12,6 +12,8 @@
 #include <rte_common.h> 
 #include <rte_malloc.h> 
 #include <rte_errno.h> 
+#include <rte_ethdev.h>
+#include <rte_bus_pci.h>
 
 #include <fcntl.h>  
 
@@ -52,7 +54,7 @@ static switch_port_t* configure_port(unsigned int port_id){
 	}
 
 	//Initialize pipeline port
-	port = switch_port_init(port_name, false, PORT_TYPE_PHYSICAL, PORT_STATE_NONE);
+	port = switch_port_init(port_name, false, PORT_TYPE_PHYSICAL, PORT_STATE_NONE, /*tunnel_id=*/0);
 	if(!port)
 		return NULL; 
 
@@ -266,10 +268,10 @@ rofl_result_t iface_manager_create_virtual_port_pair(of_switch_t* lsw1, switch_p
 	//Init the pipeline ports
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 0);
 
-	*vport1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+	*vport1 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE, /*tunnel_id=*/0);
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 1);
 
-	*vport2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+	*vport2 = switch_port_init(port_name, true, PORT_TYPE_VIRTUAL, PORT_STATE_NONE, /*tunnel_id=*/0);
 	
 	if(*vport1 == NULL || *vport2 == NULL){
 		XDPD_ERR(DRIVER_NAME"[iface_manager] Unable to allocate memory for virtual ports\n");

@@ -37,7 +37,8 @@ openflow_switch* switch_manager::create_switch(
 		int* ma_list,
 		int reconnect_start_timeout,
 		enum xdpd::csocket::socket_type_t socket_type,
-		const xdpd::cparams& socket_params){
+		const xdpd::cparams& socket_params,
+		sw_flavor_t flavor){
 
 	openflow_switch* dp;
 
@@ -62,19 +63,19 @@ openflow_switch* switch_manager::create_switch(
 
 		case OF_VERSION_10:
 			versionbitmap.add_ofp_version(openflow10::OFP_VERSION);
-			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params);
+			dp = new openflow10_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params, flavor);
 
 			break;
 
 		case OF_VERSION_12:
 			versionbitmap.add_ofp_version(openflow12::OFP_VERSION);
-			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params);
+			dp = new openflow12_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params, flavor);
 
 			break;
 	
 		case OF_VERSION_13:
 			versionbitmap.add_ofp_version(openflow13::OFP_VERSION);
-			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params);
+			dp = new openflow13_switch(dpid, dpname, num_of_tables, ma_list, reconnect_start_timeout, versionbitmap, socket_type, socket_params, flavor);
 
 			break;
 
@@ -296,7 +297,7 @@ void switch_manager::get_switch_table_flows(uint64_t dpid, uint8_t table_id /*TO
 
 	of1x_stats_flow_msg_t* hal_flows = NULL;
 	of1x_switch_snapshot_t* sw_snapshot = NULL; 
-	of1x_flow_entry_t* entry = of1x_init_flow_entry(false); //empty matches (all)
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(false, false); //empty matches (all)
 
 	//Make sure 	
 	pthread_rwlock_rdlock(&switch_manager::rwlock);

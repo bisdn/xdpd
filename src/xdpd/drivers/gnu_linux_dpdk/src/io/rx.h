@@ -61,7 +61,7 @@ process_port_rx(unsigned int core_id, switch_port_t* port, struct rte_mbuf** pkt
 	{
 		//DPDK NF port - pkts received through an rte_ring
 		dpdk_shmem_port_state *port_state = (dpdk_shmem_port_state_t*)port->platform_port_state;
-		burst_len = rte_ring_mc_dequeue_burst(port_state->to_xdpd_queue, (void **)pkts_burst, IO_IFACE_MAX_PKT_BURST);
+		burst_len = rte_ring_mc_dequeue_burst(port_state->to_xdpd_queue, (void **)pkts_burst, IO_IFACE_MAX_PKT_BURST, NULL);
 	}
 	else if(port->type == PORT_TYPE_NF_EXTERNAL)
 	{

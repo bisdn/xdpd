@@ -168,7 +168,7 @@ of13_endpoint::flow_mod_add(
 	of1x_flow_entry_t *entry=NULL;
 
 	// sanity check: table for table-id must exist
-	if ( (table_id > sw->num_of_tables) && (table_id != openflow13::OFPTT_ALL) ){
+	if ( (sw->flavor==SW_FLAVOR_GENERIC) && (table_id > sw->num_of_tables) && (table_id != openflow13::OFPTT_ALL) ){
 		XDPD_ERR("[xdpd][of13][flow-mod-add] unable to add flow-mod due to invalid table-id: %d on dpt: %s\n",
 				msg.get_flowmod().get_table_id(), sw->dpname.c_str());
 		throw rofl::eFlowModBadTableId();
@@ -227,7 +227,7 @@ of13_endpoint::flow_mod_modify(
 	hal_fm_result_t res;
 
 	// sanity check: table for table-id must exist
-	if (pack.get_flowmod().get_table_id() > sw->num_of_tables){
+	if ( (sw->flavor==SW_FLAVOR_GENERIC) && (pack.get_flowmod().get_table_id() > sw->num_of_tables)){
 		XDPD_ERR("[xdpd][of13][flow-mod-modify] unable to modify flow-mod due to invalid table-id: %d on dpt: %s\n",
 				pack.get_flowmod().get_table_id(), sw->dpname.c_str());
 		throw rofl::eFlowModBadTableId();
@@ -345,7 +345,7 @@ of13_endpoint::handle_flow_stats_request(
 		rofl::openflow::cofmsg_flow_stats_request& msg)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(false, /*builtin=*/false);
 
 	try{
 		of13_translation_utils::of13_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
@@ -424,7 +424,7 @@ of13_endpoint::handle_aggregate_stats_request(
 		rofl::openflow::cofmsg_aggr_stats_request& msg)
 {
 	//Map the match structure from OpenFlow to packet_matches_t
-	of1x_flow_entry_t* entry = of1x_init_flow_entry(false);
+	of1x_flow_entry_t* entry = of1x_init_flow_entry(false, /*builtin=*/false);
 
 	if(!entry)
 		throw rofl::eBadRequestBadStat();

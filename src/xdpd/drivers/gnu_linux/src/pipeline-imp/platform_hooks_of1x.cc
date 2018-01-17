@@ -50,17 +50,17 @@ rofl_result_t platform_post_init_of1x_switch(of1x_switch_t* sw){
 		bitmap128_unset(&config->match, OF1X_MATCH_IPV6_EXTHDR);
 		bitmap128_unset(&config->wildcards, OF1X_MATCH_IPV6_EXTHDR);
 		
-		bitmap128_unset(&config->match, OF1X_MATCH_TUNNEL_ID);
-		bitmap128_unset(&config->wildcards, OF1X_MATCH_TUNNEL_ID);
+		//bitmap128_unset(&config->match, OF1X_MATCH_TUNNEL_ID);
+		//bitmap128_unset(&config->wildcards, OF1X_MATCH_TUNNEL_ID);
 
 		//Actions
 		bitmap128_unset(&config->apply_actions, OF1X_AT_SET_FIELD_IPV6_EXTHDR);	
-		bitmap128_unset(&config->apply_actions, OF1X_AT_SET_FIELD_TUNNEL_ID);	
+		//bitmap128_unset(&config->apply_actions, OF1X_AT_SET_FIELD_TUNNEL_ID);
 		bitmap128_unset(&config->apply_actions, OF1X_AT_EXPERIMENTER);
 		
 		//Group Table
 		bitmap128_unset(&group_config->supported_actions, OF1X_AT_SET_FIELD_IPV6_EXTHDR);
-		bitmap128_unset(&group_config->supported_actions, OF1X_AT_SET_FIELD_TUNNEL_ID);
+		//bitmap128_unset(&group_config->supported_actions, OF1X_AT_SET_FIELD_TUNNEL_ID);
 		bitmap128_unset(&group_config->supported_actions, OF1X_AT_EXPERIMENTER);
 	}
 

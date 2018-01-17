@@ -11,6 +11,7 @@
 #include <rofl/common/openflow/experimental/matches/capwap_matches.h>
 #include <rofl/common/openflow/experimental/matches/wlan_matches.h>
 #include <rofl/common/openflow/experimental/matches/gre_matches.h>
+#include <rofl/common/openflow/experimental/matches/ofdpa_matches.h>
 
 #include "xdpd/common/utils/c_logger.h"
 
@@ -49,7 +50,7 @@ of13_translation_utils::of13_map_flow_entry(
 		openflow_switch* sw)
 {
 
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flowmod().get_flags() & rofl::openflow13::OFPFF_SEND_FLOW_REM);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flowmod().get_flags() & rofl::openflow13::OFPFF_SEND_FLOW_REM, /*builtin=*/false);
 
 	if(!entry)
 		throw eFlowModUnknown();
@@ -579,6 +580,45 @@ of13_translation_utils::of13_map_flow_entry_matches(
 				rofl::openflow::ROFL_EXP_ID, rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY).get_u16value());
 		of1x_add_match_to_entry(entry, match);
 	}
+
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_VRF)) {
+		match = of1x_init_ofdpa_vrf_match(
+					ofmatch.get_matches().get_exp_match(
+							rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_VRF).get_u16value(),
+					ofmatch.get_matches().get_exp_match(
+							rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_VRF).get_u16mask());
+		of1x_add_match_to_entry(entry, match);
+	}
+
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_VRF_MASK)) {
+		match = of1x_init_ofdpa_vrf_match(
+					ofmatch.get_matches().get_exp_match(
+							rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_VRF_MASK).get_u16value(),
+					ofmatch.get_matches().get_exp_match(
+							rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_VRF_MASK).get_u16mask());
+		of1x_add_match_to_entry(entry, match);
+	}
+
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_OVID)) {
+		match = of1x_init_ofdpa_ovid_match(
+					ofmatch.get_matches().get_exp_match(
+							rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_OVID).get_u16value());
+		of1x_add_match_to_entry(entry, match);
+	}
+
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_ALLOW_VLAN_TRANSLATION)) {
+		match = of1x_init_ofdpa_allow_vlan_translation_match(
+					ofmatch.get_matches().get_exp_match(
+							rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_ALLOW_VLAN_TRANSLATION).get_u8value());
+		of1x_add_match_to_entry(entry, match);
+	}
+
+	if (ofmatch.get_matches().has_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_ACTSET_OUTPUT)) {
+		match = of1x_init_ofdpa_actset_output_match(
+					ofmatch.get_matches().get_exp_match(
+							rofl::openflow::experimental::ofdpa::EXP_ID_BCM, rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_ACTSET_OUTPUT).get_u32value());
+		of1x_add_match_to_entry(entry, match);
+	}
 	/* End of extensions */
 #endif
 }
@@ -889,87 +929,108 @@ of13_translation_utils::of13_map_flow_entry_actions(
 				break;
 			case rofl::openflow13::OFPXMC_EXPERIMENTER: {
 #ifdef EXPERIMENTAL
-				switch (set_field.get_oxm_field()) {
-				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_CODE: {
-					field.u8 = set_field.get_oxm_exp().get_u8value();
-					//field.u8 = set_field.get_oxm_8().get_u8value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_CODE, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_TYPE: {
-					field.u8 = set_field.get_oxm_exp().get_u8value();
-					//field.u8 = set_field.get_oxm_8().get_u8value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_TYPE, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_SID: {
-					field.u16 = set_field.get_oxm_exp().get_u16value();
-					//field.u16 = set_field.get_oxm_16().get_u16value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_SID, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPP_PROT: {
-					field.u16 = set_field.get_oxm_exp().get_u16value();
-					//field.u16 = set_field.get_oxm_16().get_u16value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPP_PROT, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_MSGTYPE: {
-					// TODO: fix all other experimental matches as well
-					field.u8 = set_field.get_oxm_8().get_u8value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_MSG_TYPE, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_TEID: {
-					field.u32 = set_field.get_oxm_32().get_u32value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_TEID, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_WBID: {
-					field.u8 = set_field.get_oxm_8().get_u8value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_WBID, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_RID: {
-					field.u8 = set_field.get_oxm_8().get_u8value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_RID, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_FLAGS: {
-					field.u16 = set_field.get_oxm_16().get_u16value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_FLAGS, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_FC: {
-					field.u16 = set_field.get_oxm_16().get_u16value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_FC, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_TYPE: {
-					field.u8 = set_field.get_oxm_8().get_u8value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_TYPE, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_SUBTYPE: {
-					field.u8 = set_field.get_oxm_8().get_u8value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_SUBTYPE, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_DIRECTION: {
-					field.u8 = set_field.get_oxm_8().get_u8value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_DIRECTION, field, 0x0);
-				} break;
-				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_1: {
-					field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_1, field, 0x0);
+				switch (set_field.get_oxm_exp_id()) {
+				case rofl::openflow::ROFL_EXP_ID: {
+					switch (set_field.get_oxm_field()) {
+					case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_CODE: {
+						field.u8 = set_field.get_oxm_exp().get_u8value();
+						//field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_CODE, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_TYPE: {
+						field.u8 = set_field.get_oxm_exp().get_u8value();
+						//field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_TYPE, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPPOE_SID: {
+						field.u16 = set_field.get_oxm_exp().get_u16value();
+						//field.u16 = set_field.get_oxm_16().get_u16value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPPOE_SID, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::pppoe::OFPXMT_OFX_PPP_PROT: {
+						field.u16 = set_field.get_oxm_exp().get_u16value();
+						//field.u16 = set_field.get_oxm_16().get_u16value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_PPP_PROT, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_MSGTYPE: {
+						// TODO: fix all other experimental matches as well
+						field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_MSG_TYPE, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::gtp::OFPXMT_OFX_GTP_TEID: {
+						field.u32 = set_field.get_oxm_32().get_u32value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GTP_TEID, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_WBID: {
+						field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_WBID, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_RID: {
+						field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_RID, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::capwap::OFPXMT_OFX_CAPWAP_FLAGS: {
+						field.u16 = set_field.get_oxm_16().get_u16value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_CAPWAP_FLAGS, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_FC: {
+						field.u16 = set_field.get_oxm_16().get_u16value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_FC, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_TYPE: {
+						field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_TYPE, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_SUBTYPE: {
+						field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_SUBTYPE, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_DIRECTION: {
+						field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_WLAN_DIRECTION, field, 0x0);
+					} break;
+					case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_1: {
+						field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
+						action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_1, field, 0x0);
+					}break;
+					case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_2: {
+						field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
+						action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_2, field, 0x0);
+					}break;
+					case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_3: {
+						field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
+						action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_3, field, 0x0);
+					}break;
+					case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_VERSION: {
+						field.u16 = set_field.get_oxm_16().get_u16value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_VERSION, field, 0x0);
+					}break;
+					case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_PROT_TYPE: {
+						field.u16 = set_field.get_oxm_16().get_u16value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_PROT_TYPE, field, 0x0);
+					}break;
+					case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_KEY: {
+						field.u32 = set_field.get_oxm_32().get_u32value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_KEY, field, 0x0);
+					}break;
+					}
 				}break;
-				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_2: {
-					field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_2, field, 0x0);
-				}break;
-				case rofl::openflow::experimental::wlan::OFPXMT_OFX_WLAN_ADDRESS_3: {
-					field.u64 = set_field.get_oxm_48().get_u48value_as_lladdr().get_mac();
-					action = of1x_init_packet_action(OF1X_AT_SET_FIELD_WLAN_ADDRESS_3, field, 0x0);
-				}break;
-				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_VERSION: {
-					field.u16 = set_field.get_oxm_16().get_u16value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_VERSION, field, 0x0);
-				}break;
-				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_PROT_TYPE: {
-					field.u16 = set_field.get_oxm_16().get_u16value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_PROT_TYPE, field, 0x0);
-				}break;
-				case rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_KEY: {
-					field.u32 = set_field.get_oxm_32().get_u32value();
-					action = of1x_init_packet_action( OF1X_AT_SET_FIELD_GRE_KEY, field, 0x0);
+				case rofl::openflow::experimental::ofdpa::EXP_ID_BCM: {
+					switch (set_field.get_oxm_field()) {
+					case rofl::openflow::experimental::ofdpa::OFPXMT_OFX_OFDPA_VRF: {
+						field.u16 = set_field.get_oxm_16().get_u16value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_OFDPA_VRF, field, 0x0);
+					}break;
+					case rofl::openflow::experimental::ofdpa::OFPXMT_OFX_OFDPA_OVID: {
+						field.u16 = set_field.get_oxm_16().get_u16value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_OFDPA_OVID, field, 0x0);
+					}break;
+					case rofl::openflow::experimental::ofdpa::OFPXMT_OFX_OFDPA_ALLOW_VLAN_TRANSLATION: {
+						field.u8 = set_field.get_oxm_8().get_u8value();
+						action = of1x_init_packet_action( OF1X_AT_SET_FIELD_OFDPA_ALLOW_VLAN_TRANSLATION, field, 0x0);
+					}break;
+					}
+
 				}break;
 				}
 #endif
@@ -1436,6 +1497,24 @@ of13_translation_utils::of13_map_reverse_flow_entry_matches(
 						rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY_MASK).set_u32value(of1x_get_match_value32(m));
 				match.set_matches().set_exp_match(rofl::openflow::ROFL_EXP_ID,
 						rofl::openflow::experimental::gre::OXM_TLV_EXPR_GRE_KEY_MASK).set_u32mask(of1x_get_match_mask32(m));
+				break;
+			case OF1X_MATCH_OFDPA_VRF:
+				match.set_matches().add_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+						rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_VRF_MASK).set_u16value(of1x_get_match_value16(m));
+				match.set_matches().set_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+						rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_VRF_MASK).set_u16mask(of1x_get_match_mask16(m));
+				break;
+			case OF1X_MATCH_OFDPA_OVID:
+				match.set_matches().add_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+						rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_OVID).set_u16value(of1x_get_match_value16(m));
+				break;
+			case OF1X_MATCH_OFDPA_ALLOW_VLAN_TRANSLATION:
+				match.set_matches().add_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+						rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_ALLOW_VLAN_TRANSLATION).set_u8value(of1x_get_match_value8(m));
+				break;
+			case OF1X_MATCH_OFDPA_ACTSET_OUTPUT:
+				match.set_matches().add_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+						rofl::openflow::experimental::ofdpa::OXM_TLV_EXPR_ACTSET_OUTPUT).set_u32value(of1x_get_match_value32(m));
 				break;
 #endif
 			default:
@@ -1981,6 +2060,15 @@ of13_translation_utils::of13_map_reverse_flow_entry_action(
 		case OF1X_AT_SET_FIELD_GRE_KEY: {
 			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::gre::coxmatch_ofx_gre_key(of1x_get_packet_action_field32(of1x_action)));
 		} break;
+		case OF1X_AT_SET_FIELD_OFDPA_VRF: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::ofdpa::coxmatch_ofb_vrf(of1x_get_packet_action_field16(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_OFDPA_OVID: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::ofdpa::coxmatch_ofb_ovid(of1x_get_packet_action_field16(of1x_action)));
+		} break;
+		case OF1X_AT_SET_FIELD_OFDPA_ALLOW_VLAN_TRANSLATION: {
+			actions.add_action_set_field(index).set_oxm(rofl::openflow::experimental::ofdpa::coxmatch_ofb_allow_vlan_translation(of1x_get_packet_action_field8(of1x_action)));
+		} break;
 		/* End of extensions */
 #endif
 
@@ -2205,6 +2293,20 @@ void of13_translation_utils::of13_map_reverse_packet_matches(packet_matches_t* p
 	if(packet_matches_get_gre_key_value(pm))
 		match.set_matches().add_exp_match(rofl::openflow::ROFL_EXP_ID,
 				rofl::openflow::experimental::gre::OFPXMT_OFX_GRE_KEY).set_u32value(packet_matches_get_gre_key_value(pm));
+
+	//OFDPA
+	if(packet_matches_get_ofdpa_vrf_value(pm))
+		match.set_matches().add_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+				rofl::openflow::experimental::ofdpa::OFPXMT_OFX_OFDPA_VRF).set_u16value(packet_matches_get_ofdpa_vrf_value(pm));
+	if(packet_matches_get_ofdpa_ovid_value(pm))
+		match.set_matches().add_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+				rofl::openflow::experimental::ofdpa::OFPXMT_OFX_OFDPA_OVID).set_u16value(packet_matches_get_ofdpa_ovid_value(pm));
+	if(packet_matches_get_ofdpa_allow_vlan_translation_value(pm))
+		match.set_matches().add_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+				rofl::openflow::experimental::ofdpa::OFPXMT_OFX_OFDPA_ALLOW_VLAN_TRANSLATION).set_u8value(packet_matches_get_ofdpa_allow_vlan_translation_value(pm));
+	if(packet_matches_get_ofdpa_action_set_output_egress_portno_value(pm))
+		match.set_matches().add_exp_match(rofl::openflow::experimental::ofdpa::EXP_ID_BCM,
+				rofl::openflow::experimental::ofdpa::OFPXMT_OFX_OFDPA_ACTSET_OUTPUT).set_u32value(packet_matches_get_ofdpa_action_set_output_egress_portno_value(pm));
 #endif
 }
 

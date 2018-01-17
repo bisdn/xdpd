@@ -23,7 +23,7 @@ void config::get_config_file_contents(Config* cfg){
 	std::string conf_file;
 
 	if(!system_manager::is_option_set(CONFIG_FILE_OPT_FULL_NAME)){
-		XDPD_INFO(CONF_PLUGIN_ID "No configuration file specified either via -c or --config-file\n");
+		XDPD_INFO(CONF_PLUGIN_ID "No configuration file specified neither via -c nor --config-file\n");
 		throw eConfParamNotFound();
 	}
 

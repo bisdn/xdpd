@@ -50,7 +50,7 @@ void iface_manager_handle_kni_commands(){
 /*
 * Handle external requests to bring up/down a KNI interface
 */
-static int kni_config_network_interface(uint8_t port_id, uint8_t if_up){
+static int kni_config_network_interface(uint16_t port_id, uint8_t if_up){
 
 	switch_port_t* port = nf_port_mapping[port_id];
 
@@ -85,7 +85,7 @@ static switch_port_t* configure_nf_port_shmem(const char *nf_name, const char *n
 	char queue_name[PORT_QUEUE_MAX_LEN_NAME];
 
 	//Initialize pipeline port
-	port = switch_port_init((char*)nf_port, false, PORT_TYPE_NF_SHMEM, PORT_STATE_NONE);
+	port = switch_port_init((char*)nf_port, false, PORT_TYPE_NF_SHMEM, PORT_STATE_NONE, /*tunnel_id=*/0);
 	if(!port)
 		return NULL;
 
@@ -158,7 +158,7 @@ static switch_port_t* configure_nf_port_kni(const char *nf_name, const char *nf_
 	switch_port_t* port;
 
 	//Initialize pipeline port
-	port = switch_port_init((char*)nf_port, false, PORT_TYPE_NF_EXTERNAL, PORT_STATE_NONE);
+	port = switch_port_init((char*)nf_port, false, PORT_TYPE_NF_EXTERNAL, PORT_STATE_NONE, /*tunnel_id=*/0);
 	if(!port)
 		return NULL;
 

@@ -175,11 +175,11 @@ of_switch_snapshot_t* hal_driver_get_switch_snapshot_by_dpid(uint64_t dpid){
 * @ingroup logical_switch_management
 * @retval  Pointer to of_switch_t instance 
 */
-hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of_version, unsigned int num_of_tables, int* ma_list){
+hal_result_t hal_driver_create_switch(char* name, uint64_t dpid, of_version_t of_version, sw_flavor_t flavor, unsigned int num_of_tables, int* ma_list){
 	
 	of_switch_t* sw;
 	
-	sw = (of_switch_t*)of1x_init_switch(name, of_version, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
+	sw = (of_switch_t*)of1x_init_switch(name, of_version, flavor, dpid, num_of_tables, (enum of1x_matching_algorithm_available*) ma_list);
 
 	if(unlikely(!sw))
 		return HAL_FAILURE;

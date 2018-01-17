@@ -100,7 +100,8 @@ public:
 					int* ma_list,
 					int reconnect_start_timeout,
 					enum xdpd::csocket::socket_type_t socket_type,
-					const xdpd::cparams& params);
+					const xdpd::cparams& params,
+					sw_flavor_t flavor = SW_FLAVOR_GENERIC);
 
 
 	/**

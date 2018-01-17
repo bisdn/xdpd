@@ -37,7 +37,7 @@ transmit_port_queue_tx_burst(unsigned int port_id, unsigned int queue_id, struct
 	switch_port_t* port = phy_port_mapping[port_id];
 
 	//Dequeue a burst from the TX ring
-	len = rte_ring_mc_dequeue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);
+	len = rte_ring_mc_dequeue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)burst, IO_IFACE_MAX_PKT_BURST, NULL);
 
 	if(len == 0)
 		return;
@@ -72,7 +72,7 @@ flush_port_queue_tx_burst(switch_port_t* port, unsigned int port_id, struct mbuf
 	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] Trying to flush burst(enqueue in lcore ring) on port queue_id %u of length: %u\n", port->name,  port_id, queue_id, queue->len);
 
 	//Enqueue to the lcore (if it'd we us, we could probably call to transmit directly)
-	ret = rte_ring_mp_enqueue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)queue->burst, queue->len);
+	ret = rte_ring_mp_enqueue_burst(port_tx_lcore_queue[port_id][queue_id], (void **)queue->burst, queue->len, NULL);
 
 	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][%s(%u)] --- Flushed %u pkts, on queue id %u\n", port->name, port_id, ret, queue_id);
 
@@ -163,7 +163,7 @@ flush_shmem_nf_port(switch_port_t* port, rte_ring* queue, struct mbuf_burst* bur
 	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem][%s] Trying to flush burst(enqueue in lcore ring) of length: %u\n", port->name,  burst->len);
 
 	//Enqueue to the hsmem ring
-	ret = rte_ring_mp_enqueue_burst(queue, (void **)burst->burst, burst->len);
+	ret = rte_ring_mp_enqueue_burst(queue, (void **)burst->burst, burst->len, NULL);
 
 	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][shmem][%s] --- Flushed %u pkts\n", port->name, ret);
 
@@ -259,7 +259,7 @@ transmit_kni_nf_port_burst(switch_port_t* port, unsigned int port_id, struct rte
 	unsigned int ret, len;
 
 	//Dequeue a burst from the TX ring
-	len = rte_ring_mc_dequeue_burst(port_tx_nf_lcore_queue[port_id], (void **)burst, IO_IFACE_MAX_PKT_BURST);
+	len = rte_ring_mc_dequeue_burst(port_tx_nf_lcore_queue[port_id], (void **)burst, IO_IFACE_MAX_PKT_BURST, NULL);
 
 	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Trying to transmit burst on KNI port %s of length %u\n",nf_port_mapping[port_id]->name, len);
 
@@ -293,7 +293,7 @@ flush_kni_nf_port_burst(switch_port_t* port, unsigned int port_id, struct mbuf_b
 	XDPD_DEBUG_VERBOSE(DRIVER_NAME"[io][kni] Trying to flush burst(enqueue in lcore ring) on KNI port %s\n", port->name, queue->len);
 
 
-	ret = rte_ring_mp_enqueue_burst(port_tx_nf_lcore_queue[port_id], (void **)queue->burst, queue->len);
+	ret = rte_ring_mp_enqueue_burst(port_tx_nf_lcore_queue[port_id], (void **)queue->burst, queue->len, NULL);
 
 	//XXX port_statistics[port].tx += ret;
 

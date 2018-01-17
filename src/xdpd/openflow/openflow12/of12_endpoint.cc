@@ -311,7 +311,7 @@ of12_endpoint::handle_flow_stats_request(
 	of1x_flow_entry_t* entry = NULL;
 
 	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(false);
+	entry = of1x_init_flow_entry(false, /*builtin=*/false);
 	
 	try{
 		of12_translation_utils::of12_map_flow_entry_matches(&ctl, msg.get_flow_stats().get_match(), sw, entry);
@@ -393,7 +393,7 @@ of12_endpoint::handle_aggregate_stats_request(
 //	struct ofp_flow_stats *flow_stats = (struct ofp_flow_stats*)body.somem();
 
 	//Map the match structure from OpenFlow to packet_matches_t
-	entry = of1x_init_flow_entry(false);
+	entry = of1x_init_flow_entry(false, /*builtin=*/false);
 
 	if(!entry)
 		throw rofl::eBadRequestBadStat();

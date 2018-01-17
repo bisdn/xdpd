@@ -49,7 +49,7 @@ of12_translation_utils::of12_map_flow_entry(
 		openflow_switch* sw)
 {
 
-	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flowmod().get_flags() & openflow12::OFPFF_SEND_FLOW_REM);
+	of1x_flow_entry_t *entry = of1x_init_flow_entry(msg->get_flowmod().get_flags() & openflow12::OFPFF_SEND_FLOW_REM, /*builtin=*/false);
 
 	if(!entry)
 		throw eFlowModUnknown();

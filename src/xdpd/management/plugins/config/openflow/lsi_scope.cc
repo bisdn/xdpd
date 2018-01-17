@@ -1,4 +1,5 @@
 #include "lsi_scope.h"
+#include <tuple>
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,6 +19,7 @@ using namespace rofl;
 
 //Constants
 #define LSI_DPID "dpid"
+#define LSI_FLAVOR "flavor"
 #define LSI_VERSION "version"
 #define LSI_DESCRIPTION "description"
 #define LSI_RECONNECT_TIME "reconnect-time"
@@ -30,6 +32,7 @@ using namespace rofl;
 lsi_scope::lsi_scope(std::string name, scope* parent):scope(name, parent, false){
 
 	register_parameter(LSI_DPID, true);
+	register_parameter(LSI_FLAVOR);
 	register_parameter(LSI_VERSION, true);
 	register_parameter(LSI_DESCRIPTION);
 
@@ -49,6 +52,26 @@ lsi_scope::lsi_scope(std::string name, scope* parent):scope(name, parent, false)
 
 	//Port mappings
 	register_parameter(LSI_PORTS, true);
+}
+
+
+void lsi_scope::parse_flavor(libconfig::Setting& setting, sw_flavor_t* flavor){
+
+	//Parse version
+	std::string s_flavor("generic");
+
+	if(setting.exists(LSI_FLAVOR)){
+		s_flavor = (const char*)setting[LSI_FLAVOR];
+	}
+
+	if(s_flavor == "generic"){
+		*flavor = SW_FLAVOR_GENERIC;
+	}else if(s_flavor == "ofdpa"){
+		*flavor = SW_FLAVOR_OFDPA;
+	}else{
+		XDPD_ERR(CONF_PLUGIN_ID "%s: invalid switch flavor. Valid switch flavors include \"generic\" (default) and \"ofdpa\". Found: %s\n", setting.getPath().c_str(), s_flavor.c_str());
+		throw eConfParseError();
+	}
 }
 
 
@@ -97,7 +120,7 @@ void lsi_scope::parse_pirl(libconfig::Setting& setting, bool* pirl_enabled, int*
 
 	}
 }
-void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string>& ports, bool dry_run){
+void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::tuple<std::string, uint32_t> >& ports, bool dry_run){
 
 	//TODO: improve conf file to be able to control the OF port number when attaching
 
@@ -110,7 +133,17 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 	}
 
 	for(int i=0; i<setting[LSI_PORTS].getLength(); ++i){
+		std::string s_port = setting[LSI_PORTS][i];
 		std::string port = setting[LSI_PORTS][i];
+		size_t epos;
+		uint32_t of_port_num=i+1;
+
+		if (((epos = s_port.find(":")) != std::string::npos)){
+			port = s_port.substr(0, epos);
+			std::stringstream ss(s_port.substr(epos+1, s_port.length()));
+			ss >> of_port_num;
+		}
+
 		if(port != ""){
 			//Check if blacklisted to print a nice trace
 			if(port_manager::is_blacklisted(port)){
@@ -124,16 +157,19 @@ void lsi_scope::parse_ports(libconfig::Setting& setting, std::vector<std::string
 				throw eConfParseError(); 	
 			
 			}
-			if((std::find(ports.begin(), ports.end(), port) != ports.end())){
+			if(find_if(ports.begin(), ports.end(), find_port_tuple_by_name(port))!=ports.end()){
 				XDPD_ERR(CONF_PLUGIN_ID "%s: attempting to attach twice port '%s'!\n", setting.getPath().c_str(), port.c_str());
+				throw eConfParseError();
+			}
+			if(find_if(ports.begin(), ports.end(), find_port_tuple_by_portno(of_port_num))!=ports.end()){
+				XDPD_ERR(CONF_PLUGIN_ID "%s: attempting to use portno '%u' twice!\n", setting.getPath().c_str(), of_port_num);
 				throw eConfParseError(); 	
-			
 			}				
 		}
 		
 		//Then push it to the list of ports
 		//Note empty ports are valid (empty, ignore slot)
-		ports.push_back(port);
+		ports.push_back(std::make_tuple(port, of_port_num));
 	
 	}	
 
@@ -194,6 +230,7 @@ void lsi_scope::parse_matching_algorithms(libconfig::Setting& setting, of_versio
 void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 
 	uint64_t dpid;
+	sw_flavor_t flavor = SW_FLAVOR_GENERIC;
 	of_version_t version;
 	std::vector<lsi_connection> connections;
  
@@ -205,7 +242,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	unsigned int reconnect_time = 5;
 	//std::string bind_address_ip = "0.0.0.0";
 	//caddress bind_address;
-	std::vector<std::string> ports;
+	std::vector<std::tuple<std::string, uint32_t> > ports;
 	int ma_list[OF1X_MAX_FLOWTABLES] = { 0 };
 	bool pirl_enabled = true;
 	int pirl_rate=pirl::PIRL_DEFAULT_MAX_RATE;
@@ -216,6 +253,11 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 	if(!dpid){
 		XDPD_ERR(CONF_PLUGIN_ID "%s: Unable to convert parameter DPID to a proper uint64_t\n", setting.getPath().c_str());
 		throw eConfParseError(); 	
+	}
+
+	//Parse flavor
+	if (setting.exists(LSI_FLAVOR)) {
+		parse_flavor(setting, &flavor);
 	}
 
 	//Parse version
@@ -257,7 +299,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		openflow_switch* sw;
 
 		//Create switch with the initial connection (connection 0)
-		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, reconnect_time, conns[0].type, conns[0].params);
+		sw = switch_manager::create_switch(version, dpid, name, num_of_tables, ma_list, reconnect_time, conns[0].type, conns[0].params, flavor);
 
 
 		if(!sw){
@@ -266,21 +308,23 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 		}	
 	
 		//Attach ports
-		std::vector<std::string>::iterator port_it;
-		unsigned int i;
-		for(port_it = ports.begin(), i=1; port_it != ports.end(); ++port_it, ++i){
+		std::vector<std::tuple<std::string, uint32_t> >::iterator port_it;
+		for(port_it = ports.begin(); port_it != ports.end(); ++port_it){
 				
+			std::string port_name = std::get<0>(*port_it);
+			unsigned int i = std::get<1>(*port_it);
+
 			//Ignore empty ports	
-			if(*port_it == "")
+			if(port_name == "")
 				continue;
 		
 			try{
 				//Attach
-				port_manager::attach_port_to_switch(dpid, *port_it, &i);
+				port_manager::attach_port_to_switch(dpid, port_name, &i);
 				//Bring up
-				port_manager::bring_up(*port_it);
+				port_manager::bring_up(port_name);
 			}catch(...){	
-				XDPD_ERR(CONF_PLUGIN_ID "%s: unable to attach port '%s'. Unknown error.\n", setting.getPath().c_str(), (*port_it).c_str());
+				XDPD_ERR(CONF_PLUGIN_ID "%s: unable to attach port '%s'. Unknown error.\n", setting.getPath().c_str(), port_name.c_str());
 				throw;
 			}
 		}

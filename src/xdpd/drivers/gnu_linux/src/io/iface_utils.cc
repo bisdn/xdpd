@@ -282,7 +282,7 @@ static switch_port_t* fill_port(int sock, struct ifaddrs* ifa){
 	}
 
 	//Init the port
-	port = switch_port_init(ifa->ifa_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_NONE);
+	port = switch_port_init(ifa->ifa_name, true/*will be overriden afterwards*/, PORT_TYPE_PHYSICAL, PORT_STATE_NONE, /*tunnel_id=*/0);
 	if(!port)
 		return NULL;
 
@@ -402,10 +402,10 @@ rofl_result_t create_virtual_port_pair(of_switch_t* lsw1, ioport** vport1, of_sw
 
 	//Init the pipeline ports
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 0);
-	port1 = switch_port_init(port_name, false, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+	port1 = switch_port_init(port_name, false, PORT_TYPE_VIRTUAL, PORT_STATE_NONE, /*tunnel_id=*/0);
 
 	snprintf(port_name,PORT_QUEUE_MAX_LEN_NAME, "vlink%u_%u", num_of_vlinks, 1);
-	port2 = switch_port_init(port_name, false, PORT_TYPE_VIRTUAL, PORT_STATE_NONE);
+	port2 = switch_port_init(port_name, false, PORT_TYPE_VIRTUAL, PORT_STATE_NONE, /*tunnel_id=*/0);
 
 	if(!port1 || !port2){
 		free(port1);

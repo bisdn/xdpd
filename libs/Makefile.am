@@ -16,6 +16,7 @@ MAINTAINERCLEANFILES = Makefile.in
 #
 
 #General variables
+SRC_DIR=$(abs_top_srcdir)
 LIBS_DIR=$(abs_top_srcdir)/libs
 LIBS_BUILD_DIR=$(abs_top_builddir)/libs
 
@@ -113,6 +114,7 @@ clean-rofl-common-datapath:
 
 maintainer-clean-rofl-datapath: clean-rofl-common-datapath
 	@cd $(builddir)/rofl-datapath/build && $(MAKE) maintainer-clean
+
 
 
 ##

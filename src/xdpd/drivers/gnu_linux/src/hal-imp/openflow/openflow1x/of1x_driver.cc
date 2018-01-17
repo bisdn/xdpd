@@ -362,7 +362,7 @@ hal_fm_result_t hal_driver_of1x_process_flow_mod_add(uint64_t dpid, uint8_t tabl
 		return HAL_FM_FAILURE;
 	}
 
-	if(table_id >= lsw->pipeline.num_of_tables)
+	if((lsw->sw_flavor==SW_FLAVOR_GENERIC)&&(table_id >= lsw->pipeline.num_of_tables))
 		return HAL_FM_INVALID_TABLE_ID_FAILURE;
 
 	if( (result = of1x_add_flow_entry_table(&lsw->pipeline, table_id, flow_entry, check_overlap, reset_counts)) != ROFL_OF1X_FM_SUCCESS)
@@ -413,8 +413,9 @@ hal_fm_result_t hal_driver_of1x_process_flow_mod_modify(uint64_t dpid, uint8_t t
 		return HAL_FM_FAILURE;
 	}
 
-	if(table_id >= lsw->pipeline.num_of_tables)
+	if((lsw->sw_flavor==SW_FLAVOR_GENERIC)&&(table_id >= lsw->pipeline.num_of_tables))
 		return HAL_FM_INVALID_TABLE_ID_FAILURE;
+
 
 	if((result = of1x_modify_flow_entry_table(&lsw->pipeline, table_id, flow_entry, strictness, reset_counts)) != ROFL_OF1X_FM_SUCCESS)
 		return hal_fm_map_pipeline_retcode(result);
@@ -466,8 +467,9 @@ hal_fm_result_t hal_driver_of1x_process_flow_mod_delete(uint64_t dpid, uint8_t t
 		return HAL_FM_FAILURE;
 	}
 
-	if(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+	if((lsw->sw_flavor==SW_FLAVOR_GENERIC)&&(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL))
 		return HAL_FM_INVALID_TABLE_ID_FAILURE;
+
 
 	if(table_id == OF1X_FLOW_TABLE_ALL){
 		//Single table
@@ -517,7 +519,7 @@ of1x_stats_flow_msg_t* hal_driver_of1x_get_flow_stats(uint64_t dpid, uint8_t tab
 		return NULL;
 	}
 
-	if(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+	if((lsw->sw_flavor==SW_FLAVOR_GENERIC)&&(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL))
 		return NULL; 
 
 	return of1x_get_flow_stats(&lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);
@@ -549,7 +551,7 @@ of1x_stats_flow_aggregate_msg_t* hal_driver_of1x_get_flow_aggregate_stats(uint64
 		return NULL;
 	}
 
-	if(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL)
+	if((lsw->sw_flavor==SW_FLAVOR_GENERIC)&&(table_id >= lsw->pipeline.num_of_tables && table_id != OF1X_FLOW_TABLE_ALL))
 		return NULL; 
 
 	return of1x_get_flow_aggregate_stats(&lsw->pipeline, table_id, cookie, cookie_mask, out_port, out_group, matches);

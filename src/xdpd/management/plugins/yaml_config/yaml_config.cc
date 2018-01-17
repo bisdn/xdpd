@@ -22,7 +22,7 @@ YAML::Node& yaml_config::reload_yaml_file(){
 	std::string conf_file;
 
 	if(!system_manager::is_option_set(YAML_FILE_OPT_FULL_NAME)){
-		XDPD_INFO(YAML_PLUGIN_ID "No configuration file specified either via -y or --yaml-conf\n");
+		XDPD_INFO(YAML_PLUGIN_ID "No configuration file specified neither via -y nor --yaml-conf\n");
 		throw eYamlConfParamNotFound();
 	}
 
